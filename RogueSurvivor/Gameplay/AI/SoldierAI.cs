@@ -131,12 +131,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var damage_field = new Dictionary<Point, int>();
       var slow_melee_threat = new List<Actor>();
       var immediate_threat = new HashSet<Actor>();
+      var blast_field = new HashSet<Point>();
       if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       AddTrapsToDamageField(damage_field, percepts_all);
-      bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
+      bool in_blast_field = AddExplosivesToDamageField(damage_field, blast_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       if (0>= immediate_threat.Count) immediate_threat = null;
+      if (0>= blast_field.Count) blast_field = null;
 
       List<Point> retreat = null;
       List<Point> run_retreat = null;
@@ -211,7 +213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES, blast_field);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif

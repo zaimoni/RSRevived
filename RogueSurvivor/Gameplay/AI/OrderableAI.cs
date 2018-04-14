@@ -1654,11 +1654,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes, HashSet<Point> blast_field=null)
     {
+#if DEBUG
+      if (blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
+#endif
+      List<Point> legal_steps = m_Actor.LegalSteps; // XXX should be passing this in instead
+      if (null!=blast_field && null!=legal_steps) {
+        IEnumerable<Point> test = legal_steps.Where(pt => !blast_field.Contains(pt));
+        legal_steps = (test.Any() ? test.ToList() : null);
+      }
+      // enemies list is sorted by grid distance; and preclude their grids from being legal steps
+
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(enemies);
-      List<Point> legal_steps = m_Actor.LegalSteps; // XXX should be passing this in instead
       Actor enemy = target.Percepted as Actor;
 
       bool doRun = false;	// only matters when fleeing

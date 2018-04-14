@@ -766,7 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, List<Percept_<Inventory>> goals)
+    public bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept_<Inventory>> goals)
     {
       if (null == goals) return false;
       bool in_blast_field = false;
@@ -776,12 +776,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point pt = exp.Location.Position;
         if (damage_field.ContainsKey(pt)) damage_field[pt] += tmp_blast.Damage[0];
         else damage_field[pt] = tmp_blast.Damage[0];
+        blast_field.Add(pt);
         // We would need a very different implementation for large blast radii.
         int r = 0;
         while (++r <= tmp_blast.Radius) {
           foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => exp.Location.Position.RadarSweep(r, i))) {
             if (!exp.Location.Map.IsValid(p)) continue;
             if (!LOS.CanTraceFireLine(exp.Location, p, tmp_blast.Radius)) continue;
+            blast_field.Add(p);
             if (damage_field.ContainsKey(p)) damage_field[p] += tmp_blast.Damage[r];
             else damage_field[p] = tmp_blast.Damage[r];
             if (p == m_Actor.Location.Position) in_blast_field = true;
@@ -791,9 +793,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return in_blast_field;
     }
 
-    protected bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, List<Percept> percepts)
+    protected bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept> percepts)
     {
-      return AddExplosivesToDamageField(damage_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
+      return AddExplosivesToDamageField(damage_field, blast_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
 
     protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
