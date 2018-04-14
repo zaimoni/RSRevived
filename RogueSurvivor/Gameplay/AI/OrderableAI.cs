@@ -821,18 +821,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRechargeAtDawn(it)) ?? false;
     }
 
-    public bool InCommunicationWith(Actor a)
-    {
-      if (m_Actor==a) return true;
-      if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
-      if (a.IsSleeping) return false;
-      if (a.Location.Map == m_Actor.Location.Map && a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
-      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
-      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
-      if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
-      return false;
-    }
-
     // XXX to implement
     // core inventory should be (but is not)
     // armor: 1 slot (done)

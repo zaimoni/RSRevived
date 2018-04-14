@@ -182,6 +182,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
+      if (null == current_enemies) AdviseFriendsOfSafety();
+
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);

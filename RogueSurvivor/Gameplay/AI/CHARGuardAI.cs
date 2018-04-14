@@ -136,6 +136,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  List<Percept> friends = FilterNonEnemies(percepts_all);
 
+      if (null == current_enemies) AdviseFriendsOfSafety();
+
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);

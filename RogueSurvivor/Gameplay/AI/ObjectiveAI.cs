@@ -766,7 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept_<Inventory>> goals)
+    private bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept_<Inventory>> goals)
     {
       if (null == goals) return false;
       bool in_blast_field = false;
@@ -813,6 +813,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 #endregion
+
+    public bool InCommunicationWith(Actor a)
+    {
+      if (m_Actor==a) return true;
+      if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
+      if (a.IsSleeping) return false;
+      if (a.Location.Map == m_Actor.Location.Map && a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
+      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
+      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
+      if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
+      return false;
+    }
+
+    protected void AdviseFriendsOfSafety()
+    {
+#if DEBUG
+      if (null != enemies_in_FOV) throw new InvalidOperationException("not really safe");
+#endif
+      var observers = new Dictionary<Actor, ThreatTracking>();
+      var friends = friends_in_FOV;
+      if (null != friends) {
+        foreach(var pos_fr in friends) {
+          Actor friend = pos_fr.Value;
+          ThreatTracking ally_threat = friend.Threats;
+          if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+          if (!InCommunicationWith(friend)) continue;
+          observers[friend] = ally_threat;
+        }
+      }
+      HashSet<Actor> allies = m_Actor.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
+      if (null != allies) {
+        foreach(Actor friend in allies) {
+          ThreatTracking ally_threat = friend.Threats;
+          if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+          if (!InCommunicationWith(friend)) continue;
+          observers[friend] = ally_threat;
+        }
+      }
+      // but this won't trigger if any of our friends are mutual enemies
+      if (0<observers.Count) {
+        foreach(KeyValuePair<Actor,ThreatTracking> wary in observers) {
+          if (!wary.Key.AnyEnemiesInFov(FOV)) wary.Value.Cleared(m_Actor.Location.Map,FOV);
+        }
+      }
+    }
 
     private ActorAction _PrefilterDrop(Item it)
     {
