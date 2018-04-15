@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_SELECTACTION
+#define TRACE_SELECTACTION
 // #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
@@ -499,8 +499,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             // invariant failure
 #if DEBUG
-            ActorAction failed2 = (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(at_target.Location, at_target.Percepted as Inventory);
-            throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed2.to_s());
+            throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+tmpAction.to_s());
 #endif
           }
 
@@ -546,6 +545,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Goal_PathToStack remote = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
         if (null != remote) {
           tmpAction = remote.Pathing();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "remote.Pathing(): "+tmpAction.to_s());
+#endif
           if (null != tmpAction) return tmpAction;
         }
       } // null == enemies && Directives.CanTakeItems

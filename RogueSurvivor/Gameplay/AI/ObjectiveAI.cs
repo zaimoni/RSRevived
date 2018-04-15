@@ -871,8 +871,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!InCommunicationWith(ally)) continue;
         var track_inv = ai.Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
         foreach(Percept p in stacks) {
-          if (ai.CanSee(p.Location)) continue;
-          if (!(ai.BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true)) continue;
+          if (m_Actor.Location != p.Location && ai.CanSee(p.Location)) continue;
+          try {
+            if (!ai.WouldGrabFromStack(p.Location, p.Percepted as Inventory)) continue;
+          } catch (InvalidOperationException e) {   // invalid operation is expected when denormalized location is null
+            goto presume_ok;
+          };
+
+presume_ok:
           if (null == track_inv) {
             track_inv = new Goal_PathToStack(ally.Location.Map.LocalTime.TurnCounter,ally,p.Location);
             ai.Objectives.Add(track_inv);
@@ -1092,6 +1098,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
       if (null == rw) {
+        // second opinion...if we know where a suitable rw, close by, then elevate priority
+        var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+        if (null != track_inv) {
+          foreach(Inventory inv in track_inv.Inventories) {
+            if (inv.IsEmpty) continue;
+            if (null != inv.GetCompatibleRangedWeapon(am)) {
+              if (is_in_inventory) return 2;
+              return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 2;
+            }
+          }
+        }
+
         if (is_in_inventory) return 1;
         return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
       }
@@ -1361,12 +1379,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
       if (null != rw) return BehaviorDropItem(rw);
 
+#if FALSE_POSITIVE
       if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) {
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) {
           ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => null == m_Actor.Inventory.GetCompatibleRangedWeapon(it));
           if (null != am) return BehaviorDropItem(am);
         }
       }
+#endif
 
       return null;
     }
