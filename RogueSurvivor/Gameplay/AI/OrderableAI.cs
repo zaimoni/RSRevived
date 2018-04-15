@@ -362,9 +362,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var goals = new Dictionary<Point, int>{
             [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
           };
-          ActorAction tmp = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
-          if (tmp?.IsLegal() ?? false) return tmp;
-          return null;
+          return (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
         }
 
         IEnumerable<Point> dest_pts = Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
@@ -705,6 +703,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
     // we also assume no enemies in sight.
+    // XXX as a de-facto leaf function, we can get away with destructive modifications to goals
     public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
       if (0>=goals.Count) return null;
@@ -713,6 +712,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2 <= legal_steps.Count) legal_steps = DecideMove_WaryOfTraps(legal_steps);
       if (2 <= legal_steps.Count) {
         int min_dist = goals.Values.Min();
+        // this breaks down if 2+ goals equidistant.
+        {
+        var nearest = new List<Point>(goals.Count);
+        foreach(var x in goals) {
+          if (x.Value>min_dist) continue;
+          nearest.Add(x.Key);
+        }
+        if (1<nearest.Count) {
+           int i = RogueForm.Game.Rules.DiceRoller.Roll(0,nearest.Count);
+           nearest.RemoveAt(i);
+           foreach(Point pt in nearest) goals.Remove(pt);
+        }
+        }
+        // exactly one minimum-cost goal now
         int near_scale = goals.Count+1;
         var efficiency = new Dictionary<Point,int>();
         foreach(Point pt in legal_steps) {
@@ -1512,9 +1525,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // we could floodfill this, of course -- but everything is in LoS so try something else
       // we want to head for a nearest objective in such a way that the distance to all of the other objectives is minimized
-      ActorAction tmpAction = BehaviorEfficientlyHeadFor(want_to_resolve);
-      if (null != tmpAction) return tmpAction;
-      return null;
+      return BehaviorEfficientlyHeadFor(want_to_resolve);
     }
 
     protected ActionShout BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
