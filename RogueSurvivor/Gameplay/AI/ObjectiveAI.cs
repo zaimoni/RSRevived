@@ -1087,26 +1087,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 2;
     }
 
+    private bool KnowRelevantInventory(ItemAmmo am)
+    {
+      // second opinion...if we know where a suitable rw, close by, then elevate priority
+      var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+      if (null != track_inv) {
+        foreach(Inventory inv in track_inv.Inventories) {
+          if (inv.IsEmpty) continue;
+          if (null != inv.GetCompatibleRangedWeapon(am)) return true;
+        }
+      }
+      return false;
+    }
+
     private int ItemRatingCode(ItemAmmo am)
     {
       bool is_in_inventory = m_Actor.Inventory.Contains(am);
 
       ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
       if (null == rw) {
-        // second opinion...if we know where a suitable rw, close by, then elevate priority
-        var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
-        if (null != track_inv) {
-          foreach(Inventory inv in track_inv.Inventories) {
-            if (inv.IsEmpty) continue;
-            if (null != inv.GetCompatibleRangedWeapon(am)) {
-              if (is_in_inventory) return 2;
-              return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 2;
-            }
-          }
-        }
-
-        if (is_in_inventory) return 1;
-        return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
+        int potential_importance = KnowRelevantInventory(am) ? 2 : 1;
+        if (is_in_inventory) return potential_importance;
+        return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : potential_importance;
       }
       if (is_in_inventory) return 2;
       if (rw.Ammo < rw.Model.MaxAmmo) return 2;
@@ -1900,6 +1902,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
       if (null == rw) {
+        if (KnowRelevantInventory(am) && !AmmoAtLimit) return true;
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
         if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
       } else {
