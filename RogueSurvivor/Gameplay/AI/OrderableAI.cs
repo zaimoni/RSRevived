@@ -228,11 +228,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_PathToStack(int t0, Actor who, Location loc)
       : base(t0,who)
       {
-        Inventory inv = loc.Items;
-#if DEBUG
-        if ((inv?.IsEmpty ?? true) || null==(m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(loc,inv)) throw new ArgumentNullException(nameof(inv));
-#endif
-        _stacks.Add(new Percept_<Inventory>(inv,t0,loc));
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null == test) return;
+          loc = test.Value;
+        }
+        newStack(loc);
       }
 
       public override bool UrgentAction(out ActorAction ret)
@@ -240,14 +241,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         HashSet<Point> fov = m_Actor.Controller.FOV;
         int i = _stacks.Count;
-#if DEBUG
-        if (0 >= i) throw new InvalidOperationException("expired objective");
-#else
         if (0 >= i) {
           _isExpired = true;
           return true;
         }
-#endif
+
         // update if stack is actually in sight
         while(0 < i--) {
           { // scope var p
@@ -262,8 +260,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           } // end scope var p
           // XXX \todo some telepathic leakage since this isn't a value copy
-          if (_stacks[i].Percepted.IsEmpty || null == (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
-           _stacks.RemoveAt(i);
+          try {
+            if (_stacks[i].Percepted.IsEmpty || null == (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
+              _stacks.RemoveAt(i);
+              continue;
+            }
+          } catch (InvalidOperationException e) {   // YES, we do want to catch this; happens when the return value is ActionTakeItem and the denormalized location is null
             continue;
           }
         }
@@ -275,9 +277,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
 
-        var _at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
-        if (null != _at_target) {
-          ActorAction tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromStack(_at_target.Location, _at_target.Percepted);
+        var at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
+        if (null != at_target) {
+          ActorAction tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted);
           if (tmpAction?.IsLegal() ?? false) {
             ret = tmpAction;
             m_Actor.Activity = Activity.IDLE;
@@ -285,7 +287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           // invariant failure
 #if DEBUG
-          ActorAction failed = (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(_at_target.Location, _at_target.Percepted);
+          ActorAction failed = (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(at_target.Location, at_target.Percepted);
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed.to_s());
 #else
           _stacks.Remove(_at_target);
@@ -302,9 +304,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public void newStack(Location loc) {
         Inventory inv = loc.Items;
-#if DEBUG
-        if ((inv?.IsEmpty ?? true) || null==(m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(loc,inv)) throw new ArgumentNullException(nameof(inv));
-#endif
+        if (inv?.IsEmpty ?? true) return;
+        if (null == (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(loc, inv)) return;
+
         int i = _stacks.Count;
         // update if stack is present
         while(0 < i--) {
@@ -2409,7 +2411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
     }
 
-    protected ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
+    public ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -2453,7 +2455,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
     }
 
-    public ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
+    protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));

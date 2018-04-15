@@ -859,6 +859,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    protected void AdviseCellOfInventoryStacks(List<Percept> stacks)
+    {
+#if DEBUG
+      if (0 >= (stacks?.Count ?? 0)) throw new ArgumentNullException(nameof(stacks));
+#endif
+      var cell = m_Actor.ChainOfCommand;  // Cf. Robert Heinlein, "The Moon is a Harsh Mistress"
+      if (null == cell) return;
+      foreach(Actor ally in cell) {
+        if (!(ally.Controller is OrderableAI ai)) continue;
+        if (!InCommunicationWith(ally)) continue;
+        var track_inv = ai.Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+        foreach(Percept p in stacks) {
+          if (ai.CanSee(p.Location)) continue;
+          if (!(ai.BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true)) continue;
+          if (null == track_inv) {
+            track_inv = new Goal_PathToStack(ally.Location.Map.LocalTime.TurnCounter,ally,p.Location);
+            ai.Objectives.Add(track_inv);
+          } else track_inv.newStack(p.Location);
+        }
+      }
+    }
+
     private ActorAction _PrefilterDrop(Item it)
     {
       // use stimulants before dropping them

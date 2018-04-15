@@ -459,9 +459,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // 2) categorize stacks by whether they are personally interesting or not.
         // 3) the personally interesting ones get evaluated here. 
         // 4) in-communication followers will be consulted regarding the not-interesting stacks
-        List<Percept> interestingStacks = percepts1.FilterT<Inventory>().FilterOut(p =>
-        {
-          if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
+        var examineStacks = new List<Percept>(percepts1?.Count ?? 0);
+        if (null != percepts1) {
+          var boringStacks = new List<Percept>(percepts1.Count);
+          foreach(Percept p in percepts1) {
+            if (!(p.Percepted is Inventory inv)) continue;
+            if (m_Actor.StackIsBlocked(p.Location, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
+            if (!BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true) {
+              boringStacks.Add(p);
+              continue;
+            }
+            if (p.Turn != map.LocalTime.TurnCounter) continue;    // not in sight
+            examineStacks.Add(p);
+          }
+          if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);
+        }
+        List<Percept> interestingStacks = examineStacks.FilterT<Inventory>().FilterOut(p => {
           if (IsOccupiedByOther(p.Location)) return true; // blocked
           if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
             if (!imStarvingOrCourageous && map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints) return true;  // destination deathtrapped
@@ -473,9 +486,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
             path[0] = test;
             if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAt(pt) >= m_Actor.HitPoints)) return true;
           }
-          return !BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true;
+          return false;
         });
         if (interestingStacks != null) {
+          var at_target = interestingStacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
+          if (null != at_target) {
+            m_LastItemsSaw = at_target;
+            tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
+            if (tmpAction?.IsLegal() ?? false) {
+              m_Actor.Activity = Activity.IDLE;
+              return tmpAction;
+            }
+            // invariant failure
+#if DEBUG
+            ActorAction failed2 = (m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(at_target.Location, at_target.Percepted as Inventory);
+            throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed2.to_s());
+#endif
+          }
+
+          // no accessible interesting stacks.  Memorize them just in case.
+          {
+          var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+          foreach(Percept p in interestingStacks) {
+            if (null == track_inv) {
+              track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,p.Location);
+              Objectives.Add(track_inv);
+            } else track_inv.newStack(p.Location);
+          }
+          }
+
           Percept percept = FilterNearest(interestingStacks);
           m_LastItemsSaw = percept;
           tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
@@ -504,6 +543,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
 #endif
+        Goal_PathToStack remote = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+        if (null != remote) {
+          tmpAction = remote.Pathing();
+          if (null != tmpAction) return tmpAction;
+        }
       } // null == enemies && Directives.CanTakeItems
 
       // attempting extortion from cops should have consequences.

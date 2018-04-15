@@ -1350,6 +1350,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // ignores faction alliances
+    public HashSet<Actor> ChainOfCommand {
+      get {
+        var ret = new HashSet<Actor>();
+        if (0 < CountFollowers) ret.UnionWith(m_Followers);
+        else if (HasLeader) {
+          ret.Add(Leader);
+          ret.UnionWith(Leader.Followers);
+          ret.Remove(this);
+        }
+        return (0<ret.Count ? ret : null);
+      }
+    }
+
     // map-related, loosely
     public void RemoveFromMap()
     {
