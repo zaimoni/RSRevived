@@ -352,21 +352,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ret = new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;
         }
+        return false;
+      }
+
+      public ActorAction Pathing()
+      {
         Location? test = m_Actor.Location.Map.Denormalize(_dest.Location);
         if (null!=test && m_Actor.Controller.FOV.Contains(test.Value.Position)) {
           var goals = new Dictionary<Point, int>{
             [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
           };
           ActorAction tmp = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
-          if (tmp?.IsLegal() ?? false) {
-            ret = tmp;
-            return true;
-          }
+          if (tmp?.IsLegal() ?? false) return tmp;
+          return null;
         }
 
         IEnumerable<Point> dest_pts = Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
-        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
-        return ret?.IsLegal() ?? false;
+        ActorAction ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
+        return (ret?.IsLegal() ?? false) ? ret : null;
+      }
+
+      public override string ToString()
+      {
+        return "Pathing to "+_dest.Name;
       }
     }
 

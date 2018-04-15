@@ -535,6 +535,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed.ToString()+" "+failed.IsLegal().ToString());
 #endif
         }
+        {   // leadership or trading requests
+        Goal_HintPathToActor remote = Objectives.FirstOrDefault(o => o is Goal_HintPathToActor) as Goal_HintPathToActor;
+        if (null != remote) {
+          tmpAction = remote.Pathing();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "remote.Pathing(): "+tmpAction.to_s());
+#endif
+          if (null != tmpAction) return tmpAction;
+        }
+        }
         if (Directives.CanTrade) {
           tmpAction = BehaviorFindTrade(friends);
           if (null != tmpAction) return tmpAction;
@@ -542,6 +552,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
 #endif
+        {
         Goal_PathToStack remote = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
         if (null != remote) {
           tmpAction = remote.Pathing();
@@ -549,6 +560,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "remote.Pathing(): "+tmpAction.to_s());
 #endif
           if (null != tmpAction) return tmpAction;
+        }
         }
       } // null == enemies && Directives.CanTakeItems
 
