@@ -265,12 +265,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           } // end scope var p
           // XXX \todo some telepathic leakage since this isn't a value copy
-          try {
-            if (_stacks[i].Percepted.IsEmpty || !(m_Actor.Controller as OrderableAI).WouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
-              _stacks.RemoveAt(i);
-              continue;
-            }
-          } catch (InvalidOperationException e) {   // YES, we do want to catch this; happens when the return value is ActionTakeItem and the denormalized location is null
+          if (_stacks[i].Percepted.IsEmpty || !(m_Actor.Controller as OrderableAI).WouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
+            _stacks.RemoveAt(i);
             continue;
           }
         }

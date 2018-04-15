@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define TRACE_SELECTACTION
+// #define TRACE_SELECTACTION
 // #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
@@ -472,7 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (p.Turn != map.LocalTime.TurnCounter) continue;    // not in sight
             examineStacks.Add(p);
           }
-          if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);
+          if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);    // XXX \todo PC leader should do the same
         }
         List<Percept> interestingStacks = examineStacks.FilterT<Inventory>().FilterOut(p => {
           if (IsOccupiedByOther(p.Location)) return true; // blocked

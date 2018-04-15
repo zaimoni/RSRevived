@@ -872,13 +872,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var track_inv = ai.Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
         foreach(Percept p in stacks) {
           if (m_Actor.Location != p.Location && ai.CanSee(p.Location)) continue;
-          try {
-            if (!ai.WouldGrabFromStack(p.Location, p.Percepted as Inventory)) continue;
-          } catch (InvalidOperationException e) {   // invalid operation is expected when denormalized location is null
-            goto presume_ok;
-          };
+          if (!ai.WouldGrabFromStack(p.Location, p.Percepted as Inventory)) continue;
 
-presume_ok:
           if (null == track_inv) {
             track_inv = new Goal_PathToStack(ally.Location.Map.LocalTime.TurnCounter,ally,p.Location);
             ai.Objectives.Add(track_inv);
@@ -1130,12 +1125,12 @@ presume_ok:
         if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
       }
       if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
-      if (0 >= rws_w_ammo && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 3;
+      ItemAmmo compatible = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+      if (0 >= rw.Ammo && null == compatible) return 1;
+      if (0 >= rws_w_ammo && null != compatible) return 3;
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return 0;
-      if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
-      if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 0;
+      if (AmmoAtLimit && null==compatible) return 0;
       if (0< rws_w_ammo) return 2;
       return 3;
     }
@@ -1863,6 +1858,10 @@ presume_ok:
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
+      if (m_Actor.Inventory.Contains(rw)) {
+        if (0 < rw.Ammo) return true;
+        // should not have ammo in ivnentory at this point
+      }
       int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo);
       if (!m_Actor.Inventory.Contains(rw)) {
         if (0< rws_w_ammo) {
@@ -1875,8 +1874,7 @@ presume_ok:
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return false;
-      if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return false;
+      if (AmmoAtLimit && null== m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       return _InterestingItemPostprocess(rw);
     }

@@ -32,6 +32,11 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       return Math.Max(0, t1 - Turn);
     }
+
+    public override string ToString()
+    {
+      return Turn.ToString()+": "+Location.ToString();
+    }
   }
 
   [Serializable]
@@ -48,6 +53,11 @@ namespace djack.RogueSurvivor.Engine.AI
       if (null == percepted) throw new ArgumentNullException(nameof(percepted));
 #endif
       m_Percepted = percepted;
+    }
+
+    public override string ToString()
+    {
+      return Percepted.ToString()+" @ "+base.ToString();
     }
   }
 
