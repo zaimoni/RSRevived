@@ -252,26 +252,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         while(0 < i--) {
           { // scope var p
           var p = _stacks[i];
-          if (p.Location.Map==m_Actor.Location.Map) {
-            if (fov.Contains(p.Location.Position)) {
-              Inventory inv = p.Location.Items;
-              if (inv?.IsEmpty ?? true) {
-                _stacks.RemoveAt(i);
-                continue;
-              }
-              _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
+          if (m_Actor.Controller.CanSee(p.Location)) {
+            Inventory inv = p.Location.Items;
+            if (inv?.IsEmpty ?? true) {
+              _stacks.RemoveAt(i);
+              continue;
             }
-          } else {
-            Location? test = m_Actor.Location.Map.Denormalize(p.Location);
-            if (null == test) continue;
-            if (fov.Contains(test.Value.Position)) {
-              Inventory inv = p.Location.Items;
-              if (inv?.IsEmpty ?? true) {
-                _stacks.RemoveAt(i);
-                continue;
-              }
-              _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
-            }
+            _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
           }
           } // end scope var p
           // XXX \todo some telepathic leakage since this isn't a value copy
@@ -309,13 +296,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
 
-        // OTHER normal-path AI checks that should suspend navigation go here
-
-        var _locs = _stacks.Select(p => p.Location);
-
-        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
-        if (!ret?.IsLegal() ?? true) return false;
-        return true;
+        // let other AI processing kick in before final pathing
+        return false;
       }
 
       public void newStack(Location loc) {
@@ -323,7 +305,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if ((inv?.IsEmpty ?? true) || null==(m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(loc,inv)) throw new ArgumentNullException(nameof(inv));
 #endif
-        _stacks.Add(new Percept_<Inventory>(inv,t0,loc));
+        int i = _stacks.Count;
+        // update if stack is present
+        while(0 < i--) {
+          var p = _stacks[i];
+          if (p.Location==loc) {
+            _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
+            return;
+          }
+        }
+
+        _stacks.Add(new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, loc));   // otherwise, add
       }
 
       public ActorAction Pathing()
