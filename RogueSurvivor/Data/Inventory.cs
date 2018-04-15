@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
+using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 using ItemRangedWeaponModel = djack.RogueSurvivor.Engine.Items.ItemRangedWeaponModel;
 
@@ -208,6 +209,28 @@ namespace djack.RogueSurvivor.Data
       }
       return null;
     }
+
+    // we prefer to return weapons that need reloading.
+    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
+    {
+#if DEBUG
+      if (null == am) throw new ArgumentNullException(nameof(am));
+#endif
+      var rw = GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo);
+      if (null != rw) return rw;
+      return GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
+    }
+
+    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
+    {
+      return GetCompatibleRangedWeapon(am.Model);
+    }
+
+    public ItemRangedWeapon GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
+    {
+      return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
+    }
+
 
     public bool Contains(Item it)
     {

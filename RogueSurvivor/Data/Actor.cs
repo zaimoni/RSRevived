@@ -2620,28 +2620,6 @@ namespace djack.RogueSurvivor.Data
       return Inventory.Items.Select(it=>it as ItemBodyArmor).Where(armor=>null!=armor && DollPart.NONE == armor.EquippedPart).Minimize(armor=>armor.Rating);
     }
 
-    // we prefer to return weapons that need reloading.
-    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
-    {
-#if DEBUG
-      if (null == am) throw new ArgumentNullException(nameof(am));
-      if (null == m_Inventory) throw new ArgumentNullException(nameof(m_Inventory));
-#endif
-      ItemRangedWeapon rw = m_Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo);
-      if (null != rw) return rw;
-      return m_Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
-    }
-
-    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
-    {
-      return GetCompatibleRangedWeapon(am.Model);
-    }
-
-    public ItemRangedWeapon GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
-    {
-      return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
-    }
-
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
     {
       if (!Model.Abilities.HasToEat) return true;

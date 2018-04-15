@@ -1090,7 +1090,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       bool is_in_inventory = m_Actor.Inventory.Contains(am);
 
-      ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+      ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
       if (null == rw) {
         if (is_in_inventory) return 1;
         return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
@@ -1278,7 +1278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       { // similar to IsInterestingItem(ItemAmmo)
       if (it is ItemAmmoModel am) {
-        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+        ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
         if (null == rw) return 0 < m_Actor.Inventory.Count(am) ? 0 : 1;
 
         if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw) && !AmmoAtLimit) return 3;
@@ -1363,7 +1363,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) {
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) {
-          ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => null == m_Actor.GetCompatibleRangedWeapon(it));
+          ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => null == m_Actor.Inventory.GetCompatibleRangedWeapon(it));
           if (null != am) return BehaviorDropItem(am);
         }
       }
@@ -1588,7 +1588,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (it is ItemAmmo am) {
-        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+        ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
         if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           // 1) we would re-pickup food.
@@ -1770,7 +1770,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // uninteresting ammo
-      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
+      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.Inventory.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
 //    ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
       if (null != tmpAmmo) return _BehaviorDropOrExchange(tmpAmmo, it, position);
 
@@ -1880,7 +1880,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemAmmo am)
     {
-      ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+      ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
       if (null == rw) {
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
         if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
