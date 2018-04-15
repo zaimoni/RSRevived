@@ -317,6 +317,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!ret?.IsLegal() ?? true) return false;
         return true;
       }
+
+      public void newStack(Location loc) {
+        Inventory inv = loc.Items;
+#if DEBUG
+        if ((inv?.IsEmpty ?? true) || null==(m_Actor.Controller as OrderableAI).BehaviorWouldGrabFromStack(loc,inv)) throw new ArgumentNullException(nameof(inv));
+#endif
+        _stacks.Add(new Percept_<Inventory>(inv,t0,loc));
+      }
+
+      public ActorAction Pathing()
+      {
+        var _locs = _stacks.Select(p => p.Location);
+
+        var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
+        return (ret?.IsLegal() ?? false) ? ret : null;
+      }
     }
 
     [Serializable]

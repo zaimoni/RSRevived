@@ -454,7 +454,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         Map map = m_Actor.Location.Map;
         bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage;
-        List<Percept> perceptList2 = percepts1.FilterT<Inventory>().FilterOut(p =>
+        // following needs to be more sophisticated.
+        // 1) identify all stacks, period.
+        // 2) categorize stacks by whether they are personally interesting or not.
+        // 3) the personally interesting ones get evaluated here. 
+        // 4) in-communication followers will be consulted regarding the not-interesting stacks
+        List<Percept> interestingStacks = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(p.Location)) return true; // blocked
@@ -470,8 +475,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           return !BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true;
         });
-        if (perceptList2 != null) {
-          Percept percept = FilterNearest(perceptList2);
+        if (interestingStacks != null) {
+          Percept percept = FilterNearest(interestingStacks);
           m_LastItemsSaw = percept;
           tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
           if (tmpAction?.IsLegal() ?? false) {
