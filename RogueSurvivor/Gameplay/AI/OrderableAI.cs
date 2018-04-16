@@ -284,6 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tmpAction?.IsLegal() ?? false) {
             ret = tmpAction;
             m_Actor.Activity = Activity.IDLE;
+            _isExpired = true;  // we don't play well with action chains
             return true;
           }
           // invariant failure
