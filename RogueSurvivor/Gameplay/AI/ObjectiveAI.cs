@@ -185,13 +185,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // calculate retreat destinations if possibly needed
       if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
-        _retreat = FindRetreat(_damage_field);
+        _retreat = FindRetreat();
         if (null != _retreat) {
           AvoidBeingCornered(_retreat);
           _safe_retreat = !_damage_field.ContainsKey(_retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !_safe_retreat) {
-          _run_retreat = FindRunRetreat(_damage_field);
+          _run_retreat = FindRunRetreat();
           if (null != _run_retreat) {
             AvoidBeingRunCornered(_run_retreat);
             _safe_run_retreat = !_damage_field.ContainsKey(_run_retreat[0]);
@@ -326,33 +326,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new Dictionary<Point,int>(PlannedMoves[pt]);
     }
 
-    protected List<Point> FindRetreat(Dictionary<Point,int> damage_field)
+    private List<Point> FindRetreat()
     {
 #if DEBUG
-      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
+      if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
+      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
-      IEnumerable<Point> tmp_point = _legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
+      IEnumerable<Point> tmp_point = _legal_steps.Where(pt=>!_damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = _legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
+      tmp_point = _legal_steps.Where(p=> _damage_field[p] < _damage_field[m_Actor.Location.Position]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
 
-    protected List<Point> FindRunRetreat(Dictionary<Point,int> damage_field)
+    private List<Point> FindRunRetreat()
     {
 #if DEBUG
-      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
+      if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
+      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
       var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
 //    ret.RemoveWhere(pt => !_legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());    // predicted to work but fails due to MS C# compiler bug April 12 2018
       ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(pt,pt2))); // this does work and would be more efficient than the broken version above
 
-      IEnumerable<Point> tmp_point = ret.Where(pt=>!damage_field.ContainsKey(pt));
+      IEnumerable<Point> tmp_point = ret.Where(pt=>!_damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = ret.Where(pt=> damage_field[pt] < damage_field[m_Actor.Location.Position]);
+      tmp_point = ret.Where(pt=> _damage_field[pt] < _damage_field[m_Actor.Location.Position]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
 
