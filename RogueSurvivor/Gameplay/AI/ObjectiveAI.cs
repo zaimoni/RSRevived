@@ -736,7 +736,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #region damage field
-    protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
+    private void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
@@ -857,12 +857,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return in_blast_field;
     }
 
-    protected bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept> percepts)
+    private bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept> percepts)
     {
       return AddExplosivesToDamageField(damage_field, blast_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
 
-    protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
     {
       List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
       if (null == goals) return;
