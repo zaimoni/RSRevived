@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      List<Point> legal_steps = m_Actor.LegalSteps;
+      InitAICache();
       Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
       List<Actor> slow_melee_threat = new List<Actor>();
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
@@ -112,14 +112,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool safe_retreat = false;
       bool safe_run_retreat = false;
       // calculate retreat destinations if possibly needed
-      if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(damage_field, legal_steps);
+      if (null != damage_field && null != _legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
+        retreat = FindRetreat(damage_field);
         if (null != retreat) {
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(damage_field, legal_steps);
+          run_retreat = FindRunRetreat(damage_field);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
             safe_run_retreat = !damage_field.ContainsKey(run_retreat[0]);
@@ -140,10 +140,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
       if (null != tmpAction) return tmpAction;
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, available_ranged_weapons, current_enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
       if (null != current_enemies) {

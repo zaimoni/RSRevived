@@ -499,36 +499,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
-    protected List<Point> FindRetreat(Dictionary<Point,int> damage_field, IEnumerable<Point> legal_steps)
-    {
-#if DEBUG
-      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
-      if (null == legal_steps) throw new ArgumentNullException(nameof(legal_steps));
-      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
-#endif
-      IEnumerable<Point> tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
-      if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
-      return (tmp_point.Any() ? tmp_point.ToList() : null);
-    }
-
-    protected List<Point> FindRunRetreat(Dictionary<Point,int> damage_field, IEnumerable<Point> legal_steps)
-    {
-#if DEBUG
-      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
-      if (null == legal_steps) throw new ArgumentNullException(nameof(legal_steps));
-      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
-#endif
-      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
-//    ret.RemoveWhere(pt => !legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());    // predicted to work but fails due to MS C# compiler bug April 12 2018
-      ret.RemoveWhere(pt => !legal_steps.Any(pt2 => Rules.IsAdjacent(pt,pt2))); // this does work and would be more efficient than the broken version above
-
-      IEnumerable<Point> tmp_point = ret.Where(pt=>!damage_field.ContainsKey(pt));
-      if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = ret.Where(pt=> damage_field[pt] < damage_field[m_Actor.Location.Position]);
-      return (tmp_point.Any() ? tmp_point.ToList() : null);
-    }
-
     protected void AvoidBeingCornered(List<Point> retreat)
     {
       if (2 > (retreat?.Count ?? 0)) return;

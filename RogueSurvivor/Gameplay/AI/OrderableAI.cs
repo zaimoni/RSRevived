@@ -969,7 +969,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
-    protected ActorAction ManageMeleeRisk(List<Point> legal_steps, List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Actor> slow_melee_threat)
+    protected ActorAction ManageMeleeRisk(List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Actor> slow_melee_threat)
     {
       ActorAction tmpAction = null;
       if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
@@ -984,7 +984,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TIME_TURNS
       Stopwatch timer = Stopwatch.StartNew();
 #endif
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(_legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": DecideMove " + timer.ElapsedMilliseconds.ToString()+"ms; "+safe_run_retreat.ToString());
@@ -1095,7 +1095,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -1165,10 +1165,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (null == en_in_range && null != legal_steps) {
+      if (null == en_in_range && null != _legal_steps) {
         List<Percept> percepts2 = FilterPossibleFireTargets(enemies);
 		if (null != percepts2) {
-		  IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
+		  IEnumerable<Point> tmp = _legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
 		  if (tmp.Any()) {
 	        tmpAction = DecideMove(tmp);
             if (null != tmpAction) {

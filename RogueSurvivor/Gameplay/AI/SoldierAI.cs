@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      List<Point> legal_steps = m_Actor.LegalSteps;
+      InitAICache();
       var damage_field = new Dictionary<Point, int>();
       var slow_melee_threat = new List<Actor>();
       var immediate_threat = new HashSet<Actor>();
@@ -145,14 +145,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool safe_retreat = false;
       bool safe_run_retreat = false;
       // calculate retreat destinations if possibly needed
-      if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(damage_field, legal_steps);
+      if (null != damage_field && null != _legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
+        retreat = FindRetreat(damage_field);
         if (null != retreat) {
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(damage_field, legal_steps);
+          run_retreat = FindRunRetreat(damage_field);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
             safe_run_retreat = !damage_field.ContainsKey(run_retreat[0]);
@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get out of the range of explosions if feasible
       if (in_blast_field) {
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(_legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
@@ -187,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, available_ranged_weapons, current_enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies, immediate_threat);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
