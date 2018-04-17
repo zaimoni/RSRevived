@@ -592,21 +592,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actorAt = exitAt?.Location.Actor;
         if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return true;
       }
-      if (x is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-         Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-         if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
-           // non-moving shove...would rather not spend the stamina if there is a better option
-           if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) return false; // shove is to a wanted destination
-           return true;
-         }
-         // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
-         // target should not be sleeping; check for that anyway
-         if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
+      if (x is ActionShove shove) {
+        if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion
+        if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
+
+        if (shove.Target.Controller is ObjectiveAI ai) {
+          Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+          if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+            // non-moving shove...would rather not spend the stamina if there is a better option
+            if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) return false; // shove is to a wanted destination
+            return true;
+          }
+          // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
+          // target should not be sleeping; check for that anyway
+          if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
 /*
            if (   null == ok_dests // shove is rude
                || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
                return tmp;
 */
+        }
       }
       if (x is ActionUseExit exit && exit.IsBlocked) return true;
 
