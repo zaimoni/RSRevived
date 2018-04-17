@@ -99,32 +99,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      InitAICache();
-      Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
-      List<Actor> slow_melee_threat = new List<Actor>();
-      HashSet<Actor> immediate_threat = new HashSet<Actor>();
-      if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
-      AddTrapsToDamageField(damage_field, percepts_all);
-      if (0>=damage_field.Count) damage_field = null;
-      if (0>= slow_melee_threat.Count) slow_melee_threat = null;
-      if (0>= immediate_threat.Count) immediate_threat = null;
+      InitAICache(percepts_all);
 
       List<Point> retreat = null;
       List<Point> run_retreat = null;
       bool safe_retreat = false;
       bool safe_run_retreat = false;
       // calculate retreat destinations if possibly needed
-      if (null != damage_field && null != _legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(damage_field);
+      if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+        retreat = FindRetreat(_damage_field);
         if (null != retreat) {
           AvoidBeingCornered(retreat);
-          safe_retreat = !damage_field.ContainsKey(retreat[0]);
+          safe_retreat = !_damage_field.ContainsKey(retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(damage_field);
+          run_retreat = FindRunRetreat(_damage_field);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
-            safe_run_retreat = !damage_field.ContainsKey(run_retreat[0]);
+            safe_run_retreat = !_damage_field.ContainsKey(run_retreat[0]);
           }
         }
       }
@@ -142,14 +134,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies);
       if (null != tmpAction) return tmpAction;
 
-      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies);
       if (null != tmpAction) return tmpAction;
 
       if (null != current_enemies) {
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
       if (null != friends) {

@@ -238,35 +238,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      InitAICache();
-      var damage_field = new Dictionary<Point, int>();
-      var slow_melee_threat = new List<Actor>();
-      var immediate_threat = new HashSet<Actor>();
-      var blast_field = new HashSet<Point>();
-      if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
-      AddTrapsToDamageField(damage_field, percepts1);
-      bool in_blast_field = AddExplosivesToDamageField(damage_field, blast_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
-      if (0>=damage_field.Count) damage_field = null;
-      if (0>= slow_melee_threat.Count) slow_melee_threat = null;
-      if (0>= immediate_threat.Count) immediate_threat = null;
-      if (0>= blast_field.Count) blast_field = null;
+      InitAICache(percepts1, percepts_all);
+      bool in_blast_field = _blast_field?.Contains(m_Actor.Location.Position) ?? false;
 
       List<Point> retreat = null;
       List<Point> run_retreat = null;
       bool safe_retreat = false;
       bool safe_run_retreat = false;
       // calculate retreat destinations if possibly needed
-      if (null != damage_field && null != _legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(damage_field);
+      if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+        retreat = FindRetreat(_damage_field);
         if (null != retreat) {
           AvoidBeingCornered(retreat);
-          safe_retreat = !damage_field.ContainsKey(retreat[0]);
+          safe_retreat = !_damage_field.ContainsKey(retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(damage_field);
+          run_retreat = FindRunRetreat(_damage_field);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
-            safe_run_retreat = !damage_field.ContainsKey(run_retreat[0]);
+            safe_run_retreat = !_damage_field.ContainsKey(run_retreat[0]);
           }
         }
       }
@@ -301,7 +291,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         timer.Restart();
 #endif
 
-      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, enemies);
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
@@ -312,14 +302,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != enemies && Directives.CanThrowGrenades) {
-        tmpAction = BehaviorThrowGrenade(game, enemies, blast_field);
+        tmpAction = BehaviorThrowGrenade(game, enemies);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
 #endif
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, enemies);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
@@ -338,7 +328,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, enemies, damage_field, Directives.Courage, m_Emotes, blast_field);
+        tmpAction = BehaviorFightOrFlee(game, enemies, Directives.Courage, m_Emotes);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif

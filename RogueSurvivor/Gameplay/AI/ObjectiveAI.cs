@@ -160,9 +160,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _blast_field = null;
     }
 
-    protected void InitAICache()
+    protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
     {
       _legal_steps = m_Actor.LegalSteps;
+      _damage_field = new Dictionary<Point, int>();
+      _slow_melee_threat = new List<Actor>();
+      _immediate_threat = new HashSet<Actor>();
+      _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
+      if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
+      AddTrapsToDamageField(_damage_field, now);
+      if (UsesExplosives) AddExplosivesToDamageField(_damage_field, _blast_field, all_time);  // only civilians and soldiers respect explosives; CHAR and gang don't
+      if (0>= _damage_field.Count) _damage_field = null;
+      if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
+      if (0>= _immediate_threat.Count) _immediate_threat = null;
+      if (0>= _blast_field.Count) _blast_field = null;
     }
 
     protected bool RunIfAdvisable(Point dest)

@@ -969,7 +969,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
-    protected ActorAction ManageMeleeRisk(List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Actor> slow_melee_threat)
+    protected ActorAction ManageMeleeRisk(List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
     {
       ActorAction tmpAction = null;
       if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
@@ -1009,7 +1009,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // have slow enemies nearby
-        if (null != slow_melee_threat) {
+        if (null != _slow_melee_threat) {
 	      tmpAction = DecideMove(retreat);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
@@ -1095,7 +1095,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -1111,7 +1111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
                 return tmpAction;
@@ -1121,7 +1121,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == immediate_threat || (1 == immediate_threat.Count && immediate_threat.Contains(en)));
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
                   Item tmp_w = m_Actor.GetEquippedWeapon();
@@ -1188,8 +1188,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
 
       // filter immediate threat by being in range
-      var immediate_threat_in_range = (null!=immediate_threat ? new HashSet<Actor>(immediate_threat) : new HashSet<Actor>());
-      if (null != immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
+      var immediate_threat_in_range = (null!=_immediate_threat ? new HashSet<Actor>(_immediate_threat) : new HashSet<Actor>());
+      if (null != _immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
 
       if (1 == available_ranged_weapons.Count) {
         if (1 == en_in_range.Count) {
@@ -1392,7 +1392,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>null, or a legal ActionThrowGrenade</returns>
-    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies, HashSet<Point> blast_field)
+    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
     {
       if (3 > (enemies?.Count ?? 0)) return null;
       ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
@@ -1406,7 +1406,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (itemGrenadeModel.BlastAttack.Radius >= my_dist) continue;
         if (maxRange < my_dist) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
-        if (blast_field?.Contains(point) ?? false) continue;
+        if (_blast_field?.Contains(point) ?? false) continue;
         int score = 0;
         Rectangle blast_zone = new Rectangle(point.X-itemGrenadeModel.BlastAttack.Radius, point.Y-itemGrenadeModel.BlastAttack.Radius, 2*itemGrenadeModel.BlastAttack.Radius+1, 2*itemGrenadeModel.BlastAttack.Radius+1);
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
@@ -1699,7 +1699,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
-    private ActorAction BehaviorFlee(Actor enemy, Dictionary<Point, int> damage_field, HashSet<Point> LoF_reserve, bool doRun, string[] emotes)
+    private ActorAction BehaviorFlee(Actor enemy, HashSet<Point> LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
       ActorAction tmpAction = null;
@@ -1749,7 +1749,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here ...
-        if (null==damage_field || !damage_field.ContainsKey(m_Actor.Location.Position)) {
+        if (!_damage_field?.ContainsKey(m_Actor.Location.Position) ?? true) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
@@ -1772,14 +1772,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes, HashSet<Point> blast_field=null)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, ActorCourage courage, string[] emotes)
     {
 #if DEBUG
-      if (blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
+      if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
 #endif
-      List<Point> legal_steps = m_Actor.LegalSteps; // XXX should be passing this in instead
-      if (null!=blast_field && null!=legal_steps) {
-        IEnumerable<Point> test = legal_steps.Where(pt => !blast_field.Contains(pt));
+      List<Point> legal_steps = _legal_steps; // XXX working reference due to following postprocessing
+      if (null != _blast_field && null != legal_steps) {
+        IEnumerable<Point> test = legal_steps.Where(pt => !_blast_field.Contains(pt));
         legal_steps = (test.Any() ? test.ToList() : null);
       }
 
@@ -1820,7 +1820,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var LoF_reserve = AlliesNeedLoFvs(enemy);
       ActorAction tmpAction = null;
       if (decideToFlee) {
-        tmpAction = BehaviorFlee(enemy, damage_field, LoF_reserve, doRun, emotes);
+        tmpAction = BehaviorFlee(enemy, LoF_reserve, doRun, emotes);
         if (null != tmpAction) return tmpAction;
       }
 
