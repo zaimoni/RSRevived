@@ -187,17 +187,47 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
         _retreat = FindRetreat();
         if (null != _retreat) {
-          AvoidBeingCornered(_retreat);
+          AvoidBeingCornered();
           _safe_retreat = !_damage_field.ContainsKey(_retreat[0]);
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !_safe_retreat) {
           _run_retreat = FindRunRetreat();
           if (null != _run_retreat) {
-            AvoidBeingRunCornered(_run_retreat);
+            AvoidBeingRunCornered();
             _safe_run_retreat = !_damage_field.ContainsKey(_run_retreat[0]);
           }
         }
       }
+    }
+
+    private void AvoidBeingCornered()
+    {
+#if DEBUG
+      if (null == _retreat) throw new ArgumentNullException(nameof(_retreat));
+#endif
+      if (2 > _retreat.Count) return;
+
+      var cornered = new HashSet<Point>(_retreat);
+      foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
+        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
+      }
+
+      if (cornered.Count< _retreat.Count) _retreat.RemoveAll(pt => cornered.Contains(pt));
+    }
+
+    private void AvoidBeingRunCornered()
+    {
+#if DEBUG
+      if (null == _run_retreat) throw new ArgumentNullException(nameof(_run_retreat));
+#endif
+      if (2 > _run_retreat.Count) return;
+
+      var cornered = new HashSet<Point>(_run_retreat);
+      foreach(Point pt in Enumerable.Range(0,24).Select(i=>m_Actor.Location.Position.RadarSweep(3,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
+        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
+      }
+
+      if (cornered.Count< _run_retreat.Count) _run_retreat.RemoveAll(pt => cornered.Contains(pt));
     }
 
     protected bool RunIfAdvisable(Point dest)

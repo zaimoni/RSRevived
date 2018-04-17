@@ -499,30 +499,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
-    protected void AvoidBeingCornered(List<Point> retreat)
-    {
-      if (2 > (retreat?.Count ?? 0)) return;
-
-      var cornered = new HashSet<Point>(retreat);
-      foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
-        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
-      }
-
-      if (cornered.Count<retreat.Count) retreat.RemoveAll(pt => cornered.Contains(pt));
-    }
-
-    protected void AvoidBeingRunCornered(List<Point> run_retreat)
-    {
-      if (2 > (run_retreat?.Count ?? 0)) return;
-
-      var cornered = new HashSet<Point>(run_retreat);
-      foreach(Point pt in Enumerable.Range(0,24).Select(i=>m_Actor.Location.Position.RadarSweep(3,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
-        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
-      }
-
-      if (cornered.Count<run_retreat.Count) run_retreat.RemoveAll(pt => cornered.Contains(pt));
-    }
-
     protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
