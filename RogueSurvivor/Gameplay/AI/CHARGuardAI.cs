@@ -108,8 +108,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-	  List<Percept> friends = FilterNonEnemies(percepts_all);
-
       if (null == current_enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
@@ -124,6 +122,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
+
+	  List<Percept> friends = FilterNonEnemies(percepts_all);
       if (null != friends) {
         List<Percept> percepts3 = friends.Filter(p =>
         {

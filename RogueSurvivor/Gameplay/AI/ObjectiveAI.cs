@@ -168,6 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _safe_run_retreat = false;
     }
 
+    // morally a constructor-type function
     protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
     {
       _legal_steps = m_Actor.LegalSteps;
@@ -177,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
       if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
       AddTrapsToDamageField(_damage_field, now);
-      if (UsesExplosives) AddExplosivesToDamageField(_damage_field, _blast_field, all_time);  // only civilians and soldiers respect explosives; CHAR and gang don't
+      if (UsesExplosives) AddExplosivesToDamageField(all_time);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>= _damage_field.Count) _damage_field = null;
       if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
       if (0>= _immediate_threat.Count) _immediate_threat = null;
@@ -884,36 +885,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept_<Inventory>> goals)
+    private void AddExplosivesToDamageField(List<Percept_<Inventory>> goals)
     {
-      if (null == goals) return false;
-      bool in_blast_field = false;
+      if (null == goals) return;
       IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p => new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
       foreach (Percept_<ItemPrimedExplosive> exp in explosives) {
         BlastAttack tmp_blast = exp.Percepted.Model.BlastAttack;
         Point pt = exp.Location.Position;
-        if (damage_field.ContainsKey(pt)) damage_field[pt] += tmp_blast.Damage[0];
-        else damage_field[pt] = tmp_blast.Damage[0];
-        blast_field.Add(pt);
+        if (_damage_field.ContainsKey(pt)) _damage_field[pt] += tmp_blast.Damage[0];
+        else _damage_field[pt] = tmp_blast.Damage[0];
+        _blast_field.Add(pt);
         // We would need a very different implementation for large blast radii.
         int r = 0;
         while (++r <= tmp_blast.Radius) {
           foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => exp.Location.Position.RadarSweep(r, i))) {
             if (!exp.Location.Map.IsValid(p)) continue;
             if (!LOS.CanTraceFireLine(exp.Location, p, tmp_blast.Radius)) continue;
-            blast_field.Add(p);
-            if (damage_field.ContainsKey(p)) damage_field[p] += tmp_blast.Damage[r];
-            else damage_field[p] = tmp_blast.Damage[r];
-            if (p == m_Actor.Location.Position) in_blast_field = true;
+            _blast_field.Add(p);
+            if (_damage_field.ContainsKey(p)) _damage_field[p] += tmp_blast.Damage[r];
+            else _damage_field[p] = tmp_blast.Damage[r];
           }
         }
       }
-      return in_blast_field;
     }
 
-    private bool AddExplosivesToDamageField(Dictionary<Point, int> damage_field, HashSet<Point> blast_field, List<Percept> percepts)
+    private void AddExplosivesToDamageField(List<Percept> percepts)
     {
-      return AddExplosivesToDamageField(damage_field, blast_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
+      AddExplosivesToDamageField(percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
 
     private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)

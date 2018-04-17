@@ -248,8 +248,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-	  List<Percept> friends = FilterNonEnemies(percepts1);
-
       // get out of the range of explosions if feasible
       if (in_blast_field) {
         tmpAction = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
@@ -299,6 +297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
+	  List<Percept> friends = FilterNonEnemies(percepts1);
       if (null != enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
