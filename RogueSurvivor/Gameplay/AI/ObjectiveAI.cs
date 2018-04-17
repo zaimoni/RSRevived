@@ -142,6 +142,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private int _STA_reserve;
     int STA_reserve { get { return _STA_reserve; } }
 
+    // cache variables
+    [NonSerialized] protected List<Point> _legal_steps = null;
+    [NonSerialized] protected Dictionary<Point, int> _damage_field = null;
+    [NonSerialized] protected List<Actor> _slow_melee_threat = null;
+    [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
+    [NonSerialized] protected HashSet<Point> _blast_field = null;
+
+    public void ResetAICache()
+    {
+      _legal_steps = null;
+      _damage_field = null;
+      _slow_melee_threat = null;
+      _immediate_threat = null;
+      _blast_field = null;
+    }
+
     protected bool RunIfAdvisable(Point dest)
     {
       if (!m_Actor.CanRun()) return false;
