@@ -101,26 +101,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       InitAICache(percepts_all);
 
-      List<Point> retreat = null;
-      List<Point> run_retreat = null;
-      bool safe_retreat = false;
-      bool safe_run_retreat = false;
-      // calculate retreat destinations if possibly needed
-      if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(_damage_field);
-        if (null != retreat) {
-          AvoidBeingCornered(retreat);
-          safe_retreat = !_damage_field.ContainsKey(retreat[0]);
-        }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(_damage_field);
-          if (null != run_retreat) {
-            AvoidBeingRunCornered(run_retreat);
-            safe_run_retreat = !_damage_field.ContainsKey(run_retreat[0]);
-          }
-        }
-      }
-
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
       // any range: of all ranged weapons available, use the weakest one with a good enough one-shot kill rate
@@ -134,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, current_enemies);
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies);

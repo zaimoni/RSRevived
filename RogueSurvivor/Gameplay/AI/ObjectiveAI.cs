@@ -148,6 +148,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected List<Actor> _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
     [NonSerialized] protected HashSet<Point> _blast_field = null;
+    [NonSerialized] protected List<Point> _retreat = null;
+    [NonSerialized] protected List<Point> _run_retreat = null;
+    [NonSerialized] protected bool _safe_retreat = false;
+    [NonSerialized] protected bool _safe_run_retreat = false;
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -158,6 +162,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _slow_melee_threat = null;
       _immediate_threat = null;
       _blast_field = null;
+      _retreat = null;
+      _run_retreat = null;
+      _safe_retreat = false;
+      _safe_run_retreat = false;
     }
 
     protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
@@ -174,6 +182,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
       if (0>= _immediate_threat.Count) _immediate_threat = null;
       if (0>= _blast_field.Count) _blast_field = null;
+
+      // calculate retreat destinations if possibly needed
+      if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+        _retreat = FindRetreat(_damage_field);
+        if (null != _retreat) {
+          AvoidBeingCornered(_retreat);
+          _safe_retreat = !_damage_field.ContainsKey(_retreat[0]);
+        }
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !_safe_retreat) {
+          _run_retreat = FindRunRetreat(_damage_field);
+          if (null != _run_retreat) {
+            AvoidBeingRunCornered(_run_retreat);
+            _safe_run_retreat = !_damage_field.ContainsKey(_run_retreat[0]);
+          }
+        }
+      }
     }
 
     protected bool RunIfAdvisable(Point dest)

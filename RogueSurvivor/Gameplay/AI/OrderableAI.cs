@@ -969,13 +969,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
-    protected ActorAction ManageMeleeRisk(List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
+    protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
     {
       ActorAction tmpAction = null;
-      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
+      if ((null != _retreat || null != _run_retreat) && null != available_ranged_weapons && null!=enemies) {
         // ranged weapon: prefer to maintain LoF when retreating
-        MaximizeRangedTargets(retreat, enemies);
-        MaximizeRangedTargets(run_retreat, enemies);
+        MaximizeRangedTargets(_retreat, enemies);
+        MaximizeRangedTargets(_run_retreat, enemies);
         IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed >= 2 * m_Actor.Speed);   // typically rats.
         if (fast_enemies.Any()) return null;    // not practical to run from rats.
         // ranged weapon: fast retreat ok
@@ -984,14 +984,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TIME_TURNS
       Stopwatch timer = Stopwatch.StartNew();
 #endif
-        tmpAction = (safe_run_retreat ? DecideMove(_legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": DecideMove " + timer.ElapsedMilliseconds.ToString()+"ms; "+safe_run_retreat.ToString());
 #endif
         if (null != tmpAction) {
           if (tmpAction is ActionMoveStep test) {
-            if (safe_run_retreat) RunIfPossible();
+            if (_safe_run_retreat) RunIfPossible();
             else m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
           }
           m_Actor.Activity = Activity.FLEEING;
@@ -999,10 +999,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (null != retreat) {
+      if (null != _retreat) {
         // need stamina to melee: slow retreat ok
         if (WillTireAfterAttack(m_Actor)) {
-	      tmpAction = DecideMove(retreat);
+	      tmpAction = DecideMove(_retreat);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;
@@ -1010,7 +1010,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // have slow enemies nearby
         if (null != _slow_melee_threat) {
-	      tmpAction = DecideMove(retreat);
+	      tmpAction = DecideMove(_retreat);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;

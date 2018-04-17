@@ -241,26 +241,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       InitAICache(percepts1, percepts_all);
       bool in_blast_field = _blast_field?.Contains(m_Actor.Location.Position) ?? false;
 
-      List<Point> retreat = null;
-      List<Point> run_retreat = null;
-      bool safe_retreat = false;
-      bool safe_run_retreat = false;
-      // calculate retreat destinations if possibly needed
-      if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindRetreat(_damage_field);
-        if (null != retreat) {
-          AvoidBeingCornered(retreat);
-          safe_retreat = !_damage_field.ContainsKey(retreat[0]);
-        }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
-          run_retreat = FindRunRetreat(_damage_field);
-          if (null != run_retreat) {
-            AvoidBeingRunCornered(run_retreat);
-            safe_run_retreat = !_damage_field.ContainsKey(run_retreat[0]);
-          }
-        }
-      }
-
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
       // any range: of all ranged weapons available, use the weakest one with a good enough one-shot kill rate
@@ -272,7 +252,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get out of the range of explosions if feasible
       if (in_blast_field) {
-        tmpAction = (safe_run_retreat ? DecideMove(_legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
@@ -291,7 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         timer.Restart();
 #endif
 
-      tmpAction = ManageMeleeRisk(retreat, run_retreat, safe_run_retreat, available_ranged_weapons, enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, enemies);
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
