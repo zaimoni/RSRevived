@@ -739,6 +739,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ITEM_COMBAT_KNIFE);
       Load(ITEM_EMPTY_CAN);
       Load(ITEM_FAMU_FATARU_KATANA);
+      Load(ITEM_FATHER_TIME_SCYTHE);
       Load(ITEM_FLASHLIGHT);
       Load(ITEM_FLASHLIGHT_OUT);
       Load(ITEM_FREE_ANGELS_JACKET);
