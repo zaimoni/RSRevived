@@ -36,6 +36,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
+    public override bool UsesExplosives { get { return false; } }
+
     public override void OptimizeBeforeSaving()
     {
       m_MemLOSSensor.Forget(m_Actor);

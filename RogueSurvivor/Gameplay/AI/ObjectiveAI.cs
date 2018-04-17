@@ -149,6 +149,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
     [NonSerialized] protected HashSet<Point> _blast_field = null;
 
+    public virtual bool UsesExplosives { get { return true; } } // default to what PC does
+
     public void ResetAICache()
     {
       _legal_steps = null;
@@ -1023,8 +1025,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (it is ItemSprayPaintModel) return true;
       if (it is ItemGrenadePrimedModel) return true;    // XXX want a general primed explosive model test
 
-      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return true;
+      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue; unsure about why gangsters dont)
+      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.ID && !UsesExplosives) return true;
 
       // only civilians use stench killer
       if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
@@ -2283,72 +2285,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public HashSet<GameItems.IDs> WhatDoINeedNow()
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
-#if OBSOLETE
-      if (/* m_Actor.Model.Abilities.HasToEat && */ m_Actor.IsHungry) {
-        ret.UnionWith(GameItems.food);
-      }
-
-      if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
-        List<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
-        if (null != tmp_rw) {
-          if (!AmmoAtLimit) {
-            foreach(ItemRangedWeapon rw in tmp_rw) {
-              if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
-            }
-          }
-        }
-        List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
-        if (null != tmp_ammo && (null == tmp_rw || !AmmoAtLimit)) {
-          foreach(ItemAmmo am in tmp_ammo) {
-            if (null == m_Actor.GetCompatibleRangedWeapon(am)) {
-                switch(am.Model.ID)
-                {
-                case GameItems.IDs.AMMO_LIGHT_PISTOL:
-                  ret.Add(GameItems.IDs.RANGED_PISTOL); // weakly dominates Kolt
-                  ret.Add(GameItems.IDs.RANGED_KOLT_REVOLVER);
-                  ret.Add(GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL);   // dominates both normal pistols
-                  break;
-                case GameItems.IDs.AMMO_HEAVY_PISTOL:
-                  ret.Add(GameItems.IDs.RANGED_ARMY_PISTOL);
-                  break;
-                case GameItems.IDs.AMMO_LIGHT_RIFLE:
-                  ret.Add(GameItems.IDs.RANGED_HUNTING_RIFLE);
-                  break;
-                case GameItems.IDs.AMMO_HEAVY_RIFLE:
-                  ret.Add(GameItems.IDs.RANGED_ARMY_RIFLE);     // mostly dominates precision rifle
-                  ret.Add(GameItems.IDs.RANGED_PRECISION_RIFLE);
-                  break;
-                case GameItems.IDs.AMMO_SHOTGUN:
-                  ret.Add(GameItems.IDs.RANGED_SHOTGUN);
-                  ret.Add(GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN);   // dominates shotgun
-                  break;
-                case GameItems.IDs.AMMO_BOLTS:
-                  ret.Add(GameItems.IDs.RANGED_HUNTING_CROSSBOW);
-                  break;
-                }
-            }
-          }
-        }
-      }
-
-      int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
-      if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing)) {
-        // We need second aid.
-        ret.Add(GameItems.IDs.MEDICINE_MEDIKIT);
-        ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
-      }
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
-      // integrity check
-      foreach(var x in ret) {
-        if (3>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoINeedNow");
-      }
-#endif
-#else
       GameItems.IDs i = GameItems.IDs._COUNT;
       while(0 < i--) {
         if (3==ItemRatingCode(i)) ret.Add(i);
       }
-#endif
       return ret;
     }
 
@@ -2358,85 +2298,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
 
-#if OBSOLETE
-      if (/* m_Actor.Model.Abilities.HasToEat && */ !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) {
-        ret.UnionWith(GameItems.food);
-      }
-#if FAIL
-      // needs substantial work...in particular, weapons w/o ammo need to have their own id values to be ignored here
-      if (   !m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons
-          && 0 >= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) // XXX rules out AI gun bunnies
-        {
-        ret.UnionWith(GameItems.ranged);
-        }
-#endif
-
-      if (!AmmoAtLimit) {
-        foreach (GameItems.IDs am in GameItems.ammo) {
-          ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
-          if (null == rw) continue;
-          if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
-          if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) ret.Add(am);
-        }
-      }
-
-      int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
-      if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)) {
-        // We need first aid.
-        ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
-      }
-
-      { // scoping brace
-      Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-      foreach(GameItems.IDs melee in GameItems.melee) {
-        ItemMeleeWeaponModel model = Models.Items[(int)melee] as ItemMeleeWeaponModel;
-        if (m_Actor.MeleeWeaponAttack(model).Rating <= martial_arts.Rating) continue;
-        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-        if (null != best && best.Model.Attack.Rating >= model.Attack.Rating) continue;  // martial arts invalidates starting baton for police
-        ret.Add(melee);
-      }
-      } // end scoping brace
-
-      ItemBodyArmor curr_armor = m_Actor.GetBestBodyArmor();
-      if (null == curr_armor) {
-        ret.UnionWith(GameItems.armor);
-      } else {
-        int curr_rating = curr_armor.Rating;
-        foreach (GameItems.IDs armor in GameItems.armor) {
-          if (curr_rating >= (Models.Items[(int)armor] as ItemBodyArmorModel).Rating) continue;
-          ret.Add(armor);
-        }
-      }
-#if FAIL
-      if (it is ItemMedicine)
-        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-#endif
-#if FAIL
-      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
-        return false;
-      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
-#endif
-#if FAIL
-	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
-
-      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (Gameplay.GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
-
-      // only civilians use stench killer
-      if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
-#endif
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
-      // integrity check
-      foreach(var x in ret) {
-        if (2>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoIWantNow");
-      }
-#endif
-#else
       GameItems.IDs i = GameItems.IDs._COUNT;
       while(0 < i--) {
         if (2==ItemRatingCode(i)) ret.Add(i);
       }
-#endif
       return ret;
     }
 
