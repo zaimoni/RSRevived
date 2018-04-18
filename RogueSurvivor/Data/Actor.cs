@@ -2603,7 +2603,10 @@ namespace djack.RogueSurvivor.Data
       var melee = Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == melee) return null;
       if (1 == melee.Count) return melee[0];
-      return melee.Where(w=> !w.IsEquipped).Minimize(w=>w.Model.Attack.Rating);
+      // some sort of invariant problem here
+      var ret = melee.Where(w=> !w.IsEquipped).Minimize(w=>w.Model.Attack.Rating);
+      if (null == ret) ret = melee.Minimize(w => w.Model.Attack.Rating);
+      return ret;
     }
 
     public ItemBodyArmor GetBestBodyArmor(Predicate<ItemBodyArmor> fn=null)

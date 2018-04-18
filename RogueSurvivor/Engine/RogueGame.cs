@@ -6584,8 +6584,11 @@ namespace djack.RogueSurvivor.Engine
 
     static private string DescribePlayerFollowerStatus(Actor follower)
     {
-      OrderableAI baseAi = follower.Controller as OrderableAI;
-      return (baseAi.Order != null ? baseAi.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", follower.TrustInLeader);
+      if (follower.Controller is OrderableAI ai) {
+        return (null != ai.Order ? ai.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", follower.TrustInLeader);
+      } else {
+        return ("(is player)") + string.Format("(trust:{0})", follower.TrustInLeader);
+      }
     }
 
     static private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
