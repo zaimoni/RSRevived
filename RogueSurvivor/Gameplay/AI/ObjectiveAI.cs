@@ -1485,7 +1485,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // strict domination checks
       ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-      if (null != armor) return BehaviorDropItem(armor);
+      if (null != armor && 2 <= m_Actor.CountQuantityOf<ItemBodyArmor>()) return BehaviorDropItem(armor);
 
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {

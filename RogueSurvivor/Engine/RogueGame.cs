@@ -10631,6 +10631,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if PROTOTYPE
+    // experiment...icons at scale rather than 2x scale  Was hard to read.
     private void DrawDetected(Actor actor, Color minimap_color, string map_img, Rectangle view)
     {
       Location loc = actor.Location;
@@ -10646,6 +10648,7 @@ namespace djack.RogueSurvivor.Engine
       }
       m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
     }
+#endif
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DrawMiniMap(Rectangle view)
@@ -11302,6 +11305,7 @@ namespace djack.RogueSurvivor.Engine
 #if OBSOLETE
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "<Loaded game>");
 #endif
+      // Test drivers that require a fully constructed world can go here.
       return true;
     }
 

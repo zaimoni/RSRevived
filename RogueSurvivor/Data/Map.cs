@@ -381,27 +381,14 @@ namespace djack.RogueSurvivor.Data
       if (0>=map_code) return null;
       if (map_code != UsesCrossDistrictView(loc.Map)) return null;
       Point district_delta = new Point(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
-      if (-1 > district_delta.X || 1 < district_delta.X) return null;   // XXX \todo fails for minimap if district size < 50
-      if (-1 > district_delta.Y || 1 < district_delta.Y) return null;
+
+      // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
-      switch(district_delta.X)
-      {
-      case 1:
-        not_in_bounds.X += Width;
-        break;
-      case -1:
-        not_in_bounds.X -= loc.Map.Width;
-        break;
-      };
-      switch(district_delta.Y)
-      {
-      case 1:
-        not_in_bounds.Y += Height;
-        break;
-      case -1:
-        not_in_bounds.Y -= loc.Map.Height;
-        break;
-      };
+      if (0 < district_delta.X) not_in_bounds.X += district_delta.X*Width;
+      else if (0 > district_delta.X) not_in_bounds.X += district_delta.X * loc.Map.Width;
+      if (0 < district_delta.Y) not_in_bounds.Y += district_delta.Y*Height;
+      else if (0 > district_delta.Y) not_in_bounds.Y += district_delta.Y * loc.Map.Height;
+
       return new Location(this,not_in_bounds);
 #else
       return null;
