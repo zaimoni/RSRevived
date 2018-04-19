@@ -26,5 +26,15 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public Defence ToDefence() { return new Defence(-Encumbrance, Protection_Hit, Protection_Shot); }
     public int Rating { get { return Protection_Hit + Protection_Shot; } }
+
+    public override Item create()
+    {
+      return new ItemBodyArmor(this);
+    }
+
+    public ItemBodyArmor instantiate()
+    {
+      return new ItemBodyArmor(this);
+    }
   }
 }

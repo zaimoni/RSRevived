@@ -16,7 +16,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
-  internal class BaseTownGenerator : BaseMapGenerator
+    internal class BaseTownGenerator : BaseMapGenerator
   {
     public static readonly BaseTownGenerator.Parameters DEFAULT_PARAMS = new BaseTownGenerator.Parameters {
       MapWidth = RogueGame.MAP_MAX_WIDTH,
@@ -1500,24 +1500,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Item MakeShopSportsWearItem()
     {
-      switch (m_DiceRoller.Roll(0, 10))
-      {
-        case 0: return (m_DiceRoller.RollChance(30) ? (Item)MakeItemHuntingRifle() : MakeItemLightRifleAmmo());
-        case 1: return (m_DiceRoller.RollChance(30) ? (Item)MakeItemHuntingCrossbow() : MakeItemBoltsAmmo());
-        case 2:
-        case 3:
-        case 4:
-        case 5: return MakeItemBaseballBat();
-        case 6:
-        case 7: return MakeItemIronGolfClub();
-        case 8:
+      // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
+      KeyValuePair<ItemModel, int>[] stock = {
+        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_RIFLE,3),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_RIFLE,7),
+        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_CROSSBOW,3),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_BOLTS,7),
+        new KeyValuePair<ItemModel,int>(GameItems.BASEBALLBAT,40),
+        new KeyValuePair<ItemModel,int>(GameItems.IRON_GOLFCLUB,20),
+        new KeyValuePair<ItemModel,int>(GameItems.GOLFCLUB,20)
+      };
 #if DEBUG
-        case 9: return MakeItemGolfClub();
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return MakeItemGolfClub();
+      if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
-      }
+      return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
     }
 
     private Item MakeShopConstructionItem()
@@ -1557,40 +1553,31 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Item MakeShopGunshopItem()
     {
-      if (m_DiceRoller.RollChance(40)) {
-        switch (m_DiceRoller.Roll(0, 4)) {
-          case 0: return MakeItemRandomPistol();
-          case 1: return MakeItemShotgun();
-          case 2: return MakeItemHuntingRifle();
+      // RS Alpha 9: 40% ranged weapons, 60% ammo
+      KeyValuePair<ItemModel, int>[] stock = {
+        new KeyValuePair<ItemModel,int>(GameItems.PISTOL,5),
+        new KeyValuePair<ItemModel,int>(GameItems.KOLT_REVOLVER,5),
+        new KeyValuePair<ItemModel,int>(GameItems.SHOTGUN,10),
+        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_RIFLE,10),
+        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_CROSSBOW,10),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_SHOTGUN,15),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_PISTOL,15),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_RIFLE,15),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_BOLTS,15)
+      };
 #if DEBUG
-          case 3: return MakeItemHuntingCrossbow();
-          default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-          default: return MakeItemHuntingCrossbow();
+      if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
-        }
-      }
-
-      switch (m_DiceRoller.Roll(0, 4)) {
-        case 0: return MakeItemLightPistolAmmo();
-        case 1: return MakeItemShotgunAmmo();
-        case 2: return MakeItemLightRifleAmmo();
-#if DEBUG
-        case 3: return MakeItemBoltsAmmo();
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return MakeItemBoltsAmmo();
-#endif
-      }
+      return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
     }
 
     private Item MakeHuntingShopItem()
     {
       if (m_DiceRoller.RollChance(50)) {
-        if (m_DiceRoller.RollChance(40)) return (0 == m_DiceRoller.Roll(0, 2) ? MakeItemHuntingRifle() : MakeItemHuntingCrossbow());
-        return (0 == m_DiceRoller.Roll(0, 2) ? MakeItemLightRifleAmmo() : MakeItemBoltsAmmo());
+        if (m_DiceRoller.RollChance(40)) return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.HUNTING_RIFLE : GameItems.HUNTING_CROSSBOW).create();
+        return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.AMMO_LIGHT_RIFLE : GameItems.AMMO_BOLTS).create();
       }
-      return (0 == m_DiceRoller.Roll(0, 2) ? (Item)MakeItemHunterVest() : (Item)MakeItemBearTrap());
+      return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.HUNTER_VEST.create() : (Item)MakeItemBearTrap());
     }
 
     private Item MakeShopGeneralItem()
@@ -1642,18 +1629,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 8: return MakeItemBaseballBat();
         case 9: return MakeItemRandomPistol();
         case 10:
-          if (m_DiceRoller.RollChance(30)) return (m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle());
-          return (m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo());
+          if (m_DiceRoller.RollChance(30)) return (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create();
+          return (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create();
         case 11:
         case 12:
         case 13: return MakeItemCellPhone();
         case 14:
         case 15: return MakeItemFlashlight();
         case 16:
-        case 17: return MakeItemLightPistolAmmo();
+        case 17: return GameItems.AMMO_LIGHT_PISTOL.create();
         case 18:
         case 19: return MakeItemStenchKiller();
-        case 20: return MakeItemHunterVest();
+        case 20: return GameItems.HUNTER_VEST.create();
 #if DEBUG
         case 21:
         case 22:
@@ -1675,11 +1662,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       switch (m_DiceRoller.Roll(0, 10))
       {
         case 0:
-          if (m_DiceRoller.RollChance(10))
-            return MakeItemGrenade();
-          if (m_DiceRoller.RollChance(30))
-            return MakeItemShotgun();
-          return MakeItemShotgunAmmo();
+          if (m_DiceRoller.RollChance(10)) return MakeItemGrenade();
+          return (m_DiceRoller.RollChance(30) ? GameItems.SHOTGUN.create() : GameItems.AMMO_SHOTGUN.create());
         case 1:
         case 2:
           if (m_DiceRoller.RollChance(50))
@@ -1688,13 +1672,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 3:
           return MakeItemCannedFood();
         case 4:
-          if (!m_DiceRoller.RollChance(50))
-            return (Item) null;
+          if (!m_DiceRoller.RollChance(50)) return null;
           if (m_DiceRoller.RollChance(50))
             return MakeItemZTracker();
           return MakeItemBlackOpsGPS();
-        default:
-          return (Item) null;
+        default: return null;
       }
     }
 
@@ -2016,7 +1998,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
-        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle())) : (Item)MakeItemGrenade()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : (Item)MakeItemCHARLightBodyArmor(), pt);
+        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create() : (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create()) : (Item)MakeItemGrenade()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : GameItems.CHAR_LT_BODYARMOR.create(), pt);
         return MakeObjShelf();
       }));
     }
@@ -2151,15 +2133,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Item stock_armory() {
         switch (m_DiceRoller.Roll(0, 10)) {
           case 0:
-          case 1: return m_DiceRoller.RollChance(50) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
+          case 1: return (m_DiceRoller.RollChance(50) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
           case 2:
           case 3: return  m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
           case 4:
           case 5: return MakeItemTruncheon();
           case 6:
-          case 7: return m_DiceRoller.RollChance(30) ? (Item)MakeItemPistol() : (Item)MakeItemLightPistolAmmo();
+          case 7: return m_DiceRoller.RollChance(30) ? GameItems.PISTOL.create() : GameItems.AMMO_LIGHT_PISTOL.create();
           case 8:
-          case 9: return m_DiceRoller.RollChance(30) ? (Item)MakeItemShotgun() : (Item)MakeItemShotgunAmmo();
+          case 9: return m_DiceRoller.RollChance(30) ? GameItems.SHOTGUN.create() : GameItems.AMMO_SHOTGUN.create();
           default: throw new ArgumentOutOfRangeException("unhandled roll");
         }
       };
@@ -2746,9 +2728,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
           switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))) {
             case 0: return MakeItemGrenade();
-            case 1: return MakeItemArmyBodyArmor();
-            case 2: return MakeItemHeavyPistolAmmo();
-            case 3: return MakeItemHeavyRifleAmmo();
+            case 1: return GameItems.ARMY_BODYARMOR.create();
+            case 2: return GameItems.AMMO_HEAVY_PISTOL.create();
+            case 3: return GameItems.AMMO_HEAVY_RIFLE.create();
             case 4: return MakeItemCombatKnife();
 #if DEBUG
             case 5: return MakeItemPillsAntiviral();
@@ -2803,18 +2785,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
       numberedName.Inventory.AddAll(MakeItemCannedFood());
       numberedName.Inventory.AddAll(MakeItemArmyRation());
-      if (m_DiceRoller.RollChance(50)) {
-        numberedName.Inventory.AddAll(MakeItemArmyRifle());
-        if (m_DiceRoller.RollChance(50))
-          numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
-        else
-          numberedName.Inventory.AddAll(MakeItemGrenade());
-      } else {
-        numberedName.Inventory.AddAll(MakeItemShotgun());
-        if (m_DiceRoller.RollChance(50))
-          numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
-        else
-          numberedName.Inventory.AddAll(MakeItemGrenade());
+      {
+      var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
+      numberedName.Inventory.AddAll(rw);
+      if (m_DiceRoller.RollChance(50))
+        numberedName.Inventory.AddAll(MakeAmmo(rw.Model.ID));
+      else
+        numberedName.Inventory.AddAll(MakeItemGrenade());
       }
       numberedName.Inventory.AddAll(MakeItemMedikit());
       switch (m_DiceRoller.Roll(0, 3))
@@ -2829,7 +2806,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           numberedName.Inventory.AddAll(MakeItemPillsSAN());
           break;
       }
-      numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
+      numberedName.Inventory.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       return numberedName;
@@ -2870,28 +2847,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
       // Inline the functional part instead.
-      if (m_DiceRoller.RollChance(50)) {
-        var it = MakeItemPistol();
-        numberedName.Inventory.AddAll(it);
-        numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
-        it.Equip();
-        numberedName.OnEquipItem(it);
-      } else {
-        var it = MakeItemShotgun();
-        numberedName.Inventory.AddAll(it);
-        numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
-        it.Equip();
-        numberedName.OnEquipItem(it);
+      {
+      var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).instantiate();
+      numberedName.Inventory.AddAll(rw);
+      numberedName.Inventory.AddAll(MakeAmmo(rw.Model.ID));
+      rw.Equip();
+      numberedName.OnEquipItem(rw);
       }
       // do not issue truncheon if martial arts would nerf it
       if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(MakeItemTruncheon());
       numberedName.Inventory.AddAll(MakeItemFlashlight());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
-        var it = m_DiceRoller.RollChance(80) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
-        numberedName.Inventory.AddAll(it);
-        it.Equip();
-        numberedName.OnEquipItem(it);
+        var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).instantiate();
+        numberedName.Inventory.AddAll(armor);
+        armor.Equip();
+        numberedName.OnEquipItem(armor);
       }
       if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
         numberedName.Controller = new PlayerController();
@@ -2953,9 +2924,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = GameActors.CHARGuard.CreateNumberedName(GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
-      numberedName.Inventory.AddAll(MakeItemShotgun());
-      numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
-      numberedName.Inventory.AddAll(MakeItemCHARLightBodyArmor());
+
+      ItemModel[] default_inv = { GameItems.SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.CHAR_LT_BODYARMOR };
+      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+
       return numberedName;
     }
 
@@ -2965,11 +2937,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
-      numberedName.Inventory.AddAll(MakeItemArmyRifle());
-      numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
-      numberedName.Inventory.AddAll(MakeItemArmyPistol());
-      numberedName.Inventory.AddAll(MakeItemHeavyPistolAmmo());
-      numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
+
+      ItemModel[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
+      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+
       ItemBarricadeMaterial barricadeMaterial = MakeItemWoodenPlank();
       barricadeMaterial.Quantity = GameItems.WOODENPLANK.StackingLimit;
       numberedName.Inventory.AddAll(barricadeMaterial);
@@ -3015,10 +2986,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
-      numberedName.Inventory.AddAll(MakeItemPrecisionRifle());
-      numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
-      numberedName.Inventory.AddAll(MakeItemArmyPistol());
-      numberedName.Inventory.AddAll(MakeItemHeavyPistolAmmo());
+
+      ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL };
+      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+
       numberedName.Inventory.AddAll(MakeItemBlackOpsGPS());
       return numberedName;
     }

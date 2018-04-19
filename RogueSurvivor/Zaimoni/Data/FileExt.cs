@@ -4,6 +4,11 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Zaimoni.Data
 {
+    public interface Factory<out T>  
+    {  
+      T create();  
+    }  
+
 	static class FileExt
 	{
 		public static Stream CreateStream(this string filepath, bool save)

@@ -291,7 +291,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+ret.to_s());
 #else
-          _stacks.Remove(_at_target);
+          _stacks.Remove(at_target);
           if (0 >= _stacks.Count) {
             _isExpired = true;
             return true;

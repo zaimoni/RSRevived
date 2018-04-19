@@ -871,61 +871,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       throw new InvalidOperationException(x.ToString()+" not an ammo or ranged weapon");
     }
 
-    static public ItemRangedWeapon MakeItemHuntingCrossbow()
-    {
-      return new ItemRangedWeapon(GameItems.HUNTING_CROSSBOW);
-    }
-
-    static public ItemAmmo MakeItemBoltsAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_BOLTS);
-    }
-
-    static public ItemRangedWeapon MakeItemHuntingRifle()
-    {
-      return new ItemRangedWeapon(GameItems.HUNTING_RIFLE);
-    }
-
-    static public ItemAmmo MakeItemLightRifleAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_LIGHT_RIFLE);
-    }
-
-    static public ItemRangedWeapon MakeItemPistol()
-    {
-      return new ItemRangedWeapon(GameItems.PISTOL);
-    }
-
-    static public ItemRangedWeapon MakeItemKoltRevolver()
-    {
-      return new ItemRangedWeapon(GameItems.KOLT_REVOLVER);
-    }
-
     public ItemRangedWeapon MakeItemRandomPistol()
     {
-      if (!m_DiceRoller.RollChance(50))
-        return MakeItemKoltRevolver();
-      return MakeItemPistol();
-    }
-
-    static public ItemAmmo MakeItemLightPistolAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_LIGHT_PISTOL);
-    }
-
-    static public ItemRangedWeapon MakeItemShotgun()
-    {
-      return new ItemRangedWeapon(GameItems.SHOTGUN);
-    }
-
-    static public ItemAmmo MakeItemShotgunAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_SHOTGUN);
-    }
-
-    static public ItemBodyArmor MakeItemCHARLightBodyArmor()
-    {
-      return new ItemBodyArmor(GameItems.CHAR_LT_BODYARMOR);
+      return (m_DiceRoller.RollChance(50) ? GameItems.KOLT_REVOLVER : GameItems.PISTOL).instantiate();
     }
 
     static public ItemBodyArmor MakeItemBikerGangJacket(GameGangs.IDs gangId)
@@ -938,21 +886,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         default:
           throw new ArgumentException("unhandled biker gang");
       }
-    }
-
-    static public ItemBodyArmor MakeItemPoliceJacket()
-    {
-      return new ItemBodyArmor(GameItems.POLICE_JACKET);
-    }
-
-    static public ItemBodyArmor MakeItemPoliceRiotArmor()
-    {
-      return new ItemBodyArmor(GameItems.POLICE_RIOT);
-    }
-
-    static public ItemBodyArmor MakeItemHunterVest()
-    {
-      return new ItemBodyArmor(GameItems.HUNTER_VEST);
     }
 
     static public ItemTracker MakeItemCellPhone()
@@ -993,33 +926,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new ItemSprayScent(GameItems.STENCH_KILLER);
     }
-
-    static public ItemRangedWeapon MakeItemArmyRifle()
-    {
-      return new ItemRangedWeapon(GameItems.ARMY_RIFLE);
-    }
-
-    static public ItemRangedWeapon MakeItemPrecisionRifle()
-    {
-      return new ItemRangedWeapon(GameItems.PRECISION_RIFLE);
-    }
-
-    static public ItemAmmo MakeItemHeavyRifleAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_HEAVY_RIFLE);
-    }
-
-    static public ItemRangedWeapon MakeItemArmyPistol()
-    {
-      return new ItemRangedWeapon(GameItems.ARMY_PISTOL);
-    }
-
-    static public ItemAmmo MakeItemHeavyPistolAmmo()
-    {
-      return new ItemAmmo(GameItems.AMMO_HEAVY_PISTOL);
-    }
-
-    static public ItemBodyArmor MakeItemArmyBodyArmor() { return new ItemBodyArmor(GameItems.ARMY_BODYARMOR); }
 
     static public ItemFood MakeItemArmyRation()
     {

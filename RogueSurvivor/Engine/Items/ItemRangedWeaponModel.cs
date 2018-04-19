@@ -22,5 +22,15 @@ namespace djack.RogueSurvivor.Engine.Items
       MaxAmmo = maxAmmo;
       AmmoType = ammoType;
     }
+
+    public override Item create()
+    {
+      return new ItemRangedWeapon(this);
+    }
+
+    public ItemRangedWeapon instantiate()
+    {
+      return new ItemRangedWeapon(this);
+    }
   }
 }

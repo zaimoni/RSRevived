@@ -11,10 +11,10 @@ using Actor = djack.RogueSurvivor.Data.Actor;
 using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerator;
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
+using ItemModel = djack.RogueSurvivor.Data.ItemModel;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 using Map = djack.RogueSurvivor.Data.Map;
-using World = djack.RogueSurvivor.Data.World;
 using Zone = djack.RogueSurvivor.Data.Zone;
 
 // Note that game-specific content was already here in RS alpha 9 (the identities of the unique actors)
@@ -181,10 +181,9 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+
+     ItemModel[] default_inv = { GameItems.UNIQUE_SANTAMAN_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN };
+      foreach(var x in default_inv) named.Inventory.AddAll(x.create());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");

@@ -8907,8 +8907,7 @@ namespace djack.RogueSurvivor.Engine
           mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);
         }
         if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon(GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon(GameItems.IMPROVISED_CLUB);
-          mapObj.Location.Map.DropItemAt(itemMeleeWeapon, mapObj.Location.Position);
+          mapObj.Location.Map.DropItemAt((m_Rules.RollChance(50) ? GameItems.IMPROVISED_CLUB : GameItems.IMPROVISED_SPEAR).instantiate(), mapObj.Location.Position);
         }
       }
       if (flag)

@@ -8,7 +8,7 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class ItemModel
+  internal class ItemModel : Zaimoni.Data.Factory<Item>
   {
     public Gameplay.GameItems.IDs ID { get; set; }
     public readonly string SingleName;
@@ -47,6 +47,11 @@ namespace djack.RogueSurvivor.Data
       ImageID = imageID;
       FlavorDescription = flavor;
       EquipmentPart = part;
+    }
+
+    public virtual Item create()
+    {
+      throw new InvalidOperationException("override ItemModel::create to do anything useful");
     }
   }
 }

@@ -123,6 +123,16 @@ namespace Zaimoni.Data
       return  null != rect.FirstOrDefault(testFn);
     }
 
+    // Angband-style rarity table support
+    public static T UseRarityTable<T>(this IEnumerable<KeyValuePair<T,int>> src, int r)
+    {
+      foreach(var x in src) {
+        if (x.Value > r) return x.Key;
+        r -= x.Value;
+      }
+      throw new InvalidProgramException("should not reach end of MakeShopSportsWearItem");
+    }
+
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {

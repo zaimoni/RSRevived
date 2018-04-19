@@ -20,5 +20,15 @@ namespace djack.RogueSurvivor.Engine.Items
       AmmoType = ammoType;
       StackingLimit = maxQuantity;
     }
+
+    public override Item create()
+    {
+      return new ItemAmmo(this);
+    }
+
+    public ItemAmmo instantiate()
+    {
+      return new ItemAmmo(this);
+    }
   }
 }
