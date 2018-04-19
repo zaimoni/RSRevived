@@ -21,6 +21,16 @@ namespace djack.RogueSurvivor.Engine.Items
        DontAutoEquip = true;
     }
 
+    public override Item create()
+    {
+      return new ItemTracker(this);
+    }
+
+    public ItemTracker instantiate()
+    {
+      return new ItemTracker(this);
+    }
+
     [System.Flags]
     public enum TrackingFlags
     {

@@ -349,7 +349,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #region 8. Items.
       Item sewers_stock() {
         switch (m_DiceRoller.Roll(0, 3)) {
-          case 0: return MakeItemBigFlashlight();
+          case 0: return GameItems.BIG_FLASHLIGHT.create();
           case 1: return  MakeItemCrowbar();
 #if DEBUG
           case 2:
@@ -1533,10 +1533,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 11: return GameItems.WOODENPLANK.create();
         case 12:
         case 13:
-        case 14: return MakeItemFlashlight();
+        case 14: return GameItems.FLASHLIGHT.create();
         case 15:
         case 16:
-        case 17: return MakeItemBigFlashlight();
+        case 17: return GameItems.BIG_FLASHLIGHT.create();
         case 18:
         case 19:
         case 20: return MakeItemSpikes();
@@ -1633,9 +1633,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           return (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create();
         case 11:
         case 12:
-        case 13: return MakeItemCellPhone();
+        case 13: return GameItems.CELL_PHONE.create();
         case 14:
-        case 15: return MakeItemFlashlight();
+        case 15: return GameItems.FLASHLIGHT.create();
         case 16:
         case 17: return GameItems.AMMO_LIGHT_PISTOL.create();
         case 18:
@@ -1673,9 +1673,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           return MakeItemCannedFood();
         case 4:
           if (!m_DiceRoller.RollChance(50)) return null;
-          if (m_DiceRoller.RollChance(50))
-            return MakeItemZTracker();
-          return MakeItemBlackOpsGPS();
+          return (m_DiceRoller.RollChance(50) ? GameItems.ZTRACKER : GameItems.BLACKOPS_GPS).create();
         default: return null;
       }
     }
@@ -1689,8 +1687,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 2: return MakeItemPillsSLP();
         case 3: return MakeItemPillsSTA();
         case 4: return MakeItemPillsSAN();
-        case 5: return MakeItemFlashlight();
-        case 6: return MakeItemCellPhone();
+        case 5: return GameItems.FLASHLIGHT.create();
+        case 6: return GameItems.CELL_PHONE.create();
 #if DEBUG
         case 7:
 #else
@@ -1998,7 +1996,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
-        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create() : (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create()) : (Item)MakeItemGrenade()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : GameItems.CHAR_LT_BODYARMOR.create(), pt);
+        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create() : (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create()) : (Item)MakeItemGrenade()) : (m_DiceRoller.RollChance(50) ? GameItems.ZTRACKER : GameItems.BLACKOPS_GPS).create()) : GameItems.CHAR_LT_BODYARMOR.create(), pt);
         return MakeObjShelf();
       }));
     }
@@ -2130,20 +2128,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       MakeRoomsPlan(map, ref list, rect1, 5);
 
+      KeyValuePair<ItemModel, int>[] stock = {
+        new KeyValuePair<ItemModel,int>(GameItems.POLICE_JACKET,10),
+        new KeyValuePair<ItemModel,int>(GameItems.POLICE_RIOT,10),
+        new KeyValuePair<ItemModel,int>(GameItems.FLASHLIGHT,5),
+        new KeyValuePair<ItemModel,int>(GameItems.BIG_FLASHLIGHT,5),
+        new KeyValuePair<ItemModel,int>(GameItems.POLICE_RADIO,10),
+        new KeyValuePair<ItemModel,int>(GameItems.TRUNCHEON,20),
+        new KeyValuePair<ItemModel,int>(GameItems.PISTOL,6),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_PISTOL,14),
+        new KeyValuePair<ItemModel,int>(GameItems.SHOTGUN,6),
+        new KeyValuePair<ItemModel,int>(GameItems.AMMO_SHOTGUN,14)
+      };
+#if DEBUG
+      if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
+#endif
+
       Item stock_armory() {
-        switch (m_DiceRoller.Roll(0, 10)) {
-          case 0:
-          case 1: return (m_DiceRoller.RollChance(50) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
-          case 2:
-          case 3: return  m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
-          case 4:
-          case 5: return GameItems.TRUNCHEON.create();
-          case 6:
-          case 7: return m_DiceRoller.RollChance(30) ? GameItems.PISTOL.create() : GameItems.AMMO_LIGHT_PISTOL.create();
-          case 8:
-          case 9: return m_DiceRoller.RollChance(30) ? GameItems.SHOTGUN.create() : GameItems.AMMO_SHOTGUN.create();
-          default: throw new ArgumentOutOfRangeException("unhandled roll");
-        }
+        return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
       };
 
       foreach (Rectangle rect2 in list) {
@@ -2856,7 +2858,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       // do not issue truncheon if martial arts would nerf it
       if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.instantiate());
-      numberedName.Inventory.AddAll(MakeItemFlashlight());
+      numberedName.Inventory.AddAll(GameItems.FLASHLIGHT.create());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
         var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).instantiate();
@@ -2990,7 +2992,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
-      numberedName.Inventory.AddAll(MakeItemBlackOpsGPS());
+      numberedName.Inventory.AddAll(GameItems.BLACKOPS_GPS.create());
       return numberedName;
     }
 

@@ -2885,7 +2885,7 @@ namespace djack.RogueSurvivor.Engine
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
-        armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemZTracker());
+        armyNationalGuard.Inventory.AddAll(GameItems.ZTRACKER.create());
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
@@ -9209,8 +9209,8 @@ namespace djack.RogueSurvivor.Engine
       if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
         if (GameFactions.ThePolice == deadGuy.Faction) {
-          Item it = BaseMapGenerator.MakeItemPoliceRadio();
-          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Map.DropItemAt(BaseMapGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
+          var it = GameItems.POLICE_RADIO.instantiate();
+          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Map.DropItemAt(it, deadGuy.Location.Position);
         }
         foreach (Item it in deadGuy.Inventory.Items.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit

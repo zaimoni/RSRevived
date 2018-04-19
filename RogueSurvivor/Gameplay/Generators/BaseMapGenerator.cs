@@ -838,11 +838,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    static public ItemTracker MakeItemCellPhone()
-    {
-      return new ItemTracker(GameItems.CELL_PHONE);
-    }
-
     public ItemSprayPaint MakeItemSprayPaint()
     {
       ItemSprayPaintModel itemSprayPaintModel;
@@ -880,31 +875,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static public ItemFood MakeItemArmyRation()
     {
       return new ItemFood(GameItems.ARMY_RATION, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * GameItems.ARMY_RATION.BestBeforeDays);
-    }
-
-    static public ItemLight MakeItemFlashlight()
-    {
-      return new ItemLight(GameItems.FLASHLIGHT);
-    }
-
-    static public ItemLight MakeItemBigFlashlight()
-    {
-      return new ItemLight(GameItems.BIG_FLASHLIGHT);
-    }
-
-    static public ItemTracker MakeItemZTracker()
-    {
-      return new ItemTracker(GameItems.ZTRACKER);
-    }
-
-    static public ItemTracker MakeItemBlackOpsGPS()
-    {
-      return new ItemTracker(GameItems.BLACKOPS_GPS);
-    }
-
-    static public ItemTracker MakeItemPoliceRadio()
-    {
-      return new ItemTracker(GameItems.POLICE_RADIO);
     }
 
     public ItemGrenade MakeItemGrenade()
