@@ -806,51 +806,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    static public ItemMeleeWeapon MakeItemBaseballBat()
-    {
-      return new ItemMeleeWeapon(GameItems.BASEBALLBAT);
-    }
-
-    static public ItemMeleeWeapon MakeItemCombatKnife()
-    {
-      return new ItemMeleeWeapon(GameItems.COMBAT_KNIFE);
-    }
-
-    static public ItemMeleeWeapon MakeItemTruncheon()
-    {
-      return new ItemMeleeWeapon(GameItems.TRUNCHEON);
-    }
-
-    static public ItemMeleeWeapon MakeItemGolfClub()
-    {
-      return new ItemMeleeWeapon(GameItems.GOLFCLUB);
-    }
-
-    static public ItemMeleeWeapon MakeItemIronGolfClub()
-    {
-      return new ItemMeleeWeapon(GameItems.IRON_GOLFCLUB);
-    }
-
-    static public ItemMeleeWeapon MakeItemHugeHammer()
-    {
-      return new ItemMeleeWeapon(GameItems.HUGE_HAMMER);
-    }
-
-    static public ItemMeleeWeapon MakeItemSmallHammer()
-    {
-      return new ItemMeleeWeapon(GameItems.SMALL_HAMMER);
-    }
-
-    static public ItemMeleeWeapon MakeItemShovel()
-    {
-      return new ItemMeleeWeapon(GameItems.SHOVEL);
-    }
-
-    static public ItemMeleeWeapon MakeItemShortShovel()
-    {
-      return new ItemMeleeWeapon(GameItems.SHORT_SHOVEL);
-    }
-
     static public ItemBarricadeMaterial MakeItemWoodenPlank()
     {
       return new ItemBarricadeMaterial(GameItems.WOODENPLANK);

@@ -2893,7 +2893,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(leader.Location.Map.LocalTime.TurnCounter, "Pvt", leader.Followers);
       if (m_Rules.RollChance(50))
-        armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemCombatKnife());
+        armyNationalGuard.Inventory.AddAll(GameItems.COMBAT_KNIFE.create());
       else
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
       return (SpawnActorNear(leader.Location.Map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? armyNationalGuard : null);

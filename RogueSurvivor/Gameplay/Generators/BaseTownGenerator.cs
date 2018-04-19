@@ -1521,13 +1521,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       switch (m_DiceRoller.Roll(0, 24)) {
         case 0:
         case 1:
-        case 2: return (m_DiceRoller.RollChance(50) ? MakeItemShovel() : MakeItemShortShovel());
+        case 2: return (m_DiceRoller.RollChance(50) ? GameItems.SHOVEL : GameItems.SHORT_SHOVEL).create();
         case 3:
         case 4:
         case 5: return MakeItemCrowbar();
         case 6:
         case 7:
-        case 8: return (m_DiceRoller.RollChance(50) ? MakeItemHugeHammer() : MakeItemSmallHammer());
+        case 8: return (m_DiceRoller.RollChance(50) ? GameItems.HUGE_HAMMER : GameItems.SMALL_HAMMER).create();
         case 9:
         case 10:
         case 11: return MakeItemWoodenPlank();
@@ -1626,7 +1626,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 5:
         case 6:
         case 7:
-        case 8: return MakeItemBaseballBat();
+        case 8: return GameItems.BASEBALLBAT.create();
         case 9: return MakeItemRandomPistol();
         case 10:
           if (m_DiceRoller.RollChance(30)) return (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create();
@@ -1685,7 +1685,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       switch (m_DiceRoller.Roll(0, 8))
       {
         case 0: return MakeItemSprayPaint();
-        case 1: return MakeItemBaseballBat();
+        case 1: return GameItems.BASEBALLBAT.create();
         case 2: return MakeItemPillsSLP();
         case 3: return MakeItemPillsSTA();
         case 4: return MakeItemPillsSAN();
@@ -2137,7 +2137,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           case 2:
           case 3: return  m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
           case 4:
-          case 5: return MakeItemTruncheon();
+          case 5: return GameItems.TRUNCHEON.create();
           case 6:
           case 7: return m_DiceRoller.RollChance(30) ? GameItems.PISTOL.create() : GameItems.AMMO_LIGHT_PISTOL.create();
           case 8:
@@ -2731,7 +2731,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             case 1: return GameItems.ARMY_BODYARMOR.create();
             case 2: return GameItems.AMMO_HEAVY_PISTOL.create();
             case 3: return GameItems.AMMO_HEAVY_RIFLE.create();
-            case 4: return MakeItemCombatKnife();
+            case 4: return GameItems.COMBAT_KNIFE.create();
 #if DEBUG
             case 5: return MakeItemPillsAntiviral();
             default: throw new ArgumentOutOfRangeException("unhandled roll");
@@ -2855,7 +2855,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.OnEquipItem(rw);
       }
       // do not issue truncheon if martial arts would nerf it
-      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(MakeItemTruncheon());
+      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.instantiate());
       numberedName.Inventory.AddAll(MakeItemFlashlight());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
@@ -2961,7 +2961,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
+      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : GameItems.BASEBALLBAT.create());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
@@ -2975,7 +2975,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GiveNameToActor(m_DiceRoller, numberedName);
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       // Gangsters don't seem very prepared: no reserve ammo
-      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : (Item)MakeItemBaseballBat());
+      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : GameItems.BASEBALLBAT.create());
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY);
       return numberedName;
     }
