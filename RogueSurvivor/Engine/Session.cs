@@ -128,6 +128,9 @@ namespace djack.RogueSurvivor.Engine
     public void Reset()
     {
       Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+Seed.ToString());
+#endif
       RogueGame.Reset();
       m_Scoring = new Scoring();
       World = new World(RogueGame.Options.CitySize);

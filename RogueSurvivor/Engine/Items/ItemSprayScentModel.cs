@@ -21,5 +21,15 @@ namespace djack.RogueSurvivor.Engine.Items
       Odor = odor;
       Strength = strength;
     }
+
+    public override Item create()
+    {
+      return new ItemSprayScent(this);
+    }
+
+    public ItemSprayScent instantiate()
+    {
+      return new ItemSprayScent(this);
+    }
   }
 }

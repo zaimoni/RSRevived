@@ -867,11 +867,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemSprayPaint(itemSprayPaintModel);
     }
 
-    static public ItemSprayScent MakeItemStenchKiller()
-    {
-      return new ItemSprayScent(GameItems.STENCH_KILLER);
-    }
-
     static public ItemFood MakeItemArmyRation()
     {
       return new ItemFood(GameItems.ARMY_RATION, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * GameItems.ARMY_RATION.BestBeforeDays);

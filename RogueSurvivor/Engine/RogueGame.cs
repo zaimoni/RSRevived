@@ -11612,11 +11612,23 @@ namespace djack.RogueSurvivor.Engine
           }
           District district = new District(new Point(index1, index2), GenerateDistrictKind(index1, index2));
           world[index1, index2] = district;
+#if DEBUG
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, district.Kind.ToString());
+#endif
           // All map generation types should have an entry map so that is sort-of-ok to have as a member function of District
           district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, s_Options.DistrictSize, m_TownGenerator);
+#if DEBUG
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "entry map ok");
+#endif
           // other (hypothetical) map generation types are not guaranteed to have sewers or subways so leave those where they are
           GenerateDistrictSewersMap(district);
+#if DEBUG
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "sewers map ok");
+#endif
           if (index2 == world.Size / 2) GenerateDistrictSubwayMap(district);
+#if DEBUG
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "subway map ok or absent");
+#endif
         }
       }
       if (isVerbose) {

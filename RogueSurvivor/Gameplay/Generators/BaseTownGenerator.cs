@@ -203,9 +203,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public virtual Map GenerateSewersMap(int seed, District district)
     {
       m_DiceRoller = new DiceRoller(seed);
+restart:
       Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
       TileFill(sewers, GameTiles.WALL_SEWER, true);
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: baseline");
+#endif
+
 
       ///////////////////////////////////////////////////
       // 1. Make blocks.
@@ -224,6 +229,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // 1. Make blocks.
       List<Block> list = new List<Block>(m_SurfaceBlocks.Count);
       MakeBlocks(sewers, false, ref list, new Rectangle(0, 0, sewers.Width, sewers.Height));
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #1 ok");
+#endif
 
 #region 2. Make tunnels.
       foreach (Block block in list)
@@ -263,30 +271,43 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MapObjectPlace(sewers, x2, y2, MakeObjIronFence());
       }
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #2 ok");
+#endif
 
 #region 3. Link with surface.
+      // This stage empirically can infinite-loop.
+      {
+      var candidates = new List<Point>();
+      sewers.Rect.DoForEach(pt => {
+        if (!sewers.GetTileModelAt(pt).IsWalkable) return;
+        Tile tileAt = surface.GetTileAt(pt);
+        if (!tileAt.Model.IsWalkable) return;
+        if (sewers.HasMapObjectAt(pt)) return;
+        if (tileAt.IsInside) return;
+        if (surface.HasMapObjectAt(pt)) return;
+        if (tileAt.Model == GameTiles.FLOOR_WALKWAY || tileAt.Model == GameTiles.FLOOR_GRASS) candidates.Add(pt);
+      });
+      if (0 >= candidates.Count) goto restart;
+
       int countLinks = 0;
       do {
-        for (int x = 0; x < sewers.Width; ++x) {
-          for (int y = 0; y < sewers.Height; ++y) {
-            if (m_DiceRoller.RollChance(3) && sewers.GetTileModelAt(x, y).IsWalkable) {
-              Tile tileAt = surface.GetTileAt(x, y);
-              if (tileAt.Model.IsWalkable && !sewers.HasMapObjectAt(x, y) && !tileAt.IsInside && ((tileAt.Model == GameTiles.FLOOR_WALKWAY || tileAt.Model == GameTiles.FLOOR_GRASS) && !surface.HasMapObjectAt(x, y)))
-              {
-                Point point = new Point(x, y);
-                if (!sewers.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => sewers.HasExitAt(p))) && !surface.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => surface.HasExitAt(p))))
-                {
-                  AddExit(sewers, point, surface, point, GameImages.DECO_SEWER_LADDER, true);
-                  AddExit(surface, point, sewers, point, GameImages.DECO_SEWER_HOLE, true);
-                  ++countLinks;
-                }
-              }
-            }
-          }
+        foreach(Point pt in candidates) {
+          // these two tests will only trigger on sewer exits due to the prefilter above.  Adjacency across district boundaries is a known bug
+          if (sewers.HasAnyAdjacentInMap(pt, p => sewers.HasExitAt(p))) continue;
+          if (surface.HasAnyAdjacentInMap(pt, p => surface.HasExitAt(p))) continue;
+          if (1<candidates.Count && !m_DiceRoller.RollChance(3)) continue;
+          AddExit(sewers, pt, surface, pt, GameImages.DECO_SEWER_LADDER, true);
+          AddExit(surface, pt, sewers, pt, GameImages.DECO_SEWER_HOLE, true);
+          ++countLinks;
         }
       }
       while (countLinks < 1);
+      }
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #3 ok");
+#endif
 
 #region 5. Sewers Maintenance Room & Building(surface).
       List<Block> blockList = null;
@@ -314,6 +335,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
       }
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #5 ok");
+#endif
 
 #region 6. Some rooms.
       foreach (Block block in list)
@@ -336,6 +360,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #6 ok");
+#endif
 
 #region 7. Objects.
       MapObjectFill(sewers, new Rectangle(0, 0, sewers.Width, sewers.Height), (Func<Point, MapObject>) (pt =>
@@ -345,6 +372,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         return MakeObjJunk();
       }));
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #7 ok");
+#endif
 
 #region 8. Items.
       Item sewers_stock() {
@@ -368,6 +398,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         return sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE);
       });
 #endregion
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: 88 ok");
+#endif
 
 #region 9. Tags.
       for (int x = 0; x < sewers.Width; ++x) {
@@ -1490,10 +1523,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 3: return MakeItemPillsSTA();
         case 4: return MakeItemPillsSAN();
 #if DEBUG
-        case 5: return MakeItemStenchKiller();
+        case 5: return GameItems.STENCH_KILLER.create();
         default: throw new ArgumentOutOfRangeException("unhandled roll");
 #else
-        default: return MakeItemStenchKiller();
+        default: return GameItems.STENCH_KILLER.create();
 #endif
       }
     }
@@ -1605,7 +1638,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 2: return MakeItemPillsSLP();
         case 3: return MakeItemPillsSTA();
         case 4: return MakeItemPillsSAN();
-        case 5: return MakeItemStenchKiller();
+        case 5: return GameItems.STENCH_KILLER.create();
 #if DEBUG
         case 6: return MakeItemPillsAntiviral();
         default: throw new ArgumentOutOfRangeException("unhandled roll");
@@ -1639,7 +1672,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 16:
         case 17: return GameItems.AMMO_LIGHT_PISTOL.create();
         case 18:
-        case 19: return MakeItemStenchKiller();
+        case 19: return GameItems.STENCH_KILLER.create();
         case 20: return GameItems.HUNTER_VEST.create();
 #if DEBUG
         case 21:
