@@ -1530,7 +1530,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 8: return (m_DiceRoller.RollChance(50) ? GameItems.HUGE_HAMMER : GameItems.SMALL_HAMMER).create();
         case 9:
         case 10:
-        case 11: return MakeItemWoodenPlank();
+        case 11: return GameItems.WOODENPLANK.create();
         case 12:
         case 13:
         case 14: return MakeItemFlashlight();
@@ -1696,7 +1696,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #else
         default:
 #endif
-          return MakeItemWoodenPlank();
+          return GameItems.WOODENPLANK.create();
 #if DEBUG
         default: throw new ArgumentOutOfRangeException("unhandled item roll");
 #endif
@@ -2941,7 +2941,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ItemModel[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
-      ItemBarricadeMaterial barricadeMaterial = MakeItemWoodenPlank();
+      var barricadeMaterial = GameItems.WOODENPLANK.instantiate();
       barricadeMaterial.Quantity = GameItems.WOODENPLANK.StackingLimit;
       numberedName.Inventory.AddAll(barricadeMaterial);
       // National Guard training includes firing range and construction.

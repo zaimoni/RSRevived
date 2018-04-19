@@ -806,11 +806,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    static public ItemBarricadeMaterial MakeItemWoodenPlank()
-    {
-      return new ItemBarricadeMaterial(GameItems.WOODENPLANK);
-    }
-
     // XXX These two arguably should be alternate constructors.
     static public ItemRangedWeapon MakeRangedWeapon(GameItems.IDs x)
     {
