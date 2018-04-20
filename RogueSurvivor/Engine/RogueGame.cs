@@ -9403,16 +9403,15 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_SetCursor(null);
       m_MusicManager.StopAll();
       m_MusicManager.Play(GameMusics.PLAYER_DEATH);
-      Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
-      Session.Get.Scoring.SetKiller(killer);
-      if (Player.CountFollowers > 0) {
-        foreach (Actor follower in Player.Followers)
-          Session.Get.Scoring.AddFollowerWhenDied(follower);
-      }
+
       List<Zone> zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
-      Session.Get.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name;
+
+      Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
+      Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
+
       Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
+
       AddOverlay(new OverlayPopup(new string[3] {
         "TIP OF THE DEAD",
         "Did you know that...",
@@ -9485,7 +9484,7 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> DEATH");
-      textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring.DeathPlace));
+      textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
       if (Session.Get.Scoring.HasNoKills) {
@@ -9523,14 +9522,14 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
       { // scoping brace
-      int count_followers = Session.Get.Scoring.FollowersWhendDied?.Count ?? 0;
+      int count_followers = Session.Get.Scoring_fatality.FollowersWhendDied?.Count ?? 0;
       if (0 >= count_followers) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
         var stringBuilder = new StringBuilder(string.Format("{0} was leading", str1));
         bool flag = true;
         int num = 0;
-        foreach (Actor actor in Session.Get.Scoring.FollowersWhendDied) {
+        foreach (Actor actor in Session.Get.Scoring_fatality.FollowersWhendDied) {
           if (flag) stringBuilder.Append(" ");
           else if (num == count_followers) stringBuilder.Append(".");
           else if (num == count_followers - 1) stringBuilder.Append(" and ");
@@ -9541,7 +9540,7 @@ namespace djack.RogueSurvivor.Engine
         }
         stringBuilder.Append(".");
         textFile.Append(stringBuilder.ToString());
-        foreach (Actor actor in Session.Get.Scoring.FollowersWhendDied) {
+        foreach (Actor actor in Session.Get.Scoring_fatality.FollowersWhendDied) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
           if (actor.Sheet.SkillTable?.Skills != null) {
             foreach (var skill in actor.Sheet.SkillTable.Skills)
@@ -9960,7 +9959,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (deadVictim.IsPlayer) {
-        Session.Get.Scoring.SetZombifiedPlayer(actor);
+        Session.Get.Scoring_fatality?.SetZombifiedPlayer(actor);
         if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
           AddMessage(MakeYesNoMessage(deadVictim.Name+" rises as a zombie.  Use a reincarnation"));
           RedrawPlayScreen();
@@ -12443,20 +12442,20 @@ namespace djack.RogueSurvivor.Engine
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
           { // scoping brace
-          int count_followers = Session.Get.Scoring.FollowersWhendDied?.Count ?? 0;
+          int count_followers = Session.Get.Scoring_fatality.FollowersWhendDied?.Count ?? 0;
           if (0 >= count_followers) {
             matchingActors = 0;
             return null;
           }
           var actorList1 = new List<Actor>(count_followers);
-          foreach (Actor a in Session.Get.Scoring.FollowersWhendDied) {
+          foreach (Actor a in Session.Get.Scoring_fatality.FollowersWhendDied) {
             if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
           return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList1);
           } // scoping brace
         case GameOptions.ReincMode.KILLER:
-          Actor killer = Session.Get.Scoring.Killer;
+          Actor killer = Session.Get.Scoring_fatality.Killer;
           if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false)) {
             matchingActors = 1;
             return killer;
@@ -12464,7 +12463,7 @@ namespace djack.RogueSurvivor.Engine
           matchingActors = 0;
           return null;
         case GameOptions.ReincMode.ZOMBIFIED:
-          Actor zombifiedPlayer = Session.Get.Scoring.ZombifiedPlayer;
+          Actor zombifiedPlayer = Session.Get.Scoring_fatality.ZombifiedPlayer;
           if (IsSuitableReincarnation(zombifiedPlayer, false)) {
             matchingActors = 1;
             return zombifiedPlayer;

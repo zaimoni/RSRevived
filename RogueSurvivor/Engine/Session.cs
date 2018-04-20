@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Engine
     public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
 
+    [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
@@ -59,6 +60,7 @@ namespace djack.RogueSurvivor.Engine
     public WorldTime WorldTime { get { return new WorldTime(World[World.Size-1,World.Size-1]?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
 
     public Scoring Scoring { get { return m_Scoring; } }
+    public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
     public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory { get { return m_PoliceItemMemory; } }
     public ThreatTracking PoliceThreatTracking { get { return m_PoliceThreatTracking; } }
     public LocationSet PoliceInvestigate { get { return m_PoliceInvestigate; } }
@@ -122,6 +124,9 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("m_PoliceItemMemory", m_PoliceItemMemory, typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
       info.AddValue("m_PoliceThreatTracking", m_PoliceThreatTracking, typeof(ThreatTracking));
       info.AddValue("m_PoliceInvestigate", m_PoliceInvestigate, typeof(LocationSet));
+
+      // non-serialized fields
+      m_Scoring_fatality = null;
     }
 #endregion
 
@@ -199,6 +204,11 @@ namespace djack.RogueSurvivor.Engine
       if (null == district) throw new ArgumentNullException(nameof(district));
 #endif
       m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
+    }
+
+    public void LatestKill(Actor killer, Actor victim, string death_loc)
+    {
+      m_Scoring_fatality = new Scoring_fatality(killer,victim,death_loc);
     }
 
     public static void Save(Session session, string filepath, SaveFormat format)

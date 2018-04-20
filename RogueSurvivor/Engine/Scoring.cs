@@ -24,17 +24,13 @@ namespace djack.RogueSurvivor.Engine
     public const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
     private int m_StartScoringTurn;
     private int m_ReincarnationNumber;
-    private List<Actor> m_FollowersWhenDied;
-    private Actor m_Killer;
-    private Actor m_ZombifiedPlayer;
     private int m_KillPoints;
     private DifficultySide m_Side;
 
     private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
-    public Skills.IDs StartingSkill;    // RogueGame: 1 write access
+    public Skills.IDs StartingSkill;    // RogueGame: 1 write access; 0 reads
     public int TurnsSurvived;   // RogueGame: 3 write access
     public string DeathReason;  // RogueGame: 1 write access
-    public string DeathPlace;  // RogueGame: 1 write access
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
     public DifficultySide Side {
@@ -52,9 +48,6 @@ namespace djack.RogueSurvivor.Engine
     public bool HasNoEvents { get { return m_Events.Count == 0; } }
     public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
     public bool HasNoKills { get { return m_Kills.Count == 0; } }
-    public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
-    public Actor Killer { get { return m_Killer; } }
-    public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
     public int KillPoints { get { return m_KillPoints; } }
     public int SurvivalPoints { get { return 2 * (TurnsSurvived - StartScoringTurn); } }
 
@@ -118,9 +111,6 @@ namespace djack.RogueSurvivor.Engine
       m_Events.Clear();
       m_Sightings.Clear();
       m_Kills.Clear();
-      m_Killer = null;
-      m_FollowersWhenDied = null;
-      m_ZombifiedPlayer = null;
       m_KillPoints = 0;
       m_StartScoringTurn = gameTurn;
     }
@@ -266,21 +256,6 @@ namespace djack.RogueSurvivor.Engine
       lock (m_VisitedMaps) m_VisitedMaps.Add(map);
     }
 
-    public void SetKiller(Actor k)
-    {
-      m_Killer = k;
-    }
-
-    public void SetZombifiedPlayer(Actor z)
-    {
-      m_ZombifiedPlayer = z;
-    }
-
-    public void AddFollowerWhenDied(Actor fo)
-    {
-      (m_FollowersWhenDied ?? (m_FollowersWhenDied = new List<Actor>())).Add(fo);
-    }
-
     public void AddEvent(int turn, string text)
     {
       lock (m_Events) m_Events.Add(new GameEventData(turn, text));
@@ -312,6 +287,32 @@ namespace djack.RogueSurvivor.Engine
         Turn = turn;
         Text = text;
       }
+    }
+  }
+
+  // not clear if this should be serializable
+  [Serializable]
+  internal class Scoring_fatality
+  {
+    private List<Actor> m_FollowersWhenDied = null;
+    public readonly Actor Killer;
+    private Actor m_ZombifiedPlayer;
+    public readonly string DeathPlace;
+
+    public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
+    public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
+
+    public Scoring_fatality(Actor killer, Actor victim, string death_loc) // historically victim is a player, but we don't check that here
+    {
+      Killer = killer;
+      DeathPlace = death_loc;
+      int ub = victim.CountFollowers;
+      if (0 < ub) m_FollowersWhenDied = new List<Actor>(victim.Followers);
+    }
+
+    public void SetZombifiedPlayer(Actor z)
+    {
+      m_ZombifiedPlayer = z;
     }
   }
 }
