@@ -569,6 +569,84 @@ namespace djack.RogueSurvivor.Engine
             m_ShamblersUpgrade = false;
     }
 
+    public float DifficultyRating(Gameplay.GameFactions.IDs side)
+    { // Historically supported factions are civilians and zombies
+      Data.Faction us = Data.Models.Factions[(int)side];
+      float num1 = 1f;
+      if (!RevealStartingDistrict) num1 += 0.1f;    // theoretically affects everyone
+
+      if (!NPCCanStarveToDeath) num1 += (!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? -0.1f : 0.1f);  // very arguable
+      if (NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR && Gameplay.GameFactions.TheBlackOps!=us) {
+        // blackops are strictly after national guard so they don't care aobut this setting either way
+        float num2 = (float) (NatGuardFactor - GameOptions.DEFAULT_NATGUARD_FACTOR) / (float)GameOptions.DEFAULT_NATGUARD_FACTOR;
+        num1 += 0.5f*(!Gameplay.GameFactions.TheArmy.IsEnemyOf(us) ? -num2 : num2);
+      }
+      if (SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) {
+        // while almost everyone can use medikits, the main influence of this is on food supply
+        float num2 = (float) (SuppliesDropFactor - GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) / (float)GameOptions.DEFAULT_SUPPLIESDROP_FACTOR;
+        num1 += 0.5f*(!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? -num2 : num2);
+      }
+      if (ZombifiedsUpgradeDays != GameOptions.ZupDays.THREE)
+      {
+        float num2 = 0.0f;
+        switch (ZombifiedsUpgradeDays)
+        {
+          case GameOptions.ZupDays.ONE:
+            num2 = 0.5f;
+            break;
+          case GameOptions.ZupDays.TWO:
+            num2 = 0.25f;
+            break;
+          case GameOptions.ZupDays.FOUR:
+            num2 -= 0.1f;
+            break;
+          case GameOptions.ZupDays.FIVE:
+            num2 -= 0.2f;
+            break;
+          case GameOptions.ZupDays.SIX:
+            num2 -= 0.3f;
+            break;
+          case GameOptions.ZupDays.SEVEN:
+            num2 -= 0.4f;
+            break;
+          case GameOptions.ZupDays.OFF:
+            num2 = -0.5f;
+            break;
+        }
+        num1 += 0.5f*(Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? num2 : -num2);
+      }
+      float num3 = (float) Math.Sqrt(GameOptions.DEFAULT_MAX_UNDEADS+ GameOptions.DEFAULT_MAX_CIVILIANS) / (GameOptions.DEFAULT_CITY_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE);
+      float num4 = ((float) Math.Sqrt((double) (MaxCivilians + MaxUndeads)) / (float) (CitySize * DistrictSize * DistrictSize) - num3) / num3;
+      float num5 = !Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? num1 - 0.99f * num4 : num1 + 0.99f * num4;
+
+      const float num6 = (float)(GameOptions.DEFAULT_MAX_UNDEADS) /(float)(GameOptions.DEFAULT_MAX_CIVILIANS);
+      float num7 = ((float) MaxUndeads / (float) MaxCivilians - num6) / num6;
+      float num8 = (float) (DayZeroUndeadsPercent - GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT) / (float)GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
+      float num9 = (float) (ZombieInvasionDailyIncrease - 5) / 5f;
+      float num10 = !Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? num5 - (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9) 
+                                                                    : num5 + (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9);
+
+      // XXX should this have an effect on infection modes?
+      const float num11 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_ZOMBIFICATION_CHANCE);
+      float num12 = ((float) (MaxCivilians * ZombificationChance) - num11) / num11;
+      const float num13 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
+      float num14 = ((float) (MaxCivilians * StarvedZombificationChance) - num13) / num13;
+      if (!NPCCanStarveToDeath)
+        num14 = -1f;
+      float num15 = !Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? num10 - (float) (0.3 * (double) num12 + 0.2 * (double) num14)
+                                                                    : num10 + (float) (0.3 * (double) num12 + 0.2 * (double) num14);
+
+      if (!AllowUndeadsEvolution && Session.Get.HasEvolution) num15 *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 0.5f : 2f);
+      if (IsCombatAssistantOn) num15 *= 0.75f;
+      if (IsPermadeathOn) num15 *= 2f;
+      if (!IsAggressiveHungryCiviliansOn) num15 *= (!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? 0.5f : 2f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && RatsUpgrade) num15 *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.1f : 0.9f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && SkeletonsUpgrade) num15 *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.2f : 0.8f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && ShamblersUpgrade) num15 *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.25f : 0.75f);
+
+      return Math.Max(num15, 0.0f);
+    }
+
     public static string Name(IDs option)
     {
       switch (option)
