@@ -9452,7 +9452,7 @@ namespace djack.RogueSurvivor.Engine
       string name = Player.TheName.Replace("(YOU) ", "");
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
       Session.Get.Scoring.Side = Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, 0);
       var textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
@@ -11325,7 +11325,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.IsMusicEnabled = s_Options.PlayMusic;
       m_MusicManager.Volume = s_Options.MusicVolume;
       Session.Get.Scoring.Side = Player == null || !Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, 0);
       if (m_MusicManager.IsMusicEnabled) return;
       m_MusicManager.StopAll();
     }
@@ -12374,7 +12374,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
       Session.Get.Scoring.Side = Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, 0);
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.StopAll();

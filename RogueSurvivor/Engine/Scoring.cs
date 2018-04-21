@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Engine
     public int AchievementPoints { get { return Achievements.Sum(x => x.IsDone ? x.ScoreValue : 0); } }
 
     public float DifficultyRating {
-      get {
+      get { // Live.  Thus only valid to set with values calculated at reincarnation number 0; otherwise it's double-penalized
         return m_DifficultyRating / (float) (1 + m_ReincarnationNumber);
       }
       set {
