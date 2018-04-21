@@ -1229,7 +1229,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == rw) {
         int potential_importance = KnowRelevantInventory(am) ? 2 : 1;
         if (is_in_inventory) return potential_importance;
-        return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : potential_importance;
+        if (0 < m_Actor.Inventory.Count(am.Model)) return 0;
+        if (AmmoAtLimit) return int.MaxValue;  // BehaviorMakeRoomFor triggers recursion. real value 0 or potential_importance
+        return potential_importance;
       }
       if (is_in_inventory) return 2;
       if (rw.Ammo < rw.Model.MaxAmmo) return 2;
