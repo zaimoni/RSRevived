@@ -16,7 +16,6 @@ using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
-using MapObject = djack.RogueSurvivor.Data.MapObject;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
@@ -2183,6 +2182,19 @@ retry:
           }
 #endregion
         }
+      }
+      if (0 < m_aux_CorpsesByPosition.Count) {
+        // need a value copy of relevant (infected) corpses
+        var tmp = new Dictionary<Point, List<Corpse>>(m_aux_CorpsesByPosition.Count);
+
+        bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
+
+        foreach(var x in m_aux_CorpsesByPosition) {
+          if (0>= x.Value.Count) continue;
+          if (!x.Value.Any(is_problem_corpse)) continue;
+          tmp[x.Key] = x.Value.Where(is_problem_corpse).ToList();
+        }
+        if (0 < tmp.Count) dest.WriteLine("<pre>Problematic corpses:\n"+tmp.to_s()+"</pre>");
       }
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
       if (0<actor_data.Count) {

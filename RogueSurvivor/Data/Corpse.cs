@@ -56,5 +56,10 @@ namespace djack.RogueSurvivor.Data
         return num < 90 ? 1 : 0;
       }
     }
+
+    public override string ToString()
+    {
+      return "corpse of "+DeadGuy.Name;
+    }
   }
 }

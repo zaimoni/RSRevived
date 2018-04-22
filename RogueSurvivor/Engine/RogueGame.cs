@@ -2060,7 +2060,7 @@ namespace djack.RogueSurvivor.Engine
                 corpseList3.Add(corpse);
                 Zombify(null, corpse.DeadGuy, false);
                 if (ForceVisibleToPlayer(map, corpse.Position)) {
-                  AddMessage(new Data.Message(string.Format("The corpse of {0} rise again!!", corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
+                  AddMessage(new Data.Message("The "+corpse.ToString()+" rises again!!", map.LocalTime.TurnCounter, Color.Red));
                   m_MusicManager.Play(GameSounds.UNDEAD_RISE);
                 }
               }
@@ -2071,7 +2071,7 @@ namespace djack.RogueSurvivor.Engine
             foreach (Corpse c in corpseList2) {
               map.Destroy(c);
               if (ForceVisibleToPlayer(map, c.Position))
-                AddMessage(new Data.Message(string.Format("The corpse of {0} turns into dust.", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
+                AddMessage(new Data.Message("The "+c.ToString()+" turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
             }
           }
 #endregion
@@ -6643,7 +6643,7 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add(1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.");
       stringList.Add(" ");
       foreach (Corpse corpse in corpses)
-        stringList.Add(string.Format("- Corpse of {0}.", corpse.DeadGuy.Name));
+        stringList.Add("- "+corpse.ToString().Capitalize()+".");
       return stringList.ToArray();
     }
 
@@ -6686,7 +6686,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int skillLevel = Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       var stringList = new List<string>(10){
-        string.Format("Corpse of {0}.", c.DeadGuy.Name),
+        c.ToString().Capitalize()+".",
         " ",
         string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")),
         string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")),
