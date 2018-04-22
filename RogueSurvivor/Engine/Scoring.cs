@@ -19,7 +19,6 @@ namespace djack.RogueSurvivor.Engine
     private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
     private readonly List<GameEventData> m_Events = new List<GameEventData>();
     private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
-    private float m_DifficultyRating = 1f;
     public const int MAX_ACHIEVEMENTS = 8;
     public const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
     private int m_StartScoringTurn;
@@ -55,10 +54,8 @@ namespace djack.RogueSurvivor.Engine
 
     public float DifficultyRating {
       get { // Live.  Thus only valid to set with values calculated at reincarnation number 0; otherwise it's double-penalized
-        return m_DifficultyRating / (float) (1 + m_ReincarnationNumber);
-      }
-      set {
-        m_DifficultyRating = value;
+        float ret = RogueGame.Options.DifficultyRating(DifficultySide.FOR_SURVIVOR == Session.Get.Scoring.Side ? GameFactions.IDs.TheCivilians : GameFactions.IDs.TheUndeads);
+        return ret / (float) (1 + m_ReincarnationNumber);
       }
     }
 

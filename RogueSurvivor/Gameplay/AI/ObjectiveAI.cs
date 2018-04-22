@@ -1290,7 +1290,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemRangedWeapon rw) return ItemRatingCode(rw);
       if (it is ItemAmmo am) {
         int ret = ItemRatingCode(am);
-        if (int.MaxValue == ret) return null == BehaviorMakeRoomFor(it) ? 0 : 2; // BehaviorMakeRoomFor triggers recursion
+        if (int.MaxValue == ret) {
+          if (null == BehaviorMakeRoomFor(it)) return 0;  // BehaviorMakeRoomFor triggers recursion
+          return null!=m_Actor.Inventory.GetCompatibleRangedWeapon(am) || KnowRelevantInventory(am) ? 2 : 1;
+        }
         return ret;
       }
       if (it is ItemGrenade grenade) return ItemRatingCode(grenade);
