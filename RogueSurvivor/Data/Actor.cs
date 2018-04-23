@@ -2313,12 +2313,10 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-#if DEAD_FUNC
     public bool CanButcher(Corpse corpse)
     {
       return string.IsNullOrEmpty(ReasonCantButcher(corpse));
     }
-#endif
 
     private string ReasonCantStartDrag(Corpse corpse)
     {

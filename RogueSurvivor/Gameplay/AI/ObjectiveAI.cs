@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
@@ -129,6 +130,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       _isExpired = true;
+      return true;
+    }
+  }
+
+  [Serializable]
+  internal class Goal_Butcher : Objective
+  {
+    private readonly Corpse _corpse;
+
+    public Goal_Butcher(int t0, Actor who, Corpse target)
+    : base(t0,who)
+    {
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
+      _corpse = target;
+    }
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+        _isExpired = true;
+        return true;
+      }
+      ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineButcher(_corpse);
+      if (null == ret) _isExpired = true;
       return true;
     }
   }
@@ -2422,6 +2450,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
       return new ActionRechargeItemBattery(m_Actor,it);
+    }
+
+    public ActorAction DoctrineButcher(Corpse c)
+    {
+      if (!m_Actor.CanButcher(c)) return null;
+      
+      {
+      var best = m_Actor.GetBestMeleeWeapon();
+      if (null!=best && !best.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,best);
+      }
+      if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
+      return new ActionButcher(m_Actor,c);
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)

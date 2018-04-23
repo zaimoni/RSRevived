@@ -1943,6 +1943,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (!m_Actor.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("!m_Actor.Model.Abilities.IsLawEnforcer");
 #endif
+      // XXX this should affect reputation
       Dictionary<Point,Actor> friends = friends_in_FOV;
       if (null == friends) return null;
       Dictionary<Point,Actor> murderers = null;

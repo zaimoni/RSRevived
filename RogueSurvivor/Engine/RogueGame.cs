@@ -4096,6 +4096,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
+      // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));

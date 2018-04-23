@@ -175,6 +175,11 @@ namespace djack.RogueSurvivor.Data
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
 
+      var corpses_at = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
+      if (null != corpses_at) {
+        foreach(Corpse c in corpses_at) ret.Add("Butcher "+c.ToString());
+      }
+
       Objective test = new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor);
       ActorAction testAction = null;
       if (test.UrgentAction(out testAction) && null!=testAction) ret.Add("Medicate sleep");
@@ -184,6 +189,28 @@ namespace djack.RogueSurvivor.Data
 
     public bool InterpretSelfOrder(int i, List<string> orders)
     {
+      if (orders[i].StartsWith("Butcher corpse of ")) {
+        var corpses_at = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
+#if DEBUG
+        if (null == corpses_at) throw new InvalidOperationException("no corpses here");
+#else
+        if (null == corpses_at) return false;
+#endif
+        string target_name = orders[i].Substring(18);
+        foreach(Corpse c in corpses_at) {
+          if (target_name == c.DeadGuy.Name) {
+            Objectives.Insert(0,new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor,c));
+            return true;
+          }
+        }
+#if DEBUG
+        throw new InvalidOperationException("requested corpse not here");
+#else
+        return false;
+#endif
+
+      }
+
       switch(orders[i])
       {
       case "Rest in place":
