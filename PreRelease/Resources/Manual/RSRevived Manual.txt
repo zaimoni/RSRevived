@@ -69,14 +69,10 @@ from which the game maps are built, is set from this option.  The default
 is to set the master RNG seed from the system time.  The seed reported by
 City Info, will replicate the map when entered with this option.
 
-The master RNG seed *is* part of the savegame.  It is used to re-initialize 
-the RNG when L)oading the game.
-  
-In theory the C# Random class can be saved and loaded, but the consequences 
-of the underlying language library locks failing are awesome.  Once corrupted 
-by use from two distinct threads at once, the return value becomes 
-the constant zero.  So there are good technical reasons to permit the 
-limited RNG adjustment by savescumming there is.
+The master RNG seed *is* part of the savegame.  Formerly, It was used to re-initialize 
+the RNG when L)oading the game.  0.10.0 has been revised to have the RNG in the samegame;
+playtesting dominates the technical consideration that C#-standard double-checked locking is
+C++-invalid.
 
 --socrates-daimon
 

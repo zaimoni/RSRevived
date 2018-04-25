@@ -965,6 +965,10 @@ Effect is occassionally pre-empting a turn but otherwise allowing normal action.
 
 Use the blue SLP pills as long as they're in inventory and no wastage.
 
+> Butcher corpse of ....
+
+For Infection modes.  Enough butcher actions to completely destroy the target.
+
 <SECTION>
 8. FRIENDS & FOES
 -----------------
