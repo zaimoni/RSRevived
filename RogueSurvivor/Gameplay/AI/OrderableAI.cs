@@ -2416,6 +2416,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+#if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
@@ -2425,6 +2426,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return null;
       }
+#else
+      if (cant_get && null == recover) return null;
+#endif
 #else
       if (cant_get && null == recover) return null;
 #endif
@@ -2453,6 +2457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+#if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
@@ -2462,6 +2467,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return false;
       }
+#else
+      if (cant_get && null == recover) return false;
+#endif
 #else
       if (cant_get && null == recover) return false;
 #endif
@@ -2490,6 +2498,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+#if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
@@ -2499,6 +2508,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return null;
       }
+#else
+      if (cant_get && null == recover) return null;
+#endif
 #else
       if (cant_get && null == recover) return null;
 #endif
@@ -2536,6 +2548,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+#if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
@@ -2545,6 +2558,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return null;
       }
+#else
+      if (cant_get && null == recover) return null;
+#endif
 #else
       if (cant_get && null == recover) return null;
 #endif

@@ -2156,6 +2156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (ItemIsUseless(it)) return false;
 
+#if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       bool ret = _IsInterestingItem(it);
       int item_rating = ItemRatingCode(it);
@@ -2168,6 +2169,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return ret;
+#else
+      return _IsInterestingItem(it);
+#endif
 #else
       return _IsInterestingItem(it);
 #endif
