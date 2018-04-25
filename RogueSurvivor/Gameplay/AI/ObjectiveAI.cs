@@ -1327,7 +1327,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemGrenade grenade) return ItemRatingCode(grenade);
 
       if (it is ItemBarricadeMaterial) return ItemRatingCode_generic(it);
-      if (it is ItemTrap) return ItemRatingCode_generic(it);
+      if (it is ItemTrap trap) {
+        if (trap.IsActivated) return 0;
+        return ItemRatingCode_generic(it);
+      }
       if (it is ItemSprayScent) return ItemRatingCode_generic(it);
 
       return 1;
@@ -2121,14 +2124,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } else if (it is ItemMedicine) {
         // XXX easy to action-loop if inventory full
         if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return false;
+      } else if (it is ItemTrap trap) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (trap.IsActivated) return false;
 #if DEBUG
       } else if (it is ItemEntertainment) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemBarricadeMaterial) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemSprayScent) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
-      } else if (it is ItemTrap) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemGrenade) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
