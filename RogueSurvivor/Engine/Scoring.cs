@@ -16,10 +16,7 @@ namespace djack.RogueSurvivor.Engine
   internal class Scoring
   {
     private readonly Dictionary<GameActors.IDs, Scoring.KillData> m_Kills = new Dictionary<GameActors.IDs, Scoring.KillData>();
-    private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
     private readonly List<GameEventData> m_Events = new List<GameEventData>();
-    private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
-    public const int MAX_ACHIEVEMENTS = 8;
     public const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
     private int m_StartScoringTurn;
     private int m_ReincarnationNumber;
@@ -101,9 +98,7 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-      m_VisitedMaps.Clear();
       m_Events.Clear();
-      m_Sightings.Clear();
       m_Kills.Clear();
       m_KillPoints = 0;
       m_StartScoringTurn = gameTurn;
@@ -225,29 +220,6 @@ namespace djack.RogueSurvivor.Engine
       m_KillPoints += Models.Actors[(int)id].ScoreValue;
       if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[(int)id].Abilities.IsUndead) return;
       m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
-    }
-
-    public void AddSighting(GameActors.IDs actorModelID)
-    {
-      if (m_Sightings.Contains(actorModelID)) return;
-      int turn = Session.Get.WorldTime.TurnCounter;
-      m_Sightings.Add(actorModelID);
-      AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
-    }
-
-    public bool HasSighted(GameActors.IDs actorModelID)
-    {
-      return m_Sightings.Contains(actorModelID);
-    }
-
-    public bool HasVisited(Map map)
-    {
-      return m_VisitedMaps.Contains(map);
-    }
-
-    public void AddVisit(int turn, Map map)
-    {
-      lock (m_VisitedMaps) m_VisitedMaps.Add(map);
     }
 
     public void AddEvent(int turn, string text)

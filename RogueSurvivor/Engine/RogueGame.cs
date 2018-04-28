@@ -1361,7 +1361,8 @@ namespace djack.RogueSurvivor.Engine
     {
       bool isUndead = m_CharGen.IsUndead;
       GenerateWorld(true);
-      Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
+      // XXX \todo should do this for all actors
+      Player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
       Session.Get.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       if (s_Options.IsAdvisorEnabled) {
@@ -3539,7 +3540,7 @@ namespace djack.RogueSurvivor.Engine
       for (int index1 = 0; index1 < Session.Get.World.Size; ++index1) {
         for (int index2 = 0; index2 < Session.Get.World.Size; ++index2) {
           District district = Session.Get.World[index2, index1];
-          char ch = district == CurrentMap.District ? '*' : (Session.Get.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
+          char ch = district == CurrentMap.District ? '*' : (Player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
           Color color = HandleCityInfo_DistrictToColor(district.Kind);
           string str = HandleCityInfo_DistrictToCode(district.Kind);
           string text = "".PadLeft(5,ch);
@@ -12274,7 +12275,7 @@ namespace djack.RogueSurvivor.Engine
             throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
         }
       }
-      if (!Session.Get.Scoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
+      if (!player.ActorScoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
         if (null != player.Sees(Session.Get.UniqueActors.JasonMyers.TheActor)) {
           lock (Session.Get) {
             ClearMessages();
@@ -12291,12 +12292,13 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));
         }
       }
-      if (!Session.Get.Scoring.HasVisited(player.Location.Map)) {
-        Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
+      if (!player.ActorScoring.HasVisited(player.Location.Map)) {
+        player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
         Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
       }
-      if (null != Player.Controller.friends_in_FOV) foreach(var x in Player.Controller.friends_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID);
-      if (null != Player.Controller.enemies_in_FOV) foreach(var x in Player.Controller.enemies_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID);
+      // XXX \todo should be for all actors
+      if (null != Player.Controller.friends_in_FOV) foreach(var x in Player.Controller.friends_in_FOV) Player.ActorScoring.AddSighting(x.Value.Model.ID);
+      if (null != Player.Controller.enemies_in_FOV) foreach(var x in Player.Controller.enemies_in_FOV) Player.ActorScoring.AddSighting(x.Value.Model.ID);
     }
 
     private void HandleReincarnation()
