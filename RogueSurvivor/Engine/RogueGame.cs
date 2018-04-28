@@ -925,7 +925,6 @@ namespace djack.RogueSurvivor.Engine
         Skills.IDs? skID = HandleNewCharacterSkill(roller);
         if (null == skID) return false;
         m_CharGen.StartingSkill = skID.Value;
-        Session.Get.Scoring.StartingSkill = skID.Value;
       }
       return true;
     }

@@ -27,7 +27,6 @@ namespace djack.RogueSurvivor.Engine
     private DifficultySide m_Side;
 
     private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
-    public Skills.IDs StartingSkill;    // RogueGame: 1 write access; 0 reads
     public int TurnsSurvived;   // RogueGame: 3 write access
     public string DeathReason;  // RogueGame: 1 write access
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
