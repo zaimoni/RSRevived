@@ -75,34 +75,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Achievements[(int) a.ID] = a;
     }
-
-    [Serializable]
-    public class KillData
-    {
-      public readonly GameActors.IDs ActorModelID;
-      public int Amount;
-      public readonly int FirstKillTurn;
-
-      public KillData(Gameplay.GameActors.IDs actorModelID, int turn)
-      {
-        ActorModelID = actorModelID;
-        Amount = 1;
-        FirstKillTurn = turn;
-      }
-    }
-
-    [Serializable]
-    public class GameEventData
-    {
-      public readonly int Turn;
-      public readonly string Text;
-
-      public GameEventData(int turn, string text)
-      {
-        Turn = turn;
-        Text = text;
-      }
-    }
   }
 
   [Serializable]
