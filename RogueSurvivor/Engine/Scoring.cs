@@ -18,7 +18,6 @@ namespace djack.RogueSurvivor.Engine
     private int m_ReincarnationNumber;
 
     private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
-    public string DeathReason;  // RogueGame: 1 write access
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
@@ -116,12 +115,19 @@ namespace djack.RogueSurvivor.Engine
     private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
     private readonly List<KeyValuePair<int,string>> m_Events = new List<KeyValuePair<int, string>>();
     private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
+    private string m_DeathReason;
+
+    public string DeathReason {
+      get { return m_DeathReason; }
+      set { if (string.IsNullOrEmpty(m_DeathReason)) m_DeathReason = value; }
+    }
 
     public ActorScoring(Actor src)
     {
       m_Actor = src;
     }
 
+    public string Name { get { return m_Actor.TheName.Replace("(YOU) ", ""); } }
     public int TurnsSurvived { get { return m_Actor.Location.Map.LocalTime.TurnCounter-m_Actor.SpawnTime; } }
     public int SurvivalPoints { get { return 2*TurnsSurvived; } }
 

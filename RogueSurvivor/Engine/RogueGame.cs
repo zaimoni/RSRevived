@@ -9412,7 +9412,7 @@ namespace djack.RogueSurvivor.Engine
 
       Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
 
-      Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
+      Player.ActorScoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
 
       AddOverlay(new OverlayPopup(new string[3] {
@@ -9488,7 +9488,7 @@ namespace djack.RogueSurvivor.Engine
       } // end scoping brace: a_count
       textFile.Append(" ");
       textFile.Append("> DEATH");
-      textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
+      textFile.Append(string.Format("{0} in {1}.", Player.ActorScoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
       Player.ActorScoring.DescribeKills(textFile, str1);
@@ -9622,7 +9622,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (var skill in Player.Sheet.SkillTable.Skills)
           stringBuilder1.AppendFormat("{0}-{1} ", skill.Value, Skills.Name(skill.Key));
       }
-      if (!m_HiScoreTable.Register(HiScore.FromScoring(name, Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
+      if (!m_HiScoreTable.Register(HiScore.FromScoring(Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
     }

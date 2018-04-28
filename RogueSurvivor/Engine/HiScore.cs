@@ -31,17 +31,17 @@ namespace djack.RogueSurvivor.Engine
 
     public string Death { get; set; }
 
-    public static HiScore FromScoring(string name, Scoring sc, ActorScoring asc, string skillsDescription)
+    public static HiScore FromScoring(Scoring sc, ActorScoring asc, string skillsDescription)
     {
 #if DEBUG
       if (null == sc) throw new ArgumentNullException(nameof(sc));
 #endif
       return new HiScore{
         AchievementPoints = asc.AchievementPoints,
-        Death = sc.DeathReason,
+        Death = asc.DeathReason,
         DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating),
         KillPoints = asc.KillPoints,
-        Name = name,
+        Name = asc.Name,
         PlayingTime = sc.RealLifePlayingTime,
         SkillsDescription = skillsDescription,
         SurvivalPoints = asc.SurvivalPoints,
