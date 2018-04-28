@@ -11,43 +11,61 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class HiScore
   {
-    public string Name { get; set; }
+    public readonly string Name;
+    public readonly int TotalPoints;
+    public readonly int DifficultyPercent;
+    public readonly int SurvivalPoints;
+    public readonly int KillPoints;
+    public readonly int AchievementPoints;
+    public readonly int TurnSurvived;
+    public readonly TimeSpan PlayingTime;
+    public readonly string SkillsDescription;
+    public readonly string Death;
 
-    public int TotalPoints { get; set; }
+    // default constructor
+    public HiScore()
+    {
+      Death = "no death";
+      DifficultyPercent = 0;
+      KillPoints = 0;
+      Name = "no one";
+      PlayingTime = TimeSpan.Zero;
+      SurvivalPoints = 0;
+      TotalPoints = 0;
+      TurnSurvived = 0;
+      SkillsDescription = "no skills";
+    }
 
-    public int DifficultyPercent { get; set; }
-
-    public int SurvivalPoints { get; set; }
-
-    public int KillPoints { get; set; }
-
-    public int AchievementPoints { get; set; }
-
-    public int TurnSurvived { get; set; }
-
-    public TimeSpan PlayingTime { get; set; }
-
-    public string SkillsDescription { get; set; }
-
-    public string Death { get; set; }
-
-    public static HiScore FromScoring(Scoring sc, ActorScoring asc, string skillsDescription)
+    public HiScore(Scoring sc, ActorScoring asc, string skillsDescription)
     {
 #if DEBUG
       if (null == sc) throw new ArgumentNullException(nameof(sc));
+      if (null == asc) throw new ArgumentNullException(nameof(asc));
 #endif
-      return new HiScore{
-        AchievementPoints = asc.AchievementPoints,
-        Death = asc.DeathReason,
-        DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating),
-        KillPoints = asc.KillPoints,
-        Name = asc.Name,
-        PlayingTime = sc.RealLifePlayingTime,
-        SkillsDescription = skillsDescription,
-        SurvivalPoints = asc.SurvivalPoints,
-        TotalPoints = asc.TotalPoints,
-        TurnSurvived = asc.TurnsSurvived
-      };
+      AchievementPoints = asc.AchievementPoints;
+      Death = asc.DeathReason;
+      DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating);
+      KillPoints = asc.KillPoints;
+      Name = asc.Name;
+      PlayingTime = sc.RealLifePlayingTime;
+      SkillsDescription = skillsDescription;
+      SurvivalPoints = asc.SurvivalPoints;
+      TotalPoints = asc.TotalPoints;
+      TurnSurvived = asc.TurnsSurvived;
+    }
+
+    public bool is_valid()
+    {
+      if (string.IsNullOrEmpty(Death)) return false;
+      if (0 > DifficultyPercent) return false;
+      if (0 > KillPoints) return false;
+      if (string.IsNullOrEmpty(Name)) return false;
+//    if ( ... PlayingTime) return false;
+      if (0 > SurvivalPoints) return false;
+      if (0 > TotalPoints) return false;
+      if (0 > TurnSurvived) return false;
+      if (string.IsNullOrEmpty(SkillsDescription)) return false;
+      return true;
     }
   }
 }

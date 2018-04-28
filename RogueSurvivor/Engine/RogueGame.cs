@@ -1336,10 +1336,21 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
-      if (m_HiScoreTable == null) {
-        m_HiScoreTable = new HiScoreTable(12);
+      bool regen_table = (null == m_HiScoreTable);
+      if (!regen_table) {
+        for (int index = 0; index < m_HiScoreTable.Count; ++index) {
+          HiScore hiScore = m_HiScoreTable[index];
+          if (!hiScore.is_valid()) {
+            regen_table = true;
+            break;
+          }
+        }
+      };
+      if (regen_table) {
+        m_HiScoreTable = new HiScoreTable();
         m_HiScoreTable.Clear();
       }
+
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -9622,7 +9633,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (var skill in Player.Sheet.SkillTable.Skills)
           stringBuilder1.AppendFormat("{0}-{1} ", skill.Value, Skills.Name(skill.Key));
       }
-      if (!m_HiScoreTable.Register(HiScore.FromScoring(Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
+      if (!m_HiScoreTable.Register(new HiScore(Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
     }

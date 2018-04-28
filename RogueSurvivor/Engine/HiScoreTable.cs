@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class HiScoreTable
   {
-    public const int DEFAULT_MAX_ENTRIES = 12;
+    private const int DEFAULT_MAX_ENTRIES = 12;
     private readonly List<HiScore> m_Table;
     private readonly int m_MaxEntries;
 
@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public HiScoreTable(int maxEntries)
+    public HiScoreTable(int maxEntries = DEFAULT_MAX_ENTRIES)
     {
 #if DEBUG
       if (0 >= maxEntries) throw new InvalidOperationException("0 >= maxEntries");
@@ -38,17 +38,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  m_Table.Clear();
       for (int index = 0; index < m_MaxEntries; ++index)
-        m_Table.Add(new HiScore{
-          Death = "no death",
-          DifficultyPercent = 0,
-          KillPoints = 0,
-          Name = "no one",
-          PlayingTime = TimeSpan.Zero,
-          SurvivalPoints = 0,
-          TotalPoints = 0,
-          TurnSurvived = 0,
-          SkillsDescription = "no skills"
-        });
+        m_Table.Add(new HiScore());
     }
 
     public bool Register(HiScore hi)
