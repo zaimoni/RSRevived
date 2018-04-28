@@ -286,6 +286,74 @@ namespace djack.RogueSurvivor.Engine
     }
   }
 
+  [Serializable]
+  internal class ActorScoring
+  {
+    private readonly Actor m_Actor;
+    private readonly Dictionary<GameActors.IDs, int> m_FirstKills = new Dictionary<GameActors.IDs, int>();
+    private readonly Dictionary<GameActors.IDs, int> m_KillCounts = new Dictionary<GameActors.IDs, int>();
+    private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
+    private readonly List<KeyValuePair<int,string>> m_Events = new List<KeyValuePair<int, string>>();
+    private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
+
+    public ActorScoring(Actor src)
+    {
+      m_Actor = src;
+    }
+
+    public void AddKill(Actor victim, int turn)
+    {
+      GameActors.IDs id = victim.Model.ID;
+      if (!m_FirstKills.ContainsKey(id)) {
+        m_FirstKills[id] = turn;
+        m_KillCounts[id] = 1;
+        AddEvent(turn, string.Format("Killed first {0}.", Models.Actors[(int)id].Name));
+      } else m_KillCounts[id]++;
+    }
+
+    public int KillPoints { get {
+      const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
+      int ret = 0;
+      foreach(var x in m_KillCounts) {  // XXX only works correctly for civilians
+        ret += Models.Actors[(int)x.Key].ScoreValue*x.Value;
+        if (Models.Actors[(int)x.Key].Abilities.IsUndead) continue;
+        if (!m_Actor.Model.Abilities.IsUndead) continue;
+        ret += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD*x.Value;
+      }
+      return ret;
+    } }
+
+    public void AddSighting(GameActors.IDs actorModelID)
+    {
+      if (m_Sightings.Contains(actorModelID)) return;
+      int turn = Session.Get.WorldTime.TurnCounter;
+      m_Sightings.Add(actorModelID);
+      AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
+    }
+
+    public bool HasSighted(GameActors.IDs actorModelID)
+    {
+      return m_Sightings.Contains(actorModelID);
+    }
+
+    public IEnumerable<KeyValuePair<int, string>> Events { get { return m_Events; } }
+
+    public void AddEvent(int turn, string text)
+    {
+      lock (m_Events) m_Events.Add(new KeyValuePair<int, string>(turn, text));
+    }
+
+    public bool HasVisited(Map map)
+    {
+      return m_VisitedMaps.Contains(map);
+    }
+
+    public void AddVisit(int turn, Map map)
+    {
+      lock (m_VisitedMaps) m_VisitedMaps.Add(map);
+    }
+  }
+
   // not clear if this should be serializable
   [Serializable]
   internal class Scoring_fatality
