@@ -8888,7 +8888,7 @@ namespace djack.RogueSurvivor.Engine
       powGen.TogglePower();
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
-      OnMapPowerGeneratorSwitch(actor.Location);
+      OnMapPowerGeneratorSwitch(actor.Location, actor);
     }
 
     private void DoDestroyObject(MapObject mapObj)
@@ -9300,7 +9300,8 @@ namespace djack.RogueSurvivor.Engine
 
       // achievement: killing the Sewers Thing
       if (Player == killer || Player == killer?.Leader) {
-        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+        // XXX \todo reimplement this
+        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, Player);
       }
 
       if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
@@ -9463,21 +9464,24 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
       textFile.Append(string.Format("- {0} base points for survival.", Player.ActorScoring.SurvivalPoints));
       textFile.Append(string.Format("- {0} base points for kills.", Player.ActorScoring.KillPoints));
-      textFile.Append(string.Format("- {0} base points for achievements.", Session.Get.Scoring.AchievementPoints));
+      textFile.Append(string.Format("- {0} base points for achievements.", Player.ActorScoring.AchievementPoints));
       textFile.Append(" ");
       textFile.Append("> ACHIEVEMENTS");
-      Session.Get.Scoring.DescribeAchievements(textFile);
-      if (Session.Get.Scoring.CompletedAchievementsCount == 0) {
+      Player.ActorScoring.DescribeAchievements(textFile);
+      { // scoping brace: a_count
+      int a_count = Player.ActorScoring.CompletedAchievementsCount;
+      if (0 >= a_count) {
         textFile.Append("Didn't achieve anything notable. And then died.");
         textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", 8));
       } else {
-        textFile.Append(string.Format("Total : {0}/{1}.", Session.Get.Scoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
-        if (Session.Get.Scoring.CompletedAchievementsCount >= (int)Achievement.IDs._COUNT)
+        textFile.Append(string.Format("Total : {0}/{1}.", a_count, (int)Achievement.IDs._COUNT));
+        if ((int)Achievement.IDs._COUNT <= a_count)
           textFile.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
         else
           textFile.Append("(unlock all the achievements to win this game version)");
         textFile.Append("(later versions of the game will feature real winning conditions and multiple endings...)");
       }
+      } // end scoping brace: a_count
       textFile.Append(" ");
       textFile.Append("> DEATH");
       textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
@@ -9669,10 +9673,11 @@ namespace djack.RogueSurvivor.Engine
       }
       CheckWeatherChange();
       if (Player.Model.Abilities.IsUndead) return;
-      if (Session.Get.WorldTime.Day == 7) ShowNewAchievement(Achievement.IDs.REACHED_DAY_07);
-      else if (Session.Get.WorldTime.Day == 14) ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
-      else if (Session.Get.WorldTime.Day == 21) ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
-      else if (Session.Get.WorldTime.Day == 28) ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
+      // XXX \todo reimplement these
+      if (Session.Get.WorldTime.Day == 7) ShowNewAchievement(Achievement.IDs.REACHED_DAY_07, Player);
+      else if (Session.Get.WorldTime.Day == 14) ShowNewAchievement(Achievement.IDs.REACHED_DAY_14, Player);
+      else if (Session.Get.WorldTime.Day == 21) ShowNewAchievement(Achievement.IDs.REACHED_DAY_21, Player);
+      else if (Session.Get.WorldTime.Day == 28) ShowNewAchievement(Achievement.IDs.REACHED_DAY_28, Player);
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
@@ -12099,14 +12104,15 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private void ShowNewAchievement(Achievement.IDs id)
+    private void ShowNewAchievement(Achievement.IDs id, Actor victor)
     {
-      Session.Get.Scoring.SetCompletedAchievement(id);
+      victor.ActorScoring.SetCompletedAchievement(id);
       Achievement achievement = Session.Get.Scoring.GetAchievement(id);
       string musicId = achievement.MusicID;
       string name = achievement.Name;
       string[] text = achievement.Text;
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
+      if (!victor.IsPlayer) return;
       m_MusicManager.StopAll();
       m_MusicManager.Play(musicId);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
@@ -12116,7 +12122,7 @@ namespace djack.RogueSurvivor.Engine
         "CONGRATULATIONS!"
       };
       stringList.AddRange(text);
-      stringList.Add(string.Format("Achievements : {0}/{1}.", Session.Get.Scoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
+      stringList.Add(string.Format("Achievements : {0}/{1}.", victor.ActorScoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
       stringList.Add(str);
       Point screenPos = new Point(0, 0);
       AddOverlay(new OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, screenPos));
@@ -12140,11 +12146,11 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
-      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
-        ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
-      if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
+      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
+        ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, player);
+      if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
         lock (Session.Get) {
-          ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
+          ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, player);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
           Session.Get.CHARUndergroundFacility_Activated = true;
           Map CHARmap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
@@ -12276,7 +12282,7 @@ namespace djack.RogueSurvivor.Engine
       {
         Map map = player.Location.Map;
         if (map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
-          DoTurnAllGeneratorsOn(map);
+          DoTurnAllGeneratorsOn(map, player);
           AddMessage(new Data.Message("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));
         }
       }
@@ -12537,7 +12543,7 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
-    private void OnMapPowerGeneratorSwitch(Location location)
+    private void OnMapPowerGeneratorSwitch(Location location, Actor victor)
     {
       Map map = location.Map;
       if (map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
@@ -12549,8 +12555,9 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
                 RedrawPlayScreen();
               }
-              if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
-                ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
+              // XXX \todo severe reimplementation
+              if (!victor.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
+                ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY,victor);
             }
           } else if (map.Illuminate(false)) {
             if (0 < map.PlayerCount) {
@@ -12699,12 +12706,12 @@ namespace djack.RogueSurvivor.Engine
       CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
     }
 
-    private void DoTurnAllGeneratorsOn(Map map)
+    private void DoTurnAllGeneratorsOn(Map map, Actor victor)
     {
       foreach (var powGen in map.PowerGenerators.Get) {
         if (powGen.IsOn) continue;
         powGen.TogglePower();
-        OnMapPowerGeneratorSwitch(powGen.Location);
+        OnMapPowerGeneratorSwitch(powGen.Location, victor);
       }
     }
 

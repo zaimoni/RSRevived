@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == sc) throw new ArgumentNullException(nameof(sc));
 #endif
       return new HiScore{
-        AchievementPoints = sc.AchievementPoints,
+        AchievementPoints = asc.AchievementPoints,
         Death = sc.DeathReason,
         DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating),
         KillPoints = asc.KillPoints,

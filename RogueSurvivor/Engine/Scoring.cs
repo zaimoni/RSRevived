@@ -25,10 +25,6 @@ namespace djack.RogueSurvivor.Engine
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
     public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
 
-    public int AchievementPoints { get { return Achievements.Sum(x => x.IsDone ? x.ScoreValue : 0); } }
-
-    public int CompletedAchievementsCount { get { return Achievements.Count(x => x.IsDone); } }
-
     public Scoring()
     {
       InitAchievement(new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]{
@@ -74,16 +70,6 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
     }
 
-    public bool HasCompletedAchievement(Achievement.IDs id)
-    {
-      return Achievements[(int) id].IsDone;
-    }
-
-    public void SetCompletedAchievement(Achievement.IDs id)
-    {
-      Achievements[(int) id].IsDone = true;
-    }
-
     public Achievement GetAchievement(Achievement.IDs id)
     {
       return Achievements[(int) id];
@@ -92,16 +78,6 @@ namespace djack.RogueSurvivor.Engine
     private void InitAchievement(Achievement a)
     {
       Achievements[(int) a.ID] = a;
-    }
-
-    public void DescribeAchievements(TextFile textFile)
-    {
-      foreach (Achievement achievement in Achievements) {
-        if (achievement.IsDone)
-          textFile.Append(string.Format("- {0} for {1} points!", achievement.Name, achievement.ScoreValue));
-        else
-          textFile.Append(string.Format("- Fail : {0}.", achievement.TeaseName));
-      }
     }
 
     public void AddEvent(int turn, string text)
