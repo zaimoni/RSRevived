@@ -15,7 +15,6 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Scoring
   {
-    private readonly List<GameEventData> m_Events = new List<GameEventData>();
     private int m_ReincarnationNumber;
 
     private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
@@ -23,7 +22,6 @@ namespace djack.RogueSurvivor.Engine
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
-    public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
 
     public Scoring()
     {
@@ -62,7 +60,6 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-      m_Events.Clear();
     }
 
     public void UseReincarnation()
@@ -78,11 +75,6 @@ namespace djack.RogueSurvivor.Engine
     private void InitAchievement(Achievement a)
     {
       Achievements[(int) a.ID] = a;
-    }
-
-    public void AddEvent(int turn, string text)
-    {
-      lock (m_Events) m_Events.Add(new GameEventData(turn, text));
     }
 
     [Serializable]
@@ -207,6 +199,16 @@ namespace djack.RogueSurvivor.Engine
     public void AddEvent(int turn, string text)
     {
       lock (m_Events) m_Events.Add(new KeyValuePair<int, string>(turn, text));
+    }
+
+    public void DescribeEvents(TextFile textFile, string he_or_she)
+    {
+      if (0 >= m_Events.Count) {
+        textFile.Append(string.Format("{0} had a quiet life. Or dull and boring.", he_or_she));
+      } else {
+        foreach (var x in m_Events)
+          textFile.Append(string.Format("- {0,13} : {1}", new WorldTime(x.Key).ToString(), x.Value));
+      }
     }
 
     public bool HasVisited(Map map)

@@ -1363,7 +1363,7 @@ namespace djack.RogueSurvivor.Engine
       GenerateWorld(true);
       // XXX \todo should do this for all actors
       Player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
       if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
@@ -2545,7 +2545,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
     }
 
     private bool CheckForEvent_NationalGuard(Map map)
@@ -2592,7 +2593,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
 
     private bool CheckForEvent_ArmySupplies(Map map)
@@ -2638,7 +2640,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
     static private bool IsSuitableDropSuppliesPoint(Map map, Point pt)  // XXX should be able to partially precalculate
@@ -2691,7 +2694,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Bikers raided the district.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Bikers raided the district.");
     }
 
     private bool CheckForEvent_GangstasRaid(Map map)
@@ -2719,7 +2723,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Gangstas raided the district.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Gangstas raided the district.");
     }
 
     private bool CheckForEvent_BlackOpsRaid(Map map)
@@ -2747,7 +2752,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "BlackOps raided the district.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "BlackOps raided the district.");
     }
 
     private bool CheckForEvent_BandOfSurvivors(Map map)
@@ -2773,7 +2779,8 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         ClearMessages();
       }
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
+      // XXX \todo district event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
     }
 
     static private int DistanceToPlayer(Map map, int x, int y)
@@ -4750,7 +4757,8 @@ namespace djack.RogueSurvivor.Engine
               if (player.CanTakeLeadOf(actorAt, out string reason)) {
                 flag2 = true;
                 DoTakeLead(player, actorAt);
-                Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", actorAt.TheName));
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", actorAt.TheName));
+                actorAt.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited by {0}.", player.TheName));
                 AddMessage(new Data.Message("(you can now set directives and orders for your new follower).", Session.Get.WorldTime.TurnCounter, Color.White));
                 AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
                 break;
@@ -4761,7 +4769,8 @@ namespace djack.RogueSurvivor.Engine
                   if (WaitYesOrNo()) {
                     flag2 = true;
                     DoCancelLead(player, actorAt);
-                    Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired {0}.", actorAt.TheName));
+                    player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired {0}.", actorAt.TheName));
+                    actorAt.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired by {0}.", player.TheName));
                     break;
                   } else
                     AddMessage(new Data.Message("Good, together you are strong.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
@@ -7406,15 +7415,12 @@ namespace djack.RogueSurvivor.Engine
       exitAt.ToMap.MoveActorToFirstPosition(actor);
 #endif
       if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
-      if (ForceVisibleToPlayer(actor) || isPlayer)
-      AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
-      if (isPlayer) {
-        if (map.District != exitAt.ToMap.District) {
-          Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-          if (!run_was_free_move) actor.ActionPoints += actor.Speed;
-        }
-        SetCurrentMap(exitAt.ToMap);
+      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
+      if (map.District != exitAt.ToMap.District) {
+        actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
+        if (!run_was_free_move) actor.ActionPoints += actor.Speed;
       }
+      if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, origin);
       return true;
@@ -7452,8 +7458,8 @@ namespace djack.RogueSurvivor.Engine
       if (to.Map.District != from.Map.District) {
         foreach (Actor other in actorList) {
           if (!other.IsPlayer) leader.RemoveFollower(other);
+          leader.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
           if (flag2) {
-            Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
             ClearMessages();
             if (other.IsPlayer) {
               AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, other.Location.Map.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
@@ -9186,7 +9192,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (deadGuy.IsUnique) {
-        Session.Get.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
+        // XXX \todo global event
+        m_Player_bak.ActorScoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
             (killer != null
            ? string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName)
            : string.Format("* {0} died by {1}! *", deadGuy.TheName, reason)));
@@ -9197,10 +9204,8 @@ namespace djack.RogueSurvivor.Engine
       }
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null) {
-        if (deadGuy.Leader.IsPlayer) {
-          string text = killer == null ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason) : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName);
-          Session.Get.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
-        }
+        string text = killer == null ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason) : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName);
+        deadGuy.Leader.ActorScoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
@@ -9261,8 +9266,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (killer != null && isMurder) {
         ++killer.MurdersCounter;
-        if (killer.IsPlayer)
-          Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
+        killer.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
         if (IsVisibleToPlayer(killer))
           AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
         Map map = killer.Location.Map;
@@ -9409,7 +9413,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
 
       Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
 
       AddOverlay(new OverlayPopup(new string[3] {
         "TIP OF THE DEAD",
@@ -9544,12 +9548,7 @@ namespace djack.RogueSurvivor.Engine
       } // scoping brace
       textFile.Append(" ");
       textFile.Append("> EVENTS");
-      if (0 >= Session.Get.Scoring.Events.Count()) {
-        textFile.Append(string.Format("{0} had a quiet life. Or dull and boring.", str1));
-      } else {
-        foreach (Scoring.GameEventData @event in Session.Get.Scoring.Events)
-          textFile.Append(string.Format("- {0,13} : {1}", new WorldTime(@event.Turn).ToString(), @event.Text));
-      }
+      Player.ActorScoring.DescribeEvents(textFile, str1);
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
       textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
@@ -9713,7 +9712,7 @@ namespace djack.RogueSurvivor.Engine
 		  string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(upgrade[choiceNumber - 1]))
 					 : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(upgrade[choiceNumber - 1]), skill_level));
           AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-          Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
+          upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
           AddMessagePressEnter();
           flag = false;
         }
@@ -9935,7 +9934,8 @@ namespace djack.RogueSurvivor.Engine
     {
       if (m_Rules.RollChance(33)) {
         AddMessage(new Data.Message(Session.Get.World.WeatherChanges(), Session.Get.WorldTime.TurnCounter, Color.White));
-        Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
+        // XXX \todo global event
+        Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
       } else
         AddMessage(new Data.Message("The weather stays the same.", Session.Get.WorldTime.TurnCounter, Color.White));
     }
@@ -12111,7 +12111,7 @@ namespace djack.RogueSurvivor.Engine
       string musicId = achievement.MusicID;
       string name = achievement.Name;
       string[] text = achievement.Text;
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
+      victor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
       if (!victor.IsPlayer) return;
       m_MusicManager.StopAll();
       m_MusicManager.Play(musicId);
@@ -12225,7 +12225,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
                 if (null != local_6) {
                   ShowSpecialDialogue(theActor, local_6);
-                  Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", theActor.Name));
+                  player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", theActor.Name));
                 }
                 Session.Get.ScriptStage_PoliceStationPrisoner = 1;
                 break;
@@ -12248,15 +12248,15 @@ namespace djack.RogueSurvivor.Engine
                   "  NO NOT ME! aAAAAAaaaa! NOT NOW! AAAGGGGGGGRRR \""
                 };
                 ShowSpecialDialogue(theActor, local_7);
-                Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Freed {0}.", theActor.Name));
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Freed {0}.", theActor.Name));
                 Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
-                Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
                 KillActor(null, theActor, "transformation");
                 map.TryRemoveCorpseOf(theActor);
                 Actor local_8 = Zombify(null, theActor, false);
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.ActionPoints = 0;   // this was warned, player should get the first move
-                Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 break;
@@ -12288,7 +12288,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!player.ActorScoring.HasVisited(player.Location.Map)) {
         player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
-        Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
+        player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
       }
       // XXX \todo should be for all actors
       if (null != Player.Controller.friends_in_FOV) foreach(var x in Player.Controller.friends_in_FOV) Player.ActorScoring.AddSighting(x.Value.Model.ID);
@@ -12366,7 +12366,7 @@ namespace djack.RogueSurvivor.Engine
       m_Player = newPlayerAvatar;
       m_CurrentMap = newPlayerAvatar.Location.Map;
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.StopAll();
