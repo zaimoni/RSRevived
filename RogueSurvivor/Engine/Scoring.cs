@@ -290,6 +290,7 @@ namespace djack.RogueSurvivor.Engine
   internal class ActorScoring
   {
     private readonly Actor m_Actor;
+    private readonly bool[] Achievements_completed = new bool[(int) Achievement.IDs._COUNT];
     private readonly Dictionary<GameActors.IDs, int> m_FirstKills = new Dictionary<GameActors.IDs, int>();
     private readonly Dictionary<GameActors.IDs, int> m_KillCounts = new Dictionary<GameActors.IDs, int>();
     private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
@@ -300,6 +301,9 @@ namespace djack.RogueSurvivor.Engine
     {
       m_Actor = src;
     }
+
+    public int TurnsSurvived { get { return m_Actor.Location.Map.LocalTime.TurnCounter-m_Actor.SpawnTime; } }
+    public int SurvivalPoints { get { return 2*TurnsSurvived; } }
 
     public void AddKill(Actor victim, int turn)
     {
@@ -322,6 +326,28 @@ namespace djack.RogueSurvivor.Engine
       }
       return ret;
     } }
+
+    public float DifficultyRating {
+      get {
+        return RogueGame.Options.DifficultyRating((GameFactions.IDs)m_Actor.Faction.ID);    // don't worry about reincarnation count with per-actor scoring
+      }
+    }
+
+    public int AchievementPoints { get {
+      int ret = 0;
+      Achievement.IDs i = Achievement.IDs._COUNT;
+      while(0 < i--) {
+        if (!Achievements_completed[(int)i]) continue;
+        ret += Session.Get.Scoring.GetAchievement(i).ScoreValue;
+      }
+      return ret;
+    } }
+
+    public int TotalPoints {
+      get {
+        return (int) ((double)DifficultyRating * (double) (KillPoints + SurvivalPoints + AchievementPoints));
+      }
+    }
 
     public void AddSighting(GameActors.IDs actorModelID)
     {
@@ -351,6 +377,30 @@ namespace djack.RogueSurvivor.Engine
     public void AddVisit(int turn, Map map)
     {
       lock (m_VisitedMaps) m_VisitedMaps.Add(map);
+    }
+
+    public int CompletedAchievementsCount { get {
+      return Achievements_completed.Count(x => x);
+    } }
+
+    public bool HasCompletedAchievement(Achievement.IDs id)
+    {
+      return Achievements_completed[(int) id];
+    }
+
+    public void SetCompletedAchievement(Achievement.IDs id)
+    {
+      Achievements_completed[(int) id] = true;
+    }
+
+    public void DescribeAchievements(TextFile textFile)
+    {
+      Achievement.IDs i = 0;
+      do {
+        Achievement achievement = Session.Get.Scoring.GetAchievement(i);
+        textFile.Append(Achievements_completed[(int)i] ? string.Format("- {0} for {1} points!", achievement.Name, achievement.ScoreValue)
+                                                       : string.Format("- Fail : {0}.", achievement.TeaseName));
+      } while(Achievement.IDs._COUNT > ++i);
     }
   }
 
