@@ -9446,7 +9446,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePostMortem()
     {
-      WorldTime worldTime = new WorldTime(Session.Get.Scoring.TurnsSurvived);
+      WorldTime worldTime = new WorldTime(Player.ActorScoring.TurnsSurvived);
       string str1 = HisOrHer(Player);
       string str2 = HimOrHer(Player);
       string name = Player.TheName.Replace("(YOU) ", "");
@@ -9464,7 +9464,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append("> SCORING");
       textFile.Append(string.Format("{0} scored a total of {1} points.", str1, Session.Get.Scoring.TotalPoints));
       textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Session.Get.Scoring.DifficultyRating)));
-      textFile.Append(string.Format("- {0} base points for survival.", Session.Get.Scoring.SurvivalPoints));
+      textFile.Append(string.Format("- {0} base points for survival.", Player.ActorScoring.SurvivalPoints));
       textFile.Append(string.Format("- {0} base points for kills.", Session.Get.Scoring.KillPoints));
       textFile.Append(string.Format("- {0} base points for achievements.", Session.Get.Scoring.AchievementPoints));
       textFile.Append(" ");
@@ -9486,7 +9486,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
-      if (Session.Get.Scoring.HasNoKills) {
+      if (0 >= Session.Get.Scoring.Kills.Count()) {
         textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", str1));
       } else {
         foreach (Scoring.KillData kill in Session.Get.Scoring.Kills) {
@@ -9550,7 +9550,7 @@ namespace djack.RogueSurvivor.Engine
       } // scoping brace
       textFile.Append(" ");
       textFile.Append("> EVENTS");
-      if (Session.Get.Scoring.HasNoEvents) {
+      if (0 >= Session.Get.Scoring.Events.Count()) {
         textFile.Append(string.Format("{0} had a quiet life. Or dull and boring.", str1));
       } else {
         foreach (Scoring.GameEventData @event in Session.Get.Scoring.Events)
@@ -9629,7 +9629,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (var skill in Player.Sheet.SkillTable.Skills)
           stringBuilder1.AppendFormat("{0}-{1} ", skill.Value, Skills.Name(skill.Key));
       }
-      if (!m_HiScoreTable.Register(HiScore.FromScoring(name, Session.Get.Scoring, stringBuilder1.ToString()))) return;
+      if (!m_HiScoreTable.Register(HiScore.FromScoring(name, Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
     }

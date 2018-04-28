@@ -43,9 +43,7 @@ namespace djack.RogueSurvivor.Engine
     public int StartScoringTurn { get { return m_StartScoringTurn; } }
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
     public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
-    public bool HasNoEvents { get { return m_Events.Count == 0; } }
     public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
-    public bool HasNoKills { get { return m_Kills.Count == 0; } }
     public int KillPoints { get { return m_KillPoints; } }
     public int SurvivalPoints { get { return 2 * (TurnsSurvived - StartScoringTurn); } }
 

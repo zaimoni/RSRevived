@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string Death { get; set; }
 
-    public static HiScore FromScoring(string name, Scoring sc, string skillsDescription)
+    public static HiScore FromScoring(string name, Scoring sc, ActorScoring asc, string skillsDescription)
     {
 #if DEBUG
       if (null == sc) throw new ArgumentNullException(nameof(sc));
@@ -44,9 +44,9 @@ namespace djack.RogueSurvivor.Engine
         Name = name,
         PlayingTime = sc.RealLifePlayingTime,
         SkillsDescription = skillsDescription,
-        SurvivalPoints = sc.SurvivalPoints,
+        SurvivalPoints = asc.SurvivalPoints,
         TotalPoints = sc.TotalPoints,
-        TurnSurvived = sc.TurnsSurvived
+        TurnSurvived = asc.TurnsSurvived
       };
     }
   }

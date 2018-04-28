@@ -123,6 +123,7 @@ namespace djack.RogueSurvivor.Data
     private int m_Infection;
     private Corpse m_DraggedCorpse;
     private List<Item> m_BoringItems;
+    public readonly Engine.ActorScoring ActorScoring;
 
     public ActorModel Model
     {
@@ -589,6 +590,7 @@ namespace djack.RogueSurvivor.Data
       m_SpawnTime = spawnTime;
       IsUnique = false;
       IsDead = false;
+      ActorScoring = new Engine.ActorScoring(this);
       OnModelSet();
     }
 
