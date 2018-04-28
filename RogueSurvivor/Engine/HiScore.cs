@@ -39,13 +39,13 @@ namespace djack.RogueSurvivor.Engine
       return new HiScore{
         AchievementPoints = sc.AchievementPoints,
         Death = sc.DeathReason,
-        DifficultyPercent = (int) (100.0 * (double) sc.DifficultyRating),
-        KillPoints = sc.KillPoints,
+        DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating),
+        KillPoints = asc.KillPoints,
         Name = name,
         PlayingTime = sc.RealLifePlayingTime,
         SkillsDescription = skillsDescription,
         SurvivalPoints = asc.SurvivalPoints,
-        TotalPoints = sc.TotalPoints,
+        TotalPoints = asc.TotalPoints,
         TurnSurvived = asc.TurnsSurvived
       };
     }

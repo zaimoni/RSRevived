@@ -15,49 +15,17 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Scoring
   {
-    private readonly Dictionary<GameActors.IDs, Scoring.KillData> m_Kills = new Dictionary<GameActors.IDs, Scoring.KillData>();
     private readonly List<GameEventData> m_Events = new List<GameEventData>();
-    public const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
-    private int m_StartScoringTurn;
     private int m_ReincarnationNumber;
-    private int m_KillPoints;
-    private DifficultySide m_Side;
 
     private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
-    public int TurnsSurvived;   // RogueGame: 3 write access
     public string DeathReason;  // RogueGame: 1 write access
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
-    public DifficultySide Side {
-      get {
-        return m_Side;
-      }
-      set { // 4 references in RogueGame
-        m_Side = value;
-      }
-    }
-
-    public int StartScoringTurn { get { return m_StartScoringTurn; } }
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
     public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
-    public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
-    public int KillPoints { get { return m_KillPoints; } }
-    public int SurvivalPoints { get { return 2 * (TurnsSurvived - StartScoringTurn); } }
 
     public int AchievementPoints { get { return Achievements.Sum(x => x.IsDone ? x.ScoreValue : 0); } }
-
-    public float DifficultyRating {
-      get { // Live.  Thus only valid to set with values calculated at reincarnation number 0; otherwise it's double-penalized
-        float ret = RogueGame.Options.DifficultyRating(DifficultySide.FOR_SURVIVOR == Session.Get.Scoring.Side ? GameFactions.IDs.TheCivilians : GameFactions.IDs.TheUndeads);
-        return ret / (float) (1 + m_ReincarnationNumber);
-      }
-    }
-
-    public int TotalPoints {
-      get {
-        return (int) ((double)DifficultyRating * (double) (m_KillPoints + SurvivalPoints + AchievementPoints));
-      }
-    }
 
     public int CompletedAchievementsCount { get { return Achievements.Count(x => x.IsDone); } }
 
@@ -99,9 +67,6 @@ namespace djack.RogueSurvivor.Engine
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
       m_Events.Clear();
-      m_Kills.Clear();
-      m_KillPoints = 0;
-      m_StartScoringTurn = gameTurn;
     }
 
     public void UseReincarnation()
@@ -137,89 +102,6 @@ namespace djack.RogueSurvivor.Engine
         else
           textFile.Append(string.Format("- Fail : {0}.", achievement.TeaseName));
       }
-    }
-
-    public static float ComputeDifficultyRating(GameOptions options, DifficultySide side, int reincarnationNumber)
-    {
-      float num1 = 1f;
-      if (!options.RevealStartingDistrict) num1 += 0.1f;
-      if (!options.NPCCanStarveToDeath) num1 += (DifficultySide.FOR_SURVIVOR==side ? -0.1f : 0.1f);
-      if (options.NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR) {
-        float num2 = (float) (options.NatGuardFactor - GameOptions.DEFAULT_NATGUARD_FACTOR) / (float)GameOptions.DEFAULT_NATGUARD_FACTOR;
-        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? -num2 : num2);
-      }
-      if (options.SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) {
-        float num2 = (float) (options.SuppliesDropFactor - GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) / (float)GameOptions.DEFAULT_SUPPLIESDROP_FACTOR;
-        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? -num2 : num2);
-      }
-      if (options.ZombifiedsUpgradeDays != GameOptions.ZupDays.THREE)
-      {
-        float num2 = 0.0f;
-        switch (options.ZombifiedsUpgradeDays)
-        {
-          case GameOptions.ZupDays.ONE:
-            num2 = 0.5f;
-            break;
-          case GameOptions.ZupDays.TWO:
-            num2 = 0.25f;
-            break;
-          case GameOptions.ZupDays.FOUR:
-            num2 -= 0.1f;
-            break;
-          case GameOptions.ZupDays.FIVE:
-            num2 -= 0.2f;
-            break;
-          case GameOptions.ZupDays.SIX:
-            num2 -= 0.3f;
-            break;
-          case GameOptions.ZupDays.SEVEN:
-            num2 -= 0.4f;
-            break;
-          case GameOptions.ZupDays.OFF:
-            num2 = -0.5f;
-            break;
-        }
-        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? num2 : -num2);
-      }
-      float num3 = (float) Math.Sqrt(GameOptions.DEFAULT_MAX_UNDEADS+ GameOptions.DEFAULT_MAX_CIVILIANS) / (GameOptions.DEFAULT_CITY_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE);
-      float num4 = ((float) Math.Sqrt((double) (options.MaxCivilians + options.MaxUndeads)) / (float) (options.CitySize * options.DistrictSize * options.DistrictSize) - num3) / num3;
-      float num5 = side != DifficultySide.FOR_SURVIVOR ? num1 - 0.99f * num4 : num1 + 0.99f * num4;
-      const float num6 = (float)(GameOptions.DEFAULT_MAX_UNDEADS) /(float)(GameOptions.DEFAULT_MAX_CIVILIANS);
-      float num7 = ((float) options.MaxUndeads / (float) options.MaxCivilians - num6) / num6;
-      float num8 = (float) (options.DayZeroUndeadsPercent - GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT) / (float)GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
-      float num9 = (float) (options.ZombieInvasionDailyIncrease - 5) / 5f;
-      float num10 = side != DifficultySide.FOR_SURVIVOR ? num5 - (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9) : num5 + (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9);
-      const float num11 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_ZOMBIFICATION_CHANCE);
-      float num12 = ((float) (options.MaxCivilians * options.ZombificationChance) - num11) / num11;
-      const float num13 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
-      float num14 = ((float) (options.MaxCivilians * options.StarvedZombificationChance) - num13) / num13;
-      if (!options.NPCCanStarveToDeath)
-        num14 = -1f;
-      float num15 = side != DifficultySide.FOR_SURVIVOR ? num10 - (float) (0.3 * (double) num12 + 0.2 * (double) num14) : num10 + (float) (0.3 * (double) num12 + 0.2 * (double) num14);
-
-      if (!options.AllowUndeadsEvolution && Session.Get.HasEvolution) num15 *= (DifficultySide.FOR_SURVIVOR==side ? 0.5f : 2f);
-      if (options.IsCombatAssistantOn) num15 *= 0.75f;
-      if (options.IsPermadeathOn) num15 *= 2f;
-      if (!options.IsAggressiveHungryCiviliansOn) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 0.5f : 2f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.RatsUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.1f : 0.9f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.SkeletonsUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.2f : 0.8f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.ShamblersUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.25f : 0.75f);
-
-      return Math.Max(num15 / (float) (1 + reincarnationNumber), 0.0f);
-    }
-
-    public void AddKill(Actor player, Actor victim, int turn)
-    {
-      GameActors.IDs id = victim.Model.ID;
-      if (m_Kills.TryGetValue(id, out KillData killData)) {
-        ++killData.Amount;
-      } else {
-        m_Kills.Add(id, new KillData(id, turn));
-        AddEvent(turn, string.Format("Killed first {0}.", Models.Actors[(int)id].Name));
-      }
-      m_KillPoints += Models.Actors[(int)id].ScoreValue;
-      if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[(int)id].Abilities.IsUndead) return;
-      m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
     }
 
     public void AddEvent(int turn, string text)
@@ -296,6 +178,18 @@ namespace djack.RogueSurvivor.Engine
       }
       return ret;
     } }
+
+    public void DescribeKills(TextFile textFile, string he_or_she /* XXX \todo calculate from m_Actor */)
+    {
+      if (0 >= m_KillCounts.Count) {
+        textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", he_or_she));
+      } else {
+        foreach (var kill in m_KillCounts) {
+          string str3 = kill.Value > 1 ? Models.Actors[(int)kill.Key].PluralName : Models.Actors[(int)kill.Key].Name;
+          textFile.Append(string.Format("{0,4} {1}.", kill.Value, str3));
+        }
+      }
+    }
 
     public float DifficultyRating {
       get {

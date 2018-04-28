@@ -1364,7 +1364,6 @@ namespace djack.RogueSurvivor.Engine
       // XXX \todo should do this for all actors
       Player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
-      Session.Get.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
@@ -1516,7 +1515,7 @@ namespace djack.RogueSurvivor.Engine
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
         gy += 2*BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_SURVIVOR, 0)), (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheCivilians)), (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheUndeads))), gx, gy, new Color?());
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
         DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
@@ -2975,7 +2974,6 @@ namespace djack.RogueSurvivor.Engine
       m_Player = player;
       SetCurrentMap(player.Location.Map);  // multi-PC support
       ComputeViewRect(player.Location.Position);
-      Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
 
       GC.Collect(); // force garbage collection when things should be slow anyway
 
@@ -9407,7 +9405,6 @@ namespace djack.RogueSurvivor.Engine
 
       List<Zone> zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
 
-      Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
       Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
 
       Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
@@ -9452,7 +9449,6 @@ namespace djack.RogueSurvivor.Engine
       string str2 = HimOrHer(Player);
       string name = Player.TheName.Replace("(YOU) ", "");
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
-      Session.Get.Scoring.Side = Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       var textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
@@ -9463,10 +9459,10 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} was reincarnation {1}.", str1, Session.Get.Scoring.ReincarnationNumber));
       textFile.Append(" ");
       textFile.Append("> SCORING");
-      textFile.Append(string.Format("{0} scored a total of {1} points.", str1, Session.Get.Scoring.TotalPoints));
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Session.Get.Scoring.DifficultyRating)));
+      textFile.Append(string.Format("{0} scored a total of {1} points.", str1, Player.ActorScoring.TotalPoints));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
       textFile.Append(string.Format("- {0} base points for survival.", Player.ActorScoring.SurvivalPoints));
-      textFile.Append(string.Format("- {0} base points for kills.", Session.Get.Scoring.KillPoints));
+      textFile.Append(string.Format("- {0} base points for kills.", Player.ActorScoring.KillPoints));
       textFile.Append(string.Format("- {0} base points for achievements.", Session.Get.Scoring.AchievementPoints));
       textFile.Append(" ");
       textFile.Append("> ACHIEVEMENTS");
@@ -9487,14 +9483,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("{0} in {1}.", Session.Get.Scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
-      if (0 >= Session.Get.Scoring.Kills.Count()) {
-        textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", str1));
-      } else {
-        foreach (Scoring.KillData kill in Session.Get.Scoring.Kills) {
-          string str3 = kill.Amount > 1 ? Models.Actors[(int)kill.ActorModelID].PluralName : Models.Actors[(int)kill.ActorModelID].Name;
-          textFile.Append(string.Format("{0,4} {1}.", kill.Amount, str3));
-        }
-      }
+      Player.ActorScoring.DescribeKills(textFile, str1);
       if (!Player.Model.Abilities.IsUndead && Player.MurdersCounter > 0)
         textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(Player.MurdersCounter)));
       textFile.Append(" ");
@@ -9559,7 +9548,7 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Session.Get.Scoring.DifficultyRating)));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
       if (s_Options.IsPermadeathOn)
         textFile.Append(string.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
       if (!s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution)
@@ -9948,7 +9937,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static void PlayerKill(Actor victim)
     {
-      Session.Get.Scoring.AddKill(Player, victim, Session.Get.WorldTime.TurnCounter);
+      Player.ActorScoring.AddKill(victim, Session.Get.WorldTime.TurnCounter);
     }
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
@@ -10047,7 +10036,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(WeatherStatusText(), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
-                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Session.Get.Scoring.TotalPoints, (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
+                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Player.ActorScoring.TotalPoints, (int)(100.0 * (double)s_Options.DifficultyRating((GameFactions.IDs)Player.Faction.ID)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                 if (null != Player) {
                   if (Player.MurdersCounter > 0)
@@ -11324,7 +11313,6 @@ namespace djack.RogueSurvivor.Engine
     {
       m_MusicManager.IsMusicEnabled = s_Options.PlayMusic;
       m_MusicManager.Volume = s_Options.MusicVolume;
-      Session.Get.Scoring.Side = Player == null || !Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
       if (m_MusicManager.IsMusicEnabled) return;
       m_MusicManager.StopAll();
     }
@@ -12373,7 +12361,6 @@ namespace djack.RogueSurvivor.Engine
       m_CurrentMap = newPlayerAvatar.Location.Map;
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
-      Session.Get.Scoring.Side = Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.StopAll();
