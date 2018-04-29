@@ -9240,8 +9240,10 @@ namespace djack.RogueSurvivor.Engine
       else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);
 #endif
       if (Session.Get.HasCorpses && !deadGuy.Model.Abilities.IsUndead) DropCorpse(deadGuy);
-      if (killer != null) ++killer.KillsCount;
-      if (killer == Player) PlayerKill(deadGuy);
+      if (killer != null) {
+        ++killer.KillsCount;
+        killer.ActorScoring.AddKill(deadGuy, Session.Get.WorldTime.TurnCounter);
+      }
       if (killer != null && Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
         ActorModel actorModel = CheckUndeadEvolution(killer);
         if (actorModel != null) {
@@ -9949,11 +9951,6 @@ namespace djack.RogueSurvivor.Engine
         Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
       } else
         AddMessage(new Data.Message("The weather stays the same.", Session.Get.WorldTime.TurnCounter, Color.White));
-    }
-
-    private static void PlayerKill(Actor victim)
-    {
-      Player.ActorScoring.AddKill(victim, Session.Get.WorldTime.TurnCounter);
     }
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)

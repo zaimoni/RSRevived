@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
       AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
     }
 
-    public bool HasSighted(GameActors.IDs actorModelID)
+    public bool HasSighted(GameActors.IDs actorModelID) // this only *has* to work for Jason Myers, and it controls UI text
     {
       return m_Sightings.Contains(actorModelID);
     }
