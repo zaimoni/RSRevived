@@ -9691,12 +9691,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.StopAll();
       }
       CheckWeatherChange();
-      if (Player.Model.Abilities.IsUndead) return;
-      // XXX \todo reimplement these
-      if (Session.Get.WorldTime.Day == 7) ShowNewAchievement(Achievement.IDs.REACHED_DAY_07, Player);
-      else if (Session.Get.WorldTime.Day == 14) ShowNewAchievement(Achievement.IDs.REACHED_DAY_14, Player);
-      else if (Session.Get.WorldTime.Day == 21) ShowNewAchievement(Achievement.IDs.REACHED_DAY_21, Player);
-      else if (Session.Get.WorldTime.Day == 28) ShowNewAchievement(Achievement.IDs.REACHED_DAY_28, Player);
+      StayingAliveAchievements(Player);
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
@@ -12144,6 +12139,19 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       AddMessagePressEnter();
       ClearOverlays();
+    }
+
+    private void StayingAliveAchievements(Actor victor) {
+      if (victor.Model.Abilities.IsUndead) return;
+      int origin = new WorldTime(victor.SpawnTime).Day;
+      int now = Session.Get.WorldTime.Day;
+      switch(now-origin) {
+        case 7:  ShowNewAchievement(Achievement.IDs.REACHED_DAY_07, victor); return;
+        case 14: ShowNewAchievement(Achievement.IDs.REACHED_DAY_14, victor); return;
+        case 21: ShowNewAchievement(Achievement.IDs.REACHED_DAY_21, victor); return;
+        case 28: ShowNewAchievement(Achievement.IDs.REACHED_DAY_28, victor); return;
+        default: return;
+      }
     }
 
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
