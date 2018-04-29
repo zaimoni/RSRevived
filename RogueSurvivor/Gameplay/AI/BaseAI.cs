@@ -404,11 +404,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
     {
       reason = "";
+      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap
       bool isInside = map.IsInsideAt(pos);
+      // not really ... z just heals up on the corpse
       if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
+      // These all have the same problem: z will wander right over the trap no matter what when scent-tracking.
+      // What is important is ability of livings to avoid the trap.
+      // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
-        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
+        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";  // XXX re-fetches the object
         else if (map.HasExitAt(pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
