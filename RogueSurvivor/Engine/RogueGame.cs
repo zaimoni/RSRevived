@@ -9316,9 +9316,16 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
 
       // achievement: killing the Sewers Thing
-      if (Player == killer || Player == killer?.Leader) {
-        // XXX \todo reimplement this
-        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, Player);
+      // XXX \todo this achievement is newsworthy.
+      if (null != killer && deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
+        ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
+        var clan = killer.ChainOfCommand;
+        if (null != clan && killer.Controller is ObjectiveAI ai) {
+          foreach(Actor a in clan) {
+            if (!ai.InCommunicationWith(a) && killer.LiveLeader!=a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
+            ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
+          }
+        }
       }
 
       if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
@@ -12116,11 +12123,11 @@ namespace djack.RogueSurvivor.Engine
     {
       victor.ActorScoring.SetCompletedAchievement(id);
       Achievement achievement = Session.Get.Scoring.GetAchievement(id);
-      string musicId = achievement.MusicID;
       string name = achievement.Name;
-      string[] text = achievement.Text;
       victor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
       if (!victor.IsPlayer) return;
+      string musicId = achievement.MusicID;
+      string[] text = achievement.Text;
       m_MusicManager.StopAll();
       m_MusicManager.Play(musicId);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
