@@ -362,6 +362,126 @@ namespace djack.RogueSurvivor
       m_GameCanvas.DrawTile(x, y);
     }
 
+        // alpha10
+        public void UI_DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
+        {
+            /////////////////
+            // Measure lines
+            /////////////////
+            int longestLineWidth = 0;
+            int totalLineHeight = 0;
+            Size[] linesSize = new Size[lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                linesSize[i] = TextRenderer.MeasureText(lines[i], m_BoldFont);
+                if (linesSize[i].Width > longestLineWidth)
+                    longestLineWidth = linesSize[i].Width;
+                totalLineHeight += linesSize[i].Height;
+            }
+
+            Size titleSize = TextRenderer.MeasureText(title, m_BoldFont);
+            if (titleSize.Width > longestLineWidth)
+                longestLineWidth = titleSize.Width;
+            totalLineHeight += titleSize.Height;
+            const int TITLE_BAR_LINE = 1;
+            totalLineHeight += TITLE_BAR_LINE;
+
+            ///////////////////
+            // Setup popup box
+            ///////////////////
+            const int BOX_MARGIN = 2;
+            Point boxPos = new Point(gx, gy);
+            Size boxSize = new Size(longestLineWidth + 2 * BOX_MARGIN, totalLineHeight + 2 * BOX_MARGIN);
+            Rectangle boxRect = new Rectangle(boxPos, boxSize);
+
+            //////////////////
+            // Draw popup box
+            //////////////////
+            m_GameCanvas.AddFilledRect(boxFillColor, boxRect);
+            m_GameCanvas.AddRect(boxBorderColor, boxRect);
+
+            //////////////
+            // Draw title
+            //////////////
+            int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.Width) / 2;
+            int titleY = boxPos.Y + BOX_MARGIN;
+            int titleLineY = titleY + titleSize.Height + TITLE_BAR_LINE;
+            m_GameCanvas.AddString(m_BoldFont, titleColor, title, titleX, titleY);
+            m_GameCanvas.AddLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
+
+            //////////////
+            // Draw lines
+            //////////////
+            int lineX = boxPos.X + BOX_MARGIN;
+            int lineY = titleLineY + TITLE_BAR_LINE;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                m_GameCanvas.AddString(m_BoldFont, textColor, lines[i], lineX, lineY);
+                lineY += linesSize[i].Height;
+            }
+        }
+
+        // alpha10
+        public void UI_DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy)
+        {
+            /////////////////
+            // Measure lines
+            /////////////////
+            int longestLineWidth = 0;
+            int totalLineHeight = 0;
+            Size[] linesSize = new Size[lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                linesSize[i] = TextRenderer.MeasureText(lines[i], m_BoldFont);
+                if (linesSize[i].Width > longestLineWidth)
+                    longestLineWidth = linesSize[i].Width;
+                totalLineHeight += linesSize[i].Height;
+            }
+
+            Size titleSize = TextRenderer.MeasureText(title, m_BoldFont);
+            if (titleSize.Width > longestLineWidth)
+                longestLineWidth = titleSize.Width;
+            totalLineHeight += titleSize.Height;
+            const int TITLE_BAR_LINE = 1;
+            totalLineHeight += TITLE_BAR_LINE;
+
+            ///////////////////
+            // Setup popup box
+            ///////////////////
+            const int BOX_MARGIN = 2;
+            Point boxPos = new Point(gx, gy);
+            Size boxSize = new Size(longestLineWidth + 2 * BOX_MARGIN, totalLineHeight + 2 * BOX_MARGIN);
+            Rectangle boxRect = new Rectangle(boxPos, boxSize);
+
+            //////////////////
+            // Draw popup box
+            //////////////////
+            m_GameCanvas.AddFilledRect(boxFillColor, boxRect);
+            m_GameCanvas.AddRect(boxBorderColor, boxRect);
+
+            //////////////
+            // Draw title
+            //////////////
+            int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.Width) / 2;
+            int titleY = boxPos.Y + BOX_MARGIN;
+            int titleLineY = titleY + titleSize.Height + TITLE_BAR_LINE;
+            m_GameCanvas.AddString(m_BoldFont, titleColor, title, titleX, titleY);
+            m_GameCanvas.AddLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
+
+            //////////////
+            // Draw lines
+            //////////////
+            int lineX = boxPos.X + BOX_MARGIN;
+            int lineY = titleLineY + TITLE_BAR_LINE;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                m_GameCanvas.AddString(m_BoldFont, colors[i], lines[i], lineX, lineY);
+                lineY += linesSize[i].Height;
+            }
+        }
+
     public void UI_ClearMinimap(Color color)
     {
       m_GameCanvas.ClearMinimap(color);
