@@ -170,6 +170,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
 #endif
+      m_Actor.IsRunning = false;    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
@@ -187,7 +188,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         SetOrder(null);
       }
-      m_Actor.IsRunning = false;
       m_Actor.Activity = Activity.IDLE; // backstop
 
       m_Exploration.Update(m_Actor.Location);
