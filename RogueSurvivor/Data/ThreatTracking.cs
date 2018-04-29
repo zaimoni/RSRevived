@@ -48,6 +48,12 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) { return _threats.ContainsKey(a); }
         }
 
+        public bool Any()
+        {
+          lock(_threats) { return 0<_threats.Count; }
+        }
+
+
 #if DEAD_FUNC
 		public List<Actor> ThreatAt(Location loc)
 		{

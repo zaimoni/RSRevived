@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return threats.ThreatWhere(m);
         }
 
-        if (0 >= combat_critical.Count && null != threats) pathing_targets = hunt_threat;
+        if (0 >= combat_critical.Count && null != threats && threats.Any()) pathing_targets = hunt_threat;
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
@@ -748,8 +748,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
-        if (0 < combat_critical.Count) pathing_targets = pathing_targets.Otherwise(hunt_threat);
-#endif
+        if (0 < combat_critical.Count && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+        if (null != pathing_targets) {
+          tmpAction = BehaviorPathTo(pathing_targets);
+          if (null!=tmpAction) return tmpAction;
+        }
+#else
         if (0 >= combat_critical.Count) {
           // hunt down threats -- works for police
 #if TIME_TURNS
@@ -876,6 +880,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (null != tmpAction) return tmpAction;
         }
+#endif
       }
 #endregion
 
