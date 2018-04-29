@@ -404,7 +404,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
     {
       reason = "";
-      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap
+      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap.  Other two calls don't have a corresponding object re-fetch.
       bool isInside = map.IsInsideAt(pos);
       // not really ... z just heals up on the corpse
       if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
-        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";  // XXX re-fetches the object
+        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
         else if (map.HasExitAt(pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;

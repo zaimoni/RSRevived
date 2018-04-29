@@ -1545,6 +1545,25 @@ retry:
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
+    public void RemoveAt<T>(IEnumerable<T> src, Point position) where T:Item
+    {
+#if DEBUG
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
+      if (null==src) return;
+      Inventory itemsAt = GetItemsAt(position);
+#if DEBUG
+      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt));
+#endif
+      foreach(T it in src) {
+#if DEBUG
+        if (!itemsAt.Contains(it)) throw new InvalidOperationException("item not at this position");
+#endif
+        itemsAt.RemoveAllQuantity(it);
+      }
+      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
+    }
+
     // Clairvoyant.
     public bool TakeItemType(Gameplay.GameItems.IDs id, Inventory dest)
     {
@@ -1595,10 +1614,23 @@ retry:
       if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
     }
 
+    public void RemoveAtExt<T>(IEnumerable<T> src, Point position) where T:Item
+    {
+      if (null == src) return;
+      if (IsInBounds(position)) {
+        RemoveAt(src,position);
+        return;
+      }
+      Location? test = Normalize(position);
+      if (null != test) test.Value.Map.RemoveAt(src, test.Value.Position);
+    }
+
+#if DEAD_FUNC
     public void RemoveItemAt(Item it, int x, int y)
     {
       RemoveItemAt(it, new Point(x, y));
     }
+#endif
 
     /// <remark>Map generation depends on this being no-fail</remark>
     public void RemoveAllItemsAt(Point position)

@@ -7223,10 +7223,7 @@ namespace djack.RogueSurvivor.Engine
           (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
         }
       }
-      if (null != trapList) {
-        foreach (ItemTrap it in trapList)
-          map.RemoveItemAt(it, position);
-      }
+      map.RemoveAt(trapList, position);
       if (0 >= actor.HitPoints) KillActor(null, actor, "trap");
     }
 
@@ -7249,12 +7246,8 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
-          if (objList != null) {
-            foreach (Item it in objList)
-              map.RemoveItemAt(it, position);
-          }
-          if (canLeave && flag)
-            UntriggerAllTrapsHere(actor.Location);
+          map.RemoveAt(objList, position);
+          if (canLeave && flag) UntriggerAllTrapsHere(actor.Location);
         }
       }
       bool visible = ForceVisibleToPlayer(actor);
@@ -7323,9 +7316,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (objList == null) return;
-      foreach (Item it in objList)
-        map.RemoveItemAt(it, pos);
+      map.RemoveAt(objList,pos);
     }
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
@@ -8094,8 +8085,7 @@ namespace djack.RogueSurvivor.Engine
           if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
             objList.Add(obj);
         }
-        foreach (Item it in objList)
-          map.RemoveItemAtExt(it, location.Position);
+        map.RemoveAtExt(objList, location.Position);
       }
       if (blast.CanDamageObjects) {
         MapObject mapObjectAt = map.GetMapObjectAt(location.Position);
