@@ -155,6 +155,7 @@
     <Compile Include="Engine\Actions\ActionButcher.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />
+    <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
     <Compile Include="RogueForm.cs">
       <SubType>Form</SubType>
     </Compile>

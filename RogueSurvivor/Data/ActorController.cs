@@ -22,6 +22,8 @@ namespace djack.RogueSurvivor.Data
   {
     protected Actor m_Actor;
 
+    public Actor ControlledActor { get { return m_Actor; } } // alpha10
+
     public virtual void TakeControl(Actor actor)
     {
       m_Actor = actor;
