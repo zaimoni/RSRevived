@@ -701,6 +701,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
 #region floodfill pathfinder
       if (null != _legal_steps) {
+        // advanced pathing ultimately reduces to various flavors of calls to (specializations) of 
+        // public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
 #endif
@@ -715,6 +717,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 #endif
 
+#if PROTOTYPE
+        Func<Map,HashSet<Point>> pathing_targets = null;
+        ThreatTracking threats = m_Actor.Threats;
+        HashSet<Point> hunt_threat(Map m) {
+          if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>();
+          return threats.ThreatWhere(m);
+        }
+
+        if (0 >= combat_critical.Count && null != threats) pathing_targets = hunt_threat;
+
+        LocationSet sights_to_see = m_Actor.InterestingLocs;
+        HashSet<Point> tourism(Map m) {
+          return sights_to_see.In(m);
+        }
+        if (null != sights_to_see) pathing_targets = pathing_targets.Union(tourism);
+
+        HashSet<Point> generators(Map m) {
+          if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap==m) return new HashSet<Point>();  // plot-sensitive; if recharging there's a much closer one to the surface
+          if (WantToRecharge()) return new HashSet<Point>(m.PowerGenerators.Get.Select(obj => obj.Location.Position));
+          if (generators_off?.Any() ?? false) return new HashSet<Point>(generators_off.Select(obj => obj.Location.Position));
+          return new HashSet<Point>();
+        }
+
+        if (HasBehaviorThatRecallsToSurface) pathing_targets = pathing_targets.Union(generators);
+
+        HashSet<Point> resupply_want(Map m)
+        {
+          return WhereIs(want,m);
+        }
+
+        if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
+        if (0 < combat_critical.Count) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+#endif
         if (0 >= combat_critical.Count) {
           // hunt down threats -- works for police
 #if TIME_TURNS

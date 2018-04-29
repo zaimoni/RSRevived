@@ -328,6 +328,33 @@ namespace Zaimoni.Data
       foreach (T x in src) fn(x);
     }
 
+    // set theory operations
+    // we accept null as a shorthand for the function on domain T that returns constant empty set HashSet<U>
+    public static Func<T, HashSet<U>> Union<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
+    {
+       if (null == lhs) return rhs;
+       if (null == rhs) return lhs;
+       HashSet<U> ret(T src) {
+          var x = lhs(src);
+          x.UnionWith(rhs(src));
+          return x;
+       }
+       return ret;
+    }
+
+    // logic operation ... want to use rhs only if lhs has no targets
+    public static Func<T, HashSet<U>> Otherwise<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
+    {
+       if (null == lhs) return rhs;
+       if (null == rhs) return lhs;
+       HashSet<U> ret(T src) {
+          var x = lhs(src);
+          if (0<x.Count) return x;
+          return rhs(src);
+       }
+       return ret;
+    }
+
     // Some library classes have less than useful ToString() overrides.
     // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
     public static string to_s<T>(this HashSet<T> x) {
