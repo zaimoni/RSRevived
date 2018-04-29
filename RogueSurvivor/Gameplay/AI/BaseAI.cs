@@ -221,29 +221,89 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
+        // alpha10
+        /// <summary>
+        /// For intelligent npcs, additional cost to distance cost when chosing which adj tile to bump to.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        /// <see cref="BehaviorBumpToward(RogueGame, Point, bool, bool, Func{Point, Point, float})"/>
+        protected float EstimateBumpActionCost(Location loc, ActorAction action)
+        {
+            float cost = 0;
+
+            if (action is ActionBump) action = (action as ActionBump).ConcreteAction;
+            
+            // Consuming additional sta
+            if (m_Actor.Model.Abilities.CanTire) {
+                // jumping
+                if (action is ActionMoveStep) {
+                    MapObject mobj = loc.Map.GetMapObjectAt(loc.Position);
+                    if (mobj?.IsJumpable ?? false) cost = MOVE_DISTANCE_PENALTY;
+                }
+
+                // actions that always consume sta or may take more than one turn
+                if (action is ActionBashDoor || action is ActionBreak || action is ActionPush) cost = MOVE_DISTANCE_PENALTY;
+            }
+
+            return cost;
+        }
+
     protected ActorAction BehaviorBumpToward(Point goal, Func<Point, Point, float> distanceFn)
     {
 #if DEBUG
       if (null == distanceFn) throw new ArgumentNullException(nameof(distanceFn));
 #endif
-      ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir =>
-      {
-        Location location = m_Actor.Location + dir;
-        ActorAction a = Rules.IsBumpableFor(m_Actor, location);
+      ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir => {
+        Location next = m_Actor.Location + dir;
+        ActorAction a = Rules.IsBumpableFor(m_Actor, next);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
-            MapObject mapObjectAt = location.MapObject;
+            MapObject mapObjectAt = next.MapObject;
             if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
               Direction pushDir = RogueForm.Game.Rules.RollDirection();
               if (mapObjectAt.CanPushTo(mapObjectAt.Location.Position + pushDir))
                 return new ActionPush(m_Actor, mapObjectAt, pushDir);
             }
           }
+
+          const bool canCheckBreak = false;
+          const bool canCheckPush = false;
+          // alpha10 check special actions
+          if (canCheckBreak) {
+            MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
+            if (obj != null) {
+              if (m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
+            }
+          }
+          if (canCheckPush) {
+            MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
+            if (obj != null) {
+              if (m_Actor.CanPush(obj)) {
+                // push in a valid direction at random
+                List<Direction> validPushes = new List<Direction>(8);
+                foreach (Direction pushDir in Direction.COMPASS) {
+                  if (obj.CanPushTo(obj.Location.Position + pushDir)) validPushes.Add(pushDir);
+                }
+                if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, RogueForm.Game.Rules.DiceRoller.Choose(validPushes));
+              }
+            }
+          }
+
           return null;
         }
-        if (location.Position == goal || IsValidMoveTowardGoalAction(a)) return a;
+        if (next.Position == goal || IsValidMoveTowardGoalAction(a)) return a;
         return null;
-      }, dir => distanceFn(m_Actor.Location.Position + dir, goal), (a, b) => a < b);
+      }, (dir, action) => {
+        Location next = m_Actor.Location + dir;
+        float cost = distanceFn(next.Position, goal);
+
+        // alpha10 add action cost heuristic if npc is intelligent
+        if (!float.IsNaN(cost) && m_Actor.Model.Abilities.IsIntelligent) cost += EstimateBumpActionCost(next, action);
+
+        return cost;
+      }, (a, b) => a < b);
       if (choiceEval != null) return choiceEval.Choice;
       return null;
     }
@@ -254,7 +314,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (ptA == ptB) return 0.0f;
         float num = (float)Rules.StdDistance(ptA, ptB);
-        if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += 0.42f;
+        if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += MOVE_DISTANCE_PENALTY;
         return num;
       }));
     }
@@ -822,7 +882,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    static protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, _DATA_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
 #if DEBUG
       if (null == isChoiceValidFn) throw new ArgumentNullException(nameof(isChoiceValidFn));
@@ -837,7 +897,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
         if (null == choice) continue;
-        float f = evalChoiceFn(tmp);
+        float f = evalChoiceFn(tmp, choice);
         if (float.IsNaN(f)) continue;
         if (float.IsNaN(num)) {
           num = f;
