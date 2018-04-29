@@ -9691,7 +9691,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.StopAll();
       }
       CheckWeatherChange();
-      StayingAliveAchievements(Player);
+      Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
@@ -12145,6 +12145,7 @@ namespace djack.RogueSurvivor.Engine
       if (victor.Model.Abilities.IsUndead) return;
       int origin = new WorldTime(victor.SpawnTime).Day;
       int now = Session.Get.WorldTime.Day;
+      // XXX \todo these are notable achievements
       switch(now-origin) {
         case 7:  ShowNewAchievement(Achievement.IDs.REACHED_DAY_07, victor); return;
         case 14: ShowNewAchievement(Achievement.IDs.REACHED_DAY_14, victor); return;
@@ -12169,6 +12170,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
+      // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
       if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
         ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, player);
       if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {

@@ -60,6 +60,18 @@ namespace djack.RogueSurvivor.Data
       foreach(District d in m_DistrictsGrid) op(d);
     }
 
+    public void DoForAllActors(Action<Actor> op)
+    {
+#if DEBUG
+      if (null == op) throw new ArgumentNullException(nameof(op));
+#endif
+      foreach(District d in m_DistrictsGrid) {
+        foreach(Map m in d.Maps) {
+          foreach(Actor a in m.Actors) op(a);
+        }
+      }
+    }
+
     public World(int size)
     {
 #if DEBUG
