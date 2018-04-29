@@ -1211,17 +1211,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private int ItemRatingCode(ItemMeleeWeapon melee)
     {
-      Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-      if (m_Actor.MeleeWeaponAttack(melee.Model).Rating <= martial_arts.Rating) return 0;
+      int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
+      if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
       ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
       if (null == best) return 2;  // martial arts invalidates starting baton for police
-      if (best.Model.Attack.Rating < melee.Model.Attack.Rating) return 2;
-      if (best.Model.Attack.Rating > melee.Model.Attack.Rating) return 1;
+      if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return 2;
+      if (m_Actor.MeleeWeaponAttack(best.Model).Rating > rating) return 1;
       int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
       if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
         ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
-        return worst.Model.Attack.Rating < melee.Model.Attack.Rating ? 1 : 0;
+        return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
       }
       return 1;
     }
@@ -1425,16 +1425,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       {
       if (it is ItemMeleeWeaponModel melee) {
-        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-        if (m_Actor.MeleeWeaponAttack(melee).Rating <= martial_arts.Rating) return 0;
+        int rating = m_Actor.MeleeWeaponAttack(melee).Rating;
+        if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
         ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
         if (null == best) return 2;  // martial arts invalidates starting baton for police
-        if (best.Model.Attack.Rating < melee.Attack.Rating) return 2;
-        if (best.Model.Attack.Rating > melee.Attack.Rating) return 1;
+        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return 2;
+        if (m_Actor.MeleeWeaponAttack(best.Model).Rating > rating) return 1;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2 <= melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
-          return worst.Model.Attack.Rating < melee.Attack.Rating ? 1 : 0;
+          return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
         }
         return 1;
       }
@@ -1525,9 +1525,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {
-        int martial_arts_rating = m_Actor.UnarmedMeleeAttack().Rating;
-        int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model).Rating;
-        if (weapon_rating <= martial_arts_rating) return BehaviorDropItem(weapon);
+        if (m_Actor.MeleeWeaponAttack(weapon.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return BehaviorDropItem(weapon);
       }
 
       ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
@@ -1607,29 +1605,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (rhs is ItemMeleeWeapon rhs_melee)
         {
-        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-        if (m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating <= martial_arts.Rating) return false;
+        int rating = m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating;
+        if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
         ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
         if (null == best) return true;
-        if (best.Model.Attack.Rating < rhs_melee.Model.Attack.Rating) return true;
+        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
-          return worst.Model.Attack.Rating < rhs_melee.Model.Attack.Rating;
+          return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
-        if (lhs is ItemMeleeWeapon lhs_melee) return lhs_melee.Model.Attack.Rating < rhs_melee.Model.Attack.Rating;
+        if (lhs is ItemMeleeWeapon lhs_melee) return m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating < rating;
         return false;
         }
       else if (lhs is ItemMeleeWeapon lhs_melee) {
-        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-        if (m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating <= martial_arts.Rating) return true;
+        int rating = m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating;
+        if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
         ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
         if (null == best) return false;
-        if (best.Model.Attack.Rating < lhs_melee.Model.Attack.Rating) return false;
+        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return false;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
-          return worst.Model.Attack.Rating >= lhs_melee.Model.Attack.Rating;
+          return m_Actor.MeleeWeaponAttack(worst.Model).Rating >= rating;
         }
         return true;
       }
@@ -1709,7 +1707,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != melee) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
-          if (it is ItemMeleeWeapon new_melee && weapon.Model.Attack.Rating < new_melee.Model.Attack.Rating) return _BehaviorDropOrExchange(weapon, it, position);
+          if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, position);
         }
       }
 
@@ -2095,18 +2093,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return IsInterestingItem(am);
       }
       if (it is ItemMeleeWeapon melee) {
-        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-        if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
+        int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
+        if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
         ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
         if (null == best) return true;
-        if (best.Model.Attack.Rating < melee.Model.Attack.Rating) return true;
+        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
 #if DEBUG
         if (0 >= melee_count) throw new InvalidOperationException("inconstent return values");
 #endif        
         if (2<= melee_count) {
-          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
+          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
         return true;
       }

@@ -1485,14 +1485,19 @@ retry:
         int quantity = it.Quantity;
         int quantityAdded = itemsAt.AddAsMuchAsPossible(it);
         if (quantityAdded >= quantity) return;
+        // Hammerspace inventory is already gamey.  We can afford to be even more gamey if it makes things more playable.
         // ensure that legendary artifacts don't disappear (yes, could infinite-loop but there aren't that many artifacts)
         Item crushed = itemsAt.BottomItem;
-        itemsAt.RemoveAllQuantity(crushed);
         while(crushed.Model.IsUnbreakable || crushed.IsUnique) {
+          itemsAt.RemoveAllQuantity(crushed);
           itemsAt.AddAll(crushed);
           crushed = itemsAt.BottomItem;
-          itemsAt.RemoveAllQuantity(crushed);
         }
+        // the test game series ending with the savefile break on April 28 2018 had a number of stacks with lots of baseball bats.  If there are two or more
+        // destructible melee weapons in a stack, the worst one can be destroyed with minimal inconvenience.
+
+        // other (un)reality checks go here
+        itemsAt.RemoveAllQuantity(crushed);
         itemsAt.AddAsMuchAsPossible(it);
       }
       else

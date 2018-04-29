@@ -2604,8 +2604,9 @@ namespace djack.RogueSurvivor.Data
       if (null == melee) return null;
       if (1 == melee.Count) return melee[0];
       // some sort of invariant problem here
-      var ret = melee.Where(w=> !w.IsEquipped).Minimize(w=>w.Model.Attack.Rating);
-      if (null == ret) ret = melee.Minimize(w => w.Model.Attack.Rating);
+      // NOTE: martial arts influences the apparent rating considerably
+      var ret = melee.Where(w=> !w.IsEquipped).Minimize(w=> MeleeWeaponAttack(w.Model).Rating);
+      if (null == ret) ret = melee.Minimize(w => MeleeWeaponAttack(w.Model).Rating);
       return ret;
     }
 
