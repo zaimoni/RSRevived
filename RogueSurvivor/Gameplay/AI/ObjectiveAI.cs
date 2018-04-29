@@ -1213,10 +1213,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
       if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-      ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-      if (null == best) return 2;  // martial arts invalidates starting baton for police
-      if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return 2;
-      if (m_Actor.MeleeWeaponAttack(best.Model).Rating > rating) return 1;
+      int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+      if (null == best_rating) return 2;  // martial arts invalidates starting baton for police
+      if (best_rating < rating) return 2;
+      if (best_rating > rating) return 1;
       int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
       if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
@@ -1427,10 +1427,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemMeleeWeaponModel melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-        if (null == best) return 2;  // martial arts invalidates starting baton for police
-        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return 2;
-        if (m_Actor.MeleeWeaponAttack(best.Model).Rating > rating) return 1;
+        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        if (null == best_rating) return 2;  // martial arts invalidates starting baton for police
+        if (best_rating < rating) return 2;
+        if (best_rating > rating) return 1;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2 <= melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
@@ -1607,9 +1607,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
         int rating = m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
-        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-        if (null == best) return true;
-        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return true;
+        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        if (null == best_rating) return true;
+        if (best_rating.Value < rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
@@ -1621,9 +1621,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (lhs is ItemMeleeWeapon lhs_melee) {
         int rating = m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
-        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-        if (null == best) return false;
-        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return false;
+        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        if (null == best_rating) return false;
+        if (best_rating.Value < rating) return false;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
@@ -2095,9 +2095,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemMeleeWeapon melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
-        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-        if (null == best) return true;
-        if (m_Actor.MeleeWeaponAttack(best.Model).Rating < rating) return true;
+        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        if (null == best_rating) return true;
+        if (best_rating.Value < rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
 #if DEBUG
         if (0 >= melee_count) throw new InvalidOperationException("inconstent return values");

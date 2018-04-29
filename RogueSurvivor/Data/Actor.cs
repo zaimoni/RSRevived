@@ -871,7 +871,6 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
-    // does not properly account for martial arts
     public ItemMeleeWeapon GetBestMeleeWeapon()
     {
       if (Inventory == null) return null;
@@ -887,6 +886,22 @@ namespace djack.RogueSurvivor.Data
         itemMeleeWeapon1 = obj;
       }
       return itemMeleeWeapon1;
+    }
+
+    public int? GetBestMeleeWeaponRating()
+    {
+      if (Inventory == null) return null;
+      List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
+      if (null == tmp) return null;
+      int martial_arts_rating = UnarmedMeleeAttack().Rating;
+      int? ret = null;
+      foreach (ItemMeleeWeapon obj in tmp) {
+        int num2 = MeleeWeaponAttack(obj.Model).Rating;
+        if (num2 <= martial_arts_rating) continue;
+        if (null != ret && num2 <= ret.Value) continue;
+        ret = num2;
+      }
+      return ret;
     }
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
