@@ -47,6 +47,9 @@ namespace djack.RogueSurvivor.Engine
     void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawStringBold(ColorString text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+    // alpha10
+    void UI_DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+    void UI_DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy);
 
 #region Minimap painting
     void UI_ClearMinimap(Color color);

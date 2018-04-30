@@ -10985,6 +10985,17 @@ namespace djack.RogueSurvivor.Engine
       lock(m_Overlays) { m_Overlays.Clear(); }
     }
 
+    void RemoveOverlay(Overlay o)   // alpha10
+    {
+      lock (m_Overlays) { m_Overlays.Remove(o); }
+    }
+
+        
+    bool HasOverlay(Overlay o) // alpha10
+    {
+      lock (m_Overlays) { return m_Overlays.Contains(o); }
+    }
+
     private static Point MapToScreen(int x, int y)
     {
       return new Point((x - MapViewRect.Left) * TILE_SIZE, (y - MapViewRect.Top) * TILE_SIZE);
