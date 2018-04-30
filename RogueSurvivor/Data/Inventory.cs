@@ -123,12 +123,8 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       if (!IsFull) return true;
+      return HasAtLeastOneStackableWith(it);
 //    return GetItemsStackableWith(it, out int stackedQuantity) != null;
-      if (!it.Model.IsStackable) return false;
-      foreach (Item mItem in m_Items) {
-        if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped) return true;
-      }
-      return false;
     }
 
     public void RemoveAllQuantity(Item it)
@@ -170,6 +166,16 @@ namespace djack.RogueSurvivor.Data
         }
       }
       return objList;
+    }
+
+    bool HasAtLeastOneStackableWith(Item it) // alpha10
+    {
+      if (!it.Model.IsStackable) return false;
+
+      foreach (Item other in m_Items) {
+        if (other != it && other.Model == it.Model && other.CanStackMore && !other.IsEquipped) return true;
+      }
+      return false;
     }
 
     public Item GetBestDestackable(ItemModel it)

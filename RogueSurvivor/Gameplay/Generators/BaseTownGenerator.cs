@@ -1902,11 +1902,9 @@ restart:
 #if DEBUG
       if (null == surfaceMap) throw new ArgumentNullException(nameof(surfaceMap));
 #endif
-      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceMap.District.WorldPosition.X, surfaceMap.District.WorldPosition.Y), surfaceMap.District, 100, 100, Lighting.DARKNESS, true);
-      TileFill(underground, GameTiles.FLOOR_OFFICE, true);
-      TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
       Zone zone1 = null;
-      Point point1 = new Point();
+      Point surfaceExit = new Point();
+      {
       bool flag = false;
       do {
         // We do not want to evaluate this for each point in the office
@@ -1927,21 +1925,26 @@ restart:
         var candidates = new List<Point>();
         zone1.Bounds.DoForEach(pt => candidates.Add(pt),pt => surfaceMap.IsWalkable(pt));
         if (0 >= candidates.Count) continue;
-        point1 = m_DiceRoller.Choose(candidates);
+        surfaceExit = m_DiceRoller.Choose(candidates);
         flag = true;
       }
       while (!flag);
-      DoForEachTile(zone1.Bounds, (Action<Point>) (pt =>
-      {
+      }
+
+      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceExit.X, surfaceExit.Y), surfaceMap.District, 100, 100, Lighting.DARKNESS, true);
+      TileFill(underground, GameTiles.FLOOR_OFFICE, true);
+      TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
+
+      DoForEachTile(zone1.Bounds, pt => {
         if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
         surfaceMap.RemoveMapObjectAt(pt.X, pt.Y);
         DoorWindow doorWindow = MakeObjIronDoor();
         doorWindow.Barricade(Rules.BARRICADING_MAX);
         surfaceMap.PlaceAt(doorWindow, pt);
-      }));
+      });
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
-      AddExit(underground, point2, surfaceMap, point1, GameImages.DECO_STAIRS_UP, true);
-      AddExit(surfaceMap, point1, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP, true);
+      AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
       underground.ForEachAdjacent(point2, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
