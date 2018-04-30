@@ -1,69 +1,56 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: djack.RogueSurvivor.Engine.NullSoundManager
-// Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
-// Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class NullSoundManager : ISoundManager, IDisposable
-  {
-    public bool IsMusicEnabled { get; set; }
-
-    public int Volume { get; set; }
-
-    public bool Load(string musicname, string filename)
+    class NullSoundManager : IMusicManager
     {
-      return true;
-    }
+        #region Properties
+        public bool IsMusicEnabled { get; set; }
+        public int Volume { get; set; }
+        public int Priority { get; private set; }
+        public string Music { get; private set; }
+        public bool IsPlaying { get { return false; } }
+        public bool HasEnded { get { return true; } }
+        #endregion
 
-    public void Unload(string musicname)
-    {
-    }
+        #region Init
+        public NullSoundManager() { }
+        #endregion
 
-    public void Play(string musicname)
-    {
-    }
+        #region Loading music
+        public bool Load(string musicname, string filename) { return true;  }
 
-    public void PlayIfNotAlreadyPlaying(string musicname)
-    {
-    }
+        public void Unload(string musicname) { }
+        #endregion
 
-    public void PlayLooping(string musicname)
-    {
-    }
+        #region Playing music
 
-    public void ResumeLooping(string musicname)
-    {
-    }
+        public void Play(string musicname, int priority) { }
 
-    public void Stop(string musicname)
-    {
-    }
+        //public void PlayIfNotAlreadyPlaying(string musicname) { }
 
-    public void StopAll()
-    {
-    }
+        public void PlayLooping(string musicname, int priority) { }
 
-    public bool IsPlaying(string musicname)
-    {
-      return false;
-    }
+        public void Stop() { }
 
-    public bool IsPaused(string musicname)
-    {
-      return false;
-    }
+        //public void ResumeLooping(string musicname) { }
 
-    public bool HasEnded(string musicname)
-    {
-      return true;
-    }
+        //public void Stop(string musicname) { }
 
-    public void Dispose()
-    {
+        //public void StopAll() { }
+
+        //public bool IsPlaying(string musicname) { return false; }
+
+        //public bool IsPaused(string musicname) { return false;  }
+
+        //public bool HasEnded(string musicname) { return true;  }
+        #endregion
+
+        #region IDisposable
+        public void Dispose() { }
+        #endregion
     }
-  }
 }

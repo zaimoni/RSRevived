@@ -1,39 +1,82 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: djack.RogueSurvivor.Engine.ISoundManager
-// Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
-// Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal interface ISoundManager : IDisposable
-  {
-    bool IsMusicEnabled { get; set; }
+    // alpha10 Added concept of music priority, can play only one music at a time, renamed to MusicManager and
+    // some cleanup. Concrete classes updated.
 
-    int Volume { get; set; }
+    static class MusicPriority
+    {
+        /// <summary>
+        /// Lowest priority when not playing any music.
+        /// </summary>
+        public const int PRIORITY_NULL = 0;  // must be 0!
 
-    bool Load(string musicname, string filename);
+        /// <summary>
+        /// Medium priority for background musics.
+        /// </summary>
+        public const int PRIORITY_BGM = 1;
 
-    void Unload(string musicname);
+        /// <summary>
+        /// High priority for events musics.
+        /// </summary>
+        public const int PRIORITY_EVENT = 2;
+    }
 
-    void Play(string musicname);
+    interface IMusicManager : IDisposable
+    {
+        #region Properties
+        bool IsMusicEnabled { get; set; }
+        int Volume { get; set; }
+        // alpha10
+        int Priority { get; }
+        string Music { get; }
+        bool IsPlaying { get; }
+        bool HasEnded { get; }
+        #endregion
 
-    void PlayIfNotAlreadyPlaying(string musicname);
+        #region Loading music
+        bool Load(string musicname, string filename);
 
-    void PlayLooping(string musicname);
+        void Unload(string musicname);
+        #endregion
 
-    void ResumeLooping(string musicname);
+        #region Playing music
+        /// <summary>
+        /// Restart playing a music from the beginning if music is enabled.
+        /// </summary>
+        /// <param name="musicname"></param>
+        void Play(string musicname, int priority);
 
-    void Stop(string musicname);
+        /// <summary>
+        /// Start playing a music from the beginning if not already playing and if music is enabled.
+        /// </summary>
+        /// <param name="musicname"></param>
+        //void PlayIfNotAlreadyPlaying(string musicname, int priority);
 
-    void StopAll();
+        /// <summary>
+        /// Restart playing in a loop a music from the beginning if music is enabled.
+        /// </summary>
+        /// <param name="musicname"></param>
+        void PlayLooping(string musicname, int priority);
 
-    bool IsPlaying(string musicname);
+        //void ResumeLooping(string musicname, int priority);
 
-    bool IsPaused(string musicname);
+        // alpha10
+        void Stop();
 
-    bool HasEnded(string musicname);
-  }
+        //void Stop(string musicname);
+
+        //void StopAll();
+
+        //bool IsPlaying(string musicname);
+
+        //bool IsPaused(string musicname);
+
+        //bool HasEnded(string musicname);
+        #endregion
+    }
 }

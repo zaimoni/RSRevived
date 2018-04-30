@@ -10,13 +10,22 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class WAVSoundManager : ISoundManager,IDisposable
+  internal class WAVSoundManager : IMusicManager,IDisposable
     {
     private readonly Dictionary<string, SoundPlayer> m_Musics = new Dictionary<string, SoundPlayer>();
     private readonly Dictionary<string, SoundPlayer> m_PlayingMusics = new Dictionary<string, SoundPlayer>();
 
+    SoundPlayer m_CurrentAudio; // alpha10
+    bool m_IsPlaying = false;
+
     public bool IsMusicEnabled { get; set; }
     public int Volume { get; set; }
+    // alpha10
+    public string Music { get; private set; }
+    public int Priority { get; private set; }
+
+    public bool IsPlaying { get { return null != m_CurrentAudio && m_IsPlaying; } }
+    public bool HasEnded { get { return null != m_CurrentAudio && !m_IsPlaying; } }
 
     public WAVSoundManager()
     {
@@ -48,6 +57,23 @@ namespace djack.RogueSurvivor.Engine
       m_PlayingMusics.Remove(musicname);
     }
 
+    /// <summary>
+    /// Restart playing a music from the beginning if music is enabled.
+    /// </summary>
+    /// <param name="musicname"></param>
+    public void Play(string musicname, int priority)
+    {
+      if (!IsMusicEnabled) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
+      Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing music {0}.", musicname));
+      m_IsPlaying = true;
+      Music = musicname;
+      Priority = priority;
+      (m_CurrentAudio = music).PlaySync(); // XXX really should be in new thread but then we don't get feedback on sound termination
+      m_IsPlaying = false;
+    }
+
+#if OBSOLETE
     public void Play(string musicname)
     {
       if (!IsMusicEnabled) return;
@@ -65,7 +91,25 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_SOUND, string.Format("playing music {0}.", (object) musicname));
       audio.Play();
     }
+#endif
 
+    /// <summary>
+    /// Restart playing in a loop a music from the beginning if music is enabled.
+    /// </summary>
+    /// <param name="musicname"></param>
+    public void PlayLooping(string musicname, int priority)
+    {
+      if (!IsMusicEnabled) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
+      Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing looping music {0}.", musicname));
+//    music.Ending += new EventHandler(music_Ending);
+      m_IsPlaying = true;
+      Music = musicname;
+      Priority = priority;
+      (m_CurrentAudio = music).PlayLooping();
+    }
+
+#if OBSOLETE
     public void PlayLooping(string musicname)
     {
       if (!IsMusicEnabled) return;
@@ -83,7 +127,16 @@ namespace djack.RogueSurvivor.Engine
       audio.PlayLooping();
       m_PlayingMusics[musicname] = audio;
     }
+#endif
 
+    public void Stop()
+    {
+      if (null != m_CurrentAudio) m_CurrentAudio.Stop();
+      Music = "";
+      Priority = MusicPriority.PRIORITY_NULL;
+    }
+
+#if OBSOLETE
     public void Stop(string musicname)
     {
       if (!IsMusicEnabled) return;
@@ -119,6 +172,7 @@ namespace djack.RogueSurvivor.Engine
     {
       return true;
     }
+#endif
 
     protected void Dispose(bool disposing)
     {

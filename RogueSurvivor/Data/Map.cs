@@ -28,6 +28,7 @@ namespace djack.RogueSurvivor.Data
     public readonly int Seed;
     public readonly District District;
 	public readonly string Name;
+    private string m_BgMusic;  // alpha10
     private Lighting m_Lighting;
 	public readonly WorldTime LocalTime;
 	public readonly int Width;
@@ -77,6 +78,11 @@ namespace djack.RogueSurvivor.Data
       foreach(Map m in destination_maps.Get) {
         m.destination_maps.Recalc();
       }
+    }
+
+    public string BgMusic { // alpha10
+      get { return m_BgMusic; }
+      set { m_BgMusic = value; }    // retain this as we probably want to imposs access controls
     }
 
     public Lighting Lighting { get { return m_Lighting; } }
@@ -194,6 +200,7 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
+      m_BgMusic = (string)info.GetValue("m_BgMusic", typeof(string));   // alpha10
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList,_countUndead);
@@ -208,25 +215,26 @@ namespace djack.RogueSurvivor.Data
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("m_Seed", Seed);
-      info.AddValue("m_District", (object)District);
-      info.AddValue("m_Name", (object)Name);
-      info.AddValue("m_LocalTime", (object)LocalTime);
+      info.AddValue("m_District", District);
+      info.AddValue("m_Name", Name);
+      info.AddValue("m_LocalTime", LocalTime);
       info.AddValue("m_Width", Width);
       info.AddValue("m_Height", Height);
-      info.AddValue("m_Rectangle", (object)Rect);
-      info.AddValue("m_Exits", (object)m_Exits);
-      info.AddValue("m_Zones", (object)m_Zones);
-      info.AddValue("m_ActorsList", (object)m_ActorsList);
-      info.AddValue("m_MapObjectsList", (object)m_MapObjectsList);
-      info.AddValue("m_GroundItemsByPosition", (object)m_GroundItemsByPosition);
-      info.AddValue("m_CorpsesList", (object)m_CorpsesList);
-      info.AddValue("m_Lighting", (object)m_Lighting);
-      info.AddValue("m_ScentsByPosition", (object)m_ScentsByPosition);
-      info.AddValue("m_Timers", (object)m_Timers);
-      info.AddValue("m_TileIDs", (object)m_TileIDs);
-      info.AddValue("m_IsInside", (object)m_IsInside);
-      info.AddValue("m_Decorations", (object)m_Decorations);
-    }
+      info.AddValue("m_Rectangle", Rect);
+      info.AddValue("m_Exits", m_Exits);
+      info.AddValue("m_Zones", m_Zones);
+      info.AddValue("m_ActorsList", m_ActorsList);
+      info.AddValue("m_MapObjectsList", m_MapObjectsList);
+      info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
+      info.AddValue("m_CorpsesList", m_CorpsesList);
+      info.AddValue("m_Lighting", m_Lighting);
+      info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
+      info.AddValue("m_Timers", m_Timers);
+      info.AddValue("m_TileIDs", m_TileIDs);
+      info.AddValue("m_IsInside", m_IsInside);
+      info.AddValue("m_Decorations", m_Decorations);
+      info.AddValue("m_BgMusic", m_BgMusic);    // alpha10
+     }
 #endregion
 
     // once the peace walls are down, IsInBounds will refer to the actual map data.

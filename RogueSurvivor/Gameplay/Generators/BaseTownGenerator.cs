@@ -414,6 +414,10 @@ restart:
       }
 #endregion
 
+      // alpha10
+      // 10. Music.
+      sewers.BgMusic = GameMusics.SEWERS;
+
       district.SewersMap = sewers;
       return sewers;
     }
@@ -525,6 +529,10 @@ restart:
         }
       }
 #endregion
+
+      // alpha10
+      // 6. Music.
+      subway.BgMusic = GameMusics.SUBWAY;
 
       return subway;
     }
@@ -769,12 +777,18 @@ restart:
           if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           shopBasement.PlaceAt(CreateNewBasementRatZombie(0), pt);
         }));
-        Point point1 = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
+
+        // alpha10 music
+        shopBasement.BgMusic = GameMusics.SEWERS;
+
+        Point basementCorner = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
-        Point point2 = new Point(point1.X - 1 + rectangle.Left, point1.Y - 1 + rectangle.Top);
-        AddExit(shopBasement, point1, map, point2, GameImages.DECO_STAIRS_UP, true);
-        AddExit(map, point2, shopBasement, point1, GameImages.DECO_STAIRS_DOWN, true);
-        if (!map.HasMapObjectAt(point2)) map.RemoveMapObjectAt(point2.X, point2.Y);
+        Point shopCorner = new Point(basementCorner.X - 1 + rectangle.Left, basementCorner.Y - 1 + rectangle.Top);
+        AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP, true);
+        AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN, true);
+
+        if (!map.HasMapObjectAt(shopCorner)) map.RemoveMapObjectAt(shopCorner.X, shopCorner.Y);
+
         m_Params.District.AddUniqueMap(shopBasement);
       }
       return true;
@@ -1875,6 +1889,11 @@ restart:
           Session.Get.PoliceInvestigate.Record(basement, pt);
           return MakeObjShelf();
         }));
+
+      // alpha10
+      // music.
+      basement.BgMusic = GameMusics.SEWERS;
+
       return basement;
     }
 
@@ -2019,6 +2038,11 @@ restart:
         Actor newCharGuard = CreateNewCHARGuard(0);
         ActorPlace(m_DiceRoller, underground, newCharGuard, actor_ok_here);
       }
+
+      // alpha10
+      // 8. Music
+      underground.BgMusic = GameMusics.CHAR_UNDERGROUND_FACILITY;
+
       return underground;
     }
 
@@ -2435,41 +2459,51 @@ restart:
 #endif
       hospitalBlock = m_DiceRoller.Choose(freeBlocks);
       GenerateHospitalEntryHall(map, hospitalBlock);
-      Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
-      Map hospitalOffices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
-      Map hospitalPatients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, map.District);
-      Map hospitalStorage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, map.District);
-      Map hospitalPower = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, map.District);
-      Point point1 = new Point(hospitalBlock.InsideRect.Left + hospitalBlock.InsideRect.Width / 2, hospitalBlock.InsideRect.Top);
-      Point point2 = new Point(hospitalAdmissions.Width / 2, 1);
-      AddExit(map, point1, hospitalAdmissions, point2, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(hospitalAdmissions, point2, map, point1, GameImages.DECO_STAIRS_UP, true);
-      Point point3 = new Point(hospitalAdmissions.Width / 2, hospitalAdmissions.Height - 2);
-      Point point4 = new Point(hospitalOffices.Width / 2, 1);
-      AddExit(hospitalAdmissions, point3, hospitalOffices, point4, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(hospitalOffices, point4, hospitalAdmissions, point3, GameImages.DECO_STAIRS_UP, true);
-      Point point5 = new Point(hospitalOffices.Width / 2, hospitalOffices.Height - 2);
-      Point point6 = new Point(hospitalPatients.Width / 2, 1);
-      AddExit(hospitalOffices, point5, hospitalPatients, point6, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(hospitalPatients, point6, hospitalOffices, point5, GameImages.DECO_STAIRS_UP, true);
-      Point point7 = new Point(hospitalPatients.Width / 2, hospitalPatients.Height - 2);
-      Point point8 = new Point(1, 1);
-      AddExit(hospitalPatients, point7, hospitalStorage, point8, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(hospitalStorage, point8, hospitalPatients, point7, GameImages.DECO_STAIRS_UP, true);
-      Point point9 = new Point(hospitalStorage.Width - 2, 1);
-      Point point10 = new Point(1, 1);
-      AddExit(hospitalStorage, point9, hospitalPower, point10, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(hospitalPower, point10, hospitalStorage, point9, GameImages.DECO_STAIRS_UP, true);
-      m_Params.District.AddUniqueMap(hospitalAdmissions);
-      m_Params.District.AddUniqueMap(hospitalOffices);
-      m_Params.District.AddUniqueMap(hospitalPatients);
-      m_Params.District.AddUniqueMap(hospitalStorage);
-      m_Params.District.AddUniqueMap(hospitalPower);
-      Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap(hospitalAdmissions);
-      Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap(hospitalOffices);
-      Session.Get.UniqueMaps.Hospital_Patients = new UniqueMap(hospitalPatients);
-      Session.Get.UniqueMaps.Hospital_Storage = new UniqueMap(hospitalStorage);
-      Session.Get.UniqueMaps.Hospital_Power = new UniqueMap(hospitalPower);
+      Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
+      Map offices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
+      Map patients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, map.District);
+      Map storage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, map.District);
+      Map power = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, map.District);
+
+      // alpha10 music
+      admissions.BgMusic = offices.BgMusic = patients.BgMusic = storage.BgMusic = power.BgMusic = GameMusics.HOSPITAL;
+
+      Point entryStairs = new Point(hospitalBlock.InsideRect.Left + hospitalBlock.InsideRect.Width / 2, hospitalBlock.InsideRect.Top);
+      Point admissionsUpStairs = new Point(admissions.Width / 2, 1);
+      AddExit(map, entryStairs, admissions, admissionsUpStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(admissions, admissionsUpStairs, map, entryStairs, GameImages.DECO_STAIRS_UP, true);
+
+      Point admissionsDownStairs = new Point(admissions.Width / 2, admissions.Height - 2);
+      Point officesUpStairs = new Point(offices.Width / 2, 1);
+      AddExit(admissions, admissionsDownStairs, offices, officesUpStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(offices, officesUpStairs, admissions, admissionsDownStairs, GameImages.DECO_STAIRS_UP, true);
+
+      Point officesDownStairs = new Point(offices.Width / 2, offices.Height - 2);
+      Point patientsUpStairs = new Point(patients.Width / 2, 1);
+      AddExit(offices, officesDownStairs, patients, patientsUpStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(patients, patientsUpStairs, offices, officesDownStairs, GameImages.DECO_STAIRS_UP, true);
+
+      Point patientsDownStairs = new Point(patients.Width / 2, patients.Height - 2);
+      Point storageUpStairs = new Point(1, 1);
+      AddExit(patients, patientsDownStairs, storage, storageUpStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(storage, storageUpStairs, patients, patientsDownStairs, GameImages.DECO_STAIRS_UP, true);
+
+      Point storageDownStairs = new Point(storage.Width - 2, 1);
+      Point powerUpStairs = new Point(1, 1);
+      AddExit(storage, storageDownStairs, power, powerUpStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(power, powerUpStairs, storage, storageDownStairs, GameImages.DECO_STAIRS_UP, true);
+
+      m_Params.District.AddUniqueMap(admissions);
+      m_Params.District.AddUniqueMap(offices);
+      m_Params.District.AddUniqueMap(patients);
+      m_Params.District.AddUniqueMap(storage);
+      m_Params.District.AddUniqueMap(power);
+
+      Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap(admissions);
+      Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap(offices);
+      Session.Get.UniqueMaps.Hospital_Patients = new UniqueMap(patients);
+      Session.Get.UniqueMaps.Hospital_Storage = new UniqueMap(storage);
+      Session.Get.UniqueMaps.Hospital_Power = new UniqueMap(power);
     }
 
     private void GenerateHospitalEntryHall(Map surfaceMap, Block block)

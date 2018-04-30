@@ -38,7 +38,10 @@ namespace djack.RogueSurvivor.Data
     public bool AI_CanUseAIExits { get { return Flags.NONE != (m_Flags & Flags.AI_CAN_USE_AI_EXITS); } }
     public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
 
-#if FAIL
+#if OBSOLETE
+    ///// <summary>
+    ///// AI flag : tell some AIs to use the assault barricades behavior.
+    ///// </summary>
     public bool ZombieAI_AssaultBreakables { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_ASSAULT_BREAKABLES); } }  // XXX dead flag
 #endif
 

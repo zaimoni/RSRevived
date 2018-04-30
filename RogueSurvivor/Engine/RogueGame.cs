@@ -340,7 +340,7 @@ namespace djack.RogueSurvivor.Engine
     private static GameHintsStatus s_Hints = new GameHintsStatus();
     private readonly BaseTownGenerator m_TownGenerator;
     private bool m_PlayedIntro;
-    private readonly ISoundManager m_MusicManager;
+    private readonly IMusicManager m_MusicManager;
     private RogueGame.CharGen m_CharGen;
     private TextFile m_Manual;
     private int m_ManualLine;
@@ -659,7 +659,7 @@ namespace djack.RogueSurvivor.Engine
       LoadHiScoreTable();
       while (m_IsGameRunning)
         GameLoop();
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
       m_MusicManager.Dispose();
       m_UI.UI_DoQuit();
     }
@@ -839,9 +839,10 @@ namespace djack.RogueSurvivor.Engine
       const int gx1 = 0;
 
       Func<int,bool?> setup_handler = (c => {
-        if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro) {
-          m_MusicManager.StopAll();
-          m_MusicManager.Play(GameMusics.INTRO);
+        // music.
+        if (!m_PlayedIntro) {
+          m_MusicManager.Stop();
+          m_MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
           m_PlayedIntro = true;
         }
         gy1 = 0;
@@ -1420,8 +1421,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleCredits()
     {
-      m_MusicManager.StopAll();
-      m_MusicManager.PlayLooping(GameMusics.SLEEP);
+      m_MusicManager.Stop();
+      m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_BGM);
       m_UI.UI_Clear(Color.Black);
       DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
@@ -2071,8 +2072,8 @@ namespace djack.RogueSurvivor.Engine
                 Zombify(null, corpse.DeadGuy, false);
                 if (ForceVisibleToPlayer(map, corpse.Position)) {
                   AddMessage(new Data.Message("The "+corpse.ToString()+" rises again!!", map.LocalTime.TurnCounter, Color.Red));
-                  m_MusicManager.Play(GameSounds.UNDEAD_RISE);
-                }
+                  m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
+                                }
               }
             }
             foreach (Corpse c in corpseList3) map.Destroy(c);
@@ -2232,8 +2233,10 @@ namespace djack.RogueSurvivor.Engine
                 if (ForceVisibleToPlayer(actor))
                   AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", Conjugate(actor, VERB_WAKE_UP))));
                 if (actor.IsPlayer) {
-                  m_MusicManager.StopAll();
-                  m_MusicManager.Play(GameSounds.NIGHTMARE);
+                   // FIXME replace with sfx
+                   // alpha10 
+                   m_MusicManager.Stop();
+                   m_MusicManager.Play(GameSounds.NIGHTMARE, MusicPriority.PRIORITY_EVENT);
                 }
               }
             } else {
@@ -2249,8 +2252,12 @@ namespace djack.RogueSurvivor.Engine
               if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
                 DoWakeUp(actor);
               else if (actor.IsPlayer) {
-                if (m_MusicManager.IsPaused(GameMusics.SLEEP))
-                  m_MusicManager.ResumeLooping(GameMusics.SLEEP);
+                // check music.
+                if (m_MusicManager.Music != GameMusics.SLEEP) {
+                  m_MusicManager.Stop();
+                  m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
+                }
+                // message.
                 AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 RedrawPlayScreen();
                 Thread.Sleep(10);
@@ -2547,9 +2554,9 @@ namespace djack.RogueSurvivor.Engine
       if (map != Player.Location.Map || Player.IsSleeping || Player.Model.Abilities.IsUndead) return;
       if (unique.EventMessage != null) {
         if (unique.EventThemeMusic != null) {
-          m_MusicManager.StopAll();
-          m_MusicManager.Play(unique.EventThemeMusic);
-        }
+          m_MusicManager.Stop();
+          m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
+                }
         ClearMessages();
         AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location));
@@ -2596,8 +2603,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.NATGUARD, actor.Location.Position);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.ARMY);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("A National Guard squad has arrived!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Soldiers seem to come from", actor.Location));
@@ -2643,8 +2650,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.ARMY);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", new Location(map,dropPoint)));
@@ -2697,8 +2704,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.BIKER);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.BIKER, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You hear the sound of roaring engines!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Motorbikes seem to come from", actor.Location));
@@ -2726,8 +2733,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.GANGSTA);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.GANGSTA, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You hear obnoxious loud music!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Cars seem to come from", actor.Location));
@@ -2755,8 +2762,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.ARMY);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You hear a chopper flying over the city!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The chopper has dropped something", actor.Location));
@@ -2782,8 +2789,8 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(map, RaidType.SURVIVORS, actor.Location.Position);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.SURVIVORS);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.SURVIVORS, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You hear shooting and honking in the distance.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage("A van has stopped", actor.Location));
@@ -2972,7 +2979,7 @@ namespace djack.RogueSurvivor.Engine
     {
       StopSimThread();
       m_IsGameRunning = false;
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
     }
 
     private void HandlePlayerActor(Actor player)
@@ -3009,8 +3016,8 @@ namespace djack.RogueSurvivor.Engine
 #region Theme music
         foreach(var unique in Session.Get.UniqueActors.ToArray()) {
           if (null == unique.EventThemeMusic) continue;
-          if (unique.TheActor==player || null!=player.Sees(unique.TheActor)) m_MusicManager.PlayIfNotAlreadyPlaying(unique.EventThemeMusic);
-          else if (m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Stop(unique.EventThemeMusic);
+          if ((unique.TheActor==player || null!=player.Sees(unique.TheActor)) && m_MusicManager.Music != unique.EventThemeMusic) m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
+          else if (m_MusicManager.Music==unique.EventThemeMusic) m_MusicManager.Stop();
         }
 #endregion
 
@@ -4128,7 +4135,9 @@ namespace djack.RogueSurvivor.Engine
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) {
         AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name)));
-        m_MusicManager.Play(GameSounds.UNDEAD_EAT);
+        // alpha10 replace with sfx
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
       }
       if (c.TakeDamage(num)) {
         a.Location.Map.Destroy(c);
@@ -4713,8 +4722,9 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("Goodnight, happy nightmares!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       DoStartSleeping(player);
       RedrawPlayScreen();
-      m_MusicManager.StopAll();
-      m_MusicManager.PlayLooping(GameMusics.SLEEP);
+      // check music.
+      m_MusicManager.Stop();
+      m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
       return true;
     }
 
@@ -9056,8 +9066,8 @@ namespace djack.RogueSurvivor.Engine
       actor.IsSleeping = false;
       if (ForceVisibleToPlayer(actor))
       AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
-      if (!actor.IsPlayer) return;
-      m_MusicManager.StopAll();
+      // stop sleep music if player.
+      if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
 
     private void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
@@ -9415,8 +9425,8 @@ namespace djack.RogueSurvivor.Engine
     {
       StopSimThread();
       m_UI.UI_SetCursor(null);
-      m_MusicManager.StopAll();
-      m_MusicManager.Play(GameMusics.PLAYER_DEATH);
+      m_MusicManager.Stop();
+      m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
 
       List<Zone> zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
 
@@ -9449,7 +9459,7 @@ namespace djack.RogueSurvivor.Engine
       }
       AddMessagePressEnter();
       HandlePostMortem();
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
     }
 
     static private string TimeSpanToString(TimeSpan rt)
@@ -9648,8 +9658,8 @@ namespace djack.RogueSurvivor.Engine
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(Player.Model)) return;
       ClearOverlays();
       AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
-      m_MusicManager.StopAll();
-      m_MusicManager.Play(GameMusics.INTERLUDE);
+      m_MusicManager.Stop();
+      m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
       ClearMessages();
       AddMessage(new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green));
       Player.Controller.UpdateSensors();
@@ -9659,7 +9669,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("Welcome to the night.", Session.Get.WorldTime.TurnCounter, Color.White));
       ClearOverlays();
       RedrawPlayScreen();
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
     }
 
     private void OnNewDay()
@@ -9667,8 +9677,8 @@ namespace djack.RogueSurvivor.Engine
       if (!Player.Model.Abilities.IsUndead) {
         ClearOverlays();
         AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
-        m_MusicManager.StopAll();
-        m_MusicManager.Play(GameMusics.INTERLUDE);
+        m_MusicManager.Stop();
+        m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green));
         Player.Controller.UpdateSensors();
@@ -9678,7 +9688,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("Welcome to tomorrow.", Session.Get.WorldTime.TurnCounter, Color.White));
         ClearOverlays();
         RedrawPlayScreen();
-        m_MusicManager.StopAll();
+        m_MusicManager.Stop();
       }
       CheckWeatherChange();
       Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));
@@ -11330,7 +11340,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.IsMusicEnabled = s_Options.PlayMusic;
       m_MusicManager.Volume = s_Options.MusicVolume;
       if (m_MusicManager.IsMusicEnabled) return;
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
     }
 
     private void LoadKeybindings()
@@ -11958,23 +11968,9 @@ namespace djack.RogueSurvivor.Engine
     private void SetCurrentMap(Map map)
     {
       m_CurrentMap = map;
-      if (map == map.District.SewersMap) {
-        m_MusicManager.Stop(GameMusics.SUBWAY);
-        m_MusicManager.Stop(GameMusics.HOSPITAL);
-        if (!m_MusicManager.IsPlaying(GameMusics.SEWERS)) m_MusicManager.PlayLooping(GameMusics.SEWERS);
-      } else if (map == map.District.SubwayMap) {
-        m_MusicManager.Stop(GameMusics.SEWERS);
-        m_MusicManager.Stop(GameMusics.HOSPITAL);
-        if (!m_MusicManager.IsPlaying(GameMusics.SUBWAY)) m_MusicManager.PlayLooping(GameMusics.SUBWAY);
-      } else if (map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap || map == Session.Get.UniqueMaps.Hospital_Offices.TheMap || (map == Session.Get.UniqueMaps.Hospital_Patients.TheMap || map == Session.Get.UniqueMaps.Hospital_Power.TheMap) || map == Session.Get.UniqueMaps.Hospital_Storage.TheMap) {
-        m_MusicManager.Stop(GameMusics.SEWERS);
-        m_MusicManager.Stop(GameMusics.SUBWAY);
-        if (!m_MusicManager.IsPlaying(GameMusics.HOSPITAL)) m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
-      } else {
-        m_MusicManager.Stop(GameMusics.SEWERS);
-        m_MusicManager.Stop(GameMusics.SUBWAY);
-        m_MusicManager.Stop(GameMusics.HOSPITAL);
-      }
+
+      // alpha10 update background music
+      UpdateBgMusic();
     }
 
 #if OBSOLETE
@@ -11989,7 +11985,7 @@ namespace djack.RogueSurvivor.Engine
     private void BeforePlayerEnterDistrict(District district)
     {
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
-        m_MusicManager.StopAll();
+        m_MusicManager.Stop();
         m_MusicManager.Play(GameMusics.INTERLUDE);
         StopSimThread();
         lock (m_SimMutex) {
@@ -12041,7 +12037,7 @@ namespace djack.RogueSurvivor.Engine
         }
         RestartSimThread();
         RemoveLastMessage();
-        m_MusicManager.StopAll();
+        m_MusicManager.Stop();
     }
 #endif
 
@@ -12124,8 +12120,8 @@ namespace djack.RogueSurvivor.Engine
       if (!victor.IsPlayer) return;
       string musicId = achievement.MusicID;
       string[] text = achievement.Text;
-      m_MusicManager.StopAll();
-      m_MusicManager.Play(musicId);
+      m_MusicManager.Stop();
+      m_MusicManager.Play(musicId, MusicPriority.PRIORITY_EVENT);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
       var stringList = new List<string>(text.Length + 3 + 2){
         str,
@@ -12159,13 +12155,13 @@ namespace djack.RogueSurvivor.Engine
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
     private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
-      m_MusicManager.StopAll();
-      m_MusicManager.Play(GameMusics.INTERLUDE);
+      m_MusicManager.Stop();
+      m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
       AddOverlay(new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
       ClearMessages();
       AddMessagePressEnter();
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -12203,8 +12199,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != vip && !Session.Get.PlayerKnows_TheSewersThingLocation) {
         lock (Session.Get) {
           Session.Get.PlayerKnows_TheSewersThingLocation = true;
-          m_MusicManager.StopAll();
-          m_MusicManager.Play(GameMusics.FIGHT);
+          m_MusicManager.Stop();
+          m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
           ClearMessages();
           AddMessage(new Data.Message("Hey! What's that THING!?", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           AddMessagePressEnter();
@@ -12283,7 +12279,7 @@ namespace djack.RogueSurvivor.Engine
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.ActionPoints = 0;   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
-                m_MusicManager.Play(GameMusics.FIGHT);
+                m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 break;
               }
@@ -12324,11 +12320,11 @@ namespace djack.RogueSurvivor.Engine
     private void HandleReincarnation()
     {
       if (s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
-        m_MusicManager.StopAll();
+        m_MusicManager.Stop();
         return;
       }
 
-      m_MusicManager.Play(GameMusics.LIMBO);
+      m_MusicManager.PlayLooping(GameMusics.LIMBO, MusicPriority.PRIORITY_EVENT);
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
       m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
@@ -12382,7 +12378,7 @@ namespace djack.RogueSurvivor.Engine
       });
       if (!ChoiceMenu(choice_handler, setup_handler, entries.Length)) newPlayerAvatar = null;
       if (newPlayerAvatar == null) {
-        m_MusicManager.StopAll();
+        m_MusicManager.Stop();
         return;
       }
 
@@ -12395,13 +12391,13 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
-      m_MusicManager.StopAll();
+      m_MusicManager.Stop();
       Player.Controller.UpdateSensors();
       ComputeViewRect(Player.Location.Position);
       ClearMessages();
       AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
-      m_MusicManager.Play(GameMusics.REINCARNATE);
+      m_MusicManager.Play(GameMusics.REINCARNATE, MusicPriority.PRIORITY_EVENT);
       RestartSimThread();
     }
 
@@ -12886,6 +12882,26 @@ namespace djack.RogueSurvivor.Engine
     {
       Skills.LoadSkillsFromCSV(m_UI, "Resources\\Data\\Skills.csv");
     }
+
+    // alpha10
+#region Background music
+    private void UpdateBgMusic()
+    {
+       if (!s_Options.PlayMusic) return;
+       if (null == Player) return;
+
+       // don't interrupt music that has higher priority than bg
+       if (m_MusicManager.IsPlaying && m_MusicManager.Priority > MusicPriority.PRIORITY_BGM) return;
+
+       // get current map music and play it if not already playing it
+       string mapMusic = CurrentMap.BgMusic;
+       if (string.IsNullOrEmpty(mapMusic)) return;
+       if (m_MusicManager.Music == mapMusic && m_MusicManager.IsPlaying) return;
+
+       m_MusicManager.Stop();
+       m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
+     }
+#endregion
 
     public abstract class Overlay   // could be an interface instead
     {
