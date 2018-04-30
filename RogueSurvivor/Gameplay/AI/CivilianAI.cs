@@ -140,12 +140,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game)
     {
       ClearMovePlan();
+      // \todo start extraction target: BehaviorEquipBestItems (cf RS Alpha 10)
       BehaviorEquipBodyArmor();
 
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {
         BehaviorUnequipLeftItem(game);
       }
+      // end extraction target: BehaviorEquipBestItems
 #if TIME_TURNS
       timer.Stop();
       if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorUnequipLeftItem " + timer.ElapsedMilliseconds.ToString()+"ms");
