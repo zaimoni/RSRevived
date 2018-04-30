@@ -79,6 +79,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_SANITY_DISTURBED = "Icons\\sanity_disturbed";
     public const string ICON_SANITY_INSANE = "Icons\\sanity_insane";
     public const string ICON_BORING_ITEM = "Icons\\boring_item";
+    public const string ICON_ZGRAB = "Icons\\zgrab";  // alpha10
     public const string TILE_FLOOR_ASPHALT = "Tiles\\floor_asphalt";
     public const string TILE_FLOOR_CONCRETE = "Tiles\\floor_concrete";
     public const string TILE_FLOOR_GRASS = "Tiles\\floor_grass";
@@ -474,6 +475,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ICON_SANITY_DISTURBED);
       Load(ICON_SANITY_INSANE);
       Load(ICON_BORING_ITEM);
+      Load(ICON_ZGRAB);  // alpha10
       Notify(ui, "tiles...");
       Load(TILE_FLOOR_ASPHALT);
       Load(TILE_FLOOR_CONCRETE);

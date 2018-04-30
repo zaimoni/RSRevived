@@ -10428,6 +10428,7 @@ namespace djack.RogueSurvivor.Engine
           if (Player?.CanTradeWith(actor) ?? false) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
+          if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
           if (!s_Options.IsCombatAssistantOn || actor == Player || (Player == null || !actor.IsEnemyOf(Player))) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
