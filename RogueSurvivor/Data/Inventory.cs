@@ -243,6 +243,50 @@ namespace djack.RogueSurvivor.Data
       return m_Items.Contains(it);
     }
 
+        // alpha10
+        /// <summary>
+        /// Defragment the inventory : consolidate smaller stacks into bigger ones. 
+        /// Improves AI inventory management, not meant for the player as it can change the inventory and confuses him.
+        /// TODO -- Maybe later add a special "defrag" command for the player to the interface, players would probably
+        /// like to be able to merge stacks too.
+        /// Don't abuse it, nice O^2...
+        /// </summary>
+        public void Defrag()
+        {
+            int countEmptyStacksToRemove = 0;
+
+            // iterate over all stackable items to see if we can "steal" quantity from other stacks.
+            // since we iterate from left to right and steal from the right, the leftmost stacks will always be
+            // the biggest one.
+            int n = m_Items.Count;
+            for (int i = 0; i < n; i++) {
+                Item mergeWith = m_Items[i];
+                if (mergeWith.Quantity > 0 && mergeWith.CanStackMore) {
+                    for (int j = i + 1; j < n && mergeWith.CanStackMore; j++) {
+                        Item stealFrom = m_Items[j];
+                        if (stealFrom.Model == mergeWith.Model && stealFrom.Quantity > 0) {
+                            int steal = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, stealFrom.Quantity);
+                            mergeWith.Quantity += steal;
+                            stealFrom.Quantity -= steal;
+                            if (stealFrom.Quantity <= 0) countEmptyStacksToRemove++;
+                        }
+                    }
+                }
+            }
+
+            // some smaller stacks might now be empty, delete them now.
+            if (countEmptyStacksToRemove > 0) {
+                int i = 0;
+                do {
+                    if (m_Items[i].Quantity <= 0) {
+                        --countEmptyStacksToRemove;
+                        m_Items.RemoveAt(i);
+                    } else i++;
+                }
+                while (i < m_Items.Count && countEmptyStacksToRemove > 0);
+            }
+        }
+
     public bool HasModel(ItemModel model)
     {
       foreach (Item mItem in m_Items) {

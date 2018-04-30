@@ -8682,12 +8682,18 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUseItem(Actor actor, Item it)
     {
+      // alpha10 defrag ai inventories
+      bool defragInventory = !actor.IsPlayer && it.Model.IsStackable;
+
       if (it is ItemFood) DoUseFoodItem(actor, it as ItemFood);
       else if (it is ItemMedicine) DoUseMedicineItem(actor, it as ItemMedicine);
       else if (it is ItemAmmo) DoUseAmmoItem(actor, it as ItemAmmo);
       else if (it is ItemSprayScent) DoUseSprayScentItem(actor, it as ItemSprayScent);
       else if (it is ItemTrap) DoUseTrapItem(actor, it as ItemTrap);
       else if (it is ItemEntertainment) DoUseEntertainmentItem(actor, it as ItemEntertainment);
+
+      // alpha10 defrag ai inventories
+      if (defragInventory) actor.Inventory.Defrag();
     }
 
     public void DoEatFoodFromGround(Actor actor, ItemFood food)
