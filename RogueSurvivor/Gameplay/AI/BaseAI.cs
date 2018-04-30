@@ -13,6 +13,7 @@ using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -35,6 +36,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public const int MAX_EMOTES = 3;    // 0: flee; 1: last stand; 2:charge
 
     private Location m_prevLocation;
+    [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
 
     protected BaseAI()
     {
