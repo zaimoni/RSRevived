@@ -91,6 +91,8 @@ namespace djack.RogueSurvivor.Data
       EquippedPart = DollPart.NONE;
     }
 
+    public virtual void OptimizeBeforeSaving() { }  // alpha 10
+
     // thin wrappers
     public void DropAt(Map m, Point pos) {m.DropItemAt(this,pos);} // this guaranteed non-null so non-null precondition ok
 

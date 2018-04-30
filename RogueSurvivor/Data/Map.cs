@@ -2311,6 +2311,10 @@ retry:
         if (m_ActorsList[i].IsDead) m_ActorsList.RemoveAt(i);
       }
 
+      // alpha10 items stacks
+      foreach (Inventory stack in m_GroundItemsByPosition.Values)
+        stack.OptimizeBeforeSaving();
+
       foreach (Actor mActors in m_ActorsList)
         mActors.OptimizeBeforeSaving();
       m_ActorsList.TrimExcess();
