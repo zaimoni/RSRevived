@@ -2241,23 +2241,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == test) return float.NaN;
           loc = test.Value;
         }
-        if (exploration.HasExplored(loc)) return float.NaN;
+        const int EXPLORE_ZONES = 1000;
+        const int EXPLORE_LOCS = 500;
+        const int EXPLORE_BARRICADES = 100;
+        const int AVOID_TRAPS = -1000; // alpha10 greatly increase penalty and x by potential damage; was -50
+        const int EXPLORE_INOUT = 50;
+        const int EXPLORE_DIRECTION = 25;
+        const int EXPLORE_RANDOM = 10;
+
+//      if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
-        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
+        int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsMaxDamageAt(position) : 0;
+        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;
-        if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;
-        /* if (!exploration.HasExplored(loc)) */ num += 500;
+        if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
+        if (!exploration.HasExplored(loc)) num += EXPLORE_LOCS;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
-        if (null != map.GetActivatedTrapAt(position)) num += -50;
+        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += EXPLORE_BARRICADES;
+        if (0<trap_max_damage) num += trap_max_damage*AVOID_TRAPS;
         if (map.IsInsideAtExt(position)) {
-          if (map.LocalTime.IsNight) num += 50;
+          if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
         }
-        else if (!map.LocalTime.IsNight) num += 50;
-        if (dir == prevDirection) num += 25;
-        return (float) (num + RogueForm.Game.Rules.Roll(0, 10));
+        else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
+        if (dir == prevDirection) num += EXPLORE_DIRECTION;
+        return (float) (num + RogueForm.Game.Rules.Roll(0, EXPLORE_RANDOM));
       }, (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
