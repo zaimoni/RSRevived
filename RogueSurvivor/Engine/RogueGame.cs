@@ -2552,20 +2552,33 @@ namespace djack.RogueSurvivor.Engine
       if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER)) return;
       unique.IsSpawned = true;
       if (map != Player.Location.Map || Player.IsSleeping || Player.Model.Abilities.IsUndead) return;
-      if (unique.EventMessage != null) {
-        if (unique.EventThemeMusic != null) {
-          m_MusicManager.Stop();
-          m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
-                }
-        ClearMessages();
-        AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
+      PlayUniqueActorMusicAndMessage(unique, true);
       // XXX \todo district event
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
     }
+
+        private void PlayUniqueActorMusicAndMessage(UniqueActor unique, bool hasArrived)    // alpha10: uses parameter to signal arrival (true) or first sighting (false).  \todo: implement first sighting
+        {
+            if (unique.EventMessage != null) {
+                Overlay highlightOverlay = null;
+
+                if (unique.EventThemeMusic != null) {
+                    m_MusicManager.Stop();
+                    m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
+                }
+
+                ClearMessages();
+                AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
+                if (hasArrived) AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location));
+                else {
+                    highlightOverlay = new OverlayRect(Color.Pink, new Rectangle(MapToScreen(unique.TheActor.Location.Position), new Size(TILE_SIZE, TILE_SIZE)));
+                    AddOverlay(highlightOverlay);
+                }
+                AddMessagePressEnter();
+                ClearMessages();
+                if (highlightOverlay != null) RemoveOverlay(highlightOverlay);
+            }
+        }
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
