@@ -7040,7 +7040,7 @@ namespace djack.RogueSurvivor.Engine
       var stringList = new List<string>();
       ItemEntertainmentModel entertainmentModel = ent.Model;
       stringList.Add("> entertainment");
-      if (Player?.IsBoredOf(ent) ?? false) stringList.Add("* BORED OF IT! *");
+      if (ent.IsBoringFor(Player)) stringList.Add("* BORED OF IT! *");
       int ent_value = entertainmentModel.Value;
       int num = Player == null ? ent_value : Rules.ActorSanRegenValue(Player, ent_value);
       if (num != ent_value)
@@ -8848,7 +8848,7 @@ namespace djack.RogueSurvivor.Engine
         actor.Inventory.Consume(ent);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
       } else if (m_Rules.RollChance(boreChance)) {
-        actor.AddBoringItem(ent);
+        ent.AddBoringFor(actor);
         if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", Conjugate(actor, VERB_BE), ent.TheName)));
       }
     }
@@ -10943,7 +10943,7 @@ namespace djack.RogueSurvivor.Engine
           string trap_status = TrapStatusIcon(it as ItemTrap);
           if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx2, gy2);
         }
-        else if (it is ItemEntertainment && (Player?.IsBoredOf(it) ?? false))
+        else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
         DrawItem(it, gx2, gy2);
         if (++num2 >= slotsPerLine) {

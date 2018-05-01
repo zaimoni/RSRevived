@@ -2527,20 +2527,7 @@ namespace djack.RogueSurvivor.Data
       m_SleepPoints = Math.Max(0, m_SleepPoints - s);
     }
 
-    // boring items
-    public void AddBoringItem(Item it)
-    {
-      if (null == m_BoringItems) m_BoringItems = new List<Item>(1);
-      else if (m_BoringItems.Contains(it)) return;
-      m_BoringItems.Add(it);
-    }
-
-    public bool IsBoredOf(Item it)
-    {
-      if (null == m_BoringItems) return false;
-      return m_BoringItems.Contains(it);
-    }
-
+    // alpha10: boring items moved to ItemEntertaimment from Actor
     // inventory stats
 
     // This is the authoritative source for a living actor's maximum inventory.
@@ -2804,9 +2791,9 @@ namespace djack.RogueSurvivor.Data
         if (it.IsUseless) return "no spray left.";
       } else if (it is ItemTrap) {
         if (!(it as ItemTrap).Model.UseToActivate) return "does not activate manually";
-      } else if (it is ItemEntertainment) {
+      } else if (it is ItemEntertainment ent) {
         if (!Model.Abilities.IsIntelligent) return "not intelligent";
-        if (IsBoredOf(it)) return "bored by this";
+        if (ent.IsBoringFor(this)) return "bored by this";
       }
       if (!Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";

@@ -6,17 +6,46 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemEntertainment : Item
   {
+    List<Actor> m_BoringFor = null; // alpha10 boring items moved out of Actor
+
     new public ItemEntertainmentModel Model { get {return base.Model as ItemEntertainmentModel; } }
 
     public ItemEntertainment(ItemEntertainmentModel model)
       : base(model)
     {
+    }
+
+    public void AddBoringFor(Actor a)
+    {
+      if (null == m_BoringFor) m_BoringFor = new List<Actor>{ a };
+      else if (!m_BoringFor.Contains(a)) m_BoringFor.Add(a);
+    }
+
+    public bool IsBoringFor(Actor a)
+    {
+      return m_BoringFor?.Contains(a) ?? false;
+    }
+
+    public override void OptimizeBeforeSaving()
+    {
+      base.OptimizeBeforeSaving();
+
+      // clean up dead actors refs
+      // side effect: revived actors will forget about boring items
+      if (null != m_BoringFor) {
+        int i = m_BoringFor.Count;
+        while(0 < i--) {
+          if (m_BoringFor[i].IsDead) m_BoringFor.RemoveAt(i);
+        }
+        if (m_BoringFor.Count == 0) m_BoringFor = null;
+      }
     }
   }
 }

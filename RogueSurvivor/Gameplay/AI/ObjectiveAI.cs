@@ -1148,7 +1148,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (ItemIsUseless(it.Model)) return true;
 
       if (it is ItemTrap trap && trap.IsActivated) return true;
-      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return true;
+      if (it.IsUseless || it is ItemPrimedExplosive) return true;
+      if (it is ItemEntertainment ent && ent.IsBoringFor(m_Actor)) return true;
 
       return false;
     }
