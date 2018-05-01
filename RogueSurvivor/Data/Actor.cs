@@ -3297,15 +3297,18 @@ namespace djack.RogueSurvivor.Data
     // Just optimize everything that's an Actor or contains an Actor.
     public void OptimizeBeforeSaving()
     {
-      if (m_TargetActor != null && m_TargetActor.IsDead) m_TargetActor = null;
-      if (m_Leader != null && m_Leader.IsDead) m_Leader = null;
+      if (m_TargetActor?.IsDead ?? false) m_TargetActor = null;
+      if (m_Leader?.IsDead ?? false) m_Leader = null;
       int i = 0;
+      // \todo match RS alpha 10's prune of trust entries in dead actors (m_TrustDict for us)
+      // to avoid weirdness we want to drop only if no revivable corpse is in-game
       if (null != m_Followers) {
         i = m_Followers.Count;
         while(0 < i--) {
           if (m_Followers[i].IsDead) m_Followers.RemoveAt(i);
         }
         if (0 == m_Followers.Count) m_Followers = null;
+        else m_Followers.TrimExcess();
       }
       if (null != m_AggressorOf) {
         i = m_AggressorOf.Count;
@@ -3313,6 +3316,7 @@ namespace djack.RogueSurvivor.Data
           if (m_AggressorOf[i].IsDead) m_AggressorOf.RemoveAt(i);
         }
         if (0 == m_AggressorOf.Count) m_AggressorOf = null;
+        else m_AggressorOf.TrimExcess();
       }
       if (null != m_SelfDefenceFrom) {
         i = m_SelfDefenceFrom.Count;
@@ -3320,10 +3324,12 @@ namespace djack.RogueSurvivor.Data
           if (m_SelfDefenceFrom[i].IsDead) m_SelfDefenceFrom.RemoveAt(i);
         }
         if (0 == m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
+        else m_SelfDefenceFrom.TrimExcess();
       }
 
-      if (null != m_Controller) m_Controller.OptimizeBeforeSaving();
-      if (null != m_BoringItems) m_BoringItems.TrimExcess();
+      m_Controller?.OptimizeBeforeSaving();
+      m_Inventory?.OptimizeBeforeSaving();
+      m_BoringItems?.TrimExcess();
     }
 
 	// C# docs indicate using Actor as a key wants these
