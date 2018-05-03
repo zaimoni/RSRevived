@@ -64,6 +64,7 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.MOVE_SW, Keys.NumPad1);
             Set(PlayerCommand.MOVE_W, Keys.NumPad4);
             Set(PlayerCommand.ORDER_MODE, Keys.O);
+            Set(PlayerCommand.PULL_MODE, Keys.P | Keys.Control); // alpha10
             Set(PlayerCommand.PUSH_MODE, Keys.P);
             Set(PlayerCommand.QUIT_GAME, Keys.Q | Keys.Shift);
             Set(PlayerCommand.REVIVE_CORPSE, Keys.R | Keys.Shift);

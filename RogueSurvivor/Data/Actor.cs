@@ -1719,6 +1719,51 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // alpha10: pull support
+    private string ReasonCantPull(MapObject mapObj, Point moveToPos)
+    {
+      string ret = ReasonCantPush(mapObj);
+      if (!string.IsNullOrEmpty(ret)) return ret;
+
+      MapObject other = Location.MapObject;
+      if (null != Location.MapObject) return string.Format("{0} is blocking", other.TheName);
+
+      Location.IsWalkableFor(this, out ret);
+      return ret;
+    }
+
+    public bool CanPull(MapObject mapObj, Point moveToPos, out string reason)
+    {
+      reason = ReasonCantPull(mapObj, moveToPos);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPull(MapObject mapObj, Point moveToPos)
+    {
+      return string.IsNullOrEmpty(ReasonCantPull(mapObj, moveToPos));
+    }
+
+    private string ReasonCantPull(Actor other, Point moveToPos)
+    {
+      string ret = ReasonCantShove(other);
+      if (!string.IsNullOrEmpty(ret)) return ret;
+
+      Location.IsWalkableFor(other, out ret);
+      return ret;
+    }
+
+    public bool CanPull(Actor other, Point moveToPos, out string reason)
+    {
+      reason = ReasonCantPull(other, moveToPos);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPull(Actor other, Point moveToPos)
+    {
+      return string.IsNullOrEmpty(ReasonCantPull(other, moveToPos));
+    }
+    // alpha10: end pull support
+
     private string ReasonCantClose(DoorWindow door)
     {
 #if DEBUG

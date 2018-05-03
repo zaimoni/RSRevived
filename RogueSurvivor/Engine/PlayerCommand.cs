@@ -68,6 +68,7 @@ namespace djack.RogueSurvivor.Engine
     FACTION_INFO,
     ORDER_PC_MODE,
     SET_WAYPOINT,
-    CLEAR_WAYPOINT
+    CLEAR_WAYPOINT,
+    PULL_MODE  // alpha10
    }
 }

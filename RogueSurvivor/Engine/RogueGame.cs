@@ -91,6 +91,7 @@ namespace djack.RogueSurvivor.Engine
     {
       "TAKE LEAD MODE - directions to recruit a follower, ESC cancels"
     };
+    private readonly string[] PULL_MODE_TEXT = new string[] { "PULL MODE - directions to select object, ESC cancels" }; // alpha10
     private readonly string[] PUSH_MODE_TEXT = new string[1]
     {
       "PUSH/SHOVE MODE - directions to push/shove, ESC cancels"
@@ -99,6 +100,8 @@ namespace djack.RogueSurvivor.Engine
     {
       "TAG MODE - directions to tag a wall or on the floor, ESC cancels"
     };
+    private readonly string PULL_OBJECT_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
+    private readonly string PULL_ACTOR_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
     private readonly string PUSH_OBJECT_MODE_TEXT = "PUSHING {0} - directions to push, ESC cancels";
     private readonly string SHOVE_ACTOR_MODE_TEXT = "SHOVING {0} - directions to shove, ESC cancels";
     private readonly string[] ORDER_MODE_TEXT = new string[1]
@@ -184,6 +187,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_OFFER = new Verb("offer");
     private readonly Verb VERB_OPEN = new Verb("open");
     private readonly Verb VERB_ORDER = new Verb("order");
+    private readonly Verb VERB_PULL = new Verb("pull");  // alpha10
     private readonly Verb VERB_PUSH = new Verb("push", "pushes");
     private readonly Verb VERB_PUT = new Verb("put", "puts");
     private readonly Verb VERB_RAISE_ALARM = new Verb("raise the alarm", "raises the alarm");
@@ -311,7 +315,7 @@ namespace djack.RogueSurvivor.Engine
     private const int DISCIPLE_EVOLUTION_MIN_DAY = 7;
     private const int PLAYER_HEAR_FIGHT_CHANCE = 25;
     private const int PLAYER_HEAR_SCREAMS_CHANCE = 10;
-    private const int PLAYER_HEAR_PUSH_CHANCE = 25;
+    private const int PLAYER_HEAR_PUSHPULL_CHANCE = 25;  // alpha10 also for pulls
     private const int PLAYER_HEAR_BASH_CHANCE = 25;
     private const int PLAYER_HEAR_BREAK_CHANCE = 50;
     private const int PLAYER_HEAR_EXPLOSION_CHANCE = 100;
@@ -1825,6 +1829,7 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Mark Enemies", PlayerCommand.MARK_ENEMIES_MODE),
           new KeyValuePair< string,PlayerCommand >("Messages Log", PlayerCommand.MESSAGE_LOG),
           new KeyValuePair< string,PlayerCommand >("Order", PlayerCommand.ORDER_MODE),
+          new KeyValuePair< string,PlayerCommand >("Pull", PlayerCommand.PULL_MODE),
           new KeyValuePair< string,PlayerCommand >("Push", PlayerCommand.PUSH_MODE),
           new KeyValuePair< string,PlayerCommand >("Quit Game", PlayerCommand.QUIT_GAME),
           new KeyValuePair< string,PlayerCommand >("Redefine Keys", PlayerCommand.KEYBINDING_MODE),
@@ -3180,6 +3185,9 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.ORDER_PC_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(player);
+                break;
+              case PlayerCommand.PULL_MODE: // alpha10
+                flag1 = !TryPlayerInsanity() && !HandlePlayerPull(player);
                 break;
               case PlayerCommand.PUSH_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerPush(player);
@@ -4938,6 +4946,142 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+    private bool HandlePlayerPull(Actor player) // alpha10
+    {
+      // fail immediatly for stupid cases.
+      if (!player.AbleToPush) {
+        AddMessage(MakeErrorMessage("Cannot pull objects."));
+        return false;
+      }
+      if (player.IsTired) {
+        AddMessage(MakeErrorMessage("Too tired to pull."));
+        return false;
+      }
+      MapObject otherMobj = player.Location.MapObject;
+      if (null != otherMobj) {
+        AddMessage(MakeErrorMessage(string.Format("Cannot pull : {0} is blocking.", otherMobj.TheName)));
+        return false;
+      }
+
+      bool actionDone = false;
+
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(PULL_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+        RedrawPlayScreen(); // 1. Redraw
+        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
+
+        // 3. Handle input
+        if (dir == null) break;
+        else if (dir != Direction.NEUTRAL) {
+          Point pos = player.Location.Position + dir;
+          if (player.Location.Map.IsInBounds(pos)) {
+            MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
+            Actor other = player.Location.Map.GetActorAt(pos);
+            string reason;
+            if (other != null) {
+              // pull-shove.
+              if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
+                if (HandlePlayerPullActor(player, other)) {
+                  actionDone = true;
+                  break;
+                }
+              } else AddMessage(MakeErrorMessage(String.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
+            } else if (mapObj != null) { // pull.
+              if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
+                if (HandlePlayerPullObject(player, mapObj)) {
+                  actionDone = true;
+                  break;
+                }
+              } else AddMessage(MakeErrorMessage(String.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+            } else AddMessage(MakeErrorMessage("Nothing to pull there.")); // nothing to pull.
+          }
+        }
+      } while(true);
+
+      ClearOverlays(); // cleanup.
+      return actionDone; // return if we did an action.
+    }
+
+    bool HandlePlayerPullObject(Actor player, MapObject mapObj) // alpha10
+    {
+      bool actionDone = false;
+
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
+
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+
+        RedrawPlayScreen(); // 1. Redraw
+        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
+
+        // 3. Handle input
+        if (dir == null) break;
+        else if (dir != Direction.NEUTRAL) {
+          Point moveToPos = player.Location.Position + dir;
+          if (player.Location.Map.IsInBounds(moveToPos)) {
+            string reason;
+            if (player.CanPull(mapObj, moveToPos, out reason)) {
+              DoPull(player, mapObj, moveToPos);
+              actionDone = true;
+              break;
+            } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+          }
+        }
+       } while(true);
+
+       ClearOverlays();    // cleanup.
+       return actionDone;  // return if we did an action.
+    }
+
+    bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
+    {
+      bool actionDone = false;
+
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
+
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+        RedrawPlayScreen(); // 1. Redraw
+        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
+
+        // 3. Handle input
+        if (dir == null) break;
+        else if (dir != Direction.NEUTRAL) {
+          Point moveToPos = player.Location.Position + dir;
+          if (player.Location.Map.IsInBounds(moveToPos)) {
+            string reason;
+            if (player.CanPull(other, moveToPos, out reason)) {
+              DoPullActor(player, other, moveToPos);
+              actionDone = true;
+              break;
+            } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+          }
+        }
+      } while(true);
+
+      ClearOverlays();    // cleanup.
+      return actionDone;  // return if we did an action.
+    }
+
     private bool HandlePlayerUseSpray(Actor player)
     {
       Item equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
@@ -6134,13 +6278,14 @@ namespace djack.RogueSurvivor.Engine
           };
           break;
         case AdvisorHint.OBJECT_PUSH:
-          title = "PUSHING OBJECTS";
-          body = new string[4]
-          {
-            "You can PUSH an object around you.",
-            "Only MOVABLE objects can be pushed.",
+          title = "PUSHING/PULLING OBJECTS";
+          body = new string[] {
+            "You can PUSH/PULL an OBJECT around you.",
+            "Only MOVABLE objects can be pushed/pulled.",
             "Movable objects will be described as 'Can be moved'",
-            string.Format("To PUSH : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.PUSH_MODE).ToString())
+            "You can also PUSH/PULL ACTORS around you.",
+            String.Format("To PUSH : <{0}>.", s_KeyBindings.Get(PlayerCommand.PUSH_MODE).ToString()),
+            String.Format("To PULL : <{0}>.", s_KeyBindings.Get(PlayerCommand.PULL_MODE).ToString())
           };
           break;
         case AdvisorHint.OBJECT_BREAK:
@@ -9015,22 +9160,35 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    private void DoPushPullFollowersHelp(Actor actor, MapObject mapObj, bool isPulling, ref int staCost)    // alpha10
+    {
+      bool isVisibleMobj = IsVisibleToPlayer(mapObj);
+
+      Location objLoc = new Location(actor.Location.Map, mapObj.Location.Position);
+      List<Actor> helpers = null;
+      foreach (Actor fo in actor.Followers) {
+        // follower can help if: not sleeping, idle and adj to map object.
+        if (!fo.IsSleeping && (fo.Activity == Activity.IDLE || fo.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
+          if (helpers == null) helpers = new List<Actor>(actor.CountFollowers);
+          helpers.Add(fo);
+        }
+      }
+      if (helpers != null) {
+        // share the sta cost.
+        staCost = mapObj.Weight / (1 + helpers.Count);
+        foreach (Actor h in helpers) {
+          h.SpendActionPoints(Rules.BASE_ACTION_COST);
+          h.SpendStaminaPoints(staCost);
+          if (isVisibleMobj || IsVisibleToPlayer(h)) AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", Conjugate(h, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+        }
+      }
+    }
+
     public void DoPush(Actor actor, MapObject mapObj, Point toPos)
     {
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
-      if (actor.CountFollowers > 0) {
-        IEnumerable<Actor> tmp = actor.Followers.Where(follower=>!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location));
-        if (tmp.Any()) {
-          staminaCost = mapObj.Weight / (1 + tmp.Count());
-          foreach(Actor actor1 in tmp) {
-            actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
-            actor1.SpendStaminaPoints(staminaCost);
-            if (flag)
-              AddMessage(MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", Conjugate(actor1, VERB_HELP), actor.Name, mapObj.TheName)));
-          }
-        }
-      }
+      if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, false, ref staminaCost); // alpha10
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.SpendStaminaPoints(staminaCost);
       Location o_loc = mapObj.Location;
@@ -9043,7 +9201,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       } else {
         OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
-        if (m_Rules.RollChance(PLAYER_HEAR_PUSH_CHANCE))
+        if (m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))
           AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
       }
       CheckMapObjectTriggersTraps(o_loc.Map, toPos);
@@ -9058,9 +9216,10 @@ namespace djack.RogueSurvivor.Engine
         Location t_loc = target.Location;
         t_loc.Map.PlaceAt(target, toPos);    // XXX cross-map shove change target
         if (!Rules.IsAdjacent(target.Location, actor.Location) && t_loc.IsWalkableFor(actor)) {
-          if (!TryActorLeaveTile(actor)) return;
-          t_loc.Place(actor);
-          OnActorEnterTile(actor);
+          if (TryActorLeaveTile(actor)) {
+            t_loc.Place(actor);
+            OnActorEnterTile(actor);
+          };
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, toPos)) {
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
@@ -9069,6 +9228,90 @@ namespace djack.RogueSurvivor.Engine
         if (target.IsSleeping) DoWakeUp(target);
         OnActorEnterTile(target);
       }
+    }
+
+    public void DoPull(Actor actor, MapObject mapObj, Point moveActorToPos) // alpha10
+    {
+      bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
+      int staCost = mapObj.Weight;
+
+      if (!TryActorLeaveTile(actor)) {  // try leaving tile
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        return;
+      }
+
+      // followers help?
+      if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, true, ref staCost);
+
+      // spend AP & STA.
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendStaminaPoints(staCost);
+
+      // do it : move actor then move object
+      Map map = mapObj.Location.Map;
+            // actor...
+      Point pullObjectTo = actor.Location.Position;
+      map.Remove(actor);
+      map.PlaceAt(actor, moveActorToPos);  // assumed to be walkable, checked by rules
+      // ...object
+      map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
+      map.PlaceAt(mapObj, pullObjectTo);
+
+      // noise/message.
+      if (isVisible) {
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PULL), mapObj));
+        RedrawPlayScreen();
+      } else {
+        // loud noise.
+        OnLoudNoise(map, mapObj.Location.Position, "Something being pushed");
+
+        // player hears?
+        if (m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) {
+          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
+        }
+      }
+
+      // check triggers
+      OnActorEnterTile(actor);
+      CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
+    }
+
+    public void DoPullActor(Actor actor, Actor target, Point moveActorToPos)    // alpha10
+    {
+      bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target);
+
+      // try leaving tile, both actors and target
+      if (!TryActorLeaveTile(actor) || !TryActorLeaveTile(target)) {
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        return;
+      }
+
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
+      target.StopDraggingCorpse();
+
+      // do it : move actor then move target
+      Map map = target.Location.Map;
+      // move actor...
+      Point pullTargetTo = actor.Location.Position;
+      map.Remove(actor);
+      map.PlaceAt(actor, moveActorToPos);
+      // ...move target
+      map.Remove(target);
+      map.PlaceAt(target, pullTargetTo);
+
+      // if target is sleeping, wakes him up!
+      if (target.IsSleeping) DoWakeUp(target);
+
+      // message
+      if (isVisible) {
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PULL), target));
+        RedrawPlayScreen();
+      }
+
+      // Trigger stuff.
+      OnActorEnterTile(actor);
+      OnActorEnterTile(target);
     }
 
     public void DoStartSleeping(Actor actor)
