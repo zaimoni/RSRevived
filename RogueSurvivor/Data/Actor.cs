@@ -1182,11 +1182,6 @@ namespace djack.RogueSurvivor.Data
       m_TrustDict[other] = trust;
     }
 
-    public void AddTrustIn(Actor other, int amount)
-    {
-      SetTrustIn(other, GetTrustIn(other) + amount);
-    }
-
     public int GetTrustIn(Actor other)
     {
       if (null == m_TrustDict) return 0;

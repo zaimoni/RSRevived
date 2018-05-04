@@ -4200,7 +4200,6 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
           if (actor.IsEnemyOf(corpse.DeadGuy)) return;
           DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
-          corpse.DeadGuy.AddTrustIn(actor, Rules.TRUST_REVIVE_BONUS);
         } else {
           if (!player) return;
           AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
