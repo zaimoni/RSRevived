@@ -3051,6 +3051,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // alpha10
+    public bool CanSeeSky {
+      get {
+        if (IsDead) return false;
+        if (IsSleeping) return false;
+        return Location.Map.Lighting == Lighting.OUTSIDE;
+      }
+    }
+
     private static int LivingNightFovPenalty(WorldTime time)
     {
       switch (time.Phase) {

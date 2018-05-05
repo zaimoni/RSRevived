@@ -321,7 +321,6 @@ namespace djack.RogueSurvivor.Engine
     private const int PLAYER_HEAR_EXPLOSION_CHANCE = 100;
     private const int BLOOD_WALL_SPLAT_CHANCE = 20;
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
-    private const int WEATHER_CHANGE_CHANCE = 33;
     private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;   // XXX dead now that exit generation is on NO_PEACE_WALLS
 
 #if DEBUG
@@ -1944,15 +1943,24 @@ namespace djack.RogueSurvivor.Engine
       // XXX this set of messages must execute only once
       // XXX the displayed turn on the message must agree with the displayed turn on the screen
       if (Session.Get.World.Last == district) {
+        bool canSeeSky = Player.CanSeeSky;  // alpha10 message ony if can see sky
+
         DayPhase phase2 = Session.Get.WorldTime.Phase;
         if (Session.Get.WorldTime.IsDawn) {
-          AddMessage(new Data.Message("The sun is rising again for you...", Session.Get.WorldTime.TurnCounter, DAY_COLOR));
+          if (canSeeSky) AddMessage(new Data.Message("The sun is rising again for you...", Session.Get.WorldTime.TurnCounter, DAY_COLOR));
           OnNewDay();
         } else if (Session.Get.WorldTime.IsDusk) {
-          AddMessage(new Data.Message("Night is falling upon you...", Session.Get.WorldTime.TurnCounter, NIGHT_COLOR));
+          if (canSeeSky) AddMessage(new Data.Message("Night is falling upon you...", Session.Get.WorldTime.TurnCounter, NIGHT_COLOR));
           OnNewNight();
-        } else if (phase1 != phase2)
-          AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), Session.Get.WorldTime.TurnCounter, Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
+        } else if (phase1 != phase2) {
+          if (canSeeSky) AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), Session.Get.WorldTime.TurnCounter, Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
+        }
+
+        // alpha10
+        // if time to change weather do it and roll next change time.
+        if (Session.Get.WorldTime.TurnCounter >= Session.Get.World.NextWeatherCheckTurn) {
+          ChangeWeather();
+        }
       }
 
       if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
@@ -9951,7 +9959,6 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         m_MusicManager.Stop();
       }
-      CheckWeatherChange();
       Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));
     }
 
@@ -10206,14 +10213,14 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
     }
 
-    private void CheckWeatherChange()
+    private void ChangeWeather()
     {
-      if (m_Rules.RollChance(33)) {
-        AddMessage(new Data.Message(Session.Get.World.WeatherChanges(), Session.Get.WorldTime.TurnCounter, Color.White));
-        // XXX \todo global event
-        Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
-      } else
-        AddMessage(new Data.Message("The weather stays the same.", Session.Get.WorldTime.TurnCounter, Color.White));
+      bool canSeeWeather = Player.CanSeeSky; // alpha10
+
+      string msg = Session.Get.World.WeatherChanges();
+      if (canSeeWeather) AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.White));
+      // XXX \todo global event
+      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
     }
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)

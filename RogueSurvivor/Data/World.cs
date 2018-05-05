@@ -17,12 +17,19 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class World
   {
+    // alpha10
+    // weather stays from 1h to 3 days and then change
+    private const int WEATHER_MIN_DURATION = 1 * WorldTime.TURNS_PER_HOUR;
+    private const int WEATHER_MAX_DURATION = 3 * WorldTime.TURNS_PER_DAY;
+
+
     private readonly District[,] m_DistrictsGrid;
     private readonly int m_Size;
     private readonly Queue<District> m_PCready;
     private readonly Queue<District> m_NPCready;
     private readonly Queue<District> m_NPClive;
     public Weather Weather { get; private set; }
+    public int NextWeatherCheckTurn { get; set; } // alpha10
 
     [NonSerialized]
     private Dictionary<Map, HashSet<Point>> m_BlankPositionDict;
@@ -81,6 +88,7 @@ namespace djack.RogueSurvivor.Data
       m_Size = size;
 //    Weather = Weather.CLEAR;
       Weather = (Weather)(RogueForm.Game?.Rules.Roll(0, (int)Weather._COUNT) ?? 0);
+      NextWeatherCheckTurn = (RogueForm.Game?.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION) ?? 0);  // alpha10
       m_PCready = new Queue<District>(size*size);
       m_NPCready = new Queue<District>(size*size);
       m_NPClive = new Queue<District>(1);
@@ -170,6 +178,7 @@ namespace djack.RogueSurvivor.Data
         default: throw new ArgumentOutOfRangeException("unhandled weather");
 #endif
       }
+      NextWeatherCheckTurn = Engine.Session.Get.WorldTime.TurnCounter + RogueForm.Game.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);
     }
 
     // possible micro-optimization target
