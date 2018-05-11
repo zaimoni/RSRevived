@@ -14,18 +14,28 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public static readonly Attack BLANK = new Attack(AttackKind.PHYSICAL, new Verb("<blank>"), 0, 0, 0, 0);
 
-    public AttackKind Kind { get; private set; }
-    public Verb Verb { get; private set; }
-    public int HitValue { get; private set; }
-    public int DamageValue { get; private set; }
-    public int StaminaPenalty { get; private set; }
-    public int Range { get; private set; }
+    public readonly AttackKind Kind;
+    public readonly Verb Verb;
+    public readonly int DisarmChance;
+    public readonly int HitValue;
+    public readonly int DamageValue;
+    public readonly int StaminaPenalty;
+    public readonly int Range;
 
-    public int EfficientRange {
-      get {
-        return Range / 2;
-      }
-    }
+    public int EfficientRange { get { return Range / 2; } }
+
+    // alpha10
+    /// <summary>
+    /// Secondary hit roll value.
+    /// Eg: rapid fire 1st shot
+    /// </summary>
+    public int Hit2Value { get { return (int)(HitValue* Engine.Rules.RAPID_FIRE_FIRST_SHOT_ACCURACY); } }
+
+    /// <summary>
+    /// Tertiary hit roll value.
+    /// Eg: rapid fire 2nd shot
+    /// </summary>
+    public int Hit3Value { get { return (int)(HitValue* Engine.Rules.RAPID_FIRE_SECOND_SHOT_ACCURACY); } }
 
     public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty = 0, int range = 0)
     {
@@ -38,6 +48,7 @@ namespace djack.RogueSurvivor.Data
       DamageValue = damageValue;
       StaminaPenalty = staminaPenalty;
       Range = range;
+      DisarmChance = 0; // mockup.
     }
 
     public int Rating { 
