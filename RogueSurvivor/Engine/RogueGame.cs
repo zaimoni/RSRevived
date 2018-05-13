@@ -6998,31 +6998,36 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeItemWeapon(ItemWeapon w)
     {
       ItemWeaponModel itemWeaponModel = w.Model;
-      var stringList = new List<string>{
+      var lines = new List<string>{
         "> weapon",
         string.Format("Atk : +{0}", itemWeaponModel.Attack.HitValue),
-        string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue),
-        string.Format("Sta : -{0}", itemWeaponModel.Attack.StaminaPenalty)
+        string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue)
       };
+      // alpha10
+      if (0 != itemWeaponModel.Attack.StaminaPenalty) lines.Add(String.Format("Sta : -{0}", itemWeaponModel.Attack.StaminaPenalty));
+      if (0 != itemWeaponModel.Attack.DisarmChance) lines.Add(String.Format("Disarm : +{0}%", itemWeaponModel.Attack.DisarmChance));
+
       if (w is ItemMeleeWeapon melee) {
-        if (melee.IsFragile) stringList.Add("Breaks easily.");
-        if (melee.Model.IsMartialArts) stringList.Add("Uses martial arts.");
+        if (melee.IsFragile) lines.Add("Breaks easily.");
+        if (melee.Model.IsMartialArts) lines.Add("Uses martial arts.");
       } else if (w is ItemRangedWeapon rw) {
         ItemRangedWeaponModel rangedWeaponModel = rw.Model;
         if (rangedWeaponModel.IsFireArm)
-          stringList.Add("> firearm");
+          lines.Add("> firearm");
         else if (rangedWeaponModel.IsBow)
-          stringList.Add("> bow");
+          lines.Add("> bow");
         else
-          stringList.Add("> ranged weapon");
-        stringList.Add(string.Format("Rng  : {0}-{1}", rangedWeaponModel.Attack.Range, rangedWeaponModel.Attack.EfficientRange));
+          lines.Add("> ranged weapon");
+
+        lines.Add(string.Format("Rapid Fire Atk: {0} {1}", rangedWeaponModel.RapidFireHit1Value, rangedWeaponModel.RapidFireHit2Value));  // alpha10
+        lines.Add(string.Format("Rng  : {0}-{1}", rangedWeaponModel.Attack.Range, rangedWeaponModel.Attack.EfficientRange));
         if (rw.Ammo < rangedWeaponModel.MaxAmmo)
-          stringList.Add(string.Format("Amo  : {0}/{1}", rw.Ammo, rangedWeaponModel.MaxAmmo));
+          lines.Add(string.Format("Amo  : {0}/{1}", rw.Ammo, rangedWeaponModel.MaxAmmo));
         else
-          stringList.Add(string.Format("Amo  : {0} MAX", rw.Ammo));
-        stringList.Add(string.Format("Type : {0}", rangedWeaponModel.AmmoType.Describe(true)));
+          lines.Add(string.Format("Amo  : {0} MAX", rw.Ammo));
+        lines.Add(string.Format("Type : {0}", rangedWeaponModel.AmmoType.Describe(true)));
       }
-      return stringList.ToArray();
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemAmmo(ItemAmmo am)

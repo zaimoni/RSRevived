@@ -13,6 +13,9 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxAmmo;
     public readonly AmmoType AmmoType;
 
+    // alpha10
+    public int RapidFireHit1Value { get { return Attack.Hit2Value; } }
+    public int RapidFireHit2Value { get { return Attack.Hit3Value; } }
     public bool IsFireArm { get { return Attack.Kind == AttackKind.FIREARM; } }
     public bool IsBow { get { return Attack.Kind == AttackKind.BOW; } }
 

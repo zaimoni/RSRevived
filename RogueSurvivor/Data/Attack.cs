@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data
 
     public int Rating { 
       get {
-        return 10000 * DamageValue + 100 * HitValue + -StaminaPenalty;
+        return 100000 * DamageValue + 1000 * HitValue + DisarmChance + -StaminaPenalty;
       }
     }
   }
