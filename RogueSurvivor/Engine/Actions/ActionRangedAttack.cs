@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoSingleRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
+      RogueForm.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
     }
   }
 }

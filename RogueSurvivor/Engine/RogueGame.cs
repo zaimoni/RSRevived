@@ -4616,7 +4616,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message(string.Format("Switched to {0} fire mode.", mode.ToString()), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         } else if (key.KeyCode == Keys.F) {
           if (flag3) {
-            DoSingleRangedAttack(player, actor, LoF, mode);
+            DoRangedAttack(player, actor, LoF, mode);
             RedrawPlayScreen();
             flag1 = false;
             flag2 = true;
@@ -7996,20 +7996,20 @@ namespace djack.RogueSurvivor.Engine
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      ClearOverlays();
+      if (player1 || player2) ClearOverlays();  // alpha10: if test
     }
 
-    public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
+    public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
       if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
       switch (mode) {
         case FireMode.DEFAULT:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
-          DoSingleRangedAttack(attacker, defender, LoF, 1f);
+          DoSingleRangedAttack(attacker, defender, LoF, 0);
           break;
         case FireMode.RAPID:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
-          DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_FIRST_SHOT_ACCURACY);
+          DoSingleRangedAttack(attacker, defender, LoF, 1);
           ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
           if (defender.IsDead) {
             --itemRangedWeapon.Ammo;
@@ -8018,14 +8018,15 @@ namespace djack.RogueSurvivor.Engine
             break;
           }
           if (itemRangedWeapon.Ammo <= 0) break;
-          DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_SECOND_SHOT_ACCURACY);
+          DoSingleRangedAttack(attacker, defender, LoF, 2);
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled mode");
       }
     }
 
-    private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, double accuracyFactor)
+    /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
+    private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
@@ -8048,11 +8049,14 @@ namespace djack.RogueSurvivor.Engine
         Attack attack = attacker.RangedAttack(distance, defender);
         Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
 #if OBSOLETE
-        int num1 = (int)(accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
+        int hitRoll = m_Rules.RollSkill((int)(accuracyFactor * attack.HitValue));
 #else
-        int num1 = m_Rules.RollSkill((int)(accuracyFactor * attack.HitValue));
+        // resolve attack: alpha10
+        int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
+        int hitRoll = m_Rules.RollSkill(hitValue);
 #endif
-        int num2 = m_Rules.RollSkill(defence.Value);
+        int defRoll = m_Rules.RollSkill(defence.Value);
+
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
@@ -8063,7 +8067,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
           AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
-        if (num1 > num2) {
+        if (hitRoll > defRoll) {
           int dmg = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
             InflictDamage(defender, dmg);
@@ -8120,7 +8124,7 @@ namespace djack.RogueSurvivor.Engine
             AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
-        ClearOverlays();
+        if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
       }
     }
 
@@ -8196,7 +8200,8 @@ namespace djack.RogueSurvivor.Engine
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
       OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
-      if (ForceVisibleToPlayer(location)) {
+      bool isVisible = ForceVisibleToPlayer(location);
+      if (isVisible) {
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
@@ -8206,11 +8211,14 @@ namespace djack.RogueSurvivor.Engine
       ApplyExplosionDamage(location, 0, blastAttack);
       for (int waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance) {
         if (ApplyExplosionWave(location, waveDistance, blastAttack)) {
+          isVisible = true; // alpha10
           RedrawPlayScreen();
           AnimDelay(DELAY_NORMAL);
         }
       }
-      ClearOverlays();
+
+      // alpha10 bug fix; clear overlays only if action is visible
+      if (isVisible) ClearOverlays();
     }
 
     private bool ApplyExplosionWave(Location center, int waveDistance, BlastAttack blast)
