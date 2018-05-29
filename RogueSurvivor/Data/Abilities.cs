@@ -35,6 +35,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsLawEnforcer { get { return Flags.NONE != (m_Flags & Flags.IS_LAW_ENFORCER); } }
     public bool IsIntelligent { get { return Flags.NONE != (m_Flags & Flags.IS_INTELLIGENT); } }
     public bool IsRotting { get { return Flags.NONE != (m_Flags & Flags.IS_ROTTING); } }
+    public bool CanDisarm { get { return false; } } // mock up alpha10
     public bool AI_CanUseAIExits { get { return Flags.NONE != (m_Flags & Flags.AI_CAN_USE_AI_EXITS); } }
     public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
 

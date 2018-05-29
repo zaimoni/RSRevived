@@ -162,6 +162,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_DESTROY = new Verb("destroy");
     private readonly Verb VERB_DIE = new Verb("die");
     private readonly Verb VERB_DIE_FROM_STARVATION = new Verb("die from starvation", "dies from starvation");
+    private readonly Verb VERB_DISARM = new Verb("disarm");  // alpha10
     private readonly Verb VERB_DISCARD = new Verb("discard");
     private readonly Verb VERB_DRAG = new Verb("drag");
     private readonly Verb VERB_DROP = new Verb("drop");
@@ -6625,92 +6626,92 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeActor(Actor actor)
     {
-      var stringList = new List<string>(10);
+      var lines = new List<string>(10);
       if (null != actor.Faction) {
-        stringList.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name())
+        lines.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name())
                                        : string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
-      } else stringList.Add(string.Format("{0}.", actor.Name.Capitalize()));
+      } else lines.Add(string.Format("{0}.", actor.Name.Capitalize()));
 
-      stringList.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
-      stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
+      lines.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
+      lines.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
-      if (aiController?.Order != null) stringList.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
+      if (aiController?.Order != null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
       if (actor.HasLeader) {
         if (actor.Leader.IsPlayer) {
-          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD) stringList.Add("Trust : BOND.");
-          else if (actor.TrustInLeader >= Rules.TRUST_MAX) stringList.Add("Trust : MAX.");
-          else stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
+          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD) lines.Add("Trust : BOND.");
+          else if (actor.TrustInLeader >= Rules.TRUST_MAX) lines.Add("Trust : MAX.");
+          else lines.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
 
-          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader) stringList.Add("Ordered to not follow you.");
-          stringList.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
-          stringList.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
-          stringList.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
-          stringList.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
+          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader) lines.Add("Ordered to not follow you.");
+          lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
+          lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
+          lines.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
+          lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
         } else
-          stringList.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
+          lines.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
       }
       if (actor.MurdersCounter > 0 && Player.Model.Abilities.IsLawEnforcer) {
-        stringList.Add("WANTED FOR MURDER!");
-        stringList.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersCounter)));
+        lines.Add("WANTED FOR MURDER!");
+        lines.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersCounter)));
       } else if (actor.HasLeader && actor.Leader.IsPlayer && actor.IsTrustingLeader) {
-        stringList.Add(actor.MurdersCounter > 0
+        lines.Add(actor.MurdersCounter > 0
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(actor.MurdersCounter))
                      : "Has committed no murders.");
       }
-      if (actor.IsAggressorOf(Player)) stringList.Add("Aggressed you.");
-      if (Player.IsSelfDefenceFrom(actor)) stringList.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
-      if (Player.IsAggressorOf(actor)) stringList.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
-      if (actor.IsSelfDefenceFrom(Player)) stringList.Add("Killing you would be self-defence.");
-      if (Player.AreIndirectEnemies(actor)) stringList.Add("You are enemies through relationships.");
+      if (actor.IsAggressorOf(Player)) lines.Add("Aggressed you.");
+      if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
+      if (Player.IsAggressorOf(actor)) lines.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
+      if (actor.IsSelfDefenceFrom(Player)) lines.Add("Killing you would be self-defence.");
+      if (Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through relationships.");
 #if POLICE_NO_QUESTIONS_ASKED
       if (Player.Model.Abilities.IsLawEnforcer && Player.Threats.IsThreat(actor)) {
         stringList.Add("Is wanted for unspecified violent crimes.");
       }
 #endif
-      stringList.Add("");
+      lines.Add("");
       string str = DescribeActorActivity(actor);
-      stringList.Add(str ?? " ");
+      lines.Add(str ?? " ");
       if (actor.Model.Abilities.HasToSleep) {
-        if (actor.IsExhausted) stringList.Add("Exhausted!");
-        else if (actor.IsSleepy) stringList.Add("Sleepy.");
+        if (actor.IsExhausted) lines.Add("Exhausted!");
+        else if (actor.IsSleepy) lines.Add("Sleepy.");
       }
       if (actor.Model.Abilities.HasToEat) {
-        if (actor.IsStarving) stringList.Add("Starving!");
-        else if (actor.IsHungry) stringList.Add("Hungry.");
+        if (actor.IsStarving) lines.Add("Starving!");
+        else if (actor.IsHungry) lines.Add("Hungry.");
       }
       else if (actor.Model.Abilities.IsRotting) {
-        if (actor.IsRotStarving) stringList.Add("Starving!");
-        else if (actor.IsRotHungry) stringList.Add("Hungry.");
+        if (actor.IsRotStarving) lines.Add("Starving!");
+        else if (actor.IsRotHungry) lines.Add("Hungry.");
       }
       if (actor.Model.Abilities.HasSanity) {
-        if (actor.IsInsane) stringList.Add("Insane!");
-        else if (actor.IsDisturbed) stringList.Add("Disturbed.");
+        if (actor.IsInsane) lines.Add("Insane!");
+        else if (actor.IsDisturbed) lines.Add("Disturbed.");
       }
 
       if (Player.IsEnemyOf(actor)) {
       Attack m_p_attack = Player.MeleeAttack(actor);
       Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
       float melee_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
-      stringList.Add("% hit: "+melee_p_hit.ToString());
+      lines.Add("% hit: "+melee_p_hit.ToString());
       Attack m_a_attack = actor.MeleeAttack(Player);
       Defence p_defense = Rules.ActorDefence(Player, Player.CurrentDefence);
       float melee_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
-      stringList.Add("% be hit: "+melee_a_hit.ToString());
+      lines.Add("% be hit: "+melee_a_hit.ToString());
 //       Attack attack = attacker.RangedAttack(distance, defender);
       if (0<Player.CurrentRangedAttack.Range) {
         Attack r_p_attack = Player.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), actor);
         float ranged_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
-        stringList.Add("% shot: "+ranged_p_hit.ToString());
+        lines.Add("% shot: "+ranged_p_hit.ToString());
       }
       if (0<actor.CurrentRangedAttack.Range) {
         Attack r_a_attack = actor.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), Player);
         float ranged_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
-        stringList.Add("% be shot: "+ranged_a_hit.ToString());
+        lines.Add("% be shot: "+ranged_a_hit.ToString());
       }
       } // m_Player.IsEnemyOf(actor)
 
       // main stat block
-      stringList.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
+      lines.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
       var stringBuilder = new StringBuilder();
       int num1 = actor.MaxHPs;
       stringBuilder.Append(actor.HitPoints != num1
@@ -6722,25 +6723,66 @@ namespace djack.RogueSurvivor.Engine
                            ? string.Format("   STA : {0}/{1}", actor.StaminaPoints, num2)
                            : string.Format("   STA : {0} MAX", actor.StaminaPoints));
       }
-      stringList.Add(stringBuilder.ToString());
+      lines.Add(stringBuilder.ToString());
       Attack attack = actor.MeleeAttack();
-      stringList.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", attack.HitValue, attack.DamageValue));
+      lines.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", attack.HitValue, attack.DamageValue));
       Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
-      stringList.Add(string.Format("Def : {0:D2}", defence.Value));
-      stringList.Add(string.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
-      stringList.Add(" ");
-      stringList.Add(actor.Model.FlavorDescription);
-      stringList.Add(" ");
+      lines.Add(string.Format("Def : {0:D2}", defence.Value));
+      lines.Add(string.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
+      lines.Add(" ");
+      lines.Add(actor.Model.FlavorDescription);
+      lines.Add(" ");
       if (actor.Sheet.SkillTable != null && actor.Sheet.SkillTable.CountSkills > 0) {
         foreach (var skill in actor.Sheet.SkillTable.Skills)
-          stringList.Add(string.Format("{0}-{1}", skill.Value, Skills.Name(skill.Key)));
-        stringList.Add(" ");
+          lines.Add(string.Format("{0}-{1}", skill.Value, Skills.Name(skill.Key)));
+        lines.Add(" ");
       }
+
+      // alpha10
+      // 8. Unusual abilities
+      // unusual abilities for undeads
+      if (actor.Model.Abilities.IsUndead) {
+        // fov
+        lines.Add(string.Format("- FOV : {0}.", actor.Model.StartingSheet.BaseViewRange));
+
+        // smell rating
+        int smell = (int)(100 * actor.Smell);  // applies z-tracker skill
+        lines.Add(smell == 0 ? "- Has no sense of smell." :
+                  smell < 50 ? "- Has poor sense of smell." :
+                  smell < 100 ? "- Has good sense of smell." :
+                                "- Has excellent sense of smell.");
+
+        // grab?
+        if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
+
+        if (actor.Model.Abilities.IsUndeadMaster) lines.Add("- Other undeads follow this undead tracks.");
+        else if (smell > 0) lines.Add("- This undead will follow zombie masters tracks.");
+        if (actor.Model.Abilities.IsIntelligent) lines.Add("- This undead is intelligent.");
+        if (actor.Model.Abilities.CanDisarm) lines.Add("- This undead can disarm.");
+        if (actor.Model.Abilities.CanJump) {
+          if (actor.Model.Abilities.CanJumpStumble) lines.Add("- This undead can jump but may stumble.");
+          else lines.Add("- This undead can jump.");
+        }
+        if (actor.AbleToPush) lines.Add("- This undead can push.");
+        if (actor.Model.Abilities.ZombieAI_Explore) lines.Add("- This undead will explore.");
+
+        // things some of them cannot do
+        if (!actor.Model.Abilities.IsRotting) lines.Add("- This undead will not rot.");
+        if (!actor.Model.Abilities.CanBashDoors) lines.Add("- This undead cannot bash doors.");
+        if (!actor.Model.Abilities.CanBreakObjects) lines.Add("- This undead cannot break objects.");
+        if (!actor.Model.Abilities.CanZombifyKilled) lines.Add("- This undead cannot infect livings.");
+        if (!actor.Model.Abilities.AI_CanUseAIExits) lines.Add("- This undead live in this map.");
+      }
+      // misc unusual abilities
+      if (actor.Model.Abilities.IsLawEnforcer) lines.Add("- Is a law enforcer.");
+      if (actor.Model.Abilities.IsSmall) lines.Add("- Is small and can sneak through things.");
+
+      // 9. Inventory.
       if (!actor.Inventory?.IsEmpty ?? false) {
-        stringList.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, actor.MaxInv));
-        stringList.AddRange(DescribeInventory(actor.Inventory));
+        lines.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, actor.MaxInv));
+        lines.AddRange(DescribeInventory(actor.Inventory));
       }
-      return stringList.ToArray();
+      return lines.ToArray();
     }
 
     static private string DescribeActorActivity(Actor actor)
@@ -7904,35 +7946,55 @@ namespace djack.RogueSurvivor.Engine
       Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
-      int num1 = m_Rules.RollSkill(attack.HitValue);
-      int num2 = m_Rules.RollSkill(defence.Value);
+      int hitRoll = m_Rules.RollSkill(attack.HitValue);
+      int defRoll = m_Rules.RollSkill(defence.Value);
       // 2x damage against sleeping targets
-      int dmg = (num1 > num2 ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
+      int dmg = (hitRoll > defRoll ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
-      bool player1 = ForceVisibleToPlayer(defender);
-      bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
-      bool flag = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES flag?
+      bool isDefVisible = ForceVisibleToPlayer(defender);
+      bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
+      bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
       bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
-      if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
+      if (!isDefVisible && !isAttVisible && (!isPlayer && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
         AddMessageIfAudibleForPlayer(attacker.Location, "You hear fighting");
-      if (player2) {
+      if (isAttVisible) {
         AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
         if (display_defender) AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
         AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_MELEE_ATTACK));
       }
-      if (num1 > num2) {
+      if (hitRoll > defRoll) {
+        // alpha10
+        // roll for attacker disarming defender
+        if (attacker.Model.Abilities.CanDisarm && m_Rules.RollChance(attack.DisarmChance)) {
+          Item disarmIt = Disarm(defender);
+          if (null != disarmIt) {
+            // show
+            if (isDefVisible) {
+              if (isPlayer) ClearMessages();
+              AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_DISARM), defender));
+              AddMessage(new Data.Message(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter));
+              if (isPlayer) {
+                AddMessagePressEnter();
+              } else {
+                RedrawPlayScreen();
+                AnimDelay(DELAY_SHORT);
+              }
+            }
+          }
+        }
+
         if (dmg > 0) {
           InflictDamage(defender, dmg);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, dmg));
             attacker.RottingEat(attacker.BiteNutritionValue(dmg));
-            if (player2)
+            if (isAttVisible)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
             defender.Infect(Rules.InfectionForDamage(attacker, dmg));
           }
           if (defender.HitPoints <= 0) {
-            if (player2 || player1) {
+            if (isAttVisible || isDefVisible) {
               AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               RedrawPlayScreen();
@@ -7947,7 +8009,7 @@ namespace djack.RogueSurvivor.Engine
               if (to_immediately_zombify) {
                 defender.Location.Map.TryRemoveCorpseOf(defender);
                 Zombify(attacker, defender, false);
-                if (player1) {
+                if (isDefVisible) {
                   AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
                   RedrawPlayScreen();
                   AnimDelay(DELAY_LONG);
@@ -7964,24 +8026,24 @@ namespace djack.RogueSurvivor.Engine
               AnimDelay(DELAY_LONG);
 #endif
             }
-          } else if (player2 || player1) {
+          } else if (isAttVisible || isDefVisible) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
             RedrawPlayScreen();
-            AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
+            AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-        } else if (player2 || player1) {
+        } else if (isAttVisible || isDefVisible) {
           AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
           if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
           RedrawPlayScreen();
-          AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
+          AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      else if (player2 || player1) {
+      else if (isAttVisible || isDefVisible) {
         AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         RedrawPlayScreen();
-        AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
+        AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
@@ -7990,13 +8052,13 @@ namespace djack.RogueSurvivor.Engine
           --itemMeleeWeapon.Quantity;
         else
           attacker.Inventory.RemoveAllQuantity(itemMeleeWeapon);
-        if (player2) {
+        if (isAttVisible) {
           AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)));
           RedrawPlayScreen();
-          AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
+          AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      if (player1 || player2) ClearOverlays();  // alpha10: if test
+      if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
     }
 
     public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
@@ -8800,10 +8862,11 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
     }
 
-    public void DoUnequipItem(Actor actor, Item it)
+    public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
     {
       it.Unequip();
       actor.OnUnequipItem(it);
+      if (!canMessage) return;
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
@@ -9626,6 +9689,40 @@ namespace djack.RogueSurvivor.Engine
       // If m_Player has just died, then we should be in the current district and thus clear to find a player
       // furthermore, the viewport didn't pan away to another player
       if (Player == deadGuy) FindPlayer();
+    }
+
+    // alpha10
+    /// <param name="actor"></param>
+    /// <returns>the disarmed item or null if actor had no equipped item</returns>
+    private Item Disarm(Actor actor)
+    {
+      Item disarmIt = null;
+
+      // pick equipped item to disarm : prefer weapon, then any right handed item(?), then left handed.
+      disarmIt = actor.GetEquippedWeapon();
+      if (null == disarmIt) {
+        disarmIt = actor.GetEquippedItem(DollPart.RIGHT_HAND);
+        if (null == disarmIt) disarmIt = actor.GetEquippedItem(DollPart.LEFT_HAND);
+       }
+
+       if (null == disarmIt) return null;
+
+       // unequip, remove from inv and drop item in a random adjacent tile
+       // if none possible, will drop on same tile (which then has no almost no gameplay effect 
+       // because the actor can take it back asap at no ap cost... unless he dies)
+       DoUnequipItem(actor, disarmIt, false);
+       actor.Inventory.RemoveAllQuantity(disarmIt);
+       List<Point> dropTiles = new List<Point>(8);
+       actor.Location.Map.ForEachAdjacent(actor.Location.Position, pt => {
+         // checking if can drop there is eq to checking if can throw it there
+         if (!actor.Location.Map.IsBlockingThrow(pt.X, pt.Y)) dropTiles.Add(pt);
+       });
+       Point dropOnTile;
+       if (dropTiles.Count > 0) dropOnTile = m_Rules.DiceRoller.Choose(dropTiles);
+       else dropOnTile = actor.Location.Position;
+       actor.Location.Map.DropItemAt(disarmIt, dropOnTile);
+
+       return disarmIt; // done
     }
 
     private ActorModel CheckUndeadEvolution(Actor undead)
