@@ -647,6 +647,8 @@ namespace djack.RogueSurvivor.Engine
             m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE);
             m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE);
       m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
+      // alpha10
+      m_MusicManager.Load(GameMusics.SURFACE, GameMusics.SURFACE_FILE);
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -884,7 +886,7 @@ namespace djack.RogueSurvivor.Engine
               m_UI.UI_Repaint();
               LoadGame(GetUserSave());
               LogSaveScumStats();
-              RestartSimThread();
+              StartSimThread();
               return true;
             }
             break;
@@ -3097,12 +3099,12 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.SAVE_GAME:
                 StopSimThread();
                 HandleSaveGame();
-                RestartSimThread();
+                StartSimThread();
                 break;
               case PlayerCommand.LOAD_GAME:
                 StopSimThread();
                 HandleLoadGame();
-                RestartSimThread();
+                StartSimThread();
                 player = Player;
                 flag1 = false;
                 m_HasLoadedGame = true;

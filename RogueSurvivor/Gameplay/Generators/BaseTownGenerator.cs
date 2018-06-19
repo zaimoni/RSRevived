@@ -197,6 +197,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddWreckedCarsOutside(map, rect);
       DecorateOutsideWallsWithPosters(map, rect, m_Params.PostersChance);
       DecorateOutsideWallsWithTags(map, rect, m_Params.TagsChance);
+      map.BgMusic = GameMusics.SURFACE; // alpha10: music
       return map;
     }
 
@@ -2139,16 +2140,17 @@ restart:
     {
       policeBlock = m_DiceRoller.Choose(freeBlocks);
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
-      Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map);
-      Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
-      AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP, true);
-      AddExit(stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), stationJailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), GameImages.DECO_STAIRS_UP, true);
-      m_Params.District.AddUniqueMap(stationOfficesLevel);
-      m_Params.District.AddUniqueMap(stationJailsLevel);
-      Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(stationOfficesLevel);
-      Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(stationJailsLevel);
+      Map officesLevel = GeneratePoliceStation_OfficesLevel(map);
+      Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
+      officesLevel.BgMusic = jailsLevel.BgMusic = GameMusics.SURFACE;   // alpha10 music
+      AddExit(map, stairsToLevel1, officesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(officesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP, true);
+      AddExit(officesLevel, new Point(1, officesLevel.Height - 2), jailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(jailsLevel, new Point(1, 1), officesLevel, new Point(1, officesLevel.Height - 2), GameImages.DECO_STAIRS_UP, true);
+      m_Params.District.AddUniqueMap(officesLevel);
+      m_Params.District.AddUniqueMap(jailsLevel);
+      Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(officesLevel);
+      Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(jailsLevel);
     }
 
     private void GeneratePoliceStation(Map surfaceMap, Block policeBlock, out Point stairsToLevel1)
