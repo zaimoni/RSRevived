@@ -217,6 +217,9 @@ namespace djack.RogueSurvivor.Engine
     private bool m_IsGameRunning = true;
     private readonly List<Overlay> m_Overlays = new List<Overlay>();
     private readonly object m_SimMutex = new object();
+    readonly Object m_SimStateLock = new Object(); // alpha10 lock when reading sim thread state flags
+    bool m_SimThreadDoRun;  // alpha10 sim thread state: set by main thread to false to ask sim thread to stop.
+    bool m_SimThreadIsWorking;  // alpha10 sim thread state: set by sim thread to false when has exited loop. 
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
     public const int MINIMAP_RADIUS = 50;
@@ -1428,7 +1431,8 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       RedrawPlayScreen();
       Session.Get.World.ScheduleForAdvancePlay();   // simulation starts at district A1
-      RestartSimThread();
+      StopSimThread(false);  // alpha10 stop-start
+      StartSimThread();
     }
 
     private void HandleCredits()
@@ -2997,7 +3001,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void StopTheWorld()
     {
-      StopSimThread();
+      StopSimThread();  // alpha10 abort allowed when quitting
       m_IsGameRunning = false;
       m_MusicManager.Stop();
     }
@@ -3088,12 +3092,12 @@ namespace djack.RogueSurvivor.Engine
                 HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
-                StopSimThread();
+                StopSimThread(false);
                 HandleSaveGame();
                 StartSimThread();
                 break;
               case PlayerCommand.LOAD_GAME:
-                StopSimThread();
+                StopSimThread(false);
                 HandleLoadGame();
                 StartSimThread();
                 player = Player;
@@ -3102,7 +3106,7 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.ABANDON_GAME:
                 if (HandleAbandonGame()) {
-                  StopSimThread();
+                  StopSimThread(); // alpha10 abort allowed when quitting
                   flag1 = false;
                   KillActor(null, Player, "suicide");
                   break;
@@ -9808,7 +9812,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void PlayerDied(Actor killer, string reason)
     {
-      StopSimThread();
+      StopSimThread();   // alpha10 abort allowed when dying
       m_UI.UI_SetCursor(null);
       m_MusicManager.Stop();
       m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
@@ -10807,6 +10811,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (Player?.CanTradeWith(actor) ?? false) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
           if (actor.OdorSuppressorCounter > 0) m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx2, gy2, tint);  // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
+
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
@@ -12449,11 +12454,13 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#if OBSOLETE
     private void RestartSimThread()
     {
       StopSimThread();
       StartSimThread();
     }
+#endif
 
     private void StartSimThread()
     {
@@ -12462,47 +12469,86 @@ namespace djack.RogueSurvivor.Engine
           Name = "Simulation Thread"
         };
       }
+      lock (m_SimStateLock) { m_SimThreadDoRun = true; }; // alpha10
       m_SimThread.Start();
     }
 
+#if OBSOLETE
     private void StopSimThread()
     {
       if (m_SimThread == null) return;
       m_SimThread.Abort();
       m_SimThread = null;
     }
+#endif
+
+    // alpha10 StopSimThread is now blocking until the sim thread has actually stopped
+    // allowed to abort when ending a game or dying because of weird bug in release build where the sim thread 
+    // doesnt want to stop when dying as undead and we have to abort it(!)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
+    private void StopSimThread(bool abort=true)
+    {
+      if (null == m_SimThread) return;
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread...");
+
+      // abort thread if asked to otherwise stop it cleanly
+      if (abort) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...aborting sim thread");
+        try {
+          m_SimThread.Abort();
+        } catch (Exception e) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "...exception when aborting (ignored) " + e.Message);
+        }
+        m_SimThread = null;
+        m_SimThreadDoRun = false;
+      } else {
+        // try to stop cleanly
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
+        lock (m_SimStateLock) { m_SimThreadDoRun = false; };
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
+        while(true) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");
+          Thread.Sleep(100);
+          bool stopped = false;
+          lock (m_SimStateLock) { stopped = !m_SimThreadIsWorking; }
+          if (!stopped && !m_SimThread.IsAlive) {
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread is not alive and did not stop properly, consider it stopped");
+            stopped = true;
+          }
+          if (stopped) break;
+        }
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread has stopped");
+        m_SimThread = null;
+      }
+
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread done!");
+    }
 
     private void SimThreadProc()
     {
-#if DEBUG
-        bool have_simulated = false;
-        while (m_SimThread.IsAlive) {
-          lock (m_SimMutex) {
-            have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
-          }
-          if (!have_simulated) Thread.Sleep(200);
-        }
-#else
-      try {
-        bool have_simulated = false;
-        while (m_SimThread.IsAlive) {
-          lock (m_SimMutex) {
-            have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
-          }
-          if (!have_simulated) Thread.Sleep(200);
-        }
-      } catch (Exception ex) {
-        if (ex is ThreadAbortException) return; // this is from the Abort() call
-        using (Bugreport bugreport = new Bugreport(ex)) {
-          bugreport.ShowDialog();   // int return value is not used
-        }
-        // It is exceptionally difficult to completely shut down Rogue Survivor Revived at this point.
-        // RogueSurvivor.vshost.exe doesn't completely go away.
-        Application.Exit();
-        // Thread.CurrentThread.Abort();    // makes RogueSurvivor.exe also stay around
-        // return;  // no-op for not-so-obvious reasons
-      }
-#endif
+       lock (m_SimStateLock) { m_SimThreadIsWorking = true; }  // alpha10
+       bool have_simulated = false;
+       while (m_SimThread.IsAlive) {
+         // alpha10
+         bool stop = false;
+         lock (m_SimStateLock) { stop = !m_SimThreadDoRun; }
+         if (stop) break;
+
+         lock (m_SimMutex) {
+           try {
+             have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
+           } catch (Exception e) {
+             Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: exception while running sim thread!");
+             Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: " + e.Message);
+             // stop sim thread, better than crashing i guess...
+             break;
+           }
+         }
+         if (!have_simulated) Thread.Sleep(200);
+       }
     }
 
     private void ShowNewAchievement(Achievement.IDs id, Actor victor)
@@ -12555,6 +12601,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
       ClearMessages();
       AddMessagePressEnter();
+      ClearOverlays();  // alpha10 fix
       m_MusicManager.Stop();
     }
 
@@ -12611,8 +12658,8 @@ namespace djack.RogueSurvivor.Engine
         switch (Session.Get.ScriptStage_PoliceStationPrisoner)
         {
           case 0:
-            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && !theActor.IsSleeping)
-            {
+            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && !theActor.IsSleeping && IsVisibleToPlayer(theActor))  // alpha10 fix: and visible!)
+                        {
               lock (Session.Get)
               {
                 string[] local_6 = null;
@@ -12620,7 +12667,7 @@ namespace djack.RogueSurvivor.Engine
                   local_6 = new string[13] {    // standard message
                     "\" Psssst! Hey! You over there! \"",
                     string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  theActor.Name,  HisOrHer(theActor)),
-                    "\" Listen! I shouldn't be here! Just drived a bit too fast!",
+                    "\" Listen! I shouldn't be here! Just drove a bit too fast!",
                     "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                     "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
                     "  Now listen! Let's make a deal...",
@@ -12792,7 +12839,8 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_MusicManager.Play(GameMusics.REINCARNATE, MusicPriority.PRIORITY_EVENT);
-      RestartSimThread();
+      StopSimThread(false);  // alpha10 stop-start
+      StartSimThread();
     }
 
     static private string DescribeAvatar(Actor a)
