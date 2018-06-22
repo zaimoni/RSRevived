@@ -2339,7 +2339,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetFirstMatching<ItemSprayScent>(fn);
     }
 
-    protected ActorAction BehaviorUseStenchKiller()
+    protected ActionSprayOdorSuppressor BehaviorUseStenchKiller()
     {
       var spray = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (spray == null) return null;
@@ -2394,9 +2394,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       return null;  // nope.
-
-      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
-      return (m_Actor.CanUse(spray) ? new ActionUseItem(m_Actor, spray) : null);
     }
 
     protected bool BehaviorEquipStenchKiller(RogueGame game)
@@ -2743,6 +2740,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           } else {
             ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location);
             if (null != tmpAction) {
+              // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
+              // might spam for a few turns, but its better than not understanding whats going on.
+              RogueGame.DoSay(m_Actor, actor, String.Format("Hey {0}, let's make a deal!", actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+
               m_Actor.Activity = Activity.FOLLOWING;
               m_Actor.TargetActor = actor;
               // need an after-action "hint" to the target on where/who to go to

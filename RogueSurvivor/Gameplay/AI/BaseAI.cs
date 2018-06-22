@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal abstract class BaseAI : ActorController
     {
-    protected const int FLEE_THROUGH_EXIT_CHANCE = 50;
+    protected const int FLEE_THROUGH_EXIT_CHANCE = 90;  // alpha10 increased from 50%
     protected const int EMOTE_FLEE_CHANCE = 30;
     private const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
     protected const int EMOTE_CHARGE_CHANCE = 30;
@@ -775,8 +775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void RunIfPossible()
     {
-      if (!m_Actor.CanRun()) return;
-      m_Actor.IsRunning = true;
+      m_Actor.IsRunning = m_Actor.CanRun();  // alpha10 fix
     }
 
     /// <summary>

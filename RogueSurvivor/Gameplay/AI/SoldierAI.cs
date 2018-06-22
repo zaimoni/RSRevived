@@ -228,16 +228,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
-      if (current_enemies != null) {    // this is morally dead code (needs testing)
-        Percept target = FilterNearest(current_enemies);
-        if (m_Actor.Location == target.Location) {
-          Actor actor = target.Percepted as Actor;
-          target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
-        }
-        tmpAction = BehaviorChargeEnemy(target);
-        if (null != tmpAction) return tmpAction;
-      }
-
       // stack grabbing/trade goes here
 
       if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {

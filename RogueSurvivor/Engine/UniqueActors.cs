@@ -34,7 +34,6 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor Santaman { get; private set; }
     public UniqueActor TheSewersThing { get; private set; }
 
-    // \todo NEXT SAVEFILE BREAK: Father Time, with a legendary scythe.
     // This must be a value copy anyway (i.e. we gain almost nothing from having the authoritative storage be an array rather than auto properties)
     public UniqueActor[] ToArray()
     {
@@ -47,7 +46,8 @@ namespace djack.RogueSurvivor.Engine
         PoliceStationPrisonner,
         Roguedjack,
         Santaman,
-        TheSewersThing
+        TheSewersThing,
+        JasonMyers  // alpha10
       };
     }
 

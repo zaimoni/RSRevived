@@ -61,10 +61,10 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17;    // XXX 0.17f makes this useful at L1
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
-    public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
+    public static int SKILL_HIGH_STAMINA_STA_BONUS = 8;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
-    public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
-    public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
+    public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15f;
+    public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 3;
@@ -73,12 +73,12 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
 
     public static int SKILL_AGILE_ATK_BONUS = 2;
-    public static int SKILL_BOWS_ATK_BONUS = 5;
-    public static int SKILL_BOWS_DMG_BONUS = 2;
-    public static int SKILL_FIREARMS_ATK_BONUS = 5;
+    public static int SKILL_BOWS_ATK_BONUS = 10;
+    public static int SKILL_BOWS_DMG_BONUS = 4;
+    public static int SKILL_FIREARMS_ATK_BONUS = 19;
     public static int SKILL_FIREARMS_DMG_BONUS = 2;
-    public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 3;
-    public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 1;
+    public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 6;
+    public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 2;
     public static int SKILL_STRONG_DMG_BONUS = 2;
     public static int SKILL_ZAGILE_ATK_BONUS = 1;
     public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
@@ -1260,46 +1260,54 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsEnemyOf(Actor target)
+    public bool IsEnemyOf(Actor target, bool checkGroups = true)    // extra parameter from RS Alpha 10
     {
       if (null == target) return false;
       if (Faction.IsEnemyOf(target.Faction)) return true;
       if (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
-      if (AreDirectEnemies(target)) return true;
-      return AreIndirectEnemies(target);
+      if (ArePersonalEnemies(target)) return true;
+      return checkGroups && AreIndirectEnemies(target);
     }
 
-
-    public bool AreDirectEnemies(Actor other)
+    private bool ArePersonalEnemies(Actor other) // RS alpha 10 had better name
     {
-      if (other == null || other.IsDead) return false;
+      if (other?.IsDead ?? true) return false;
+      // following *should* be symmetric
       return (m_AggressorOf?.Contains(other) ?? false) || (m_SelfDefenceFrom?.Contains(other) ?? false) || other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this);
     }
 
     public bool AreIndirectEnemies(Actor other)
     {
-      if (other == null || other.IsDead) return false;
-      if (HasLeader) {
-        if (m_Leader.AreDirectEnemies(other)) return true;
-        if (other.HasLeader && m_Leader.AreDirectEnemies(other.Leader)) return true;
-        foreach (Actor follower in m_Leader.Followers) {
-          if (follower != this && follower.AreDirectEnemies(other))
-            return true;
-        }
+      if (other?.IsDead ?? true) return false;
+
+      // my leader enemies are my enemies.
+      // my mates enemies are my enemies.
+      bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
+      {
+        if (groupActor.Leader.IsEnemyOf(target, false)) return true;
+        foreach (Actor mate in groupActor.Leader.Followers)
+          if (mate != groupActor && mate.IsEnemyOf(target, false)) return true;
+        return false;
       }
-      if (CountFollowers > 0) {
-        foreach (Actor mFollower in m_Followers) {
-          if (mFollower.AreDirectEnemies(other)) return true;
-        }
+
+      // my followers enemies are my enemies
+      bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
+      {
+        foreach (Actor follower in groupActor.Followers)
+          if (follower.IsEnemyOf(target, false)) return true;
+        return false;
       }
+
+      if (HasLeader && IsEnemyOfMyLeaderOrMates(this,other)) {
+        if (IsEnemyOfMyLeaderOrMates(this, other)) return true;
+        if (other.HasLeader && m_Leader.IsEnemyOf(other.Leader,false)) return true;
+      }
+      if (0 < CountFollowers && IsEnemyOfMyFollowers(this,other)) return true;
       if (other.HasLeader) {
-        if (other.Leader.AreDirectEnemies(this)) return true;
-        if (HasLeader && other.Leader.AreDirectEnemies(m_Leader)) return true;
-        foreach (Actor follower in other.Leader.Followers) {
-          if (follower != other && follower.AreDirectEnemies(this))
-            return true;
-        }
+        if (IsEnemyOfMyLeaderOrMates(other, this)) return true;
+//      if (HasLeader && other.Leader.IsEnemyOf(m_Leader,false)) return true;
       }
+      if (0 < other.CountFollowers && IsEnemyOfMyFollowers(other,this)) return true;
       return false;
     }
 
@@ -1651,6 +1659,7 @@ namespace djack.RogueSurvivor.Data
       if (!mapObj.IsMovable) return "cannot be moved";
       if (mapObj.Location.Actor != null) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
+      if (null != DraggedCorpse) return "dragging a corpse";
       return "";
     }
 
@@ -1673,6 +1682,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (!AbleToPush) return "cannot shove people";
       if (IsTired) return "tired";
+      if (null != DraggedCorpse) return "dragging a corpse";
       return "";
     }
 
@@ -2430,7 +2440,6 @@ namespace djack.RogueSurvivor.Data
       if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
       if (corpse.Position != Location.Position) return "not there";
       if (corpse.RotLevel > 0) return "corpse not fresh";
-      if (corpse.IsDragged) return "dragged corpse";
       if (!Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
       return "";
     }
@@ -2777,10 +2786,14 @@ namespace djack.RogueSurvivor.Data
       if (target.IsSleeping) return "is sleeping";
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
+      // alpha10 dont bother someone who is fighting or fleeing
+      if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE)
+        return "in combat";
+
 #if OBSOLETE
       if (!IsPlayer) {
 #else
-      if (!IsPlayer && !target.IsPlayer) {
+            if (!IsPlayer && !target.IsPlayer) {
 #endif
         List<Item> theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
         if (null == theirs) return "target unwilling to trade";
@@ -2827,8 +2840,10 @@ namespace djack.RogueSurvivor.Data
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
         if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
+#if OBSOLETE
       } else if (it is ItemSprayScent) {
         if (it.IsUseless) return "no spray left.";
+#endif
       } else if (it is ItemTrap) {
         if (!(it as ItemTrap).Model.UseToActivate) return "does not activate manually";
       } else if (it is ItemEntertainment ent) {

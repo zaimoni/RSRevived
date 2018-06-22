@@ -35,14 +35,14 @@ namespace djack.RogueSurvivor.Engine
     public const int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
     public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
     public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
-    public static int SKILL_AGILE_DEF_BONUS = 2;
-    public static double SKILL_CARPENTRY_BARRICADING_BONUS = 0.2;
-    public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
+    public static int SKILL_AGILE_DEF_BONUS = 4;
+    public static double SKILL_CARPENTRY_BARRICADING_BONUS = 0.15;
+    public static int SKILL_CHARISMATIC_TRUST_BONUS = 2;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
-    public static double SKILL_MEDIC_BONUS = 0.2;
+    public static double SKILL_MEDIC_BONUS = 0.15;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Engine
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 2;
-    public static double SKILL_ZINFECTOR_BONUS = 0.1f;
+    public static double SKILL_ZINFECTOR_BONUS = 0.15f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
     public const int STAMINA_COST_RUNNING = 4;
@@ -86,9 +86,9 @@ namespace djack.RogueSurvivor.Engine
     public const int SANITY_HIT_EATEN_ALIVE = 4*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_HIT_ZOMBIFY = 2*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_HIT_BOND_DEATH = 8*WorldTime.TURNS_PER_HOUR;
-    public const int SANITY_RECOVER_KILL_UNDEAD = 2*WorldTime.TURNS_PER_HOUR;
+    public const int SANITY_RECOVER_KILL_UNDEAD = 3*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_RECOVER_BOND_CHANCE = 5;
-    public const int SANITY_RECOVER_BOND = 30;
+    public const int SANITY_RECOVER_BOND = 4 * WorldTime.TURNS_PER_HOUR;  // was 1h
     public const int FOOD_STARVING_DEATH_CHANCE = 5;
     public const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
     public const int FOOD_VOMIT_STA_COST = 100;
@@ -787,7 +787,7 @@ namespace djack.RogueSurvivor.Engine
     public int CorpseReviveChance(Actor actor, Corpse corpse)
     {
       if (!actor.CanRevive(corpse)) return 0;
-      return corpse.FreshnessPercent / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
+      return corpse.FreshnessPercent / 4 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)

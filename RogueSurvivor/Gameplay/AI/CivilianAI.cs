@@ -295,10 +295,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != tmpAction) return tmpAction;
 
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && CanSee(m_Actor.Leader.Location);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
-      bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
-
 	  List<Percept> friends = FilterNonEnemies(percepts1);
       if (null != enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
@@ -328,16 +324,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
 #endif
       if (null != tmpAction) return tmpAction;
-
-      if (null != enemies && assistLeader) {    // difference between civilian and CHAR/soldier is ok here
-        tmpAction = BehaviorChargeEnemy(FilterNearest(enemies));
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "assisting leader in melee");
-#endif
-          return tmpAction;
-        }
-      }
 
       // handle food after enemies check
       tmpAction = BehaviorEatProactively();

@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts3 = friends.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
-          return actor.Faction != GameFactions.TheCHARCorporation &&  RogueGame.IsInCHARProperty(actor.Location);
+          return actor.Faction != GameFactions.TheCHARCorporation &&  RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
         });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
