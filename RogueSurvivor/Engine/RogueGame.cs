@@ -601,6 +601,12 @@ namespace djack.RogueSurvivor.Engine
       return !actor.Model.DollBody.IsMale ? "her" : "him";
     }
 
+    // alpha10
+    private string HimselfOrHerself(Actor actor)
+    {
+       return actor.Model.DollBody.IsMale ? "himself" : "herself";
+    }
+
     private string TruncateString(string s, int maxLength)
     {
       if (s.Length > maxLength) return s.Substring(0, maxLength);
@@ -2184,26 +2190,11 @@ namespace djack.RogueSurvivor.Engine
         }
 
 #region 1. Update odors.
+#if OBSOLETE
         map.ApplyArtificialStench();
+#endif
 
-        int odorDecayRate = 1;
-        if (map == map.District.SewersMap) odorDecayRate += 2;
-        else if (map.Lighting == Lighting.OUTSIDE) {
-          switch (Session.Get.World.Weather)
-          {
-          case Weather.CLEAR:
-          case Weather.CLOUDY: break;
-          case Weather.RAIN:
-            ++odorDecayRate;
-            break;
-          case Weather.HEAVY_RAIN:
-            odorDecayRate += 2;
-            break;
-          default: throw new ArgumentOutOfRangeException("unhandled weather");
-          }
-        }
-
-        map.DecayScents(odorDecayRate);
+        map.DecayScents();
 #endregion
         // 2. Regen actors AP & STA
         foreach (Actor actor in map.Actors) actor.PreTurnStart();
@@ -9426,6 +9417,19 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, string.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
     }
 
+    // alpha10 new way to use spray scent
+    public void DoSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
+    {
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);  // spend AP.
+      --suppressor.SprayQuantity;   // spend spray.
+      sprayOn.OdorSuppressorCounter += suppressor.Model.Strength; // add odor suppressor on spray target
+
+      // message.
+      if (ForceVisibleToPlayer(actor)) {
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY), (sprayOn == actor ? HimselfOrHerself(actor) : sprayOn.Name))));
+      }
+    }
+
     private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
     {
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -10599,10 +10603,12 @@ namespace djack.RogueSurvivor.Engine
                   m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_ZOMBIEMASTER, screen.X, screen.Y);
                 }
               }
+#if OBSOLETE
             } else {
               int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
               if (scentByOdorAt > 0)
                 m_UI.UI_DrawTransparentImage((float) (0.9 * scentByOdorAt / OdorScent.MAX_STRENGTH), GameImages.ICON_SCENT_LIVING_SUPRESSOR, screen.X, screen.Y);
+#endif
             }
           }
           if (player) {
@@ -10800,6 +10806,7 @@ namespace djack.RogueSurvivor.Engine
             else if (actor.IsDisturbed) m_UI.UI_DrawImage(GameImages.ICON_SANITY_DISTURBED, gx2, gy2, tint);
           }
           if (Player?.CanTradeWith(actor) ?? false) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
+          if (actor.OdorSuppressorCounter > 0) m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx2, gy2, tint);  // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
@@ -11183,7 +11190,7 @@ namespace djack.RogueSurvivor.Engine
       Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
       return (actor.Model.Abilities.IsUndead
             ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
-            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.CountFollowers, actor.MaxFollowers));
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
     public void DrawActorStatus(Actor actor, int gx, int gy)
@@ -11251,6 +11258,12 @@ namespace djack.RogueSurvivor.Engine
       }
       gy += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, ActorStatString(actor), gx, gy, new Color?());
+
+      // 5. Odor suppressor // alpha10
+      gy += BOLD_LINE_SPACING;
+      if (0 < actor.OdorSuppressorCounter) {
+        m_UI.UI_DrawStringBold(Color.LightBlue, string.Format("Odor suppr : {0} -{1}", actor.OdorSuppressorCounter, actor.Location.OdorsDecay()), gx, gy);
+      }
     }
 
     static private string TrapStatusIcon(ItemTrap it)

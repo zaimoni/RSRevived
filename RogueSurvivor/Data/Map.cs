@@ -1812,6 +1812,7 @@ retry:
     }
 #endif
 
+#if OBSOLETE
     public void ApplyArtificialStench()
     {
         var living_suppress = new Dictionary<Point,int>();
@@ -1842,12 +1843,18 @@ retry:
         foreach(var x in living_generate) ModifyScentAt(Odor.LIVING, x.Value, x.Key);
         foreach(var x2 in living_suppress) ModifyScentAt(Odor.LIVING, -x2.Value, x2.Key);
     }
+#endif
 
-    public void DecayScents(int odorDecayRate)
+    public void DecayScents()
     {
+      // Cf. Location.OdorsDecay
+      int mapOdorDecayRate = 1;
+      if (this == District.SewersMap) mapOdorDecayRate += 2;
+
       var discard = new List<OdorScent>();
       var discard2 = new List<Point>();
       foreach(var tmp in m_ScentsByPosition) {
+        int odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
         foreach(OdorScent scent in tmp.Value) {
           scent.Strength -= odorDecayRate;
           if (0 >= scent.Strength) discard.Add(scent);  // XXX looks like it could depend on OdorScent being class rather than struct, but if that were to matter we'd have to lock anyway.

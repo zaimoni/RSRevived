@@ -52,6 +52,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_MELEE_ATTACK = "Icons\\melee_attack";
     public const string ICON_MELEE_MISS = "Icons\\melee_miss";
     public const string ICON_MELEE_DAMAGE = "Icons\\melee_damage";
+    public const string ICON_ODOR_SUPPRESSED = "Icons\\odor_suppressed";  // alpha10
     public const string ICON_OUT_OF_AMMO = "Icons\\out_of_ammo";
     public const string ICON_OUT_OF_BATTERIES = "Icons\\out_of_batteries";
     public const string ICON_RANGED_ATTACK = "Icons\\ranged_attack";
@@ -466,7 +467,8 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ICON_LINE_CLEAR);
       Load(ICON_SCENT_LIVING);
       Load(ICON_SCENT_ZOMBIEMASTER);
-      Load(ICON_SCENT_LIVING_SUPRESSOR);    // XXX spellcheck
+      //Load(ICON_SCENT_LIVING_SUPRESSOR); // alpha10 obsolete; spellcheck
+      Load(ICON_ODOR_SUPPRESSED);  // alpha10
       Load(ICON_AGGRESSOR);
       Load(ICON_INDIRECT_ENEMIES);
       Load(ICON_SELF_DEFENCE);

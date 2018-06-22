@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Data
     private int m_MurdersCounter;
     private int m_Infection;
     private Corpse m_DraggedCorpse;
-    private List<Item> m_BoringItems;
+    public int OdorSuppressorCounter;   // XXX sparse field so possible candidate for a setter/getter backed by Dictionary<Actor,int>
     public readonly Engine.ActorScoring ActorScoring;
 
     public ActorModel Model
@@ -2850,6 +2850,49 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantUseItem(it));
     }
 
+    // alpha10
+    private string ReasonCantSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn)
+    {
+#if DEBUG
+       if (suppressor == null) throw new ArgumentNullException(nameof(suppressor));
+       if (sprayOn == null) throw new ArgumentNullException(nameof(sprayOn));
+#endif
+
+       ///////////////////////////////////////////////////////
+       // Cant if any is true:
+       // 1. Actor cannot use items
+       // 2. Not an odor suppressor
+       // 3. Spray is not equiped by actor or has no spray left.
+       // 4. SprayOn is not self or adjacent.
+       ////////////////////////////////////////////////////////
+
+       // 1. Actor cannot use items
+       if (!Model.Abilities.CanUseItems) return "cannot use items";
+
+       // 2. Not an odor suppressor
+       if (Odor.SUPPRESSOR != suppressor.Model.Odor) return "not an odor suppressor";
+
+       // 3. Spray is not equiped by actor or has no spray left.
+       if (suppressor.SprayQuantity <= 0) return "no spray left";
+       if (!suppressor.IsEquipped || (!Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
+
+       // 4. SprayOn is not self or adjacent.
+       if (sprayOn != this && Rules.IsAdjacent(Location, sprayOn.Location)) return "not adjacent";
+            
+       return "";  // all clear.
+    }
+
+    public bool CanSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn, out string reason)
+    {
+      reason = ReasonCantSprayOdorSuppressor(suppressor, sprayOn);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn)
+    {
+      return string.IsNullOrEmpty(ReasonCantSprayOdorSuppressor(suppressor,sprayOn));
+    }
+
     private string ReasonCantGet(Item it)
     {
 #if DEBUG
@@ -3308,6 +3351,13 @@ namespace djack.RogueSurvivor.Data
 
     public void DropScent()
     {
+      // decay suppressor
+      if (0 < OdorSuppressorCounter) {
+        OdorSuppressorCounter -= Location.OdorsDecay();
+        if (0 > OdorSuppressorCounter) OdorSuppressorCounter = 0;
+        return;
+      }
+
       if (Model.Abilities.IsUndead) {
         if (!Model.Abilities.IsUndeadMaster) return;
         Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, UNDEAD_MASTER_SCENT_DROP, Location.Position);
@@ -3365,7 +3415,6 @@ namespace djack.RogueSurvivor.Data
 
       m_Controller?.OptimizeBeforeSaving();
       m_Inventory?.OptimizeBeforeSaving();
-      m_BoringItems?.TrimExcess();
     }
 
 	// C# docs indicate using Actor as a key wants these

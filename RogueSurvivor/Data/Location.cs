@@ -73,6 +73,33 @@ namespace djack.RogueSurvivor.Data
     public Exit Exit { get { return m_Map.GetExitAt(m_Position); } }
     public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
 
+    // alpha10
+    public int OdorsDecay()
+    {
+      int decay = 1;  // base decay
+
+      // sewers?
+      if (Map == Map.District.SewersMap) decay += 2;
+      // outside? = weather affected.
+      else if (!Map.IsInsideAt(Position)) {   // alpha10 weather affect only outside tiles
+        switch (Engine.Session.Get.World.Weather) {
+        case Weather.CLEAR:
+        case Weather.CLOUDY:
+          // default decay.
+          break;
+        case Weather.RAIN:
+          decay += 1;
+          break;
+        case Weather.HEAVY_RAIN:
+          decay += 2;
+          break;
+        default: throw new InvalidCastException("unhandled weather");
+        }
+      }
+
+      return decay;
+    }
+
     public override int GetHashCode()
     {
       return m_Map.GetHashCode() ^ m_Position.GetHashCode();

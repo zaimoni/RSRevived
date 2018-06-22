@@ -13,11 +13,12 @@ namespace djack.RogueSurvivor.Data
   {
     LIVING,
     UNDEAD_MASTER,
-    PERFUME_LIVING_SUPRESSOR,
-    PERFUME_LIVING_GENERATOR,   // XXX unused
+    SUPPRESSOR  // alpha 10
+    //PERFUME_LIVING_SUPRESSOR,
+    //PERFUME_LIVING_GENERATOR      // XXX unused
   }
 
-  [Serializable]
+    [Serializable]
   internal class OdorScent
   {
     public const int MIN_STRENGTH = 1;

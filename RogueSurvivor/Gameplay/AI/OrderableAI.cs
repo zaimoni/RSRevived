@@ -2308,11 +2308,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region stench killer
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
+    // with the new scent-suppressor mechaniics, the cutpoints are somewhat reasonable but extra distance/LoS breaking is needed
     private bool IsGoodStenchKillerSpot(Map map, Point pos)
     {
+#if OBSOLETE
       if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
+#endif
+      // 2. Spray in a good position:
+      //    2.1 entering or leaving a building.
       if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != map.IsInsideAt(pos)) return true;
+      //    2.3 an exit.
       if (map.HasExitAt(pos)) return true;
+      //    2.2 a door/window.
       return map.GetMapObjectAt(pos) is DoorWindow;
     }
 
@@ -2320,8 +2327,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemSprayScent && (obj as ItemSprayScent).Model.Odor == Odor.PERFUME_LIVING_SUPRESSOR)
-          return obj as ItemSprayScent;
+        if (obj.IsEquipped && obj is ItemSprayScent spray && Odor.SUPPRESSOR == spray.Model.Odor)
+          return spray;
       }
       return null;
     }
@@ -2334,12 +2341,62 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorUseStenchKiller()
     {
-      var itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
-      if (itemSprayScent == null) return null;
-      if (itemSprayScent.IsUseless) return null;
-      if (itemSprayScent.Model.Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
+      var spray = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
+      if (spray == null) return null;
+      if (spray.IsUseless) return null;
+      // alpha 10 redefined spray suppression to work on the odor source, not the odor
+      // if not proper odor, nope.
+      if (spray.Model.Odor != Odor.SUPPRESSOR) return null;
+
+      // first check if wants to use it on self, then check on adj leader/follower
+      Actor sprayOn = null;
+
+      bool WantsToSprayOn(Actor a)
+      {
+        // never spray on player, could mess with his tactics
+        if (a.IsPlayer) return false;
+
+        // only if self or adjacent
+        if (a != m_Actor && !Rules.IsAdjacent(m_Actor.Location, a.Location)) return false;
+
+        // dont spray if already suppressed for 2h or more
+        if (a.OdorSuppressorCounter >= 2 * WorldTime.TURNS_PER_HOUR) return false;
+
+        // spot must be interesting to spray for either us or the target.
+        if (IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return true;
+        if (IsGoodStenchKillerSpot(a.Location.Map, a.Location.Position)) return true;
+        return false;
+      }
+
+      // self?...
+      if (WantsToSprayOn(m_Actor)) sprayOn = m_Actor;
+      else {
+        // ...adj leader/mates/followers
+        if (m_Actor.HasLeader) {
+          if (WantsToSprayOn(m_Actor.Leader)) sprayOn = m_Actor.Leader;
+          else {
+            foreach (Actor mate in m_Actor.Leader.Followers)
+              if (sprayOn == null && mate != m_Actor && WantsToSprayOn(mate))
+                sprayOn = mate;
+          }
+        }
+
+        if (sprayOn == null && m_Actor.CountFollowers > 0) {
+          foreach (Actor follower in m_Actor.Followers)
+            if (sprayOn == null && WantsToSprayOn(follower)) sprayOn = follower;
+        }
+      }
+
+      //  spray?
+      if (sprayOn != null) {
+        ActionSprayOdorSuppressor sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
+        if (sprayIt.IsLegal()) return sprayIt;
+      }
+
+      return null;  // nope.
+
       if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
-      return (m_Actor.CanUse(itemSprayScent) ? new ActionUseItem(m_Actor, itemSprayScent) : null);
+      return (m_Actor.CanUse(spray) ? new ActionUseItem(m_Actor, spray) : null);
     }
 
     protected bool BehaviorEquipStenchKiller(RogueGame game)
