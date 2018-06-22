@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine
   {
     public const int DEFAULT_DISTRICT_SIZE = 50;
     public const int DEFAULT_MAX_CIVILIANS = 25;
-    public const int DEFAULT_MAX_DOGS = 0;
+    public const int DEFAULT_MAX_DOGS = 0;  // 5
     public const int DEFAULT_MAX_UNDEADS = 100;
     public const int DEFAULT_SPAWN_SKELETON_CHANCE = 60;
     public const int DEFAULT_SPAWN_ZOMBIE_CHANCE = 30;
@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
 
     static public bool CitySize_ok(int x)
     {
-      return 3<=x && 6 >= x;
+      return 3<=x && 7 >= x;
     }
 
     public int CitySize {
@@ -176,7 +176,7 @@ namespace djack.RogueSurvivor.Engine
       }
       set {
         if (value < 3) value = 3;
-        if (value > 6) value = 6;
+        if (value > 7) value = 7;
         m_CitySize = value;
       }
     }
@@ -690,9 +690,9 @@ namespace djack.RogueSurvivor.Engine
         case IDs.UI_COMBAT_ASSISTANT:
           return "  (Help) Combat Assistant";
         case IDs.UI_SHOW_TARGETS:
-          return "  (Help) Show Actor Targets";
+          return "  (Help) Show Other Actors' Targets";
         case IDs.UI_SHOW_PLAYER_TARGETS:
-          return "  (Help) Always Show Player Targets";
+          return "  (Help) Show Player Targets";
         case IDs.GAME_DISTRICT_SIZE:
           return "   (Map) District Map Size";
         case IDs.GAME_MAX_CIVILIANS:
@@ -742,7 +742,7 @@ namespace djack.RogueSurvivor.Engine
         case IDs.GAME_DEATH_SCREENSHOT:
           return " (Death) Death Screenshot";
         case IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-          return "(Living) Aggressive Hungry Civs.";
+          return "(Living) Aggressive Hungry Civs";
         case IDs.GAME_NATGUARD_FACTOR:
           return " (Event) National Guard";
         case IDs.GAME_SUPPLIESDROP_FACTOR:
