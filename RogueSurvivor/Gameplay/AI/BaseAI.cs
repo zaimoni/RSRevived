@@ -509,7 +509,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (percepts == null) return null;
       Percept percept = FilterNearest(percepts);
       if (!Rules.IsAdjacent(m_Actor.Location.Position, percept.Location.Position))
-        return BehaviorIntelligentBumpToward(percept.Location.Position);
+        return BehaviorIntelligentBumpToward(percept.Location.Position, true, true);
       return (m_Actor.CanBreak(percept.Percepted as MapObject) ? new ActionBreak(m_Actor, percept.Percepted as MapObject) : null);
     }
 #endif
@@ -1047,12 +1047,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor1;
     }
 
-    protected bool CanReachSimple(Point dest, RouteFinder.SpecialActions allowedActions)
+    // XXX these two break down cross-map
+    protected bool CanReachSimple(Location dest, RouteFinder.SpecialActions allowedActions)
     {
        if (m_RouteFinder == null) m_RouteFinder = new RouteFinder(this);
        m_RouteFinder.AllowedActions = allowedActions;
-       int maxDist = Rules.GridDistance(m_Actor.Location.Position, dest);
+       int maxDist = Rules.GridDistance(m_Actor.Location, dest);
        return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, maxDist, Rules.GridDistance);
+    }
+
+    protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)
+    {
+      int i = 0;
+      while (i < percepts.Count) {
+        if (CanReachSimple(percepts[i].Location, allowedActions)) i++;
+        else percepts.RemoveAt(i);
+      }
     }
 
 #if DEAD_FUNC

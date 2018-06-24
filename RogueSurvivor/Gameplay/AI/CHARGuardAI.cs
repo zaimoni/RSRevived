@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        if (CanReachSimple(target.Location.Position, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP)) {
+        if (CanReachSimple(target.Location, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP)) {
           tmpAction = BehaviorChargeEnemy(target,false,false);
           if (null != tmpAction) return tmpAction;
         }

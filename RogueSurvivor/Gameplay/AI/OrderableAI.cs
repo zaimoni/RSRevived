@@ -1576,7 +1576,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (target == null) return null;
       return BehaviorPathTo(target.Location);
-//    return BehaviorIntelligentBumpToward(target.Location.Position);
     }
 
     protected ActorAction BehaviorLeadActor(Percept target)
@@ -1775,7 +1774,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
-      if (m_Actor.GetEquippedWeapon() is ItemRangedWeapon) throw new InvalidOperationException("should not reach BehaviorFightFlee with an equipped ranged weapon");
+      if (null != GetBestRangedWeaponWithAmmo()) throw new InvalidOperationException("should not reach BehaviorFightFlee with a usable ranged weapon"); // XXX \todo invalidate this with a bayonet (combat knife mounted on a rifle)
 #endif
       List<Point> legal_steps = _legal_steps; // XXX working reference due to following postprocessing
       if (null != _blast_field && null != legal_steps) {
