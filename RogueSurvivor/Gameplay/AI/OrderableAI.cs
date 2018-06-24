@@ -1775,6 +1775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
+      if (m_Actor.GetEquippedWeapon() is ItemRangedWeapon) throw new InvalidOperationException("should not reach BehaviorFightFlee with an equipped ranged weapon");
 #endif
       List<Point> legal_steps = _legal_steps; // XXX working reference due to following postprocessing
       if (null != _blast_field && null != legal_steps) {
@@ -1785,6 +1786,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
       Actor enemy = target.Percepted as Actor;
+
+      // alpha10
+      Attack enemyAttack = (enemy.GetEquippedWeapon() is ItemRangedWeapon) ? enemy.CurrentRangedAttack : enemy.CurrentMeleeAttack;   // get enemy attack
+
+      // get safe range from enemy, just out of his reach.
+      int safeRange = Math.Max(2, enemyAttack.Range + 1);  // melee attack range is 0 not 1!
+      int distToEnemy = Rules.GridDistance(m_Actor.Location, enemy.Location);
+      bool inSafeRange = distToEnemy >= safeRange;
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);
@@ -1815,6 +1824,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
+
+      // alpha10
+      // Improve STA management a bit.
+      // Cancel running if this would make us tired and is not a free move
+      if (doRun && WillTireAfterRunning(m_Actor) && !m_Actor.RunIsFreeMove) doRun = false;
 
       var LoF_reserve = AlliesNeedLoFvs(enemy);
       ActorAction tmpAction = null;
