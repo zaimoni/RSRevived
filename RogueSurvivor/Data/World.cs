@@ -149,6 +149,7 @@ namespace djack.RogueSurvivor.Data
 
     public string WeatherChanges()
     {
+      NextWeatherCheckTurn = Engine.Session.Get.WorldTime.TurnCounter + RogueForm.Game.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);
       switch (Weather) {
         case Weather.CLEAR:
           Weather = Weather.CLOUDY;
@@ -175,10 +176,9 @@ namespace djack.RogueSurvivor.Data
           Weather = Weather.RAIN;
           return "The rain is less heavy.";
 #if DEBUG
-        default: throw new ArgumentOutOfRangeException("unhandled weather");
+        default: throw new InvalidOperationException("unhandled weather");
 #endif
       }
-      NextWeatherCheckTurn = Engine.Session.Get.WorldTime.TurnCounter + RogueForm.Game.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);
     }
 
     // possible micro-optimization target
