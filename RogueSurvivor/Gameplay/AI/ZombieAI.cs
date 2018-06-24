@@ -17,6 +17,9 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
+  /// <summary>
+  /// Zombie AI : used by Zombie, Zombie Master and Zombified branches.
+  /// </summary>
   internal class ZombieAI : BaseAI
   {
     private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR/3);
@@ -89,7 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
         Percept percept = FilterNearest(percepts_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept != null) {
-          tmpAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
+          tmpAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3), true, true);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FOLLOWING;
             m_Actor.TargetActor = percept.Percepted as Actor;

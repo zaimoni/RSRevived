@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != old_enemies && !m_Actor.IsTired) {    // difference between gang and CHAR/soldier is ok here
-        tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies));
+        tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies), false, false);
         if (null != tmpAction) return tmpAction;
       }
 

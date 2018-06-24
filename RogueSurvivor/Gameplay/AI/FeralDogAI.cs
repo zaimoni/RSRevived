@@ -29,6 +29,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
+    private const int RUN_TO_TARGET_DISTANCE = 3;  // dogs run to their target when close enough
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
@@ -59,9 +60,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION);
-          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location);
+          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
           if (actorAction != null) {
-            m_Actor.IsRunning = true;
+            RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = targetActor;
             return actorAction;
@@ -74,6 +75,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FeralDogAI.FIGHT_EMOTES);
         if (actorAction != null) {
+          // run to (or away if fleeing) if close.
+          if (m_Actor.TargetActor != null)
+            RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
           m_Actor.IsRunning = true;
           return actorAction;
         }
@@ -81,7 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsAlmostHungry) {
         ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts_all.FilterT<Inventory>());
         if (actorAction != null) {
-          m_Actor.IsRunning = true;
+          RunIfPossible();
           m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
@@ -89,10 +93,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsHungry) {
         ActorAction actorAction = BehaviorGoEatCorpse(percepts_all);
         if (actorAction != null) {
-          m_Actor.IsRunning = true;
+          RunIfPossible();
           m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
+      }
+      if (m_Actor.IsTired) {
+        m_Actor.Activity = Activity.IDLE;
+        return new ActionWait(m_Actor);
       }
       if (m_Actor.IsSleepy) {
         m_Actor.Activity = Activity.SLEEPING;
@@ -110,6 +118,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
+    }
+
+    protected void RunToIfCloseTo(Location loc, int closeDistance)
+    {
+      if (Rules.GridDistance(m_Actor.Location, loc) <= closeDistance) {
+        RunIfPossible();
+      } else {
+        m_Actor.IsRunning = false;
+      }
     }
   }
 }

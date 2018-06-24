@@ -536,7 +536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!toTheMax) SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location);
+      tmpAction = BehaviorIntelligentBumpToward(location, false, false);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
@@ -553,7 +553,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location);
+      tmpAction = BehaviorIntelligentBumpToward(location, false, false);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.Location.Position != location.Position) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location, false, false);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -598,7 +598,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
       if (!m_ReachedPatrolPoint) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location, false, false);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -1590,7 +1590,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
         (target1.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
       }
-      return BehaviorIntelligentBumpToward(target1.Location);
+      return BehaviorIntelligentBumpToward(target1.Location, false, false);
     }
 
     protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
@@ -1619,7 +1619,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
 
-    protected override ActorAction BehaviorChargeEnemy(Percept target)
+    protected override ActorAction BehaviorChargeEnemy(Percept target, bool canCheckBreak, bool canCheckPush)
     {
       Actor actor = target.Percepted as Actor;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
@@ -1636,7 +1636,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return DoctrineRecoverSTA(Actor.STAMINA_MIN_FOR_ACTIVITY + Rules.STAMINA_COST_MELEE_ATTACK + tmp.StaminaPenalty);
 #endif
         }
-        tmpAction = BehaviorHeadFor(target.Location);
+        tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
@@ -1864,7 +1864,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // charge
-      tmpAction = BehaviorChargeEnemy(target);
+      tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
@@ -2141,7 +2141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop
         IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
-        return BehaviorHeadFor(see_inside);
+        return BehaviorHeadFor(see_inside, false, false);
       }
 
       ActorAction tmpAction = null;
@@ -2430,7 +2430,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionReviveCorpse(m_Actor, corpse);
         }
 	  }
-      return BehaviorHeadFor(percept.Location);
+      return BehaviorHeadFor(percept.Location,false,false);
     }
 
 #region ground inventory stacks
@@ -2738,7 +2738,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return tmpAction;
             }
           } else {
-            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location);
+            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location, false, false);
             if (null != tmpAction) {
               // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
               // might spam for a few turns, but its better than not understanding whats going on.

@@ -537,7 +537,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return a.Location.Items?.Has<ItemFood>() ?? false;
         }));
         if (target != null) {
-          tmpAction = BehaviorChargeEnemy(target);
+          tmpAction = BehaviorChargeEnemy(target, true, true);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");

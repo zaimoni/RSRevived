@@ -866,7 +866,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1, 256);
+        DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1);
         DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26) {
@@ -1018,7 +1018,7 @@ namespace djack.RogueSurvivor.Engine
         int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
         gy1 += 2*BOLD_LINE_SPACING;
         foreach (string text in summaries[currentChoice]) {
           m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy1, new Color?());
@@ -1081,7 +1081,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1141,7 +1141,7 @@ namespace djack.RogueSurvivor.Engine
         gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1207,7 +1207,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1256,7 +1256,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? "Male" : "Female"), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1528,10 +1528,12 @@ namespace djack.RogueSurvivor.Engine
         GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS
       };
       string[] entries = idsArray.Select(x => GameOptions.Name(x)).ToArray();
+      char[] newlines = { '\n' };  // alpha10
+      char[] spaces = { ' ' }; // alpha10
 
       Func<int,bool?> setup_handler = (currentChoice => {
         ApplyOptions(false);
-        string[] values = idsArray.Select(x => s_Options.DescribeValue(Session.Get.GameMode, x)).ToArray();
+        string[] values = idsArray.Select(x => s_Options.DescribeValue(x)).ToArray();
         int gy;
         int gx = gy = 0;
         m_UI.UI_Clear(Color.Black);
@@ -1539,10 +1541,27 @@ namespace djack.RogueSurvivor.Engine
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
         gy += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, false, 400);
         gy += BOLD_LINE_SPACING;
+
+        // alpha10
+        // describe current option.
+        gy += BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, entries[currentChoice].TrimStart(spaces), gx, gy);
+        gy += BOLD_LINE_SPACING;
+        string desc = GameOptions.Describe(idsArray[currentChoice]);
+        string[] descLines = desc.Split(newlines);
+        foreach (string d in descLines) {
+          m_UI.UI_DrawString(Color.White, "  " + d, gx, gy);
+          gy += BOLD_LINE_SPACING;
+        }
+
         m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
         gy += 2*BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, "-V : option always OFF when playing VTG-Vintage", gx, gy);
+        gy += BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, "=S : option used only when playing STD-Standard", gx, gy);
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheCivilians)), (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheUndeads))), gx, gy, new Color?());
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
@@ -1557,238 +1576,91 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Left:
             switch (idsArray[currentChoice])
             {
-              case GameOptions.IDs.UI_MUSIC:
-                          s_Options.PlayMusic = !s_Options.PlayMusic;
-                break;
-              case GameOptions.IDs.UI_MUSIC_VOLUME:
-                          s_Options.MusicVolume -= 5;
-                break;
-              case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
-                          s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap;
-                break;
-              case GameOptions.IDs.UI_ANIM_DELAY:
-                          s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn;
-                break;
-              case GameOptions.IDs.UI_SHOW_MINIMAP:
-                          s_Options.IsMinimapOn = !s_Options.IsMinimapOn;
-                break;
-              case GameOptions.IDs.UI_ADVISOR:
-                          s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled;
-                break;
-              case GameOptions.IDs.UI_COMBAT_ASSISTANT:
-                          s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn;
-                break;
-              case GameOptions.IDs.UI_SHOW_TARGETS:
-                          s_Options.ShowTargets = !s_Options.ShowTargets;
-                break;
-              case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
-                          s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets;
-                break;
-              case GameOptions.IDs.GAME_DISTRICT_SIZE:
-                          s_Options.DistrictSize -= 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_CIVILIANS:
-                          s_Options.MaxCivilians -= 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_DOGS:
-                --s_Options.MaxDogs;
-                break;
-              case GameOptions.IDs.GAME_MAX_UNDEADS:
-                s_Options.MaxUndeads -= 10;
-                break;
-              case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-                break;
-              case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-                break;
-              case GameOptions.IDs.GAME_SIM_THREAD:
-                break;
-              case GameOptions.IDs.GAME_CITY_SIZE:
-                --s_Options.CitySize;
-                break;
-              case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
-                          s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath;
-                break;
-              case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
-                          s_Options.ZombificationChance -= 5;
-                break;
-              case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
-                          s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict;
-                break;
-              case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution;
-                break;
-              case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-                          s_Options.DayZeroUndeadsPercent -= 5;
-                break;
-              case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-                --s_Options.ZombieInvasionDailyIncrease;
-                break;
-              case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-                          s_Options.StarvedZombificationChance -= 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-                --s_Options.MaxReincarnations;
-                break;
-              case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
-                          s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat;
-                break;
-              case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
-                          s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers;
-                break;
-              case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
-                          s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted;
-                break;
-              case GameOptions.IDs.GAME_PERMADEATH:
-                          s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn;
-                break;
-              case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
-                          s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn;
-                break;
-              case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-                          s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn;
-                break;
-              case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-                          s_Options.NatGuardFactor -= 10;
-                break;
-              case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-                          s_Options.SuppliesDropFactor -= 10;
-                break;
+              case GameOptions.IDs.UI_MUSIC: s_Options.PlayMusic = !s_Options.PlayMusic; break;
+              case GameOptions.IDs.UI_MUSIC_VOLUME: s_Options.MusicVolume -= 5; break;
+              case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP: s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap; break;
+              case GameOptions.IDs.UI_ANIM_DELAY: s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn; break;
+              case GameOptions.IDs.UI_SHOW_MINIMAP: s_Options.IsMinimapOn = !s_Options.IsMinimapOn; break;
+              case GameOptions.IDs.UI_ADVISOR: s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled; break;
+              case GameOptions.IDs.UI_COMBAT_ASSISTANT: s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn; break;
+              case GameOptions.IDs.UI_SHOW_TARGETS: s_Options.ShowTargets = !s_Options.ShowTargets; break;
+              case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS: s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets; break;
+              case GameOptions.IDs.GAME_DISTRICT_SIZE: s_Options.DistrictSize -= 5; break;
+              case GameOptions.IDs.GAME_MAX_CIVILIANS: s_Options.MaxCivilians -= 5; break;
+              case GameOptions.IDs.GAME_MAX_DOGS: --s_Options.MaxDogs; break;
+              case GameOptions.IDs.GAME_MAX_UNDEADS: s_Options.MaxUndeads -= 10; break;
+              case GameOptions.IDs.GAME_SIMULATE_DISTRICTS: break;
+              case GameOptions.IDs.GAME_SIMULATE_SLEEP: break;
+              case GameOptions.IDs.GAME_SIM_THREAD: break;
+              case GameOptions.IDs.GAME_CITY_SIZE: --s_Options.CitySize; break;
+              case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH: s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath; break;
+              case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE: s_Options.ZombificationChance -= 5; break;
+              case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT: s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict; break;
+              case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION: s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution; break;
+              case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT: s_Options.DayZeroUndeadsPercent -= 5; break;
+              case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE: --s_Options.ZombieInvasionDailyIncrease; break;
+              case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE: s_Options.StarvedZombificationChance -= 5; break;
+              case GameOptions.IDs.GAME_MAX_REINCARNATIONS: --s_Options.MaxReincarnations; break;
+              case GameOptions.IDs.GAME_REINCARNATE_AS_RAT: s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat; break;
+              case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS: s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers; break;
+              case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED: s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted; break;
+              case GameOptions.IDs.GAME_PERMADEATH: s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn; break;
+              case GameOptions.IDs.GAME_DEATH_SCREENSHOT: s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn; break;
+              case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS: s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn; break;
+              case GameOptions.IDs.GAME_NATGUARD_FACTOR: s_Options.NatGuardFactor -= 10; break;
+              case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR: s_Options.SuppliesDropFactor -= 10; break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) {
-                              s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays - 1;
-                  break;
-                }
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays - 1;
                 break;
-              case GameOptions.IDs.GAME_RATS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.RatsUpgrade = !s_Options.RatsUpgrade;
-                break;
-              case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade;
-                break;
-              case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade;
-                break;
+              case GameOptions.IDs.GAME_RATS_UPGRADE: s_Options.RatsUpgrade = !s_Options.RatsUpgrade; break;
+              case GameOptions.IDs.GAME_SKELETONS_UPGRADE: s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade; break;
+              case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE: s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade; break;
             }
             break;
           case Keys.Right:
             switch (idsArray[currentChoice]) {
-              case GameOptions.IDs.UI_MUSIC:
-                          s_Options.PlayMusic = !s_Options.PlayMusic;
-                break;
-              case GameOptions.IDs.UI_MUSIC_VOLUME:
-                          s_Options.MusicVolume += 5;
-                break;
-              case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
-                          s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap;
-                break;
-              case GameOptions.IDs.UI_ANIM_DELAY:
-                          s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn;
-                break;
-              case GameOptions.IDs.UI_SHOW_MINIMAP:
-                          s_Options.IsMinimapOn = !s_Options.IsMinimapOn;
-                break;
-              case GameOptions.IDs.UI_ADVISOR:
-                          s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled;
-                break;
-              case GameOptions.IDs.UI_COMBAT_ASSISTANT:
-                          s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn;
-                break;
-              case GameOptions.IDs.UI_SHOW_TARGETS:
-                          s_Options.ShowTargets = !s_Options.ShowTargets;
-                break;
-              case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
-                          s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets;
-                break;
-              case GameOptions.IDs.GAME_DISTRICT_SIZE:
-                          s_Options.DistrictSize += 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_CIVILIANS:
-                          s_Options.MaxCivilians += 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_DOGS:
-                ++s_Options.MaxDogs;
-                break;
-              case GameOptions.IDs.GAME_MAX_UNDEADS:
-                          s_Options.MaxUndeads += 10;
-                break;
-              case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-                break;
-              case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-                break;
-              case GameOptions.IDs.GAME_SIM_THREAD:
-                break;
-              case GameOptions.IDs.GAME_CITY_SIZE:
-                ++s_Options.CitySize;
-                break;
-              case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
-                          s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath;
-                break;
-              case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
-                          s_Options.ZombificationChance += 5;
-                break;
-              case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
-                          s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict;
-                break;
-              case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution;
-                break;
-              case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-                          s_Options.DayZeroUndeadsPercent += 5;
-                break;
-              case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-                ++s_Options.ZombieInvasionDailyIncrease;
-                break;
-              case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-                          s_Options.StarvedZombificationChance += 5;
-                break;
-              case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-                ++s_Options.MaxReincarnations;
-                break;
-              case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
-                          s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat;
-                break;
-              case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
-                          s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers;
-                break;
-              case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
-                          s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted;
-                break;
-              case GameOptions.IDs.GAME_PERMADEATH:
-                          s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn;
-                break;
-              case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
-                          s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn;
-                break;
-              case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-                          s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn;
-                break;
-              case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-                          s_Options.NatGuardFactor += 10;
-                break;
-              case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-                          s_Options.SuppliesDropFactor += 10;
-                break;
+              case GameOptions.IDs.UI_MUSIC: s_Options.PlayMusic = !s_Options.PlayMusic; break;
+              case GameOptions.IDs.UI_MUSIC_VOLUME: s_Options.MusicVolume += 5; break;
+              case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP: s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap; break;
+              case GameOptions.IDs.UI_ANIM_DELAY: s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn; break;
+              case GameOptions.IDs.UI_SHOW_MINIMAP: s_Options.IsMinimapOn = !s_Options.IsMinimapOn; break;
+              case GameOptions.IDs.UI_ADVISOR: s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled; break;
+              case GameOptions.IDs.UI_COMBAT_ASSISTANT: s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn; break;
+              case GameOptions.IDs.UI_SHOW_TARGETS: s_Options.ShowTargets = !s_Options.ShowTargets; break;
+              case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS: s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets; break;
+              case GameOptions.IDs.GAME_DISTRICT_SIZE: s_Options.DistrictSize += 5; break;
+              case GameOptions.IDs.GAME_MAX_CIVILIANS: s_Options.MaxCivilians += 5; break;
+              case GameOptions.IDs.GAME_MAX_DOGS: ++s_Options.MaxDogs; break;
+              case GameOptions.IDs.GAME_MAX_UNDEADS: s_Options.MaxUndeads += 10; break;
+              case GameOptions.IDs.GAME_SIMULATE_DISTRICTS: break;
+              case GameOptions.IDs.GAME_SIMULATE_SLEEP: break;
+              case GameOptions.IDs.GAME_SIM_THREAD: break;
+              case GameOptions.IDs.GAME_CITY_SIZE: ++s_Options.CitySize; break;
+              case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH: s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath; break;
+              case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE: s_Options.ZombificationChance += 5; break;
+              case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT: s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict; break;
+              case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION: s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution; break;
+              case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT: s_Options.DayZeroUndeadsPercent += 5; break;
+              case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE: ++s_Options.ZombieInvasionDailyIncrease; break;
+              case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE: s_Options.StarvedZombificationChance += 5; break;
+              case GameOptions.IDs.GAME_MAX_REINCARNATIONS: ++s_Options.MaxReincarnations; break;
+              case GameOptions.IDs.GAME_REINCARNATE_AS_RAT: s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat; break;
+              case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS: s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers; break;
+              case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED: s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted; break;
+              case GameOptions.IDs.GAME_PERMADEATH: s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn; break;
+              case GameOptions.IDs.GAME_DEATH_SCREENSHOT: s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn; break;
+              case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS: s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn; break;
+              case GameOptions.IDs.GAME_NATGUARD_FACTOR: s_Options.NatGuardFactor += 10; break;
+              case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR: s_Options.SuppliesDropFactor += 10; break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF)
-                {
-                              s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays + 1;
-                  break;
-                }
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF) s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays + 1;
                 break;
-              case GameOptions.IDs.GAME_RATS_UPGRADE:
-				if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.RatsUpgrade = !s_Options.RatsUpgrade;
-                break;
-              case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-			    if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade;
-                break;
-              case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-				if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade;
-                break;
+              case GameOptions.IDs.GAME_RATS_UPGRADE: s_Options.RatsUpgrade = !s_Options.RatsUpgrade; break;
+              case GameOptions.IDs.GAME_SKELETONS_UPGRADE: s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade; break;
+              case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE: s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade; break;
             }
             break;
-          case Keys.R:
-            s_Options = gameOptions;
-            break;
+          case Keys.R: s_Options = gameOptions; break;
         }
         return null;
       });
@@ -1868,7 +1740,7 @@ namespace djack.RogueSurvivor.Engine
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
         gy += BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy);
         if (s_KeyBindings.CheckForConflict()) {
           m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += BOLD_LINE_SPACING;
@@ -11780,7 +11652,7 @@ namespace djack.RogueSurvivor.Engine
       GameHintsStatus.Save(RogueGame.s_Hints, RogueGame.GetUserConfigPath() + "hints.dat");
     }
 
-    private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, int rightPadding = 256)
+    private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
     {
 #if DEBUG
       if (null == entries) throw new ArgumentNullException(nameof(entries));
@@ -11789,13 +11661,18 @@ namespace djack.RogueSurvivor.Engine
       int gx1 = gx + rightPadding;
       Color color = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
       for (int index = 0; index < entries.Length; ++index) {
-        string text1 = string.Format((index != currentChoice ? "     {0}" : "---> {0}"), entries[index]);
+        string text1 = string.Format(((index != currentChoice || valuesOnNewLine) ? "     {0}" : "---> {0}"), entries[index]);
         m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
         if (values != null) {
           string text2 = index != currentChoice ? values[index] : string.Format("{0} <---", values[index]);
-          m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
+          if (valuesOnNewLine) {
+            gy += BOLD_LINE_SPACING;
+            m_UI.UI_DrawStringBold(valuesColor, text2, gx + rightPadding, gy);
+          } else {
+            m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
+          }
         }
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
       }
     }
 
@@ -12799,7 +12676,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
         gy1 += 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy1, 256);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy1);
         gy1 += 28;
         m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy1, new Color?());
         gy1 += 14;

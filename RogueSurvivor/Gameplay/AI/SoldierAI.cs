@@ -208,7 +208,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != old_enemies) {
-        tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies));
+        tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies), false, false);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget ) Logger.WriteLine(Logger.Stage.RUN_MAIN, "charging enemies");
 #endif

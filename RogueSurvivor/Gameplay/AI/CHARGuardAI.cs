@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -156,8 +157,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        tmpAction = BehaviorChargeEnemy(target);
-        if (null != tmpAction) return tmpAction;
+        if (CanReachSimple(target.Location.Position, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP)) {
+          tmpAction = BehaviorChargeEnemy(target,false,false);
+          if (null != tmpAction) return tmpAction;
+        }
       }
 
       if (null == old_enemies && WantToSleepNow) {

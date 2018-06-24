@@ -641,7 +641,7 @@ namespace djack.RogueSurvivor.Engine
       rating += Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? k : -k;
       }
 
-      if (!Session.Get.HasInfection) {  // starviation zombification chance only affects classic and z-war modes.  Does affect difficulty vacuously in RS Alpha 9
+      if (!Session.Get.HasInfection) {  // starvation zombification chance only affects classic and z-war modes.  Does affect difficulty vacuously in RS Alpha 9
         const float reference = (float)(DEFAULT_MAX_CIVILIANS* DEFAULT_ZOMBIFICATION_CHANCE);
         float relative_deviation = ((float) (MaxCivilians * ZombificationChance) - reference) / reference;
         const float reference_scale = (float)(DEFAULT_MAX_CIVILIANS* DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
@@ -756,126 +756,129 @@ namespace djack.RogueSurvivor.Engine
         case IDs.GAME_SHAMBLERS_UPGRADE:
           return "(Undead) Shamblers Skill Upgrade";
         default:
-          throw new ArgumentOutOfRangeException("unhandled option");
+          throw new InvalidOperationException("unhandled option");
+      }
+    }
+
+    // alpha10
+    public static string Describe(IDs option)
+    {
+      switch (option) {
+        case IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS: return "Allows hungry civilians to attack other people for food.";
+        case IDs.GAME_ALLOW_UNDEADS_EVOLUTION: return "ALWAYS OFF IN VTG-VINTAGE MODE.\nAllows undeads to evolve into stronger forms.";
+        case IDs.GAME_CITY_SIZE: return "Size of the city grid. The city is a square grid of districts.\nLarger cities are more fun but rapidly increases game saves size and loading time.";
+        case IDs.GAME_DAY_ZERO_UNDEADS_PERCENT: return "Percentage of max undeads spawned when the game starts.";
+        case IDs.GAME_DEATH_SCREENSHOT: return "Takes a screenshot when you die and save it to the game Config\\Screenshot folder.";
+        case IDs.GAME_DISTRICT_SIZE: return "How large are the maps in tiles. Larger maps are more fun but increase game saves size and loading time.";
+        case IDs.GAME_MAX_CIVILIANS: return "Maximum number of civilians on a map. More civilians makes the game easier for livings, but slows the game down.";
+        case IDs.GAME_MAX_DOGS: return "OPTION IS UNUSED YOU SHOULDNT BE READING THIS :)";
+        case IDs.GAME_MAX_REINCARNATIONS: return "Number of times you can reincarnate in a game after your character dies.\nSet it to 0 to disable reincarnation altogether.";
+        case IDs.GAME_MAX_UNDEADS: return "Maximum number of undeads on a map. More undeads makes the game more challenging for livings, but slows the game down.";
+        case IDs.GAME_NATGUARD_FACTOR: return "Affects how likely the National Guard event happens.\n100 is default, 0 to disable.";
+        case IDs.GAME_NPC_CAN_STARVE_TO_DEATH: return "When NPCs are starving they can die. When disabled ai characters will never die from hunger.";
+        case IDs.GAME_PERMADEATH: return "Deletes your saved game when you die so you can't reload your way out. Extra challenge and tension.";
+        case IDs.GAME_RATS_UPGRADE: return "ALWAYS OFF IN VTG-VINTAGE MODE.\nCan Rats type of undeads upgrade their skills like other undeads.\nNot recommended unless you want super annoying rats.";
+        case IDs.GAME_REVEAL_STARTING_DISTRICT: return "You start the game with knowing parts of the map you start in.";
+        case IDs.GAME_REINC_LIVING_RESTRICTED: return "Limit choices of reincarnations as livings to civilians only. If disabled allow you to reincarnte into all kinds of livings.";
+        case IDs.GAME_REINCARNATE_AS_RAT: return "Enables the possibility to reincarnate into a zombie rat.";
+        case IDs.GAME_REINCARNATE_TO_SEWERS: return "Enables the possibility to reincarnate into the sewers.";
+        case IDs.GAME_SHAMBLERS_UPGRADE: return "ALWAYS OFF IN VTG-VINTAGE MODE.\nCan Shamblers type of undeads upgrade their skills like other undeads.";
+        case IDs.GAME_SKELETONS_UPGRADE: return "ALWAYS OFF IN VTG-VINTAGE MODE.\nCan Skeletons type of undeads upgrade their skills like other undeads.";
+        case IDs.GAME_SIMULATE_DISTRICTS: return "The game simulates what is happening in districts around you. You should keep this option maxed for better gameplay.\nWhen the simulation happens depends on other sim options.";
+        case IDs.GAME_SIMULATE_SLEEP: return "Performs simulation when you are sleeping. Recommended if synchronous sim is off.";
+        case IDs.GAME_SIM_THREAD: return "Performs simulation in a separate thread while you are playing. Recommended unless the game is unstable.";
+        case IDs.GAME_SPAWN_SKELETON_CHANCE: return "YOU SHOULDNT BE READING THIS :)";
+        case IDs.GAME_SPAWN_ZOMBIE_CHANCE: return "YOU SHOULDNT BE READING THIS :)";
+        case IDs.GAME_SPAWN_ZOMBIE_MASTER_CHANCE: return "YOU SHOULDNT BE READING THIS :)";
+        case IDs.GAME_STARVED_ZOMBIFICATION_CHANCE: return "ONLY IN STD-STANDARD MODE.\nIf NPCs can starve to death, chances of turning into a zombie.";
+        case IDs.GAME_SUPPLIESDROP_FACTOR: return "Affects how likely the supplies drop event happens.\n100 is default, 0 to disable.";
+        case IDs.GAME_UNDEADS_UPGRADE_DAYS: return "How often can undeads upgrade their skills. They usually upgrade at a slower pace than livings.";
+        case IDs.GAME_ZOMBIFICATION_CHANCE: return "ONLY IN STD-STANDARD MODE.\nSome undeads have the ability to turn their living victims into zombies after killing them.\nThis option control the chances of zombification. Changing this value has a large impact on game difficulty.\nException: the player is always checked for zombification when killed in all game modes.";
+        case IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE: return "The zombies invasion increases in size each day, to fill up to Max Undeads on a map.";
+        case IDs.UI_ANIM_DELAY: return "Enable or disable delays when showing actions or events on the map.\nYou should keep it on when learning the game and then disable it for a faster play.";
+        case IDs.UI_MUSIC: return "Enable or disable ingame musics. Musics are not essential for gameplay. If you can't hear music, try the configuration program.";
+        case IDs.UI_MUSIC_VOLUME: return "Music volume.";
+        case IDs.UI_SHOW_MINIMAP: return "Display or hide the minimap.\nThe minimap could potentially crash the game on some very old graphics cards.";
+        case IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP: return "Highlight tags painted by the player as yellow dots in the minimap.";
+        case IDs.UI_ADVISOR: return "Enable or disable the ingame hints system. The advisor helps you learn the game for the living side.\nIt will only tell you hints it didn't already tell you.\nAll hints are also available from the main menu.";
+        case IDs.UI_COMBAT_ASSISTANT: return "When enabled draws a colored circle icon on your enemies.\nGreen = you can safely act twice before your enemy\nYellow = your enemy will act after you\nRed = your enemy will act twice after you";
+        case IDs.UI_SHOW_TARGETS: return "When mouse over an actor, will draw icons on actors that are targeting, are targeted or are in group with this actor.";
+        case IDs.UI_SHOW_PLAYER_TARGETS: return "Will draw icons on actors that are targeting you.";
+        default: throw new InvalidOperationException("unhandled option");
       }
     }
 
     public static string Name(ReincMode mode)
     {
-      switch (mode)
-      {
-        case ReincMode.RANDOM_FOLLOWER:
-          return "Random Follower";
-        case ReincMode.KILLER:
-          return "Your Killer";
-        case ReincMode.ZOMBIFIED:
-          return "Your Zombie Self";
-        case ReincMode.RANDOM_LIVING:
-          return "Random Living";
-        case ReincMode.RANDOM_UNDEAD:
-          return "Random Undead";
-        case ReincMode.RANDOM_ACTOR:
-          return "Random Actor";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled ReincMode");
+      switch (mode) {
+        case ReincMode.RANDOM_FOLLOWER: return "Random Follower";
+        case ReincMode.KILLER: return "Your Killer";
+        case ReincMode.ZOMBIFIED: return "Your Zombie Self";
+        case ReincMode.RANDOM_LIVING: return "Random Living";
+        case ReincMode.RANDOM_UNDEAD: return "Random Undead";
+        case ReincMode.RANDOM_ACTOR: return "Random Actor";
+        default: throw new InvalidOperationException("unhandled ReincMode");
       }
     }
 
     public static string Name(SimRatio ratio)
     {
-      switch (ratio)
-      {
-        case SimRatio.OFF:
-          return "OFF";
-        case SimRatio.ONE_QUARTER:
-          return "25%";
-        case SimRatio.ONE_THIRD:
-          return "33%";
-        case SimRatio.HALF:
-          return "50%";
-        case SimRatio.TWO_THIRDS:
-          return "66%";
-        case SimRatio.THREE_QUARTER:
-          return "75%";
-        case SimRatio.FULL:
-          return "FULL";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled simRatio");
+      switch (ratio) {
+        case SimRatio.OFF: return "OFF";
+        case SimRatio.ONE_QUARTER: return "25%";
+        case SimRatio.ONE_THIRD: return "33%";
+        case SimRatio.HALF: return "50%";
+        case SimRatio.TWO_THIRDS: return "66%";
+        case SimRatio.THREE_QUARTER: return "75%";
+        case SimRatio.FULL: return "FULL";
+        default: throw new InvalidOperationException("unhandled simRatio");
       }
     }
 
     public static float SimRatioToFloat(SimRatio ratio)
     {
-      switch (ratio)
-      {
-        case SimRatio.OFF:
-          return 0.0f;
-        case SimRatio.ONE_QUARTER:
-          return 0.25f;
-        case SimRatio.ONE_THIRD:
-          return 0.3333333f;
-        case SimRatio.HALF:
-          return 0.5f;
-        case SimRatio.TWO_THIRDS:
-          return 0.6666667f;
-        case SimRatio.THREE_QUARTER:
-          return 0.75f;
-        case SimRatio.FULL:
-          return 1f;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled simRatio");
+      switch (ratio) {
+        case SimRatio.OFF: return 0.0f;
+        case SimRatio.ONE_QUARTER: return 0.25f;
+        case SimRatio.ONE_THIRD: return 0.3333333f;
+        case SimRatio.HALF: return 0.5f;
+        case SimRatio.TWO_THIRDS: return 0.6666667f;
+        case SimRatio.THREE_QUARTER: return 0.75f;
+        case SimRatio.FULL: return 1f;
+        default: throw new InvalidOperationException("unhandled simRatio");
       }
     }
 
     public static string Name(ZupDays d)
     {
-      switch (d)
-      {
-        case ZupDays.ONE:
-          return "1 d";
-        case ZupDays.TWO:
-          return "2 d";
-        case ZupDays.THREE:
-          return "3 d";
-        case ZupDays.FOUR:
-          return "4 d";
-        case ZupDays.FIVE:
-          return "5 d";
-        case ZupDays.SIX:
-          return "6 d";
-        case ZupDays.SEVEN:
-          return "7 d";
-        case ZupDays.OFF:
-          return "OFF";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled zupDays");
+      switch (d) {
+        case ZupDays.ONE: return "1 d";
+        case ZupDays.TWO: return "2 d";
+        case ZupDays.THREE: return "3 d";
+        case ZupDays.FOUR: return "4 d";
+        case ZupDays.FIVE: return "5 d";
+        case ZupDays.SIX: return "6 d";
+        case ZupDays.SEVEN: return "7 d";
+        case ZupDays.OFF: return "OFF";
+        default: throw new InvalidOperationException("unhandled zupDays");
       }
     }
 
     public static bool IsZupDay(ZupDays d, int day)
     {
-      switch (d)
-      {
-        case ZupDays.ONE:
-          return true;
-        case ZupDays.TWO:
-          return day % 2 == 0;
-        case ZupDays.THREE:
-          return day % 3 == 0;
-        case ZupDays.FOUR:
-          return day % 4 == 0;
-        case ZupDays.FIVE:
-          return day % 5 == 0;
-        case ZupDays.SIX:
-          return day % 6 == 0;
-        case ZupDays.SEVEN:
-          return day % 7 == 0;
-        default:
-          return false;
+      switch (d) {
+        case ZupDays.ONE: return true;
+        case ZupDays.TWO: return day % 2 == 0;
+        case ZupDays.THREE: return day % 3 == 0;
+        case ZupDays.FOUR: return day % 4 == 0;
+        case ZupDays.FIVE: return day % 5 == 0;
+        case ZupDays.SIX: return day % 6 == 0;
+        case ZupDays.SEVEN: return day % 7 == 0;
+        default: return false;
       }
     }
 
-    public string DescribeValue(GameMode mode, IDs option)
+    public string DescribeValue(IDs option)
     {
       switch (option)
       {
@@ -920,7 +923,6 @@ namespace djack.RogueSurvivor.Engine
         case IDs.GAME_REVEAL_STARTING_DISTRICT:
           return !RevealStartingDistrict ? "NO    (default YES)" : "YES   (default YES)";
         case IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-          if (mode == GameMode.GM_VINTAGE) return "---";
           return !AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
         case IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
@@ -949,13 +951,10 @@ namespace djack.RogueSurvivor.Engine
         case IDs.GAME_UNDEADS_UPGRADE_DAYS:
           return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(ZombifiedsUpgradeDays), (object) GameOptions.Name(ZupDays.THREE));
         case IDs.GAME_RATS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE) return "---";
           return !RatsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case IDs.GAME_SKELETONS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE) return "---";
           return !SkeletonsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case IDs.GAME_SHAMBLERS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE) return "---";
           return !ShamblersUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         default:
           return "???";
