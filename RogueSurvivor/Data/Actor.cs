@@ -1384,6 +1384,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // alpha10
+    /// <summary>
+    /// Is this other actor our leader, a follower or a mate.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public bool IsInGroupWith(Actor other)
+    {
+      if (HasLeader && m_Leader == other) return true; // my leader?
+      if (other.HasLeader && other.Leader == m_Leader) return true;    // a mate?
+      if (m_Followers?.Contains(other) ?? false) return true; // a follower?
+      return false; // nope
+    }
+
     // map-related, loosely
     public void RemoveFromMap()
     {

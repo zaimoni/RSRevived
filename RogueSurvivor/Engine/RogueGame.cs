@@ -3803,7 +3803,7 @@ namespace djack.RogueSurvivor.Engine
           if (s_Options.ShowTargets) {
             Actor actorAt = CurrentMap.GetActorAt(pt);
             if (actorAt != null)
-              DrawActorTargets(actorAt);
+              DrawActorRelations(actorAt);
           }
         }
       }
@@ -10805,16 +10805,38 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawActorTargets(Actor actor)
+    // alpha10
+    /// <summary>
+    /// Highlight with overlays which visible actors are
+    /// - are the target of this actor 
+    /// - targeting this actor
+    /// - in group with this actor
+    /// </summary>
+    /// <param name="actor"></param>
+    private void DrawActorRelations(Actor actor)
     {
+      Point offset = new Point(TILE_SIZE / 2, TILE_SIZE / 2);
+
+      // target of this actor
       if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-        AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location), GameImages.ICON_IS_TARGET));
-      foreach (Actor actor1 in actor.Location.Map.Actors) {
-        if (actor1 != actor && !actor1.IsDead && (IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
-        {
-          AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_IS_TARGETTED));
-          break;
+        AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+
+      // actors targeting this actor or in same group
+      bool isTargettedHighlighted = false;
+      foreach (Actor other in actor.Location.Map.Actors) {
+        if (other == actor || other.IsDead || !IsVisibleToPlayer(other)) continue;
+
+        // targetting this actor
+        if (other.TargetActor == actor && (other.Activity == Activity.CHASING || other.Activity == Activity.FIGHTING)) {
+          if (!isTargettedHighlighted) {
+            AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
+            isTargettedHighlighted = true;
+          }
+          AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
         }
+
+        // in group with actor
+        if (other.IsInGroupWith(actor)) AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
       }
     }
 

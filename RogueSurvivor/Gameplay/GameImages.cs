@@ -48,6 +48,8 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_HEALING = "Icons\\healing";
     public const string ICON_IS_TARGET = "Icons\\is_target";
     public const string ICON_IS_TARGETTED = "Icons\\is_targetted";
+    public const string ICON_IS_TARGETING = "Icons\\is_targeting";  // alpha10
+    public const string ICON_IS_IN_GROUP = "Icons\\is_in_group";  // alpha10
     public const string ICON_KILLED = "Icons\\killed";
     public const string ICON_LEADER = "Icons\\leader";
     public const string ICON_MELEE_ATTACK = "Icons\\melee_attack";
