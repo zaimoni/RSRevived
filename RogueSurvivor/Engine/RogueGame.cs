@@ -10708,7 +10708,7 @@ namespace djack.RogueSurvivor.Engine
           goto case Activity.IDLE;
         case Activity.FOLLOWING:
           if (!actor.IsPlayer && null != actor.TargetActor) {
-            m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : GameImages.ACTIVITY_FOLLOWING), gx2, gy2);
+            m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : (actor.TargetActor == actor.Leader ? GameImages.ACTIVITY_FOLLOWING_LEADER : GameImages.ACTIVITY_FOLLOWING)), gx2, gy2);
           }
           goto case Activity.IDLE;
         case Activity.SLEEPING:

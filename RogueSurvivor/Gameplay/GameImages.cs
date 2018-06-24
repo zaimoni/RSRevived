@@ -32,6 +32,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ACTIVITY_FOLLOWING = "Activities\\following";
     public const string ACTIVITY_FOLLOWING_ORDER = "Activities\\following_order";
     public const string ACTIVITY_FOLLOWING_PLAYER = "Activities\\following_player";
+    public const string ACTIVITY_FOLLOWING_LEADER = "Activities\\following_leader";  // alpha10
     public const string ACTIVITY_SLEEPING = "Activities\\sleeping";
     public const string ICON_BLAST = "Icons\\blast";
     public const string ICON_CAN_TRADE = "Icons\\can_trade";
