@@ -1702,7 +1702,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var game = RogueForm.Game;
       ActorAction tmpAction = null;
       if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
-        game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
+        game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
         // All OrderableAI instances currently can both use map objects, and barricade
         // there is an inventory check requirement on barricading as well
         // due to preconditions it is mutually exclusive that a door be closable or barricadable
@@ -1762,8 +1762,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
-          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
-            game.DoEmote(m_Actor, emotes[1]);
+          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
+            game.DoEmote(m_Actor, emotes[1], true);
           return BehaviorMeleeAttack(enemy);
         }
         return null;
@@ -1880,7 +1880,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name, true));
         return tmpAction;
       }
       return null;
@@ -1980,7 +1980,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoMakeAggression(m_Actor, x.Value);
         m_Actor.TargetActor = x.Value;
         // players are special: they get to react to this first
-        return new ActionSay(m_Actor, x.Value, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(x.Value.MurdersCounter).ToUpper()), (x.Value.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
+        return new ActionSay(m_Actor, x.Value, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(x.Value.MurdersCounter).ToUpper()), (x.Value.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
       }
       return null;
     }

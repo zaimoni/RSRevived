@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     protected const int FLEE_THROUGH_EXIT_CHANCE = 90;  // alpha10 increased from 50%
     protected const int EMOTE_FLEE_CHANCE = 30;
-    private const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
+    protected const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
     protected const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out string reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
-      game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
+      game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, itemTrap.AName), true);
       return new ActionDropItem(m_Actor, itemTrap);
     }
 
@@ -636,7 +636,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
         // using map objects goes here
         // barricading goes here
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
@@ -661,8 +661,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
-          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
-            game.DoEmote(m_Actor, emotes[1]);
+          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
+            game.DoEmote(m_Actor, emotes[1], true);
           return BehaviorMeleeAttack(target.Percepted as Actor);
         }
         return null;
@@ -682,7 +682,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name, true));
         return tmpAction;
       }
       return null;

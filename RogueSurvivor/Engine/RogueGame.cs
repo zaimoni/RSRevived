@@ -131,7 +131,8 @@ namespace djack.RogueSurvivor.Engine
     private readonly Color MODE_FILLCOLOR = Color.FromArgb(192, Color.Gray);
     private static readonly Color PLAYER_ACTION_COLOR = Color.White;
     private static readonly Color OTHER_ACTION_COLOR = Color.Gray;
-    public readonly Color SAYOREMOTE_COLOR = Color.Brown;
+    public static readonly Color SAYOREMOTE_DANGER_COLOR = Color.Brown; // alpha10
+    public static readonly Color SAYOREMOTE_NORMAL_COLOR = Color.DarkCyan; // alpha10
     private readonly Color PLAYER_AUDIO_COLOR = Color.Green;
     private readonly Color NIGHT_COLOR = Color.Cyan;
     private readonly Color DAY_COLOR = Color.Gold;
@@ -7661,7 +7662,7 @@ namespace djack.RogueSurvivor.Engine
       if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
       if (!target.IsPlayer && !target.IsSleeping && !wasAlreadyEnemy )
-        DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION);
+        DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       aggressor.MarkAsAgressorOf(target);
       target.MarkAsSelfDefenceFrom(aggressor);
       if (target.IsSleeping) return;
@@ -7719,7 +7720,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) return;
       if (!wasAlreadyEnemy)
-        DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+        DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       var player_msgs = new List<Data.Message> {
         new Data.Message("You get a message from your police radio.", turnCounter),
@@ -7756,7 +7757,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) return;
       if (!wasAlreadyEnemy)
-        DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+        DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       var player_msgs = new List<Data.Message> {
         new Data.Message("You get a message from your army radio.", turnCounter),
@@ -8619,7 +8620,7 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddOverlay((new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
         AddMessage(MakeMessage(speaker, string.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
-        if (text != null) DoEmote(speaker, text);
+        if (text != null) DoEmote(speaker, text, true);
         AddMessagePressEnter();
         ClearOverlays();
         RemoveLastMessage();
@@ -8627,13 +8628,13 @@ namespace djack.RogueSurvivor.Engine
       else if (text == null)
         AddMessage(MakeMessage(speaker, string.Format("{0}!", Conjugate(speaker, VERB_SHOUT))));
       else
-        DoEmote(speaker, string.Format("{0} \"{1}\"", Conjugate(speaker, VERB_SHOUT), text));
+        DoEmote(speaker, string.Format("{0} \"{1}\"", Conjugate(speaker, VERB_SHOUT), text), true);
     }
 
-    public void DoEmote(Actor actor, string text)
+    public void DoEmote(Actor actor, string text, bool isDanger = false)
     {
       if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, SAYOREMOTE_COLOR));
+      AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
     public void DoTakeFromContainer(Actor actor, Point position)
@@ -9524,7 +9525,7 @@ namespace djack.RogueSurvivor.Engine
          if (killer.IsPlayer)
            AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
          else
-           DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
+           DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       }
 
       // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
@@ -12871,7 +12872,7 @@ namespace djack.RogueSurvivor.Engine
               actor.TrustInLeader = 0;
             }
             DoMakeAggression(actor, x.Value);
-            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);    // this takes a turn unconditionally for game balance.
+            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
           }
           return null;
         default: return null;
@@ -13394,6 +13395,7 @@ namespace djack.RogueSurvivor.Engine
       NONE = 0,
       IS_IMPORTANT = 1,
       IS_FREE_ACTION = 2,
+      IS_DANGER = 4
     }
 
     [System.Flags]

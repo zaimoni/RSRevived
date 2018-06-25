@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader) {
         Actor targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
-          RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION);
+          RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
           ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
           if (actorAction != null) {
             RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);
@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (actorAction != null) {
-          m_Actor.IsRunning = true;
+          m_Actor.IsRunning = false;
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
           return actorAction;

@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(SHOUT_CHANCE)) {
         m_Actor.Activity = Activity.IDLE;
-        game.DoEmote(m_Actor, game.Rules.DiceRoller.Choose(INSANITIES));
+        game.DoEmote(m_Actor, game.Rules.DiceRoller.Choose(INSANITIES),true);
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
         ActorAction actorAction2 = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);

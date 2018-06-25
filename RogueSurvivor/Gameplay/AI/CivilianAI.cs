@@ -543,7 +543,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
 #endif
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
-              RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
+              RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
             if (!m_Actor.TargetActor.IsSleeping) {
               if (m_Actor.TargetActor.Faction.ID.ExtortionIsAggression()) {
                 game.DoMakeAggression(m_Actor,m_Actor.TargetActor);
@@ -634,7 +634,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind barricade");
 #endif
-          game.DoEmote(m_Actor, "Open damn it! I know there is food there!");
+          game.DoEmote(m_Actor, "Open damn it! I know there is food there!", true);
           return tmpAction;
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
@@ -643,7 +643,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind non-walkable objects");
 #endif
-            game.DoEmote(m_Actor, "Where is all the damn food?!");
+            game.DoEmote(m_Actor, "Where is all the damn food?!", true);
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
