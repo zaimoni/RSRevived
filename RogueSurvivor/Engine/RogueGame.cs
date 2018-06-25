@@ -6532,7 +6532,7 @@ namespace djack.RogueSurvivor.Engine
       if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
       if (Player.IsAggressorOf(actor)) lines.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
       if (actor.IsSelfDefenceFrom(Player)) lines.Add("Killing you would be self-defence.");
-      if (Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through relationships.");
+      if (!Player.Faction.IsEnemyOf(actor.Faction) && Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through groups.");   // RS Alpha 10 tests against Rules::AreGroupEnemies
 #if POLICE_NO_QUESTIONS_ASKED
       if (Player.Model.Abilities.IsLawEnforcer && Player.Threats.IsThreat(actor)) {
         stringList.Add("Is wanted for unspecified violent crimes.");
