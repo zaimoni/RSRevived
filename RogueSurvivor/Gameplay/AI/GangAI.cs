@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -201,20 +202,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == current_enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        Percept victimize = FilterNearest(FilterCurrent(percepts_all).FilterT<Actor>(a =>
+        var mayStealFrom = FilterCurrent(percepts_all).FilterT<Actor>(a =>
         {
           if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
           return false;
-        }));
-        if (null!=victimize) {
-          Actor target = victimize.Percepted as Actor;
-          Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
-          game.DoMakeAggression(m_Actor, target);
-          m_Actor.Activity = Activity.CHASING;
-          m_Actor.TargetActor = target;
-          return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER); // takes turn for game balance
+        });
+        if (null!= mayStealFrom) {
+          // alpha10 make sure to consider only reachable victims
+          // gangs can break & push stuff
+          FilterOutUnreachablePercepts(ref mayStealFrom, RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
+          if (0 < mayStealFrom.Count) {
+            Percept victimize = FilterNearest(mayStealFrom);
+            Actor target = victimize.Percepted as Actor;
+            Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
+            game.DoMakeAggression(m_Actor, target);
+            m_Actor.Activity = Activity.CHASING;
+            m_Actor.TargetActor = target;
+            return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER); // takes turn for game balance
+          }
         }
       }
 
@@ -230,7 +237,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
-        Percept target = FilterNearest(friends);
+        var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
+        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        Percept target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {

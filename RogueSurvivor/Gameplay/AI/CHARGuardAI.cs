@@ -180,7 +180,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
-        Percept target = FilterNearest(friends);
+        // XXX \todo CHAR Guard leading civilian would get ugly quickly; either disallow, or ignore trespassing when CHAR guard is leader
+        var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
+        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        Percept target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {

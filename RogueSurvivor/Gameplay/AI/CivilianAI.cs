@@ -13,6 +13,7 @@ using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 #if TIME_TURNS
@@ -607,7 +608,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
-        Percept target = FilterNearest(friends);
+        var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
+        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        Percept target = FilterNearest(want_leader);
         if (target != null) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorLeadActor");
