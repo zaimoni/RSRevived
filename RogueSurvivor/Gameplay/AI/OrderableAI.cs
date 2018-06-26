@@ -2279,7 +2279,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
-        int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsMaxDamageAt(position) : 0;
+        int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsMaxDamageAtFor(position,m_Actor) : 0;
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;

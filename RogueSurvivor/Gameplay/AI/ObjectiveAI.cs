@@ -798,7 +798,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
 	  foreach (Point pt in src) {
-		trap_damage_field[pt] = m_Actor.Location.Map.TrapsMaxDamageAt(pt);
+		trap_damage_field[pt] = m_Actor.Location.Map.TrapsMaxDamageAtFor(pt,m_Actor);
 	  }
 	  IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
 	  int new_dest = safe.Count();

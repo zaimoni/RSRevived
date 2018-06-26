@@ -1398,6 +1398,13 @@ namespace djack.RogueSurvivor.Data
       return false; // nope
     }
 
+    public bool IsSafeFrom(ItemTrap trap)  // alpha10
+    {
+      if (null == trap.Owner) return false;
+      if (this == trap.Owner) return true;
+      return IsInGroupWith(trap.Owner);
+    }
+
     // map-related, loosely
     public void RemoveFromMap()
     {

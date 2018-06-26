@@ -17,24 +17,27 @@ namespace djack.RogueSurvivor.Engine.Items
 
     private bool m_IsActivated;
     private bool m_IsTriggered;
+    Actor m_Owner;  // alpha10
+    // XXX we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
+    // this allows the death of the trap-setter to not affect other group mates
+    // this also allows overhearing the explanation via police radio to confer ability to pass
 
     // unclear whether current game logic allows a trap to be both activated and triggered at once.
     // leave getter/setter overhead in place in case these should be mutually exclusive.
-    public bool IsActivated {
-      get {
-        return m_IsActivated;
-      }
-      set {
-        m_IsActivated = value;
-      }
-    }
+    public bool IsActivated { get { return m_IsActivated; } }
 
     public bool IsTriggered {
+      get { return m_IsTriggered; }
+      set { m_IsTriggered = value; }
+    }
+
+
+    // alpha10
+    public Actor Owner {
       get {
-        return m_IsTriggered;
-      }
-      set {
-        m_IsTriggered = value;
+        // cleanup dead owner reference
+        if (m_Owner?.IsDead ?? false) m_Owner = null;
+        return m_Owner;
       }
     }
 
@@ -46,6 +49,46 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrap Clone()
     {
       return new ItemTrap(Model);
+    }
+
+    // alpha10
+    public void Activate(Actor owner)
+    {
+      m_Owner = owner;
+      m_IsActivated = true;
+    }
+
+    public void Desactivate()
+    {
+      m_Owner = null;
+      m_IsActivated = false;
+    }
+
+    // alpha10
+    public int TriggerChanceFor(Actor a)
+    {
+      if (Owner == a) return 0; // owners never trigger their own trap
+
+      const int TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY = 30;
+      const int TRAP_SMALL_ACTOR_AVOID_BONUS = 90;
+      int baseChance = Model.TriggerChance * Quantity;
+      int avoidBonus = 0;
+
+      if (a.Model.Abilities.IsUndead) avoidBonus -= TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY;
+      if (a.Model.Abilities.IsSmall) avoidBonus += TRAP_SMALL_ACTOR_AVOID_BONUS;
+      avoidBonus += a.Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS;
+      avoidBonus += a.Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS;
+
+      return baseChance - avoidBonus;
+    }
+
+    // alpha10
+    public override void OptimizeBeforeSaving()
+    {
+      base.OptimizeBeforeSaving();
+
+      // cleanup dead owner ref
+      if (m_Owner?.IsDead ?? false) m_Owner = null;
     }
   }
 }

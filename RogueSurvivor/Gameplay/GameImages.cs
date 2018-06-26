@@ -79,7 +79,11 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_INDIRECT_ENEMIES = "Icons\\enemy_indirect";
     public const string ICON_SELF_DEFENCE = "Icons\\enemy_you_self_defence";
     public const string ICON_TRAP_ACTIVATED = "Icons\\trap_activated";
+    public const string ICON_TRAP_ACTIVATED_SAFE_GROUP = "Icons\\trap_activated_safe_group";  // alpha10
+    public const string ICON_TRAP_ACTIVATED_SAFE_PLAYER = "Icons\\trap_activated_safe_player";  // alpha10
     public const string ICON_TRAP_TRIGGERED = "Icons\\trap_triggered";
+    public const string ICON_TRAP_TRIGGERED_SAFE_GROUP = "Icons\\trap_triggered_safe_group";  // alpha10
+    public const string ICON_TRAP_TRIGGERED_SAFE_PLAYER = "Icons\\trap_triggered_safe_player";  // alpha10
     public const string ICON_SANITY_DISTURBED = "Icons\\sanity_disturbed";
     public const string ICON_SANITY_INSANE = "Icons\\sanity_insane";
     public const string ICON_BORING_ITEM = "Icons\\boring_item";

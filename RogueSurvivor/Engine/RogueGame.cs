@@ -6822,9 +6822,10 @@ namespace djack.RogueSurvivor.Engine
         else if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) str += " (expired)";
       } else if (it is ItemRangedWeapon itemRangedWeapon) {
         str += string.Format(" ({0}/{1})", itemRangedWeapon.Ammo, itemRangedWeapon.Model.MaxAmmo);
-      } else if (it is ItemTrap itemTrap) {
-        if (itemTrap.IsActivated) str += "(activated)";
-        if (itemTrap.IsTriggered) str += "(triggered)";
+      } else if (it is ItemTrap trap) {
+        if (trap.IsActivated) str += "(activated)";
+        if (trap.IsTriggered) str += "(triggered)";
+        if (trap.Owner == Player) str += "(yours)";  // alpha10
       }
       if (it.Quantity > 1) return string.Format("{0} {1}", it.Quantity, str);
       return str;
@@ -7089,19 +7090,36 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemTrap(ItemTrap tr)
     {
-      var stringList = new List<string>();
+      var lines = new List<string>();
       ItemTrapModel itemTrapModel = tr.Model as ItemTrapModel;
-      stringList.Add("> trap");
-      if (tr.IsActivated) stringList.Add("** Activated! **");
-      if (itemTrapModel.IsOneTimeUse) stringList.Add("Desactives when triggered.");
-      if (itemTrapModel.IsNoisy) stringList.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
-      if (itemTrapModel.UseToActivate) stringList.Add("Use to activate.");
-      stringList.Add(string.Format("Damage  : {0}", itemTrapModel.Damage));
-      stringList.Add(string.Format("Trigger : {0}%", itemTrapModel.TriggerChance));
-      stringList.Add(string.Format("Break   : {0}%", itemTrapModel.BreakChance));
-      if (itemTrapModel.BlockChance > 0) stringList.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
-      if (itemTrapModel.BreakChanceWhenEscape > 0) stringList.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
-      return stringList.ToArray();
+      lines.Add("> trap");
+      if (tr.IsActivated) {
+        lines.Add("** Activated! **");
+        // alpha10
+        if (Player.IsSafeFrom(tr)) {
+          lines.Add("You will safely avoid this trap.");
+          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
+        }
+      } else if (tr.IsTriggered) {
+        // alpha10
+        lines.Add("** Triggered! **");
+        if (Player.IsSafeFrom(tr)) {
+          lines.Add("You will safely avoid this trap.");
+          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
+        }
+      }
+      // alpha10
+      lines.Add(string.Format("Trigger chance for you : {0}%.", tr.TriggerChanceFor(Player)));
+
+      if (itemTrapModel.IsOneTimeUse) lines.Add("Desactives when triggered.");
+      if (itemTrapModel.IsNoisy) lines.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
+      if (itemTrapModel.UseToActivate) lines.Add("Use to activate.");
+      lines.Add(string.Format("Damage  : {0}", itemTrapModel.Damage));
+      lines.Add(string.Format("Trigger : {0}%", itemTrapModel.TriggerChance));
+      lines.Add(string.Format("Break   : {0}%", itemTrapModel.BreakChance));
+      if (itemTrapModel.BlockChance > 0) lines.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
+      if (itemTrapModel.BreakChanceWhenEscape > 0) lines.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemEntertainment(ItemEntertainment ent)
@@ -7445,7 +7463,8 @@ namespace djack.RogueSurvivor.Engine
         }
         OnLoudNoise(map, pos, trapModel.NoiseName);
       }
-      if (trapModel.IsOneTimeUse) trap.IsActivated = false;
+      if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
+
       if (!m_Rules.CheckTrapStepOnBreaks(trap, mobj)) return;
       if (player) {
         if (victim != null)
@@ -8379,7 +8398,7 @@ namespace djack.RogueSurvivor.Engine
       speaker.Inventory.RemoveAllQuantity(itSpeaker);
       target.RemoveAllQuantity(trade);
       target.AddAsMuchAsPossible(itSpeaker);
-      if (trade is ItemTrap trap) trap.IsActivated = false;
+      if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
@@ -8657,7 +8676,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (it is ItemTrap trap) trap.IsActivated = false;
+      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       int quantity = it.Quantity;
       int quantityAdded = actor.Inventory.AddAsMuchAsPossible(it);
       if (quantityAdded == quantity) map.RemoveItemAt(it, position);
@@ -8686,7 +8705,7 @@ namespace djack.RogueSurvivor.Engine
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
-      if (gift is ItemTrap trap) trap.IsActivated = false;
+      if (gift is ItemTrap trap) trap.Desactivate();
       int quantity = gift.Quantity;
       int quantityAdded = target.Inventory.AddAsMuchAsPossible(gift);
       if (quantityAdded==quantity)
@@ -8706,7 +8725,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoPutItemInContainer(Actor actor, Point dest, Item gift)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (gift is ItemTrap trap) trap.IsActivated = false;
+      if (gift is ItemTrap trap) trap.Desactivate();    // alpha10
       actor.Location.Map.DropItemAt(gift, dest);
       actor.Inventory.RemoveAllQuantity(gift);
 
@@ -8745,14 +8764,14 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
-      if (it is ItemTrap itemTrap1) {
-        ItemTrap itemTrap2 = itemTrap1.Clone();
-        itemTrap2.IsActivated = itemTrap1.IsActivated;
-        obj = itemTrap2;
-        if (itemTrap2.Model.ActivatesWhenDropped) itemTrap2.IsActivated = true;
-        itemTrap1.IsActivated = false;
+      if (it is ItemTrap trap) {
+        ItemTrap clone = trap.Clone();
+        if (trap.IsActivated) clone.Activate(actor);  // alpha10
+        obj = clone;
+        clone.Activate(actor); // alpha10
+        trap.Desactivate();  // alpha10
 #if FALSE_POSITIVE
-        if (!itemTrap2.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
+        if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
       };
       if (it.IsUseless) {
@@ -8830,11 +8849,9 @@ namespace djack.RogueSurvivor.Engine
         actor.LivingEat(actor.CurrentNutritionOf(food));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
-          ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)
-          {
-            IsActivated = true
-          };
-          actor.Location.Map.DropItemAt(itemTrap, actor.Location.Position);
+          ItemTrap emptyCan = new ItemTrap(GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
+          emptyCan.Activate(actor);  // alpha10
+          actor.Location.Map.DropItemAt(emptyCan, actor.Location.Position);
         }
         bool player = ForceVisibleToPlayer(actor);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -8906,7 +8923,8 @@ namespace djack.RogueSurvivor.Engine
     private void DoUseTrapItem(Actor actor, ItemTrap trap)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      trap.IsActivated = !trap.IsActivated;
+      if (trap.IsActivated) trap.Desactivate();
+      else trap.Activate(actor);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
     }
@@ -11166,11 +11184,19 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string TrapStatusIcon(ItemTrap it)
+    static private string TrapStatusIcon(ItemTrap trap)
     {
-      if (null == it) return "";
-      if (it.IsTriggered) return GameImages.ICON_TRAP_TRIGGERED;
-      if (it.IsActivated) return GameImages.ICON_TRAP_ACTIVATED;
+      if (null == trap) return "";
+      if (trap.IsTriggered) {
+        if (trap.Owner == m_Player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
+        else if (Player.IsSafeFrom(trap)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
+        return GameImages.ICON_TRAP_TRIGGERED;
+      }
+      if (trap.IsActivated) {
+        if (trap.Owner == m_Player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
+        else if (Player.IsSafeFrom(trap)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
+        return GameImages.ICON_TRAP_ACTIVATED;
+      }
       return "";
     }
 

@@ -435,14 +435,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> interestingStacks = examineStacks.FilterT<Inventory>().FilterOut(p => {
           if (IsOccupiedByOther(p.Location)) return true; // blocked
           if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
-            if (!imStarvingOrCourageous && map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints) return true;  // destination deathtrapped
+            if (!imStarvingOrCourageous && map.TrapsMaxDamageAtFor(p.Location.Position,m_Actor) >= m_Actor.HitPoints) return true;  // destination deathtrapped
             // check for iron gates, etc in way
             List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
             if (null == path) return true;
             List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
             if (0 >= test.Count) return true;
             path[0] = test;
-            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAt(pt) >= m_Actor.HitPoints)) return true;
+            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAtFor(pt,m_Actor) >= m_Actor.HitPoints)) return true;
           }
           return false;
         });

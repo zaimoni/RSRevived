@@ -288,7 +288,7 @@ namespace djack.RogueSurvivor.Engine
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.COURAGEOUS;  // need this to be inoperative for z
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       if (!imStarvingOrCourageous) {
-        int trapsMaxDamage = loc.Map.TrapsMaxDamageAt(loc.Position);
+        int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,actor);
         if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
           reason = "deathtrapped";
           return null;
@@ -410,7 +410,7 @@ namespace djack.RogueSurvivor.Engine
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       if (!imStarvingOrCourageous) {
-        int trapsMaxDamage = loc.Map.TrapsMaxDamageAt(loc.Position);
+        int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,actor);
         if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
           reason = "deathtrapped";
           return null;
@@ -797,9 +797,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapTriggers(ItemTrap trap, Actor a)
     {
-      if (a.Model.Abilities.IsSmall && RollChance(90)) return false;
-      int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS);
-      return RollChance(trap.Model.TriggerChance * trap.Quantity - num);
+      return RollChance(trap.TriggerChanceFor(a));
     }
 
     public bool CheckTrapTriggers(ItemTrap trap, MapObject mobj)
@@ -810,8 +808,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
     {
       int breakChance = trap.Model.BreakChance;
-      if (mobj != null)
-        breakChance *= mobj.Weight;
+      if (mobj != null) breakChance *= mobj.Weight;
       return RollChance(breakChance);
     }
 
@@ -822,6 +819,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
+      if (a.IsSafeFrom(trap)) return true;  // alpha10
       return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
     }
 

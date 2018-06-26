@@ -338,7 +338,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         float num = (float)Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
         if (!imStarvingOrCourageous) {
-          int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAt(ptA);
+          int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA,m_Actor);
           if (trapsMaxDamage > 0) {
             if (trapsMaxDamage >= m_Actor.HitPoints) return float.NaN;
             num += 0.42f;

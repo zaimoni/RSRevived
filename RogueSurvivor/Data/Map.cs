@@ -1367,13 +1367,13 @@ retry:
       return mapObjectAt;
     }
 
-    public int TrapsMaxDamageAt(Point pos)  // XXX exceptionally likely to be a nonserialized cache target
+    public int TrapsMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
     {
       Inventory itemsAt = GetItemsAt(pos);
       if (itemsAt == null) return 0;
       int num = 0;
       foreach (Item obj in itemsAt.Items) {
-        if (obj is Engine.Items.ItemTrap trap && trap.IsActivated) num += trap.Model.Damage;
+        if (obj is Engine.Items.ItemTrap trap && !a.IsSafeFrom(trap)) num += trap.Model.Damage;
       }
       return num;
     }
