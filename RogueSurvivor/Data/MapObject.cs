@@ -198,6 +198,7 @@ namespace djack.RogueSurvivor.Data
     {
       switch (x) {
         case IDs.FENCE: return true;
+        case IDs.GARDEN_FENCE: return true;
         case IDs.TREE: return true;
         case IDs.DOOR: return true;
         case IDs.WINDOW: return true;
@@ -229,6 +230,8 @@ namespace djack.RogueSurvivor.Data
     {
       switch (x) {
         case IDs.FENCE: return true;
+        case IDs.GARDEN_FENCE: return true;
+        case IDs.WIRE_FENCE: return true;
         case IDs.CAR1: return true;
         case IDs.CAR2: return true;
         case IDs.CAR3: return true;
@@ -275,6 +278,8 @@ namespace djack.RogueSurvivor.Data
       switch (x) {
         case IDs.FENCE: return true;
         case IDs.IRON_FENCE: return true;
+        case IDs.GARDEN_FENCE: return true;
+        case IDs.WIRE_FENCE: return true;
         case IDs.IRON_GATE_CLOSED: return true;
         case IDs.IRON_GATE_OPEN: return true;
         case IDs.WINDOW: return true;
@@ -322,6 +327,8 @@ namespace djack.RogueSurvivor.Data
     {
       switch (x) {
         case IDs.FENCE: return 1;
+        case IDs.GARDEN_FENCE: return 1;
+        case IDs.WIRE_FENCE: return 1;
         case IDs.BENCH: return 1;
         case IDs.IRON_BENCH: return 1;
         case IDs.SMALL_FORTIFICATION: return 1;
@@ -376,7 +383,7 @@ namespace djack.RogueSurvivor.Data
       if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
 #endif
       m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
-      m_FireState = burnable;
+      m_FireState = burnable;   // XXX should be able to infer burnable from gives wood; other materials may also be burnable (need fire spread for this to matter)
 
       m_ID = hiddenImageID.MapObject_ID();
       if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
@@ -498,6 +505,8 @@ namespace djack.RogueSurvivor.Data
       switch (x) {
         case IDs.FENCE: return "fence";
         case IDs.IRON_FENCE: return "iron fence";
+        case IDs.GARDEN_FENCE: return "garden fence";
+        case IDs.WIRE_FENCE: return "wire fence";
         case IDs.BOARD: return "board";
         case IDs.TREE: return "tree";
         case IDs.IRON_GATE_CLOSED: return "iron gate";
@@ -575,6 +584,8 @@ namespace djack.RogueSurvivor.Data
     {
       FENCE = 0,    // not-pushable ID block
       IRON_FENCE,
+      GARDEN_FENCE,
+      WIRE_FENCE,
       BOARD,
       TREE,
       IRON_GATE_CLOSED,
@@ -622,6 +633,8 @@ namespace djack.RogueSurvivor.Data
       switch (x) {
         case MapObject.IDs.FENCE: return Gameplay.GameImages.OBJ_FENCE;
         case MapObject.IDs.IRON_FENCE: return Gameplay.GameImages.OBJ_IRON_FENCE;
+        case MapObject.IDs.GARDEN_FENCE: return Gameplay.GameImages.OBJ_GARDEN_FENCE;
+        case MapObject.IDs.WIRE_FENCE: return Gameplay.GameImages.OBJ_WIRE_FENCE;
         case MapObject.IDs.BOARD: return Gameplay.GameImages.OBJ_BOARD;
         case MapObject.IDs.TREE: return Gameplay.GameImages.OBJ_TREE;
         case MapObject.IDs.IRON_GATE_CLOSED: return Gameplay.GameImages.OBJ_GATE_CLOSED;
@@ -667,6 +680,8 @@ namespace djack.RogueSurvivor.Data
       switch (x) {
         case Gameplay.GameImages.OBJ_FENCE: return MapObject.IDs.FENCE;
         case Gameplay.GameImages.OBJ_IRON_FENCE: return MapObject.IDs.IRON_FENCE;
+        case Gameplay.GameImages.OBJ_GARDEN_FENCE: return MapObject.IDs.GARDEN_FENCE;
+        case Gameplay.GameImages.OBJ_WIRE_FENCE: return MapObject.IDs.WIRE_FENCE;
         case Gameplay.GameImages.OBJ_BOARD: return MapObject.IDs.BOARD;
         case Gameplay.GameImages.OBJ_TREE: return MapObject.IDs.TREE;
         case Gameplay.GameImages.OBJ_GATE_CLOSED: return MapObject.IDs.IRON_GATE_CLOSED;

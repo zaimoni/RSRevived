@@ -625,6 +625,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject(GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS);
     }
 
+    static protected MapObject MakeObjGardenFence()  // alpha10
+    {
+      return new MapObject(GameImages.OBJ_GARDEN_FENCE, DoorWindow.BASE_HITPOINTS/2);
+    }
+
+    static protected MapObject MakeObjWireFence()  // alpha10
+    {
+      return new MapObject(GameImages.OBJ_WIRE_FENCE, DoorWindow.BASE_HITPOINTS);
+    }
+
     static protected MapObject MakeObjIronFence()
     {
       return new MapObject(GameImages.OBJ_IRON_FENCE);
