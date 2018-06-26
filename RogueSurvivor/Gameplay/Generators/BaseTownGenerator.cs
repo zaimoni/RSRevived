@@ -1099,6 +1099,65 @@ restart:
       return true;
     }
 
+    protected virtual void MakeParkShedBuilding(Map map, string baseZoneName, Rectangle shedBuildingRect)
+    {
+      Rectangle shedInsideRect = new Rectangle(shedBuildingRect.X + 1, shedBuildingRect.Y + 1, shedBuildingRect.Width - 2, shedBuildingRect.Height - 2);
+
+      // build building & zone
+      TileRectangle(map, GameTiles.WALL_BRICK, shedBuildingRect);
+      TileFill(map, GameTiles.FLOOR_PLANKS, shedInsideRect, true);
+      map.AddZone(MakeUniqueZone(baseZoneName, shedBuildingRect));
+
+      // place shed door and make sure door front is cleared of objects (trees).
+      int doorDir = m_DiceRoller.Roll(0, 4);
+      int doorX, doorY;
+      int doorFrontX, doorFrontY;
+      switch (doorDir) {
+        case 0: // west
+          doorX = shedBuildingRect.Left;
+          doorY = shedBuildingRect.Top + shedBuildingRect.Height / 2;
+          doorFrontX = doorX - 1;
+          doorFrontY = doorY;
+          break;
+        case 1: // east
+          doorX = shedBuildingRect.Right - 1;
+          doorY = shedBuildingRect.Top + shedBuildingRect.Height / 2;
+          doorFrontX = doorX + 1;
+          doorFrontY = doorY;
+          break;
+        case 3: // north
+          doorX = shedBuildingRect.Left + shedBuildingRect.Width / 2;
+          doorY = shedBuildingRect.Top;
+          doorFrontX = doorX;
+          doorFrontY = doorY - 1;
+          break;
+        default: // south
+          doorX = shedBuildingRect.Left + shedBuildingRect.Width / 2;
+          doorY = shedBuildingRect.Bottom - 1;
+          doorFrontX = doorX;
+          doorFrontY = doorY + 1;
+          break;
+      }
+      PlaceDoor(map, doorX, doorY, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+      map.RemoveMapObjectAt(doorFrontX, doorFrontY);
+
+      // mark as inside and add shelves with tools
+      DoForEachTile(shedInsideRect, (pt) =>
+      {
+        if (!map.IsWalkable(pt)) return;
+        if (0 < map.CountAdjacent<DoorWindow>(pt)) return;
+        if (0 == CountAdjWalls(map, pt.X, pt.Y)) return;
+
+        // shelf.
+        map.PlaceAt(MakeObjShelf(), pt);
+
+        // construction item (tools, lights)
+        Item it = MakeShopConstructionItem();
+        if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
+        map.DropItemAt(it, pt);
+      });
+    }
+
     protected virtual bool MakeHousingBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 4 || b.InsideRect.Height < 4) return false;
