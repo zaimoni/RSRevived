@@ -193,6 +193,8 @@ namespace djack.RogueSurvivor.Gameplay
     public const string OBJ_HOSPITAL_DOOR_OPEN = "MapObjects\\hospital_door_open";
     public const string OBJ_HOSPITAL_DOOR_CLOSED = "MapObjects\\hospital_door_closed";
     public const string OBJ_HOSPITAL_DOOR_BROKEN = "MapObjects\\hospital_door_broken";
+    public const string OBJ_GARDEN_FENCE = "MapObjects\\garden_fence"; // alpha10
+    public const string OBJ_WIRE_FENCE = "MapObjects\\wire_fence"; // alpha10
     public const string PLAYER_FOLLOWER = "Actors\\player_follower";    // XXX these three should be CGI
     public const string PLAYER_FOLLOWER_TRUST = "Actors\\player_follower_trust";
     public const string PLAYER_FOLLOWER_BOND = "Actors\\player_follower_bond";
@@ -476,7 +478,11 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ICON_INDIRECT_ENEMIES);
       Load(ICON_SELF_DEFENCE);
       Load(ICON_TRAP_ACTIVATED);
+      Load(ICON_TRAP_ACTIVATED_SAFE_GROUP);  // alpha10
+      Load(ICON_TRAP_ACTIVATED_SAFE_PLAYER);  // alpha10
       Load(ICON_TRAP_TRIGGERED);
+      Load(ICON_TRAP_TRIGGERED_SAFE_GROUP);  // alpha10
+      Load(ICON_TRAP_TRIGGERED_SAFE_PLAYER);  // alpha10
       Load(ICON_SANITY_DISTURBED);
       Load(ICON_SANITY_INSANE);
       Load(ICON_BORING_ITEM);
@@ -594,6 +600,8 @@ namespace djack.RogueSurvivor.Gameplay
       Load(OBJ_HOSPITAL_DOOR_OPEN);
       Load(OBJ_HOSPITAL_DOOR_CLOSED);
       Load(OBJ_HOSPITAL_DOOR_BROKEN);
+      Load(OBJ_GARDEN_FENCE);   // alpha 10
+      Load(OBJ_WIRE_FENCE);   // alpha 10
       Notify(ui, "actors...");
 #if CGI_ICONS
 #else
