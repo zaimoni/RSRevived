@@ -15,6 +15,7 @@ using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -1770,7 +1771,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, ActorCourage courage, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
 #if DEBUG
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
@@ -1828,6 +1829,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Improve STA management a bit.
       // Cancel running if this would make us tired and is not a free move
       if (doRun && WillTireAfterRunning(m_Actor) && !m_Actor.RunIsFreeMove) doRun = false;
+
+      // alpha10 
+      // If we have no ranged weapon and target is unreachable, no point charging him as we can't get into
+      // melee contact. Flee if enemy has equipped a ranged weapon and do nothing if not.
+      if (!decideToFlee) {
+//      if (null == GetBestRangedWeaponWithAmmo())  {   // call contract
+           // check route
+           if (!CanReachSimple(enemy.Location, allowedChargeActions)) {
+             if (null == (enemy.Controller as ObjectiveAI).GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
+             decideToFlee = true;   // get out of here, now
+           }
+//      }
+      }
 
       var LoF_reserve = AlliesNeedLoFvs(enemy);
       ActorAction tmpAction = null;

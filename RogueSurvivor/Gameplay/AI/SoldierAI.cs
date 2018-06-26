@@ -15,7 +15,6 @@ using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -188,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif

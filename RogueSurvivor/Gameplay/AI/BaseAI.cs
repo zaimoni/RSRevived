@@ -614,7 +614,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
       Percept target = FilterNearest(enemies);

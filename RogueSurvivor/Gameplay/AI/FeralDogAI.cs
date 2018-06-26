@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
+using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -73,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       // dogs cannot order their followers to stay behind
       if (enemies != null) {
-        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FeralDogAI.FIGHT_EMOTES);
+        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
         if (actorAction != null) {
           // run to (or away if fleeing) if close.
           if (m_Actor.TargetActor != null)
