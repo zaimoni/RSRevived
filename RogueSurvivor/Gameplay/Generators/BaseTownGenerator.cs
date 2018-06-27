@@ -62,6 +62,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;
     private const int PARK_ITEM_CHANCE = 5;
+    private const int PARK_SHED_CHANCE = 50;  // alpha10
+    private const int PARK_SHED_WIDTH = 5;  // alpha10
+    private const int PARK_SHED_HEIGHT = 5;  // alpha10
     private const int MAX_CHAR_GUARDS_PER_OFFICE = 3;
     private const int SEWERS_ITEM_CHANCE = 1;
     private const int SEWERS_JUNK_CHANCE = 10;
@@ -1096,6 +1099,20 @@ restart:
       }), (Func<Point, Item>) (pt => MakeRandomParkItem()));
       map.AddZone(MakeUniqueZone("Park", b.BuildingRect));
       MakeWalkwayZones(map, b);
+
+      // alpha10: park shed
+      if (b.InsideRect.Width > PARK_SHED_WIDTH+2 && b.InsideRect.Height > PARK_SHED_HEIGHT+2) {
+        if (m_DiceRoller.RollChance(PARK_SHED_CHANCE)) {
+           // roll shed pos - dont put next to park fences!
+           int shedX = m_DiceRoller.Roll(b.InsideRect.Left+1, b.InsideRect.Right - PARK_SHED_WIDTH);
+           int shedY = m_DiceRoller.Roll(b.InsideRect.Top+1, b.InsideRect.Bottom - PARK_SHED_HEIGHT);
+           Rectangle shedRect = new Rectangle(shedX, shedY, PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
+           Rectangle shedInsideRect = new Rectangle(shedX + 1, shedY + 1, PARK_SHED_WIDTH - 2, PARK_SHED_HEIGHT - 2);
+           ClearRectangle(map, shedRect, false);
+           MakeParkShedBuilding(map, "Shed", shedRect);
+        }
+      }
+
       return true;
     }
 
