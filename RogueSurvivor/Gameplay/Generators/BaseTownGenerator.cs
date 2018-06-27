@@ -80,6 +80,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int HOUSE_BASEMENT_PILAR_CHANCE = 20;
     private const int HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE = 20;
     private const int HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE = 5;
+    // alpha10 new house stuff
+    private const int HOUSE_OUTSIDE_ROOM_NEED_MIN_ROOMS = 4;
+    private const int HOUSE_OUTSIDE_ROOM_CHANCE = 75;
+    private const int HOUSE_GARDEN_TREE_CHANCE = 10;  // per tile
+    private const int HOUSE_PARKING_LOT_CAR_CHANCE = 10;  // per tile
     private const int SHOP_BASEMENT_CHANCE = 30;
     private const int SHOP_BASEMENT_SHELF_CHANCE_PER_TILE = 5;
     private const int SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF = 33;
@@ -1177,32 +1182,143 @@ restart:
 
     protected virtual bool MakeHousingBuilding(Map map, Block b)
     {
+      ////////////////////////
+      // 0. Check suitability
+      ////////////////////////
       if (b.InsideRect.Width < 4 || b.InsideRect.Height < 4) return false;
+
+      /////////////////////////////
+      // 1. Walkway, floor & walls
+      /////////////////////////////
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_BRICK, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_PLANKS, b.InsideRect, true);
-      List<Rectangle> list = new List<Rectangle>();
-      MakeRoomsPlan(map, ref list, b.BuildingRect, 5);
-      foreach (Rectangle roomRect in list) {
-        MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, GameTiles.WALL_BRICK);
-        FillHousingRoomContents(map, roomRect);
+
+      ///////////////////////
+      // 2. Rooms floor plan
+      ///////////////////////
+      var roomsList = new List<Rectangle>();
+      MakeRoomsPlan(map, ref roomsList, b.BuildingRect, 5);
+
+      /////////////////
+      // 3. Make rooms
+      /////////////////
+      // alpha10 make some housings floor plan non rectangular by randomly chosing not to place one border room
+      // and replace it with a special "outside" room : a garden, a parking lot.
+
+      int iOutsideRoom = -1;
+      HouseOutsideRoomType outsideRoom = HouseOutsideRoomType.GARDEN;
+      if (roomsList.Count >= HOUSE_OUTSIDE_ROOM_NEED_MIN_ROOMS && m_DiceRoller.RollChance(HOUSE_OUTSIDE_ROOM_CHANCE)) {
+        var outside_rooms = Enumerable.Range(0,roomsList.Count).Where(i => {
+          Rectangle r = roomsList[iOutsideRoom];
+          return r.Left == b.BuildingRect.Left || r.Right == b.BuildingRect.Right || r.Top == b.BuildingRect.Top || r.Bottom == b.BuildingRect.Bottom;
+        }).ToList();
+        iOutsideRoom = m_DiceRoller.Choose(outside_rooms);
+        outsideRoom = (HouseOutsideRoomType) m_DiceRoller.Roll(0, (int)HouseOutsideRoomType._COUNT);
       }
+
+      for (int i = 0; i < roomsList.Count; i++) {
+        Rectangle roomRect = roomsList[i];
+        if (iOutsideRoom == i) {
+          // make sure all tiles are marked as outside
+          DoForEachTile(roomRect, (pt) => map.SetIsInsideAt(pt,false));
+
+          // then shrink it properly so we dont overlap with tiles from other rooms and mess things up.
+          if (roomRect.Left != b.BuildingRect.Left) {
+            roomRect.X++;
+            roomRect.Width--;
+          }
+          if (roomRect.Right != b.BuildingRect.Right)  roomRect.Width--;
+          if (roomRect.Top != b.BuildingRect.Top) {
+            roomRect.Y++;
+            roomRect.Height--;
+          }
+          if (roomRect.Bottom != b.BuildingRect.Bottom) roomRect.Height--;
+
+          // then fill the outside room
+          switch (outsideRoom) {
+            case HouseOutsideRoomType.GARDEN:
+              TileFill(map, GameTiles.FLOOR_GRASS, roomRect);
+              DoForEachTile(roomRect, (pos) => {
+                if (map.GetTileModelAt(pos) == GameTiles.FLOOR_GRASS && m_DiceRoller.RollChance(HOUSE_GARDEN_TREE_CHANCE))
+                  map.PlaceAt(MakeObjTree(), pos);
+              });
+              break;
+            case HouseOutsideRoomType.PARKING_LOT:
+              TileFill(map, GameTiles.FLOOR_ASPHALT, roomRect);
+              DoForEachTile(roomRect, (pos) => {
+                if (map.GetTileModelAt(pos) == GameTiles.FLOOR_ASPHALT && m_DiceRoller.RollChance(HOUSE_PARKING_LOT_CAR_CHANCE))
+                  map.PlaceAt(MakeObjWreckedCar(m_DiceRoller), pos);
+              });
+              break;
+            default: throw new InvalidOperationException("unhandled room type");
+          }
+        } else {
+          MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, GameTiles.WALL_BRICK);
+          FillHousingRoomContents(map, roomRect);
+        }
+      }
+
+      // once all rooms are done, enclose the outside room
+      if (-1 != iOutsideRoom) {
+        Rectangle roomRect = roomsList[iOutsideRoom];
+        switch (outsideRoom) {
+          case HouseOutsideRoomType.GARDEN:
+            DoForEachTile(roomRect, (pos) => {
+              if (   (pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
+                  && map.GetTileModelAt(pos) == GameTiles.FLOOR_GRASS) {
+                map.RemoveMapObjectAt(pos.X, pos.Y); // make sure trees are removed
+                map.PlaceAt(MakeObjGardenFence(), pos);
+              }
+            });
+            break;
+          case HouseOutsideRoomType.PARKING_LOT:
+            DoForEachTile(roomRect, (pos) => {
+              bool isLotEntry = (pos.X == roomRect.Left + roomRect.Width / 2) || (pos.Y == roomRect.Top + roomRect.Height / 2);
+              if (  !isLotEntry && ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
+                  && map.GetTileModelAt(pos) == GameTiles.FLOOR_ASPHALT)) {
+                map.RemoveMapObjectAt(pos.X, pos.Y); // make sure cars are removed
+                map.PlaceAt(MakeObjWireFence(), pos);
+              }
+            });
+            break;
+          default: throw new InvalidOperationException("unhandled room type");
+        }
+      }
+
       // XXX post-processing: converts inside windows to doors
       // backstop for a post-condition of MakeHousingRoom
-      bool flag = b.BuildingRect.Any(pt => !map.IsInsideAt(pt) && (!(map.GetMapObjectAt(pt) as DoorWindow)?.IsWindow ?? false));
-      while(!flag) {
-          int x = m_DiceRoller.Roll(b.BuildingRect.Left, b.BuildingRect.Right);
-          int y = m_DiceRoller.Roll(b.BuildingRect.Top, b.BuildingRect.Bottom);
-          if (!map.IsInsideAt(x, y)) {
-            if (map.GetMapObjectAt(x, y) is DoorWindow window && window.IsWindow) {
-              map.RemoveMapObjectAt(x, y);
-              map.PlaceAt(MakeObjWoodenDoor(), new Point(x, y));
-              flag = true;
-            }
-          }
+      ///////////////////////////////////////
+      // 5. Fix buildings with no door exits
+      ///////////////////////////////////////
+      bool hasOutsideDoor = false;
+      var windows = new List<Point>();
+      b.BuildingRect.DoForEach(pt => {
+        if (map.IsInsideAt(pt)) return;
+        var obj = map.GetMapObjectAt(pt) as DoorWindow;
+        if (null == obj) return;
+        if (obj.IsWindow) {
+          windows.Add(pt);
+          return;
+        }
+        hasOutsideDoor = true;
+      });
+      if (!hasOutsideDoor) {
+        if (0 >= windows.Count) throw new InvalidOperationException("home w/o outside doors");
+        var window_at = m_DiceRoller.Choose(windows);
+        map.RemoveMapObjectAt(window_at.X,window_at.Y);        
+        map.PlaceAt(MakeObjWoodenDoor(), window_at);
       }
+
+      ////////////////
+      // 6. Basement?
+      ////////////////
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE))
         m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
+
+      ///////////
+      // 7. Zone
+      ///////////
       map.AddZone(MakeUniqueZone("Housing", b.BuildingRect));
       MakeWalkwayZones(map, b);
       return true;
@@ -1897,7 +2013,7 @@ restart:
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
       var candidates = new List<Point>();
-      buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
+      buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt));
       Point point = m_DiceRoller.Choose(candidates);
       Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
       AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN, true);
@@ -3346,6 +3462,14 @@ restart:
       NONE,
       AGENCY,
       OFFICE,
+    }
+
+    // alpha10
+    protected enum HouseOutsideRoomType : byte
+    {
+      GARDEN = 0,
+      PARKING_LOT,
+      _COUNT
     }
   }
 }
