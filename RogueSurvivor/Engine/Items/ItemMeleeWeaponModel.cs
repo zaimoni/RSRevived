@@ -18,17 +18,20 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly float ToolBuildBonus;
     public bool IsTool { get { return ToolBashDamageBonus != 0 || ToolBuildBonus != 0; } }
 
-    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, bool is_artifact = false)
+    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int bash, float build, bool is_artifact = false)
       : base(aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {
-      IsFragile = false;
+      ToolBashDamageBonus = bash;
+      ToolBuildBonus = build;
     }
 
-    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int stackingLimit, bool fragile)
+    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int bash, float build, int stackingLimit, bool fragile)
       : base(aName, aName.Plural(true), imageID, attack, flavor, false)
     {
       StackingLimit = stackingLimit;
       IsFragile = fragile;
+      ToolBashDamageBonus = bash;
+      ToolBuildBonus = build;
     }
 
 
