@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Data
 
     private int m_StackingLimit = 1;
 
-    public bool IsPlural { get; set; }
+    public bool IsPlural { get; protected set; }
     public bool IsProper { get; protected set; }
     public bool DontAutoEquip { get; set; }
     public bool IsUnbreakable { get; protected set; }
@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Data
     public int StackingLimit
     {
       get { return m_StackingLimit; }
-      set {
+      protected set {
 #if DEBUG
         if (0 >= value) throw new ArgumentOutOfRangeException(nameof(value),value, "0 >= value");
 #endif

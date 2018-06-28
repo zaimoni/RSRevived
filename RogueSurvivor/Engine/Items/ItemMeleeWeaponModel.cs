@@ -11,12 +11,21 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemMeleeWeaponModel : ItemWeaponModel
   {
-    public bool IsFragile { get; set; }
+    public readonly bool IsFragile;
 
     public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, bool is_artifact = false)
       : base(aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {
+      IsFragile = false;
     }
+
+    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int stackingLimit, bool fragile)
+      : base(aName, aName.Plural(true), imageID, attack, flavor, false)
+    {
+      StackingLimit = stackingLimit;
+      IsFragile = fragile;
+    }
+
 
     public Attack BaseMeleeAttack(ActorSheet Sheet) {
       return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + Sheet.UnarmedAttack.HitValue, Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
