@@ -694,7 +694,14 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorBarricadingPoints(Actor actor, int baseBarricadingPoints)
     {
-      return baseBarricadingPoints + (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)));
+      int barBonus = (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)));    // carpentry skill
+
+      // alpha10: tool build bonus
+      if (actor.GetEquippedWeapon() is ItemMeleeWeapon melee) {
+        float toolBonus = melee.Model.ToolBuildBonus;
+        if (0 != toolBonus) barBonus += (int)(baseBarricadingPoints * toolBonus);
+      }
+      return baseBarricadingPoints + barBonus;
     }
 
     public static int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)

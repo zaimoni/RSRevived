@@ -13,6 +13,11 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public readonly bool IsFragile;
 
+    // alpha10
+    public readonly int ToolBashDamageBonus;
+    public readonly float ToolBuildBonus;
+    public bool IsTool { get { return ToolBashDamageBonus != 0 || ToolBuildBonus != 0; } }
+
     public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, bool is_artifact = false)
       : base(aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {

@@ -6923,6 +6923,14 @@ namespace djack.RogueSurvivor.Engine
       if (w is ItemMeleeWeapon melee) {
         if (melee.IsFragile) lines.Add("Breaks easily.");
         if (melee.Model.IsMartialArts) lines.Add("Uses martial arts.");
+        // alpha10 tool
+        if (melee.Model.IsTool) {
+          lines.Add("Is a tool.");
+          int toolBashDmg = melee.Model.ToolBashDamageBonus;
+          if (0 != toolBashDmg) lines.Add(string.Format("Tool Dmg   : +{0} = +{1}", toolBashDmg, toolBashDmg + melee.Model.Attack.DamageValue));
+          float toolBuild = melee.Model.ToolBuildBonus;
+          if (0 != toolBuild) lines.Add(string.Format("Tool Build : +{0}%", (int)(100 * toolBuild)));
+        }
       } else if (w is ItemRangedWeapon rw) {
         ItemRangedWeaponModel rangedWeaponModel = rw.Model;
         if (rangedWeaponModel.IsFireArm)
@@ -9071,15 +9079,14 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoBreak(Actor actor, MapObject mapObj)
     {
-      // XXX NPCs know to use their best melee weapon
-      // this doesn't handle martial artists properly
+      // NPCs know to use their best melee weapon
       if (!actor.IsPlayer) {
-        ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon();
+        ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon(mapObj);
         if (null!=bestMeleeWeapon) {
           if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) DoEquipItem(actor, bestMeleeWeapon);
         }
       }
-      Attack attack = actor.MeleeAttack();
+      Attack attack = actor.MeleeAttack(mapObj);
       if (mapObj is DoorWindow doorWindow && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
