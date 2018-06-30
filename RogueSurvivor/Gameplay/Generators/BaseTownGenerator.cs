@@ -1210,7 +1210,7 @@ restart:
       HouseOutsideRoomType outsideRoom = HouseOutsideRoomType.GARDEN;
       if (roomsList.Count >= HOUSE_OUTSIDE_ROOM_NEED_MIN_ROOMS && m_DiceRoller.RollChance(HOUSE_OUTSIDE_ROOM_CHANCE)) {
         var outside_rooms = Enumerable.Range(0,roomsList.Count).Where(i => {
-          Rectangle r = roomsList[iOutsideRoom];
+          Rectangle r = roomsList[i];
           return r.Left == b.BuildingRect.Left || r.Right == b.BuildingRect.Right || r.Top == b.BuildingRect.Top || r.Bottom == b.BuildingRect.Bottom;
         }).ToList();
         iOutsideRoom = m_DiceRoller.Choose(outside_rooms);
