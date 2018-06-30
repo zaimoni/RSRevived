@@ -3,7 +3,7 @@ MELEE_BASEBALLBAT,"baseball bat",6,6,0,10,0,0.00,1,0,"Homerun!"
 MELEE_COMBAT_KNIFE,"combat knife",2,8,0,0,0,0.00,2,0,"Stab. Then stab some more."
 MELEE_CROWBAR,"crowbar",3,2,0,0,18,0.15,3,0,"A hero and its crowbar."
 UNIQUE_JASON_MYERS_AXE,"Jason Myers axe",14,14,4,10,0,0.00,1,0,"Free the serial killer in you!"
-MELEE_HUGE_HAMMER,"huge hammer",16,16,10,8,0.15,6,1,0,"Hammer time!"
+MELEE_HUGE_HAMMER,"huge hammer",16,16,6,10,8,0.15,1,0,"Hammer time!"
 MELEE_GOLFCLUB,"golf club",8,4,0,10,0,0.00,1,1,"Play fair."
 MELEE_IRON_GOLFCLUB,"iron golf club",8,6,2,10,0,0.00,1,0,"Play hard."
 MELEE_SHOVEL,"shovel",10,10,2,10,5,0.10,1,0,"Makes a satisfying sound upon impact."
@@ -16,15 +16,3 @@ UNIQUE_FAMU_FATARU_KATANA,"Famu Fataru katana",5,10,2,10,0,0.00,1,0,"Watashi wa 
 UNIQUE_BIGBEAR_BAT,"Big Bear bat",8,14,1,15,0,0.00,1,0,"Smash the fools in the head."
 UNIQUE_ROGUEDJACK_KEYBOARD,"Roguedjack keyboard",30,6,1,25,0,0.00,1,0,"Le Basher De Bugs."
 UNIQUE_FATHER_TIME_SCYTHE,"Father Time scythe",2,6,1,10,0,0.00,1,0,"Harvests more than just grain."
-
-
-
-
-
-
-
-
-
-
-
-
