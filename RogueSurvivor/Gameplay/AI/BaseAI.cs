@@ -1058,6 +1058,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)
     {
+      if (null == percepts) return;
       int i = 0;
       while (i < percepts.Count) {
         if (CanReachSimple(percepts[i].Location, allowedActions)) i++;

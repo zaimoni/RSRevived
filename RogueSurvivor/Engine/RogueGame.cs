@@ -12467,14 +12467,17 @@ namespace djack.RogueSurvivor.Engine
          if (stop) break;
 
          lock (m_SimMutex) {
+#if DEBUG
+           have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
+#else
            try {
              have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
            } catch (Exception e) {
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: exception while running sim thread!");
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: " + e.Message);
-             // stop sim thread, better than crashing i guess...
-             break;
+             throw; // rethrow, as we hang otherwise
            }
+#endif
          }
          if (!have_simulated) Thread.Sleep(200);
        }

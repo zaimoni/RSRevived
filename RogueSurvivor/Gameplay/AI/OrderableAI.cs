@@ -1837,7 +1837,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (null == GetBestRangedWeaponWithAmmo())  {   // call contract
            // check route
            if (!CanReachSimple(enemy.Location, allowedChargeActions)) {
-             if (null == (enemy.Controller as ObjectiveAI).GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
+             if (null == (enemy.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
              decideToFlee = true;   // get out of here, now
            }
 //      }
