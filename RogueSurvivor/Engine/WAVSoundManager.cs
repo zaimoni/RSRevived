@@ -15,8 +15,10 @@ namespace djack.RogueSurvivor.Engine
     private readonly Dictionary<string, SoundPlayer> m_Musics = new Dictionary<string, SoundPlayer>();
     private readonly Dictionary<string, SoundPlayer> m_PlayingMusics = new Dictionary<string, SoundPlayer>();
 
-    SoundPlayer m_CurrentAudio; // alpha10
-    bool m_IsPlaying = false;
+    private SoundPlayer m_BackgroundAudio;
+    private bool m_BackgroundLoop = false;
+    private SoundPlayer m_CurrentAudio; // alpha10
+    private bool m_IsPlaying = false;
 
     public bool IsMusicEnabled { get; set; }
     public int Volume { get; set; }
@@ -64,12 +66,33 @@ namespace djack.RogueSurvivor.Engine
     public void Play(string musicname, int priority)
     {
       if (!IsMusicEnabled) return;
+      if (MusicPriority.PRIORITY_BGM > priority) return;
       if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
+      if (MusicPriority.PRIORITY_BGM == priority) {
+        m_BackgroundAudio = music;
+        m_BackgroundLoop = false;
+        if (MusicPriority.PRIORITY_BGM < Priority) return;  // do not interrupt event music
+        if (m_CurrentAudio == music && m_IsPlaying) return; // do not restart current background music
+        m_CurrentAudio?.Stop();
+        Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing music {0}.", musicname));
+        m_IsPlaying = true;
+        Music = musicname;
+        Priority = priority;
+        (m_CurrentAudio = music).Play(); // background thread more important than feedback on sound termination
+        return;
+      }
       Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing music {0}.", musicname));
       m_IsPlaying = true;
       Music = musicname;
       Priority = priority;
       (m_CurrentAudio = music).PlaySync(); // XXX really should be in new thread but then we don't get feedback on sound termination
+      if (null != m_BackgroundAudio) {
+        if (m_BackgroundLoop) {
+          (m_CurrentAudio = m_BackgroundAudio).PlayLooping();
+        } else {
+          (m_CurrentAudio = m_BackgroundAudio).Play();
+        }
+      }
       m_IsPlaying = false;
     }
 
@@ -100,12 +123,21 @@ namespace djack.RogueSurvivor.Engine
     public void PlayLooping(string musicname, int priority)
     {
       if (!IsMusicEnabled) return;
+      if (MusicPriority.PRIORITY_BGM > priority) return;
       if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
-      Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing looping music {0}.", musicname));
+      if (MusicPriority.PRIORITY_BGM == priority) {
+        m_BackgroundAudio = music;
+        m_BackgroundLoop = true;
+        if (MusicPriority.PRIORITY_BGM < Priority) return;  // do not interrupt event music
+      } else {
+        m_BackgroundAudio = null;   // current uses of event-priority looping invalidate prior background music
+      }
 //    music.Ending += new EventHandler(music_Ending);
       m_IsPlaying = true;
       Music = musicname;
       Priority = priority;
+      if (m_CurrentAudio==music) return;
+      m_CurrentAudio?.Stop();
       (m_CurrentAudio = music).PlayLooping();
     }
 
@@ -132,6 +164,8 @@ namespace djack.RogueSurvivor.Engine
     public void Stop()
     {
       if (null != m_CurrentAudio) m_CurrentAudio.Stop();
+      m_CurrentAudio = null;
+      m_BackgroundAudio = null;
       Music = "";
       Priority = MusicPriority.PRIORITY_NULL;
     }
@@ -178,6 +212,8 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!disposing) return;
       Logger.WriteLine(Logger.Stage.CLEAN_SOUND, "disposing WAVSoundManager...");
+      m_BackgroundAudio = null;
+      m_CurrentAudio = null;
       foreach (string key in m_Musics.Keys) {
         SoundPlayer tmp = m_Musics[key];
         if (null == tmp) continue;

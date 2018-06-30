@@ -3,10 +3,18 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* Many RS Alpha 10 changes merged in
+** This does include the park shed and residential outdoor rooms changes, and corresponding map objects.
+** The safety from traps implementation is in, but scheduleddue for a re-implementation (blocked by police radio range re-implementation)
+** Revised BaseAI::SafetyFrom is not in yet (do want this)
+** Revised trading UI is not in yet (do want this for player-NPC trading but not player-player trading)
+** Item handling changes scheduled to be cherry-picked (full merge not practical)
+** Hospital storage room nurse not in yet (undecided, interacts with vaporware hospital power-up storyline)
+** Invulnerability as debug feature and guarantee of PC sighting of NPCs will not be in
 * names better matched to stereotypical English gender
 * key configuration files are not backward compatible.
 * even more AI overhaul.
-** Gangsters are now hostile to biker armor, as advertised
+** Gangsters are now hostile to biker armor, as advertised (note: may not be staying as this contradicts RS Alpha 10 resolution to same issue)
 * Closing the door behind you is now a free action.
 * Windows and glass doors are no longer perfect ablative armor
 * The CHAR Guard Manual is very interesting (0% boredom rate), but dry reading (only restores as much sanity as a magazine per reading).

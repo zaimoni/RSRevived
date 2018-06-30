@@ -858,7 +858,7 @@ namespace djack.RogueSurvivor.Engine
         // music.
         if (!m_PlayedIntro) {
           m_MusicManager.Stop();
-          m_MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
+          m_MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_BGM);
           m_PlayedIntro = true;
         }
         gy1 = 0;
@@ -2137,10 +2137,7 @@ namespace djack.RogueSurvivor.Engine
                 DoWakeUp(actor);
               else if (actor.IsPlayer) {
                 // check music.
-                if (m_MusicManager.Music != GameMusics.SLEEP) {
-                  m_MusicManager.Stop();
-                  m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
-                }
+                m_MusicManager.PlayLooping(GameMusics.SLEEP, 1 == Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
                 // message.
                 AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 RedrawPlayScreen();
@@ -4622,8 +4619,7 @@ namespace djack.RogueSurvivor.Engine
       DoStartSleeping(player);
       RedrawPlayScreen();
       // check music.
-      m_MusicManager.Stop();
-      m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
+      m_MusicManager.PlayLooping(GameMusics.SLEEP, 1==Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
       return true;
     }
 
@@ -13271,9 +13267,6 @@ namespace djack.RogueSurvivor.Engine
        // get current map music and play it if not already playing it
        string mapMusic = CurrentMap.BgMusic;
        if (string.IsNullOrEmpty(mapMusic)) return;
-       if (m_MusicManager.Music == mapMusic && m_MusicManager.IsPlaying) return;
-
-       m_MusicManager.Stop();
        m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
