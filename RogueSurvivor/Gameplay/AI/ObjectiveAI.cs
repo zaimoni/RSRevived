@@ -1232,7 +1232,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //    if (!m_Actor.Model.Abilities.HasToEat) return 0;    // redundant; for documentation
       if (m_Actor.IsHungry) return 3;
       if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return 0;
-      // XXX if the preemptive eat behavior would trigger, that is 3.
+      // if the preemptive eat behavior would trigger, that is 3.
+      // XXX \todo account for travel tiem
+      if (food.IsPerishable && (m_Actor.CurrentNutritionOf(food) <= (m_Actor.MaxFood - m_Actor.FoodPoints))) return 3;
       if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 1;
       return 2;
     }
@@ -1444,6 +1446,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemFoodModel) {
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return 3;
+        // we don't do the pre-emptive eat test here due to lack of information re expiration date
         if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return 1;
         return 2;
       }
