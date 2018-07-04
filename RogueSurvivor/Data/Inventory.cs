@@ -202,18 +202,12 @@ namespace djack.RogueSurvivor.Data
 
     public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeaponModel rw)  // XXX layering violation
     {
-      foreach(Item mItem in m_Items) {
-        if (mItem is ItemAmmo am && am.AmmoType == rw.AmmoType) return GetBestDestackable(am.Model) as ItemAmmo;
-      }
-      return null;
+      return GetBestDestackable(Models.Items[(int)rw.AmmoType + (int)(Gameplay.GameItems.IDs.AMMO_LIGHT_PISTOL)]) as ItemAmmo;
     }
 
     public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)  // XXX layering violation
     {
-      foreach(Item mItem in m_Items) {
-        if (mItem is ItemAmmo am && am.AmmoType == rw.AmmoType) return GetBestDestackable(am.Model) as ItemAmmo;
-      }
-      return null;
+      return GetBestDestackable(Models.Items[(int)rw.AmmoType + (int)(Gameplay.GameItems.IDs.AMMO_LIGHT_PISTOL)]) as ItemAmmo;
     }
 
     // we prefer to return weapons that need reloading.
