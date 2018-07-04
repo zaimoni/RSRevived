@@ -150,7 +150,6 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_EQUIP = new Verb("equip");
     private readonly Verb VERB_HAVE = new Verb("have", "has");
     private readonly Verb VERB_HELP = new Verb("help");
-    private readonly Verb VERB_PERSUADE = new Verb("persuade");
     private readonly Verb VERB_HEAL_WITH = new Verb("heal with", "heals with");
     private readonly Verb VERB_JUMP_ON = new Verb("jump on", "jumps on");
     private readonly Verb VERB_KILL = new Verb("kill");
@@ -160,6 +159,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_OFFER = new Verb("offer");
     private readonly Verb VERB_OPEN = new Verb("open");
     private readonly Verb VERB_ORDER = new Verb("order");
+    private readonly Verb VERB_PERSUADE = new Verb("persuade");
     private readonly Verb VERB_PULL = new Verb("pull");  // alpha10
     private readonly Verb VERB_PUSH = new Verb("push", "pushes");
     private readonly Verb VERB_PUT = new Verb("put", "puts");
@@ -217,13 +217,13 @@ namespace djack.RogueSurvivor.Engine
     private const int RIGHTPANEL_TEXT_X = RIGHTPANEL_X+4;
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
-    private const int INVENTORYPANEL_Y = 160;
+    private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142
     private const int GROUNDINVENTORYPANEL_Y = 224;
     private const int CORPSESPANEL_Y = 288;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
     private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
     private const int SKILLTABLE_Y = 352;
-    private const int SKILLTABLE_LINES = 10;
+    private const int SKILLTABLE_LINES = 8;  // alpha10; formerly 10
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
     private const int LOCATIONPANEL_Y = 676;
     private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
@@ -244,6 +244,7 @@ namespace djack.RogueSurvivor.Engine
     private const int DELAY_LONG = 1000;
     private const int LINE_SPACING = 12;
     private const int BOLD_LINE_SPACING = 14;
+    private const int SKILL_LINE_SPACING = LINE_SPACING+4;
     private const int CREDIT_CHAR_SPACING = 8;
     private const int CREDIT_LINE_SPACING = 12;
     private const int TEXTFILE_CHARS_PER_LINE = 120;
@@ -1367,9 +1368,13 @@ namespace djack.RogueSurvivor.Engine
       if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
-        AddMessage(new Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
-        AddMessage(new Data.Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
-        AddMessage(new Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
+        if (m_Player.Model.Abilities.IsUndead) {    // alpha10
+          AddMessage(new Data.Message("The Advisor is enabled but you will get no hint when playing undead.", 0, Color.Red));
+        } else {
+          AddMessage(new Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
+          AddMessage(new Data.Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
+          AddMessage(new Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
+        }
         AddMessage(new Data.Message(string.Format("Press {0} during the game to change the options.", RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
         AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
         RedrawPlayScreen();
@@ -3309,6 +3314,7 @@ namespace djack.RogueSurvivor.Engine
       var stringList = new List<string>();
       for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
         GetAdvisorHintText((AdvisorHint) index, out string title, out string[] body);
+        if (s_Hints.IsAdvisorHintGiven((AdvisorHint)index)) title += " (hint already given)"; // alpha10
         stringList.Add(string.Format("HINT {0} : {1}", index, title));
         stringList.AddRange(body);
         stringList.Add("~~~~");
@@ -4708,10 +4714,10 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       ClearOverlays();
+      AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
       bool flag2 = false;
       do {
-        AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) break;
@@ -5270,40 +5276,35 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 4:
-              if (HandlePlayerOrderFollowerToGuard(player, follower, fovFor))
-              {
+              if (HandlePlayerOrderFollowerToGuard(player, follower, fovFor)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 5:
-              if (HandlePlayerOrderFollowerToPatrol(player, follower, fovFor))
-              {
+              if (HandlePlayerOrderFollowerToPatrol(player, follower, fovFor)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 6:
-              if (HandlePlayerOrderFollowerToDropAllItems(player, follower))
-              {
+              if (HandlePlayerOrderFollowerToDropAllItems(player, follower)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 7:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false))
-              {
+              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 8:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, true))
-              {
+              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, true)) {
                 flag1 = false;
                 flag2 = true;
                 break;
@@ -5375,7 +5376,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
@@ -5425,7 +5426,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
@@ -5473,7 +5474,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("Left-Click on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
@@ -5532,7 +5533,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("Left-Click on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
@@ -6054,35 +6055,34 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.ITEM_GRAB_FLOOR:
           title = "TAKING AN ITEM FROM THE FLOOR";
-          body = new string[3]
-          {
+          body = new string[] {
             "You are standing on a stack of items.",
             "The items are listed on the right panel in the ground inventory.",
-            "To TAKE an item, move your mouse on the item on the ground inventory and LEFT CLICK."
+            "To TAKE an item, move your mouse on the item on the ground inventory and <LMB>.",
+            "Shortcut : <Ctrl-item slot number>."
           };
           break;
         case AdvisorHint.ITEM_UNEQUIP:
           title = "UNEQUIPING AN ITEM";
-          body = new string[3]
-          {
-            "You have equiped an item.",
+          body = new string[] {
+            "You have equipped an item.",
             "The item is displayed with a green background.",
-            "To UNEQUIP the item, LEFT CLICK on it in your inventory."
+            "To UNEQUIP the item, <LMB> on it in your inventory.",
+            "Shortcut: <Ctrl-item slot number>"
           };
           break;
         case AdvisorHint.ITEM_EQUIP:
           title = "EQUIPING AN ITEM";
-          body = new string[3]
-          {
+          body = new string[] {
             "You have an equipable item in your inventory.",
             "Typical equipable items are weapons, lights and phones.",
-            "To EQUIP the item, LEFT CLICK on it in your inventory."
+            "To EQUIP the item, <LMB> on it in your inventory.",
+            "Shortcut : <Ctrl-item slot number>"
           };
           break;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
           title = "ITEM - BARRICADING MATERIAL";
-          body = new string[3]
-          {
+          body = new string[] {
             "You have some barricading materials, such as planks.",
             "Barricading material is used when you barricade doors/windows or build fortifications.",
             "To build fortifications you need the CARPENTRY skill."
@@ -6090,26 +6090,24 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.ITEM_DROP:
           title = "DROPPING AN ITEM";
-          body = new string[3]
-          {
+          body = new string[] {
             "You can drop items from your inventory.",
-            "To DROP an item, RIGHT CLICK on it.",
+            "To DROP an item, <RMB> on it.",
             "The item must be unequiped first."
           };
           break;
         case AdvisorHint.ITEM_USE:
           title = "USING AN ITEM";
-          body = new string[3]
-          {
+          body = new string[] {
             "You can use one of your item.",
             "Typical usable items are food, medecine and ammunition.",
-            "To USE the item, LEFT CLICK on it in your inventory."
+            "To USE the item, <LMB> on it in your inventory.",
+            "Shortcut: <Ctrl-item slot number>"
           };
           break;
         case AdvisorHint.FLASHLIGHT:
           title = "LIGHTING";
-          body = new string[3]
-          {
+          body = new string[] {
             "You have found a lighting item, such as a flashlight.",
             "Equip the item to increase your view distance (FoV).",
             "Standing next to someone with a light on has the same effect."
@@ -6117,17 +6115,15 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.CELLPHONES:
           title = "CELLPHONES";
-          body = new string[3]
-          {
+          body = new string[] {
             "You have found a cellphone.",
-            "Cellphones are used to keep contact with your follower(s).",
+            "Cellphones are useful to keep contact with your follower(s).",
             "You and your follower(s) must have a cellphone equipped."
           };
           break;
         case AdvisorHint.SPRAYS_PAINT:
           title = "SPRAYS - SPRAYPAINT";
-          body = new string[4]
-          {
+          body = new string[] {
             "You have found a can of spraypaint.",
             "You can tag a symbol on walls and floors.",
             "This is useful to mark some places and locations.",
@@ -6136,40 +6132,37 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.SPRAYS_SCENT:
           title = "SPRAYS - SCENT SPRAY";
-          body = new string[4]
-          {
+          body = new string[] {
             "You have found a scent spray.",
-            "You can spray some perfume on the tile you are standing.",
-            "This is useful to confuse the undeads that chase using their smell.",
-            string.Format("To USE THE SPRAY : move the mouse over the item and press <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
+            "You can spray some perfurme on yourself or another adjacent actor.",
+            "This is useful to confuse the undeads because they hunt using their smell.",
+            String.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
           };
           break;
         case AdvisorHint.WEAPON_FIRE:
           title = "FIRING A WEAPON";
-          body = new string[8]
-          {
+          body = new string[] {
             "You can fire your equiped ranged weapon.",
             "You need to have valid targets.",
             "To fire on a target you need ammunitions and a clear line of fine.",
             "The target must be within the weapon range.",
             "The closer the target is, the easier it is to hit and it does slightly more damage.",
             string.Format("To FIRE : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString()),
+            "When firing you can switch to rapid fire mode : you will shoot twice but at reduced accurary.",
             "Remember you need to have visible enemies to fire at.",
             "Read the manual for more explanation about firing and ranged weapons."
           };
           break;
         case AdvisorHint.WEAPON_RELOAD:
           title = "RELOADING A WEAPON";
-          body = new string[2]
-          {
+          body = new string[] {
             "You can reload your equiped ranged weapon.",
             "To RELOAD, just USE a compatible ammo item."
           };
           break;
         case AdvisorHint.GRENADE:
           title = "GRENADES";
-          body = new string[3]
-          {
+          body = new string[] {
             "You have found a grenade.",
             "To THROW a GRENADE, EQUIP it and FIRE it.",
             string.Format("To FIRE : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString())
@@ -6710,8 +6703,9 @@ namespace djack.RogueSurvivor.Engine
         case Activity.FLEEING:
           return "Fleeing!";
         case Activity.FOLLOWING:
-          if (actor.TargetActor == null)
-            return "Following.";
+          if (actor.TargetActor == null) return "Following.";
+          // alpha10
+          if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", HisOrHer(actor));
           return string.Format("Following {0}.", actor.TargetActor.Name);
         case Activity.SLEEPING:
           return "Sleeping.";
@@ -6869,50 +6863,52 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemLong(Item it, bool isPlayerInventory)
     {
-      var stringList = new List<string>();
+      var lines = new List<string>();
       if (it.Model.IsStackable)
-        stringList.Add(string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
+        lines.Add(string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
       else
-        stringList.Add(DescribeItemShort(it));
-      if (it.Model.IsUnbreakable) stringList.Add("Unbreakable.");
-      string str = null;
+        lines.Add(DescribeItemShort(it));
+      if (it.Model.IsUnbreakable) lines.Add("Unbreakable.");
+      string inInvAdditionalDesc = null;
       if (it is ItemWeapon) {
-        stringList.AddRange(DescribeItemWeapon(it as ItemWeapon));
-        if (it is ItemRangedWeapon) str = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+        lines.AddRange(DescribeItemWeapon(it as ItemWeapon));
+        if (it is ItemRangedWeapon) inInvAdditionalDesc = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
-      else if (it is ItemFood) stringList.AddRange(DescribeItemFood(it as ItemFood));
-      else if (it is ItemMedicine) stringList.AddRange(DescribeItemMedicine(it as ItemMedicine));
+      else if (it is ItemFood) lines.AddRange(DescribeItemFood(it as ItemFood));
+      else if (it is ItemMedicine) lines.AddRange(DescribeItemMedicine(it as ItemMedicine));
       else if (it is ItemBarricadeMaterial) {
-        stringList.AddRange(DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
-        str = string.Format("to use : <{0}>/<{1}>/<{2}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
-      } else if (it is ItemBodyArmor) stringList.AddRange(DescribeItemBodyArmor(it as ItemBodyArmor));
+        lines.AddRange(DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
+        inInvAdditionalDesc = string.Format("to build : <{0}>/<{1}>/<{2}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
+      } else if (it is ItemBodyArmor) lines.AddRange(DescribeItemBodyArmor(it as ItemBodyArmor));
       else if (it is ItemSprayPaint) {
-        stringList.AddRange(DescribeItemSprayPaint(it as ItemSprayPaint));
-        str = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+        lines.AddRange(DescribeItemSprayPaint(it as ItemSprayPaint));
+        inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
       } else if (it is ItemSprayScent) {
-        stringList.AddRange(DescribeItemSprayScent(it as ItemSprayScent));
-        str = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
-      } else if (it is ItemLight) stringList.AddRange(DescribeItemLight(it as ItemLight));
-      else if (it is ItemTracker) stringList.AddRange(DescribeItemTracker(it as ItemTracker));
+        lines.AddRange(DescribeItemSprayScent(it as ItemSprayScent));
+        inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+      } else if (it is ItemLight) lines.AddRange(DescribeItemLight(it as ItemLight));
+      else if (it is ItemTracker) lines.AddRange(DescribeItemTracker(it as ItemTracker));
       else if (it is ItemAmmo) {
-        stringList.AddRange(DescribeItemAmmo(it as ItemAmmo));
-        str = "to reload : left-click.";
+        lines.AddRange(DescribeItemAmmo(it as ItemAmmo));
+        inInvAdditionalDesc = "to reload : left-click.";
       } else if (it is ItemExplosive) {
-        stringList.AddRange(DescribeItemExplosive(it as ItemExplosive));
-        str = string.Format("to throw : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+        lines.AddRange(DescribeItemExplosive(it as ItemExplosive));
+        inInvAdditionalDesc = string.Format("to throw : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
-      else if (it is ItemTrap) stringList.AddRange(DescribeItemTrap(it as ItemTrap));
-      else if (it is ItemEntertainment) stringList.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
-      stringList.Add(" ");
-      stringList.Add(it.Model.FlavorDescription);
+      else if (it is ItemTrap trap) {
+        lines.AddRange(DescribeItemTrap(trap));
+        inInvAdditionalDesc = (trap.Model.ActivatesWhenDropped ? "to activate trap : drop it" : "to activate trap : use it");   // alpha10
+      } else if (it is ItemEntertainment) lines.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
+      lines.Add(" ");
+      lines.Add(it.Model.FlavorDescription);
       if (isPlayerInventory) {
-        stringList.Add(" ");
-        stringList.Add("----");
-        stringList.Add(string.Format("to give : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
-        stringList.Add(string.Format("to trade : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
-        if (str != null) stringList.Add(str);
+        lines.Add(" ");
+        lines.Add("----");
+        lines.Add(string.Format("to give : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
+        lines.Add(string.Format("to trade : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
+        if (inInvAdditionalDesc != null) lines.Add(inInvAdditionalDesc);
       }
-      return stringList.ToArray();
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemExplosive(ItemExplosive ex)
@@ -7016,36 +7012,49 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemMedicine(ItemMedicine med)
     {
-      var stringList = new List<string>{ "> medicine" };
+      var lines = new List<string>{ "> medicine" };
       ItemMedicineModel itemMedicineModel = med.Model;
+
+      // alpha10 dont add lines for zero values
+
       int num1 = Player == null ? itemMedicineModel.Healing : Rules.ActorMedicineEffect(Player, itemMedicineModel.Healing);
-      if (num1 == itemMedicineModel.Healing)
-        stringList.Add(string.Format("Healing : +{0}", itemMedicineModel.Healing));
-      else
-        stringList.Add(string.Format("Healing : +{0} (+{1})", num1, itemMedicineModel.Healing));
+      if (0 != num1) {
+        if (num1 == itemMedicineModel.Healing)
+          lines.Add(string.Format("Healing : +{0}", itemMedicineModel.Healing));
+        else
+          lines.Add(string.Format("Healing : +{0} (+{1})", num1, itemMedicineModel.Healing));
+      }
       int num2 = Player == null ? itemMedicineModel.StaminaBoost : Rules.ActorMedicineEffect(Player, itemMedicineModel.StaminaBoost);
-      if (num2 == itemMedicineModel.StaminaBoost)
-        stringList.Add(string.Format("Stamina : +{0}", itemMedicineModel.StaminaBoost));
-      else
-        stringList.Add(string.Format("Stamina : +{0} (+{1})", num2, itemMedicineModel.StaminaBoost));
+      if (0 != num2) {
+        if (num2 == itemMedicineModel.StaminaBoost)
+          lines.Add(string.Format("Stamina : +{0}", itemMedicineModel.StaminaBoost));
+        else
+          lines.Add(string.Format("Stamina : +{0} (+{1})", num2, itemMedicineModel.StaminaBoost));
+      }
       int num3 = Player == null ? itemMedicineModel.SleepBoost : Rules.ActorMedicineEffect(Player, itemMedicineModel.SleepBoost);
-      if (num3 == itemMedicineModel.SleepBoost)
-        stringList.Add(string.Format("Sleep   : +{0}", itemMedicineModel.SleepBoost));
-      else
-        stringList.Add(string.Format("Sleep   : +{0} (+{1})", num3, itemMedicineModel.SleepBoost));
+      if (0 != num3) {
+        if (num3 == itemMedicineModel.SleepBoost)
+          lines.Add(string.Format("Sleep   : +{0}", itemMedicineModel.SleepBoost));
+        else
+          lines.Add(string.Format("Sleep   : +{0} (+{1})", num3, itemMedicineModel.SleepBoost));
+      }
       int num4 = Player == null ? itemMedicineModel.SanityCure : Rules.ActorMedicineEffect(Player, itemMedicineModel.SanityCure);
-      if (num4 == itemMedicineModel.SanityCure)
-        stringList.Add(string.Format("Sanity  : +{0}", itemMedicineModel.SanityCure));
-      else
-        stringList.Add(string.Format("Sanity  : +{0} (+{1})", num4, itemMedicineModel.SanityCure));
+      if (0 != num4) {
+        if (num4 == itemMedicineModel.SanityCure)
+          lines.Add(string.Format("Sanity  : +{0}", itemMedicineModel.SanityCure));
+        else
+          lines.Add(string.Format("Sanity  : +{0} (+{1})", num4, itemMedicineModel.SanityCure));
+      }
       if (Session.Get.HasInfection) {
         int num5 = Player == null ? itemMedicineModel.InfectionCure : Rules.ActorMedicineEffect(Player, itemMedicineModel.InfectionCure);
-        if (num5 == itemMedicineModel.InfectionCure)
-          stringList.Add(string.Format("Cure    : +{0}", itemMedicineModel.InfectionCure));
-        else
-          stringList.Add(string.Format("Cure    : +{0} (+{1})", num5, itemMedicineModel.InfectionCure));
+        if (0 != num5) {
+          if (num5 == itemMedicineModel.InfectionCure)
+            lines.Add(string.Format("Cure    : +{0}", itemMedicineModel.InfectionCure));
+          else
+            lines.Add(string.Format("Cure    : +{0} (+{1})", num5, itemMedicineModel.InfectionCure));
+        }
       }
-      return stringList.ToArray();
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
@@ -7108,13 +7117,19 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
-      var stringList = new List<string>{ "> spray scent" };
-      int max_spray = sp.Model.MaxSprayQuantity;
+      var lines = new List<string>{ "> spray scent" };
+      var model = sp.Model;
+      int max_spray = model.MaxSprayQuantity;
       if (sp.SprayQuantity < max_spray)
-        stringList.Add(string.Format("Spray : {0}/{1}", sp.SprayQuantity, max_spray));
+        lines.Add(string.Format("Spray : {0}/{1}", sp.SprayQuantity, max_spray));
       else
-        stringList.Add(string.Format("Spray : {0} MAX", sp.SprayQuantity));
-      return stringList.ToArray();
+        lines.Add(string.Format("Spray : {0} MAX", sp.SprayQuantity));
+
+      // alpha10
+      lines.Add(string.Format("Odor     : {0}", model.Odor.ToString().ToLower().Capitalize()));
+      lines.Add(string.Format("Strength : {0}h", model.Strength / WorldTime.TURNS_PER_HOUR));
+
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemLight(ItemLight lt)
@@ -7127,9 +7142,15 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemTracker(ItemTracker tr)
     {
-      var stringList = new List<string>{ "> tracker" };
-      stringList.Add(DescribeBatteries(tr));
-      return stringList.ToArray();
+      var lines = new List<string>{ "> tracker" };
+      lines.Add(DescribeBatteries(tr));
+      // alpha10 range if applicable
+      // TODO -- should be an tracker item property, hardcoding is baaaad -_-
+      if (tr.CanTrackUndeads)
+        lines.Add("Range: " + Rules.ZTRACKINGRADIUS.ToString());
+      else
+        lines.Add("Range: " + MINIMAP_RADIUS.ToString());
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemTrap(ItemTrap tr)
@@ -7196,19 +7217,19 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF", Actor.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
-          return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+          return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
         case Skills.IDs.BOWS:
-          return string.Format("bows +{0} Atk, +{1} Dmg", Actor.SKILL_BOWS_ATK_BONUS, Actor.SKILL_BOWS_DMG_BONUS);
+          return string.Format("bows +{0} ATK, +{1} DMG", Actor.SKILL_BOWS_ATK_BONUS, Actor.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:
           return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * (double)Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
         case Skills.IDs.CHARISMATIC:
           return string.Format("+{0} trust per turn, +{1}% trade offers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);
         case Skills.IDs.FIREARMS:
-          return string.Format("firearms +{0} Atk, +{1} Dmg", Actor.SKILL_FIREARMS_ATK_BONUS, Actor.SKILL_FIREARMS_DMG_BONUS);
+          return string.Format("firearms +{0} ATK, +{1} DMG", Actor.SKILL_FIREARMS_ATK_BONUS, Actor.SKILL_FIREARMS_DMG_BONUS);
         case Skills.IDs.HARDY:
-          return string.Format("sleep heals anywhere, +{0}% chance to heal", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
+          return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
         case Skills.IDs.HAULER:
-          return string.Format("+{0} inventory capacity", Actor.SKILL_HAULER_INV_BONUS);
+          return string.Format("+{0} inventory slots", Actor.SKILL_HAULER_INV_BONUS);
         case Skills.IDs.HIGH_STAMINA:
           return string.Format("+{0} STA", Actor.SKILL_HIGH_STAMINA_STA_BONUS);
         case Skills.IDs.LEADERSHIP:
@@ -7220,11 +7241,11 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LIGHT_SLEEPER:
           return string.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
         case Skills.IDs.MARTIAL_ARTS:
-          return string.Format("unarmed only melee +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
+          return string.Format("unarmed only +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
           return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
-          return string.Format("+{0}/+{1} Dmg vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
+          return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
           return string.Format("+{0} melee DMG, +{1} throw range", Actor.SKILL_STRONG_DMG_BONUS, Actor.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:
@@ -7236,7 +7257,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF, can jump", Actor.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
         case Skills.IDs.Z_EATER:
-          return string.Format("+{0}% hp regen", (int)(100.0 * (double)Rules.SKILL_ZEATER_REGEN_BONUS));
+          return string.Format("+{0}% eating HP regen", (int)(100.0 * (double)Rules.SKILL_ZEATER_REGEN_BONUS));
         case Skills.IDs.Z_GRAB:
           return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
         case Skills.IDs.Z_INFECTOR:
@@ -7350,7 +7371,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
 
-      if (actor.ActionPoints >= Rules.BASE_ACTION_COST) actor.DropScent();
+      if (0 < actor.ActionPoints) actor.DropScent();    // alpha10 fix
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
         OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
@@ -11324,15 +11345,28 @@ namespace djack.RogueSurvivor.Engine
       int gx1 = gx;
       int gy1 = gy;
       foreach (var skill in skills) {
-        m_UI.UI_DrawString(Color.White, string.Format("{0}-", skill.Value), gx1, gy1, new Color?());
-        int gx2 = gx1 + 16;
-        m_UI.UI_DrawString(Color.White, Skills.Name(skill.Key), gx2, gy1, new Color?());
-        gx1 = gx2 - 16;
-        if (++num >= 10) {
+        Color skColor = Color.White;
+
+        // alpha10 highlight if active skills are active or not
+        switch (skill.Key) {
+          case Skills.IDs.MARTIAL_ARTS:
+            skColor = (actor.GetEquippedWeapon() == null ? Color.LightGreen : Color.Red);
+            break;
+          case Skills.IDs.HARDY:
+            if (actor.IsSleeping) skColor = Color.LightGreen;
+            break;
+        }
+
+        m_UI.UI_DrawString(skColor, String.Format("{0}-", skill.Value), gx1, gy1);
+        gx1 += SKILL_LINE_SPACING;
+        m_UI.UI_DrawString(skColor, Skills.Name(skill.Key), gx1, gy1);
+        gx1 -= SKILL_LINE_SPACING;
+
+        if (++num >= SKILLTABLE_LINES) {
           num = 0;
           gy1 = gy;
           gx1 += TEXTFILE_CHARS_PER_LINE;
-        } else gy1 += 12;
+        } else gy1 += LINE_SPACING;
       }
     }
 
