@@ -317,6 +317,7 @@ namespace djack.RogueSurvivor.Engine
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
     private static GameHintsStatus s_Hints = new GameHintsStatus();
+    private OverlayPopup m_HintAvailableOverlay;  // alpha10
     private readonly BaseTownGenerator m_TownGenerator;
     private bool m_PlayedIntro;
     private readonly IMusicManager m_MusicManager;
@@ -2875,8 +2876,29 @@ namespace djack.RogueSurvivor.Engine
           ComputeViewRect(player.Location.Position);
         }
         m_UI.UI_SetCursor(null);
-        if (s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
-          AddOverlay(new OverlayPopup(new string[1] { string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()) }, Color.White, Color.White, Color.Black, MapToScreen(Player.Location.Position.X - 3, Player.Location.Position.Y - 1)));
+        // hint available?
+        // alpha10 no hint if undead
+        if (Player != null && !Player.IsDead && !Player.Model.Abilities.IsUndead) {
+          // alpha10 fix properly handle hint overlay
+          int availableHint = -1;
+          if (s_Options.IsAdvisorEnabled && (availableHint = GetAdvisorFirstAvailableHint()) != -1) {
+            Point overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
+            if (m_HintAvailableOverlay == null) {
+              m_HintAvailableOverlay = new OverlayPopup(null, Color.White, Color.White, Color.Black, overlayPos);
+              AddOverlay(m_HintAvailableOverlay);
+            } else {
+              m_HintAvailableOverlay.ScreenPosition = overlayPos;
+              if (!HasOverlay(m_HintAvailableOverlay)) AddOverlay(m_HintAvailableOverlay);
+            }
+
+            GetAdvisorHintText((AdvisorHint)availableHint, out string hintTitle, out string[] hintBody);
+            m_HintAvailableOverlay.Lines = new string[] {
+              string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()),
+              hintTitle };
+          } else if (m_HintAvailableOverlay != null && HasOverlay(m_HintAvailableOverlay)) {
+            RemoveOverlay(m_HintAvailableOverlay);
+          }
+        }
 
 #region Theme music
         foreach(var unique in Session.Get.UniqueActors.ToArray()) {
@@ -5732,13 +5754,16 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private bool HasAdvisorAnyHintToGive()
+    // alpha10
+    /// <returns>-1 if none</returns>
+    private int GetAdvisorFirstAvailableHint()
     {
-      for (int index = 0; index < (int) AdvisorHint._COUNT; ++index) {
-        if (!s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
-          return true;
+      for (int i = 0; i < (int)AdvisorHint._COUNT; i++) {
+        if (s_Hints.IsAdvisorHintGiven((AdvisorHint)i)) continue;
+        if (IsAdvisorHintAppliable((AdvisorHint)i)) return i;
       }
-      return false;
+
+      return -1;
     }
 
     private void AdvisorGiveHint(AdvisorHint hint)
@@ -13384,12 +13409,17 @@ namespace djack.RogueSurvivor.Engine
 
     private class OverlayPopup : Overlay
     {
-      public readonly Point ScreenPosition;
+      public Point ScreenPosition;
       public readonly Color TextColor;
       public readonly Color BoxBorderColor;
       public readonly Color BoxFillColor;
-      public readonly string[] Lines;
+      public string[] Lines;
 
+      /// <param name="lines">can be null if want to set text property later</param>
+      /// <param name="textColor"></param>
+      /// <param name="boxBorderColor"></param>
+      /// <param name="boxFillColor"></param>
+      /// <param name="screenPos"></param>
       public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos)
       {
         ScreenPosition = screenPos;
