@@ -1778,6 +1778,7 @@ retry:
       }
     }
 
+#if OBSOLETE
     public void ModifyScentAt(Odor odor, int strengthChange, Point position)
     {
 #if DEBUG
@@ -1789,6 +1790,7 @@ retry:
       } else
         scentByOdor.Strength += strengthChange;
     }
+#endif
 
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {

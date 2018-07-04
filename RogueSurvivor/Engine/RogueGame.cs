@@ -75,51 +75,22 @@ namespace djack.RogueSurvivor.Engine
     {
       "INITIATE TRADE MODE - directions to offer item to someone, ESC cancels"
     };
-    private readonly string[] UPGRADE_MODE_TEXT = new string[1]
-    {
-      "UPGRADE MODE - follow instructions in the message panel"
-    };
-    private readonly string[] FIRE_MODE_TEXT = new string[1]
-    {
-      "FIRE MODE - F to fire, T next target, M toggle mode, ESC cancels"
-    };
-    private readonly string[] SWITCH_PLACE_MODE_TEXT = new string[1]
-    {
-      "SWITCH PLACE MODE - directions to switch place with a follower, ESC cancels"
-    };
-    private readonly string[] TAKE_LEAD_MODE_TEXT = new string[1]
-    {
-      "TAKE LEAD MODE - directions to recruit a follower, ESC cancels"
-    };
+    private readonly string[] UPGRADE_MODE_TEXT = new string[] { "UPGRADE MODE - follow instructions in the message panel" };
+    private readonly string[] FIRE_MODE_TEXT = new string[] { "FIRE MODE - F to fire, T next target, M toggle mode, ESC cancels" };
+    private readonly string[] SWITCH_PLACE_MODE_TEXT = new string[] { "SWITCH PLACE MODE - directions to switch place with a follower, ESC cancels" };
+    private readonly string[] TAKE_LEAD_MODE_TEXT = new string[] { "TAKE LEAD MODE - directions to recruit a follower, ESC cancels" };
     private readonly string[] PULL_MODE_TEXT = new string[] { "PULL MODE - directions to select object, ESC cancels" }; // alpha10
-    private readonly string[] PUSH_MODE_TEXT = new string[1]
-    {
-      "PUSH/SHOVE MODE - directions to push/shove, ESC cancels"
-    };
-    private readonly string[] TAG_MODE_TEXT = new string[1]
-    {
-      "TAG MODE - directions to tag a wall or on the floor, ESC cancels"
-    };
+    private readonly string[] PUSH_MODE_TEXT = new string[] { "PUSH/SHOVE MODE - directions to push/shove, ESC cancels" };
+    private readonly string[] TAG_MODE_TEXT = new string[] { "TAG MODE - directions to tag a wall or on the floor, ESC cancels" };
+    private readonly string[] SPRAY_MODE_TEXT = new string[] { "SPRAY MODE - directions to spray or wait key to spray on yourself, ESC cancels" };  // alpha10
     private readonly string PULL_OBJECT_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
     private readonly string PULL_ACTOR_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
     private readonly string PUSH_OBJECT_MODE_TEXT = "PUSHING {0} - directions to push, ESC cancels";
     private readonly string SHOVE_ACTOR_MODE_TEXT = "SHOVING {0} - directions to shove, ESC cancels";
-    private readonly string[] ORDER_MODE_TEXT = new string[1]
-    {
-      "ORDER MODE - follow instructions in the message panel, ESC cancels"
-    };
-    private readonly string[] GIVE_MODE_TEXT = new string[1]
-    {
-      "GIVE MODE - directions to give item to someone, ESC cancels"
-    };
-    private readonly string[] THROW_GRENADE_MODE_TEXT = new string[1]
-    {
-      "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels"
-    };
-    private readonly string[] MARK_ENEMIES_MODE = new string[1]
-    {
-      "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels"
-    };
+    private readonly string[] ORDER_MODE_TEXT = new string[] { "ORDER MODE - follow instructions in the message panel, ESC cancels" };
+    private readonly string[] GIVE_MODE_TEXT = new string[] { "GIVE MODE - directions to give item to someone, ESC cancels" };
+    private readonly string[] THROW_GRENADE_MODE_TEXT = new string[] { "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels" };
+    private readonly string[] MARK_ENEMIES_MODE = new string[] { "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels" };
     // end string arrays used by OverlayPopup
 
     // report formatting; design width 120 characters, design height 51-ish lines (depends on bold/normal)
@@ -4966,13 +4937,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (equippedItem is ItemSprayPaint) return HandlePlayerTag(player);
       if (equippedItem is ItemSprayScent spray) {
-        if (!player.CanUse(spray, out string reason)) {
-          AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", reason)));
-          RedrawPlayScreen();
-          return false;
-        }
-        DoUseSprayScentItem(player, spray);
-        return true;
+        // alpha10 new way to use stench killer
+        return HandlePlayerSprayOdorSuppressor(player);
       }
       AddMessage(MakeErrorMessage("No spray equipped."));
       RedrawPlayScreen();
@@ -5035,6 +5001,55 @@ namespace djack.RogueSurvivor.Engine
       }
       reason = "";
       return true;
+    }
+
+    // alpha10 new way to use stench killer
+    private bool HandlePlayerSprayOdorSuppressor(Actor player)
+    {
+      // Check if has odor suppressor.
+      ItemSprayScent spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
+      if (null == spray) {
+        AddMessage(MakeErrorMessage("No spray equipped."));
+        RedrawPlayScreen();
+        return false;
+      } else if (0 >= spray.SprayQuantity) {
+        AddMessage(MakeErrorMessage("No spray left."));
+        RedrawPlayScreen();
+        return false;
+      }
+
+      bool actionDone = false;
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(SPRAY_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+        RedrawPlayScreen();
+        Direction dir = WaitDirectionOrCancel();
+
+        if (dir == null) break;
+        Actor sprayOn = (dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir));
+
+        if (sprayOn == null) {
+          AddMessage(MakeErrorMessage("No one to spray on here."));
+          RedrawPlayScreen();
+        } else {
+          if (player.CanSprayOdorSuppressor(spray, sprayOn, out string reason)) {
+            DoSprayOdorSuppressor(player, spray, sprayOn);
+            actionDone = true;
+            break;
+          } else {
+            AddMessage(MakeErrorMessage(String.Format("Can't spray here : {0}.", reason)));
+            RedrawPlayScreen();
+          }
+        }
+      } while (true);
+
+      ClearOverlays();
+      return actionDone;
     }
 
     private bool HandlePlayerOrderPCMode(Actor player) {
@@ -8822,7 +8837,6 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemFood) DoUseFoodItem(actor, it as ItemFood);
       else if (it is ItemMedicine) DoUseMedicineItem(actor, it as ItemMedicine);
       else if (it is ItemAmmo) DoUseAmmoItem(actor, it as ItemAmmo);
-      else if (it is ItemSprayScent) DoUseSprayScentItem(actor, it as ItemSprayScent);
       else if (it is ItemTrap) DoUseTrapItem(actor, it as ItemTrap);
       else if (it is ItemEntertainment) DoUseEntertainmentItem(actor, it as ItemEntertainment);
 
@@ -8911,17 +8925,6 @@ namespace djack.RogueSurvivor.Engine
       if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
-    }
-
-    private void DoUseSprayScentItem(Actor actor, ItemSprayScent spray)
-    {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      --spray.SprayQuantity;
-      Map map = actor.Location.Map;
-      ItemSprayScentModel itemSprayScentModel = spray.Model;
-      map.ModifyScentAt(itemSprayScentModel.Odor, itemSprayScentModel.Strength, actor.Location.Position);
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SPRAY), spray));
     }
 
     private void DoUseTrapItem(Actor actor, ItemTrap trap)
