@@ -5923,7 +5923,7 @@ namespace djack.RogueSurvivor.Engine
           return map.LocalTime.Hour >= 7;
         case AdvisorHint.CITY_INFORMATION:
           return map.LocalTime.Hour >= 12;
-        case AdvisorHint.CORPSE_BUTCHER:
+        case AdvisorHint.CORPSE:
           if (!Player.Model.Abilities.IsUndead)
             return map.HasCorpsesAt(position);
           return false;
@@ -5931,14 +5931,13 @@ namespace djack.RogueSurvivor.Engine
           if (Player.Model.Abilities.IsUndead)
             return map.HasCorpsesAt(position);
           return false;
-        case AdvisorHint.CORPSE_DRAG_START:
-          if (Player.DraggedCorpse == null)
-            return map.HasCorpsesAt(position);
-          return false;
-        case AdvisorHint.CORPSE_DRAG_MOVE:
-          return Player.DraggedCorpse != null;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled hint");
+
+        // alpha10 new hints
+
+        case AdvisorHint.SANITY: return  0.80f * Player.MaxSanity > Player.Sanity;
+        case AdvisorHint.INFECTION: return 0 < Player.Infection;
+        case AdvisorHint.TRAPS: return Player.Has<ItemTrap>();
+        default: throw new InvalidOperationException("unhandled hint");
       }
     }
 
@@ -6349,15 +6348,24 @@ namespace djack.RogueSurvivor.Engine
           };
           break;
         case AdvisorHint.CORPSE_BUTCHER:
-          title = "BUTCHERING CORPSES";
-          body = new string[2] {
-            "You can butcher a corpse.",
-            "TO BUTCHER A CORPSE : RIGHT CLICK on it in the corpse list."
+          title = "CORPSES";
+          body = new string[] {
+            "You are standing on a CORPSE.",
+            "Corpses will slowly rot away but may resurrect as zombies.",
+            "You can BUTCHER a corpse as a way to prevent that.",
+            "You can also DRAG corpses to move them.",
+            "You can try to REVIVE corpses if you have the medic skill and a medikit.",
+            "If you are desperate and starving you can resort to cannibalism by EATING corpses.",
+            "To act, hover the mouse on it in the corpse list and...",
+            "TO BUTCHER the CORPSE : <RMB>",
+            "TO DRAG the CORPSE : <LMB>",
+            string.Format("TO REVIVE the CORPSE : <{0}>", s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()),
+            string.Format("TO EAT the CORPSE : <{0}>", s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString())
           };
           break;
         case AdvisorHint.CORPSE_EAT:
           title = "EATING CORPSES";
-          body = new string[2] {
+          body = new string[] {
             "You can eat a corpse to regain health.",
             "TO EAT A CORPSE : RIGHT CLICK on it in the corpse list."
           };
@@ -6376,8 +6384,45 @@ namespace djack.RogueSurvivor.Engine
             "TO STOP DRAGGING THE CORPSE : LEFT CLICK on it in the corpse list."
           };
           break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled hint");
+        // alpha10 new hints
+        case AdvisorHint.SANITY:  // sanity
+          title = "SANITY";
+          body = new string[] {
+            "You should care about your SANITY.",
+            "If it gets too low, you can go insane.",
+            "Living in this horrible world and seing horrible things will lower your sanity.",
+            "You can recover sanity by :",
+            "- Talking to people.",
+            "- Having followers you trust.",
+            "- Killing undeads.",
+            "- Using entertainment items.",
+            "- Taking pills."
+          };
+          break;
+        case AdvisorHint.INFECTION:
+          title = "INFECTION";
+          body = new string[] {
+            "You are INFECTED!",
+            "Most undeads bites are infectious.",
+            "A low infection value will make you sick.",
+            "A full infection value is death.",
+            "Infection only worsen when you are biten.",
+            "Cure the infection with appropriate meds."
+          };
+          break;
+        case AdvisorHint.TRAPS:
+          title = "TRAPS";
+          body = new string[] {
+            "You are carrying TRAPS.",
+            "Traps are a good way to protect places.",
+            "Drop activated traps on tiles.",
+            "Some traps are activated by dropping them.",
+            "Other traps need to be activated before being dropped.",
+            "You are always safe from your own traps.",
+            "Traps layed by your followers are also safe."
+          };
+          break;
+        default: throw new InvalidOperationException("unhandled hint");
       }
     }
 
