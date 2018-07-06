@@ -104,8 +104,6 @@ namespace djack.RogueSurvivor.Engine
     public const int VICTIM_DROP_GENERIC_ITEM_CHANCE = 50;
     public const int VICTIM_DROP_AMMOFOOD_ITEM_CHANCE = 100;
     public const int IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE = 25;
-    public const float RAPID_FIRE_FIRST_SHOT_ACCURACY = 0.5f;
-    public const float RAPID_FIRE_SECOND_SHOT_ACCURACY = 0.3f;
     public const int ZTRACKINGRADIUS = 6;
     public const int DEFAULT_ACTOR_WEIGHT = 10;
     public const int FIRE_RAIN_TEST_CHANCE = 1;

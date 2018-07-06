@@ -456,6 +456,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
     private const int LAW_ENFORCE_CHANCE = 30;
+    private const int IN_LEADER_LOF_SAFETY_PENALTY = 1;  // alpha10 int
 
     // taboos really belong here
     private List<Actor> m_TabooTrades;
@@ -962,7 +963,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected void BehaviorEquipBodyArmor()
+    protected void BehaviorEquipBestBodyArmor()
     {
       ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor();
       if (bestBodyArmor == null) return;
@@ -1691,7 +1692,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
           num -= (float)Rules.StdDistance(location, leader.Location);
-          if (leaderLoF?.Contains(location.Position) ?? false) --num;
+          if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
         }
         return num;
       }, (a, b) => a > b);

@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ClearMovePlan();
       // \todo start extraction target: BehaviorEquipBestItems (cf RS Alpha 10)
-      BehaviorEquipBodyArmor();
+      BehaviorEquipBestBodyArmor();
 
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {

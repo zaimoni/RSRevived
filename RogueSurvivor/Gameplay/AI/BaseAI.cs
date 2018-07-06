@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
     protected const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
-    private const float LEADER_LOF_PENALTY = 1f;
+    private const float MOVE_INTO_TRAPS_PENALTY = 1;  // alpha10
     public const int MAX_EMOTES = 3;    // 0: flee; 1: last stand; 2:charge
 
     private Location m_prevLocation;
@@ -209,14 +209,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (null != goodWanderLocFn && !goodWanderLocFn(loc)) return float.NaN;
-        if (!isValidWanderAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
+        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
         if (!loc.Map.IsInBounds(loc.Position)) {
           Location? test = loc.Map.Normalize(loc.Position);
           if (null == test) return float.NaN;
           loc = test.Value;
         }
         int num = RogueForm.Game.Rules.Roll(0, 666);
-        if (m_Actor.Model.Abilities.IsIntelligent && null != loc.Map.GetActivatedTrapAt(loc.Position))
+        if (m_Actor.Model.Abilities.IsIntelligent && 0 < loc.Map.TrapsMaxDamageAtFor(loc.Position,m_Actor))
           num -= 1000;
         return (float) num;
       }, (a, b) => a > b);
@@ -341,7 +341,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA,m_Actor);
           if (trapsMaxDamage > 0) {
             if (trapsMaxDamage >= m_Actor.HitPoints) return float.NaN;
-            num += 0.42f;
+            num += MOVE_INTO_TRAPS_PENALTY;
           }
         }
         return num;
@@ -436,7 +436,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // "good chances" = both hits at least 50%
           // typically the second shot has worse chances to hit (recoil) but a true burst fire weapon would reverse this;
           // it is possible to correct the targeting ellipse that fast even at Angband space-time scale.
-          // \todo after configuration merge: is the army rifle already configured as a true burst fire weapon?
+          // after configuration merge:
+          // * no true burst fire weapons, not even the army rifle
+          // * getting true burst fire may require a minimum level of firearms skill, much like martial arts weapons don't work right without martial arts skill
+          // * shotguns appear artificially inaccurate (but considering that CHAR guards have them, that may be a case of balance over realism)  High recoil, but also very wide fire cone
+          // * not clear why Kolt so much more inaccurate than pistol
+          // * not clear why Hanz Von Hanz has steeper drop-off than normal light pistol
           // \todo when the army rifle is configured as a true burst fire weapon, ensure that the army sniper rifle gets 3x the shots from a clip.  Clip size 60(!), but reloading army rifle is 10 shots for 30 ammo.
           // \todo new burst fire weapon: machine pistol (uses light pistol ammo).  Uses 3 ammo at once (handwave last burst), so only gets 7 shots from a light pistol clip (but loads the entire clip!)
           // somewhat exotic (may only be available from survivalist caches as contraband, or possibly an unusual SWAT police weapon)
@@ -951,7 +956,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-    protected bool isValidWanderAction(ActorAction a)
+    protected bool IsValidWanderAction(ActorAction a)
     {
       if (null == a) return false;
       if (a is ActionMoveStep) return true;

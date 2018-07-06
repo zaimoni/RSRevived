@@ -5,12 +5,14 @@ REVIVED 0.10.0 CHANGES
 ------------------
 * Many RS Alpha 10 changes merged in
 ** This does include the park shed and residential outdoor rooms changes, and corresponding map objects.
-** The safety from traps implementation is in, but scheduleddue for a re-implementation (blocked by police radio range re-implementation)
+** The safety from traps implementation is in, but due for a re-implementation (blocked by police radio range re-implementation)
 ** Revised BaseAI::SafetyFrom is not in yet (do want this)
 ** Revised trading UI is not in yet (do want this for player-NPC trading but not player-player trading)
 ** Item handling changes scheduled to be cherry-picked (full merge not practical)
+** tracker clock not in yet (this affects the same trackers as a vaporware alarm feature)
 ** Hospital storage room nurse not in yet (undecided, interacts with vaporware hospital power-up storyline)
-** Invulnerability as debug feature and guarantee of PC sighting of NPCs will not be in
+** disarming mechanic not in yet (like general idea, not comfortable with current implementation)
+** Invulnerability as debug feature, and guarantee of PC sighting of NPCs will not be in.
 * names better matched to stereotypical English gender
 * key configuration files are not backward compatible.
 * even more AI overhaul.
