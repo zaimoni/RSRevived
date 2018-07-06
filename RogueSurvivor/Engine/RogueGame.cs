@@ -2112,6 +2112,7 @@ namespace djack.RogueSurvivor.Engine
                 DoShout(actor, "NO! LEAVE ME ALONE!");
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
+                actor.SpendStaminaPoints(Rules.SANITY_NIGHTMARE_STA_LOSS);
                 if (ForceVisibleToPlayer(actor))
                   AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", Conjugate(actor, VERB_WAKE_UP))));
                 if (actor.IsPlayer) {
@@ -9244,12 +9245,12 @@ namespace djack.RogueSurvivor.Engine
             RedrawPlayScreen();
             AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
+          ClearOverlays();
         } else if (flag) {
           if (m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
             AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone breaking furniture");
         } else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
           AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone bashing furniture");
-        ClearOverlays();
       }
     }
 
@@ -9287,7 +9288,10 @@ namespace djack.RogueSurvivor.Engine
       Location o_loc = mapObj.Location;
       o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
       if (!Rules.IsAdjacent(mapObj.Location, actor.Location) && o_loc.IsWalkableFor(actor)) {
-        o_loc.Place(actor);
+        if (TryActorLeaveTile(actor)) { // RS alpha 10
+          o_loc.Place(actor);
+          OnActorEnterTile(actor);  // RS alpha 10
+        }
       }
       if (flag) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
