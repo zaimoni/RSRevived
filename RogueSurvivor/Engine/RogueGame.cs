@@ -6347,7 +6347,7 @@ namespace djack.RogueSurvivor.Engine
             string.Format("To VIEW THE CITY INFORMATION : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString())
           };
           break;
-        case AdvisorHint.CORPSE_BUTCHER:
+        case AdvisorHint.CORPSE:
           title = "CORPSES";
           body = new string[] {
             "You are standing on a CORPSE.",
@@ -6368,20 +6368,6 @@ namespace djack.RogueSurvivor.Engine
           body = new string[] {
             "You can eat a corpse to regain health.",
             "TO EAT A CORPSE : RIGHT CLICK on it in the corpse list."
-          };
-          break;
-        case AdvisorHint.CORPSE_DRAG_START:
-          title = "DRAGGING CORPSES";
-          body = new string[2] {
-            "You can drag corpses.",
-            "TO DRAG A CORPSE : LEFT CLICK on it in the corpse list."
-          };
-          break;
-        case AdvisorHint.CORPSE_DRAG_MOVE:
-          title = "DRAGGING CORPSES";
-          body = new string[2] {
-            "You can move the dragged corpse with you.",
-            "TO STOP DRAGGING THE CORPSE : LEFT CLICK on it in the corpse list."
           };
           break;
         // alpha10 new hints
