@@ -660,6 +660,31 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+  // alpha10
+  /// <summary>
+  /// Estimate chances to hit with a ranged attack. <br></br>
+  /// Simulate a large number of rolls attack vs defence and returns % of hits.
+  /// </summary>
+  /// <param name="actor"></param>
+  /// <param name="target"></param>
+  /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
+  /// <returns>[0..100]</returns>
+  public int ComputeChancesRangedHit(Actor target, int shotCounter)
+  {
+#if DEBUG
+    if (null == target) throw new ArgumentNullException(nameof(target));
+    if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
+#endif
+    Attack attack = RangedAttack(Rules.GridDistance(Location,target.Location),target);
+    Defence defence = Rules.ActorDefence(target, target.CurrentDefence);
+
+    int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
+    int defValue = defence.Value;
+
+    float ranged_hit = Rules.SkillProbabilityDistribution(defValue).LessThan(Rules.SkillProbabilityDistribution(hitValue));
+    return (int)(100* ranged_hit);
+  }
+
     // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)
     {

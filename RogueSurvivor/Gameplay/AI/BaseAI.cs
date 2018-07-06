@@ -423,12 +423,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      if (m_Actor.CanFireAt(target)) {
-        m_Actor.Activity = Activity.FIGHTING;
-        m_Actor.TargetActor = target;
-        return new ActionRangedAttack(m_Actor, target);
+      if (!m_Actor.CanFireAt(target)) return null;
+
+      // alpha10
+      // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
+      FireMode fireMode = FireMode.DEFAULT;
+      if ((m_Actor.GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2) {
+        Attack rangedAttack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location, target.Location), target);
+        if (rangedAttack.DamageValue < target.HitPoints) {
+          int rapidHit1Chance = m_Actor.ComputeChancesRangedHit(target, 1);
+          int rapidHit2Chance = m_Actor.ComputeChancesRangedHit(target, 2);
+          // "good chances" = both hits at least 50%
+          // typically the second shot has worse chances to hit (recoil) but a true burst fire weapon would reverse this;
+          // it is possible to correct the targeting ellipse that fast even at Angband space-time scale.
+          // \todo after configuration merge: is the army rifle already configured as a true burst fire weapon?
+          // \todo when the army rifle is configured as a true burst fire weapon, ensure that the army sniper rifle gets 3x the shots from a clip.  Clip size 60(!), but reloading army rifle is 10 shots for 30 ammo.
+          // \todo new burst fire weapon: machine pistol (uses light pistol ammo).  Uses 3 ammo at once (handwave last burst), so only gets 7 shots from a light pistol clip (but loads the entire clip!)
+          // somewhat exotic (may only be available from survivalist caches as contraband, or possibly an unusual SWAT police weapon)
+          if (rapidHit1Chance >= 50 && rapidHit2Chance >= 50) fireMode = FireMode.RAPID;
+        }
       }
-      return null;
+
+       // fire!
+       m_Actor.Activity = Activity.FIGHTING;
+       m_Actor.TargetActor = target;
+       return new ActionRangedAttack(m_Actor, target, fireMode);
     }
 
     /// <returns>null, or a non-free action</returns>

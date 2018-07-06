@@ -4464,18 +4464,36 @@ namespace djack.RogueSurvivor.Engine
       var LoF = new List<Point>(attack.Range);
       FireMode mode = FireMode.DEFAULT;
       do {
-        Actor actor = enemiesInFov[index];
+        Actor currentTarget = enemiesInFov[index];
         LoF.Clear();
-        bool flag3 = player.CanFireAt(actor, LoF, out string reason);
-        int num1 = Rules.GridDistance(player.Location, actor.Location);
+        bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
+        int num1 = Rules.GridDistance(player.Location, currentTarget.Location);
+
+        string modeDesc = (mode == FireMode.RAPID ? string.Format("RAPID fire average hit chances {0}% {1}%", player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2))
+                                                  : string.Format("Normal fire average hit chance {0}%", player.ComputeChancesRangedHit(currentTarget, 0)));
+
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+
+        // 1. Redraw
+        var overlayPopupText = new List<string>();
+        overlayPopupText.AddRange(FIRE_MODE_TEXT);
+        overlayPopupText.Add(modeDesc);
         ClearOverlays();
-        AddOverlay(new OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-        AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_TARGET));
+        AddOverlay(new OverlayPopup(overlayPopupText.ToArray(), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
         RedrawPlayScreen();
+
+        // 2. Get input.
         KeyEventArgs key = m_UI.UI_WaitKey();
+
+        // 3. Handle input
         if (key.KeyCode == Keys.Escape) flag1 = false;
         else if (key.KeyCode == Keys.T) index = (index + 1) % enemiesInFov.Count;
         else if (key.KeyCode == Keys.M) {
@@ -4483,12 +4501,12 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message(string.Format("Switched to {0} fire mode.", mode.ToString()), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         } else if (key.KeyCode == Keys.F) {
           if (flag3) {
-            DoRangedAttack(player, actor, LoF, mode);
+            DoRangedAttack(player, currentTarget, LoF, mode);
             RedrawPlayScreen();
             flag1 = false;
             flag2 = true;
           } else
-            AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", actor.TheName, reason)));
+            AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason)));
         }
       }
       while (flag1);
@@ -6126,7 +6144,7 @@ namespace djack.RogueSurvivor.Engine
             "You have found a can of spraypaint.",
             "You can tag a symbol on walls and floors.",
             "This is useful to mark some places and locations.",
-            string.Format("To USE THE SPRAY : move the mouse over the item and press <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
+            String.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
           };
           break;
         case AdvisorHint.SPRAYS_SCENT:
@@ -6367,7 +6385,7 @@ namespace djack.RogueSurvivor.Engine
           title = "EATING CORPSES";
           body = new string[] {
             "You can eat a corpse to regain health.",
-            "TO EAT A CORPSE : RIGHT CLICK on it in the corpse list."
+            String.Format("TO EAT A CORPSE : <RMB> on it in the corpse list.")
           };
           break;
         // alpha10 new hints
