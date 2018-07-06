@@ -664,9 +664,11 @@ namespace djack.RogueSurvivor.Engine
       if (IsCombatAssistantOn) rating *= 0.75f;
       if (IsPermadeathOn) rating *= 2f;
       if (!IsAggressiveHungryCiviliansOn) rating *= (!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? 0.5f : 2f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && RatsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.1f : 0.9f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && SkeletonsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.2f : 0.8f);
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && ShamblersUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.25f : 0.75f);
+      if (Session.Get.HasAllZombies) {
+        if (RatsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.1f : 0.9f);
+        if (SkeletonsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.2f : 0.8f);
+        if (ShamblersUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.25f : 0.75f);
+      }
 
       return Math.Max(rating, 0.0f);
     }

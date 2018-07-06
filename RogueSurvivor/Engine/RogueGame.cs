@@ -931,32 +931,46 @@ namespace djack.RogueSurvivor.Engine
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
         "The classic zombies next door."
       };
-      string[][] summaries = new string[(int)GameMode_Bounds._COUNT][] {
-        new string[] {
-          "This is the standard game setting:",
+      // XXX \todo should refactor text to react to game mode (proofreading)
+      List<string>[] summaries = new List<string>[(int)GameMode_Bounds._COUNT] {
+        new List<string>(){
+          "This is the standard game setting.",
+          "Recommended for beginners.",
           "- All the kinds of undeads.",
-          "- Undeads can evolve.",
-          "- Livings can zombify instantly when dead."
+          "- Undeads can evolve to stronger forms.",
+          "- Livings can zombify instantly when dead.",
+          "- No infection.",
+          "- No corpses."
         },
-        new string[] {
-          "This is the standard game setting with corpses and infection: ",
+        new List<string>(){
+          "This is the standard game setting plus corpses and infection.",
+          "Recommended to experience all the features of the game.",
           "- All the kinds of undeads.",
-          "- Undeads can evolve.",
-          "- Some undeads can infect livings when damaging them.",
-          "- Livings become corpses when dead.",
-          "- Corpses will slowy rot... but may rise as undead if infected."
+          "- Undeads can evolve to stronger forms.",
+          "- Infection:",
+          "  - some undeads can infect livings when biting them.",
+          "  - infected livings can become ill and die.",
+          "  - infected corpses have more chances to rise as zombies.",
+          "- Corpses:",
+          "  - livings that die drop corpses that will rot away.",
+          "  - corpses may rise as zombies.",
+          "  - undeads can eat corpses.",
+          "  - livings can eat corpses if desperate."
         },
-        new string[] {
-          "This is the zombie game for classic hardcore fans: ",
+        new List<string>(){
+          "This is the classic zombies for hardcore zombie fans.",
+          "Recommended if you want classic movies zombies.",
           "- Undeads are only zombified men and women.",
-          "- Undeads don't evolve.",
-          "- Some undeads can infect livings when damaging them.",
-          "- Livings become corpses when dead.",
-          "- Corpses will slowy rot... but may rise as undead if infected.",
-          "",
-          "NOTE:",
-          "This mode force some options OFF.",
-          "Remember to set them back ON again when you play other modes!"
+          "- Undeads don't evolve to stronger forms.",
+          "- Infection:",
+          "  - some undeads can infect livings when biting them.",
+          "  - infected livings can become ill and die.",
+          "  - infected corpses have more chances to rise as zombies.",
+          "- Corpses:",
+          "  - livings that die drop corpses that will rot away.",
+          "  - corpses may rise as zombies.",
+          "  - undeads can eat corpses.",
+          "  - livings can eat corpses if desperate.",
         }
       };
 
@@ -1506,6 +1520,13 @@ namespace djack.RogueSurvivor.Engine
         GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS
       };
       string[] entries = idsArray.Select(x => GameOptions.Name(x)).ToArray();
+      // alpha10: policy to separate option mode modifiers from main option description
+      entries[(int)GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION] += " !V";
+      entries[(int)GameOptions.IDs.GAME_RATS_UPGRADE] += " !V";
+      entries[(int)GameOptions.IDs.GAME_SKELETONS_UPGRADE] += " !V";
+      entries[(int)GameOptions.IDs.GAME_SHAMBLERS_UPGRADE] += " !V";
+      entries[(int)GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE] += " =S";  // XXX also World War Z but that's vaporware
+      entries[(int)GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE] += " =S";
       char[] newlines = { '\n' };  // alpha10
       char[] spaces = { ' ' }; // alpha10
 
