@@ -671,16 +671,6 @@ namespace djack.RogueSurvivor.Engine
       return (int) (SANITY_UNSTABLE_LEVEL * (1.0 - SKILL_STRONG_PSYCHE_LEVEL_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
 
-    public static Defence ActorDefence(Actor actor, Defence baseDefence)
-    {
-      if (actor.IsSleeping) return new Defence(0, 0, 0);
-      int num1 = SKILL_AGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      float num2 = (float) (baseDefence.Value + num1);
-      if (actor.IsExhausted) num2 /= 2f;
-      else if (actor.IsSleepy) num2 *= 0.75f;
-      return new Defence((int) num2, baseDefence.Protection_Hit, baseDefence.Protection_Shot);
-    }
-
     public static int ActorMedicineEffect(Actor actor, int baseEffect)
     {
       return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));

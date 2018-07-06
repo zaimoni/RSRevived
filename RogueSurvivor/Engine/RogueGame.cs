@@ -6660,11 +6660,11 @@ namespace djack.RogueSurvivor.Engine
 
       if (Player.IsEnemyOf(actor)) {
       Attack m_p_attack = Player.MeleeAttack(actor);
-      Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
+      Defence a_defense = actor.Defence;
       float melee_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
       lines.Add("% hit: "+melee_p_hit.ToString());
       Attack m_a_attack = actor.MeleeAttack(Player);
-      Defence p_defense = Rules.ActorDefence(Player, Player.CurrentDefence);
+      Defence p_defense = Player.Defence;
       float melee_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
       lines.Add("% be hit: "+melee_a_hit.ToString());
 //       Attack attack = attacker.RangedAttack(distance, defender);
@@ -6696,7 +6696,7 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(stringBuilder.ToString());
       Attack attack = actor.MeleeAttack();
       lines.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", attack.HitValue, attack.DamageValue));
-      Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
+      Defence defence = actor.Defence;
       lines.Add(string.Format("Def : {0:D2}", defence.Value));
       lines.Add(string.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
       lines.Add(" ");
@@ -7968,7 +7968,7 @@ namespace djack.RogueSurvivor.Engine
       attacker.TargetActor = defender;
       if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
       Attack attack = attacker.MeleeAttack(defender);
-      Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
+      Defence defence = defender.Defence;
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int hitRoll = m_Rules.RollSkill(attack.HitValue);
@@ -8134,7 +8134,7 @@ namespace djack.RogueSurvivor.Engine
         if (DoCheckFireThrough(attacker, LoF)) ++distance;  // XXX \todo distance penalty should be worse the further the object is from the target
 #endif
         Attack attack = attacker.RangedAttack(distance, defender);
-        Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
+        Defence defence = defender.Defence;
 #if OBSOLETE
         int hitRoll = m_Rules.RollSkill((int)(accuracyFactor * attack.HitValue));
 #else
@@ -11231,7 +11231,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string ActorStatString(Actor actor)
     {
-      Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
+      Defence defence = actor.Defence;
       return (actor.Model.Abilities.IsUndead
             ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
             : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));

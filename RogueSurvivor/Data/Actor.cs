@@ -676,7 +676,7 @@ namespace djack.RogueSurvivor.Data
     if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
 #endif
     Attack attack = RangedAttack(Rules.GridDistance(Location,target.Location),target);
-    Defence defence = Rules.ActorDefence(target, target.CurrentDefence);
+    Defence defence = target.Defence;
 
     int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
     int defValue = defence.Value;
@@ -856,6 +856,18 @@ namespace djack.RogueSurvivor.Data
     public bool CanMeleeAttack(Actor target)
     {
       return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
+    }
+
+    public Defence Defence {
+      get {
+        if (IsSleeping) return Defence.BLANK;
+        Defence baseDefence = CurrentDefence;
+        int num1 = Rules.SKILL_AGILE_DEF_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+        float num2 = (float) (baseDefence.Value + num1);
+        if (IsExhausted) num2 /= 2f;
+        else if (IsSleepy) num2 *= 0.75f;
+        return new Defence((int) num2, baseDefence.Protection_Hit, baseDefence.Protection_Shot);
+      }
     }
 
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor target = null)
