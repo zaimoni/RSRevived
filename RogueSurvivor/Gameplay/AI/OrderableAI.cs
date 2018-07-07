@@ -2324,6 +2324,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret.Any() ? ret.ToList() : null;
     }
 
+    // XXX \todo replace/augment this behavior to generally take action to manage sanity
+    // that is: entertainment (currently), medication, and chatting.
+    // the use medicine behavior is used in combat so it should not be nearly as finicky about sanity as the non-combat management here
     protected ActorAction BehaviorUseEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;

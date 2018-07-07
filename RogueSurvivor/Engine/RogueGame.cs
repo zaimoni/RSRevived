@@ -8427,6 +8427,17 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
       if (speaker.IsPlayer || !speaker.CanTradeWith(target)) return;
       DoTrade(speaker, target);
+
+      // alpha10 recover san after "normal" chat or fast trade
+      if (speaker.Model.Abilities.HasSanity) {
+        speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE);
+        if (IsVisibleToPlayer(speaker)) AddMessage(MakeMessage(speaker, string.Format("{0} better after chatting with", Conjugate(speaker, VERB_FEEL)), target));
+      }
+
+      if (target.Model.Abilities.HasSanity) {
+        target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE);
+        if (IsVisibleToPlayer(target)) AddMessage(MakeMessage(target, string.Format("{0} better after chatting with", Conjugate(speaker, VERB_FEEL)), speaker));
+      }
     }
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
@@ -9870,7 +9881,12 @@ namespace djack.RogueSurvivor.Engine
 
     static private string TimeSpanToString(TimeSpan rt)
     {
+      // alpha10 shortened
+#if OBSOLETE
       return string.Format("{0}{1}{2}{3}", rt.Days == 0 ? "" : string.Format("{0} days ", (object)rt.Days), rt.Hours == 0 ? "" : string.Format("{0:D2} hours ", (object)rt.Hours), rt.Minutes == 0 ? "" : string.Format("{0:D2} minutes ", (object)rt.Minutes), rt.Seconds == 0 ? "" : string.Format("{0:D2} seconds", (object)rt.Seconds));
+#else
+      return string.Format("{0}{1}{2}{3}", rt.Days == 0 ? "" : string.Format("{0} d ", (object)rt.Days), rt.Hours == 0 ? "" : string.Format("{0:D2} h ", (object)rt.Hours), rt.Minutes == 0 ? "" : string.Format("{0:D2} m ", (object)rt.Minutes), rt.Seconds == 0 ? "" : string.Format("{0:D2} s", (object)rt.Seconds));
+#endif
     }
 
     private void HandlePostMortem()
@@ -10105,6 +10121,8 @@ namespace djack.RogueSurvivor.Engine
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
       bool flag = true;
       do {
+        OverlayPopupTitle popup = null;
+
         ClearMessages();
         AddMessage(new Data.Message(str + " can improve or learn one of these skills. Choose wisely.", Session.Get.WorldTime.TurnCounter, Color.Green));
         if (upgrade.Count == 0) {
@@ -10115,6 +10133,32 @@ namespace djack.RogueSurvivor.Engine
             int skillLevel = upgradeActor.Sheet.SkillTable.GetSkillLevel(id);
             AddMessage(new Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", index + 1, Skills.Name(id), skillLevel, skillLevel + 1, DescribeSkillShort(id)), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
           }
+
+          var popupLines = new List<string> { "" };
+
+          for (int iChoice = 0; iChoice < upgrade.Count; iChoice++) {
+            Skills.IDs sk = upgrade[iChoice];
+            int level = upgradeActor.Sheet.SkillTable.GetSkillLevel(sk);
+            string text = string.Format("{0}. {1} {2}/{3}", iChoice + 1, Skills.Name(sk), level + 1, Skills.MaxSkillLevel(sk));
+            AddMessage(new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+
+            popupLines.Add(text);
+            popupLines.Add("    " + DescribeSkillShort(sk));
+            popupLines.Add(" ");
+          }
+
+          popupLines.Add("ESC. don't upgrade; SPACE to get wiser skills.");
+
+          if (upgradeActor != Player) {
+            popupLines.Add(" ");
+            popupLines.Add(upgradeActor.Name + " current skills");
+            foreach (var sk in upgradeActor.Sheet.SkillTable.Skills) {
+              popupLines.Add(string.Format("{0} {1}", Skills.Name(sk.Key), sk.Value));
+            }
+          }
+
+          popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
+          AddOverlay(popup);
         }
         AddMessage(new Data.Message("ESC if you don't want to upgrade; SPACE to get wiser skills.", Session.Get.WorldTime.TurnCounter, Color.White));
         RedrawPlayScreen();
@@ -10134,6 +10178,8 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
           upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
           AddMessagePressEnter();
+          if (null != popup) RemoveOverlay(popup);
+          RedrawPlayScreen();
           flag = false;
         }
       }
@@ -10250,6 +10296,11 @@ namespace djack.RogueSurvivor.Engine
 
     static private int NPCSkillUtility(Actor actor, Skills.IDs skID)
     {
+      const int USELESS_UTIL = 0;
+      const int LOW_UTIL = 1;
+      const int AVG_UTIL = 2;
+      const int HI_UTIL = 3;
+
       if (actor.Model.Abilities.IsUndead)
       {
         switch (skID)
@@ -10287,7 +10338,7 @@ namespace djack.RogueSurvivor.Engine
             }
             return 0;
           case Skills.IDs.CARPENTRY: return 1;
-          case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;
+          case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;    // ???
           case Skills.IDs.FIREARMS:
             if (actor.Inventory != null)
             {
@@ -10300,7 +10351,7 @@ namespace djack.RogueSurvivor.Engine
             return 0;
           case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.HAULER: return 3;
-          case Skills.IDs.HIGH_STAMINA: return 2;
+          case Skills.IDs.HIGH_STAMINA: return 2;   // alpha10 wants 3
           case Skills.IDs.LEADERSHIP: return !actor.HasLeader ? 1 : 0;    // only because of lack of chain of command
           case Skills.IDs.LIGHT_EATER: return !actor.Model.Abilities.HasToEat ? 0 : 3;
           case Skills.IDs.LIGHT_FEET: return 2;
@@ -10316,7 +10367,7 @@ namespace djack.RogueSurvivor.Engine
             }
             return 2;
           case Skills.IDs.MEDIC: return 1;
-          case Skills.IDs.NECROLOGY: return 0;
+          case Skills.IDs.NECROLOGY: return 1;  // alpha10; previously 0
           case Skills.IDs.STRONG: return 2;
           case Skills.IDs.STRONG_PSYCHE: return !actor.Model.Abilities.HasSanity ? 0 : 3;
           case Skills.IDs.TOUGH: return 3;
@@ -13542,6 +13593,65 @@ namespace djack.RogueSurvivor.Engine
         ui.UI_DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
       }
     }
+
+
+    // alpha10
+
+    class OverlayPopupTitle : Overlay
+    {
+      public readonly Point ScreenPosition;
+      public readonly string Title;
+      public readonly Color TitleColor;
+      public readonly string[] Lines;
+      public readonly Color TextColor;
+      public readonly Color BoxBorderColor;
+      public readonly Color BoxFillColor;
+
+      public OverlayPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos)
+      {
+        ScreenPosition = screenPos;
+        Title = title;
+        TitleColor = titleColor;
+        TextColor = textColor;
+        BoxBorderColor = boxBorderColor;
+        BoxFillColor = boxFillColor;
+        Lines = lines;
+      }
+
+      public override void Draw(IRogueUI ui)
+      {
+        ui.UI_DrawPopupTitle(Title, TitleColor, Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+      }
+    }
+
+#if PROTOTYPE
+    class OverlayPopupTitleColors : Overlay
+    {
+            public Point ScreenPosition { get; set; }
+            public string Title { get; set; }
+            public Color TitleColor { get; set; }
+            public string[] Lines { get; set; }
+            public Color[] Colors { get; set; }
+            public Color BoxBorderColor { get; set; }
+            public Color BoxFillColor { get; set; }
+
+            public OverlayPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, Point screenPos)
+            {
+                this.ScreenPosition = screenPos;
+                this.Title = title;
+                this.TitleColor = titleColor;
+                this.Colors = colors;
+                this.BoxBorderColor = boxBorderColor;
+                this.BoxFillColor = boxFillColor;
+                this.Lines = lines;
+            }
+
+            public override void Draw(IRogueUI ui)
+            {
+                ui.UI_DrawPopupTitleColors(Title, TitleColor, Lines, Colors, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+            }
+    }
+#endif
 
     private struct CharGen
     {
