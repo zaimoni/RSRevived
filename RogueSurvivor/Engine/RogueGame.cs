@@ -1911,8 +1911,29 @@ namespace djack.RogueSurvivor.Engine
         HandlePlayerActor(nextActorToAct);
         if (!m_IsGameRunning || m_HasLoadedGame || 0>=Session.Get.World.PlayerCount) return;
         CheckSpecialPlayerEventsAfterAction(nextActorToAct);
+      } else {
+#if PROTOTYPE
+        // alpha10 ai loop bug detection; not multi-thread aware.  \todo fix this
+        if (actor == m_DEBUG_prevAiActor) {
+          if (++m_DEBUG_sameAiActorCount >= DEBUG_AI_ACTOR_LOOP_COUNT_WARNING) {
+            // TO DEVS: you might want to add a debug breakpoint here ->
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "WARNING: AI actor " + actor.Name + " is probably looping!!");
+#if DEBUG
+            // in debug keep going to let us debug the ai
+#else
+            // in release throw an exception as infinite loop is a fatal bug
+            Exception e = new InvalidOperationException("an AI actor is looping, please report the exception details");
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "AI stacktrace:" + e.StackTrace);
+#endif
+          }
+        } else {
+          m_DEBUG_sameAiActorCount = 0;
+          m_DEBUG_prevAiActor = actor;
+        }
+#endif
+
+        HandleAiActor(nextActorToAct);
       }
-      else HandleAiActor(nextActorToAct);
       nextActorToAct.AfterAction();
     }
 
