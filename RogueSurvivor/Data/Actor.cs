@@ -53,10 +53,6 @@ namespace djack.RogueSurvivor.Data
     private const int MAX_BASE_VISION = 8;       // XXX should be read from configuration files (actors)
     public const int  MAX_VISION = MAX_BASE_VISION + FOV_BONUS_STANDING_ON_OBJECT - FOV_PENALTY_SUNSET + MAX_LIGHT_FOV_BONUS;   // should be calculated after configuration files read
 
-    private const int FIRE_DISTANCE_VS_RANGE_MODIFIER = 2;
-    private const float FIRING_WHEN_STA_TIRED = 0.75f;
-    private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
-
     public static double SKILL_AWAKE_SLEEP_BONUS = 0.1;
     public static double SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17;    // XXX 0.17f makes this useful at L1
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
@@ -1003,15 +999,15 @@ namespace djack.RogueSurvivor.Data
 
     public Attack HypotheticalRangedAttack(Attack baseAttack, int distance, Actor target = null)
     {
-      int num1 = 0;
-      int num2 = 0;
+      int hitMod = 0;
+      int dmgBonus = 0;
       switch (baseAttack.Kind) {
         case AttackKind.FIREARM:
           {
           int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
           if (0 != skill) {
-            num1 = SKILL_FIREARMS_ATK_BONUS * skill;
-            num2 = SKILL_FIREARMS_DMG_BONUS * skill;
+            hitMod = SKILL_FIREARMS_ATK_BONUS * skill;
+            dmgBonus = SKILL_FIREARMS_DMG_BONUS * skill;
           }
           }
           break;
@@ -1019,23 +1015,57 @@ namespace djack.RogueSurvivor.Data
           {
           int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
           if (0 != skill) {
-            num1 = SKILL_BOWS_ATK_BONUS * skill;
-            num2 = SKILL_BOWS_DMG_BONUS * skill;
+            hitMod = SKILL_BOWS_ATK_BONUS * skill;
+            dmgBonus = SKILL_BOWS_DMG_BONUS * skill;
           }
           }
           break;
       }
-      if (target?.Model.Abilities.IsUndead ?? false) num2 += DamageBonusVsUndeads;
+      if (target?.Model.Abilities.IsUndead ?? false) dmgBonus += DamageBonusVsUndeads;
 
       int efficientRange = baseAttack.EfficientRange;
-      if (distance != efficientRange) num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
+      // alpha10 distance as % modifier instead of flat bonus
+      float distanceMod = 1;
+      if (distance != efficientRange) {
+        float distanceScale = (efficientRange - distance) / (float)baseAttack.Range;
+        // bigger effect (penalty) beyond efficient range
+        if (distance > efficientRange) distanceScale *= 2;
+        distanceMod = 1 + distanceScale;
+      }
+      float hit = (baseAttack.HitValue + hitMod) * distanceMod; // XXX natural vector data structure, but this is a hot path so may want this unrolled
+      float rapidHit1 = (baseAttack.Hit2Value + hitMod) * distanceMod;
+      float rapidHit2 = (baseAttack.Hit3Value + hitMod) * distanceMod;
 
-      float num4 = (float) (baseAttack.HitValue + num1);
-      if (IsExhausted) num4 /= 2f;
-      else if (IsSleepy) num4 *= 0.75f;
-      if (IsTired) num4 *= FIRING_WHEN_STA_TIRED;
-      else if (StaminaPoints < MaxSTA) num4 *= FIRING_WHEN_STA_NOT_FULL;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
+      const float FIRING_WHEN_SLP_EXHAUSTED = 0.50f; // -50%
+      const float FIRING_WHEN_SLP_SLEEPY = 0.75f; // -25%
+      const float FIRING_WHEN_STA_TIRED = 0.75f; // -25%
+      const float FIRING_WHEN_STA_NOT_FULL = 0.9f; // -10%
+
+      // sleep penalty.
+      if (IsExhausted) {
+        hit *= FIRING_WHEN_SLP_EXHAUSTED;
+        rapidHit1 *= FIRING_WHEN_SLP_EXHAUSTED;
+        rapidHit2 *= FIRING_WHEN_SLP_EXHAUSTED; 
+      } else if (IsSleepy) {
+        hit *= FIRING_WHEN_SLP_SLEEPY;
+        rapidHit1 *= FIRING_WHEN_SLP_SLEEPY;
+        rapidHit2 *= FIRING_WHEN_SLP_SLEEPY;
+      }
+
+      // stamina penalty.
+      if (IsTired) {
+        hit *= FIRING_WHEN_STA_TIRED;
+        rapidHit1 *= FIRING_WHEN_STA_TIRED;
+        rapidHit2 *= FIRING_WHEN_STA_TIRED;
+      } else if (StaminaPoints < MaxSTA) {
+        hit *= FIRING_WHEN_STA_NOT_FULL;
+        rapidHit1 *= FIRING_WHEN_STA_NOT_FULL;
+        rapidHit2 *= FIRING_WHEN_STA_NOT_FULL;
+      }
+
+      if (IsExhausted) hit /= 2f;
+      else if (IsSleepy) hit *= 0.75f;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) hit, baseAttack.DamageValue + dmgBonus, baseAttack.StaminaPenalty, baseAttack.Range, (int)rapidHit1, (int)rapidHit2);
     }
 
     public Attack RangedAttack(int distance, Actor target = null)
