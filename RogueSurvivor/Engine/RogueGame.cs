@@ -7250,8 +7250,8 @@ namespace djack.RogueSurvivor.Engine
       if (itemTrapModel.IsOneTimeUse) lines.Add("Desactives when triggered.");
       if (itemTrapModel.IsNoisy) lines.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
       if (itemTrapModel.UseToActivate) lines.Add("Use to activate.");
-      lines.Add(string.Format("Damage  : {0}", itemTrapModel.Damage));
-      lines.Add(string.Format("Trigger : {0}%", itemTrapModel.TriggerChance));
+      lines.Add(string.Format("Damage  : {0} x{1} = {2}", itemTrapModel.Damage, tr.Quantity, tr.Quantity * itemTrapModel.Damage));  // alpha10
+      lines.Add(string.Format("Trigger : {0}% x{1} = {2}%", itemTrapModel.TriggerChance, tr.Quantity, tr.Quantity * itemTrapModel.TriggerChance));  // alpha10
       lines.Add(string.Format("Break   : {0}%", itemTrapModel.BreakChance));
       if (itemTrapModel.BlockChance > 0) lines.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
       if (itemTrapModel.BreakChanceWhenEscape > 0) lines.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
