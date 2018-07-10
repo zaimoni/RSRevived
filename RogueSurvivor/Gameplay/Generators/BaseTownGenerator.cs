@@ -431,6 +431,8 @@ restart:
       return sewers;
     }
 
+    // \todo ultimately we'd like a proper subway network (this is just the EW line)
+    // would also need: NS line, T-junctions, a 4-way junction at the center/default starting district, and diagonal bridges
     public Map GenerateSubwayMap(int seed, District district)
     {
       m_DiceRoller = new DiceRoller(seed);
@@ -451,7 +453,7 @@ restart:
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // reseruved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       Map entryMap = district.EntryMap;
-      int railY = subway.Width / 2 - 1;
+      int railY = subway.Width / 2 - 1; // XXX fortunately width=height
       const int height = 4;
       Rectangle tmp = new Rectangle(0, railY, subway.Width, height); // start as rails
       DoForEachTile(tmp, (Action<Point>)(pt => { subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW); }));
@@ -576,6 +578,26 @@ restart:
       bottomRight = ((flag2 && flag1) ? new Rectangle(splitX, splitY, width2, height2) : Rectangle.Empty);
     }
 
+    // main map block list.
+    // in practice, m_Params.MinBlockSize is constant 11.  For this value:
+#if ANALYSIS
+      int railY = subway.Width / 2 - 1; // XXX fortunately width=height
+      const int height = 4;
+      Rectangle tmp = new Rectangle(0, railY, subway.Width, height); // start as rails
+      DoForEachTile(tmp, (Action<Point>)(pt => { subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW); }));
+      subway.AddZone(MakeUniqueZone("rails", tmp));
+
+        const int minDistToRails = 8;
+        bool flag = false;
+        // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
+        // at district size 50: railY 24, upper bound 27; 38 should pass
+        // we want a simple interval-does-not-intersect test
+        if (mSurfaceBlock.Rectangle.Top - minDistToRails > railY-1+height) flag = true;  // top below critical y
+        if (mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 < railY) flag = true;   // bottom above critical y
+#endif
+    // district size 30: raw split range 10..19; can fail to split immediately.  railY=14; tolerances 7, 25 (-7,+11); subway entrances impossible.
+    // district size 40: raw split range 13..26. railY=19; tolerances 12, 30 (very difficult)
+    // district size 50: raw split range 16..33. railY=25; tolerances 17,35 (moderately difficult)
     private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
     {
       QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
