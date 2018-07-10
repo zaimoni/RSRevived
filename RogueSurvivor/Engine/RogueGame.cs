@@ -9157,7 +9157,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
     {
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
+      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
       actor.Inventory.Consume(barricadeMaterial);
       door.Barricade(Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
@@ -9170,7 +9170,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = actor.BarricadingMaterialNeedForFortification(isLarge);
       for (int index = 0; index < num; ++index) {
-        actor.Inventory.Consume(actor.Inventory.GetFirst<ItemBarricadeMaterial>());
+        actor.Inventory.Consume(actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>());
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
@@ -9182,7 +9182,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoRepairFortification(Actor actor, Fortification fort)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
+      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
       actor.Inventory.Consume(barricadeMaterial);
       fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));

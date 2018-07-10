@@ -178,7 +178,24 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public Item GetBestDestackable(ItemModel it)
+    
+
+    public _T_ GetSmallestStackOf<_T_>() where _T_ : Item   // alpha10 equivalent: GetSmallestStackByType
+        {
+      _T_ smallest = null;
+
+      foreach (Item it in m_Items) {
+        if (it is _T_ obj) {
+          int q = obj.Quantity;
+          if (null == smallest || obj.Quantity < smallest.Quantity) {
+            smallest = obj;
+          }
+        }
+      }
+      return smallest;
+    }
+
+    public Item GetBestDestackable(ItemModel it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
