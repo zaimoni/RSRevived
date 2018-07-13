@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.UI;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
@@ -27,8 +28,10 @@ namespace djack.RogueSurvivor
     private MouseButtons m_MouseButtons;
     private IContainer components;
     private IGameCanvas m_GameCanvas;
+    private List<string> m_Mods = new List<string>();
 
     internal static RogueGame Game { get; private set; }    // de-facto singleton
+    public IEnumerable<string> Mods { get { return new List<string>(m_Mods); } }  // value-copy for const correctness.
 
 #region Init
     public RogueForm()
@@ -65,6 +68,7 @@ namespace djack.RogueSurvivor
 
     private void LoadResources()
     {
+      // \todo this has to detect mods and provide them in strictly increasing order
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images...");
       GameImages.LoadResources((IRogueUI) this);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images done");

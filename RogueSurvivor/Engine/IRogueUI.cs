@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Security.Permissions;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
+using EnumerableString = System.Collections.Generic.IEnumerable<string>;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -16,6 +17,8 @@ namespace djack.RogueSurvivor.Engine
   /// </summary>
   internal interface IRogueUI
   {
+    EnumerableString Mods { get; }
+
 #region Input
     KeyEventArgs UI_WaitKey();
     KeyEventArgs UI_PeekKey();

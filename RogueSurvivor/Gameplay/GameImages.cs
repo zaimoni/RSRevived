@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Gameplay
   {
     private static readonly Dictionary<string, Image> s_Images = new Dictionary<string, Image>();
     private static readonly Dictionary<string, Image> s_GrayLevelImages = new Dictionary<string, Image>();
+    private static readonly List<string> s_Mods = new List<string>();
     private const float GRAYLEVEL_DIM_FACTOR = 0.55f;
     public const string ACTIVITY_CHASING = "Activities\\chasing";
     public const string ACTIVITY_CHASING_PLAYER = "Activities\\chasing_player";
@@ -429,6 +430,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static void LoadResources(IRogueUI ui)
     {
+      s_Mods.AddRange(ui.Mods); // get mod list from ui
+
       Notify(ui, "icons...");
       Load(ACTIVITY_CHASING);
       Load(ACTIVITY_CHASING_PLAYER);
@@ -854,7 +857,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void Load(string id)
     {
-      string filename = "Resources\\Images\\" + id + ".png";
+      string filename = FOLDER + id + ".png";
+      // we must be able to load the base image or else
       try {
 #if LINUX
         filename = filename.Replace("\\", "/");
@@ -864,6 +868,19 @@ namespace djack.RogueSurvivor.Gameplay
         s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
       } catch (Exception) {
         throw new ArgumentException("coud not load image id=" + id + "; file=" + filename);
+      }
+      // it is ok to not load a mod image (it may not exist)
+      foreach(var path in s_Mods) {
+        filename = path + id + ".png";
+        try {
+#if LINUX
+          filename = filename.Replace("\\", "/");
+#endif
+          Bitmap img = new Bitmap(filename);
+          s_Images.Add(id, img);
+          s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
+        } catch (Exception) {
+        }
       }
     }
 

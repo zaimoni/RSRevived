@@ -451,7 +451,7 @@ restart:
 
 #region 1. Trace rail line.
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
-      // reseruved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
+      // reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       Map entryMap = district.EntryMap;
       int railY = subway.Width / 2 - 1; // XXX fortunately width=height
       const int height = 4;
@@ -2478,7 +2478,7 @@ restart:
       
       // XXX AI by default would "stock up" before charging out to the surface.
       // The simplest way to "override" is to say that these are SWAT reserves, so they have already "stocked up"
-      // \todo while here, sort the turn order -- nearest to stairs up should go first
+      // While here, sort the turn order -- nearest to stairs up should go first
 
       // sort leadership 2 up front to increase plausibility of their getting backup guns
       var impressive_cops = map.Police.Get.Where(a=> 2<=a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)).ToList();
