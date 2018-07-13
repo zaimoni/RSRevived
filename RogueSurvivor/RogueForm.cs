@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
@@ -117,6 +118,10 @@ namespace djack.RogueSurvivor
     protected override void OnShown(EventArgs e)
     {
       base.OnShown(e);
+      try {
+        m_Mods.AddRange(Directory.EnumerateDirectories("Mods"));
+      } catch (Exception) { // just eat the exception, not a problem if there are no mods
+      }
       LoadResources();
       Game.Run();
     }
