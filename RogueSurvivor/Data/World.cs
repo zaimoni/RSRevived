@@ -22,6 +22,8 @@ namespace djack.RogueSurvivor.Data
     private const int WEATHER_MIN_DURATION = 1 * WorldTime.TURNS_PER_HOUR;
     private const int WEATHER_MAX_DURATION = 3 * WorldTime.TURNS_PER_DAY;
 
+    // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
+    // static public readonly Point CHAR_CIty_Origin = new Point(0,0);  // VAPORWARE
 
     private readonly District[,] m_DistrictsGrid;
     private readonly int m_Size;
@@ -57,6 +59,8 @@ namespace djack.RogueSurvivor.Data
     // unsure that city/game world will be a square of districts indefinitely so use this wrapper
     /// <returns>The last district in the turn sequencing order</returns>
     public District Last { get { return m_DistrictsGrid[m_Size-1, m_Size-1]; } }
+
+    // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE
     
     // cannot return IEnumerable<District>, but this does not error
     public void DoForAllDistricts(Action<District> op)
