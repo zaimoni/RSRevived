@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay
       m_Models[(int)IDs.FLOOR_WALKWAY] = new TileModel(GameImages.TILE_FLOOR_WALKWAY, GameTiles.LIT_GRAY2, true, true) { ID = (int)IDs.FLOOR_WALKWAY };
       m_Models[(int)IDs.ROAD_ASPHALT_EW] = new TileModel(GameImages.TILE_ROAD_ASPHALT_EW, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.ROAD_ASPHALT_EW };
       m_Models[(int)IDs.ROAD_ASPHALT_NS] = new TileModel(GameImages.TILE_ROAD_ASPHALT_NS, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.ROAD_ASPHALT_NS };
-      m_Models[(int)IDs.RAIL_EW] = new TileModel(GameImages.TILE_RAIL_ES, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_EW };
+      m_Models[(int)IDs.RAIL_EW] = new TileModel(GameImages.TILE_RAIL_EW, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_EW };
       m_Models[(int)IDs.WALL_BRICK] = new TileModel(GameImages.TILE_WALL_BRICK, GameTiles.DRK_GRAY1, false, false) { ID = (int)IDs.WALL_BRICK };
       m_Models[(int)IDs.WALL_CHAR_OFFICE] = new TileModel(GameImages.TILE_WALL_CHAR_OFFICE, GameTiles.DRK_RED, false, false) { ID = (int)IDs.WALL_CHAR_OFFICE };
       m_Models[(int)IDs.WALL_HOSPITAL] = new TileModel(GameImages.TILE_WALL_HOSPITAL, Color.White, false, false) { ID = (int)IDs.WALL_HOSPITAL };

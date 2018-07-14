@@ -103,7 +103,8 @@ namespace djack.RogueSurvivor.Gameplay
     public const string TILE_FLOOR_WALKWAY = "Tiles\\floor_walkway";
     public const string TILE_ROAD_ASPHALT_NS = "Tiles\\road_asphalt_ns";
     public const string TILE_ROAD_ASPHALT_EW = "Tiles\\road_asphalt_ew";
-    public const string TILE_RAIL_ES = "Tiles\\rail_ew";
+    public const string TILE_RAIL_NS = "Tiles\\rail_ns";
+    public const string TILE_RAIL_EW = "Tiles\\rail_ew";
     public const string TILE_WALL_BRICK = "Tiles\\wall_brick";
     public const string TILE_WALL_CHAR_OFFICE = "Tiles\\wall_char_office";
     public const string TILE_WALL_HOSPITAL = "Tiles\\wall_hospital";
@@ -509,7 +510,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(TILE_FLOOR_WALKWAY);
       Load(TILE_ROAD_ASPHALT_NS);
       Load(TILE_ROAD_ASPHALT_EW);    // XXX interpolate by rotation?
-      Load(TILE_RAIL_ES);    // XXX spellcheck
+      Load(TILE_RAIL_EW);
       Load(TILE_WALL_BRICK);
       Load(TILE_WALL_CHAR_OFFICE);
       Load(TILE_WALL_HOSPITAL);
@@ -851,6 +852,9 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeBorderTile(PLAYER_FOLLOWER, Color.Transparent, Color.FromArgb(0x00,0x99,0x99));
       MonochromeBorderTile(PLAYER_FOLLOWER_TRUST, Color.Transparent, Color.Cyan);
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
+      RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
+#else
+#error Need to provide TILE_RAIL_NS as a file
 #endif
       Notify(ui, "done!");
     }
@@ -886,7 +890,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void MonochromeTile(string id, Color tint)
     {
-      GameImages.s_Images.Add(id, Zaimoni.Data.ext_Drawing.MonochromeRectangle(tint, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE));
+      s_Images.Add(id, Zaimoni.Data.ext_Drawing.MonochromeRectangle(tint, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE));
     }
 
     private static void MonochromeBorderTile(string id, Color background, Color border)
@@ -896,7 +900,7 @@ namespace djack.RogueSurvivor.Gameplay
       img.HLine(border,-1,0,-1);
       img.VLine(border,0,1,-2);
       img.VLine(border,-1,1,-2);
-      GameImages.s_Images.Add(id, img);
+      s_Images.Add(id, img);
     }
 
     private static void MonochromeDropshadowTile(string id, Color background, Color border, Color shadow)
@@ -908,7 +912,17 @@ namespace djack.RogueSurvivor.Gameplay
       img.VLine(border,-1,1,-2);
       img.HLine(shadow,1,1,-2);
       img.VLine(shadow,1,2,-2);
-      GameImages.s_Images.Add(id, img);
+      s_Images.Add(id, img);
+    }
+
+    private static void RotateTile(string id, string src)
+    {
+      Bitmap bitmap = new Bitmap(s_Images[src]);
+      bitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
+      s_Images.Add(id,bitmap);
+      bitmap = new Bitmap(s_GrayLevelImages[src]);
+      bitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
+      s_GrayLevelImages.Add(id,bitmap);
     }
 
     private static Image MakeGrayLevel(Bitmap img)
