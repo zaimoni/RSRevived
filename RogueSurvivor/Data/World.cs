@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Point = System.Drawing.Point;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -61,7 +62,15 @@ namespace djack.RogueSurvivor.Data
     public District Last { get { return m_DistrictsGrid[m_Size-1, m_Size-1]; } }
 
     // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE
-    
+    public uint SubwayLayout(Point pos)
+    {
+#if PROTOTYPE
+#else
+      if (Size / 2 == pos.Y) return Compass.UnorderedLineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
+#endif
+      return 0; // any valid layout will have at least one line segment and thus be non-zero
+    }
+
     // cannot return IEnumerable<District>, but this does not error
     public void DoForAllDistricts(Action<District> op)
     {

@@ -184,6 +184,16 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static uint crmth_unordered_pair(uint lhs, uint rhs, uint _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (_base <= lhs) throw new InvalidOperationException("_base <= lhs");
+      if (_base <= rhs) throw new InvalidOperationException("_base <= rhs");
+#endif
+      return (lhs < rhs) ? _base*lhs+rhs : _base * rhs + lhs;
+    }
+
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {

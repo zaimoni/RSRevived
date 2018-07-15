@@ -72,6 +72,7 @@ namespace djack.RogueSurvivor.Gameplay
       m_Models[(int)IDs.WALL_SEWER] = new TileModel(GameImages.TILE_WALL_SEWER, Color.DarkGreen, false, false) { ID = (int)IDs.WALL_SEWER };
       m_Models[(int)IDs.WALL_STONE] = new TileModel(GameImages.TILE_WALL_STONE, GameTiles.DRK_GRAY1, false, false) { ID = (int)IDs.WALL_STONE };
       m_Models[(int)IDs.WALL_SUBWAY] = new TileModel(GameImages.TILE_WALL_STONE, Color.Blue, false, false) { ID = (int)IDs.WALL_SUBWAY };
+      m_Models[(int)IDs.RAIL_NS] = new TileModel(GameImages.TILE_RAIL_NS, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_NS };
     }
 
     public GameTiles()
@@ -104,7 +105,8 @@ namespace djack.RogueSurvivor.Gameplay
       WALL_SEWER = 16,
       WALL_STONE = 17,
       WALL_SUBWAY = 18,
-      _COUNT = 19,
+      RAIL_NS,  // new RS Revived 0.10.0.0
+      _COUNT,
     }
   }
 }
