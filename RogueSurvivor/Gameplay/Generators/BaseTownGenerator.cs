@@ -431,6 +431,37 @@ restart:
       return sewers;
     }
 
+    // geometry is a Godel-encoded series of compass-point line segments
+    public List<Block> GetSubwayStationBlocks(District district, uint geometry)
+    {
+      List<Block> blockList = null;
+      Map entryMap = district.EntryMap;
+      // entry map has same dimensions as incoming subway map
+      // rail line is 4 squares high (does not scale until close to 900 turns/hour)
+      // EW: reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
+      const int height = 4;
+      int railX = entryMap.Width / 2 - 1;
+      int railY = entryMap.Height / 2 - 1;
+      
+      foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
+        if (mSurfaceBlock.BuildingRect.Width > m_Params.MinBlockSize + 2) continue;
+        if (mSurfaceBlock.BuildingRect.Height > m_Params.MinBlockSize + 2) continue;
+        if (IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)) continue;
+        // unclear whether this scales with turns per hour.
+        // If anything, at high magnifications we may need to not be "too far" from the rails either
+        const int minDistToRails = 8;
+        // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
+        // at district size 50: railY 24, upper bound 27; 38 should pass
+        // we want a simple interval-does-not-intersect test
+        if (   mSurfaceBlock.Rectangle.Top - minDistToRails <= railY-1+height  // top below critical y
+            && mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 >= railY) continue;   // bottom above critical y
+        (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
+//      break;
+      }
+      // \todo further postprocessing here
+      return blockList;
+    }
+
     // \todo ultimately we'd like a proper subway network (this is just the EW line)
     // would also need: NS line, T-junctions, a 4-way junction at the center/default starting district, and diagonal bridges
     public Map GenerateSubwayMap(int seed, District district)
@@ -462,26 +493,7 @@ restart:
 #endregion
 
 #region 2. Make station linked to surface.
-      List<Block> blockList = null;
-      foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
-        if (mSurfaceBlock.BuildingRect.Width > m_Params.MinBlockSize + 2) continue;
-        if (mSurfaceBlock.BuildingRect.Height > m_Params.MinBlockSize + 2) continue;
-        if (IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)) continue;
-        // unclear whether this scales with turns per hour.
-        // If anything, at high magnifications we may need to not be "too far" from the rails either
-        const int minDistToRails = 8;
-        bool flag = false;
-        // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
-        // at district size 50: railY 24, upper bound 27; 38 should pass
-        // we want a simple interval-does-not-intersect test
-        if (mSurfaceBlock.Rectangle.Top - minDistToRails > railY-1+height) flag = true;  // top below critical y
-        if (mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 < railY) flag = true;   // bottom above critical y
-        if (flag) {
-          if (blockList == null) blockList = new List<Block>(m_SurfaceBlocks.Count);
-          blockList.Add(mSurfaceBlock);
-          break;
-        }
-      }
+      List<Block> blockList = GetSubwayStationBlocks(district, Compass.UnorderedLineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W));
       if (blockList != null) {
         Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);

@@ -490,5 +490,22 @@ namespace Zaimoni.Data
 #endif
       return (lhs < rhs) ? _base*lhs+rhs : _base * rhs + lhs;
     }
+
+    public static uint max_unordered_pair(uint _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (uint.MaxValue/_base < _base) throw new InvalidOperationException("int.MaxValue/_base <= data");
+#endif
+      return (_base-2)*_base+(_base-1);
+    }
+
+    public static bool is_valid_unordered_pair(uint src, uint _base)
+    {
+      if (max_unordered_pair(_base) < src) return false;
+      uint low = src%_base;
+      uint high = src/_base;
+      return low<high;
+    }
   }
 }   // Zaimoni.Data
