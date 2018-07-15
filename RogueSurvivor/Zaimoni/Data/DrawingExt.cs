@@ -133,67 +133,6 @@ namespace Zaimoni.Data
       throw new InvalidProgramException("should not reach end of UseRarityTable");
     }
 
-    // Gödel encoding using Chinese remainder theorem
-    public static void crmth_encode(ref int dest, int data, int _base)
-    {
-#if DEBUG
-      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
-      if (0 == _base%2) throw new InvalidOperationException("0 == _base%2");
-      if (_base/2 < data) throw new InvalidOperationException("0 == _base/2 < data");
-      if (-(_base / 2) > data) throw new InvalidOperationException("0 == -(_base / 2) > data");
-      if (int.MaxValue/_base <= dest) throw new InvalidOperationException("int.MaxValue/_base <= data");
-      if (int.MinValue/_base >= dest) throw new InvalidOperationException("int.MinValue/_base >= dest");
-#endif
-      dest *= _base;
-      dest += data;
-    }
-
-    public static int crmth_decode(ref int src, int _base)
-    {
-#if DEBUG
-      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
-      if (0 == _base%2) throw new InvalidOperationException("0 == _base%2");
-#endif
-      int threshold = _base/2;
-      int ret = src % _base;
-      if (threshold < ret) ret -= _base;
-      else if (-threshold > ret) ret += _base;
-      src -= ret;
-      src /= _base;
-      return ret;
-    }
-
-    public static void crmth_encode(ref uint dest, uint data, uint _base)
-    {
-#if DEBUG
-      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
-      if (uint.MaxValue/_base <= dest) throw new InvalidOperationException("int.MaxValue/_base <= data");
-#endif
-      dest *= _base;
-      dest += data;
-    }
-
-    public static uint crmth_decode(ref uint src, uint _base)
-    {
-#if DEBUG
-      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
-#endif
-      uint ret = src % _base;
-      src -= ret;
-      src /= _base;
-      return ret;
-    }
-
-    public static uint crmth_unordered_pair(uint lhs, uint rhs, uint _base)
-    {
-#if DEBUG
-      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
-      if (_base <= lhs) throw new InvalidOperationException("_base <= lhs");
-      if (_base <= rhs) throw new InvalidOperationException("_base <= rhs");
-#endif
-      return (lhs < rhs) ? _base*lhs+rhs : _base * rhs + lhs;
-    }
-
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {
@@ -488,4 +427,68 @@ namespace Zaimoni.Data
       return x.ToString();
     }
   } // ext_Drawing
+
+  // Gödel encoding using Chinese remainder theorem
+  public static class crmth
+  {
+    public static void encode(ref int dest, int data, int _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (0 == _base%2) throw new InvalidOperationException("0 == _base%2");
+      if (_base/2 < data) throw new InvalidOperationException("0 == _base/2 < data");
+      if (-(_base / 2) > data) throw new InvalidOperationException("0 == -(_base / 2) > data");
+      if (int.MaxValue/_base <= dest) throw new InvalidOperationException("int.MaxValue/_base <= data");
+      if (int.MinValue/_base >= dest) throw new InvalidOperationException("int.MinValue/_base >= dest");
+#endif
+      dest *= _base;
+      dest += data;
+    }
+
+    public static int decode(ref int src, int _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (0 == _base%2) throw new InvalidOperationException("0 == _base%2");
+#endif
+      int threshold = _base/2;
+      int ret = src % _base;
+      if (threshold < ret) ret -= _base;
+      else if (-threshold > ret) ret += _base;
+      src -= ret;
+      src /= _base;
+      return ret;
+    }
+
+    public static void encode(ref uint dest, uint data, uint _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (uint.MaxValue/_base <= dest) throw new InvalidOperationException("int.MaxValue/_base <= data");
+#endif
+      dest *= _base;
+      dest += data;
+    }
+
+    public static uint decode(ref uint src, uint _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+#endif
+      uint ret = src % _base;
+      src -= ret;
+      src /= _base;
+      return ret;
+    }
+
+    public static uint unordered_pair(uint lhs, uint rhs, uint _base)
+    {
+#if DEBUG
+      if (1 >= _base) throw new InvalidOperationException("1 >= _base");
+      if (_base <= lhs) throw new InvalidOperationException("_base <= lhs");
+      if (_base <= rhs) throw new InvalidOperationException("_base <= rhs");
+#endif
+      return (lhs < rhs) ? _base*lhs+rhs : _base * rhs + lhs;
+    }
+  }
 }   // Zaimoni.Data

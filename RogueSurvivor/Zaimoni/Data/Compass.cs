@@ -31,7 +31,7 @@ namespace Zaimoni.Data
 #if DEBUG
           if (origin == dest) throw new InvalidOperationException("origin == dest");
 #endif       
-          return ext_Drawing.crmth_unordered_pair(origin,dest, (uint)reference.XCOM_EXT_STRICT_UB);
+          return crmth.unordered_pair(origin,dest, (uint)reference.XCOM_EXT_STRICT_UB);
         }
     }
 }
