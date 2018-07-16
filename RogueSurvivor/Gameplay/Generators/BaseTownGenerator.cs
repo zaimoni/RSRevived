@@ -493,7 +493,7 @@ restart:
 #endregion
 
 #region 2. Make station linked to surface.
-      List<Block> blockList = GetSubwayStationBlocks(district, Compass.UnorderedLineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W));
+      List<Block> blockList = GetSubwayStationBlocks(district, Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W));
       if (blockList != null) {
         Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);

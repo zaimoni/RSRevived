@@ -62,11 +62,15 @@ namespace djack.RogueSurvivor.Data
     public District Last { get { return m_DistrictsGrid[m_Size-1, m_Size-1]; } }
 
     // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE
+    // VAPORWARE: supported layouts are: E-W, N-S, 
+    // the four Ts with 3 cardinal directions linked to neutral (represented as two line segments)
+    // 4-way interesection (represented as two line segments, E-W and N-S)
+    // diagonals: S-E, S-W, N-E, N-W
     public uint SubwayLayout(Point pos)
     {
 #if PROTOTYPE
 #else
-      if (Size / 2 == pos.Y) return Compass.UnorderedLineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
+      if (Size / 2 == pos.Y) return Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
 #endif
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }
