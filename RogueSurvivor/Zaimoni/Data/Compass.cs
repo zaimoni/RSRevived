@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
@@ -77,9 +78,100 @@ namespace Zaimoni.Data
             if ((uint)_ref.SE_NEUTRAL == rhs) return true;
             if ((uint)_ref.NW_NEUTRAL == rhs) return true;
             return false;
+          // XXX general implementation would have the four edges of the reference square \todo IMPLEMENT
           default: return false;
           }
           return false; // in case of typos
+        }
+
+        // Five line segments based on the extended compass may be encoded into a 32-bit unsigned integer without unusual measures.
+
+        public class LineGraph
+        {
+          private uint _radix_point = 0;
+          private uint _radix_segment = 0;
+          private uint _graph = 0;
+          Func<uint,uint, bool> _contains = null;
+
+          public uint Radix { get { return _radix_point; } }
+
+          // defaults are to be correct for the local direction enumeration
+          public LineGraph(uint graph = 0, uint radix = (uint)reference.XCOM_EXT_STRICT_UB, Func<uint, uint, bool> contains = null) {
+#if DEBUG
+            if (1 >= radix) throw new InvalidOperationException("1 >= radix");
+#endif
+            _radix_point = radix;
+            _radix_segment = crmth.max_unordered_pair(radix)+1;
+            _graph = graph;
+            if (null != contains) _contains = contains;
+            else if ((uint)reference.XCOM_EXT_STRICT_UB == _radix_point) _contains = LineSegmentContains;
+          }
+
+          public void AddLineSegment(uint origin, uint dest)
+          {
+            uint delta = crmth.unordered_pair(origin, dest, _radix_point);
+            if (0 == _graph) {
+              _graph = delta;
+              return;
+            }
+            if (_graph < _radix_segment) {
+              if (_graph == delta) return;
+              if (null != _contains) {
+                if (_contains(_graph,delta)) return;
+                if (_contains(delta,_graph)) {
+                  _graph = delta;
+                   return;
+                }
+              }
+              crmth.encode(ref _graph, delta, _radix_segment);
+              return;
+            }
+            uint working = _graph;
+            var staging = new List<uint>();
+            while(0 < working) {    // be slightly inefficient for ease of verification
+              uint inspect = crmth.decode(ref working, _radix_segment);
+              if (delta == inspect) return; // no-op
+              if (null != _contains && _contains(inspect,delta)) return; // no-op
+              if (null != _contains && _contains(delta, inspect)) staging.Add(delta);
+              // XXX complete implementation would check for extension of line segment \todo IMPLEMENT
+              else staging.Add(inspect);
+            }
+            // XXX other processing to normal form would happen here
+            // reassemble
+            staging.Sort();
+            staging.Reverse();
+            working = 0;
+            foreach(uint seg in staging) {
+              crmth.encode(ref working, seg, _radix_segment);
+            }
+            _graph = working;
+          }
+
+          public bool ContainsLineSegment(uint seg)
+          {
+            if (0 == _graph) return false;
+#if DEBUG
+            if (seg >= _radix_segment) throw new InvalidOperationException("line segment encoding out of range");
+#endif
+            if (_graph < _radix_segment) {
+              if (_graph == seg) return true;
+              if (null != _contains) return _contains(_graph,seg);
+              return false;
+            }
+            uint working = _graph;
+            // assume we are close to normal form
+            while(0 < working) {    // be slightly inefficient for ease of verification
+              uint inspect = crmth.decode(ref working, _radix_segment);
+              if (seg == inspect) return true; // no-op
+              if (null != _contains) {
+                if (_contains(inspect,seg)) return true; // ok
+                if (_contains(seg, inspect)) return false;   // implies failure when in normal form
+              }
+            }            
+            return false;
+          }
+        
+          // XXX remove line segment operation
         }
     }
 }
