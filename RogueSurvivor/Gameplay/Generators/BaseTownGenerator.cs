@@ -486,6 +486,10 @@ restart:
     // would also need: NS line, T-junctions, a 4-way junction at the center/default starting district, and diagonal bridges
     public Map GenerateSubwayMap(int seed, District district)
     {
+      uint layout = Session.Get.World.SubwayLayout(district.WorldPosition);
+#if DEBUG
+      if (0 >= layout) throw new InvalidOperationException("0 >= layout");
+#endif
       m_DiceRoller = new DiceRoller(seed);
       Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
       TileFill(subway, GameTiles.WALL_BRICK, true);
@@ -513,7 +517,7 @@ restart:
 #endregion
 
 #region 2. Make station linked to surface.
-      List<Block> blockList = GetSubwayStationBlocks(district, Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W));
+      List<Block> blockList = GetSubwayStationBlocks(district, layout);
       if (blockList != null) {
         Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);

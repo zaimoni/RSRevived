@@ -12173,7 +12173,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "sewers map ok");
 #endif
-          if (index2 == world.Size / 2) GenerateDistrictSubwayMap(district);
+          if (0 < world.SubwayLayout(district.WorldPosition)) GenerateDistrictSubwayMap(district);
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "subway map ok or absent");
 #endif
