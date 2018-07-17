@@ -853,6 +853,7 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeBorderTile(PLAYER_FOLLOWER_TRUST, Color.Transparent, Color.Cyan);
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
       RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
+      // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #else
 #error Need to provide TILE_RAIL_NS as a file
 #endif

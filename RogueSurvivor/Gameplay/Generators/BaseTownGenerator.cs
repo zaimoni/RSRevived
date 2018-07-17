@@ -440,21 +440,41 @@ restart:
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // EW: reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       const int height = 4;
-      int railX = entryMap.Width / 2 - 1;
-      int railY = entryMap.Height / 2 - 1;
-      
+      Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
+      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+      const int minDistToRails = 8;
+      // precompute some important line segments of interest
+      const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      var layout = new Compass.LineGraph(geometry);
+
       foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
         if (mSurfaceBlock.BuildingRect.Width > m_Params.MinBlockSize + 2) continue;
         if (mSurfaceBlock.BuildingRect.Height > m_Params.MinBlockSize + 2) continue;
         if (IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)) continue;
         // unclear whether this scales with turns per hour.
         // If anything, at high magnifications we may need to not be "too far" from the rails either
-        const int minDistToRails = 8;
         // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
         // at district size 50: railY 24, upper bound 27; 38 should pass
+
+        // To trigger critical-y: E_NEUTRAL or W_NEUTRAL line segments relevant
+        // To trigger critical-x: N_NEUTRAL or S_NEUTRAL line segments relevant
+        bool want_critical_Y = false;
+        bool want_critical_X = false;
+        if (layout.ContainsLineSegment(E_NEUTRAL) && mSurfaceBlock.BuildingRect.Right >= rail.X) want_critical_Y = true;
+        if (layout.ContainsLineSegment(W_NEUTRAL) && mSurfaceBlock.BuildingRect.X < rail.X + height) want_critical_Y = true;
+        if (layout.ContainsLineSegment(N_NEUTRAL) && mSurfaceBlock.BuildingRect.Y < rail.Y + height) want_critical_X = true;
+        if (layout.ContainsLineSegment(S_NEUTRAL) && mSurfaceBlock.BuildingRect.Bottom >= rail.Y) want_critical_X = true;
+
         // we want a simple interval-does-not-intersect test
-        if (   mSurfaceBlock.Rectangle.Top - minDistToRails <= railY-1+height  // top below critical y
-            && mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 >= railY) continue;   // bottom above critical y
+        if (   want_critical_Y
+            && mSurfaceBlock.Rectangle.Top - minDistToRails <= rail.Y-1+height  // top below critical y
+            && mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 >= rail.Y) continue;   // bottom above critical y
+        if (   want_critical_X
+            && mSurfaceBlock.Rectangle.Left - minDistToRails <= rail.X-1+height  // left below critical x
+            && mSurfaceBlock.Rectangle.Right + minDistToRails-1 >= rail.X) continue;   // right above critical x
         (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
 //      break;
       }

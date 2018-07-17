@@ -503,8 +503,8 @@ namespace Zaimoni.Data
     public static bool is_valid_unordered_pair(uint src, uint _base)
     {
       if (max_unordered_pair(_base) < src) return false;
-      uint low = src%_base;
-      uint high = src/_base;
+      uint high = src%_base;
+      uint low = src/_base;
       return low<high;
     }
   }
