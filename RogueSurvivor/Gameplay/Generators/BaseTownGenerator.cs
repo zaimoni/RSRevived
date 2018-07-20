@@ -508,12 +508,17 @@ restart:
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       Map entryMap = district.EntryMap;
-      int railY = subway.Width / 2 - 1; // XXX fortunately width=height
+      Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
+      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
       const int height = 4;
-      Rectangle tmp = new Rectangle(0, railY, subway.Width, height); // start as rails
+      // layout logic: E-W more important than N-S
+      // the neutral segments are less important than the full-length segments E-W, N-S
+      // storage room is adjacent to rails
+      // following is for E-W rail
+      Rectangle tmp = new Rectangle(0, rail.Y, subway.Width, height); // start as rails
       DoForEachTile(tmp, (Action<Point>)(pt => { subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW); }));
       subway.AddZone(MakeUniqueZone("rails", tmp));
-      DoForEachTile(new Rectangle(0, railY-1, subway.Width, height+2), (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
+      DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
 #endregion
 
 #region 2. Make station linked to surface.
@@ -539,7 +544,7 @@ restart:
       int num3 = 0;
       do {
         int x2 = m_DiceRoller.Roll(10, subway.Width - 10);
-        int y2 = direction == Direction.N ? railY - 1 : railY + height;
+        int y2 = direction == Direction.N ? rail.Y - 1 : rail.Y + height;
         if (!subway.GetTileModelAt(x2, y2).IsWalkable) {
           rect = direction != Direction.N ? new Rectangle(x2, y2, toolsRoomWidth, toolsRoomHeight) : new Rectangle(x2, y2 - toolsRoomHeight + 1, toolsRoomWidth, toolsRoomHeight);
           flag1 = CheckForEachTile(rect, (Predicate<Point>) (pt => !subway.GetTileModelAt(pt).IsWalkable));
