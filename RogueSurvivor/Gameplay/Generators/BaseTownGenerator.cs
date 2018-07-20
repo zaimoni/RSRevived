@@ -1358,8 +1358,7 @@ restart:
       var windows = new List<Point>();
       b.BuildingRect.DoForEach(pt => {
         if (map.IsInsideAt(pt)) return;
-        var obj = map.GetMapObjectAt(pt) as DoorWindow;
-        if (null == obj) return;
+        if (!(map.GetMapObjectAt(pt) is DoorWindow obj)) return;
         if (obj.IsWindow) {
           windows.Add(pt);
           return;

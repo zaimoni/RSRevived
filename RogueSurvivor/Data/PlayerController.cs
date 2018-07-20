@@ -181,8 +181,7 @@ namespace djack.RogueSurvivor.Data
       }
 
       Objective test = new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor);
-      ActorAction testAction = null;
-      if (test.UrgentAction(out testAction) && null!=testAction) ret.Add("Medicate sleep");
+      if (test.UrgentAction(out ActorAction testAction) && null!=testAction) ret.Add("Medicate sleep");
       } // if (!in_combat)
       return ret;
     }

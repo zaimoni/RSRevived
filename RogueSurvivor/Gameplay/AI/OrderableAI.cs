@@ -529,8 +529,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction ExecuteBarricading(Location location, bool toTheMax)
     {
       if (m_Actor.Location.Map != location.Map) return null;
-      DoorWindow door = location.Map.GetMapObjectAt(location.Position) as DoorWindow;
-      if (door == null) return null;
+      if (!(location.Map.GetMapObjectAt(location.Position) is DoorWindow door)) return null;
       if (!m_Actor.CanBarricade(door)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
@@ -1298,8 +1297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemFood obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory.Items) {
-        ItemFood food = obj2 as ItemFood;
-        if (null == food) continue;
+        if (!(obj2 is ItemFood food)) continue;
         int num3 = 0;
         int num4 = food.NutritionAt(turnCounter);
         int num5 = num4 - need;
@@ -1323,8 +1321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemFood obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory.Items) {
-        ItemFood food = obj2 as ItemFood;
-        if (null == food) continue;
+        if (!(obj2 is ItemFood food)) continue;
         if (!food.IsPerishable) continue;
         if (food.IsSpoiledAt(turnCounter)) continue;
         int num4 = m_Actor.CurrentNutritionOf(food);
@@ -1483,8 +1480,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
     {
-      var door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
-      if (null == door) return null;
+      if (!(previousLocation.Map.GetMapObjectAt(previousLocation.Position) is DoorWindow door)) return null;
       if (!m_Actor.CanClose(door)) return null;
       foreach(Direction dir in Direction.COMPASS) {
         Actor actor = previousLocation.Map.GetActorAtExt(previousLocation.Position+dir);
@@ -1502,8 +1498,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       var want_to_resolve = new Dictionary<Point,int>();
       foreach (Point position in m_Actor.Controller.FOV) {
-        var door = map.GetMapObjectAt(position) as DoorWindow;
-        if (null == door) continue;
+        if (!(map.GetMapObjectAt(position) is DoorWindow door)) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
           if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
             // this can trigger close-open loop with someone who is merely traveling
@@ -1538,8 +1533,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
       if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
       foreach (Percept friend in friends) {
-        Actor actor = friend.Percepted as Actor;
-        if (actor == null) throw new ArgumentException("percept not an actor");
+        if (!(friend.Percepted is Actor actor)) throw new ArgumentException("percept not an actor");
         if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
           return new ActionShout(m_Actor, string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name));
         }
@@ -1715,8 +1709,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var barricade_doors = new Dictionary<Point,DoorWindow>();
         foreach(Point pt in Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir)) {
           if (LoF_reserve?.Contains(pt) ?? false) continue;
-          var door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
-          if (null == door) continue;
+          if (!(m_Actor.Location.Map.GetMapObjectAt(pt) is DoorWindow door)) continue;
           if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
           if (m_Actor.CanClose(door)) {
             if ((!Rules.IsAdjacent(pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
@@ -2372,8 +2365,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionSprayOdorSuppressor BehaviorUseStenchKiller()
     {
-      var spray = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
-      if (spray == null) return null;
+      if (!(m_Actor.GetEquippedItem(DollPart.LEFT_HAND) is ItemSprayScent spray)) return null;
       if (spray.IsUseless) return null;
       // alpha 10 redefined spray suppression to work on the odor source, not the odor
       // if not proper odor, nope.
@@ -2875,8 +2867,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Point pt in dest.Keys) {
 #if TRACE_NAVIGATE
-        string err = "";
-        ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out err);
+        ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out string err);
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": ("+pt.X.ToString()+","+pt.Y.ToString()+") "+(null==tmp ? "null ("+err+")" : tmp.ToString()));
 #else
         ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt));

@@ -4966,8 +4966,7 @@ namespace djack.RogueSurvivor.Engine
         else if (dir != Direction.NEUTRAL) {
           Point moveToPos = player.Location.Position + dir;
           if (player.Location.Map.IsInBounds(moveToPos)) {
-            string reason;
-            if (player.CanPull(mapObj, moveToPos, out reason)) {
+            if (player.CanPull(mapObj, moveToPos, out string reason)) {
               DoPull(player, mapObj, moveToPos);
               actionDone = true;
               break;
@@ -5002,8 +5001,7 @@ namespace djack.RogueSurvivor.Engine
         else if (dir != Direction.NEUTRAL) {
           Point moveToPos = player.Location.Position + dir;
           if (player.Location.Map.IsInBounds(moveToPos)) {
-            string reason;
-            if (player.CanPull(other, moveToPos, out reason)) {
+            if (player.CanPull(other, moveToPos, out string reason)) {
               DoPullActor(player, other, moveToPos);
               actionDone = true;
               break;
