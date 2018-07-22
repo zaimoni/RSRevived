@@ -490,6 +490,7 @@ restart:
 #if DEBUG
       if (0 >= layout) throw new InvalidOperationException("0 >= layout");
 #endif
+      var geometry = new Compass.LineGraph(layout);
       m_DiceRoller = new DiceRoller(seed);
       Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
       TileFill(subway, GameTiles.WALL_BRICK, true);
@@ -511,14 +512,74 @@ restart:
       Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
       Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
       const int height = 4;
+
+      // precompute some important line segments of interest
+      const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+
       // layout logic: E-W more important than N-S
       // the neutral segments are less important than the full-length segments E-W, N-S
       // storage room is adjacent to rails
-      // following is for E-W rail
-      Rectangle tmp = new Rectangle(0, rail.Y, subway.Width, height); // start as rails
-      DoForEachTile(tmp, (Action<Point>)(pt => { subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW); }));
-      subway.AddZone(MakeUniqueZone("rails", tmp));
-      DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
+      void PoliceEnlightenment(Point pt)
+      {
+        Session.Get.ForcePoliceKnown(new Location(subway, pt));
+      }
+      void lay_NS_rail(Point pt)
+      {
+        subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_NS);
+      }
+      void lay_EW_rail(Point pt)
+      {
+        subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW);
+      }
+
+      bool have_NS = false;
+      bool have_EW = false;
+      if (geometry.ContainsLineSegment(N_S)) {
+        have_NS = true;
+        Rectangle tmp = new Rectangle(rail.X, 0, height, subway.Height); // start as rails
+        DoForEachTile(tmp, lay_NS_rail);
+        subway.AddZone(MakeUniqueZone("rails", tmp));
+        DoForEachTile(new Rectangle(rail.X-1, 0, height+2, subway.Height), PoliceEnlightenment);
+      }
+      if (geometry.ContainsLineSegment(E_W)) {
+        have_EW = true;
+        Rectangle tmp = new Rectangle(0, rail.Y, subway.Width, height); // start as rails
+        DoForEachTile(tmp, lay_EW_rail);
+        subway.AddZone(MakeUniqueZone("rails", tmp));
+        DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), PoliceEnlightenment);
+      }
+      if (have_EW && !have_NS) {
+        if (geometry.ContainsLineSegment(N_NEUTRAL)) {
+          Rectangle tmp = new Rectangle(rail.X, 0, height, rail.Y); // start as rails
+          DoForEachTile(tmp, lay_NS_rail);
+          subway.AddZone(MakeUniqueZone("rails", tmp));
+          DoForEachTile(new Rectangle(rail.X-1, 0, height+2, rail.Y), PoliceEnlightenment);
+        } else if (geometry.ContainsLineSegment(S_NEUTRAL)) {
+          Rectangle tmp = new Rectangle(rail.X, rail.Y+height, height, subway.Height-(rail.Y + height)); // start as rails
+          DoForEachTile(tmp, lay_NS_rail);
+          subway.AddZone(MakeUniqueZone("rails", tmp));
+          DoForEachTile(new Rectangle(rail.X-1, rail.Y + height, height+2, subway.Height-(rail.Y + height)), PoliceEnlightenment);
+        }
+      }
+      if (have_NS && !have_EW) {
+        if (geometry.ContainsLineSegment(W_NEUTRAL)) {
+          Rectangle tmp = new Rectangle(0, rail.Y, rail.X, height); // start as rails
+          DoForEachTile(tmp, lay_EW_rail);
+          subway.AddZone(MakeUniqueZone("rails", tmp));
+          DoForEachTile(new Rectangle(0, rail.Y-1, rail.X, height+2), PoliceEnlightenment);
+        } else if (geometry.ContainsLineSegment(E_NEUTRAL)) {
+          Rectangle tmp = new Rectangle(rail.X+height, rail.Y, subway.Width-(rail.X + height), height); // start as rails
+          DoForEachTile(tmp, lay_EW_rail);
+          subway.AddZone(MakeUniqueZone("rails", tmp));
+          DoForEachTile(new Rectangle(rail.X + height, rail.Y-1, subway.Width-(rail.X + height), height+2), PoliceEnlightenment);
+        }
+      }
+      // \todo handle the four diagonals (more synthetic tiles needed
 #endregion
 
 #region 2. Make station linked to surface.

@@ -37,6 +37,7 @@ namespace djack.RogueSurvivor.Gameplay
     static public TileModel ROAD_ASPHALT_EW { get { return m_Models[(int)IDs.ROAD_ASPHALT_EW]; } }
     static public TileModel ROAD_ASPHALT_NS { get { return m_Models[(int)IDs.ROAD_ASPHALT_NS]; } }
     static public TileModel RAIL_EW { get { return m_Models[(int)IDs.RAIL_EW]; } }
+    static public TileModel RAIL_NS { get { return m_Models[(int)IDs.RAIL_NS]; } }
     static public TileModel WALL_BRICK { get { return m_Models[(int)IDs.WALL_BRICK]; } }
     static public TileModel WALL_CHAR_OFFICE { get { return m_Models[(int)IDs.WALL_CHAR_OFFICE]; } }
     static public TileModel WALL_POLICE_STATION { get { return m_Models[(int)IDs.WALL_POLICE_STATION]; } }
