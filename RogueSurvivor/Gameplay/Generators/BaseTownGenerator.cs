@@ -536,6 +536,19 @@ restart:
       {
         subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW);
       }
+      var toolroom_superposition = new HashSet<Rectangle>();   // historically: m_DiceRoller.Roll(10, subway.Width - 10) for anchor point center
+      const int toolsRoomWidth = 5; // these should be odd numbers to allow visual centering on-grid for the door
+      const int toolsRoomHeight = 5;
+      void add_toolroomEWofNS(int y)
+      {
+        toolroom_superposition.Add(new Rectangle(rail.X - toolsRoomWidth, y- toolsRoomHeight / 2, 5,5));
+        toolroom_superposition.Add(new Rectangle(rail.X+height, y- toolsRoomHeight / 2, 5,5));
+      }
+      void add_toolroomNSofEW(int x)
+      {
+        toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y - toolsRoomHeight, 5,5));
+        toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y+height,5,5));
+      }
 
       bool have_NS = false;
       bool have_EW = false;
@@ -545,6 +558,7 @@ restart:
         DoForEachTile(tmp, lay_NS_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
         DoForEachTile(new Rectangle(rail.X-1, 0, height+2, subway.Height), PoliceEnlightenment);
+        foreach(int y in Enumerable.Range(10, subway.Height-10)) add_toolroomEWofNS(y);
       }
       if (geometry.ContainsLineSegment(E_W)) {
         have_EW = true;
@@ -552,6 +566,7 @@ restart:
         DoForEachTile(tmp, lay_EW_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
         DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), PoliceEnlightenment);
+        foreach(int x in Enumerable.Range(10, subway.Width-10)) add_toolroomNSofEW(x);
       }
       if (have_EW && !have_NS) {
         if (geometry.ContainsLineSegment(N_NEUTRAL)) {
@@ -559,11 +574,13 @@ restart:
           DoForEachTile(tmp, lay_NS_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(rail.X-1, 0, height+2, rail.Y), PoliceEnlightenment);
+          foreach(int y in Enumerable.Range(10, rail.Y- toolsRoomHeight / 2)) add_toolroomEWofNS(y);
         } else if (geometry.ContainsLineSegment(S_NEUTRAL)) {
           Rectangle tmp = new Rectangle(rail.X, rail.Y+height, height, subway.Height-(rail.Y + height)); // start as rails
           DoForEachTile(tmp, lay_NS_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(rail.X-1, rail.Y + height, height+2, subway.Height-(rail.Y + height)), PoliceEnlightenment);
+          foreach(int y in Enumerable.Range(rail.Y+height+ toolsRoomHeight / 2, subway.Height-10)) add_toolroomEWofNS(y);
         }
       }
       if (have_NS && !have_EW) {
@@ -572,11 +589,13 @@ restart:
           DoForEachTile(tmp, lay_EW_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(0, rail.Y-1, rail.X, height+2), PoliceEnlightenment);
+          foreach(int x in Enumerable.Range(10, rail.X- toolsRoomWidth / 2)) add_toolroomNSofEW(x);
         } else if (geometry.ContainsLineSegment(E_NEUTRAL)) {
           Rectangle tmp = new Rectangle(rail.X+height, rail.Y, subway.Width-(rail.X + height), height); // start as rails
           DoForEachTile(tmp, lay_EW_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(rail.X + height, rail.Y-1, subway.Width-(rail.X + height), height+2), PoliceEnlightenment);
+          foreach(int x in Enumerable.Range(rail.X+height+ toolsRoomWidth / 2, subway.Width-10)) add_toolroomNSofEW(x);
         }
       }
       // \todo handle the four diagonals (more synthetic tiles needed
@@ -597,34 +616,51 @@ restart:
       }
 #endregion
 #region 3.  Small tools room.
-      const int toolsRoomWidth = 5;
-      const int toolsRoomHeight = 5;
-      Direction direction = m_DiceRoller.RollChance(50) ? Direction.N : Direction.S;
-      Rectangle rect = Rectangle.Empty;
-      bool flag1 = false;
-      int num3 = 0;
-      do {
-        int x2 = m_DiceRoller.Roll(10, subway.Width - 10);
-        int y2 = direction == Direction.N ? rail.Y - 1 : rail.Y + height;
-        if (!subway.GetTileModelAt(x2, y2).IsWalkable) {
-          rect = direction != Direction.N ? new Rectangle(x2, y2, toolsRoomWidth, toolsRoomHeight) : new Rectangle(x2, y2 - toolsRoomHeight + 1, toolsRoomWidth, toolsRoomHeight);
-          flag1 = CheckForEachTile(rect, (Predicate<Point>) (pt => !subway.GetTileModelAt(pt).IsWalkable));
-        }
-        ++num3;
+      // filter out not-valid choices
+      {
+      foreach(int x in Enumerable.Range(10 - toolsRoomWidth / 2, subway.Width - 10 + toolsRoomWidth / 2)) {
+        Point pt = new Point(x, rail.Y - 1);
+        if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
+        pt = new Point(x, rail.Y + height);
+        if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
       }
-      while (num3 < subway.Width * subway.Height && !flag1);
-      if (flag1) {
+      foreach(int y in Enumerable.Range(10 - toolsRoomHeight / 2, subway.Height - 10 +toolsRoomHeight / 2)) {
+        Point pt = new Point(rail.X - 1,y);
+        if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
+        pt = new Point(rail.X + height, y);
+        if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
+      }
+      }
+
+      while (0 < toolroom_superposition.Count) {
+        Rectangle rect = m_DiceRoller.Choose(toolroom_superposition);
+        var doors = new List<Point>();
+        {
+        var pt = new Point(rect.Left+ toolsRoomWidth/ 2 , rect.Top);
+        if (subway.GetTileModelAt(pt+Direction.N).IsWalkable) doors.Add(pt);
+        pt = new Point(rect.Left + toolsRoomWidth / 2, rect.Bottom - 1);
+        if (subway.GetTileModelAt(pt+Direction.S).IsWalkable) doors.Add(pt);
+        pt = new Point(rect.Left, rect.Top+toolsRoomHeight / 2);
+        if (subway.GetTileModelAt(pt+Direction.W).IsWalkable) doors.Add(pt);
+        pt = new Point(rect.Right - 1, rect.Top+toolsRoomHeight / 2);
+        if (subway.GetTileModelAt(pt+Direction.E).IsWalkable) doors.Add(pt);
+        if (0 >= doors.Count) {
+          toolroom_superposition.Remove(rect);
+          continue;
+        }
+        }
         TileFill(subway, GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(subway, GameTiles.WALL_BRICK, rect);
-        PlaceDoor(subway, rect.Left + 2, direction == Direction.N ? rect.Bottom - 1 : rect.Top, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+        var door = m_DiceRoller.Choose(doors);
+        PlaceDoor(subway, door.X, door.Y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
-        DoForEachTile(rect, (Action<Point>) (pt =>
-        {
+        DoForEachTile(rect, pt => {
           if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
           subway.PlaceAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
-        }));
+        });
         DoForEachTile(rect, (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
+        break;
       }
 #endregion
 #region 4. Tags & Posters almost everywhere.
@@ -1301,6 +1337,7 @@ restart:
         Item it = MakeShopConstructionItem();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         map.DropItemAt(it, pt);
+        Session.Get.PoliceInvestigate.Record(map,pt);
       });
     }
 
