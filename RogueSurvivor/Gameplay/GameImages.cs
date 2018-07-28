@@ -508,8 +508,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(TILE_FLOOR_SEWER_WATER_COVER);
       Load(TILE_FLOOR_TILES);
       Load(TILE_FLOOR_WALKWAY);
-      Load(TILE_ROAD_ASPHALT_NS);
-      Load(TILE_ROAD_ASPHALT_EW);    // XXX interpolate by rotation?
+      Load(TILE_ROAD_ASPHALT_EW);
       Load(TILE_RAIL_EW);
       Load(TILE_WALL_BRICK);
       Load(TILE_WALL_CHAR_OFFICE);
@@ -852,11 +851,10 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeBorderTile(PLAYER_FOLLOWER, Color.Transparent, Color.FromArgb(0x00,0x99,0x99));
       MonochromeBorderTile(PLAYER_FOLLOWER_TRUST, Color.Transparent, Color.Cyan);
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
-      RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
-#else
-#error Need to provide TILE_RAIL_NS as a file
 #endif
+      RotateTile(TILE_ROAD_ASPHALT_NS, TILE_ROAD_ASPHALT_EW);
+      RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       Notify(ui, "done!");
     }
 
