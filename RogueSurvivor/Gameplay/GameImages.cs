@@ -860,6 +860,25 @@ namespace djack.RogueSurvivor.Gameplay
       Notify(ui, "done!");
     }
 
+    private static bool LoadMod(string id)
+    {
+      // it is ok to not load a mod image (it may not exist)
+      foreach(var path in s_Mods) {
+        string filename = path + id + ".png";
+        try {
+#if LINUX
+          filename = filename.Replace("\\", "/");
+#endif
+          Bitmap img = new Bitmap(filename);
+          s_Images.Add(id, img);
+          s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
+          return true;
+        } catch (Exception) {
+        }
+      }
+      return false;
+    }
+
     private static void Load(string id)
     {
       string filename = FOLDER + id + ".png";
@@ -874,28 +893,18 @@ namespace djack.RogueSurvivor.Gameplay
       } catch (Exception) {
         throw new ArgumentException("coud not load image id=" + id + "; file=" + filename);
       }
-      // it is ok to not load a mod image (it may not exist)
-      foreach(var path in s_Mods) {
-        filename = path + id + ".png";
-        try {
-#if LINUX
-          filename = filename.Replace("\\", "/");
-#endif
-          Bitmap img = new Bitmap(filename);
-          s_Images.Add(id, img);
-          s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
-        } catch (Exception) {
-        }
-      }
+      LoadMod(id);
     }
 
     private static void MonochromeTile(string id, Color tint)
     {
+      if (LoadMod(id)) return;
       s_Images.Add(id, Zaimoni.Data.ext_Drawing.MonochromeRectangle(tint, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE));
     }
 
     private static void MonochromeBorderTile(string id, Color background, Color border)
     {
+      if (LoadMod(id)) return;
       Bitmap img = ext_Drawing.MonochromeRectangle(background, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE);
       img.HLine(border,0,0,-1);
       img.HLine(border,-1,0,-1);
@@ -906,6 +915,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void MonochromeDropshadowTile(string id, Color background, Color border, Color shadow)
     {
+      if (LoadMod(id)) return;
       Bitmap img = ext_Drawing.MonochromeRectangle(background, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE);
       img.HLine(border,0,0,-1);
       img.HLine(border,-1,0,-1);
