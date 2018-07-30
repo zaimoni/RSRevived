@@ -842,6 +842,15 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ROT5_1);
       Load(ROT5_2);
       Notify(ui, "CGI...");
+      // 2018-07-28: left spacing of stripes on road tiles as-is; true equal gaps visually would be 3-6-3 rather than 4-4-4, 
+      // but that amkes it harder to see the underlying grid.  Gray shade here was easy to get to from MS Paint 3D but not MS Paint.
+      // 2018-07-30: concrete: 175 175 175 is good match
+      // walkway: MS Paint medium gray 128 128 18
+      // main color floor tiles: 208 208 208 (consider for inner hospital drop shadow)
+      // main color office tiles, hospital: 230 230 230
+      // border for office, floor tiles, hospital: MS Paint medium gray 127 127 127; consider for intermediate hospital drop shadow
+      // outer border for hospital: 64 64 64
+      // inner drop shadow for hospital: 192 192 192
       MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
       MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
       MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
