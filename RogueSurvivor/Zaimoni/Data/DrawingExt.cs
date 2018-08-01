@@ -218,6 +218,47 @@ namespace Zaimoni.Data
       }
     }
 
+#if PROTOTYPE
+    public static Bitmap SkewCopy(this Bitmap img, int w, int h, Func<Point,Point> transform)
+    {
+#if DEBUG
+      if (null == transform) throw new ArgumentNullException(nameof(transform));
+#endif
+      Bitmap dest = new Bitmap(w,h);
+      Point pt = new Point(0,0);
+      for (pt.X = 0; pt.X < w; ++pt.X ) {
+        for (pt.Y = 0; pt.Y < h; ++pt.Y) {
+          Point src = transform(pt);
+          if (0 > src.X || img.Width  <= src.X) continue;
+          if (0 > src.Y || img.Height <= src.Y) continue;
+          dest.SetPixel(pt.X,pt.Y,img.GetPixel(src.X,src.Y));
+        }
+      }
+      return dest;
+    }
+#endif
+
+    public static Bitmap Splice(this Bitmap src, Bitmap splice, Func<Point,bool> use_src)
+    {
+#if DEBUG
+      if (null == use_src) throw new ArgumentNullException(nameof(use_src));
+      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (null == splice) throw new ArgumentNullException(nameof(splice));
+      if (src.Width!=splice.Width) throw new InvalidOperationException("src.Width!=splice.Width");
+      if (src.Height!=splice.Height) throw new InvalidOperationException("src.Width!=splice.Width");
+#endif
+      int w = src.Width;
+      int h = src.Height;
+      Bitmap dest = new Bitmap(w,h);
+      Point pt = new Point(0,0);
+      for (pt.X = 0; pt.X < w; ++pt.X ) {
+        for (pt.Y = 0; pt.Y < h; ++pt.Y) {
+          dest.SetPixel(pt.X,pt.Y,(use_src(pt) ? src : splice).GetPixel(pt.X,pt.Y));
+        }
+      }
+      return dest;
+    }
+
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {

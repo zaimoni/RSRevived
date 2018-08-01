@@ -21,8 +21,8 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class GameImages
   {
-    private static readonly Dictionary<string, Image> s_Images = new Dictionary<string, Image>();
-    private static readonly Dictionary<string, Image> s_GrayLevelImages = new Dictionary<string, Image>();
+    private static readonly Dictionary<string, Bitmap> s_Images = new Dictionary<string, Bitmap>();
+    private static readonly Dictionary<string, Bitmap> s_GrayLevelImages = new Dictionary<string, Bitmap>();
     private static readonly List<string> s_Mods = new List<string>();
     private const float GRAYLEVEL_DIM_FACTOR = 0.55f;
     public const string ACTIVITY_CHASING = "Activities\\chasing";
@@ -871,11 +871,11 @@ namespace djack.RogueSurvivor.Gameplay
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
       // \todo 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
-      // VReflect(TILE_RAIL_SENW,tILE_RAIL_SWNE);
-      // TLLRSplice(TILE_RAIL_SWNE_WALL_E,tILE_RAIL_SWNE,TILE_WALL_STONE);
-      // LRTLSplice(TILE_RAIL_SWNE_WALL_W,TILE_WALL_STONE,tILE_RAIL_SWNE);
-      // BLTRSplice(TILE_RAIL_SENW_WALL_E,tILE_RAIL_SENW,TILE_WALL_STONE);
-      // TRBLSplice(TILE_RAIL_SENW_WALL_W,TILE_WALL_STONE,tILE_RAIL_SENW);
+      VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);
+      TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SWNE,TILE_WALL_STONE);
+      BRTLSplice(TILE_RAIL_SWNE_WALL_W,TILE_WALL_STONE,TILE_RAIL_SWNE);
+      BLTRSplice(TILE_RAIL_SENW_WALL_E,TILE_RAIL_SENW,TILE_WALL_STONE);
+      TRBLSplice(TILE_RAIL_SENW_WALL_W,TILE_WALL_STONE,TILE_RAIL_SENW);
       RotateTile(TILE_ROAD_ASPHALT_NS, TILE_ROAD_ASPHALT_EW);
       RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       Notify(ui, "done!");
@@ -957,7 +957,47 @@ namespace djack.RogueSurvivor.Gameplay
       s_GrayLevelImages.Add(id,bitmap);
     }
 
-    private static Image MakeGrayLevel(Bitmap img)
+    private static void VReflect(string id, string src)
+    {
+      Bitmap bitmap = new Bitmap(s_Images[src]);
+      bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+      s_Images.Add(id,bitmap);
+      bitmap = new Bitmap(s_GrayLevelImages[src]);
+      bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+      s_GrayLevelImages.Add(id,bitmap);
+    }
+
+    private static bool TopLeftInclusive(Point pt) { return pt.X <= pt.Y; }
+    private static bool TopLeftExclusive(Point pt) { return pt.X <  pt.Y; }
+
+    private static void TLBRSplice(string id, string lhs, string rhs)
+    {
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftInclusive);
+      s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopLeftInclusive);
+    }
+
+    private static void BRTLSplice(string id, string lhs, string rhs)
+    {
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftExclusive);
+      s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopLeftExclusive);
+    }
+
+    private static bool TopRightInclusive(Point pt) { return pt.X <= ((RogueGame.TILE_SIZE - 1) - pt.Y); }
+    private static bool TopRightExclusive(Point pt) { return pt.X <  ((RogueGame.TILE_SIZE - 1) - pt.Y); }
+
+    private static void BLTRSplice(string id, string lhs, string rhs)
+    {
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftInclusive);
+      s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopRightInclusive);
+    }
+
+    private static void TRBLSplice(string id, string lhs, string rhs)
+    {
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftExclusive);
+      s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopRightExclusive);
+    }
+
+    private static Bitmap MakeGrayLevel(Bitmap img)
     {
       Bitmap bitmap = new Bitmap(img);
       for (int x = 0; x < bitmap.Width; ++x) {
@@ -979,7 +1019,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Image Get(string imageID)
     {
-      if (s_Images.TryGetValue(imageID, out Image image)) return image;
+      if (s_Images.TryGetValue(imageID, out Bitmap image)) return image;
 #if DEBUG
       throw new InvalidOperationException("missing image '"+imageID+"'");
 #else
@@ -989,7 +1029,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Image GetGrayLevel(string imageID)
     {
-      if (s_GrayLevelImages.TryGetValue(imageID, out Image image)) return image;
+      if (s_GrayLevelImages.TryGetValue(imageID, out Bitmap image)) return image;
 #if DEBUG
       throw new InvalidOperationException("missing image '"+imageID+"'");
 #else
