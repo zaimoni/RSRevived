@@ -105,6 +105,12 @@ namespace djack.RogueSurvivor.Gameplay
     public const string TILE_ROAD_ASPHALT_EW = "Tiles\\road_asphalt_ew";
     public const string TILE_RAIL_NS = "Tiles\\rail_ns";
     public const string TILE_RAIL_EW = "Tiles\\rail_ew";
+    public const string TILE_RAIL_SWNE = "Tiles\\rail_swne";
+    public const string TILE_RAIL_SWNE_WALL_W = "Tiles\\rail_swne_wall_w";
+    public const string TILE_RAIL_SWNE_WALL_E = "Tiles\\rail_swne_wall_e";
+    public const string TILE_RAIL_SENW = "Tiles\\rail_senw";
+    public const string TILE_RAIL_SENW_WALL_W = "Tiles\\rail_senw_wall_w";
+    public const string TILE_RAIL_SENW_WALL_E = "Tiles\\rail_senw_wall_e";
     public const string TILE_WALL_BRICK = "Tiles\\wall_brick";
     public const string TILE_WALL_CHAR_OFFICE = "Tiles\\wall_char_office";
     public const string TILE_WALL_HOSPITAL = "Tiles\\wall_hospital";
@@ -515,6 +521,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(TILE_WALL_HOSPITAL);
       Load(TILE_WALL_SEWER);
       Load(TILE_WALL_STONE);
+      Load(TILE_RAIL_SWNE);
 
       Notify(ui, "tile decorations...");
       Load(DECO_BLOODIED_FLOOR);
@@ -845,12 +852,13 @@ namespace djack.RogueSurvivor.Gameplay
       // 2018-07-28: left spacing of stripes on road tiles as-is; true equal gaps visually would be 3-6-3 rather than 4-4-4, 
       // but that amkes it harder to see the underlying grid.  Gray shade here was easy to get to from MS Paint 3D but not MS Paint.
       // 2018-07-30: concrete: 175 175 175 is good match
-      // walkway: MS Paint medium gray 128 128 18
+      // walkway: MS Paint medium gray 128 128 128
       // main color floor tiles: 208 208 208 (consider for inner hospital drop shadow)
       // main color office tiles, hospital: 230 230 230
       // border for office, floor tiles, hospital: MS Paint medium gray 127 127 127; consider for intermediate hospital drop shadow
       // outer border for hospital: 64 64 64
       // inner drop shadow for hospital: 192 192 192
+      // 2018-07-31: EW railway: 64 64 64 drop shadow; 160 160 160 outer rail; 127 127 17 (stock dark gray) central bar; 100 100 80 ground under railway.
       MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
       MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
       MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
@@ -862,6 +870,12 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
+      // \todo 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
+      // VReflect(TILE_RAIL_SENW,tILE_RAIL_SWNE);
+      // TLLRSplice(TILE_RAIL_SWNE_WALL_E,tILE_RAIL_SWNE,TILE_WALL_STONE);
+      // LRTLSplice(TILE_RAIL_SWNE_WALL_W,TILE_WALL_STONE,tILE_RAIL_SWNE);
+      // BLTRSplice(TILE_RAIL_SENW_WALL_E,tILE_RAIL_SENW,TILE_WALL_STONE);
+      // TRBLSplice(TILE_RAIL_SENW_WALL_W,TILE_WALL_STONE,tILE_RAIL_SENW);
       RotateTile(TILE_ROAD_ASPHALT_NS, TILE_ROAD_ASPHALT_EW);
       RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       Notify(ui, "done!");

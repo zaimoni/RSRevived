@@ -74,6 +74,12 @@ namespace djack.RogueSurvivor.Gameplay
       m_Models[(int)IDs.WALL_STONE] = new TileModel(GameImages.TILE_WALL_STONE, GameTiles.DRK_GRAY1, false, false) { ID = (int)IDs.WALL_STONE };
       m_Models[(int)IDs.WALL_SUBWAY] = new TileModel(GameImages.TILE_WALL_STONE, Color.Blue, false, false) { ID = (int)IDs.WALL_SUBWAY };
       m_Models[(int)IDs.RAIL_NS] = new TileModel(GameImages.TILE_RAIL_NS, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_NS };
+      m_Models[(int)IDs.RAIL_SWNE] = new TileModel(GameImages.TILE_RAIL_SWNE, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_SWNE };
+      m_Models[(int)IDs.RAIL_SWNE_WALL_W] = new TileModel(GameImages.TILE_RAIL_SWNE_WALL_W, Color.Blue, false, false) { ID = (int)IDs.RAIL_SWNE_WALL_W };
+      m_Models[(int)IDs.RAIL_SWNE_WALL_E] = new TileModel(GameImages.TILE_RAIL_SWNE_WALL_E, Color.Blue, false, false) { ID = (int)IDs.RAIL_SWNE_WALL_E };
+      m_Models[(int)IDs.RAIL_SENW] = new TileModel(GameImages.TILE_RAIL_SENW, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_SENW };
+      m_Models[(int)IDs.RAIL_SENW_WALL_W] = new TileModel(GameImages.TILE_RAIL_SENW_WALL_W, Color.Blue, false, false) { ID = (int)IDs.RAIL_SENW_WALL_W };
+      m_Models[(int)IDs.RAIL_SENW_WALL_E] = new TileModel(GameImages.TILE_RAIL_SENW_WALL_E, Color.Blue, false, false) { ID = (int)IDs.RAIL_SENW_WALL_E };
     }
 
     public GameTiles()
@@ -107,6 +113,12 @@ namespace djack.RogueSurvivor.Gameplay
       WALL_STONE = 17,
       WALL_SUBWAY = 18,
       RAIL_NS,  // new RS Revived 0.10.0.0
+      RAIL_SWNE,
+      RAIL_SWNE_WALL_W,
+      RAIL_SWNE_WALL_E,
+      RAIL_SENW,
+      RAIL_SENW_WALL_W,
+      RAIL_SENW_WALL_E,
       _COUNT,
     }
   }
