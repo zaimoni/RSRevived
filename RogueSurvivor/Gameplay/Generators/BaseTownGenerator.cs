@@ -520,6 +520,10 @@ restart:
       const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
       const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
       const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
+      const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
 
       // layout logic: E-W more important than N-S
       // the neutral segments are less important than the full-length segments E-W, N-S
@@ -598,10 +602,40 @@ restart:
           foreach(int x in Enumerable.Range(rail.X+height+ toolsRoomWidth / 2, subway.Width-10)) add_toolroomNSofEW(x);
         }
       }
-      // \todo handle the four diagonals (more synthetic tiles needed
+      // handle the four diagonals (more synthetic tiles needed
+      // \todo tool room  candidates for these layouts IF it could be reached safely once the subway trains are in place
+      void lay_NW_SE_rail(Point pt)
+      {
+        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SENW_WALL_W);
+        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SENW_WALL_E);
+        foreach (int delta in Enumerable.Range(1, height)) {
+          pt.Y++;
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SENW);
+        }
+      }
+      void lay_NE_SW_rail(Point pt)
+      {
+        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SWNE_WALL_W);
+        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SWNE_WALL_E);
+        foreach (int delta in Enumerable.Range(1, height)) {
+          pt.Y++;
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SWNE);
+        }
+      }
+      if (!have_NS && !have_EW) {
+        if (geometry.ContainsLineSegment(N_E)) {
+          for (int y = 0; subway.Width > rail.X + y; y++) lay_NE_SW_rail(new Point(rail.X+y,y));
+        } else if (geometry.ContainsLineSegment(S_W)) {
+          for (int y = 0; -height <= rail.X - 1 - y; y++) lay_NE_SW_rail(new Point(rail.X-1-y, subway.Height - 1 - y));
+        } else if (geometry.ContainsLineSegment(N_W)) {
+          for (int y = 0; -height <= rail.X - 1 - y; y++) lay_NW_SE_rail(new Point(rail.X-1-y,y));
+        } else if (geometry.ContainsLineSegment(S_E)) {
+          for (int y = 0; subway.Width > rail.X + y; y++) lay_NW_SE_rail(new Point(rail.X+y,subway.Height-1-y));
+        }
+      }
 #endregion
 
-#region 2. Make station linked to surface.
+      #region 2. Make station linked to surface.
       List<Block> blockList = GetSubwayStationBlocks(district, layout);
       if (blockList != null) {
         Block block = m_DiceRoller.Choose(blockList);

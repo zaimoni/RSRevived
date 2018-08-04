@@ -45,14 +45,20 @@ namespace djack.RogueSurvivor.Gameplay
     static public TileModel WALL_SEWER { get { return m_Models[(int)IDs.WALL_SEWER]; } }
     static public TileModel WALL_STONE { get { return m_Models[(int)IDs.WALL_STONE]; } }
     static public TileModel WALL_SUBWAY { get { return m_Models[(int)IDs.WALL_SUBWAY]; } }
+    static public TileModel RAIL_SWNE { get { return m_Models[(int)IDs.RAIL_SWNE]; } }
+    static public TileModel RAIL_SWNE_WALL_W { get { return m_Models[(int)IDs.RAIL_SWNE_WALL_W]; } }
+    static public TileModel RAIL_SWNE_WALL_E { get { return m_Models[(int)IDs.RAIL_SWNE_WALL_E]; } }
+    static public TileModel RAIL_SENW { get { return m_Models[(int)IDs.RAIL_SENW]; } }
+    static public TileModel RAIL_SENW_WALL_W { get { return m_Models[(int)IDs.RAIL_SENW_WALL_W]; } }
+    static public TileModel RAIL_SENW_WALL_E { get { return m_Models[(int)IDs.RAIL_SENW_WALL_E]; } }
 
-    // There are no transparent walls at this time.
-    // There are no opaque non-walls at this time.
-    // According to the map class, a transparent wall permits ranged combat, and blocks both walking and throwing.
-    // * use this to implement a gun port
-    // According to the map class, an opaque non-wall blocks ranged combat, but permits both walking and throwing.
-    // * use this to implement a smoke grenade, or thick smoke from a fire
-    static GameTiles()
+        // There are no transparent walls at this time.
+        // There are no opaque non-walls at this time.
+        // According to the map class, a transparent wall permits ranged combat, and blocks both walking and throwing.
+        // * use this to implement a gun port
+        // According to the map class, an opaque non-wall blocks ranged combat, but permits both walking and throwing.
+        // * use this to implement a smoke grenade, or thick smoke from a fire
+        static GameTiles()
     {
       m_Models[(int)IDs.UNDEF] = TileModel.UNDEF;
       m_Models[(int)IDs.FLOOR_ASPHALT] = new TileModel(GameImages.TILE_FLOOR_ASPHALT, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.FLOOR_ASPHALT };
