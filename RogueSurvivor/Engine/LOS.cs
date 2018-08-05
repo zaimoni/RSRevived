@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Engine
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
 #endif
         Point start = new Point(xFrom, yFrom);
-        line?.Add(new Point(start.X, start.Y));
+        line?.Add(start);
         if (0 == maxSteps) return true;
 
         int xDelta = xTo - xFrom;
@@ -150,9 +150,7 @@ namespace djack.RogueSurvivor.Engine
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
         Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out Direction knightmove);
-        Point end = needRange * tmp;    // estimate here
-        end.X += xFrom;
-        end.Y += yFrom;
+        Point end = start + needRange * tmp;
         Direction offset = Direction.To(end.X, end.Y, xTo, yTo);
         int i = 0;
         if (offset == Direction.NEUTRAL)

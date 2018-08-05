@@ -1016,7 +1016,7 @@ restart:
       Point tmp = b.InsideRect.Anchor((Compass.XCOMlike)direction.Index);
       CHAR_guard_locs[1] = tmp + orthogonal;
       CHAR_guard_locs[2] = tmp - orthogonal;
-      CHAR_guard_locs[0] = tmp - direction - direction;
+      CHAR_guard_locs[0] = tmp - 2*direction;
       Point chokepoint_door_pos = CHAR_guard_locs[0] - direction;
       if (direction == Direction.N) {
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
@@ -1454,17 +1454,18 @@ restart:
       }
       if (!isSurface) {
         Point p = doorAt;
+        var x2orthogonal = 2 * orthogonal;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p + orthogonal, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p - orthogonal, GameTiles.FLOOR_CONCRETE);
-          map.SetTileModelAt(p - orthogonal - orthogonal, GameTiles.WALL_STONE);
-          map.SetTileModelAt(p + orthogonal + orthogonal, GameTiles.WALL_STONE);
+          map.SetTileModelAt(p - x2orthogonal, GameTiles.WALL_STONE);
+          map.SetTileModelAt(p + x2orthogonal, GameTiles.WALL_STONE);
           DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
           p += direction;
         }
         const int height = 4;
-        Point centralGateAt = p - direction - direction - direction - direction;  // don't have good scalar multiplication/addition
+        Point centralGateAt = p - 4*direction;
         int left1 = Math.Max(0, b.BuildingRect.Left - 10);
         int right = Math.Min(map.Width - 1, b.BuildingRect.Right + 10);
         Rectangle rect1 = new Rectangle(left1, (direction == Direction.S ? centralGateAt : p).Y+1, right-left1,height);
@@ -1486,7 +1487,7 @@ restart:
         map.PlaceAt(MakeObjIronGate(), centralGateAt);
         map.PlaceAt(MakeObjIronGate(), centralGateAt + orthogonal);
         map.PlaceAt(MakeObjIronGate(), centralGateAt - orthogonal);
-        Point point2 = doorAt+ orthogonal + orthogonal + direction+direction;
+        Point point2 = doorAt+ x2orthogonal + 2*direction;
         Rectangle rect2 = new Rectangle((doorAt.X > map.Width / 2 ? point2.X - 3 : point2.X), point2.Y - 2, 4,5);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, GameTiles.WALL_STONE, rect2);
