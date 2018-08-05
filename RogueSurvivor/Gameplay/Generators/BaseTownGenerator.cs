@@ -1432,7 +1432,16 @@ restart:
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
       else direction = (b.Rectangle.Bottom < map.Width / 2) ? Direction.S : Direction.N;    // \todo make this layout-aware
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
-      Direction orthogonal = direction.Left.Left;   // \todo postprocess to be biased towards center
+      Direction orthogonal = direction.Left.Left;
+      switch(orthogonal.Index%4)
+      {
+      case 2:   // EW
+        orthogonal = (doorAt.X > map.Width / 2) ? Direction.W : Direction.E;
+        break;
+      case 0:   // NS
+        orthogonal = (doorAt.Y > map.Height / 2) ? Direction.N : Direction.S;
+        break;
+      }
       if (isSurface) {
         map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
         map.PlaceAt(MakeObjGlassDoor(), doorAt);
@@ -1444,13 +1453,7 @@ restart:
         AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP), true);
       }
       if (!isSurface) {
-        map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt + orthogonal, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt - orthogonal, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt - orthogonal - orthogonal, GameTiles.WALL_STONE);
-        map.SetTileModelAt(doorAt + orthogonal + orthogonal, GameTiles.WALL_STONE);
-        DoForEachTile(new Rectangle(doorAt.X - 2, doorAt.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
-        Point p = doorAt + direction;
+        Point p = doorAt;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p + orthogonal, GameTiles.FLOOR_CONCRETE);
@@ -1460,16 +1463,16 @@ restart:
           DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
           p += direction;
         }
+        const int height = 4;
+        Point centralGateAt = p - direction - direction - direction - direction;  // don't have good scalar multiplication/addition
         int left1 = Math.Max(0, b.BuildingRect.Left - 10);
         int right = Math.Min(map.Width - 1, b.BuildingRect.Right + 10);
-        Rectangle rect1;
+        Rectangle rect1 = new Rectangle(left1, (direction == Direction.S ? centralGateAt : p).Y+1, right-left1,height);
         int y;
         if (direction == Direction.S) {
-          rect1 = Rectangle.FromLTRB(left1, p.Y - 3, right, p.Y);
           y = rect1.Top;
           map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, doorAt.Y, doorAt.X + 1 + 1, rect1.Top)));
         } else {
-          rect1 = Rectangle.FromLTRB(left1, p.Y + 1, right, p.Y + 1 + 3);
           y = rect1.Bottom - 1;
           map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, rect1.Bottom, doorAt.X + 1 + 1, doorAt.Y + 1)));
         }
@@ -1480,12 +1483,10 @@ restart:
         }
         DoForEachTile(rect1,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
         map.AddZone(MakeUniqueZone("platform", rect1));
-        Point point1 = direction != Direction.S ? new Point(doorAt.X, rect1.Bottom) : new Point(doorAt.X, rect1.Top - 1);
-        map.PlaceAt(MakeObjIronGate(), point1);
-        map.PlaceAt(MakeObjIronGate(), point1 + orthogonal);
-        map.PlaceAt(MakeObjIronGate(), point1 - orthogonal);
-        Direction towards_center = (doorAt.X > map.Width / 2) ? Direction.W : Direction.E;  // orientation-sensitive; this is correct for ew orientation.  Must be at right angles to direction.
-        Point point2 = doorAt+towards_center+towards_center+direction+direction;
+        map.PlaceAt(MakeObjIronGate(), centralGateAt);
+        map.PlaceAt(MakeObjIronGate(), centralGateAt + orthogonal);
+        map.PlaceAt(MakeObjIronGate(), centralGateAt - orthogonal);
+        Point point2 = doorAt+ orthogonal + orthogonal + direction+direction;
         Rectangle rect2 = new Rectangle((doorAt.X > map.Width / 2 ? point2.X - 3 : point2.X), point2.Y - 2, 4,5);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, GameTiles.WALL_STONE, rect2);
