@@ -182,10 +182,10 @@ diagonalExit:
         switch (dirCode)
         {
         default: throw new ArgumentOutOfRangeException("dirCode (diagonal); legal range -4..4", dirCode.ToString());
-        case -4: return Direction.NW;
-        case -2: return Direction.SW;
-        case 2: return Direction.NE;
-        case 4: return Direction.SE;
+        case -4: return NW;
+        case -2: return SW;
+        case 2: return NE;
+        case 4: return SE;
         }
     }
 
@@ -200,15 +200,12 @@ diagonalExit:
       return dir ?? N;
     }
 
+    public Direction Left { get { return COMPASS[(Index + 7) % 8]; } }
+
 #if DEAD_FUNC
     public static Direction Right(Direction d)
     {
       return COMPASS[(d.Index + 1) % 8];
-    }
-
-    public static Direction Left(Direction d)
-    {
-      return COMPASS[(d.Index - 1) % 8];
     }
 
     public static Direction Opposite(Direction d)
@@ -217,9 +214,6 @@ diagonalExit:
     }
 #endif
 
-    public override string ToString()
-    {
-      return m_Name;
-    }
+    public override string ToString() { return m_Name; }
   }
 }

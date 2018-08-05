@@ -59,6 +59,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
     private readonly string[] m_PC_names;
+    private const int HOSPITAL_TYPICAL_WIDTH_HEIGHT = 5;
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;
     private const int PARK_ITEM_CHANCE = 5;
@@ -665,7 +666,7 @@ restart:
         TileFill(subway, GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(subway, GameTiles.WALL_BRICK, rect);
         var door = m_DiceRoller.Choose(doors);
-        PlaceDoor(subway, door.X, door.Y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+        PlaceDoor(subway, door, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, pt => {
           if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
@@ -782,40 +783,6 @@ restart:
       map.AddZone(MakeUniqueZone("road", rect));
     }
 
-    protected virtual void PlaceDoor(Map map, int x, int y, TileModel floor, DoorWindow door)
-    {
-      map.SetTileModelAt(x, y, floor);
-      MapObjectPlace(map, x, y, door);
-    }
-
-    protected virtual void PlaceDoorIfNoObject(Map map, int x, int y, TileModel floor, DoorWindow door)
-    {
-      if (!map.HasMapObjectAt(x, y)) PlaceDoor(map, x, y, floor, door);
-    }
-
-    protected virtual bool PlaceDoorIfAccessible(Map map, int x, int y, TileModel floor, int minAccessibility, DoorWindow door)
-    {
-      Point pt = new Point(x, y);
-      int num = Direction.COMPASS.Select(d => pt+d).Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
-      if (num < minAccessibility) return false;
-      PlaceDoorIfNoObject(map, x, y, floor, door);
-      return true;
-    }
-
-    protected virtual bool PlaceDoorIfAccessibleAndNotAdjacent(Map map, int x, int y, TileModel floor, int minAccessibility, DoorWindow door)
-    {
-      int num = 0;
-      Point point1 = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS) {  // micro-optimized: loop combines a reject-any check with a counting operation
-        Point point2 = point1 + direction;
-        if (map.IsWalkable(point2)) ++num;
-        if (map.GetMapObjectAt(point2) is DoorWindow) return false;
-      }
-      if (num < minAccessibility) return false;
-      PlaceDoorIfNoObject(map, x, y, floor, door);
-      return true;
-    }
-
     protected virtual void AddWreckedCarsOutside(Map map, Rectangle rect)
     {
       MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
@@ -900,29 +867,10 @@ restart:
         return shop_name_image.Value;
       }));
 
-      Point wall_midpoint(int dir_code) {
-        Rectangle rectangle = b.BuildingRect;
-          
-        switch (dir_code) {
-          case 0: return new Point(rectangle.Left + rectangle.Width / 2, rectangle.Top);
-          case 1: return new Point(rectangle.Left + rectangle.Width / 2, rectangle.Bottom - 1);
-          case 2: return new Point(rectangle.Left, rectangle.Top + rectangle.Height / 2);
-#if DEBUG
-          case 3:
-#else
-          default:
-#endif
-            return new Point(rectangle.Right - 1, rectangle.Top + rectangle.Height / 2);
-#if DEBUG
-          default: throw new ArgumentOutOfRangeException("unhandled side");
-#endif
-        }
-      }
-
       if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE)) {
-        Point doorAt = wall_midpoint(m_DiceRoller.Roll(0, 4));
+        Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
 
-        if (!map.GetTileModelAt(doorAt).IsWalkable) PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_TILES, MakeObjWindow());
+        if (!map.GetTileModelAt(doorAt).IsWalkable) PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWindow()); // XXX loses 1/4th of windows to the shop door
       }
       if (shopType == ShopType.GUNSHOP) BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       ItemsDrop(map, b.InsideRect, pt => {
@@ -986,39 +934,26 @@ restart:
     // natural BaseMapGenerator, but anchored by PlaceDoor
     protected Direction PlaceShoplikeEntrance(Map map, Block b, TileModel model, Func<DoorWindow> make_door)
     {
+#if DEBUG
+      if (null == make_door) throw new ArgumentNullException(nameof(make_door));
+#endif
       bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;
-      int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
-      int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
       Direction ret;
-      int door_edge;
       if (orientation_ew) {
-        if (m_DiceRoller.RollChance(50)) {
-          ret = Direction.W;
-          door_edge = b.BuildingRect.Left;
-        } else {
-          ret = Direction.E;
-          door_edge = b.BuildingRect.Right - 1;
-        }
-        PlaceDoor(map, door_edge, y1, model, make_door());
-          if (b.InsideRect.Height >= 8) {
-            PlaceDoor(map, door_edge, y1 - 1, model, make_door());
-            if (b.InsideRect.Height >= 12)
-              PlaceDoor(map, door_edge, y1 + 1, model, make_door());
-        }
+        ret = m_DiceRoller.RollChance(50) ? Direction.W : Direction.E;
       } else {
-        if (m_DiceRoller.RollChance(50)) {
-          ret = Direction.N;
-          door_edge = b.BuildingRect.Top;
-        } else {
-          ret = Direction.S;
-          door_edge = b.BuildingRect.Bottom - 1;
-        }
-        PlaceDoor(map, x1, door_edge, model, make_door());
-        if (b.InsideRect.Width >= 8) {
-          PlaceDoor(map, x1 - 1, door_edge, model, make_door());
-          if (b.InsideRect.Width >= 12)
-            PlaceDoor(map, x1 + 1, door_edge, model, make_door());
-        }
+        ret = m_DiceRoller.RollChance(50) ? Direction.N : Direction.S;
+      }
+      Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)ret.Index);
+      PlaceDoor(map, doorAt, model, make_door());
+      if (orientation_ew) {
+        if (8 > b.InsideRect.Height) return ret;
+        PlaceDoor(map, doorAt + Direction.N, model, make_door());
+        if (b.InsideRect.Height >= 12) PlaceDoor(map, doorAt + Direction.S, model, make_door());
+      } else {
+        if (8 > b.InsideRect.Width) return ret;
+        PlaceDoor(map, doorAt+Direction.W, model, make_door());
+        if (b.InsideRect.Width >= 12) PlaceDoor(map, doorAt + Direction.E, model, make_door());
       }
       return ret;
     }
@@ -1068,8 +1003,8 @@ restart:
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_OFFICE, b.InsideRect, true);
       bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;  // must agree with copy in PlaceShoplikeEntrance
-      Point midpoint = new Point(b.Rectangle.Left + b.Rectangle.Width / 2, b.Rectangle.Top + b.Rectangle.Height / 2);
       Direction direction = PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
+      Direction orthogonal = direction.Left.Left;
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
         if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
@@ -1078,46 +1013,35 @@ restart:
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
 
       Point[] CHAR_guard_locs = new Point[MAX_CHAR_GUARDS_PER_OFFICE];
-      int end_foyer_wall = -1;
+      Point tmp = b.InsideRect.Anchor((Compass.XCOMlike)direction.Index);
+      CHAR_guard_locs[1] = tmp + orthogonal;
+      CHAR_guard_locs[2] = tmp - orthogonal;
+      CHAR_guard_locs[0] = tmp - direction - direction;
+      Point chokepoint_door_pos = CHAR_guard_locs[0] - direction;
       if (direction == Direction.N) {
-        end_foyer_wall = b.InsideRect.Top + 3;
-        CHAR_guard_locs[0] = new Point(midpoint.X,end_foyer_wall-1);
-        CHAR_guard_locs[1] = new Point(midpoint.X-1, b.InsideRect.Top);
-        CHAR_guard_locs[2] = new Point(midpoint.X+1, b.InsideRect.Top);
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, end_foyer_wall, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.S) {
-        end_foyer_wall = b.InsideRect.Bottom - 1 - 3;
-        CHAR_guard_locs[0] = new Point(midpoint.X,end_foyer_wall+1);
-        CHAR_guard_locs[1] = new Point(midpoint.X-1, b.InsideRect.Bottom - 1);
-        CHAR_guard_locs[2] = new Point(midpoint.X+1, b.InsideRect.Bottom - 1);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.E) {
-        end_foyer_wall = b.InsideRect.Right - 1 - 3;
-        CHAR_guard_locs[0] = new Point(end_foyer_wall+1, midpoint.Y);
-        CHAR_guard_locs[1] = new Point(b.InsideRect.Right - 1, midpoint.Y-1);
-        CHAR_guard_locs[2] = new Point(b.InsideRect.Right - 1, midpoint.Y+1);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
 #if DEBUG
       } else if (direction == Direction.W) {
 #else
       } else {
 #endif
-        end_foyer_wall = b.InsideRect.Left + 3;
-        CHAR_guard_locs[0] = new Point(end_foyer_wall-1, midpoint.Y);
-        CHAR_guard_locs[1] = new Point(b.InsideRect.Left, midpoint.Y-1);
-        CHAR_guard_locs[2] = new Point(b.InsideRect.Left, midpoint.Y+1);
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(end_foyer_wall, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       }
 #if DEBUG
       else throw new InvalidOperationException("unhandled door side");
 #endif
 
-      if (orientation_ew) TileVLine(map, GameTiles.WALL_CHAR_OFFICE, end_foyer_wall, b.InsideRect.Top, b.InsideRect.Height);
-      else TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, end_foyer_wall, b.InsideRect.Width);
+      if (orientation_ew) TileVLine(map, GameTiles.WALL_CHAR_OFFICE, chokepoint_door_pos.X, b.InsideRect.Top, b.InsideRect.Height);
+      else TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width);
 
+      Point midpoint = new Point(b.Rectangle.Left + b.Rectangle.Width / 2, b.Rectangle.Top + b.Rectangle.Height / 2);
       Rectangle restricted_zone;
       if (direction == Direction.N) {
-        restricted_zone = new Rectangle(midpoint.X - 1, end_foyer_wall, 3, b.BuildingRect.Height - 1 - 3);
+        restricted_zone = new Rectangle(midpoint.X - 1, chokepoint_door_pos.Y, 3, b.BuildingRect.Height - 1 - 3);
       } else if (direction == Direction.S) {
         restricted_zone = new Rectangle(midpoint.X - 1, b.BuildingRect.Top, 3, b.BuildingRect.Height - 1 - 3);
       } else if (direction == Direction.E) {
@@ -1127,7 +1051,7 @@ restart:
 #else
       } else {
 #endif
-        restricted_zone = new Rectangle(end_foyer_wall, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
+        restricted_zone = new Rectangle(chokepoint_door_pos.X, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
       }
 #if DEBUG
       else throw new InvalidOperationException("unhandled door side");
@@ -1135,10 +1059,8 @@ restart:
 
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, restricted_zone);
 
-      { // \todo arrange for this door to be mechanically locked
-      Point chokepoint_door_pos = (orientation_ew ? new Point(end_foyer_wall, midpoint.Y) : new Point(midpoint.X, end_foyer_wall));
-      PlaceDoor(map, chokepoint_door_pos.X, chokepoint_door_pos.Y, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
-      }
+      // \todo arrange for this door to be mechanically locked
+      PlaceDoor(map, chokepoint_door_pos, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       
       Rectangle rect2;
       Rectangle rect3;
@@ -1172,15 +1094,15 @@ restart:
       }
       foreach (Rectangle rectangle2 in list1){
         if (orientation_ew)
-          PlaceDoor(map, rectangle2.Left + rectangle2.Width / 2, rectangle2.Bottom - 1, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.S.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
-          PlaceDoor(map, rectangle2.Right - 1, rectangle2.Top + rectangle2.Height / 2, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.E.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
       foreach (Rectangle rectangle2 in list2) {
         if (orientation_ew)
-          PlaceDoor(map, rectangle2.Left + rectangle2.Width / 2, rectangle2.Top, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.N.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
-          PlaceDoor(map, rectangle2.Left, rectangle2.Top + rectangle2.Height / 2, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
       var table_pos = new List<Point>(rectangleList.Count);
       var chair_pos = new List<Point>(8);
@@ -1281,7 +1203,7 @@ restart:
       Direction doorDir = m_DiceRoller.Choose(Direction.COMPASS_4);
       Point doorAt = shedBuildingRect.Anchor((Compass.XCOMlike)doorDir.Index);
       Point doorFront = doorAt+doorDir;
-      PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+      PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
       map.RemoveMapObjectAt(doorFront);
 
       // mark as inside and add shelves with tools
@@ -1434,8 +1356,7 @@ restart:
       ////////////////
       // 6. Basement?
       ////////////////
-      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE))
-        m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
+      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE)) m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
 
       ///////////
       // 7. Zone
@@ -1455,16 +1376,11 @@ restart:
       }
       Direction direction = m_DiceRoller.Choose(Direction.COMPASS_4);   // \todo CHAR zoning
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
-      bool orientation_ew = (2 == direction.Index%4);
-      if (orientation_ew) {
-        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.N);
-        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.S);
-      } else {
-        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.W);
-        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.E);
-      }
+      Direction orthogonal = direction.Left.Left;
+      map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + orthogonal);
+      map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt - orthogonal);
 
-      PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+      PlaceDoor(map, doorAt, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER), true);
       if (!isSurface) {
@@ -1476,15 +1392,13 @@ restart:
       }
       int num = m_DiceRoller.Roll(Math.Max(b.InsideRect.Width, b.InsideRect.Height), 2 * Math.Max(b.InsideRect.Width, b.InsideRect.Height));
       for (int index = 0; index < num; ++index)
-        MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
-        {
+        MapObjectPlaceInGoodPosition(map, b.InsideRect, pt => {
           return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
-        }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
-        {
+        }, m_DiceRoller, pt => {
           map.DropItemAt(MakeShopConstructionItem(), pt);
           Session.Get.PoliceInvestigate.Record(map, pt);
           return MakeObjTable(GameImages.OBJ_TABLE);
-        }));
+        });
       if (m_DiceRoller.RollChance(33)) {
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
@@ -1518,17 +1432,12 @@ restart:
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
       else direction = (b.Rectangle.Bottom < map.Width / 2) ? Direction.S : Direction.N;    // \todo make this layout-aware
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
-      bool orientation_ew = (2 == direction.Index%4);
+      Direction orthogonal = direction.Left.Left;   // \todo postprocess to be biased towards center
       if (isSurface) {
         map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
         map.PlaceAt(MakeObjGlassDoor(), doorAt);
-        if (orientation_ew) { 
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.N);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.S);
-        } else { 
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.W);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.E);
-        }
+        map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + orthogonal);
+        map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt - orthogonal);
       }
       for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
@@ -1536,18 +1445,18 @@ restart:
       }
       if (!isSurface) {
         map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt.X + 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt.X - 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(doorAt.X - 2, doorAt.Y, GameTiles.WALL_STONE);
-        map.SetTileModelAt(doorAt.X + 2, doorAt.Y, GameTiles.WALL_STONE);
+        map.SetTileModelAt(doorAt + orthogonal, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt - orthogonal, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt - orthogonal - orthogonal, GameTiles.WALL_STONE);
+        map.SetTileModelAt(doorAt + orthogonal + orthogonal, GameTiles.WALL_STONE);
         DoForEachTile(new Rectangle(doorAt.X - 2, doorAt.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
         Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p, GameTiles.FLOOR_CONCRETE);
-          map.SetTileModelAt(p.X - 1, p.Y, GameTiles.FLOOR_CONCRETE);
-          map.SetTileModelAt(p.X + 1, p.Y, GameTiles.FLOOR_CONCRETE);
-          map.SetTileModelAt(p.X - 2, p.Y, GameTiles.WALL_STONE);
-          map.SetTileModelAt(p.X + 2, p.Y, GameTiles.WALL_STONE);
+          map.SetTileModelAt(p + orthogonal, GameTiles.FLOOR_CONCRETE);
+          map.SetTileModelAt(p - orthogonal, GameTiles.FLOOR_CONCRETE);
+          map.SetTileModelAt(p - orthogonal - orthogonal, GameTiles.WALL_STONE);
+          map.SetTileModelAt(p + orthogonal + orthogonal, GameTiles.WALL_STONE);
           DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
           p += direction;
         }
@@ -1572,29 +1481,22 @@ restart:
         DoForEachTile(rect1,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
         map.AddZone(MakeUniqueZone("platform", rect1));
         Point point1 = direction != Direction.S ? new Point(doorAt.X, rect1.Bottom) : new Point(doorAt.X, rect1.Top - 1);
-        map.PlaceAt(MakeObjIronGate(), new Point(point1.X, point1.Y));
-        map.PlaceAt(MakeObjIronGate(), new Point(point1.X + 1, point1.Y));
-        map.PlaceAt(MakeObjIronGate(), new Point(point1.X - 1, point1.Y));
-        Point point2;
-        Rectangle rect2;
-        if (doorAt.X > map.Width / 2) {
-          point2 = new Point(doorAt.X - 2, doorAt.Y + 2 * direction.Vector.Y);
-          rect2 = Rectangle.FromLTRB(point2.X - 4, point2.Y - 2, point2.X + 1, point2.Y + 2 + 1);
-        } else {
-          point2 = new Point(doorAt.X + 2, doorAt.Y + 2 * direction.Vector.Y);
-          rect2 = Rectangle.FromLTRB(point2.X, point2.Y - 2, point2.X + 4, point2.Y + 2 + 1);
-        }
+        map.PlaceAt(MakeObjIronGate(), point1);
+        map.PlaceAt(MakeObjIronGate(), point1 + orthogonal);
+        map.PlaceAt(MakeObjIronGate(), point1 - orthogonal);
+        Direction towards_center = (doorAt.X > map.Width / 2) ? Direction.W : Direction.E;  // orientation-sensitive; this is correct for ew orientation.  Must be at right angles to direction.
+        Point point2 = doorAt+towards_center+towards_center+direction+direction;
+        Rectangle rect2 = new Rectangle((doorAt.X > map.Width / 2 ? point2.X - 3 : point2.X), point2.Y - 2, 4,5);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, GameTiles.WALL_STONE, rect2);
-        PlaceDoor(map, point2.X, point2.Y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2.X, point2.Y - 1);
-        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2.X, point2.Y + 1);
-        MapObjectFill(map, rect2, (Func<Point, MapObject>) (pt =>
-        {
+        PlaceDoor(map, point2, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2+direction);
+        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2-direction);
+        MapObjectFill(map, rect2, pt => {
           if (!map.GetTileModelAt(pt).IsWalkable) return null;
-          if (CountAdjWalls(map, pt.X, pt.Y) < 3 || map.AnyAdjacent<DoorWindow>(pt)) return null;
+          if (CountAdjWalls(map, pt) < 3 || map.AnyAdjacent<DoorWindow>(pt)) return null;
           return MakeObjPowerGenerator();
-        }));
+        });
         DoForEachTile(rect2, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       }
       for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
@@ -2204,17 +2106,12 @@ restart:
       MakeRoomsPlan(underground, ref list, rect4, 6);
       MakeRoomsPlan(underground, ref list, rect1, 6);
       MakeRoomsPlan(underground, ref list, rect2, 6);
-      foreach (Rectangle rect5 in list)
-        TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, rect5);
+      foreach (Rectangle rect5 in list) TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, rect5);
       foreach (Rectangle rectangle in list) {
-        Point position1 = rectangle.Left < underground.Width / 2 ? new Point(rectangle.Right - 1, rectangle.Top + rectangle.Height / 2) : new Point(rectangle.Left, rectangle.Top + rectangle.Height / 2);
-        if (!underground.HasMapObjectAt(position1)) {
-          PlaceDoorIfAccessibleAndNotAdjacent(underground, position1.X, position1.Y, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
-        }
-        Point position2 = rectangle.Top < underground.Height / 2 ? new Point(rectangle.Left + rectangle.Width / 2, rectangle.Bottom - 1) : new Point(rectangle.Left + rectangle.Width / 2, rectangle.Top);
-        if (!underground.HasMapObjectAt(position2)) {
-          PlaceDoorIfAccessibleAndNotAdjacent(underground, position2.X, position2.Y, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
-        }
+        Point position1 = rectangle.Anchor((Compass.XCOMlike)(rectangle.Left < underground.Width / 2 ? Direction.E : Direction.W).Index);
+        if (!underground.HasMapObjectAt(position1)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position1, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
+        Point position2 = rectangle.Anchor((Compass.XCOMlike)(rectangle.Top < underground.Height / 2 ? Direction.S : Direction.N).Index);
+        if (!underground.HasMapObjectAt(position2)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position2, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
       }
       for (int right = rect1.Right; right < rect4.Left; ++right) {
         PlaceDoor(underground, right, rect1.Bottom - 1, GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
@@ -2401,27 +2298,27 @@ restart:
       Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(jailsLevel);
     }
 
-    private void GeneratePoliceStation(Map surfaceMap, Block policeBlock, out Point stairsToLevel1)
+    static private void GeneratePoliceStation(Map surfaceMap, Block policeBlock, out Point stairsToLevel1)
     {
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
       DoForEachTile(policeBlock.InsideRect,pt => Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt)));
-      Point point = new Point(policeBlock.BuildingRect.Left + policeBlock.BuildingRect.Width / 2, policeBlock.BuildingRect.Bottom - 1);
-      surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, point.X - 1, point.Y);
-      surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, point.X + 1, point.Y);
+      Point entryDoorAt = policeBlock.BuildingRect.Anchor((Compass.XCOMlike)Direction.S.Index);
+      surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.W);
+      surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.E);
       surfaceMap.AddZone(new Zone("NoCivSpawn", new Rectangle(policeBlock.BuildingRect.Left,policeBlock.BuildingRect.Top,policeBlock.BuildingRect.Width,3)));  // once the power locks go in civilians won't be able to path here
       Rectangle rect = Rectangle.FromLTRB(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, rect);
-      PlaceDoor(surfaceMap, rect.Left + rect.Width / 2, rect.Top, GameTiles.FLOOR_TILES, MakeObjIronDoor());
-      PlaceDoor(surfaceMap, point.X, point.Y, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-      DoForEachTile(rect, (Action<Point>) (pt =>
-      {
-        if (!surfaceMap.IsWalkable(pt.X, pt.Y) || CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))
+      Point restrictedDoorAt = rect.Anchor((Compass.XCOMlike)Direction.N.Index);
+      PlaceDoor(surfaceMap, restrictedDoorAt, GameTiles.FLOOR_TILES, MakeObjIronDoor());
+      PlaceDoor(surfaceMap, entryDoorAt, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
+      DoForEachTile(rect, pt => {
+        if (!surfaceMap.IsWalkable(pt) || CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))
           return;
         surfaceMap.PlaceAt(MakeObjBench(), pt);
-      }));
-      stairsToLevel1 = new Point(point.X, policeBlock.InsideRect.Top);
+      });
+      stairsToLevel1 = restrictedDoorAt+Direction.N;
       surfaceMap.AddZone(MakeUniqueZone("Police Station", policeBlock.BuildingRect));
       MakeWalkwayZones(surfaceMap, policeBlock);
     }
@@ -2462,7 +2359,7 @@ restart:
         Rectangle rect3 = Rectangle.FromLTRB(rect2.Left + 1, rect2.Top + 1, rect2.Right - 1, rect2.Bottom - 1);
         if (rect2.Right == map.Width) {
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-          PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+          PlaceDoor(map, rect2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
             if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             map.PlaceAt(MakeObjShelf(), pt);
@@ -2473,7 +2370,7 @@ restart:
         }
         TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-        PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
+        PlaceDoor(map, rect2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
         // top-left room has generator rather than furniture.  At Day 0 turn 0 it is on for backstory and gameplay reasons.
         if (0 == rect2.Top && 3 == rect2.Left) {
           PowerGenerator power = MakeObjPowerGenerator();
@@ -2765,12 +2662,12 @@ restart:
       TileRectangle(surfaceMap, GameTiles.WALL_HOSPITAL, block.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, block.Rectangle);
       Point point1 = new Point(block.BuildingRect.Left + block.BuildingRect.Width / 2, block.BuildingRect.Bottom - 1);
-      Point point2 = new Point(point1.X - 1, point1.Y);
-      surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point2.X - 1, point2.Y);
-      surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point1.X + 1, point1.Y);
+      Point point2 = point1+Direction.W;
+      surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point2+Direction.W);
+      surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point1+Direction.E);
       Rectangle rect = Rectangle.FromLTRB(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
-      PlaceDoor(surfaceMap, point1.X, point1.Y, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-      PlaceDoor(surfaceMap, point2.X, point2.Y, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
+      PlaceDoor(surfaceMap, point1, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
+      PlaceDoor(surfaceMap, point2, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, (Action<Point>) (pt =>
       {
         if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
@@ -2783,25 +2680,27 @@ restart:
 
     private Map GenerateHospital_Admissions(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Admissions", d, 13, 33, Lighting.DARKNESS);
+      const int HALLWAY_LENGTH_IN_OFFICES = 8;
+
+      Map map = new Map(seed, "Hospital - Admissions", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES * (HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);    // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
-      Rectangle rect = new Rectangle(4, 0, 5, map.Height);
+      Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
-      Rectangle rectangle1 = new Rectangle(0, 0, 5, map.Height);
+      Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y1 = 0;
-      while (y1 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, 5, 5);
+      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalPatientRoom(map, "patient room", room, true);
-        y1 += 4;
+        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
+      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
+      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalPatientRoom(map, "patient room", room, false);
-        y2 += 4;
+        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       for (int index = 0; index < 10; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
@@ -2821,25 +2720,27 @@ restart:
 
     private Map GenerateHospital_Offices(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Offices", d, 13, 33, Lighting.DARKNESS);
+      const int HALLWAY_LENGTH_IN_OFFICES = 8;
+
+      Map map = new Map(seed, "Hospital - Offices", d, 3+2* HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);  // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
-      Rectangle rect = new Rectangle(4, 0, 5, map.Height);
+      Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);    // left/right borders are the offices
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
-      Rectangle rectangle1 = new Rectangle(0, 0, 5, map.Height);
+      Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y1 = 0;
-      while (y1 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, 5, 5);
+      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalOfficeRoom(map, "office", room, true);
-        y1 += 4;
+        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
+      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
+      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalOfficeRoom(map, "office", room, false);
-        y2 += 4;
+        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       Predicate<Point> in_office = (pt => map.HasZonePartiallyNamedAt(pt, "office"));
       for (int index = 0; index < 5; ++index) {
@@ -2855,25 +2756,27 @@ restart:
 
     private Map GenerateHospital_Patients(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Patients", d, 13, 49, Lighting.DARKNESS);
+      const int HALLWAY_LENGTH_IN_OFFICES = 12;
+
+      Map map = new Map(seed, "Hospital - Patients", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);  // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
-      Rectangle rect = new Rectangle(4, 0, 5, map.Height);
+      Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
-      Rectangle rectangle1 = new Rectangle(0, 0, 5, map.Height);
+      Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y1 = 0;
-      while (y1 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, 5, 5);
+      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalPatientRoom(map, "patient room", room, true);
-        y1 += 4;
+        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
+      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
+      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
         MakeHospitalPatientRoom(map, "patient room", room, false);
-        y2 += 4;
+        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       for (int index = 0; index < 20; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
@@ -2893,7 +2796,12 @@ restart:
 
     private Map GenerateHospital_Storage(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Storage", d, 51, 16, Lighting.DARKNESS);
+      const int STORAGE_ROOMS_PER_CORRIDOR = 12;
+      const int STORAGE_ROOM_DEPTH = HOSPITAL_TYPICAL_WIDTH_HEIGHT - 1;
+      const int STORAGE_CORRIDORS = 2;
+
+      // top corridor, with walls, to the generators is constant height 4
+      Map map = new Map(seed, "Hospital - Storage", d, 3+ STORAGE_ROOMS_PER_CORRIDOR*(HOSPITAL_TYPICAL_WIDTH_HEIGHT - 1), 4+STORAGE_CORRIDORS*(2+ STORAGE_ROOM_DEPTH), Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, map.Width, 4);
@@ -2904,24 +2812,24 @@ restart:
       map.SetTileModelAt(1, rect2.Top, GameTiles.FLOOR_TILES);
       map.PlaceAt(MakeObjIronGate(), new Point(1, rect2.Top));
       map.AddZone(MakeUniqueZone("central corridor", rect2));
-      Rectangle rectangle1 = new Rectangle(2, rect2.Bottom - 1, map.Width - 2, 4);
+      Rectangle rectangle1 = new Rectangle(2, rect2.Bottom - 1, map.Width - 2, STORAGE_ROOM_DEPTH);
       int left1 = rectangle1.Left;
-      while (left1 <= map.Width - 5) {
-        Rectangle room = new Rectangle(left1, rectangle1.Top, 5, 4);
+      while (left1 <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(left1, rectangle1.Top, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
         MakeHospitalStorageRoom(map, "storage", room);
-        left1 += 4;
+        left1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       map.SetTileModelAt(1, rectangle1.Top, GameTiles.FLOOR_TILES);
       Rectangle rect3 = Rectangle.FromLTRB(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect3);
       map.SetTileModelAt(1, rect3.Top, GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("south corridor", rect3));
-      Rectangle rectangle2 = new Rectangle(2, rect3.Bottom - 1, map.Width - 2, 4);
+      Rectangle rectangle2 = new Rectangle(2, rect3.Bottom - 1, map.Width - 2, STORAGE_ROOM_DEPTH);
       int left2 = rectangle2.Left;
-      while (left2 <= map.Width - 5) {
-        Rectangle room = new Rectangle(left2, rectangle2.Top, 5, 4);
+      while (left2 <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        Rectangle room = new Rectangle(left2, rectangle2.Top, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
         MakeHospitalStorageRoom(map, "storage", room);
-        left2 += 4;
+        left2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       map.SetTileModelAt(1, rectangle2.Top, GameTiles.FLOOR_TILES);
       return map;
@@ -2988,13 +2896,14 @@ restart:
     {
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
+      Direction facing = isFacingEast ? Direction.E : Direction.W;
       int x = isFacingEast ? room.Right - 1 : room.Left;
-      PlaceDoor(map, x, room.Top + 1, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
-      Point position1 = new Point(room.Left + room.Width / 2, room.Bottom - 2);
-      map.PlaceAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), position1);
-      map.PlaceAt(MakeObjChair(GameImages.OBJ_HOSPITAL_CHAIR), new Point(isFacingEast ? position1.X + 1 : position1.X - 1, position1.Y));
-      Point position2 = new Point(isFacingEast ? position1.X - 1 : position1.X + 1, position1.Y);
-      map.PlaceAt(MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE), position2);
+      PlaceDoor(map, room.Anchor((Compass.XCOMlike)facing.Index)+Direction.N, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());    // this door is offset from the usual position
+      Point bedAt = room.Anchor((Compass.XCOMlike)Direction.S.Index)+Direction.N;
+      map.PlaceAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), bedAt);
+      map.PlaceAt(MakeObjChair(GameImages.OBJ_HOSPITAL_CHAIR), bedAt+facing);
+      Point nightTableAt = bedAt - facing;
+      map.PlaceAt(MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE), nightTableAt);
 
       // Inefficient, but avoids polluting interface
       Item furnish() {
@@ -3010,8 +2919,9 @@ restart:
         }
       };
 
-      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), position2);
-      map.PlaceAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), new Point(isFacingEast ? room.Left + 1 : room.Right - 2, room.Top + 1));
+      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), nightTableAt);
+      Direction wardrobe_dir = isFacingEast ? Direction.NW : Direction.NE;
+      map.PlaceAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), room.Anchor((Compass.XCOMlike)wardrobe_dir.Index)- wardrobe_dir);
     }
 
     private void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
@@ -3019,29 +2929,26 @@ restart:
       TileFill(map, GameTiles.FLOOR_PLANKS, room);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
-      int x1 = isFacingEast ? room.Right - 1 : room.Left;
-      int y = room.Top + 2;
-      PlaceDoor(map, x1, y, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
-      int x2 = isFacingEast ? room.Left + 2 : room.Right - 3;
-      map.PlaceAt(MakeObjTable(GameImages.OBJ_TABLE), new Point(x2, y));
-      map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), new Point(x2 - 1, y));
-      map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), new Point(x2 + 1, y));
+      Point doorAt = room.Anchor((Compass.XCOMlike)(isFacingEast ? Direction.E : Direction.W).Index);
+      PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+      Point midpoint = new Point(room.Left + room.Width / 2, room.Top + room.Height / 2);
+      map.PlaceAt(MakeObjTable(GameImages.OBJ_TABLE), midpoint);
+      map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.W);
+      map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.E);
     }
 
     private void MakeHospitalStorageRoom(Map map, string baseZoneName, Rectangle room)
     {
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
-      PlaceDoor(map, room.Left + 2, room.Top, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
-      DoForEachTile(room, (Action<Point>) (pt =>
-      {
+      PlaceDoor(map, room.Anchor((Compass.XCOMlike)Direction.N.Index), GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
+      DoForEachTile(room, pt => {
         if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
         map.PlaceAt(MakeObjShelf(), pt);
         Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
-        if (it.Model.IsStackable)
-          it.Quantity = it.Model.StackingLimit;
+        if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         map.DropItemAt(it, pt);
-      }));
+      });
     }
 
     private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)

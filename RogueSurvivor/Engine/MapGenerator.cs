@@ -7,6 +7,7 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using Zaimoni.Data;
@@ -197,6 +198,46 @@ namespace djack.RogueSurvivor.Engine
     protected static void MapObjectPlace(Map map, Point pt, MapObject mapObj)
     {
       if (!map.HasMapObjectAt(pt)) map.PlaceAt(mapObj, pt);
+    }
+
+    protected static void PlaceDoor(Map map, int x, int y, TileModel floor, DoorWindow door)
+    {
+      map.SetTileModelAt(x, y, floor);
+      MapObjectPlace(map, x, y, door);
+    }
+
+    protected static void PlaceDoor(Map map, Point pt, TileModel floor, DoorWindow door)
+    {
+      map.SetTileModelAt(pt, floor);
+      MapObjectPlace(map, pt, door);
+    }
+
+    protected static void PlaceDoorIfNoObject(Map map, Point pt, TileModel floor, DoorWindow door)
+    {
+      if (!map.HasMapObjectAt(pt)) PlaceDoor(map, pt, floor, door);
+    }
+
+#if DEAD_FUNC
+    protected static bool PlaceDoorIfAccessible(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
+    {
+      int num = Direction.COMPASS.Select(d => pt+d).Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
+      if (num < minAccessibility) return false;
+      PlaceDoorIfNoObject(map, pt, floor, door);
+      return true;
+    }
+#endif
+
+    protected static bool PlaceDoorIfAccessibleAndNotAdjacent(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
+    {
+      int num = 0;
+      foreach (Direction direction in Direction.COMPASS) {  // micro-optimized: loop combines a reject-any check with a counting operation
+        Point point2 = pt + direction;
+        if (map.IsWalkable(point2)) ++num;
+        if (map.GetMapObjectAt(point2) is DoorWindow) return false;
+      }
+      if (num < minAccessibility) return false;
+      PlaceDoorIfNoObject(map, pt, floor, door);
+      return true;
     }
 
     protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
