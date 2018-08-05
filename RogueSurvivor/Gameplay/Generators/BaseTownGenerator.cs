@@ -1647,15 +1647,10 @@ restart:
         if (!map.HasMapObjectAt(x, y)) return;
         map.SetTileModelAt(x, y, floor);
       });
-      int x1 = roomRect.Left + roomRect.Width / 2;
-      int y1 = roomRect.Top + roomRect.Height / 2;
-      bool door_window_ok(int x, int y) { return !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && !map.AnyAdjacent<DoorWindow>(new Point(x, y)); };
-      MapObject make_door_window(int x, int y) { return ((!IsInside(map, x, y) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
+      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt); };
+      MapObject make_door_window(Point pt) { return ((!map.GetTileAt(pt).IsInside && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
-      PlaceIf(map, x1, roomRect.Top, floor, door_window_ok, make_door_window);
-      PlaceIf(map, x1, roomRect.Bottom - 1, floor, door_window_ok, make_door_window);
-      PlaceIf(map, roomRect.Left, y1, floor, door_window_ok, make_door_window);
-      PlaceIf(map, roomRect.Right - 1, y1, floor, door_window_ok, make_door_window);
+      foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);
     }
 
     protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect)

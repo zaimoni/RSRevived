@@ -259,6 +259,7 @@ namespace djack.RogueSurvivor.Engine
       return map.CountAdjacentTo(x, y, pt => map.GetTileModelAt(pt).IsWalkable);
     }
 
+#if DEAD_FUNC
     protected static void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
     {
 #if DEBUG
@@ -271,15 +272,24 @@ namespace djack.RogueSurvivor.Engine
       map.SetTileModelAt(x, y, floor);
       MapObjectPlace(map, x, y, mapObj);
     }
+#endif
+
+    protected static void PlaceIf(Map map, Point pt, TileModel floor, Func<Point, bool> predicateFn, Func<Point, MapObject> createFn)
+    {
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+#endif
+      if (!predicateFn(pt)) return;
+      MapObject mapObj = createFn(pt);
+      if (mapObj == null) return;
+      map.SetTileModelAt(pt, floor);
+      MapObjectPlace(map, pt, mapObj);
+    }
 
     protected static bool IsAccessible(Map map, int x, int y)
     {
       return map.CountAdjacentTo(x, y, pt => map.IsWalkable(pt.X, pt.Y)) >= 6;
-    }
-
-    protected static bool IsInside(Map map, int x, int y)
-    {
-      return map.GetTileAt(x, y).IsInside;
     }
 #endregion
   }
