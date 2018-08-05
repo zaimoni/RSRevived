@@ -25,26 +25,8 @@ namespace djack.RogueSurvivor.Data
     public static readonly Direction SW = new Direction(5, "SW", new Point(-1, 1));
     public static readonly Direction W = new Direction(6, "W", new Point(-1, 0));
     public static readonly Direction NW = new Direction(7, "NW", new Point(-1, -1));
-    public static readonly Direction[] COMPASS = new Direction[8]
-    {
-      Direction.N,
-      Direction.NE,
-      Direction.E,
-      Direction.SE,
-      Direction.S,
-      Direction.SW,
-      Direction.W,
-      Direction.NW
-    };
-#if DEAD_FUNC
-    public static readonly Direction[] COMPASS_4 = new Direction[4]
-    {
-      Direction.N,
-      Direction.E,
-      Direction.S,
-      Direction.W
-    };
-#endif
+    public static readonly Direction[] COMPASS = new Direction[8] { N, NE, E, SE, S, SW, W, NW };
+    public static readonly Direction[] COMPASS_4 = new Direction[4] { N, E, S, W };
     public readonly sbyte Index;
     private readonly string m_Name;
     public readonly Point Vector;

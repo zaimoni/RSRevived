@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Collections.Generic;
 
 namespace Zaimoni.Data
@@ -24,6 +25,22 @@ namespace Zaimoni.Data
             XCOM_STRICT_UB = XCOMlike.NW + 1,
             XCOM_EXT_STRICT_UB = NEUTRAL + 1,
         };
+
+        static public Point Anchor(this Rectangle src, XCOMlike dir_code)  // Tk/Tcl anchor point for aligning a rectangle
+        {
+        switch(dir_code)
+        {
+        case XCOMlike.N: return new Point(src.Width / 2 + src.Left, src.Top);
+        case XCOMlike.NE: return new Point(src.Right - 1, src.Top);
+        case XCOMlike.E: return new Point(src.Right - 1, src.Height / 2 + src.Top);
+        case XCOMlike.SE: return new Point(src.Right - 1, src.Bottom - 1);
+        case XCOMlike.S: return new Point(src.Width / 2 + src.Left, src.Bottom - 1);
+        case XCOMlike.SW: return new Point(src.Left, src.Bottom - 1);
+        case XCOMlike.W: return new Point(src.Left, src.Height / 2 + src.Top);
+        case XCOMlike.NW: return new Point(src.Left, src.Top);
+        default: throw new InvalidOperationException("direction code out of range");
+        }
+        }
 
         // precompile some constants we use internally
         private enum _ref : uint

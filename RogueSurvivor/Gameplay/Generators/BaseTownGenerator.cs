@@ -1261,41 +1261,15 @@ restart:
           return MakeObjFence();
         return null;
       }));
-      MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
-      {
-        return (m_DiceRoller.RollChance(PARK_TREE_CHANCE) ? MakeObjTree() : null);
-      }));
-      MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
-      {
-        return (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null);
-      }));
-      int x;
-      int y;
-      switch (m_DiceRoller.Roll(0, 4)) {
-        case 0:
-          x = b.BuildingRect.Left;
-          y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          break;
-        case 1:
-          x = b.BuildingRect.Right - 1;
-          y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          break;
-        case 3:
-          x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          y = b.BuildingRect.Top;
-          break;
-        default:
-          x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          y = b.BuildingRect.Bottom - 1;
-          break;
-      }
-      map.RemoveMapObjectAt(x, y);
-      map.SetTileModelAt(x, y, GameTiles.FLOOR_WALKWAY);
-      ItemsDrop(map, b.InsideRect, (pt =>
-      {
+      MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_TREE_CHANCE) ? MakeObjTree() : null));
+      MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null));
+      Point entranceAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
+      map.RemoveMapObjectAt(entranceAt.X, entranceAt.Y);
+      map.SetTileModelAt(entranceAt.X, entranceAt.Y, GameTiles.FLOOR_WALKWAY);
+      ItemsDrop(map, b.InsideRect, pt => {
         if (!map.HasMapObjectAt(pt)) return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
         return false;
-      }), (Func<Point, Item>) (pt => MakeRandomParkItem()));
+      }, pt => MakeRandomParkItem());
       map.AddZone(MakeUniqueZone("Park", b.BuildingRect));
       MakeWalkwayZones(map, b);
 
@@ -1325,37 +1299,11 @@ restart:
       map.AddZone(MakeUniqueZone(baseZoneName, shedBuildingRect));
 
       // place shed door and make sure door front is cleared of objects (trees).
-      int doorDir = m_DiceRoller.Roll(0, 4);
-      int doorX, doorY;
-      int doorFrontX, doorFrontY;
-      switch (doorDir) {
-        case 0: // west
-          doorX = shedBuildingRect.Left;
-          doorY = shedBuildingRect.Top + shedBuildingRect.Height / 2;
-          doorFrontX = doorX - 1;
-          doorFrontY = doorY;
-          break;
-        case 1: // east
-          doorX = shedBuildingRect.Right - 1;
-          doorY = shedBuildingRect.Top + shedBuildingRect.Height / 2;
-          doorFrontX = doorX + 1;
-          doorFrontY = doorY;
-          break;
-        case 3: // north
-          doorX = shedBuildingRect.Left + shedBuildingRect.Width / 2;
-          doorY = shedBuildingRect.Top;
-          doorFrontX = doorX;
-          doorFrontY = doorY - 1;
-          break;
-        default: // south
-          doorX = shedBuildingRect.Left + shedBuildingRect.Width / 2;
-          doorY = shedBuildingRect.Bottom - 1;
-          doorFrontX = doorX;
-          doorFrontY = doorY + 1;
-          break;
-      }
-      PlaceDoor(map, doorX, doorY, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
-      map.RemoveMapObjectAt(doorFrontX, doorFrontY);
+      Direction doorDir = m_DiceRoller.Choose(Direction.COMPASS_4);
+      Point doorAt = shedBuildingRect.Anchor((Compass.XCOMlike)doorDir.Index);
+      Point doorFront = doorAt+doorDir;
+      PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+      map.RemoveMapObjectAt(doorFront.X, doorFront.Y);
 
       // mark as inside and add shelves with tools
       DoForEachTile(shedInsideRect, (pt) =>
@@ -1526,52 +1474,22 @@ restart:
         for (int top = b.InsideRect.Top; top < b.InsideRect.Bottom; ++top)
           map.SetIsInsideAt(left, top);
       }
-      Direction direction;
-      int x;
-      int y;
-      switch (m_DiceRoller.Roll(0, 4)) {
-        case 0:
-          direction = Direction.N;
-          x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          y = b.BuildingRect.Top;
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x - 1, y);
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x + 1, y);
-          break;
-        case 1:
-          direction = Direction.S;
-          x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          y = b.BuildingRect.Bottom - 1;
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x - 1, y);
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x + 1, y);
-          break;
-        case 2:
-          direction = Direction.W;
-          x = b.BuildingRect.Left;
-          y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x, y - 1);
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x, y + 1);
-          break;
-#if DEBUG
-        case 3:
-#else
-        default:
-#endif
-          direction = Direction.E;
-          x = b.BuildingRect.Right - 1;
-          y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x, y - 1);
-          map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, x, y + 1);
-          break;
-#if DEBUG
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
-#endif
+      Direction direction = m_DiceRoller.Choose(Direction.COMPASS_4);   // \todo CHAR zoning
+      Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
+      bool orientation_ew = (2 == direction.Index%4);
+      if (orientation_ew) {
+        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.N);
+        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.S);
+      } else {
+        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.W);
+        map.AddDecorationAt(GameImages.DECO_SEWERS_BUILDING, doorAt + Direction.E);
       }
-      PlaceDoor(map, x, y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+
+      PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER), true);
       if (!isSurface) {
-        Point p = new Point(x, y) + direction;
+        Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p.X, p.Y, GameTiles.FLOOR_CONCRETE);
           p += direction;
@@ -1617,41 +1535,11 @@ restart:
           Session.Get.ForcePoliceKnown(new Location(map, pt));
           Session.Get.PoliceInvestigate.Seen(map, pt);
       });
-      Direction direction;
-      Point doorAt = new Point(-1,-1);
-      bool orientation_ew = false;
-      switch (!isSurface ? (b.Rectangle.Bottom < map.Width / 2 ? 1 : 0) : m_DiceRoller.Roll(0, 4)) {
-        case 0:
-          direction = Direction.N;
-          doorAt.X = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          doorAt.Y = b.BuildingRect.Top;
-          break;
-        case 1:
-          direction = Direction.S;
-          doorAt.X = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          doorAt.Y = b.BuildingRect.Bottom - 1;
-          break;
-        case 2:
-          direction = Direction.W;
-          orientation_ew = true;
-          doorAt.X = b.BuildingRect.Left;
-          doorAt.Y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          break;
-#if DEBUG
-        case 3:
-#else
-        default:
-#endif
-          direction = Direction.E;
-          orientation_ew = true;
-          doorAt.X = b.BuildingRect.Right - 1;
-          doorAt.Y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          break;
-#if DEBUG
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
-#endif
-      }
+      Direction direction = null;
+      if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
+      else direction = (b.Rectangle.Bottom < map.Width / 2) ? Direction.S : Direction.N;    // \todo make this layout-aware
+      Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
+      bool orientation_ew = (2 == direction.Index%4);
       if (isSurface) {
         map.SetTileModelAt(doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE);
         map.PlaceAt(MakeObjGlassDoor(), doorAt);
