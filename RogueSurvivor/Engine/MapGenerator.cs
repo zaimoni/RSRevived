@@ -194,6 +194,11 @@ namespace djack.RogueSurvivor.Engine
       if (!map.HasMapObjectAt(x, y)) map.PlaceAt(mapObj, new Point(x, y));
     }
 
+    protected static void MapObjectPlace(Map map, Point pt, MapObject mapObj)
+    {
+      if (!map.HasMapObjectAt(pt)) map.PlaceAt(mapObj, pt);
+    }
+
     protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
 #if DEBUG

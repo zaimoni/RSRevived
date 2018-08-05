@@ -248,36 +248,25 @@ restart:
       foreach (Block block in list) {
         if (!m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE)) continue;
         bool flag = false;
-        int x1;
-        int y1;
-        int x2;
-        int y2;
         do {
-          int num = m_DiceRoller.Roll(0, 4);
-          switch (num) {
-            case 0:
-            case 1:
-              x1 = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
-              y1 = num == 0 ? block.Rectangle.Top : block.Rectangle.Bottom - 1;
-              x2 = x1;
-              y2 = num == 0 ? y1 - 1 : y1 + 1;
-              break;
-            case 2:
-            case 3:
-              x1 = num == 2 ? block.Rectangle.Left : block.Rectangle.Right - 1;
-              y1 = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
-              x2 = num == 2 ? x1 - 1 : x1 + 1;
-              y2 = y1;
-              break;
-            default:
-              throw new ArgumentOutOfRangeException("unhandled roll");
+          Direction dir = m_DiceRoller.Choose(Direction.COMPASS_4);
+          bool orientation_ew = (2 == dir.Index%4);
+          Point gate = block.Rectangle.Anchor((Compass.XCOMlike)dir.Index);
+          if (sewers.IsOnMapBorder(gate.X, gate.Y)) continue;
+          if (orientation_ew) { 
+            gate.Y = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
+          } else {
+            gate.X = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
           }
-          if (!sewers.IsOnMapBorder(x1, y1) && !sewers.IsOnMapBorder(x2, y2) && (CountAdjWalls(sewers, x1, y1) == 3 && CountAdjWalls(sewers, x2, y2) == 3))
-            flag = true;
-        }
-        while (!flag);
-        MapObjectPlace(sewers, x1, y1, MakeObjIronFence());
-        MapObjectPlace(sewers, x2, y2, MakeObjIronFence());
+          if (sewers.IsOnMapBorder(gate.X, gate.Y)) continue;  // just in case
+          if (3 != CountAdjWalls(sewers, gate)) continue;
+          Point gate2 = gate+dir;
+          if (sewers.IsOnMapBorder(gate2.X, gate2.Y)) continue;
+          if (3 != CountAdjWalls(sewers, gate2)) continue;
+          MapObjectPlace(sewers, gate, MakeObjIronFence());
+          MapObjectPlace(sewers, gate2, MakeObjIronFence());
+          break;
+        } while(true);
       }
 #endregion
 #if DEBUG
