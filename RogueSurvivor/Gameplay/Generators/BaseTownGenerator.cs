@@ -155,6 +155,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
 
       TileFill(map, GameTiles.FLOOR_GRASS);
+#if PROTOTYPE
+restart:
+#endif
       List<Block> list = new List<Block>();
       Rectangle rect = new Rectangle(0, 0, map.Width, map.Height);
       MakeBlocks(map, true, ref list, rect);
@@ -166,6 +169,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
       // give subway fairly high priority
       if (0 < Session.Get.World.SubwayLayout(map.District.WorldPosition)) {
+#if PROTOTYPE
+        var test = GetSubwayStationBlocks(map, Session.Get.World.SubwayLayout(map.District.WorldPosition));
+        if (null == test) goto restart;
+#endif
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
         if (null != subway_station) blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
       }
@@ -556,11 +563,15 @@ restart:
       const int toolsRoomHeight = 5;
       void add_toolroomEWofNS(int y)
       {
+        if (10 > y) return;
+        if (subway.Height-10 < y) return;
         toolroom_superposition.Add(new Rectangle(rail.X - toolsRoomWidth, y- toolsRoomHeight / 2, 5,5));
         toolroom_superposition.Add(new Rectangle(rail.X+height, y- toolsRoomHeight / 2, 5,5));
       }
       void add_toolroomNSofEW(int x)
       {
+        if (10 > x) return;
+        if (subway.Width-10 < x) return;
         toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y - toolsRoomHeight, 5,5));
         toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y+height,5,5));
       }
@@ -573,7 +584,7 @@ restart:
         DoForEachTile(tmp, lay_NS_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
         DoForEachTile(new Rectangle(rail.X-1, 0, height+2, subway.Height), PoliceEnlightenment);
-        foreach(int y in Enumerable.Range(10, subway.Height-10)) add_toolroomEWofNS(y);
+        foreach(int y in Enumerable.Range(10, subway.Height-20)) add_toolroomEWofNS(y);
       }
       if (geometry.ContainsLineSegment(E_W)) {
         have_EW = true;
@@ -581,7 +592,7 @@ restart:
         DoForEachTile(tmp, lay_EW_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
         DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), PoliceEnlightenment);
-        foreach(int x in Enumerable.Range(10, subway.Width-10)) add_toolroomNSofEW(x);
+        foreach(int x in Enumerable.Range(10, subway.Width-20)) add_toolroomNSofEW(x);
       }
       if (have_EW && !have_NS) {
         if (geometry.ContainsLineSegment(N_NEUTRAL)) {
@@ -589,7 +600,7 @@ restart:
           DoForEachTile(tmp, lay_NS_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(rail.X-1, 0, height+2, rail.Y), PoliceEnlightenment);
-          foreach(int y in Enumerable.Range(10, rail.Y- toolsRoomHeight / 2)) add_toolroomEWofNS(y);
+          foreach(int y in Enumerable.Range(10, rail.Y- toolsRoomHeight / 2-10)) add_toolroomEWofNS(y);
         } else if (geometry.ContainsLineSegment(S_NEUTRAL)) {
           Rectangle tmp = new Rectangle(rail.X, rail.Y+height, height, subway.Height-(rail.Y + height)); // start as rails
           DoForEachTile(tmp, lay_NS_rail);
@@ -604,7 +615,7 @@ restart:
           DoForEachTile(tmp, lay_EW_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
           DoForEachTile(new Rectangle(0, rail.Y-1, rail.X, height+2), PoliceEnlightenment);
-          foreach(int x in Enumerable.Range(10, rail.X- toolsRoomWidth / 2)) add_toolroomNSofEW(x);
+          foreach(int x in Enumerable.Range(10, rail.X- toolsRoomWidth / 2-10)) add_toolroomNSofEW(x);
         } else if (geometry.ContainsLineSegment(E_NEUTRAL)) {
           Rectangle tmp = new Rectangle(rail.X+height, rail.Y, subway.Width-(rail.X + height), height); // start as rails
           DoForEachTile(tmp, lay_EW_rail);
@@ -646,7 +657,7 @@ restart:
       }
 #endregion
 
-      #region 2. Make station linked to surface.
+#region 2. Make station linked to surface.
       List<Block> blockList = GetSubwayStationBlocks(entryMap, layout);
       if (blockList != null) {
         block = m_DiceRoller.Choose(blockList);

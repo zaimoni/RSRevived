@@ -68,7 +68,14 @@ namespace djack.RogueSurvivor.Data
     // diagonals: S-E, S-W, N-E, N-W
     public uint SubwayLayout(Point pos)
     {
+      if (40 > Engine.RogueGame.Options.DistrictSize) return 0; // 30 is known to be impossible to get a subway station.  40 is ok
 #if PROTOTYPE
+      if (0 == pos.Y) {
+      } else if (Size  / 2 == pos.Y) {
+      } else if (Size -1 == pos.Y) {
+      } else if (0 == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
+      } else if (Size / == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
+      } else if (Size - 1 == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
 #else
       if (Size / 2 == pos.Y) return Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
 #endif
