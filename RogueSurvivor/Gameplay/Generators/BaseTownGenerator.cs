@@ -1094,15 +1094,15 @@ restart:
       }
       foreach (Rectangle rectangle2 in list1){
         if (orientation_ew)
-          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.S.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
-          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.E.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
       foreach (Rectangle rectangle2 in list2) {
         if (orientation_ew)
-          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.N.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
-          PlaceDoor(map, rectangle2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+          PlaceDoor(map, rectangle2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
       var table_pos = new List<Point>(rectangleList.Count);
       var chair_pos = new List<Point>(8);
@@ -1436,34 +1436,21 @@ restart:
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
       else {
         var options = new Dictionary<Compass.XCOMlike,int>();
-        var candidates = new List<Direction>();
         if (b.Rectangle.Bottom < map.Height / 2) {
           Point test = b.BuildingRect.Anchor(Compass.XCOMlike.S);
-          if (map.IsWalkable(test.X,rail.Y)) {
-            candidates.Add(Direction.S);
-            options[Compass.XCOMlike.S] = test.Y-rail.Y;
-          }
+          if (map.IsWalkable(test.X,rail.Y)) options[Compass.XCOMlike.S] = test.Y-rail.Y;
         }
         if (b.Rectangle.Top > map.Height / 2) {
           Point test = b.BuildingRect.Anchor(Compass.XCOMlike.N);
-          if (map.IsWalkable(test.X,rail.Y+height-1)) {
-            candidates.Add(Direction.N);
-            options[Compass.XCOMlike.N] = (rail.Y+height-1)-test.Y;
-          }
+          if (map.IsWalkable(test.X,rail.Y+height-1)) options[Compass.XCOMlike.N] = (rail.Y+height-1)-test.Y;
         }
         if (b.Rectangle.Right < map.Width / 2) {
           Point test = b.BuildingRect.Anchor(Compass.XCOMlike.E);
-          if (map.IsWalkable(rail.X,test.Y)) {
-            candidates.Add(Direction.E);
-            options[Compass.XCOMlike.E] = test.X-rail.X;
-          }
+          if (map.IsWalkable(rail.X,test.Y)) options[Compass.XCOMlike.E] = test.X-rail.X;
         }
         if (b.Rectangle.Left > map.Width / 2) {
           Point test = b.BuildingRect.Anchor(Compass.XCOMlike.W);
-          if (map.IsWalkable(rail.X+height-1, test.Y)) {
-            candidates.Add(Direction.W);
-            options[Compass.XCOMlike.W] = (rail.X+height-1)-test.X;
-          }
+          if (map.IsWalkable(rail.X+height-1, test.Y)) options[Compass.XCOMlike.W] = (rail.X+height-1)-test.X;
         }
         if (0==options.Count) throw new InvalidOperationException("subway station w/o candidate directions");
         int min_cost = options.Values.Min();
@@ -2239,9 +2226,9 @@ restart:
       MakeRoomsPlan(underground, ref list, rect2, 6);
       foreach (Rectangle rect5 in list) TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, rect5);
       foreach (Rectangle rectangle in list) {
-        Point position1 = rectangle.Anchor((Compass.XCOMlike)(rectangle.Left < underground.Width / 2 ? Direction.E : Direction.W).Index);
+        Point position1 = rectangle.Anchor(rectangle.Left < underground.Width / 2 ? Compass.XCOMlike.E : Compass.XCOMlike.W);
         if (!underground.HasMapObjectAt(position1)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position1, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
-        Point position2 = rectangle.Anchor((Compass.XCOMlike)(rectangle.Top < underground.Height / 2 ? Direction.S : Direction.N).Index);
+        Point position2 = rectangle.Anchor(rectangle.Top < underground.Height / 2 ? Compass.XCOMlike.S : Compass.XCOMlike.N);
         if (!underground.HasMapObjectAt(position2)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position2, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
       }
       for (int right = rect1.Right; right < rect4.Left; ++right) {
@@ -2435,13 +2422,13 @@ restart:
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
       DoForEachTile(policeBlock.InsideRect,pt => Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt)));
-      Point entryDoorAt = policeBlock.BuildingRect.Anchor((Compass.XCOMlike)Direction.S.Index);
+      Point entryDoorAt = policeBlock.BuildingRect.Anchor(Compass.XCOMlike.S);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.W);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.E);
       surfaceMap.AddZone(new Zone("NoCivSpawn", new Rectangle(policeBlock.BuildingRect.Left,policeBlock.BuildingRect.Top,policeBlock.BuildingRect.Width,3)));  // once the power locks go in civilians won't be able to path here
       Rectangle rect = Rectangle.FromLTRB(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, rect);
-      Point restrictedDoorAt = rect.Anchor((Compass.XCOMlike)Direction.N.Index);
+      Point restrictedDoorAt = rect.Anchor(Compass.XCOMlike.N);
       PlaceDoor(surfaceMap, restrictedDoorAt, GameTiles.FLOOR_TILES, MakeObjIronDoor());
       PlaceDoor(surfaceMap, entryDoorAt, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, pt => {
@@ -2490,7 +2477,7 @@ restart:
         Rectangle rect3 = Rectangle.FromLTRB(rect2.Left + 1, rect2.Top + 1, rect2.Right - 1, rect2.Bottom - 1);
         if (rect2.Right == map.Width) {
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-          PlaceDoor(map, rect2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+          PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
             if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             map.PlaceAt(MakeObjShelf(), pt);
@@ -2501,7 +2488,7 @@ restart:
         }
         TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-        PlaceDoor(map, rect2.Anchor((Compass.XCOMlike)Direction.W.Index), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
+        PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
         // top-left room has generator rather than furniture.  At Day 0 turn 0 it is on for backstory and gameplay reasons.
         if (0 == rect2.Top && 3 == rect2.Left) {
           PowerGenerator power = MakeObjPowerGenerator();
@@ -3030,7 +3017,7 @@ restart:
       Direction facing = isFacingEast ? Direction.E : Direction.W;
       int x = isFacingEast ? room.Right - 1 : room.Left;
       PlaceDoor(map, room.Anchor((Compass.XCOMlike)facing.Index)+Direction.N, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());    // this door is offset from the usual position
-      Point bedAt = room.Anchor((Compass.XCOMlike)Direction.S.Index)+Direction.N;
+      Point bedAt = room.Anchor(Compass.XCOMlike.S)+Direction.N;
       map.PlaceAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), bedAt);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_HOSPITAL_CHAIR), bedAt+facing);
       Point nightTableAt = bedAt - facing;
@@ -3055,12 +3042,12 @@ restart:
       map.PlaceAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), room.Anchor((Compass.XCOMlike)wardrobe_dir.Index)- wardrobe_dir);
     }
 
-    private void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
+    static private void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
     {
       TileFill(map, GameTiles.FLOOR_PLANKS, room);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
-      Point doorAt = room.Anchor((Compass.XCOMlike)(isFacingEast ? Direction.E : Direction.W).Index);
+      Point doorAt = room.Anchor(isFacingEast ? Compass.XCOMlike.E : Compass.XCOMlike.W);
       PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
       Point midpoint = new Point(room.Left + room.Width / 2, room.Top + room.Height / 2);
       map.PlaceAt(MakeObjTable(GameImages.OBJ_TABLE), midpoint);
@@ -3072,7 +3059,7 @@ restart:
     {
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
-      PlaceDoor(map, room.Anchor((Compass.XCOMlike)Direction.N.Index), GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
+      PlaceDoor(map, room.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
       DoForEachTile(room, pt => {
         if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
         map.PlaceAt(MakeObjShelf(), pt);
