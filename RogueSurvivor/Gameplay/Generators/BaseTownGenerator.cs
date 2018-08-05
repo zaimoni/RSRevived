@@ -252,16 +252,16 @@ restart:
           Direction dir = m_DiceRoller.Choose(Direction.COMPASS_4);
           bool orientation_ew = (2 == dir.Index%4);
           Point gate = block.Rectangle.Anchor((Compass.XCOMlike)dir.Index);
-          if (sewers.IsOnMapBorder(gate.X, gate.Y)) continue;
+          if (sewers.IsOnMapBorder(gate)) continue; // \todo make this test always-false
           if (orientation_ew) { 
             gate.Y = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
           } else {
             gate.X = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
           }
-          if (sewers.IsOnMapBorder(gate.X, gate.Y)) continue;  // just in case
+          if (sewers.IsOnMapBorder(gate)) continue;  // just in case \todo make this test always-false
           if (3 != CountAdjWalls(sewers, gate)) continue;
           Point gate2 = gate+dir;
-          if (sewers.IsOnMapBorder(gate2.X, gate2.Y)) continue;
+          if (sewers.IsOnMapBorder(gate2)) continue;
           if (3 != CountAdjWalls(sewers, gate2)) continue;
           MapObjectPlace(sewers, gate, MakeObjIronFence());
           MapObjectPlace(sewers, gate2, MakeObjIronFence());

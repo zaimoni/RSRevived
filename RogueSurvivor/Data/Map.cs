@@ -419,9 +419,16 @@ namespace djack.RogueSurvivor.Data
       return -1 == x || x == Width || -1 == y || y == Height;
     }
 
+#if DEAD_FUNC
     public bool IsOnMapBorder(int x, int y)
     {
       return 0 == x || x == Width-1 || 0 == y || y == Height-1;
+    }
+#endif
+
+    public bool IsOnMapBorder(Point pt)
+    {
+      return 0 == pt.X || pt.X == Width-1 || 0 == pt.Y || pt.Y == Height-1;
     }
 
     /// <summary>
