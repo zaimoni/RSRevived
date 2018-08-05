@@ -354,17 +354,7 @@ restart:
         if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileModelAt(pt).IsWalkable)))
         {
           TileFill(sewers, GameTiles.FLOOR_CONCRETE, block.InsideRect);
-          buildingRect = block.BuildingRect;
-          int x1 = buildingRect.Left + buildingRect.Width / 2;
-          sewers.SetTileModelAt(x1, buildingRect.Top, GameTiles.FLOOR_CONCRETE);
-          int x2 = buildingRect.Left + buildingRect.Width / 2;
-          int y1 = buildingRect.Bottom - 1;
-          sewers.SetTileModelAt(x2, y1, GameTiles.FLOOR_CONCRETE);
-          int y2 = buildingRect.Top + buildingRect.Height / 2;
-          sewers.SetTileModelAt(buildingRect.Left, y2, GameTiles.FLOOR_CONCRETE);
-          int x3 = buildingRect.Right - 1;
-          int y3 = buildingRect.Top + buildingRect.Height / 2;
-          sewers.SetTileModelAt(x3, y3, GameTiles.FLOOR_CONCRETE);
+          foreach(var dir in Direction.COMPASS_4) sewers.SetTileModelAt(block.BuildingRect.Anchor((Compass.XCOMlike)dir.Index), GameTiles.FLOOR_CONCRETE);
           sewers.AddZone(MakeUniqueZone("room", block.InsideRect));
         }
       }
@@ -534,11 +524,11 @@ restart:
       }
       void lay_NS_rail(Point pt)
       {
-        subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_NS);
+        subway.SetTileModelAt(pt, GameTiles.RAIL_NS);
       }
       void lay_EW_rail(Point pt)
       {
-        subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW);
+        subway.SetTileModelAt(pt, GameTiles.RAIL_EW);
       }
       var toolroom_superposition = new HashSet<Rectangle>();   // historically: m_DiceRoller.Roll(10, subway.Width - 10) for anchor point center
       const int toolsRoomWidth = 5; // these should be odd numbers to allow visual centering on-grid for the door
@@ -606,20 +596,20 @@ restart:
       // \todo tool room  candidates for these layouts IF it could be reached safely once the subway trains are in place
       void lay_NW_SE_rail(Point pt)
       {
-        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SENW_WALL_W);
+        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW_WALL_W);
         if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SENW_WALL_E);
         foreach (int delta in Enumerable.Range(1, height)) {
           pt.Y++;
-          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SENW);
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW);
         }
       }
       void lay_NE_SW_rail(Point pt)
       {
-        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SWNE_WALL_W);
+        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE_WALL_W);
         if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SWNE_WALL_E);
         foreach (int delta in Enumerable.Range(1, height)) {
           pt.Y++;
-          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_SWNE);
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);
         }
       }
       if (!have_NS && !have_EW) {
@@ -1265,7 +1255,7 @@ restart:
       MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null));
       Point entranceAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
       map.RemoveMapObjectAt(entranceAt.X, entranceAt.Y);
-      map.SetTileModelAt(entranceAt.X, entranceAt.Y, GameTiles.FLOOR_WALKWAY);
+      map.SetTileModelAt(entranceAt, GameTiles.FLOOR_WALKWAY);
       ItemsDrop(map, b.InsideRect, pt => {
         if (!map.HasMapObjectAt(pt)) return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
         return false;
@@ -1491,7 +1481,7 @@ restart:
       if (!isSurface) {
         Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
-          map.SetTileModelAt(p.X, p.Y, GameTiles.FLOOR_CONCRETE);
+          map.SetTileModelAt(p, GameTiles.FLOOR_CONCRETE);
           p += direction;
         }
       }
@@ -1541,7 +1531,7 @@ restart:
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
       bool orientation_ew = (2 == direction.Index%4);
       if (isSurface) {
-        map.SetTileModelAt(doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
         map.PlaceAt(MakeObjGlassDoor(), doorAt);
         if (orientation_ew) { 
             map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.N);
@@ -1556,7 +1546,7 @@ restart:
         AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP), true);
       }
       if (!isSurface) {
-        map.SetTileModelAt(doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt, GameTiles.FLOOR_CONCRETE);
         map.SetTileModelAt(doorAt.X + 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
         map.SetTileModelAt(doorAt.X - 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
         map.SetTileModelAt(doorAt.X - 2, doorAt.Y, GameTiles.WALL_STONE);
@@ -1564,7 +1554,7 @@ restart:
         DoForEachTile(new Rectangle(doorAt.X - 2, doorAt.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
         Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
-          map.SetTileModelAt(p.X, p.Y, GameTiles.FLOOR_CONCRETE);
+          map.SetTileModelAt(p, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X - 1, p.Y, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X + 1, p.Y, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X - 2, p.Y, GameTiles.WALL_STONE);
@@ -2042,14 +2032,14 @@ restart:
           && GameTiles.WALL_BRICK == basement.GetTileModelAt(small)) {
         if (corner==basementStairs) {
           // The Sokoban gate is required to work.
-          basement.SetTileModelAt(diag_step.X, diag_step.Y, GameTiles.FLOOR_CONCRETE);
+          basement.SetTileModelAt(diag_step, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,diag_step);
-          basement.SetTileModelAt(large.X, large.Y, GameTiles.FLOOR_CONCRETE);
+          basement.SetTileModelAt(large, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,large);
         } else if (   GameTiles.WALL_BRICK == basement.GetTileModelAt(diag_step)
                    && GameTiles.FLOOR_CONCRETE == basement.GetTileModelAt(corner)) {
-          basement.SetTileModelAt(corner.X, corner.Y, GameTiles.WALL_BRICK);
-          basement.SetTileModelAt(diag_step.X, diag_step.Y, GameTiles.FLOOR_CONCRETE);
+          basement.SetTileModelAt(corner, GameTiles.WALL_BRICK);
+          basement.SetTileModelAt(diag_step, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,diag_step);
           Session.Get.PoliceInvestigate.Seen(basement,corner);
         }
@@ -2110,7 +2100,7 @@ restart:
         // basement.Rect.Top and basement.Rect.Left are hardcoded 0
         // coordinates 0, width-1, height-1 are already brick walls
         Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
-        basement.SetTileModelAt(pt.X, pt.Y, GameTiles.WALL_BRICK);
+        basement.SetTileModelAt(pt, GameTiles.WALL_BRICK);
       }));
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
@@ -2692,7 +2682,7 @@ restart:
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect);
         map.PlaceAt(MakeObjIronBench(), new Point(x + 1, 4));
         Point position2 = new Point(x + 1, 3);
-        map.SetTileModelAt(position2.X, position2.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(position2, GameTiles.FLOOR_CONCRETE);
         map.PlaceAt(MakeObjIronGate(), position2);
         map.AddZone(MakeUniqueZone("jail", rect));
         x += 2;

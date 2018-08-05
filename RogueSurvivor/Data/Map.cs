@@ -517,6 +517,15 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs[x, y] = (byte)(model.ID);
     }
 
+    public void SetTileModelAt(Point pt, TileModel model)
+    {
+#if DEBUG
+      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (!IsInBounds(pt)) throw new InvalidOperationException("!IsInBounds(pt)");
+#endif
+      m_TileIDs[pt.X, pt.Y] = (byte)(model.ID);
+    }
+
     public TileModel GetTileModelAt(int x, int y)
     {
       return Models.Tiles[m_TileIDs[x,y]];
