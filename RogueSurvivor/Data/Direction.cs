@@ -51,6 +51,11 @@ namespace djack.RogueSurvivor.Data
       return new Point(lhs.X - rhs.Vector.X, lhs.Y - rhs.Vector.Y);
     }
 
+    public static Direction operator -(Direction rhs)
+    {
+      return COMPASS[(rhs.Index + 4) % 8];
+    }
+
     public static Size operator *(int lhs, Direction rhs)
     {
       return new Size(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
@@ -206,11 +211,6 @@ diagonalExit:
     public static Direction Right(Direction d)
     {
       return COMPASS[(d.Index + 1) % 8];
-    }
-
-    public static Direction Opposite(Direction d)
-    {
-      return COMPASS[(d.Index + 4) % 8];
     }
 #endif
 

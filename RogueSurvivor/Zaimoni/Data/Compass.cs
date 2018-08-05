@@ -42,6 +42,18 @@ namespace Zaimoni.Data
         }
         }
 
+        static public Rectangle Edge(this Rectangle src, XCOMlike dir_code)
+        {
+        switch(dir_code)
+        {
+        case XCOMlike.N: return new Rectangle(src.Left,src.Top,src.Width,1);
+        case XCOMlike.S: return new Rectangle(src.Left, src.Bottom-1, src.Width, 1);
+        case XCOMlike.W: return new Rectangle(src.Left, src.Top, 1, src.Height);
+        case XCOMlike.E: return new Rectangle(src.Right-1, src.Top, 1, src.Height);
+        default: throw new InvalidOperationException("direction code out of range");
+        }
+        }
+
         // precompile some constants we use internally
         private enum _ref : uint
         {

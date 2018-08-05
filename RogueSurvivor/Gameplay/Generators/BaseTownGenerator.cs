@@ -1428,9 +1428,49 @@ restart:
           Session.Get.ForcePoliceKnown(new Location(map, pt));
           Session.Get.PoliceInvestigate.Seen(map, pt);
       });
+      const int height = 4;
+      Point mid_map = new Point(map.Width / 2, map.Height / 2);
+      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+
       Direction direction = null;
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
-      else direction = (b.Rectangle.Bottom < map.Width / 2) ? Direction.S : Direction.N;    // \todo make this layout-aware
+      else {
+        var options = new Dictionary<Compass.XCOMlike,int>();
+        var candidates = new List<Direction>();
+        if (b.Rectangle.Bottom < map.Height / 2) {
+          Point test = b.BuildingRect.Anchor(Compass.XCOMlike.S);
+          if (map.IsWalkable(test.X,rail.Y)) {
+            candidates.Add(Direction.S);
+            options[Compass.XCOMlike.S] = test.Y-rail.Y;
+          }
+        }
+        if (b.Rectangle.Top > map.Height / 2) {
+          Point test = b.BuildingRect.Anchor(Compass.XCOMlike.N);
+          if (map.IsWalkable(test.X,rail.Y+height-1)) {
+            candidates.Add(Direction.N);
+            options[Compass.XCOMlike.N] = (rail.Y+height-1)-test.Y;
+          }
+        }
+        if (b.Rectangle.Right < map.Width / 2) {
+          Point test = b.BuildingRect.Anchor(Compass.XCOMlike.E);
+          if (map.IsWalkable(rail.X,test.Y)) {
+            candidates.Add(Direction.E);
+            options[Compass.XCOMlike.E] = test.X-rail.X;
+          }
+        }
+        if (b.Rectangle.Left > map.Width / 2) {
+          Point test = b.BuildingRect.Anchor(Compass.XCOMlike.W);
+          if (map.IsWalkable(rail.X+height-1, test.Y)) {
+            candidates.Add(Direction.W);
+            options[Compass.XCOMlike.W] = (rail.X+height-1)-test.X;
+          }
+        }
+        if (0==options.Count) throw new InvalidOperationException("subway station w/o candidate directions");
+        int min_cost = options.Values.Min();
+        options.OnlyIf(val => val <= min_cost);
+        direction = Direction.COMPASS[(int)options.Keys.First()];
+      }
+      bool direction_ew = (2==direction.Index%4);
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
       Direction orthogonal = direction.Left.Left;
       switch(orthogonal.Index%4)
@@ -1464,31 +1504,120 @@ restart:
           DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
           p += direction;
         }
-        const int height = 4;
         Point centralGateAt = p - 4*direction;
-        int left1 = Math.Max(0, b.BuildingRect.Left - 10);
-        int right = Math.Min(map.Width - 1, b.BuildingRect.Right + 10);
-        Rectangle rect1 = new Rectangle(left1, (direction == Direction.S ? centralGateAt : p).Y+1, right-left1,height);
-        int y;
-        if (direction == Direction.S) {
-          y = rect1.Top;
-          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, doorAt.Y, doorAt.X + 1 + 1, rect1.Top)));
-        } else {
-          y = rect1.Bottom - 1;
-          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, rect1.Bottom, doorAt.X + 1 + 1, doorAt.Y + 1)));
+        Rectangle corridor() {
+          switch(direction.Index)
+          {
+          case (int)Compass.XCOMlike.N: return new Rectangle(doorAt.X - 1, centralGateAt.Y, 3, doorAt.Y - centralGateAt.Y + 1);
+          case (int)Compass.XCOMlike.S: return new Rectangle(doorAt.X - 1, doorAt.Y, 3, centralGateAt.Y - doorAt.Y + 1);
+          case (int)Compass.XCOMlike.W: return new Rectangle(centralGateAt.X, doorAt.Y - 1, doorAt.X - centralGateAt.X + 1, 3);
+          case (int)Compass.XCOMlike.E: return new Rectangle(doorAt.X, doorAt.Y - 1, centralGateAt.X - doorAt.X + 1, 3);
+          default: throw new InvalidOperationException("unhandled direction");
+          }
         }
-        TileFill(map, GameTiles.FLOOR_CONCRETE, rect1);
-        for (int left2 = rect1.Left; left2 < rect1.Right; ++left2) {
-          if (CountAdjWalls(map, left2, y) >= 3)
-            map.PlaceAt(MakeObjIronBench(), new Point(left2, y));
+
+        map.AddZone(MakeUniqueZone("corridor", corridor()));
+
+        Rectangle plat() {
+          int left = Math.Max(0, b.BuildingRect.Left - 10);
+          int right = Math.Min(map.Width - 1, b.BuildingRect.Right + 10);
+    
+          // bench layout doesn't look good flush against district boundary
+          switch(direction.Index)
+          {
+          case (int)Compass.XCOMlike.N:
+          case (int)Compass.XCOMlike.S:
+            left = Math.Max(1, b.BuildingRect.Left - 10);
+            right = Math.Min(map.Width - 2, b.BuildingRect.Right + 10);
+            break;
+          case (int)Compass.XCOMlike.W:
+          case (int)Compass.XCOMlike.E:
+            left = Math.Max(1, b.BuildingRect.Top - 10);
+            right = Math.Min(map.Height - 2, b.BuildingRect.Bottom + 10);
+            break;
+          default: throw new InvalidOperationException("unhandled direction");
+          }
+          // don't cross rails with the platform
+          // XXX will need revising if diagonal rails go in for t-intersections and 4-way
+          switch(direction.Index)
+          {
+          case (int)Compass.XCOMlike.N:
+            if (right > rail.X-2 && left <= rail.X-2 && map.IsWalkable(rail.X, p.Y + 1)) {
+              right = rail.X -2;
+              break;
+            }
+            if (right >= rail.X+height+1 && left < rail.X+height+1 && map.IsWalkable(rail.X+height-1, p.Y + 1)) {
+              left = rail.X+height+1;
+              break;
+            }
+            break;
+          case (int)Compass.XCOMlike.S:
+            if (right > rail.X-2 && left <= rail.X-2 && map.IsWalkable(rail.X, centralGateAt.Y + 1)) {
+              right = rail.X -2;
+              break;
+            }
+            if (right >= rail.X+height+1 && left < rail.X+height+1 && map.IsWalkable(rail.X+height-1, centralGateAt.Y + 1)) {
+              left = rail.X+height+1;
+              break;
+            }
+            break;
+          case (int)Compass.XCOMlike.W:
+            if (right > rail.Y-2 && left <= rail.Y-2 && map.IsWalkable(p.X + 1, rail.Y)) {
+              right = rail.Y -2;
+              break;
+            }
+            if (right >= rail.Y+height+1 && left < rail.Y+height+1 && map.IsWalkable(p.X + 1, rail.Y+height-1)) {
+              left = rail.Y+height+1;
+              break;
+            }
+            break;
+          case (int)Compass.XCOMlike.E:
+            if (right > rail.Y-2 && left <= rail.Y-2 && map.IsWalkable(centralGateAt.X + 1, rail.Y)) {
+              right = rail.Y -2;
+              break;
+            }
+            if (right >= rail.Y+height+1 && left < rail.Y+height+1 && map.IsWalkable(centralGateAt.X + 1, rail.Y+height-1)) {
+              left = rail.Y+height+1;
+              break;
+            }
+            break;
+          default: throw new InvalidOperationException("unhandled direction");
+          }
+          switch(direction.Index)
+          {
+          case (int)Compass.XCOMlike.N: return new Rectangle(left, p.Y + 1, right - left, 3);
+          case (int)Compass.XCOMlike.S: return new Rectangle(left, centralGateAt.Y + 1, right - left, 3);
+          case (int)Compass.XCOMlike.W: return new Rectangle(p.X + 1, left, 3, right - left);
+          case (int)Compass.XCOMlike.E: return new Rectangle(centralGateAt.X + 1, left, 3, right - left);
+          default: throw new InvalidOperationException("unhandled direction");
+          }
         }
-        DoForEachTile(rect1,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
-        map.AddZone(MakeUniqueZone("platform", rect1));
+
+        Rectangle platform = plat();
+        TileFill(map, GameTiles.FLOOR_CONCRETE, platform);
+        platform.Edge((Compass.XCOMlike)(-direction).Index).DoForEach(pt => map.PlaceAt(MakeObjIronBench(), pt),
+            pt => (CountAdjWalls(map, pt) >= 3));
+        DoForEachTile(platform,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+        map.AddZone(MakeUniqueZone("platform", platform));
         map.PlaceAt(MakeObjIronGate(), centralGateAt);
         map.PlaceAt(MakeObjIronGate(), centralGateAt + orthogonal);
         map.PlaceAt(MakeObjIronGate(), centralGateAt - orthogonal);
         Point point2 = doorAt+ x2orthogonal + 2*direction;
-        Rectangle rect2 = new Rectangle((doorAt.X > map.Width / 2 ? point2.X - 3 : point2.X), point2.Y - 2, 4,5);
+
+        Rectangle backup() {
+          Rectangle ret = direction_ew ? new Rectangle(0,0,5,4) : new Rectangle(0,0,4,5);
+          ret.Location = point2 + 2*(direction_ew ? Direction.W : Direction.N);
+          switch(orthogonal.Index)
+          {
+          case (int)Compass.XCOMlike.W:
+          case (int)Compass.XCOMlike.N:
+            ret.Location += 3*orthogonal;
+            break;
+          }
+          return ret;
+        }
+
+        Rectangle rect2 = backup();
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, GameTiles.WALL_STONE, rect2);
         PlaceDoor(map, point2, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
