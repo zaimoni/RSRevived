@@ -12171,10 +12171,6 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "sewers map ok");
 #endif
-          if (0 < world.SubwayLayout(district.WorldPosition)) GenerateDistrictSubwayMap(district);
-#if DEBUG
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "subway map ok or absent");
-#endif
         }
       }
       if (isVerbose) {
@@ -12432,11 +12428,6 @@ namespace djack.RogueSurvivor.Engine
     private void GenerateDistrictSewersMap(District district)
     {
       m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
-    }
-
-    private void GenerateDistrictSubwayMap(District district)
-    {
-      m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
     }
 
     private void GeneratePlayerOnMap(Map map)

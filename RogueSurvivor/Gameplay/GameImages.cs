@@ -447,6 +447,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ACTIVITY_FLEEING_FROM_EXPLOSIVE);
       Load(ACTIVITY_FOLLOWING);
       Load(ACTIVITY_FOLLOWING_ORDER);
+      Load(ACTIVITY_FOLLOWING_LEADER);
       Load(ACTIVITY_FOLLOWING_PLAYER);
       Load(ACTIVITY_SLEEPING);
       Load(ICON_BLAST);
@@ -463,6 +464,8 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ICON_HEALING);
       Load(ICON_IS_TARGET);
       Load(ICON_IS_TARGETTED);
+      Load(ICON_IS_TARGETING);  // alpha10
+      Load(ICON_IS_IN_GROUP);  // alpha10
       Load(ICON_KILLED);
       Load(ICON_LEADER);
       Load(ICON_MELEE_ATTACK);

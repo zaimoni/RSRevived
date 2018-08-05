@@ -163,6 +163,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_SurfaceBlocks = new List<Block>(list.Count);
       foreach (Block copyFrom in list)
         m_SurfaceBlocks.Add(new Block(copyFrom));
+
+      // give subway fairly high priority
+      if (0 < Session.Get.World.SubwayLayout(map.District.WorldPosition)) {
+        GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
+        if (null != subway_station) blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
+      }
+
       if (m_Params.GeneratePoliceStation) {
         MakePoliceStation(map, list, out Block policeBlock);
         blockList1.Remove(policeBlock);
@@ -412,10 +419,9 @@ restart:
     }
 
     // geometry is a Godel-encoded series of compass-point line segments
-    public List<Block> GetSubwayStationBlocks(District district, uint geometry)
+    public List<Block> GetSubwayStationBlocks(Map entryMap, uint geometry)
     {
       List<Block> blockList = null;
-      Map entryMap = district.EntryMap;
       // entry map has same dimensions as incoming subway map
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // EW: reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
@@ -429,6 +435,7 @@ restart:
       const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
       const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
       var layout = new Compass.LineGraph(geometry);
+      var costs = new Dictionary<Rectangle,int>();
 
       foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
         if (mSurfaceBlock.BuildingRect.Width > m_Params.MinBlockSize + 2) continue;
@@ -456,23 +463,48 @@ restart:
             && mSurfaceBlock.Rectangle.Left - minDistToRails <= rail.X-1+height  // left below critical x
             && mSurfaceBlock.Rectangle.Right + minDistToRails-1 >= rail.X) continue;   // right above critical x
         (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
+        Point exitPosition = mSurfaceBlock.InsideRect.Anchor(Compass.XCOMlike.N);
+        if (want_critical_Y) {
+          if (mSurfaceBlock.Rectangle.Bottom < rail.Y) costs[mSurfaceBlock.Rectangle] = rail.Y- exitPosition.Y;
+          else if (mSurfaceBlock.Rectangle.Top > rail.Y+(height-1)) costs[mSurfaceBlock.Rectangle] = exitPosition.Y - (rail.Y + (height - 1));
+        }
+        if (want_critical_X) {
+          if (want_critical_Y) {
+            if (mSurfaceBlock.Rectangle.Right < rail.X) costs[mSurfaceBlock.Rectangle] = Math.Min(costs[mSurfaceBlock.Rectangle], rail.X- exitPosition.X);
+            else if (mSurfaceBlock.Rectangle.Left > rail.X+(height-1)) costs[mSurfaceBlock.Rectangle] = Math.Min(costs[mSurfaceBlock.Rectangle], exitPosition.X - (rail.X + (height - 1)));
+          } else {
+            if (mSurfaceBlock.Rectangle.Right < rail.X) costs[mSurfaceBlock.Rectangle] = rail.X- exitPosition.X;
+            else if (mSurfaceBlock.Rectangle.Left > rail.X+(height-1)) costs[mSurfaceBlock.Rectangle] = exitPosition.X - (rail.X + (height - 1));
+          }
+        }
+        
 //      break;
       }
-      // \todo further postprocessing here
+      if (1 >= (blockList?.Count ?? 0)) return blockList;
+      // further postprocessing here -- would like to minimize distance to rails *from the stairs*
+      // Block is a class (extra work for dictionary), but Rectangle is a struct (and thus ok)
+      var tmp = new List<Block>();
+      int min_cost = costs.Values.Min();
+      foreach(var x in blockList) {
+        if (costs[x.Rectangle]==min_cost) tmp.Add(x);
+      }
+      if (0 < tmp.Count) return tmp;
       return blockList;
     }
 
     // \todo ultimately we'd like a proper subway network (this is just the EW line)
     // would also need: NS line, T-junctions, a 4-way junction at the center/default starting district, and diagonal bridges
-    public Map GenerateSubwayMap(int seed, District district)
+    public Map GenerateSubwayMap(int seed, Map entryMap, out Block block)
     {
+      block = null;
+      District district = entryMap.District;
       uint layout = Session.Get.World.SubwayLayout(district.WorldPosition);
 #if DEBUG
       if (0 >= layout) throw new InvalidOperationException("0 >= layout");
 #endif
       var geometry = new Compass.LineGraph(layout);
       m_DiceRoller = new DiceRoller(seed);
-      Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
+      Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, entryMap.Width, entryMap.Height, Lighting.DARKNESS);
       TileFill(subway, GameTiles.WALL_BRICK, true);
 
       district.SubwayMap = subway;
@@ -488,7 +520,6 @@ restart:
 #region 1. Trace rail line.
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
-      Map entryMap = district.EntryMap;
       Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
       Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
       const int height = 4;
@@ -616,14 +647,14 @@ restart:
 #endregion
 
       #region 2. Make station linked to surface.
-      List<Block> blockList = GetSubwayStationBlocks(district, layout);
+      List<Block> blockList = GetSubwayStationBlocks(entryMap, layout);
       if (blockList != null) {
-        Block block = m_DiceRoller.Choose(blockList);
+        block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         m_SurfaceBlocks.Remove(block);
-        Block b1 = new Block(block.Rectangle);
-        Point exitPosition = new Point(b1.BuildingRect.Left + b1.BuildingRect.Width / 2, b1.InsideRect.Top);
+        Point exitPosition = block.InsideRect.Anchor(Compass.XCOMlike.N);
+        Block b1 = new Block(block.Rectangle);  // tolerate these vacuous copies for now -- insulates class data from the called functions
         MakeSubwayStationBuilding(entryMap, true, b1, subway, exitPosition);
         Block b2 = new Block(block.Rectangle);
         MakeSubwayStationBuilding(subway, false, b2, entryMap, exitPosition);
@@ -1423,10 +1454,12 @@ restart:
     private void MakeSubwayStationBuilding(Map map, bool isSurface, Block b, Map linkedMap, Point exitPosition)
     {
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
+      if (isSurface) TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
       DoForEachTile(b.BuildingRect,pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
           Session.Get.PoliceInvestigate.Seen(map, pt);
+          map.SetIsInsideAt(pt);
       });
       const int height = 4;
       Point mid_map = new Point(map.Width / 2, map.Height / 2);
