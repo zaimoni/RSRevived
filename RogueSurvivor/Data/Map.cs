@@ -1364,6 +1364,14 @@ retry:
       m_aux_MapObjectsByPosition.Remove(new Point(x, y));
     }
 
+    public void RemoveMapObjectAt(Point pt)
+    {
+      MapObject mapObjectAt = GetMapObjectAt(pt);
+      if (mapObjectAt == null) return;
+      m_MapObjectsList.Remove(mapObjectAt);
+      m_aux_MapObjectsByPosition.Remove(pt);
+    }
+
     public bool IsTrapCoveringMapObjectAt(Point pos)
     {
       MapObject mapObjectAt = GetMapObjectAt(pos);

@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Data
     public void Remove()
     {
       if (null == Location.Map) return;
-      Location.Map.RemoveMapObjectAt(Location.Position.X,Location.Position.Y);
+      Location.Map.RemoveMapObjectAt(Location.Position);
     }
 
     // flag handling

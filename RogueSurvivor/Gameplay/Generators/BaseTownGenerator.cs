@@ -969,7 +969,7 @@ restart:
         AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP, true);
         AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN, true);
 
-        if (!map.HasMapObjectAt(shopCorner)) map.RemoveMapObjectAt(shopCorner.X, shopCorner.Y);
+        if (!map.HasMapObjectAt(shopCorner)) map.RemoveMapObjectAt(shopCorner);
 
         m_Params.District.AddUniqueMap(shopBasement);
       }
@@ -1243,7 +1243,7 @@ restart:
       MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_TREE_CHANCE) ? MakeObjTree() : null));
       MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null));
       Point entranceAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
-      map.RemoveMapObjectAt(entranceAt.X, entranceAt.Y);
+      map.RemoveMapObjectAt(entranceAt);
       map.SetTileModelAt(entranceAt, GameTiles.FLOOR_WALKWAY);
       ItemsDrop(map, b.InsideRect, pt => {
         if (!map.HasMapObjectAt(pt)) return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
@@ -1282,7 +1282,7 @@ restart:
       Point doorAt = shedBuildingRect.Anchor((Compass.XCOMlike)doorDir.Index);
       Point doorFront = doorAt+doorDir;
       PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
-      map.RemoveMapObjectAt(doorFront.X, doorFront.Y);
+      map.RemoveMapObjectAt(doorFront);
 
       // mark as inside and add shelves with tools
       DoForEachTile(shedInsideRect, (pt) =>
@@ -1389,7 +1389,7 @@ restart:
             DoForEachTile(roomRect, (pos) => {
               if (   (pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
                   && map.GetTileModelAt(pos) == GameTiles.FLOOR_GRASS) {
-                map.RemoveMapObjectAt(pos.X, pos.Y); // make sure trees are removed
+                map.RemoveMapObjectAt(pos); // make sure trees are removed
                 map.PlaceAt(MakeObjGardenFence(), pos);
               }
             });
@@ -1399,7 +1399,7 @@ restart:
               bool isLotEntry = (pos.X == roomRect.Left + roomRect.Width / 2) || (pos.Y == roomRect.Top + roomRect.Height / 2);
               if (  !isLotEntry && ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
                   && map.GetTileModelAt(pos) == GameTiles.FLOOR_ASPHALT)) {
-                map.RemoveMapObjectAt(pos.X, pos.Y); // make sure cars are removed
+                map.RemoveMapObjectAt(pos); // make sure cars are removed
                 map.PlaceAt(MakeObjWireFence(), pos);
               }
             });
@@ -1427,7 +1427,7 @@ restart:
       if (!hasOutsideDoor) {
         if (0 >= windows.Count) throw new InvalidOperationException("home w/o outside doors");
         var window_at = m_DiceRoller.Choose(windows);
-        map.RemoveMapObjectAt(window_at.X,window_at.Y);        
+        map.RemoveMapObjectAt(window_at);
         map.PlaceAt(MakeObjWoodenDoor(), window_at);
       }
 
@@ -2191,7 +2191,7 @@ restart:
 
       DoForEachTile(zone1.Bounds, pt => {
         if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
-        surfaceMap.RemoveMapObjectAt(pt.X, pt.Y);
+        surfaceMap.RemoveMapObjectAt(pt);
         DoorWindow doorWindow = MakeObjIronDoor();
         doorWindow.Barricade(Rules.BARRICADING_MAX);
         surfaceMap.PlaceAt(doorWindow, pt);
