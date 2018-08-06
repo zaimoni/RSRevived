@@ -178,11 +178,11 @@ restart:
       }
 
       if (m_Params.GeneratePoliceStation) {
-        MakePoliceStation(map, list, out Block policeBlock);
+        MakePoliceStation(map, blockList1, out Block policeBlock);
         blockList1.Remove(policeBlock);
       }
       if (m_Params.GenerateHospital) {
-        MakeHospital(map, list, out Block hospitalBlock);
+        MakeHospital(map, blockList1, out Block hospitalBlock);
         blockList1.Remove(hospitalBlock);
       }
       blockList2.Clear();
@@ -428,6 +428,7 @@ restart:
     // geometry is a Godel-encoded series of compass-point line segments
     public List<Block> GetSubwayStationBlocks(Map entryMap, uint geometry)
     {
+      // subway station code isn't meant to handle the diagnonals so bail on those early
       List<Block> blockList = null;
       // entry map has same dimensions as incoming subway map
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
@@ -461,6 +462,7 @@ restart:
         if (layout.ContainsLineSegment(W_NEUTRAL) && mSurfaceBlock.BuildingRect.X < rail.X + height) want_critical_Y = true;
         if (layout.ContainsLineSegment(N_NEUTRAL) && mSurfaceBlock.BuildingRect.Y < rail.Y + height) want_critical_X = true;
         if (layout.ContainsLineSegment(S_NEUTRAL) && mSurfaceBlock.BuildingRect.Bottom >= rail.Y) want_critical_X = true;
+        if (!want_critical_X && !want_critical_Y) continue;
 
         // we want a simple interval-does-not-intersect test
         if (   want_critical_Y
@@ -663,7 +665,8 @@ restart:
         block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
-        m_SurfaceBlocks.Remove(block);
+        Rectangle die = block.Rectangle;
+        m_SurfaceBlocks.RemoveAll(b=>b.Rectangle== die);
         Point exitPosition = block.InsideRect.Anchor(Compass.XCOMlike.N);
         Block b1 = new Block(block.Rectangle);  // tolerate these vacuous copies for now -- insulates class data from the called functions
         MakeSubwayStationBuilding(entryMap, true, b1, subway, exitPosition);

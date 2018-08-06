@@ -24,6 +24,7 @@ namespace Zaimoni.Data
             NEUTRAL = XCOMlike.NW + 1,
             XCOM_STRICT_UB = XCOMlike.NW + 1,
             XCOM_EXT_STRICT_UB = NEUTRAL + 1,
+            XCOM_LINE_SEGMENT_UB = XCOM_EXT_STRICT_UB*(XCOM_EXT_STRICT_UB-1)
         };
 
         static public Point Anchor(this Rectangle src, XCOMlike dir_code)  // Tk/Tcl anchor point for aligning a rectangle

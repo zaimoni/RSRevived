@@ -69,15 +69,43 @@ namespace djack.RogueSurvivor.Data
     public uint SubwayLayout(Point pos)
     {
       if (40 > Engine.RogueGame.Options.DistrictSize) return 0; // 30 is known to be impossible to get a subway station.  40 is ok
-#if PROTOTYPE
+      // precompute some line segments
+      const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
+      const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
+      const uint N_TEE = N_NEUTRAL * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
+      const uint S_TEE = S_NEUTRAL * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
+      const uint E_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_NEUTRAL;
+      const uint W_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + W_NEUTRAL;
+#if DEBUG
       if (0 == pos.Y) {
+        if (0 == pos.X) return S_E;
+        else if (Size / 2 == pos.X) return S_TEE;
+        else if (Size - 1 == pos.X) return S_W;
+        else return E_W;
       } else if (Size  / 2 == pos.Y) {
+        if (0 == pos.X) return E_TEE;
+        else if (Size / 2 == pos.X) return FOUR_WAY;
+        else if (Size - 1 == pos.X) return W_TEE;
+        else return E_W;
       } else if (Size -1 == pos.Y) {
-      } else if (0 == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
-      } else if (Size / == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
-      } else if (Size - 1 == pos.X) return Compass.LineSegment((uint)Compass.XCOMlike.N, (uint)Compass.XCOMlike.S)
+        if (0 == pos.X) return N_E;
+        else if (Size / 2 == pos.X) return N_TEE;
+        else if (Size - 1 == pos.X) return N_W;
+        else return E_W;
+      } else if (0 == pos.X) return N_S;
+      else if (Size / 2 == pos.X) return N_S;
+      else if (Size - 1 == pos.X) return N_S;
 #else
-      if (Size / 2 == pos.Y) return Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
+            if (Size / 2 == pos.Y) return Compass.LineSegment((uint)Compass.XCOMlike.E, (uint)Compass.XCOMlike.W);
 #endif
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }

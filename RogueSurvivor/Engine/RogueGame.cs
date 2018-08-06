@@ -12299,17 +12299,34 @@ namespace djack.RogueSurvivor.Engine
           }
           // subway has a different geometry than the other two canonical maps
           Map subwayMap1 = world[x1, y1].SubwayMap;
-          if (subwayMap1 != null && x1 > 0) {
-            Map subwayMap2 = world[x1 - 1, y1].SubwayMap;
-            for (int y2 = 0; y2 < subwayMap1.Height; ++y2) {
-              if (y2 < subwayMap2.Height) {
-                Point from1 = new Point(-1, y2);
-                Point to1 = new Point(subwayMap2.Width - 1, y2);
-                Point from2 = new Point(subwayMap2.Width, y2);
-                Point to2 = new Point(0, y2);
-                if (subwayMap1.IsWalkable(subwayMap1.Width - 1, y2) && subwayMap2.IsWalkable(0, y2)) {
-                  GenerateExit(subwayMap1, from1, subwayMap2, to1);
-                  GenerateExit(subwayMap2, from2, subwayMap1, to2);
+          if (null != subwayMap1) {
+            Map subway_W = (0 < x1) ? world[x1 - 1, y1].SubwayMap : null;
+            if (null != subway_W) {
+              for (int y2 = 0; y2 < subwayMap1.Height; ++y2) {
+                if (y2 < subway_W.Height) {
+                  Point from1 = new Point(-1, y2);
+                  Point to1 = new Point(subway_W.Width - 1, y2);
+                  Point from2 = new Point(subway_W.Width, y2);
+                  Point to2 = new Point(0, y2);
+                  if (CheckIfExitIsGood(subway_W, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
+                    GenerateExit(subwayMap1, from1, subway_W, to1);
+                    GenerateExit(subway_W, from2, subwayMap1, to2);
+                  }
+                }
+              }
+            }
+            Map subway_N = (0 < y1) ? world[x1, y1 - 1].SubwayMap : null;
+            if (null != subway_N) {
+              for (int x2 = 0; x2 < subwayMap1.Width; ++x2) {
+                if (x2 < subway_N.Width) {
+                  Point from1 = new Point(x2, -1);
+                  Point to1 = new Point(x2, subway_N.Height - 1);
+                  Point from2 = new Point(x2, subway_N.Height);
+                  Point to2 = new Point(x2, 0);
+                  if (CheckIfExitIsGood(subway_N, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
+                    GenerateExit(subwayMap1, from1, subway_N, to1);
+                    GenerateExit(subway_N, from2, subwayMap1, to2);
+                  }
                 }
               }
             }
