@@ -177,14 +177,8 @@ restart:
         if (null != subway_station) blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
       }
 
-      if (m_Params.GeneratePoliceStation) {
-        MakePoliceStation(map, blockList1, out Block policeBlock);
-        blockList1.Remove(policeBlock);
-      }
-      if (m_Params.GenerateHospital) {
-        MakeHospital(map, blockList1, out Block hospitalBlock);
-        blockList1.Remove(hospitalBlock);
-      }
+      if (m_Params.GeneratePoliceStation) MakePoliceStation(map, blockList1);
+      if (m_Params.GenerateHospital) MakeHospital(map, blockList1);
       blockList2.Clear();
       foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
@@ -2446,9 +2440,10 @@ restart:
       }));
     }
 
-    private void MakePoliceStation(Map map, List<Block> freeBlocks, out Block policeBlock)
+    private void MakePoliceStation(Map map, List<Block> freeBlocks)
     {
-      policeBlock = m_DiceRoller.Choose(freeBlocks);
+      Block policeBlock = m_DiceRoller.Choose(freeBlocks);
+      freeBlocks.Remove(policeBlock);
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
       Map officesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
@@ -2767,12 +2762,13 @@ restart:
       return map;
     }
 
-    private void MakeHospital(Map map, List<Block> freeBlocks, out Block hospitalBlock)
+    private void MakeHospital(Map map, List<Block> freeBlocks)
     {
 #if DEBUG
       if (null == map.District) throw new ArgumentNullException(nameof(map.District));
 #endif
-      hospitalBlock = m_DiceRoller.Choose(freeBlocks);
+      Block hospitalBlock = m_DiceRoller.Choose(freeBlocks);
+      freeBlocks.Remove(hospitalBlock);
       GenerateHospitalEntryHall(map, hospitalBlock);
       Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
       Map offices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
