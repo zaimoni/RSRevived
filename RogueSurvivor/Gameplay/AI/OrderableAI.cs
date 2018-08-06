@@ -1203,10 +1203,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var best_weapon_ETAs = new Dictionary<Actor,int>();
       var best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
       if (1<available_ranged_weapons.Count) {
-        foreach(ItemRangedWeapon rw in available_ranged_weapons) {
-          foreach(Percept p in en_in_range) {
-            Actor a = p.Percepted as Actor;
-            ETAToKill(a,Rules.GridDistance(m_Actor.Location,p.Location),rw,best_weapon_ETAs, best_weapons);
+        foreach(Percept p in en_in_range) {
+          Actor a = p.Percepted as Actor;
+          int range = Rules.GridDistance(m_Actor.Location, p.Location);
+          foreach(ItemRangedWeapon rw in available_ranged_weapons) {
+            if (range > rw.Model.Attack.Range) continue;
+            ETAToKill(a, range, rw,best_weapon_ETAs, best_weapons);
           }
         }
       } else {
