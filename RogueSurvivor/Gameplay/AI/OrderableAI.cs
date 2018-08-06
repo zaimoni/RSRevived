@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define TRACE_NAVIGATE
+// #define TRACE_NAVIGATE
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TIME_TURNS
@@ -1185,7 +1185,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
+      if (null == en_in_range) return null; // no enemies in range, no constructive action: do something else
 
       // filter immediate threat by being in range
       var immediate_threat_in_range = (null!=_immediate_threat ? new HashSet<Actor>(_immediate_threat) : new HashSet<Actor>());
@@ -2863,6 +2863,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 
       Dictionary<Point, int> dest = PlanApproach(navigate);
+      if (0 >= dest.Count) {
+        Dictionary<Point, ActorAction> legal = m_Actor.OnePath(m_Actor.Location.Map, m_Actor.Location.Position, new Dictionary<Point, ActorAction>());  // \todo not truly reliable w/o proper get-from-container action
+        if (0 < legal.Count) {
+          // workaround
+          var bypass = new Dictionary<Point, int>();
+          foreach(var x in legal) {
+            int cost = navigate.Cost(x.Key);
+            if (int.MaxValue == cost) continue;
+            if (!x.Value.IsLegal()) continue;
+            bypass[x.Key] = cost;
+          }
+          dest = bypass;
+        }
+#if DEBUG
+        if (0 >= dest.Count) throw new InvalidOperationException("should be able to close in");
+#endif      
+      }
+
       var exposed = new Dictionary<Point,int>();
 
       foreach(Point pt in dest.Keys) {

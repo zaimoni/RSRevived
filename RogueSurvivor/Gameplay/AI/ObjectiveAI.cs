@@ -301,15 +301,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
       var test = new Dictionary<Point,int>(8);
+#if MARVIN
+      var failover = new Dictionary<Point,int>(8);
+#endif
       if (null != legal_steps) {
         int current_cost = navigate.Cost(m_Actor.Location.Position);
         foreach(Point pt in legal_steps) {
           int new_cost = navigate.Cost(pt);
+#if MARVIN
+          if (new_cost > current_cost) continue;
+          failover[pt] = new_cost;
+          if (new_cost == current_cost) continue;
+#else
           if (new_cost >= current_cost) continue;
+#endif
           test[pt] = new_cost;
         }
       }
+#if MARVIN
+      return (0 < test.Count ? test : failover);    // XXX this probably is an issue w/floodfinder
+#else
       return test;
+#endif
     }
 
     // these two return a value copy for correctness
@@ -2119,7 +2132,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
 #if DEBUG
         if (0 >= melee_count) throw new InvalidOperationException("inconstent return values");
-#endif        
+#endif
         if (2<= melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;

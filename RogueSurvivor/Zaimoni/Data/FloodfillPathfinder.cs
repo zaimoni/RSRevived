@@ -126,7 +126,7 @@ namespace Zaimoni.Data
 #else
                   if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
 #endif
-                  int new_cost = _map[tmp]+tmp2.Value;
+                  int new_cost = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key)) {
                     int old_cost = _map[tmp2.Key];
                     if (old_cost <= new_cost) continue;
