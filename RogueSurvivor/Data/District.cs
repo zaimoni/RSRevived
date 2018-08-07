@@ -23,6 +23,10 @@ namespace djack.RogueSurvivor.Data
     private Map m_SewersMap;
     private Map m_SubwayMap;
 
+    // world generation assistants
+    static private Point HospitalWorldPos;
+    static private Point PoliceStationWorldPos;
+
     public string Name {
       get {
         return m_Name;
@@ -249,8 +253,24 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static public void WorldGenInit()
+    {
+      var pointList = new List<Point>();
+      var CHAR_city_size = Engine.Session.Get.World.Size;
+      for (int x = 0; x < CHAR_city_size; ++x) {
+        for (int y = 0; y < CHAR_city_size; ++y)
+          pointList.Add(new Point(x, y));
+      }
+      // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
+      var dr = RogueForm.Game.Rules.DiceRoller;
+      PoliceStationWorldPos = dr.ChooseWithoutReplacement(pointList);
+      HospitalWorldPos = dr.ChooseWithoutReplacement(pointList);
+      // \todo subway city planning.  Each subway station can electrify the subway rails not just for its district, but one district away.
+      // make sure all subway rails can be electrified by at least one subway station.
+    }
+
     // low-level support
-    public void GenerateEntryMap(World world, Point policeStationDistrictPos, Point hospitalDistrictPos, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
+    public void GenerateEntryMap(World world, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
     {
       int x = WorldPosition.X;
       int y = WorldPosition.Y;
@@ -306,8 +326,8 @@ namespace djack.RogueSurvivor.Data
       }
 
       // Special params.
-      parameters.GeneratePoliceStation = WorldPosition == policeStationDistrictPos;
-      parameters.GenerateHospital = WorldPosition == hospitalDistrictPos;
+      parameters.GeneratePoliceStation = WorldPosition == PoliceStationWorldPos;
+      parameters.GenerateHospital = WorldPosition == HospitalWorldPos;
 #endregion
 
       // working around an abstract function declaration that *cannot* have the parameters as an argument.

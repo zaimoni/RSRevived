@@ -12140,15 +12140,8 @@ namespace djack.RogueSurvivor.Engine
 
       Session.Get.Reset();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
+      District.WorldGenInit();
       World world = Session.Get.World;
-      var pointList = new List<Point>();
-      for (int x = 0; x < world.Size; ++x) {
-        for (int y = 0; y < world.Size; ++y)
-          pointList.Add(new Point(x, y));
-      }
-      // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
-      Point policeStationDistrictPos = m_Rules.DiceRoller.ChooseWithoutReplacement(pointList);
-      Point hospitalDistrictPos = m_Rules.DiceRoller.ChooseWithoutReplacement(pointList);
       for (int index1 = 0; index1 < world.Size; ++index1) {
         for (int index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {
@@ -12162,7 +12155,7 @@ namespace djack.RogueSurvivor.Engine
           Logger.WriteLine(Logger.Stage.RUN_MAIN, district.Kind.ToString());
 #endif
           // All map generation types should have an entry map so that is sort-of-ok to have as a member function of District
-          district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, s_Options.DistrictSize, m_TownGenerator);
+          district.GenerateEntryMap(world, s_Options.DistrictSize, m_TownGenerator);
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "entry map ok");
 #endif
