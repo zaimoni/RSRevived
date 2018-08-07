@@ -3745,11 +3745,13 @@ namespace djack.RogueSurvivor.Engine
               // full knowledge: police storyline
               if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should have NPC start-of-game district chief
+                display.Add("Aurora warning was called at noon, based on NASA forecast.  Confidence of breakers tripping on the magnetosphere generators between 21:00 and 3:00 is two in five.");
                 display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
+                display.Add("The Metro Transit Authority confirmed that the subway has been shut down and the trains put in storage at 20:17.");
               }
               if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should record first-aggressed cop
-                // XXX each CHAR office is to have one copy of the CHAR Operation Dead Hand document
+                // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
                 // XXX if the CHAR default orders document has been read then this text should be revised
                 display.Add("Something's very wrong; CHAR guards are attacking us cops.");
                 if (1==Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make "+HimOrHer(Session.Get.UniqueActors.PoliceStationPrisonner.TheActor)+" squawk.");
