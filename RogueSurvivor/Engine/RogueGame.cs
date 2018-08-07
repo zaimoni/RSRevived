@@ -12142,7 +12142,7 @@ namespace djack.RogueSurvivor.Engine
 
       Session.Get.Reset();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
-      District.WorldGenInit();
+      BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;
       for (int index1 = 0; index1 < world.Size; ++index1) {
         for (int index2 = 0; index2 < world.Size; ++index2) {

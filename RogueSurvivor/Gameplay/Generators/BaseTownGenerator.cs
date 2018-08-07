@@ -93,6 +93,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int SHOP_BASEMENT_ZOMBIE_RAT_CHANCE = 5;
     private List<Block> m_SurfaceBlocks;    // inconsistently used -- while this enables deferred creation of sewers and subways, such deferred creation does stomp on already-generated blocks
 
+    // world generation assistants
+    static private Point HospitalWorldPos;
+    static private Point PoliceStationWorldPos;
+    static private readonly List<List<Point>> SubwayElectrifyPlans = new List<List<Point>>();    // XXX possible template class target: logic problem solver, AND of OR-clauses
+    static private readonly HashSet<Point> ForceSubwayStation = new HashSet<Point>();   // XXX possible template class target: logic problem solver, AND of OR-clauses
+
     public Parameters Params
     {
       get {
@@ -149,37 +155,85 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       survivalist_ranged_candidates = working_survivalist.ToArray();
     }
 
+    static public void WorldGenInit()
+    {
+      // subway city planning.  Each subway station can electrify the subway rails not just for its district, but one district away.
+      // make sure all subway rails can be electrified by at least one subway station.
+      SubwayElectrifyPlans.Clear(); 
+      ForceSubwayStation.Clear();
+
+      var world = Engine.Session.Get.World;
+      var pointList = new List<Point>();
+      Rectangle world_bounds = new Rectangle(0,0, world.Size, world.Size);
+      world_bounds.DoForEach(pt => {
+        pointList.Add(pt);
+        if (0<world.SubwayLayout(pt)) {
+          var working = new List<Point> { pt };
+          foreach(var dir in Direction.COMPASS_4) {
+            Point pt2 = pt+dir;
+            if (!world_bounds.Contains(pt2)) continue;
+            if (0 < world.SubwayLayout(pt2)) working.Add(pt2);
+          }
+#if DEBUG
+          if (1==working.Count) throw new InvalidOperationException("isolated node in subway network");
+#endif
+          SubwayElectrifyPlans.Add(working);
+        }
+      });
+      // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
+      var dr = RogueForm.Game.Rules.DiceRoller;
+      PoliceStationWorldPos = dr.ChooseWithoutReplacement(pointList);
+      HospitalWorldPos = dr.ChooseWithoutReplacement(pointList);
+    }
+
     public override Map Generate(int seed, string name)
     {
       m_DiceRoller = new DiceRoller(seed);
       Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
 
       TileFill(map, GameTiles.FLOOR_GRASS);
-#if PROTOTYPE
 restart:
-#endif
       List<Block> list = new List<Block>();
       Rectangle rect = new Rectangle(0, 0, map.Width, map.Height);
       MakeBlocks(map, true, ref list, rect);
       List<Block> blockList1 = new List<Block>(list);
-      List<Block> blockList2 = new List<Block>(blockList1.Count);
       m_SurfaceBlocks = new List<Block>(list.Count);
       foreach (Block copyFrom in list)
         m_SurfaceBlocks.Add(new Block(copyFrom));
 
       // give subway fairly high priority
-      if (0 < Session.Get.World.SubwayLayout(map.District.WorldPosition)) {
-#if PROTOTYPE
-        var test = GetSubwayStationBlocks(map, Session.Get.World.SubwayLayout(map.District.WorldPosition));
-        if (null == test) goto restart;
-#endif
+      Point world_pos = map.District.WorldPosition;
+      if (0 < Session.Get.World.SubwayLayout(world_pos)) {
+        if (ForceSubwayStation.Contains(world_pos)) {
+          var test = GetSubwayStationBlocks(map, Session.Get.World.SubwayLayout(world_pos));
+          if (null == test) goto restart;
+        }
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
-        if (null != subway_station) blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
+        if (null != subway_station) {
+          blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
+          // maintain building plans:
+          ForceSubwayStation.Remove(world_pos);
+          int i = SubwayElectrifyPlans.Count;
+          while(0 < i--) {
+            if (SubwayElectrifyPlans[i].Contains(world_pos)) SubwayElectrifyPlans.RemoveAt(i);
+          }
+        } else {    // no station here
+          int i = SubwayElectrifyPlans.Count;
+          while(0 < i--) {
+            if (SubwayElectrifyPlans[i].Contains(world_pos)) {
+              SubwayElectrifyPlans[i].Remove(world_pos);
+              if (1== SubwayElectrifyPlans[i].Count) {
+                ForceSubwayStation.Add(SubwayElectrifyPlans[i][0]);
+                SubwayElectrifyPlans.RemoveAt(i);
+              }
+            }
+          }
+        }
       }
 
-      if (m_Params.GeneratePoliceStation) MakePoliceStation(map, blockList1);
-      if (m_Params.GenerateHospital) MakeHospital(map, blockList1);
-      blockList2.Clear();
+      if (world_pos == PoliceStationWorldPos) MakePoliceStation(map, blockList1);
+      if (world_pos == HospitalWorldPos) MakeHospital(map, blockList1);
+      List<Block> blockList2 = new List<Block>(blockList1.Count);
       foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
           blockList2.Add(b);
@@ -256,7 +310,6 @@ restart:
         TileRectangle(sewers, GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
       foreach (Block block in list) {
         if (!m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE)) continue;
-        bool flag = false;
         do {
           Direction dir = m_DiceRoller.Choose(Direction.COMPASS_4);
           bool orientation_ew = (2 == dir.Index%4);
@@ -3419,8 +3472,6 @@ restart:
       private int m_PolicemanChance;
 
       // these have operational reasons for being public-writable
-      public bool GeneratePoliceStation;
-      public bool GenerateHospital;
       public District District;
 
       // map generation is naturally slow, so we can afford to hard-validate even in release mode
