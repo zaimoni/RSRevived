@@ -28,9 +28,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Drawing;
-#if TIME_TURNS
 using System.Diagnostics;
-#endif
 using System.IO;
 using System.Linq;
 using System.Security.Permissions;
@@ -304,6 +302,7 @@ namespace djack.RogueSurvivor.Engine
     public static bool IsDebugging;
     public static readonly Dictionary<long,long> TimingCache = new Dictionary<long, long>();
 #endif
+    private static readonly Stopwatch play_timer = new Stopwatch();
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
     private HiScoreTable m_HiScoreTable;
@@ -2915,6 +2914,7 @@ namespace djack.RogueSurvivor.Engine
       ComputeViewRect(player.Location.Position);
 
       GC.Collect(); // force garbage collection when things should be slow anyway
+      play_timer.Stop();
 
       bool flag1 = true;
       do {
@@ -3197,6 +3197,7 @@ namespace djack.RogueSurvivor.Engine
       ComputeViewRect(player.Location.Position);
       (player.Controller as PlayerController)?.UpdatePrevLocation();    // abandon PC results in null here
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
+      play_timer.Restart();
     }
 
     private bool TryPlayerInsanity()
@@ -10527,12 +10528,17 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(WeatherStatusText(), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING);
+                // end measure from above
+
+                if (0<play_timer.Elapsed.TotalSeconds) m_UI.UI_DrawString(Color.White, string.Format("CPU: {0} s", play_timer.Elapsed.TotalSeconds), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING - LINE_SPACING, new Color?());
+
+                // measure from below
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Player.ActorScoring.TotalPoints, (int)(100.0 * (double)s_Options.DifficultyRating((GameFactions.IDs)Player.Faction.ID)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                 if (null != Player) {
                   if (Player.MurdersCounter > 0)
-                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", Player.MurdersCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
+                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", Player.MurdersCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
