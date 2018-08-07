@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF = 33;
     private const int SHOP_WINDOW_CHANCE = 30;
     private const int SHOP_BASEMENT_ZOMBIE_RAT_CHANCE = 5;
-    private List<Block> m_SurfaceBlocks;
+    private List<Block> m_SurfaceBlocks;    // inconsistently used -- while this enables deferred creation of sewers and subways, such deferred creation does stomp on already-generated blocks
 
     public Parameters Params
     {
@@ -2442,8 +2442,7 @@ restart:
 
     private void MakePoliceStation(Map map, List<Block> freeBlocks)
     {
-      Block policeBlock = m_DiceRoller.Choose(freeBlocks);
-      freeBlocks.Remove(policeBlock);
+      Block policeBlock = m_DiceRoller.ChooseWithoutReplacement(freeBlocks);
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
       Map officesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
@@ -2767,8 +2766,7 @@ restart:
 #if DEBUG
       if (null == map.District) throw new ArgumentNullException(nameof(map.District));
 #endif
-      Block hospitalBlock = m_DiceRoller.Choose(freeBlocks);
-      freeBlocks.Remove(hospitalBlock);
+      Block hospitalBlock = m_DiceRoller.ChooseWithoutReplacement(freeBlocks);
       GenerateHospitalEntryHall(map, hospitalBlock);
       Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
       Map offices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
