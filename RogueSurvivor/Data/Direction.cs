@@ -221,16 +221,18 @@ diagonalExit:
   internal static class Direction_ext {
     private static readonly TimeCache<Point,Point[]> _adjacent = new TimeCache<Point, Point[]>();
 
-    public static void Now() {
+    public static void Now() {  // generally not called in an actively multi-threaded context
       var t0 = Engine.Session.Get.WorldTime.TurnCounter;
       _adjacent.Now(t0);
       _adjacent.Expire(t0 - 2);
     }
     public static Point[] Adjacent(this Point pt) {
-      if (_adjacent.TryGetValue(pt, out Point[] value)) return value;
-      Point[] ret = Direction.COMPASS.Select(dir => pt+dir).ToArray();
-      _adjacent.Set(pt, ret);
-      return ret;
+      lock (_adjacent) {
+        if (_adjacent.TryGetValue(pt, out Point[] value)) return value;
+        Point[] ret = Direction.COMPASS.Select(dir => pt+dir).ToArray();
+        _adjacent.Set(pt, ret);
+        return ret;
+      }
     }
   }
 }
