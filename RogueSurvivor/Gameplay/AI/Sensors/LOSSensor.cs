@@ -67,11 +67,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           if (actorAt== m_Actor) continue;
           if (actorAt.IsDead) continue;
           perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-          if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
-          else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
-          if (!m_Actor.IsEnemyOf(actorAt)) continue;
-          threats.Sighted(actorAt, actorAt.Location); // XXX change target for cross-district vision
-          has_threat.Add(pt);
+          if (m_Actor.IsEnemyOf(actorAt)) {
+            (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
+            threats.Sighted(actorAt, actorAt.Location); // XXX change target for cross-district vision
+            has_threat.Add(pt);
+          } else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
         }
         // ensure fact what is in sight is current, is recorded
 		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));

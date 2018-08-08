@@ -1113,13 +1113,10 @@ retry:
       if (this!=actor.Location.Map) throw new InvalidOperationException(actor.Name + " does not think he is in map to be removed from");
 #endif
       lock(m_aux_ActorsByPosition) {
-        bool removed = false;
 #if AUDIT_ACTOR_MOVEMENT
         if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
 #endif
-        removed = m_ActorsList.Remove(actor);
-
-        if (removed) {
+        if (m_ActorsList.Remove(actor)) {
 #if AUDIT_ACTOR_MOVEMENT
           if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
             foreach(var x in m_aux_ActorsByPosition) {

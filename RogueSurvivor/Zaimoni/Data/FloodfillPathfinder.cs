@@ -127,8 +127,7 @@ namespace Zaimoni.Data
                   if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
 #endif
                   int new_cost = cost+tmp2.Value;
-                  if (_map.ContainsKey(tmp2.Key)) {
-                    int old_cost = _map[tmp2.Key];
+                  if (_map.TryGetValue(tmp2.Key,out int old_cost)) {
                     if (old_cost <= new_cost) continue;
                     if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
                   }
@@ -160,7 +159,7 @@ namespace Zaimoni.Data
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_cost-cost<=tmp2.Value) continue;
                   int new_dist = cost+tmp2.Value;
-                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
+                  if (_map.TryGetValue(tmp2.Key,out int old_cost) && old_cost <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
                 }
@@ -193,8 +192,7 @@ namespace Zaimoni.Data
             Dictionary<T, int> tmp = _inverse(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
             foreach (T tmp2 in tmp.Keys) {
-				if (!_map.ContainsKey(tmp2)) continue;
-                if (_map[tmp2] < current_cost) ret[tmp2] = _map[tmp2];
+                if (_map.TryGetValue(tmp2,out int cost) && cost < current_cost) ret[tmp2] = _map[tmp2];
             }
             if (0 == ret.Count) return null;
             return ret;
@@ -206,8 +204,7 @@ namespace Zaimoni.Data
             Dictionary<T, int> tmp = _forward(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
             foreach (T tmp2 in tmp.Keys) {
-				if (!_map.ContainsKey(tmp2)) continue;
-				if (_map[tmp2] > current_cost) ret[tmp2] = _map[tmp2];
+                if (_map.TryGetValue(tmp2, out int cost) && cost > current_cost) ret[tmp2] = _map[tmp2];
             }
             if (0 == ret.Count) return null;
             return ret;

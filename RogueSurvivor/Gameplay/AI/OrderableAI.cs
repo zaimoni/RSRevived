@@ -1221,14 +1221,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // cf above: we got here because there were multiple ranged weapons to choose from in these cases
       if (1 == en_in_range.Count) {
         Actor a = en_in_range[0].Percepted as Actor;
-        tmpAction = Equip(best_weapons[a]);
-        if (null != tmpAction) return tmpAction;
-        return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
+        return Equip(best_weapons[a]) ?? BehaviorRangedAttack(a);
       } else if (1 == immediate_threat_in_range.Count) {
         Actor a = immediate_threat_in_range.First();
-        tmpAction = Equip(best_weapons[a]);
-        if (null != tmpAction) return tmpAction;
-        return BehaviorRangedAttack(a);
+        return Equip(best_weapons[a]) ?? BehaviorRangedAttack(a);
       }
       // at this point: there definitely is more than one enemy in range
       // if there are any immediate threat, there are at least two immediate threat

@@ -2917,6 +2917,7 @@ namespace djack.RogueSurvivor.Engine
       ComputeViewRect(player.Location.Position);
 
       GC.Collect(); // force garbage collection when things should be slow anyway
+      GC.WaitForPendingFinalizers();
       play_timer.Stop();
 
       bool flag1 = true;
