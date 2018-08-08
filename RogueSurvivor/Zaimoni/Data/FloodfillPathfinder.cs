@@ -132,7 +132,7 @@ namespace Zaimoni.Data
                     if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
                   }
                   _map[tmp2.Key] = new_cost;
-                  if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
+                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(tmp2.Key);
                   else _now[new_cost] = new HashSet<T>{tmp2.Key};
                 }
               }
@@ -142,7 +142,7 @@ namespace Zaimoni.Data
 
         public void ReviseGoalDistance(T pos, int new_cost, T start)
         {
-            if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
+            if (_map.TryGetValue(pos, out int old_cost) && old_cost <= new_cost) return;   // alternate route not useful
             int max_cost = Cost(start);
             if (max_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
 
@@ -159,7 +159,7 @@ namespace Zaimoni.Data
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_cost-cost<=tmp2.Value) continue;
                   int new_dist = cost+tmp2.Value;
-                  if (_map.TryGetValue(tmp2.Key,out int old_cost) && old_cost <= new_dist) continue;
+                  if (_map.TryGetValue(tmp2.Key,out int test) && test <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
                 }
@@ -170,7 +170,7 @@ namespace Zaimoni.Data
 
         public void ReviseGoalDistance(T pos, int new_cost, IEnumerable<T> start)
         {
-            if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
+            if (_map.TryGetValue(pos, out int old_cost) && old_cost <= new_cost) return;   // alternate route not useful
             foreach(T x in start) {
               int max_cost = Cost(x);
               if (max_cost <= new_cost) continue;   // we assume the _forward cost function is not pathological i.e. all costs positive
@@ -182,7 +182,7 @@ namespace Zaimoni.Data
 
         public int Cost(T pos)
         {
-            return _map.ContainsKey(pos) ? _map[pos] : int.MaxValue;
+            return (_map.TryGetValue(pos,out int ret)) ? ret: int.MaxValue;
         }
 
         public Dictionary<T, int> Approach(T current_pos) {
@@ -194,8 +194,7 @@ namespace Zaimoni.Data
             foreach (T tmp2 in tmp.Keys) {
                 if (_map.TryGetValue(tmp2,out int cost) && cost < current_cost) ret[tmp2] = _map[tmp2];
             }
-            if (0 == ret.Count) return null;
-            return ret;
+            return (0 < ret.Count) ? ret : null;
         }
 
         public Dictionary<T, int> Flee(T current_pos) {
@@ -206,8 +205,7 @@ namespace Zaimoni.Data
             foreach (T tmp2 in tmp.Keys) {
                 if (_map.TryGetValue(tmp2, out int cost) && cost > current_cost) ret[tmp2] = _map[tmp2];
             }
-            if (0 == ret.Count) return null;
-            return ret;
+            return (0 < ret.Count) ? ret : null;
         }
     }
 }

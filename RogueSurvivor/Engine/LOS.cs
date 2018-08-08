@@ -22,14 +22,14 @@ namespace djack.RogueSurvivor.Engine
     // makes sense.
     private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
 
-    public static void Expire(Map m) { if (FOVcache.ContainsKey(m) && FOVcache[m].Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
+    public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
     public static void Now(Map map) {
       if (!FOVcache.ContainsKey(map)) FOVcache[map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
       FOVcache[map].Now(map.LocalTime.TurnCounter);
     }
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
-      if (FOVcache.ContainsKey(map)) FOVcache[map].Validate(fn);
+      if (FOVcache.TryGetValue(map,out var target)) target.Validate(fn);
     }
 
     // Optimal FOV offset subsystem to deal with some ugly inverse problems
@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Engine
     private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>>();
     public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(int range)
     {
-      if (OptimalFOVOffsets.ContainsKey(range)) return OptimalFOVOffsets[range];    // TryGetValue indicated
+      if (OptimalFOVOffsets.TryGetValue(range,out var ret)) return ret;    // TryGetValue indicated
       List<Point> tmp = new List<Point>();
       // Cf. ComputeFOVFor
       double edge_of_maxrange = range+0.5;

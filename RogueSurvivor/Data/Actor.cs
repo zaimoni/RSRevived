@@ -1682,8 +1682,8 @@ namespace djack.RogueSurvivor.Data
           if (null == test) continue;
           dest = test.Value;
         }
-        if (already.ContainsKey(dest)) {
-          ret[dest] = already[dest];
+        if (already.TryGetValue(dest, out var relay)) {
+          ret[dest] = relay;
           continue;
         }
         if (Location==dest) {
@@ -1715,8 +1715,8 @@ namespace djack.RogueSurvivor.Data
     {
       var ret = new Dictionary<Point, ActorAction>(9);
       foreach(var pt in p.Adjacent()) {
-        if (already.ContainsKey(pt)) {
-          ret[pt] = already[pt];
+        if (already.TryGetValue(pt, out var relay)) {
+          ret[pt] = relay;
           continue;
         }
         if (Location==(new Location(m,pt))) {

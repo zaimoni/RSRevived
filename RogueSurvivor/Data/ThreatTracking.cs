@@ -68,8 +68,7 @@ namespace djack.RogueSurvivor.Data
           var ret = new HashSet<Point>();
 		  lock(_threats) {
             foreach (var x in _threats) {
-              if (!x.Value.ContainsKey(map)) continue;
-              ret.UnionWith(x.Value[map]);
+              if (x.Value.TryGetValue(map, out var src)) ret.UnionWith(src);
             }
 		  }
 		  return ret;
@@ -115,8 +114,8 @@ namespace djack.RogueSurvivor.Data
 		  lock(_threats) {
             var tmp = new HashSet<Point>();
             foreach (var x in _threats) {
-              if (!x.Value.ContainsKey(map)) continue;
-              tmp.UnionWith(x.Value[map]);
+              if (!x.Value.TryGetValue(map, out var src)) continue;
+              tmp.UnionWith(src);
 #if PROTOTYPE
               tmp.RemoveWhere(pt => !view.Contains(pt));
 #endif
@@ -202,9 +201,9 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) {
             var amnesia = new List<Actor>();
             foreach(var x in _threats) {
-              if (!x.Value.ContainsKey(m)) continue;
-              x.Value[m].ExceptWith(pts);
-              if (0 >= x.Value[m].Count) {
+              if (!x.Value.TryGetValue(m, out var test)) continue;
+              test.ExceptWith(pts);
+              if (0 >= test.Count) {
                 x.Value.Remove(m);
                 if (0 >= x.Value.Count) amnesia.Add(x.Key);
               }
@@ -314,14 +313,14 @@ namespace djack.RogueSurvivor.Data
       public bool Contains(Location loc)
       {
         lock(_locs) {
-		  return _locs.ContainsKey(loc.Map) && _locs[loc.Map].Contains(loc.Position);
+		  return _locs.TryGetValue(loc.Map,out var test) && test.Contains(loc.Position);
 		}
 	  }
 
       public HashSet<Point> In(Map map)
 	  {
 		lock(_locs) {
-          return _locs.ContainsKey(map) ? new HashSet<Point>(_locs[map]) : new HashSet<Point>();
+          return _locs.TryGetValue(map, out var src) ? new HashSet<Point>(src) : new HashSet<Point>();
 		}
 	  }
 
@@ -415,8 +414,7 @@ namespace djack.RogueSurvivor.Data
           return;
         }
 		lock(_locs) {
-		  if (!_locs.ContainsKey(loc.Map)) return;
-          if (_locs[loc.Map].Remove(loc.Position) && 0 >= _locs[loc.Map].Count) _locs.Remove(loc.Map);
+		  if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
 		}
       }
 

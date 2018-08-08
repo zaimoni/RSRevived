@@ -407,9 +407,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Dictionary<Point, int> MovePlanIf(Point pt)
     {
-      if (!PlannedMoves.ContainsKey(pt)) return null;
-      if (null==PlannedMoves[pt]) return null;  // XXX probably being used incorrectly
-      return new Dictionary<Point,int>(PlannedMoves[pt]);
+      if (   !PlannedMoves.TryGetValue(pt, out var src)
+          ||  null==src)  // XXX probably being used incorrectly
+        return null;
+      return new Dictionary<Point,int>(src);
     }
 
     private List<Point> FindRetreat()
@@ -487,13 +488,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     static private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
         tainted.IntersectWith(new_los);
         if (0>=tainted.Count) return dests;
-        Dictionary<Point,int> taint_exposed = new Dictionary<Point,int>();
+        var taint_exposed = new Dictionary<Point,int>();
         foreach(Point pt in dests) {
-          if (!hypothetical_los.ContainsKey(pt)) {
+          if (!hypothetical_los.TryGetValue(pt,out var src)) {
             taint_exposed[pt] = 0;
             continue;
           }
-          HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
+          HashSet<Point> tmp2 = new HashSet<Point>(src);
           tmp2.IntersectWith(tainted);
           taint_exposed[pt] = tmp2.Count;
         }
@@ -512,11 +513,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
             taint_exposed[loc] = 0;
             continue;
           }
-          if (!hypothetical_los.ContainsKey(test.Value.Position)) {
+          if (!hypothetical_los.TryGetValue(test.Value.Position,out var src)) {
             taint_exposed[loc] = 0;
             continue;
           }
-          HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[test.Value.Position]);
+          HashSet<Point> tmp2 = new HashSet<Point>(src);
           tmp2.IntersectWith(tainted);
           taint_exposed[loc] = tmp2.Count;
         }
@@ -612,8 +613,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
         var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp);
-		ActorAction ret = (legal_steps.ContainsKey(dest) ? legal_steps[dest] : null);
-        if (!ret?.IsLegal() ?? true) continue; // not really an option
+        if (!legal_steps.TryGetValue(dest, out var ret) || !ret.IsLegal()) continue; // not really an option
         if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
           continue;
         };
@@ -934,9 +934,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(var pt_dam in ranged_damage_field) {
-          if (melee_damage_field.ContainsKey(pt_dam.Key)) {
-            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
-            else ret[pt_dam.Key] = Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
+          if (melee_damage_field.TryGetValue(pt_dam.Key,out int prior_dam)) {
+            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += Math.Max(pt_dam.Value, prior_dam);
+            else ret[pt_dam.Key] = Math.Max(pt_dam.Value, prior_dam);
           } else {
             if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
             else ret[pt_dam.Key] = pt_dam.Value;

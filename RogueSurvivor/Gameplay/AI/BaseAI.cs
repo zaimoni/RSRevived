@@ -875,11 +875,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         } else if (num != f) continue;
 
         ChoiceEval< _T_ > tmp2 = new ChoiceEval<_T_>(tmp, f);
-        if (choiceEvalDict.ContainsKey(f)) {
-          choiceEvalDict[f].Add(tmp2);
-        } else {
-          choiceEvalDict[f] = new List<ChoiceEval<_T_>>{ tmp2 };
-        }
+        if (choiceEvalDict.TryGetValue(f,out var dest)) dest.Add(tmp2);
+        else choiceEvalDict[f] = new List<ChoiceEval<_T_>>{ tmp2 };
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
@@ -937,11 +934,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         } else if (num != f) continue;
 
         ChoiceEval< _DATA_ > tmp2 = new ChoiceEval<_DATA_>(choice, f);
-        if (choiceEvalDict.ContainsKey(f)) {
-          choiceEvalDict[f].Add(tmp2);
-        } else {
-          choiceEvalDict[f] = new List<ChoiceEval<_DATA_>>{ tmp2 };
-        }
+        if (choiceEvalDict.TryGetValue(f,out var dest))  dest.Add(tmp2);
+        else choiceEvalDict[f] = new List<ChoiceEval<_DATA_>>{ tmp2 };
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;

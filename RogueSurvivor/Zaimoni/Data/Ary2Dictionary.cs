@@ -38,8 +38,8 @@ namespace Zaimoni.Data
 
         public bool HaveEverSeen(Key1 key, out Range value) {
             if (_no_entries.TryGetValue(key, out value)) return true;
-            if (_first_second_dict.ContainsKey(key)) {
-                value = _first_second_dict[key].Key;
+            if (_first_second_dict.TryGetValue(key, out var x)) {
+                value = x.Key;
                 return true;
             }
             return false;
@@ -47,13 +47,12 @@ namespace Zaimoni.Data
 
         // Yes, value copy for these two
         public HashSet<Key2> WhatIsAt(Key1 key) {
-            if (_first_second_dict.ContainsKey(key)) return _first_second_dict[key].Value;
-            return null;
+            return _first_second_dict.TryGetValue(key, out var src) ? src.Value : null;
         }
 
         public Dictionary<Key1, Range> WhereIs(Key2 key)
         {   // copy constructor failed by race condition: need to use a multi-threaded dictionary
-            if (_second_first_dict.ContainsKey(key)) return new Dictionary<Key1, Range>(_second_first_dict[key]);
+            if (_second_first_dict.TryGetValue(key,out var src)) return new Dictionary<Key1, Range>(src);
             return null;
         }
 

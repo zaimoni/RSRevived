@@ -3332,8 +3332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var already = new Dictionary<Location, ActorAction>();
       Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location, already);
       foreach(Location loc in goals) {
-        if (moves.ContainsKey(loc)) {
-          ActorAction tmp = moves[loc];
+        if (moves.TryGetValue(loc,out var tmp)) {
           if (!tmp.IsLegal()) return null;
           if (VetoAction(tmp)) return null;
           return tmp;

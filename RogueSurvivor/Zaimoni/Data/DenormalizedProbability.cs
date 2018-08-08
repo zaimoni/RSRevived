@@ -51,8 +51,7 @@ namespace Zaimoni.Data
         public float this[T x]
         {
             get {
-                if (!_weights.ContainsKey(x)) return 0.0f;
-                return _weights[x];
+                return (_weights.TryGetValue(x, out float ret)) ? ret : 0.0f;
             }
             set {
                 if (0 < value) _weights[x] = value;
