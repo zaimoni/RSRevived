@@ -285,7 +285,7 @@ namespace djack.RogueSurvivor.Data
         private void HandleMove(object sender, EventArgs e)
         {
           Actor moving = (sender as Actor);
-          lock (_threats) {
+          lock(_threats) {
             if (!_threats.ContainsKey(moving)) return;
             List<Point> tmp = moving.LegalSteps;
             if (null == tmp) return;
@@ -308,12 +308,12 @@ namespace djack.RogueSurvivor.Data
 
       public void Clear()
       {
-        lock (_locs) { _locs.Clear(); }
+        lock(_locs) { _locs.Clear(); }
       }
 
       public bool Contains(Location loc)
       {
-        lock (_locs) {
+        lock(_locs) {
 		  return _locs.ContainsKey(loc.Map) && _locs[loc.Map].Contains(loc.Position);
 		}
 	  }

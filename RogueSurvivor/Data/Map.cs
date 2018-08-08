@@ -1050,47 +1050,36 @@ retry:
       Actor actorAt = GetActorAt(position);
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
-      lock (m_aux_ActorsByPosition) {
+      lock(m_aux_ActorsByPosition) {
         // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
         bool knows_on_map = actor.Location.Map == this;
-        bool already_on_map = false;
-#if LOCK_ACTORSLIST
-        lock(m_ActorsList) {
-#endif
-          already_on_map = m_ActorsList.Contains(actor);
-          if (already_on_map) {
-            if (!knows_on_map) throw new InvalidOperationException(actor.Name+" did not know s/he was in the map");
+        bool already_on_map = m_ActorsList.Contains(actor);
+        if (already_on_map) {
+          if (!knows_on_map) throw new InvalidOperationException(actor.Name+" did not know s/he was in the map");
 #if AUDIT_ACTOR_MOVEMENT
-            if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
-            if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
-              foreach(var x in m_aux_ActorsByPosition) {
-                if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-              }
-              throw new InvalidOperationException("map location cache out of sync");
+          if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
+          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
+            foreach(var x in m_aux_ActorsByPosition) {
+              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
             }
-            if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
-              foreach(var x in m_aux_ActorsByPosition) {
-               if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-              }
-              throw new InvalidOperationException("map location cache out of sync");
-            }
-#endif
-          } else {
-#if AUDIT_ACTOR_MOVEMENT
+            throw new InvalidOperationException("map location cache out of sync");
+          }
+          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
             foreach(var x in m_aux_ActorsByPosition) {
              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
             }
-#endif
-            if (!knows_on_map) actor.RemoveFromMap();
-            m_ActorsList.Add(actor);
+            throw new InvalidOperationException("map location cache out of sync");
           }
-#if LOCK_ACTORSLIST
-        }   // lock m_ActorList
 #endif
-
-        if (already_on_map) {
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
         } else {
+#if AUDIT_ACTOR_MOVEMENT
+          foreach(var x in m_aux_ActorsByPosition) {
+           if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+          }
+#endif
+          if (!knows_on_map) actor.RemoveFromMap();
+          m_ActorsList.Add(actor);
           Engine.LOS.Now(this);
           if (actor.IsPlayer) Players.Recalc();
           if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
@@ -1109,15 +1098,9 @@ retry:
 #if AUDIT_ACTOR_MOVEMENT
       if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
 #endif
-#if LOCK_ACTORSLIST
-      lock(m_ActorsList) {
-#endif
-        if (1 == m_ActorsList.Count) return;
-        m_ActorsList.Remove(actor);
-        m_ActorsList.Insert(0, actor);
-#if LOCK_ACTORSLIST
-      }
-#endif
+      if (1 == m_ActorsList.Count) return;
+      m_ActorsList.Remove(actor);
+      m_ActorsList.Insert(0, actor);
       m_iCheckNextActorIndex = 0;
       if (actor.IsPlayer) Players.Recalc();
       if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
@@ -1131,16 +1114,10 @@ retry:
 #endif
       lock(m_aux_ActorsByPosition) {
         bool removed = false;
-#if LOCK_ACTORSLIST
-        lock(m_ActorsList) {
-#endif
 #if AUDIT_ACTOR_MOVEMENT
-          if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
+        if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
 #endif
-          removed = m_ActorsList.Remove(actor);
-#if LOCK_ACTORSLIST
-        }
-#endif
+        removed = m_ActorsList.Remove(actor);
 
         if (removed) {
 #if AUDIT_ACTOR_MOVEMENT

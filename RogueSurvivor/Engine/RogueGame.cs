@@ -1802,7 +1802,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
 
-      lock(district) {
+      lock (district) {
       bool IsPCdistrict = (0 < district.PlayerCount);
 
       foreach(Map current in district.Maps) {
@@ -1858,7 +1858,7 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_BlackOpsRaid(district.EntryMap)) FireEvent_BlackOpsRaid(district.EntryMap);
       if (CheckForEvent_BandOfSurvivors(district.EntryMap)) FireEvent_BandOfSurvivors(district.EntryMap);
       if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
-      } // end lock(district)
+      } // end lock (district)
 
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
@@ -10555,7 +10555,7 @@ namespace djack.RogueSurvivor.Engine
                     mOverlay.Draw(m_UI);
                 }
                 m_UI.UI_Repaint();
-            };  // lock(m_UI)
+            };  // lock (m_UI)
     }
 
     private static string LocationText()
@@ -11527,12 +11527,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddOverlay(Overlay o)
     {
-      lock(m_Overlays) { m_Overlays.Add(o); }
+      lock (m_Overlays) { m_Overlays.Add(o); }
     }
 
     public void ClearOverlays()
     {
-      lock(m_Overlays) { m_Overlays.Clear(); }
+      lock (m_Overlays) { m_Overlays.Clear(); }
     }
 
     void RemoveOverlay(Overlay o)   // alpha10

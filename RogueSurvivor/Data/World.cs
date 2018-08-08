@@ -271,7 +271,7 @@ namespace djack.RogueSurvivor.Data
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
     // an inconsistent state
     public void ScheduleForAdvancePlay() {
-      lock (m_PCready) {
+      lock(m_PCready) {
         ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
       }
     }
@@ -323,7 +323,7 @@ retry:
 
 #if SCHEDULER_IS_RACY
 #else
-      lock (d) {
+      lock(d) {
 #endif
         int district_turn = d.EntryMap.LocalTime.TurnCounter;
         // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
@@ -488,7 +488,7 @@ retry:
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
 #endif
 
-      lock (m_PCready) {
+      lock(m_PCready) {
         if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
         if (0 < m_NPClive.Count && d == m_NPClive.Peek()) m_NPClive.Dequeue();
 
