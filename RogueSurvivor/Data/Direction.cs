@@ -6,6 +6,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using Zaimoni.Data;
 
 // XXX C# Point is not a point in a vector space at all.
@@ -215,5 +216,21 @@ diagonalExit:
 #endif
 
     public override string ToString() { return m_Name; }
+  }
+
+  internal static class Direction_ext {
+    private static readonly TimeCache<Point,Point[]> _adjacent = new TimeCache<Point, Point[]>();
+
+    public static void Now() {
+      var t0 = Engine.Session.Get.WorldTime.TurnCounter;
+      _adjacent.Now(t0);
+      _adjacent.Expire(t0 - 2);
+    }
+    public static Point[] Adjacent(this Point pt) {
+      if (_adjacent.TryGetValue(pt, out Point[] value)) return value;
+      Point[] ret = Direction.COMPASS.Select(dir => pt+dir).ToArray();
+      _adjacent.Set(pt, ret);
+      return ret;
+    }
   }
 }

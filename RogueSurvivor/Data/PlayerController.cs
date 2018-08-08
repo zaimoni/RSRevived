@@ -144,8 +144,7 @@ namespace djack.RogueSurvivor.Data
       ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
       if (null != stim) {
         MapObject car = null;
-        foreach(Direction dir in Direction.COMPASS) {
-          Point pt = m_Actor.Location.Position + dir;
+        foreach(var pt in m_Actor.Location.Position.Adjacent()) {
           MapObject tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt);
           if (null == tmp) continue;
           switch(tmp.ID) {

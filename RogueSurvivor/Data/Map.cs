@@ -678,8 +678,7 @@ namespace djack.RogueSurvivor.Data
         if (!src.Contains(mExit.Value)) continue;
         if (IsInBounds(mExit.Key)) ret.Add(mExit.Key);
         else {
-          foreach(Direction dir in Direction.COMPASS) {
-            Point pt = mExit.Key+dir;
+          foreach(var pt in mExit.Key.Adjacent()) {
             if (IsInBounds(pt)) ret.Add(pt);
           }
         }
@@ -1467,8 +1466,7 @@ retry:
       var ground_inv = new Dictionary<Point, Inventory>();
       Inventory inv = GetItemsAtExt(pt);
       if (!inv?.IsEmpty ?? false) ground_inv[pt] = inv;
-      foreach(var dir in Direction.COMPASS) {
-        Point adjacent = pt + dir;
+      foreach(var adjacent in pt.Adjacent()) {
         inv = GetItemsAtExt(adjacent);
         if (inv?.IsEmpty ?? true) continue;
         MapObject mapObjectAt = GetMapObjectAtExt(adjacent);

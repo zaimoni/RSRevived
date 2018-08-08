@@ -4,7 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define NOSKEW_SCHEDULER
 #define SCHEDULER_IS_RACY
 
 using System;
@@ -480,11 +479,8 @@ retry:
       int y = d.WorldPosition.Y;
       District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
       District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
-#if NOSKEW_SCHEDULER
-#else
-      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
-#endif
 #if FAIL
+      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
       District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
       District tmp_W = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
       District tmp_S = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
@@ -492,17 +488,17 @@ retry:
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
 #endif
 
-      lock(m_PCready) {
+      lock (m_PCready) {
         if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
         if (0 < m_NPClive.Count && d == m_NPClive.Peek()) m_NPClive.Dequeue();
 
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
         if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
-#if NOSKEW_SCHEDULER
-		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
-#else
+#if OBSOLETE
         if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);	// XXX causes global vs. local time skew
+#else
+		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
 #endif
 
         // backstops

@@ -1484,8 +1484,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!(previousLocation.Map.GetMapObjectAt(previousLocation.Position) is DoorWindow door)) return null;
       if (!m_Actor.CanClose(door)) return null;
-      foreach(Direction dir in Direction.COMPASS) {
-        Actor actor = previousLocation.Map.GetActorAtExt(previousLocation.Position+dir);
+      foreach(var pt in previousLocation.Position.Adjacent()) {
+        Actor actor = previousLocation.Map.GetActorAtExt(pt);
         if (null == actor) continue;
         if (actor.Controller is ObjectiveAI ai) {
           Dictionary<Point, int> tmp = ai.MovePlanIf(actor.Location.Position);

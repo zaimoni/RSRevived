@@ -1550,8 +1550,7 @@ namespace djack.RogueSurvivor.Data
       if (0 < UsingPolearmInBMovie) {
         // Polearms actually have range 2 (cf. Dungeon Crawl Stone Soup).
         // this would look much more reasonable at Angband space-time scale of 900 turns per hour, than the historical 30 turns/hour
-        foreach(Direction d in Direction.COMPASS) {
-          Point pt2 = pt+d;
+        foreach(var pt2 in pt.Adjacent()) {
           if (2!=Rules.GridDistance(Location.Position,pt2)) continue;
           a = Location.Map.GetActorAtExt(pt2);
           if (null==a || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
@@ -1715,8 +1714,7 @@ namespace djack.RogueSurvivor.Data
     public Dictionary<Point,ActorAction> OnePath(Map m, Point p, Dictionary<Point, ActorAction> already)
     {
       var ret = new Dictionary<Point, ActorAction>(9);
-      foreach(Direction dir in Direction.COMPASS) {
-        Point pt = p+dir;
+      foreach(var pt in p.Adjacent()) {
         if (already.ContainsKey(pt)) {
           ret[pt] = already[pt];
           continue;

@@ -1844,6 +1844,9 @@ namespace djack.RogueSurvivor.Engine
         if (Session.Get.WorldTime.TurnCounter >= Session.Get.World.NextWeatherCheckTurn) {
           ChangeWeather();
         }
+
+        // handle unconditional time caches here
+        Direction_ext.Now();
       }
 
       if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
@@ -5928,8 +5931,7 @@ namespace djack.RogueSurvivor.Engine
           return map.AnyAdjacent<DoorWindow>(position, door => Player.CanBarricade(door));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
-          foreach (Direction direction in Direction.COMPASS) {
-            Point point = position + direction;
+          foreach (var point in position.Adjacent()) {
             if (!map.IsInBounds(point) && map.HasExitAt(point)) return true;
           }
           return false;
@@ -10520,7 +10522,8 @@ namespace djack.RogueSurvivor.Engine
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
                 DrawMessages();
-                // We have one spare line of text in the location panel, should it be needed
+                // \todo finetune spacing
+                // We had one spare line of text in the location panel; the CPU line uses it.
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
                 m_UI.UI_DrawString(Color.White, CurrentMap.Name, LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y, new Color?());
                 m_UI.UI_DrawString(Color.White, LocationText(), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
@@ -11844,6 +11847,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
+      Direction_ext.Now();
       // command line option --PC requests converting an NPC to a PC
       if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC();
 #if OBSOLETE
@@ -12147,6 +12151,7 @@ namespace djack.RogueSurvivor.Engine
       _validateSpawn(); // prepare to use the --spawn option
 
       Session.Get.Reset();
+      Direction_ext.Now();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;

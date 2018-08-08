@@ -230,8 +230,7 @@ namespace djack.RogueSurvivor.Engine
     protected static bool PlaceDoorIfAccessibleAndNotAdjacent(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
     {
       int num = 0;
-      foreach (Direction direction in Direction.COMPASS) {  // micro-optimized: loop combines a reject-any check with a counting operation
-        Point point2 = pt + direction;
+      foreach (var point2 in pt.Adjacent()) {  // micro-optimized: loop combines a reject-any check with a counting operation
         if (map.IsWalkable(point2)) ++num;
         if (map.GetMapObjectAt(point2) is DoorWindow) return false;
       }
