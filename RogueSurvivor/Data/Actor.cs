@@ -12,6 +12,7 @@ using System;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -303,14 +304,9 @@ namespace djack.RogueSurvivor.Data
     public int PreviousSanity { get { return m_previousSanity; } }
     public ActorSheet Sheet { get { return m_Sheet; } }
 
-    public int ActionPoints {
-      get {
-        return m_ActionPoints;
-      }
-      set {
-        m_ActionPoints = value;
-      }
-    }
+    public int ActionPoints { get { return m_ActionPoints; } }
+    public void APreset() { m_ActionPoints = 0; }
+    public void APrecharge() { Interlocked.Add(ref m_ActionPoints,Speed); }
 
     public int LastActionTurn { get { return m_LastActionTurn; } }
 
@@ -2113,7 +2109,7 @@ namespace djack.RogueSurvivor.Data
     // event timing
     public void SpendActionPoints(int actionCost)
     {
-      m_ActionPoints -= actionCost;
+      Interlocked.Add(ref m_ActionPoints, -actionCost);
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
     }
 
@@ -2138,7 +2134,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool WillActAgainBefore(Actor other)
     {
-      return other.ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
+      return other.m_ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
     }
 
     public int Speed {
@@ -2166,7 +2162,7 @@ namespace djack.RogueSurvivor.Data
         my_actions++;
       }
       if (my_actions>n) return 0;
-      int other_ap = other.ActionPoints+(IsBefore(other) ? 0 : other.Speed);
+      int other_ap = other.m_ActionPoints+(IsBefore(other) ? 0 : other.Speed);
       int other_actions = 0;
       while(0 < other_ap) { // assuming this never gets very large
         other_ap -= Rules.BASE_ACTION_COST;
@@ -3517,7 +3513,7 @@ namespace djack.RogueSurvivor.Data
     public void PreTurnStart()
     {
        DropScent();
-       if (!IsSleeping) m_ActionPoints += Speed;
+       if (!IsSleeping) Interlocked.Add(ref m_ActionPoints, Speed);
        if (m_StaminaPoints < MaxSTA) RegenStaminaPoints(STAMINA_REGEN_WAIT);
     }
 

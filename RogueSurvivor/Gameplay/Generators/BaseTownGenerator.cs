@@ -3347,7 +3347,7 @@ restart:
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
       Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
-      named.ActionPoints = 0;
+      named.APreset();
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);
         if (null == decorations) continue;

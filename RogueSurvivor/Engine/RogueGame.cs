@@ -7692,7 +7692,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
       if (map.District != exitAt.ToMap.District) {
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-        if (!run_was_free_move) actor.ActionPoints += actor.Speed;
+        if (!run_was_free_move) actor.APrecharge();
       }
       if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
@@ -12871,7 +12871,7 @@ namespace djack.RogueSurvivor.Engine
                 map.TryRemoveCorpseOf(theActor);
                 Actor local_8 = Zombify(null, theActor, false);
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
-                local_8.ActionPoints = 0;   // this was warned, player should get the first move
+                local_8.APreset();   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
