@@ -310,13 +310,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorStupidBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
-      return BehaviorBumpToward(goal, false, false, (Func<Point, Point, float>) ((ptA, ptB) =>
-      {
+      return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) => {
         if (ptA == ptB) return 0.0f;
         float num = (float)Rules.StdDistance(ptA, ptB);
         if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += MOVE_DISTANCE_PENALTY;
         return num;
-      }));
+      });
     }
 
     protected ActorAction BehaviorStupidBumpToward(Location goal, bool canCheckBreak, bool canCheckPush)
@@ -332,7 +331,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, goal);
       ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      return BehaviorBumpToward(goal, false, false, (Func<Point, Point, float>) ((ptA, ptB) =>
+      return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) =>
       {
         if (ptA == ptB) return 0.0f;
         float num = (float)Rules.StdDistance(ptA, ptB);
@@ -345,7 +344,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         return num;
-      }));
+      });
     }
 
     protected ActorAction BehaviorIntelligentBumpToward(Location goal, bool canCheckBreak, bool canCheckPush)
