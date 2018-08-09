@@ -33,6 +33,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
 
+    private List<Actor> _squad = null;
+
     public CHARGuardAI()
     {
     }
@@ -134,7 +136,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
-          game.DoMakeAggression(m_Actor, target);
+          // Now that we can get crowds of civilians, they should react to seeing others betrayed
+          // also note that the CHAR armor comes with an inbuilt CHAR radio (they invented the hyper-efficient radios the police and army use)
+          // however, CHAR guards are on zone defense so the immediate aggression is just the current CHAR office (underground base is whole base, however)
+          Aggress(target);
+          // betrayal reaction
+          foreach(var witness in percepts3) {
+            Actor a = witness.Percepted as Actor;
+            if (a == target) continue;
+            if (a.IsSleeping) continue;
+            // XXX cheat...assume symmetric visibility
+            Aggress(a);
+          }
+          // XXX should have some reaction from witnesses that weren't aggressed
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target;
           // players are special: they get to react to being aggressed
@@ -207,6 +221,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
+    }
+
+    private void Aggress(Actor target)
+    {
+      var game = RogueForm.Game;
+      game.DoMakeAggression(m_Actor, target);   // XXX needs to be more effective
+      foreach(var guard in _squad) {
+        if (m_Actor==guard) continue;
+        if (guard.IsDead || guard.IsSleeping) continue;
+        game.DoMakeAggression(guard, target);
+      }
+    }
+
+    static public void DeclareSquad(List<Actor> squad)  // used in map creation
+    {
+      foreach(Actor a in squad) {
+        if (a.Controller is CHARGuardAI ai) ai._squad = squad;
+      }
     }
   }
 }

@@ -1084,9 +1084,13 @@ restart:
 
     private void PopulateCHAROfficeBuilding(Map map, Point[] locs)
     {
+      var squad = new List<Actor>();
       for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
-        map.PlaceAt(CreateNewCHARGuard(0), locs[index]); // do not use the ActorPlace function as we have pre-arranged the conditions when initializing the locs array
+        var guard = CreateNewCHARGuard(0);
+        map.PlaceAt(guard, locs[index]); // do not use the ActorPlace function as we have pre-arranged the conditions when initializing the locs array
+        squad.Add(guard);
       }
+      Gameplay.AI.CHARGuardAI.DeclareSquad(squad);
     }
 
     private bool MakeCHAROffice(Map map, Block b)
@@ -2394,10 +2398,15 @@ restart:
         }
         ActorPlace(m_DiceRoller, underground, newUndead, actor_ok_here);
       }
+      {
+      var squad = new List<Actor>();
       int num1 = underground.Width / 10;
       for (int index = 0; index < num1; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
         ActorPlace(m_DiceRoller, underground, newCharGuard, actor_ok_here);
+        squad.Add(newCharGuard);
+      }
+      Gameplay.AI.CHARGuardAI.DeclareSquad(squad);
       }
 
       // alpha10
