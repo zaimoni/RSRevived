@@ -369,6 +369,17 @@ namespace Zaimoni.Data
       foreach (T x in src) fn(x);
     }
 
+    // logic operations -- C# does not actually support lambda calculus, idioms like ok = ok.Or(...) will fail by infinite recursion
+    public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
+      bool and(T src) { return lhs(src) && rhs(src); };
+      return and;
+    }
+
+    public static Predicate<T> Or<T>(this Predicate<T> lhs, Predicate<T> rhs) {
+      bool or(T src) { return lhs(src) || rhs(src); };
+      return or;
+    }
+
     // set theory operations
     // we accept null as a shorthand for the function on domain T that returns constant empty set HashSet<U>
     public static Func<T, HashSet<U>> Union<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)

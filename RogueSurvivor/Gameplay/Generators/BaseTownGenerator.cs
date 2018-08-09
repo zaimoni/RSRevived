@@ -710,7 +710,7 @@ restart:
       List<Block> blockList = GetSubwayStationBlocks(entryMap, layout);
       if (blockList != null) {
         block = m_DiceRoller.Choose(blockList);
-        ClearRectangle(entryMap, block.BuildingRect);
+        ClearRectangle(entryMap, block.BuildingRect);   // had been wiping out stores, etc as late-generation
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         Rectangle die = block.Rectangle;
         m_SurfaceBlocks.RemoveAll(b=>b.Rectangle== die);
@@ -1273,7 +1273,6 @@ restart:
            int shedX = m_DiceRoller.Roll(b.InsideRect.Left+1, b.InsideRect.Right - PARK_SHED_WIDTH);
            int shedY = m_DiceRoller.Roll(b.InsideRect.Top+1, b.InsideRect.Bottom - PARK_SHED_HEIGHT);
            Rectangle shedRect = new Rectangle(shedX, shedY, PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
-           Rectangle shedInsideRect = new Rectangle(shedX + 1, shedY + 1, PARK_SHED_WIDTH - 2, PARK_SHED_HEIGHT - 2);
            ClearRectangle(map, shedRect, false);
            MakeParkShedBuilding(map, "Shed", shedRect);
         }
@@ -1520,7 +1519,8 @@ restart:
       DoForEachTile(b.BuildingRect,pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
           Session.Get.PoliceInvestigate.Seen(map, pt);
-          map.SetIsInsideAt(pt);
+          map.SetIsInsideAt(pt);    // XXX this is a severe change -- combined with the early generation, it guarantees the subway is inside when the NPCs are placed.
+                                    // with late generation it was possible to overwrite a park
       });
       const int height = 4;
       Point mid_map = new Point(map.Width / 2, map.Height / 2);
