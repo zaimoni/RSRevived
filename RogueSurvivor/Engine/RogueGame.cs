@@ -8513,8 +8513,7 @@ namespace djack.RogueSurvivor.Engine
       if (!acceptDeal) {
         if (!flag1) return;
         AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
-        if (!isPlayer) return;
-        RedrawPlayScreen();
+        if (isPlayer) RedrawPlayScreen();
         return;
       }
 
@@ -8995,6 +8994,7 @@ namespace djack.RogueSurvivor.Engine
 
       // alpha10 defrag ai inventories
       if (defragInventory) actor.Inventory.Defrag();
+      if (actor.IsPlayer) RedrawPlayScreen();
     }
 
     public void DoEatFoodFromGround(Actor actor, ItemFood food)
@@ -9141,22 +9141,22 @@ namespace djack.RogueSurvivor.Engine
     public void DoOpenDoor(Actor actor, DoorWindow door)
     {
       door.SetState(DoorWindow.STATE_OPEN);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_OPEN), door));
         RedrawPlayScreen();
       }
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
+      if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
         RedrawPlayScreen();
       }
-      if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
