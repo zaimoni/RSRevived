@@ -28,6 +28,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); };
       bool has_subway = null!=map.GetZoneByPartialName("Subway Station");
       bool has_CHAR_office = null!=map.GetZoneByPartialName("CHAR Office");
+      List<Zone> unclaimed_sheds = map.GetZonesByPartialName("Shed");
+      List<Zone> claimed_sheds = null;
+      List<Zone> full_sheds = null;
 
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
         if (m_DiceRoller.RollChance(Params.PolicemanChance))
@@ -39,12 +42,80 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           // \todo: when lifting sewers to early-generation, strongly restrict extras.  Allow one significant other.
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
           var zzz = new HashSet<Point>();
-          Predicate<Point> ok_1 = inside_test;
+          var shed_claimed = new HashSet<Point>();
+          Predicate<Point> ok_2 = inside_test;
+          // Park sheds can get crowded fast.  #1 takes the central square (5 in reach).
+          // VAPORWARE #2 takes the square between the central square and the door.
+          // disallow more than 2.
+          if (null != unclaimed_sheds) {
+            if (null != claimed_sheds) {
+              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+                if (null != claimed_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
+                var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
+                if (null == z2) return true;
+                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
+                if (pt == center) { // grab center slot
+                  shed_claimed.Add(pt);
+                  return true;
+                } else return false;
+              });
+            } else {
+              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+                var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
+                if (null == z2) return true;
+                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
+                if (pt == center) { // grab center slot
+                  shed_claimed.Add(pt);
+                  return true;
+                } else return false;
+              });
+            }
+          } else if (null != claimed_sheds) {
+            if (null != full_sheds) {
+              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+                if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
+                var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
+                if (null == z2) return true;
+                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
+                foreach(var dir in Direction.COMPASS_4) {
+                  var pt2 = center+dir;
+                  if (null != map.GetMapObjectAt(pt2)) continue;
+                  if (pt == pt2) {
+                    shed_claimed.Add(pt);
+                    return true;
+                  } else return false;
+                }
+                return false;
+              });
+            } else {
+              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+                var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
+                if (null == z2) return true;
+                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
+                foreach(var dir in Direction.COMPASS_4) {
+                  var pt2 = center+dir;
+                  if (null != map.GetMapObjectAt(pt2)) continue;
+                  if (pt == pt2) {
+                    shed_claimed.Add(pt);
+                    return true;
+                  } else return false;
+                }
+                return false;
+              });
+            }
+          } else if (null != full_sheds) {
+            ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+              if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;
+              return true;
+            });
+          }
+
+          Predicate<Point> ok_1 = ok_2;
           // Unfortunately, CHAR did represent to the police that the offices were ok as curfew refuges.
           // The CHAR Guard Manuals only approve of this for lesser disasters than a z apocalypse.
           // Fortunately, airliners that crash have 1/3rd fewer passengers than those that don't!
           // There may also be some "prison barge" rumors circulating (cf. the 2018 Hawaii volcanic eruption, and graffiti at game start)
-          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok_1 = ((Predicate < Point >)inside_test).And(pt => !map.HasZonePartiallyNamedAt(pt, "CHAR Office"));
+          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok_1 = ok_2.And(pt => !map.HasZonePartiallyNamedAt(pt, "CHAR Office"));
           // subways are now early-spawn.  Since they're a legal area for the PC to spawn we have to allow them, but 
           // they're not really emergency shelters (the trains are in storage).
           Predicate<Point> ok = ok_1;
@@ -62,9 +133,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             }
           }
 
-          if (ActorPlace(m_DiceRoller, map, newCivilian, ok) && zzz.Contains(newCivilian.Location.Position)) {    // start the game sleeping
+          if (!ActorPlace(m_DiceRoller, map, newCivilian, ok)) continue;    // XXX \todo record and use the non-spawn elsewhere
+          if (zzz.Contains(newCivilian.Location.Position)) {    // start the game sleeping
             newCivilian.Activity = Activity.SLEEPING;
             newCivilian.IsSleeping = true;
+          } else if (shed_claimed.Contains(newCivilian.Location.Position)) {
+            int i = unclaimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
+            if (0 <= i) {
+              (claimed_sheds ?? (claimed_sheds = new List<Zone>())).Add(unclaimed_sheds[i]);
+              unclaimed_sheds.RemoveAt(i);
+            } else {
+              i = claimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
+              if (0 <= i) {
+                (full_sheds ?? (full_sheds = new List<Zone>())).Add(claimed_sheds[i]);
+                claimed_sheds.RemoveAt(i);
+              }
+            }
           }
         }
       }

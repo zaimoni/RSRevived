@@ -959,6 +959,12 @@ retry:
     }
 #endif
 
+    public List<Zone> GetZonesByPartialName(string partOfname)
+    {
+      var ret = m_Zones.Where(z => z.Name.Contains(partOfname));
+      return ret.Any() ? ret.ToList() : null;
+    }
+
     public Zone GetZoneByPartialName(string partOfname)
     {
       return m_Zones.FirstOrDefault(mZone => mZone.Name.Contains(partOfname));
