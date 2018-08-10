@@ -2095,8 +2095,7 @@ namespace djack.RogueSurvivor.Engine
         map.DecayScents();
 #endregion
         // 2. Regen actors AP & STA
-        foreach (Actor actor in map.Actors) actor.PreTurnStart();
-        map.CheckNextActorIndex = 0;
+        map.PreTurnStart();
 #region 3. Stop tired actors from running.
         foreach (Actor actor in map.Actors) {
           if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {

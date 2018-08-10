@@ -104,17 +104,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public int CountActors { get { return m_ActorsList.Count; } }
-
-    public int CheckNextActorIndex
-    {
-      get {
-        return m_iCheckNextActorIndex;
-      }
-      set { // nominates RogueGame::NextMapTurn for conversion to Map member function
-        m_iCheckNextActorIndex = value;
-      }
-    }
-
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
     public IEnumerable<Inventory> GroundInventories { get { return m_GroundItemsByPosition.Values; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
@@ -1154,6 +1143,7 @@ retry:
     public Actor NextActorToAct {
       get {
         int countActors = m_ActorsList.Count;
+        // use working copy of m_iCheckNextActorIndex to mitigate multi-threading issues
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
           Actor actor = m_ActorsList[checkNextActorIndex];
           if (actor.CanActThisTurn && !actor.IsSleeping) {
@@ -1161,6 +1151,7 @@ retry:
             return actor;
           }
         }
+        m_iCheckNextActorIndex = countActors;
         return null;
       }
     }
@@ -1872,6 +1863,11 @@ retry:
       if (0 < discard2.Count) {
         foreach(var x in discard2) m_ScentsByPosition.Remove(x);
       }
+    }
+
+    public void PreTurnStart() {
+      m_iCheckNextActorIndex = 0;
+      foreach (var actor in Actors) actor.PreTurnStart();
     }
 
     public bool IsTransparent(int x, int y)
