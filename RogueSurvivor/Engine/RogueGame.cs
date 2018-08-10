@@ -9204,8 +9204,6 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoDestroyObject(MapObject mapObj)
     {
-      DoorWindow doorWindow = mapObj as DoorWindow;
-      bool flag = doorWindow != null && doorWindow.IsWindow;
       mapObj.HitPoints = 0;
       if (mapObj.GivesWood) {
         int val2 = 1 + mapObj.MaxHitPoints / 40;
@@ -9220,7 +9218,9 @@ namespace djack.RogueSurvivor.Engine
           mapObj.Location.Map.DropItemAt((m_Rules.RollChance(50) ? GameItems.IMPROVISED_CLUB : GameItems.IMPROVISED_SPEAR).instantiate(), mapObj.Location.Position);
         }
       }
-      if (flag)
+
+      DoorWindow doorWindow = mapObj as DoorWindow;
+      if (doorWindow?.IsWindow ?? false)
         doorWindow.SetState(DoorWindow.STATE_BROKEN);
       else
         mapObj.Remove();
@@ -9257,6 +9257,13 @@ namespace djack.RogueSurvivor.Engine
         if (mapObj.HitPoints <= 0) {
           DoDestroyObject(mapObj);
           flag = true;
+#if PROTOTYPE
+        } else {
+          // \todo VAPORWARE an ObjectiveAI actor will implicity request his mates help with the breaking
+          // this is handled with OrderableAI by a specific objective
+          // players are given a message
+          // players may both self-order breaking a barricade, etc. and give an order to followers to that effect.
+#endif
         }
         OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
         bool player1 = ForceVisibleToPlayer(actor);
