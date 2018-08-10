@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Data
     private readonly Queue<District> m_NPCready;
     private readonly Queue<District> m_NPClive;
     public Weather Weather { get; private set; }
-    public int NextWeatherCheckTurn { get; set; } // alpha10
+    public int NextWeatherCheckTurn { get; private set; } // alpha10
 
     [NonSerialized]
     private Dictionary<Map, HashSet<Point>> m_BlankPositionDict;
