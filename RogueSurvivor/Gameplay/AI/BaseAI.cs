@@ -607,7 +607,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (0 >= (scents?.Count ?? 0)) return null;
       Percept_<AIScent> percept = FilterStrongestScent(scents);
-      if (m_Actor.Location != percept.Location) return BehaviorIntelligentBumpToward(percept.Location, false, false);
+      if (m_Actor.Location != percept.Location) {
+        ActorAction tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
+        if (null!=tmpAction) return tmpAction;
+        var dir = Direction.FromVector(new Point(percept.Location.Position.X-m_Actor.Location.Position.X,percept.Location.Position.Y- m_Actor.Location.Position.Y));
+        // Cf. Angband.
+        if (null!=dir) {
+          if (RogueForm.Game.Rules.DiceRoller.RollChance(50)) { // anti-clockwise bias
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Left, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Right, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left.Left, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right.Right, false, false);
+            if (null!=tmpAction) return tmpAction;
+          } else {  // clockwise bias
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right.Right, false, false);
+            if (null!=tmpAction) return tmpAction;
+            tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left.Left, false, false);
+            if (null!=tmpAction) return tmpAction;
+          }
+        }
+        return null;
+      }
       if (m_Actor.Location.Map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
         return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;

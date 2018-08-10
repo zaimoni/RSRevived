@@ -210,13 +210,7 @@ diagonalExit:
     }
 
     public Direction Left { get { return COMPASS[(Index + 7) % 8]; } }
-
-#if DEAD_FUNC
-    public static Direction Right(Direction d)
-    {
-      return COMPASS[(d.Index + 1) % 8];
-    }
-#endif
+    public Direction Right { get { return COMPASS[(Index + 1) % 8]; } }
 
     public override string ToString() { return m_Name; }
   }
