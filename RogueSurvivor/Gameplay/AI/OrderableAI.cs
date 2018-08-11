@@ -709,9 +709,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
       if (0>=goals.Count) return null;
-      List<Point> legal_steps = m_Actor.LegalSteps;
-      if (null == legal_steps) return null;
-      if (2 <= legal_steps.Count) legal_steps = DecideMove_WaryOfTraps(legal_steps);
+      if (null == _legal_steps) return null;
+      List<Point> legal_steps = (2 <= _legal_steps.Count) ? DecideMove_WaryOfTraps(_legal_steps) : _legal_steps;    // need working copy here
       if (2 <= legal_steps.Count) {
         int min_dist = goals.Values.Min();
         // this breaks down if 2+ goals equidistant.
@@ -2599,20 +2598,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
       { // scoping brace
-      List<Point> legal_steps = m_Actor.LegalSteps;
-      if (null == legal_steps) return null;
+      if (null == _legal_steps) return null;
       int current_distance = Rules.GridDistance(m_Actor.Location, loc);
       Location? denorm = m_Actor.Location.Map.Denormalize(loc);
       var costs = new Dictionary<Point,int>();
       var vis_costs = new Dictionary<Point,int>();
-      if (legal_steps.Contains(denorm.Value.Position)) {
+      if (_legal_steps.Contains(denorm.Value.Position)) {
         Point pt = denorm.Value.Position;
         Location test = new Location(m_Actor.Location.Map,pt);
         costs[pt] = 1;
         // this particular heuristic breaks badly if it loses sight of its target
         if (LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) vis_costs[pt] = 1;
       } else {
-        foreach(Point pt in legal_steps) {
+        foreach(Point pt in _legal_steps) {
           Location test = new Location(m_Actor.Location.Map,pt);
           int dist = Rules.GridDistance(test,loc);
           if (dist >= current_distance) continue;
@@ -2623,7 +2621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // above fails if a direct diagonal path is blocked.
         if (0 >= costs.Count) {
-          foreach(Point pt in legal_steps) {
+          foreach(Point pt in _legal_steps) {
             Location test = new Location(m_Actor.Location.Map,pt);
             int dist = Rules.GridDistance(test,loc);
             if (dist == current_distance) continue;
@@ -2939,24 +2937,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": near-tainted "+timer.ElapsedMilliseconds.ToString()+"ms, "+near_tainted.Count.ToString());
 #endif
       if (0<near_tainted.Count) {
-        
-
-#if TIME_TURNS
-        timer.Restart();
-#endif
-        List<Point> legal_steps = m_Actor.LegalSteps;
-#if TIME_TURNS
-        timer.Stop();
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": LegalSteps "+timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
-        if (null == legal_steps) return null;
+        if (null == _legal_steps) return null;
 
         var exposed = new Dictionary<Point,int>();
         var safe_exposed = new Dictionary<Point,int>();
 #if TIME_TURNS
         timer.Restart();
 #endif
-        foreach (Point pt in legal_steps) {
+        foreach (Point pt in _legal_steps) {
           HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
           los.IntersectWith(near_tainted);
           if (0 >= los.Count) continue;
