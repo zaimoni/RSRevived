@@ -231,16 +231,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #if PROTOTYPE
+    [System.Flags]
+    enum ReactionCode : uint {
+      NONE = 0,
+      ENEMY = uint.MaxValue/2+1
+    };
+
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
     // Should not need to be an override of a reduced-functionality BaseAI version
-    uint InterruptLongActivity()
+    ReactionCode InterruptLongActivity()
     {
-        uint ret = 0;
-        if (0>=(enemies_in_FOV?.Count ?? 0)) ret += int.MaxValue/2+1;
+        ReactionCode ret = ReactionCode.NONE;
+        if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
         // \todo we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
         // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
         // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
-        return 0;   // nothing to react to
+        return ret;
     }
 #endif
 
