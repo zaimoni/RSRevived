@@ -854,73 +854,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRechargeAtDawn(it)) ?? false;
     }
 
-    // XXX to implement
-    // core inventory should be (but is not)
-    // armor: 1 slot (done)
-    // flashlight: 1 slot (currently very low priority)
-    // melee weapon: 1 slot (done)
-    // ranged weapon w/ammo: 1 slot
-    // ammo clips: 1 slot high priority, 1 slot moderate priority (tradeable)
-    // without Hauler levels, that is 5 non-tradeable slots when fully kitted
-    // Also, has enough food checks should be based on wakeup time
-
-    // Gun bunnies would:
-    // * have a slot budget of MaxCapacity-3 or -4 for ranged weapons and ammo combined
-    // * use no more than half of that slot budget for ranged weapons, rounded up
-    // * strongly prefer one clip for each of two ranged weapons over 2 clips for a single ranged weapon
-
-    // close to the inverse of IsInterestingItem
-    public bool IsTradeableItem(Item it)
-    {
-#if DEBUG
-        if (null == it) throw new ArgumentNullException(nameof(it));
-        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(m_Actor.Name+" cannot trade");
-#endif
-        if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
-        if (it is ItemFood food)
-            {
-            if (!m_Actor.Model.Abilities.HasToEat) return true;
-            if (m_Actor.IsHungry) return false;
-            // only should trade away food that doesn't drop below threshold
-            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food))
-              return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-            return true;
-            }
-        if (it is ItemRangedWeapon rw)
-            {
-            if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
-            if (0 < rw.Ammo) return false;
-            if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
-            return true;    // more work needed
-            }
-        if (it is ItemAmmo am)
-            {
-            if (m_Actor.Inventory.GetCompatibleRangedWeapon(am) == null) return true;
-            return m_Actor.HasAtLeastFullStackOf(it, 2);
-            }
-        if (it is ItemMeleeWeapon melee)
-            {
-            if (m_Actor.MeleeWeaponAttack(melee.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
-            if (2<=m_Actor.Inventory.Count(it.Model)) return true;  // trading away a spare is ok
-            // do not trade away the best melee weapon.  Others ok.
-            return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
-            }
-        if (it is ItemLight)
-            {
-            if (!m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
-            // XXX more work needed
-            return true;
-            }
-        // player should be able to trade for blue pills
-/*
-        if (it is ItemMedicine)
-            {
-            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-            }
-*/
-        return true;    // default to ok to trade away
-    }
-
     // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
     public void OnRaid(RaidType raid, Location location, int turn)
     {
@@ -2307,14 +2240,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return HasAnyInterestingItem(inv.Items);
     }
 
-    public List<Item> GetTradeableItems()
-    {
-      Inventory inv = m_Actor.Inventory;
-      if (inv == null) return null;
-      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
-      return ret.Any() ? ret.ToList() : null;
-    }
-
     // XXX \todo replace/augment this behavior to generally take action to manage sanity
     // that is: entertainment (currently), medication, and chatting.
     // the use medicine behavior is used in combat so it should not be nearly as finicky about sanity as the non-combat management here
@@ -2731,52 +2656,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
 #endif
-        var TradeableItems = GetTradeableItems();
-        if (0>=(TradeableItems?.Count ?? 0)) return null;
         Map map = m_Actor.Location.Map;
 
-        List<Percept> percepts2 = friends.FilterOut(p => {
-          if (p.Turn != map.LocalTime.TurnCounter) return true;
-          Actor actor = p.Percepted as Actor;
-          if (actor.IsPlayer) return true;
-          if (IsActorTabooTrade(actor)) return true;
-          if (!m_Actor.CanTradeWith(actor)) return true;
-          if (null==m_Actor.MinStepPathTo(m_Actor.Location, p.Location)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
-          if (1 == TradeableItems.Count) {
-            List<Item> other_TradeableItems = (actor.Controller as OrderableAI).GetTradeableItems();
-            if (null == other_TradeableItems) return true;
-            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) return true;
-          }
-          return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
-        });
-        if (percepts2 != null) {
-          Actor actor = FilterNearest(percepts2).Percepted as Actor;
-          if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-            var tmpAction = new ActionTrade(m_Actor, actor);
-            if (tmpAction.IsLegal()) {
-              MarkActorAsRecentTrade(actor);
-              RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
-              return tmpAction;
-            }
-          } else {
-            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location, false, false);
-            if (null != tmpAction) {
-              // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
-              // might spam for a few turns, but its better than not understanding whats going on.
-              RogueGame.DoSay(m_Actor, actor, String.Format("Hey {0}, let's make a deal!", actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+        var percepts2 = GetTradingTargets(friends); // this should only return legal trading targets
+        if (null == percepts2) return null;
+        Actor actor = FilterNearest(percepts2).Percepted as Actor;
+        // We are having CPU loading problems, so don't retest the legality of the trade
+        if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
+          MarkActorAsRecentTrade(actor);
+          RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
+          return new ActionTrade(m_Actor, actor);
+        }
+        ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location, false, false);
+        if (null == tmpAction) return null;
+        // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
+        // might spam for a few turns, but its better than not understanding whats going on.
+        RogueGame.DoSay(m_Actor, actor, String.Format("Hey {0}, let's make a deal!", actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);
 
-              m_Actor.Activity = Activity.FOLLOWING;
-              m_Actor.TargetActor = actor;
-              // need an after-action "hint" to the target on where/who to go to
-              if (!m_Actor.WillActAgainBefore(actor)) {
-                int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
-                (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
-              }
-              return tmpAction;
-            }
-         }
-       }
-      return null;
+        m_Actor.Activity = Activity.FOLLOWING;
+        m_Actor.TargetActor = actor;
+        // need an after-action "hint" to the target on where/who to go to
+        if (!m_Actor.WillActAgainBefore(actor)) {
+          int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
+          (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
+        }
+        return tmpAction;
     }
 #endregion
 

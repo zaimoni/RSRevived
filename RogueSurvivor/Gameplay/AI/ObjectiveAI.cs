@@ -1106,6 +1106,104 @@ namespace djack.RogueSurvivor.Gameplay.AI
         });
     }
 
+    // XXX to implement
+    // core inventory should be (but is not)
+    // armor: 1 slot (done)
+    // flashlight: 1 slot (currently very low priority)
+    // melee weapon: 1 slot (done)
+    // ranged weapon w/ammo: 1 slot
+    // ammo clips: 1 slot high priority, 1 slot moderate priority (tradeable)
+    // without Hauler levels, that is 5 non-tradeable slots when fully kitted
+    // Also, has enough food checks should be based on wakeup time
+
+    // Gun bunnies would:
+    // * have a slot budget of MaxCapacity-3 or -4 for ranged weapons and ammo combined
+    // * use no more than half of that slot budget for ranged weapons, rounded up
+    // * strongly prefer one clip for each of two ranged weapons over 2 clips for a single ranged weapon
+
+    // close to the inverse of IsInterestingItem
+    public bool IsTradeableItem(Item it)
+    {
+#if DEBUG
+        if (null == it) throw new ArgumentNullException(nameof(it));
+        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(m_Actor.Name+" cannot trade");
+#endif
+        if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
+        if (it is ItemFood food)
+            {
+            if (!m_Actor.Model.Abilities.HasToEat) return true;
+            if (m_Actor.IsHungry) return false;
+            // only should trade away food that doesn't drop below threshold
+            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food))
+              return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+            return true;
+            }
+        if (it is ItemRangedWeapon rw)
+            {
+            if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
+            if (0 < rw.Ammo) return false;
+            if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
+            return true;    // more work needed
+            }
+        if (it is ItemAmmo am)
+            {
+            if (m_Actor.Inventory.GetCompatibleRangedWeapon(am) == null) return true;
+            return m_Actor.HasAtLeastFullStackOf(it, 2);
+            }
+        if (it is ItemMeleeWeapon melee)
+            {
+            if (m_Actor.MeleeWeaponAttack(melee.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
+            if (2<=m_Actor.Inventory.Count(it.Model)) return true;  // trading away a spare is ok
+            // do not trade away the best melee weapon.  Others ok.
+            return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
+            }
+        if (it is ItemLight)
+            {
+            if (!m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
+            // XXX more work needed
+            return true;
+            }
+        // player should be able to trade for blue pills
+/*
+        if (it is ItemMedicine)
+            {
+            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            }
+*/
+        return true;    // default to ok to trade away
+    }
+
+    public List<Item> GetTradeableItems()
+    {
+      Inventory inv = m_Actor.Inventory;
+      if (inv == null) return null;
+      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
+      return ret.Any() ? ret.ToList() : null;
+    }
+
+    protected List<Percept> GetTradingTargets(IEnumerable<Percept> friends)
+    {
+        if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
+        var TradeableItems = GetTradeableItems();
+        if (0>=(TradeableItems?.Count ?? 0)) return null;
+        Map map = m_Actor.Location.Map;
+
+        return friends.FilterOut(p => {
+          if (p.Turn != map.LocalTime.TurnCounter) return true;
+          Actor actor = p.Percepted as Actor;
+          if (actor.IsPlayer) return true;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(actor)) return true;
+          if (!m_Actor.CanTradeWith(actor)) return true;
+          if (null==m_Actor.MinStepPathTo(m_Actor.Location, p.Location)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+          if (1 == TradeableItems.Count) {
+            List<Item> other_TradeableItems = (actor.Controller as OrderableAI).GetTradeableItems();
+            if (null == other_TradeableItems) return true;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) return true;
+          }
+          return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
+        });
+    }
+
     private ActorAction _PrefilterDrop(Item it)
     {
       // use stimulants before dropping them
