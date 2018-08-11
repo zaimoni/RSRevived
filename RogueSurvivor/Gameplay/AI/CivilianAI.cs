@@ -411,41 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
         Map map = m_Actor.Location.Map;
-        bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage;
-        // following needs to be more sophisticated.
-        // 1) identify all stacks, period.
-        // 2) categorize stacks by whether they are personally interesting or not.
-        // 3) the personally interesting ones get evaluated here. 
-        // 4) in-communication followers will be consulted regarding the not-interesting stacks
-        var examineStacks = new List<Percept>(percepts1?.Count ?? 0);
-        if (null != percepts1) {
-          var boringStacks = new List<Percept>(percepts1.Count);
-          foreach(Percept p in percepts1) {
-            if (!(p.Percepted is Inventory inv)) continue;
-            if (m_Actor.StackIsBlocked(p.Location, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
-            if (!BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true) {
-              boringStacks.Add(p);
-              continue;
-            }
-            if (p.Turn != map.LocalTime.TurnCounter) continue;    // not in sight
-            examineStacks.Add(p);
-          }
-          if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);    // XXX \todo PC leader should do the same
-        }
-        List<Percept> interestingStacks = examineStacks.FilterT<Inventory>().FilterOut(p => {
-          if (IsOccupiedByOther(p.Location)) return true; // blocked
-          if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
-            if (!imStarvingOrCourageous && map.TrapsMaxDamageAtFor(p.Location.Position,m_Actor) >= m_Actor.HitPoints) return true;  // destination deathtrapped
-            // check for iron gates, etc in way
-            List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
-            if (null == path) return true;
-            List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
-            if (0 >= test.Count) return true;
-            path[0] = test;
-            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAtFor(pt,m_Actor) >= m_Actor.HitPoints)) return true;
-          }
-          return false;
-        });
+        var interestingStacks = GetInterestingInventoryStacks(percepts1);
         if (interestingStacks != null) {
           var at_target = interestingStacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
           if (null != at_target) {

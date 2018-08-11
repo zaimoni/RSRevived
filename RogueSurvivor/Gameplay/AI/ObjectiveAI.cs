@@ -1,4 +1,5 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
+// #define MARVIN
 
 using System;
 using System.Collections.Generic;
@@ -1056,6 +1057,53 @@ namespace djack.RogueSurvivor.Gameplay.AI
           } else track_inv.newStack(p.Location);
         }
       }
+    }
+
+    virtual protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack) // XXX placeholder \todo PlayerController implementation followed by conversion to abstract
+    {
+      return null;
+    }
+
+    protected List<Percept> GetInterestingInventoryStacks(IEnumerable<Percept> src)
+    {
+      if (src?.Any() ?? true) return null;
+      // following needs to be more sophisticated.
+      // 1) identify all stacks, period.
+      // 2) categorize stacks by whether they are personally interesting or not.
+      // 3) in-communication followers will be consulted regarding the not-interesting stacks
+      Map map = m_Actor.Location.Map;
+      int t0 = map.LocalTime.TurnCounter;
+      var examineStacks = new List<Percept>(src.Count());
+      var boringStacks = new List<Percept>(src.Count());
+      foreach(Percept p in src) {
+        if (!(p.Percepted is Inventory inv)) continue;
+        if (p.Turn != t0) continue;    // not in sight
+        if (m_Actor.StackIsBlocked(p.Location, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
+        if (!BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true) {
+          boringStacks.Add(p);
+          continue;
+        }
+        examineStacks.Add(p);
+      }
+      if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);    // XXX \todo PC leader should do the same
+      if (0 >= examineStacks.Count) return null;
+
+      bool imStarvingOrCourageous = m_Actor.IsStarving;
+      if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == ai.Directives.Courage) imStarvingOrCourageous = true;
+      return examineStacks.FilterT<Inventory>().FilterOut(p => {
+          if (IsOccupiedByOther(p.Location)) return true; // blocked
+          if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
+            if (!imStarvingOrCourageous && map.TrapsMaxDamageAtFor(p.Location.Position,m_Actor) >= m_Actor.HitPoints) return true;  // destination deathtrapped
+            // check for iron gates, etc in way
+            List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
+            if (null == path) return true;
+            List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
+            if (0 >= test.Count) return true;
+            path[0] = test;
+            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAtFor(pt,m_Actor) >= m_Actor.HitPoints)) return true;
+          }
+          return false;
+        });
     }
 
     private ActorAction _PrefilterDrop(Item it)
