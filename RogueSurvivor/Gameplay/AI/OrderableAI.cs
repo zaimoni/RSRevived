@@ -411,7 +411,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
           if (!m_Actor.IsTired) throw new InvalidOperationException("!m_Actor.IsTired");
 #endif
-          // \todo check for helpers that are ready and politely back off for them
+          // check for helpers that are ready and politely back off for them
+          var escape = new List<Point>(8);
+          var motive = new List<Point>(8);
+          foreach(Point pt in m_Actor.Location.Position.Adjacent()) {
+            if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.Add(pt);
+            else {
+              Actor helper = m_Actor.Location.Map.GetActorAt(pt);
+              if (null == helper) continue;
+              if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == _dest)) {
+                motive.Add(pt);
+              }
+            }
+          }
+          if (0 < motive.Count && 0<escape.Count) {
+            ret = new ActionMoveStep(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(escape));
+            return true;
+          }
+
           ret = new ActionWait(m_Actor);
           return true;
         }
@@ -429,7 +446,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != is_helping) helpers_at[pt] = a;
           else move_to.Add(pt);
         }
-        // ...
+        if (0<helpers_at.Count) {
+          foreach(Point pt in move_to.ToList()) {
+            bool ok = false;
+            foreach(var x in helpers_at) {
+              if (Rules.IsAdjacent(pt,x.Key)) {
+                ok = true;
+                break;
+              }
+            }
+            if (!ok) move_to.Remove(pt);
+          }
+          if (0 >= move_to.Count) {
+            foreach(var x in helpers_at) {
+              foreach(Point pt in x.Key.Adjacent()) {
+                if (move_to.Contains(pt)) continue;
+                if (!_dest.Location.Map.GetTileModelAt(pt).IsWalkable) continue;
+                if (null!=_dest.Location.Map.GetActorAt(pt)) continue;
+                move_to.Add(pt);
+              }
+            }
+            if (0 >= move_to.Count) return false;   // XXX overcrowded \todo good time to wander
+          }
+        }
         if (0 < move_to.Count) {
           ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == _dest.Location.Map ? move_to : new HashSet<Point>()));
           return true;
