@@ -1495,7 +1495,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
             // this can trigger close-open loop with someone who is merely traveling
             // check for duplicating last action
-            if (Objectives.Any(o => o is Goal_LastAction<ActionCloseDoor> && (o as Goal_LastAction<ActionCloseDoor>).LastAction.Door == door)) {
+            if (null!=Goal<Goal_LastAction<ActionCloseDoor>>(o => o.LastAction.Door == door)) {
               // break action loop; plausibly the conflicting actor will be in the doorway next time
               return new ActionWait(m_Actor);
             }

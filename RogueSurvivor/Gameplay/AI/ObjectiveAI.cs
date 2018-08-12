@@ -185,6 +185,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}
+    public T Goal<T>() where T:Objective { return Objectives.FirstOrDefault(o => o is T) as T;}
 
     public void ResetAICache()
     {
@@ -1052,7 +1053,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Actor ally in cell) {
         if (!(ally.Controller is OrderableAI ai)) continue;
         if (!InCommunicationWith(ally)) continue;
-        var track_inv = ai.Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+        var track_inv = ai.Goal<Goal_PathToStack>();
         foreach(Percept p in stacks) {
           if (m_Actor.Location != p.Location && ai.CanSee(p.Location)) continue;
           if (!ai.WouldGrabFromStack(p.Location, p.Percepted as Inventory)) continue;
@@ -1421,7 +1422,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private bool KnowRelevantInventory(ItemAmmo am)
     {
       // second opinion...if we know where a suitable rw, close by, then elevate priority
-      var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+      var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
         foreach(Inventory inv in track_inv.Inventories) {
           if (inv.IsEmpty) continue;

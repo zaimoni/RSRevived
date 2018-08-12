@@ -429,7 +429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // no accessible interesting stacks.  Memorize them just in case.
           {
-          var track_inv = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+          var track_inv = Goal<Goal_PathToStack>();
           foreach(Percept p in interestingStacks) {
             if (null == track_inv) {
               track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,p.Location);
@@ -460,7 +460,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
         {   // leadership or trading requests
-        Goal_HintPathToActor remote = Objectives.FirstOrDefault(o => o is Goal_HintPathToActor) as Goal_HintPathToActor;
+        Goal_HintPathToActor remote = Goal<Goal_HintPathToActor>();
         if (null != remote) {
           tmpAction = remote.Pathing();
 #if TRACE_SELECTACTION
@@ -477,7 +477,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
 #endif
         {
-        Goal_PathToStack remote = Objectives.FirstOrDefault(o => o is Goal_PathToStack) as Goal_PathToStack;
+        Goal_PathToStack remote = Goal<Goal_PathToStack>();
         if (null != remote) {
           tmpAction = remote.Pathing();
 #if TRACE_SELECTACTION
