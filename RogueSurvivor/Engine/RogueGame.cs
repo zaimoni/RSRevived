@@ -9246,9 +9246,12 @@ namespace djack.RogueSurvivor.Engine
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH))));
         } else {
-          if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
-          AddMessageIfAudibleForPlayer(doorWindow.Location, "You hear someone bashing barricades");
+          if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) AddMessageIfAudibleForPlayer(doorWindow.Location, "You hear someone bashing barricades");
         }
+        if (doorWindow.IsBarricaded) {
+          if (actor.Controller is ObjectiveAI ai) ai.DeBarricade(doorWindow);
+        }
+        return;
       } else {
         mapObj.HitPoints -= attack.DamageValue;
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);

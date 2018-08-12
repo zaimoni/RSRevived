@@ -378,24 +378,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if PROTOTYPE
     [Serializable]
     internal class Goal_BreakBarricade : Objective
     {
-      private readonly DoorWindow _dest;
+      private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
 
       public Goal_BreakBarricade(int t0, Actor who, DoorWindow dest)
       : base(t0, who)
       {
-        dest = dest;
+#if DEBUG
+        if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+        _dest = dest.Location;
       }
 
-      DoorWindow Target { get { return _dest; } }
+      public DoorWindow Target { get { return _dest.MapObject as DoorWindow; } }
 
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        if (!_dest.IsBarricaded) {  // it's down now
+        var door = Target;
+        if (!door.IsBarricaded) {  // it's down now
           _isExpired = true;
           return true;
         }
@@ -403,9 +406,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;    // cancel: something urgent
           return true;
         }
-        if (Rules.IsAdjacent(m_Actor.Location, _dest.Location)) {
-          if (m_Actor.CanBreak(_dest)) {
-            ret = new ActionBreak(m_Actor, _dest);
+        if (Rules.IsAdjacent(m_Actor.Location, _dest)) {
+          if (m_Actor.CanBreak(door)) {
+            ret = new ActionBreak(m_Actor, door);
             return true;
           }
 #if DEBUG
@@ -415,11 +418,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var escape = new List<Point>(8);
           var motive = new List<Point>(8);
           foreach(Point pt in m_Actor.Location.Position.Adjacent()) {
+            if (Rules.IsAdjacent(pt, _dest.Position)) continue;
             if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.Add(pt);
             else {
               Actor helper = m_Actor.Location.Map.GetActorAt(pt);
               if (null == helper) continue;
-              if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == _dest)) {
+              if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == door)) {
                 motive.Add(pt);
               }
             }
@@ -435,14 +439,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // unusual pathing requirement: do not push helpers; give helpers room to step aside
         var helpers_at = new Dictionary<Point,Actor>();
         var move_to = new HashSet<Point>();
-        foreach(Point pt in _dest.Location.Position.Adjacent()) {
-          if (!_dest.Location.Map.GetTileModelAt(pt).IsWalkable) continue;
-          Actor a = _dest.Location.Map.GetActorAt(pt);
+        foreach(Point pt in _dest.Position.Adjacent()) {
+          if (!_dest.Map.GetTileModelAt(pt).IsWalkable) continue;
+          Actor a = _dest.Map.GetActorAt(pt);
           if (null == a) {
             move_to.Add(pt);
             continue;
           }
-          var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==_dest);
+          var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==door);
           if (null != is_helping) helpers_at[pt] = a;
           else move_to.Add(pt);
         }
@@ -461,8 +465,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(var x in helpers_at) {
               foreach(Point pt in x.Key.Adjacent()) {
                 if (move_to.Contains(pt)) continue;
-                if (!_dest.Location.Map.GetTileModelAt(pt).IsWalkable) continue;
-                if (null!=_dest.Location.Map.GetActorAt(pt)) continue;
+                if (!_dest.Map.GetTileModelAt(pt).IsWalkable) continue;
+                if (null!=_dest.Map.GetActorAt(pt)) continue;
                 move_to.Add(pt);
               }
             }
@@ -470,13 +474,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (0 < move_to.Count) {
-          ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == _dest.Location.Map ? move_to : new HashSet<Point>()));
+          ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == _dest.Map ? move_to : new HashSet<Point>()));
           return true;
         }
         return false;
       }
     }
-#endif
 
 #if FAIL
     [Serializable]

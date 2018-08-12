@@ -2677,5 +2677,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
+    public void DeBarricade(Engine.MapObjects.DoorWindow doorWindow)
+    {
+#if DEBUG
+      if (null == doorWindow) throw new ArgumentNullException(nameof(doorWindow));
+#endif
+      if (null == Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) Objectives.Insert(0, new Goal_BreakBarricade(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, doorWindow));
+      if (0 < m_Actor.CountFollowers) {
+        foreach(Actor fo in m_Actor.Followers) {
+          if (!InCommunicationWith(fo)) continue;
+          if (fo.IsPlayer) continue;
+          OrderableAI ai = fo.Controller as OrderableAI;
+          // XXX \todo message this so it's clear what's going on
+          if (null == ai.Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) ai.Objectives.Insert(0, new Goal_BreakBarricade(fo.Location.Map.LocalTime.TurnCounter, fo, doorWindow));
+        }
+      }
+    }
   }
 }
