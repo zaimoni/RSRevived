@@ -1025,7 +1025,10 @@ namespace djack.RogueSurvivor.Data
       if (distance != efficientRange) {
         float distanceScale = (efficientRange - distance) / (float)baseAttack.Range;
         // bigger effect (penalty) beyond efficient range
-        if (distance > efficientRange) distanceScale *= 2;
+        if (distance > efficientRange) {
+//        distanceScale *= 2;   0% chance to hit at maximum range, but GUI is in-range
+          distanceScale = (efficientRange - distance) / (float)((baseAttack.Range-efficientRange)+1);
+        }
         distanceMod = 1 + distanceScale;
       }
       float hit = (baseAttack.HitValue + hitMod) * distanceMod; // XXX natural vector data structure, but this is a hot path so may want this unrolled

@@ -10153,28 +10153,19 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
-      bool flag = true;
       do {
         OverlayPopupTitle popup = null;
 
         ClearMessages();
-        AddMessage(new Data.Message(str + " can improve or learn one of these skills. Choose wisely.", Session.Get.WorldTime.TurnCounter, Color.Green));
         if (upgrade.Count == 0) {
           AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
         } else {
-          for (int index = 0; index < upgrade.Count; ++index) {
-            Skills.IDs id = upgrade[index];
-            int skillLevel = upgradeActor.Sheet.SkillTable.GetSkillLevel(id);
-            AddMessage(new Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", index + 1, Skills.Name(id), skillLevel, skillLevel + 1, DescribeSkillShort(id)), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-          }
-
           var popupLines = new List<string> { "" };
 
           for (int iChoice = 0; iChoice < upgrade.Count; iChoice++) {
             Skills.IDs sk = upgrade[iChoice];
             int level = upgradeActor.Sheet.SkillTable.GetSkillLevel(sk);
             string text = string.Format("{0}. {1} {2}/{3}", iChoice + 1, Skills.Name(sk), level + 1, Skills.MaxSkillLevel(sk));
-            AddMessage(new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
 
             popupLines.Add(text);
             popupLines.Add("    " + DescribeSkillShort(sk));
@@ -10194,12 +10185,12 @@ namespace djack.RogueSurvivor.Engine
           popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
           AddOverlay(popup);
         }
-        AddMessage(new Data.Message("ESC if you don't want to upgrade; SPACE to get wiser skills.", Session.Get.WorldTime.TurnCounter, Color.White));
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
         if (key.KeyCode == Keys.Escape) break;
         if (key.KeyCode == Keys.Space) {
           upgrade = RollSkillsToUpgrade(upgradeActor, 300);
+          if (null != popup) RemoveOverlay(popup);
           continue;
         }
 
@@ -10214,10 +10205,10 @@ namespace djack.RogueSurvivor.Engine
           AddMessagePressEnter();
           if (null != popup) RemoveOverlay(popup);
           RedrawPlayScreen();
-          flag = false;
+          break;
         }
       }
-      while (flag);
+      while(true);
       // this is the change target for becoming a cop.  The test may need extracting to an ImpersonateCop function
       // 0) must be civilian or survivor with 0 murders
       if ((GameFactions.TheCivilians == upgradeActor.Faction || GameFactions.TheSurvivors == upgradeActor.Faction)
