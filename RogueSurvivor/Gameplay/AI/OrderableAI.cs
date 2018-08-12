@@ -398,7 +398,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
         var door = Target;
-        if (!door.IsBarricaded) {  // it's down now
+        if (!door?.IsBarricaded ?? true) {  // it's down now
           _isExpired = true;
           return true;
         }
