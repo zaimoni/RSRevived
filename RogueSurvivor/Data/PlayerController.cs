@@ -91,7 +91,9 @@ namespace djack.RogueSurvivor.Data
 
     public override List<Percept> UpdateSensors()
     {
-      return m_LOSSensor.Sense(m_Actor);
+      var ret = m_LOSSensor.Sense(m_Actor);
+      if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
+      return ret;
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
