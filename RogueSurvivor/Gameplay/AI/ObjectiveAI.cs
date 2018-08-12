@@ -1066,14 +1066,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    virtual protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack) // XXX placeholder \todo PlayerController implementation followed by conversion to abstract
-    {
-      return null;
-    }
+    abstract protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack);
 
     protected List<Percept> GetInterestingInventoryStacks(IEnumerable<Percept> src)
     {
-      if (src?.Any() ?? true) return null;
+      if (!src?.Any() ?? true) return null;
       // following needs to be more sophisticated.
       // 1) identify all stacks, period.
       // 2) categorize stacks by whether they are personally interesting or not.
@@ -2201,7 +2198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Inventory.Contains(rw)) {
         if (0 < rw.Ammo) return true;
-        // should not have ammo in ivnentory at this point
+        // should not have ammo in inventory at this point
       }
       int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo);
       if (!m_Actor.Inventory.Contains(rw)) {

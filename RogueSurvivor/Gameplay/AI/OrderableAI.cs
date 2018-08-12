@@ -2513,7 +2513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj;
     }
 
-    protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
+    protected override ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));

@@ -9668,6 +9668,7 @@ namespace djack.RogueSurvivor.Engine
           if (killer.Sheet.SkillTable?.Skills != null)
             skillTable = new SkillTable(killer.Sheet.SkillTable);
           killer.Model = actorModel;
+          killer.APreset(); // to avoid triggering a debug-mode crash
           if (killer.IsPlayer) killer.PrepareForPlayerControl();
           if (skillTable != null) {
             foreach (var skill in skillTable.Skills) {
