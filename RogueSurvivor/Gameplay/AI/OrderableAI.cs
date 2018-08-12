@@ -1113,6 +1113,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // XXX need to use floodfill pathfinder
         HashSet<Point> fire_from_here = GetRangedAttackFromZone(enemies);
+        if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
         tmpAction = BehaviorNavigate(fire_from_here);
         if (null != tmpAction) return tmpAction;
       }
@@ -1839,7 +1840,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorPathTo(m => (m==dest.Map ? new HashSet<Point> { dest.Position } : new HashSet<Point>()));
       }
 
-      return BehaviorNavigate(new Point[1]{ dest.Position });
+      return BehaviorNavigate(new HashSet<Point> { dest.Position });
 	}
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
@@ -2726,13 +2727,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    protected void NavigateFilter(HashSet<Point> tainted)
+    {
+#if DEBUG
+      if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
+      if (tainted.Contains(m_Actor.Location.Position)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
+#endif
+      int min_dist = int.MaxValue;
+      int max_dist = int.MinValue;
+      var dist = new Dictionary<Point,int>();
+      foreach(var pt in tainted) {
+        int tmp = Rules.GridDistance(pt, m_Actor.Location.Position);
+        dist[pt] = tmp;
+        if (tmp > max_dist) max_dist = tmp;
+        if (tmp < min_dist) min_dist = tmp;
+      }
+      if (min_dist >= max_dist-min_dist) return;
+      int min_2x = 2*min_dist;
+      foreach(var x in dist) {
+        if (x.Value > min_2x) tainted.Remove(x.Key);
+      }
+    }
+
     // April 7 2017: This is called directly only by the same-map threat and tourism behaviors
     // These two behaviors both like a "spread out" where each non-follower ally heads for the targets nearer to them than
     // to the other non-follower allies
-    protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
+    protected ActorAction BehaviorNavigate(HashSet<Point> tainted)
     {
 #if DEBUG
-      if (!tainted?.Any() ?? true) throw new ArgumentNullException(nameof(tainted));
+      if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
       if (tainted.Contains(m_Actor.Location.Position)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
 #endif
 
@@ -2974,6 +2997,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
       }
 #else
+      if (2<=tainted.Count) NavigateFilter(tainted);
       return BehaviorNavigate(tainted);
 #endif
     }
@@ -2992,7 +3016,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == sights_to_see) return null;
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
-      return 0 < tainted.Count ? BehaviorNavigate(tainted) : null;
+      if (0 >= tainted.Count) return null;
+      if (2<=tainted.Count) NavigateFilter(tainted);
+      return BehaviorNavigate(tainted);
     }
 
     protected ActorAction BehaviorHuntDownThreatOtherMaps()
