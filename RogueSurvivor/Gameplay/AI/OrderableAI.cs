@@ -378,6 +378,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#if PROTOTYPE
+    [Serializable]
+    internal class Goal_BreakBarricade : Objective
+    {
+      private readonly DoorWindow _dest;
+
+      public Goal_BreakBarricade(int t0, Actor who, DoorWindow dest)
+      : base(t0, who)
+      {
+        dest = dest;
+      }
+
+      DoorWindow Target { get { return _dest; } }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        if (!_dest.IsBarricaded) {  // it's down now
+          _isExpired = true;
+          return true;
+        }
+        if (ObjectiveAI.ReactionCode.NONE != (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
+          _isExpired = true;    // cancel: something urgent
+          return true;
+        }
+        if (Rules.IsAdjacent(m_Actor.Location, _dest.Location)) {
+          if (m_Actor.CanBreak(_dest)) {
+            ret = new ActionBreak(m_Actor, _dest);
+            return true;
+          }
+#if DEBUG
+          if (!m_Actor.IsTired) throw new InvalidOperationException("!m_Actor.IsTired");
+#endif
+          // \todo check for helpers that are ready and politely back off for them
+          ret = new ActionWait(m_Actor);
+          return true;
+        }
+        // unusual pathing requirement: do not push helpers; give helpers room to step aside
+        var helpers_at = new Dictionary<Point,Actor>();
+        var move_to = new HashSet<Point>();
+        foreach(Point pt in _dest.Location.Position.Adjacent()) {
+          if (!_dest.Location.Map.GetTileModelAt(pt).IsWalkable) continue;
+          Actor a = _dest.Location.Map.GetActorAt(pt);
+          if (null == a) {
+            move_to.Add(pt);
+            continue;
+          }
+          var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==_dest);
+          if (null != is_helping) helpers_at[pt] = a;
+          else move_to.Add(pt);
+        }
+        // ...
+        if (0 < move_to.Count) {
+          ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == _dest.Location.Map ? move_to : new HashSet<Point>()));
+          return true;
+        }
+        return false;
+      }
+    }
+#endif
+
 #if FAIL
     [Serializable]
     public Goal_Sleep : Objective

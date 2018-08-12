@@ -184,6 +184,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
+    public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}
+
     public void ResetAICache()
     {
       _legal_steps = null;
@@ -230,16 +232,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if PROTOTYPE
     [System.Flags]
-    enum ReactionCode : uint {
+    public enum ReactionCode : uint {
       NONE = 0,
       ENEMY = uint.MaxValue/2+1
     };
 
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
     // Should not need to be an override of a reduced-functionality BaseAI version
-    ReactionCode InterruptLongActivity()
+    public ReactionCode InterruptLongActivity()
     {
         ReactionCode ret = ReactionCode.NONE;
         if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
@@ -248,7 +249,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
         return ret;
     }
-#endif
 
     private void AvoidBeingCornered()
     {
