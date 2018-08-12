@@ -10115,7 +10115,7 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
       m_MusicManager.Stop();
-      m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+      m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
       ClearMessages();
       AddMessage(new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green));
       Player.Controller.UpdateSensors();
@@ -10134,7 +10134,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
         m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+        m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green));
         Player.Controller.UpdateSensors();
@@ -12758,7 +12758,7 @@ namespace djack.RogueSurvivor.Engine
     private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
       m_MusicManager.Stop();
-      m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+      m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
       AddOverlay(new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
       ClearMessages();
