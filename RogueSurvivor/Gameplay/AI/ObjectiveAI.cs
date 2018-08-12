@@ -2264,8 +2264,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemFood food) {
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return true;
-        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return false;
-        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+        if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return false;
+        if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return true;
+        // only interesting if pre-emptive eating would kick in
+        return food.IsPerishable && m_Actor.CurrentNutritionOf(food)<= m_Actor.MaxFood - m_Actor.FoodPoints;
       }
 
       if (it is ItemRangedWeapon rw) {
