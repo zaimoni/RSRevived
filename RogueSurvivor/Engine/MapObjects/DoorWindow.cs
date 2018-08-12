@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Threading;
 
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
@@ -61,18 +62,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
 
     public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
-
-    public int BarricadePoints {
-      get {
-        return m_BarricadePoints;
-      }
-      private set {
-        if (0>value) value = 0;
-        if (Rules.BARRICADING_MAX < value) value = Rules.BARRICADING_MAX;
-        m_BarricadePoints = value;
-      }
-    }
-
+    public int BarricadePoints { get { return m_BarricadePoints; } }
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
     public DoorWindow(DW_type _type, int hitPoints)
@@ -84,9 +74,12 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public void Barricade(int delta)
     {
-      int old = BarricadePoints;
-      BarricadePoints += delta;
-      if ((0 < old)!=(0 < BarricadePoints)) InvalidateLOS();
+      int old = m_BarricadePoints;
+      if (-old > delta) delta = - old;
+      else if (Rules.BARRICADING_MAX-old < delta) delta = Rules.BARRICADING_MAX-old;
+      if (0 != delta) {
+        if ((0 < old)!=(0 < Interlocked.Add(ref m_BarricadePoints,delta))) InvalidateLOS();
+      }
     }
 
     private string ReasonCantBarricade()

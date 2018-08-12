@@ -148,7 +148,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int MaxHitPoints {
+    public int MaxHitPoints {   // \todo SAVEFILE BREAK: convert to readonly
       get {
         return m_MaxHitPoints;
       }
