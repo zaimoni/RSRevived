@@ -77,8 +77,10 @@ namespace djack.RogueSurvivor.Data
 		public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
 		{
           var ret = new HashSet<Point>();
+          if (null == map) return ret;
           var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
+          // subway may be null
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok.Get) {
               HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X-1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
@@ -327,6 +329,7 @@ namespace djack.RogueSurvivor.Data
       public HashSet<Point> In(Map map, Rectangle view)
 	  {
           var ret = new HashSet<Point>();
+          if (null == map) return ret;
           var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
