@@ -12723,8 +12723,7 @@ namespace djack.RogueSurvivor.Engine
       if (!victor.IsPlayer) return;
       string musicId = achievement.MusicID;
       string[] text = achievement.Text;
-      m_MusicManager.Stop();
-      m_MusicManager.Play(musicId, MusicPriority.PRIORITY_EVENT);
+      m_MusicManager.PlayLooping(musicId, MusicPriority.PRIORITY_EVENT);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
       var stringList = new List<string>(text.Length + 3 + 2){
         str,
