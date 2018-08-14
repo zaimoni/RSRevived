@@ -108,13 +108,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Inventory> GroundInventories { get { return m_GroundItemsByPosition.Values; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
-    public IEnumerable<TimedTask> Timers { get { return m_Timers; } }
-
-    public int CountTimers {
-      get {
-        return (m_Timers != null ? m_Timers.Count : 0);
-      }
-    }
 
     private static ReadOnlyCollection<Actor> _findPlayers(IEnumerable<Actor> src)
     {
@@ -1731,9 +1724,23 @@ retry:
       m_Timers.Add(t);
     }
 
-    public void RemoveTimer(TimedTask t)
+#if DEAD_FUNC
+    public void RemoveTimer(TimedTask t)    // would be expected by Create-Read-Update-Delete idiom
     {
       m_Timers.Remove(t);
+    }
+#endif
+
+    public void UpdateTimers()
+    {
+      int i = m_Timers?.Count ?? 0;
+      if (0 >= i) return;
+      // we use this idiom to allow a triggering timer to add more timers to the map safely
+      while(0 < i--) {
+        var timer = m_Timers[i];
+        timer.Tick(this);
+        if (timer.IsCompleted) m_Timers.RemoveAt(i);
+      }
     }
 
     public int GetScentByOdorAt(Odor odor, Point position)
@@ -1865,7 +1872,8 @@ retry:
       }
     }
 
-    public void PreTurnStart() {
+    public void PreTurnStart()
+    {
       m_iCheckNextActorIndex = 0;
       foreach (var actor in Actors) actor.PreTurnStart();
     }

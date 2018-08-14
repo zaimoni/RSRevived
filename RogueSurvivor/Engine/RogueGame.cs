@@ -2303,7 +2303,7 @@ namespace djack.RogueSurvivor.Engine
         if (Session.Get.World.Weather.IsRain() && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
           foreach (MapObject mapObject in map.MapObjects) {
             if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
-              mapObject.Extinguish();;
+              mapObject.Extinguish();
               if (ForceVisibleToPlayer(mapObject))
                 AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
             }
@@ -2312,14 +2312,7 @@ namespace djack.RogueSurvivor.Engine
 #endregion
       } // skipped in lodetail turns.
 
-#region Check timers
-      if (map.CountTimers > 0) {
-        foreach (TimedTask timer in new List<TimedTask>(map.Timers)) {
-          timer.Tick(map);
-          if (timer.IsCompleted) map.RemoveTimer(timer);
-        }
-      }
-#endregion
+      map.UpdateTimers();
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
