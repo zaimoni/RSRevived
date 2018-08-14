@@ -1813,8 +1813,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
-      if (null != GetBestRangedWeaponWithAmmo()) throw new InvalidOperationException("should not reach BehaviorFightFlee with a usable ranged weapon"); // XXX \todo invalidate this with a bayonet (combat knife mounted on a rifle)
 #endif
+      // it is possible to reach here with a ranged weapon.  (Char Office assault, for instance)  In this case, we don't have Line of Fire.
+      if (null != GetBestRangedWeaponWithAmmo()) return null;
+
       List<Point> legal_steps = _legal_steps; // XXX working reference due to following postprocessing
       if (null != _blast_field && null != legal_steps) {
         IEnumerable<Point> test = legal_steps.Where(pt => !_blast_field.Contains(pt));
