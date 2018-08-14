@@ -13254,6 +13254,15 @@ namespace djack.RogueSurvivor.Engine
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
             if (0 == Session.Get.ScriptStage_PoliceStationPrisoner) Session.Get.ScriptStage_PoliceStationPrisoner = 1;
+              // \todo prison breakout
+              // * use Goal_PathTo on all normal prisoners.  Use an extended timer so the prisoners don't forget to escape.
+              // * VAPORWARE: AI isn't otherwise there, so don't worry about waking up anyone who slept through the gates opening (yet)
+              // * VAPORWARE: Police that see the escaping prisoners before they get distance 2 beyond the front door will realize there is a breakout and attempt to kill.
+              // * VAPORWARE: If the police radio is *on* when the prisoner gives the location of the CHAR base, the police may get the location at the same time.
+              // (Backstory: It depends on how much AI/pattern matching is in the radio.)
+              // In this case, the player will not be targeted (cf police storyline), but the police will know of the breakout immediately.
+              // * VAPORWARE: If the radio was *not* on, and the player cannot pass as a police officer, (s)he'll be treated like an escaping prisoner.  
+              // Turning on/off the police radio where this can be seen or detected would raise suspicion.
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
