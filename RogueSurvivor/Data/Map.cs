@@ -1149,6 +1149,40 @@ retry:
       }
     }
 
+    private string ReasonNotWalkableFor(int x, int y, ActorModel model)
+    {
+#if DEBUG
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
+#if NO_PEACE_WALLS
+      if (!IsInBounds(x, y) && !HasExitAt(x,y)) return "out of map";
+#else
+      if (!IsInBounds(x, y)) return "out of map";
+#endif
+      if (!GetTileModelAtExt(x, y).IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
+      if (!mapObjectAt?.IsWalkable ?? false) {
+        if (mapObjectAt.IsJumpable) {
+          if (!model.Abilities.CanJump) return "cannot jump";
+        } else if (model.Abilities.IsSmall) {
+          if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
+        } else return "blocked by object";
+      }
+      if (HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
+      return "";
+    }
+
+    public bool IsWalkableFor(Point p, ActorModel model)
+    {
+      return string.IsNullOrEmpty(ReasonNotWalkableFor(p.X, p.Y, model));
+    }
+
+    public bool IsWalkableFor(Point p, ActorModel model, out string reason)
+    {
+      reason = ReasonNotWalkableFor(p.X, p.Y, model);
+      return string.IsNullOrEmpty(reason);
+    }
+
     private string ReasonNotWalkableFor(int x, int y, Actor actor)
     {
 #if DEBUG
@@ -1183,6 +1217,44 @@ retry:
     {
       reason = ReasonNotWalkableFor(p.X, p.Y, actor);
       return string.IsNullOrEmpty(reason);
+    }
+
+    // AI-ish, but essentially a map geometry property
+    // we are considering a non-jumpable pushable object here (e.g. shop shelves)
+    public bool PushCreatesSokobanPuzzle(Point dest,ActorModel model)
+    {
+      if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
+
+      bool[] is_wall = new bool[8];   // these default-initialize to false
+      bool[] blocked = new bool[8];
+      bool[] no_go = new bool[8];
+      foreach(Point pt2 in dest.Adjacent()) {
+        if (IsWalkableFor(pt2,model)) continue;
+        Direction dir = Direction.FromVector(pt2.X-dest.X,pt2.Y-dest.Y);
+#if DEBUG
+        if (null == dir) throw new ArgumentNullException(nameof(dir));
+#endif
+        no_go[dir.Index] = true;
+        if (IsValid(pt2) && GetTileModelAtExt(pt2.X, pt2.Y).IsWalkable) blocked[dir.Index] = true;
+        else is_wall[dir.Index] = true;
+      }
+      // corners and walls are generally ok
+      if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.N] && is_wall[(int)Compass.XCOMlike.NE] && !is_wall[(int)Compass.XCOMlike.S] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
+      if (is_wall[(int)Compass.XCOMlike.SW] && is_wall[(int)Compass.XCOMlike.S] && is_wall[(int)Compass.XCOMlike.SE] && !is_wall[(int)Compass.XCOMlike.N] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
+      if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.W] && is_wall[(int)Compass.XCOMlike.SW] && !is_wall[(int)Compass.XCOMlike.E] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
+      if (is_wall[(int)Compass.XCOMlike.NE] && is_wall[(int)Compass.XCOMlike.E] && is_wall[(int)Compass.XCOMlike.NW] && !is_wall[(int)Compass.XCOMlike.W] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
+
+      // blocking access to something that could be next to wall/corner is problematic
+      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.NW] 
+          && (no_go[(int)Compass.XCOMlike.NE] || no_go[(int)Compass.XCOMlike.SW])) return true;
+      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.E] && no_go[(int)Compass.XCOMlike.NE] 
+          && (no_go[(int)Compass.XCOMlike.NW] || no_go[(int)Compass.XCOMlike.SE])) return true;
+      if (blocked[(int)Compass.XCOMlike.S] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.SW]
+          && (no_go[(int)Compass.XCOMlike.SE] || no_go[(int)Compass.XCOMlike.NW])) return true;
+      if (blocked[(int)Compass.XCOMlike.S] && blocked[(int)Compass.XCOMlike.E] && no_go[(int)Compass.XCOMlike.SE]
+          && (no_go[(int)Compass.XCOMlike.SW] || no_go[(int)Compass.XCOMlike.NE])) return true;
+
+      return false;
     }
 
     // tracking players on map

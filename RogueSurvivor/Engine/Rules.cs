@@ -502,7 +502,11 @@ namespace djack.RogueSurvivor.Engine
         if (actor.AbleToPush && actor.CanPush(mapObjectAt)) {
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
-           Dictionary<Point,Direction> push_dest = map.ValidDirections(mapObjectAt.Location.Position, (m, pt) => mapObjectAt.CanPushTo(pt));
+           Dictionary<Point,Direction> push_dest = map.ValidDirections(mapObjectAt.Location.Position, (m, pt) => {
+               // short-circuit language requirement on operator && failed here
+               if (!mapObjectAt.CanPushTo(pt)) return false;
+               return !m.PushCreatesSokobanPuzzle(pt, actor.Model);
+           });   // does not trivially create a Sokoban puzzle (can happen in police station)
 
            bool is_adjacent = Rules.IsAdjacent(actor.Location, mapObjectAt.Location);
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
