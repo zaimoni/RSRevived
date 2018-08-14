@@ -192,11 +192,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_PathTo : Objective
     {
       private readonly HashSet<Location> _locs;
+      private readonly bool walking;
 
-      public Goal_PathTo(int t0, Actor who, Location loc)
+      public Goal_PathTo(int t0, Actor who, Location loc, bool walk=false)
       : base(t0,who)
       {
         _locs = new HashSet<Location>{loc};
+        walking = walk;
       }
 
       public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs)
@@ -213,10 +215,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
-        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
-        if (null == ret) return false;
-        if (!ret.IsLegal()) return false;
+        if (ObjectiveAI.ReactionCode.NONE != (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
+          _isExpired = true;    // cancel: something urgent
+          return true;
+        }
+
+        ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
+        if (!(ret?.IsLegal() ?? false)) {
+          ret = null;
+          _isExpired = true;    // cancel: buggy
+          return true;
+        }
+        if (walking) m_Actor.IsRunning = false;
         return true;
       }
     }
@@ -3168,91 +3178,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest)
-    {
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
-#endif
-      var goals = new List<Location>();
-      HashSet<Point> where_to_go = targets_at(dest);
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
-#endif
-      if (0 < where_to_go.Count) {
-        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
-      }
-
-      var already_seen = new List<Map>{ dest };
-
-      // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
-      if (0==where_to_go.Count) {
-        var maps = new HashSet<Map>(dest.destination_maps.Get);
-        if (1<maps.Count) {
-          foreach(Map m in maps.ToList()) {
-            if (1<m.destination_maps.Get.Count) continue;
-            HashSet<Point> go_here = targets_at(m);
-            if (0<go_here.Count) {
-              foreach(Point pt in go_here) goals.Add(new Location(m,pt));
-              already_seen.Add(m);
-              continue;
-            }
-            maps.Remove(m);
-          }
-        }
-        if (1==maps.Count && 0==goals.Count) {
-          Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
-          foreach(var pos_exit in exits) {
-            Location loc = new Location(dest, pos_exit.Key);
-            goals.Add(loc==m_Actor.Location ? pos_exit.Value.Location : loc);
-          }
-#if TRACE_GOALS
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
-#endif
-          return goals;
-        }
-        // if that isn't enough, we could also use the police and hospital geometries
-      } 
-
-      foreach(Map m in dest.destination_maps.Get) {
-        if (already_seen.Contains(m)) continue;
-        Goals(targets_at,m,already_seen,goals);
-      }
-      return goals;
-    }
-
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen, List<Location> goals)
-    {
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 2+)");
-#endif
-      HashSet<Point> where_to_go = targets_at(dest);
-      if (0 < where_to_go.Count) {
-        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
-      }
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
-#endif
-
-      already_seen.Add(dest);
-
-      foreach(Map m in dest.destination_maps.Get) {
-        if (already_seen.Contains(m)) continue;
-        Goals(targets_at,m,already_seen,goals);
-      }
-      return goals;
-    }
-
-    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals, Map dest)
-    {
-#if DEBUG
-      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
-#endif
-      var navigate = dest.PathfindLocSteps(m_Actor);
-
-      navigate.GoalDistance(goals, m_Actor.Location);
-      return navigate;
-    }
-
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
     {
 #if DEBUG
@@ -3316,17 +3241,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return navigate;
     }
 
-    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Location> navigate)
-    {
-      if (null == navigate) return null;
-      if (!navigate.Domain.Contains(m_Actor.Location)) return null;
-      ActorAction ret = DecideMove(navigate.Approach(m_Actor.Location));
-      if (null == ret) ret = PlanApproachFailover(navigate);
-      if (null == ret) return null;
-      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-      return ret;
-    }
-
     protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
     {
       if (null == navigate) return null;
@@ -3343,25 +3257,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
-    }
-
-    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
-    {
-      List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
-      if (0 >= goals.Count) return null;
-      {
-      var already = new Dictionary<Location, ActorAction>();
-      Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location, already);
-      foreach(Location loc in goals) {
-        if (moves.TryGetValue(loc,out var tmp)) {
-          if (!tmp.IsLegal()) return null;
-          if (VetoAction(tmp)) return null;
-          return tmp;
-        }
-      }
-      }
-
-      return BehaviorPathTo(PathfinderFor(goals,m_Actor.Location.Map));
     }
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)

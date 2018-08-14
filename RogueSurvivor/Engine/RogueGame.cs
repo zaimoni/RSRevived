@@ -11636,18 +11636,34 @@ namespace djack.RogueSurvivor.Engine
       Location origin = Player.Location;
       Location viewpoint = origin;
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint.  RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       RedrawPlayScreen();
 
       do {
         WaitKeyOrMouse(out KeyEventArgs key, out Point point, out MouseButtons? mouseButtons);
         if (null != key) {
           switch(key.KeyCode) {
-          case Keys.Escape:
+          case Keys.Escape: // cancel
             ClearOverlays();
             PanViewportTo(Player);
             return null;
-          case Keys.Return:
+          case Keys.R:  // run to ...
+            if (viewpoint.IsWalkableFor(Player)) { 
+              (Player.Controller as PlayerController).RunTo(viewpoint);
+              ClearOverlays();
+              PanViewportTo(Player);
+              return null;
+            }
+            break;  // XXX \todo be somewhat more informative
+          case Keys.W:  // walk to ...
+            if (viewpoint.IsWalkableFor(Player)) { 
+              (Player.Controller as PlayerController).WalkTo(viewpoint);
+              ClearOverlays();
+              PanViewportTo(Player);
+              return null;
+            }
+            break;  // XXX \todo be somewhat more informative
+          case Keys.Return: // set waypoint
             ClearOverlays();
             PanViewportTo(Player);
             return viewpoint;

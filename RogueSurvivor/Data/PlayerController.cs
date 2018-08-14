@@ -135,6 +135,16 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public void WalkTo(Location loc)
+    {   // triggered from far look mode
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc, true));
+    }
+
+    public void RunTo(Location loc)
+    {   // triggered from far look mode
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc));
+    }
+
     public List<string> GetValidSelfOrders()
     { 
       var ret = new List<string>();

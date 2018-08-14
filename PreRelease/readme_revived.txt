@@ -24,12 +24,15 @@ REVIVED 0.10.0 CHANGES
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
 ** The SWAT team starting at the police station on Day 0 Turn 0 has pre-looted the offices.
+** Complete subway network at district size 40+
 * It is rarely possible to see where a living is planning to move next.  (If you are about to shove him, you will see this.)
 * player-player trading is now possible.  A similar implementation is used for player-NPC trading (no more roulette, if the target doesn't
   want to give up anything you want, you will know immediately)
+** RS Alpha 10 negotiation has not yet been merged in; it is wanted.
 * new (stub) command: Faction Info (default Shift-Ctrl-I).  See the main manual for details.
 * new (stub) command: Set Waypoint (default Alt-Shift-I).  Use this to far-look (move the viewpoint without actually moving).
   See the main manual for details.
+** W)alk and R)un work from here.
 * Items will survive better if the method of death isn't particularly destructive to them.  (A slightly weaker version 
   of the change in Still Alive).
 ** the historical resistance of food and ammo to destruction has been retained.  Armor will survive better
