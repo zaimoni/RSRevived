@@ -12820,12 +12820,13 @@ namespace djack.RogueSurvivor.Engine
         switch (Session.Get.ScriptStage_PoliceStationPrisoner)
         {
           case 0:
-            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && !theActor.IsSleeping && IsVisibleToPlayer(theActor))  // alpha10 fix: and visible!)
-                        {
+            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(theActor))  // alpha10 fix: and visible!)
+            {
               lock (Session.Get)
               {
                 string[] local_6 = null;
                 if (player.Faction == GameFactions.TheCivilians || player.Faction == GameFactions.TheSurvivors) {
+                  if (theActor.IsSleeping) DoWakeUp(theActor);
                   local_6 = new string[13] {    // standard message
                     "\" Psssst! Hey! You over there! \"",
                     string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  theActor.Name,  HisOrHer(theActor)),
