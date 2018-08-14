@@ -1443,6 +1443,7 @@ retry:
       foreach(MapObject obj in MapObjects) {
         if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_OPEN;
+        RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
       }
     }
 

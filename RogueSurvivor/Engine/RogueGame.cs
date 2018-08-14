@@ -9515,10 +9515,14 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
     }
 
+    public void OnLoudNoise(Location loc, string noiseName)
+    {
+      OnLoudNoise(loc.Map,loc.Position,noiseName);
+    }
+
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
     {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
       Rectangle survey = new Rectangle(noisePosition.X - Rules.LOUD_NOISE_RADIUS, noisePosition.Y - Rules.LOUD_NOISE_RADIUS, 2* Rules.LOUD_NOISE_RADIUS + 1, 2 * Rules.LOUD_NOISE_RADIUS + 1);
-      map.TrimToBounds(ref survey);
 
       Actor actorAt = null;
       survey.DoForEach(pt => {
@@ -9528,8 +9532,8 @@ namespace djack.RogueSurvivor.Engine
           RedrawPlayScreen();
         }
       }, pt => {
-        actorAt = map.GetActorAt(pt);
-        if (!actorAt?.IsSleeping ?? true) return false;
+        actorAt = map.GetActorAtExt(pt);
+        if (!(actorAt?.IsSleeping ?? false)) return false;
         int noiseDistance = Rules.GridDistance(noisePosition, pt);
         return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
       });
@@ -13287,11 +13291,14 @@ namespace djack.RogueSurvivor.Engine
       foreach (MapObject obj in map.MapObjects) {
         if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_CLOSED;
+//      RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell closing" : "gate closing");
+        OnLoudNoise(obj.Location,map== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell closing" : "gate closing");
+
         Actor actorAt = map.GetActorAt(obj.Location.Position);
         if (null == actorAt) continue;
-        KillActor(null, actorAt, "crushed");
+        KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
         if (0<map.PlayerCount) {
-          AddMessage(new Data.Message("Someone got crushed between the closing "+gate_name+"!", map.LocalTime.TurnCounter, Color.Red));
+          AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", Conjugate(actorAt, VERB_BE))));
           RedrawPlayScreen();
         }
       }
