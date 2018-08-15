@@ -12807,7 +12807,7 @@ namespace djack.RogueSurvivor.Engine
         lock (Session.Get) {
           Session.Get.PlayerKnows_TheSewersThingLocation = true;
           m_MusicManager.Stop();
-          m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
+          m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
           ClearMessages();
           AddMessage(new Data.Message("Hey! What's that THING!?", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           AddMessagePressEnter();
@@ -12887,7 +12887,7 @@ namespace djack.RogueSurvivor.Engine
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.APreset();   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
-                m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
+                m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 break;
               }
@@ -13254,8 +13254,26 @@ namespace djack.RogueSurvivor.Engine
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
             if (0 == Session.Get.ScriptStage_PoliceStationPrisoner) Session.Get.ScriptStage_PoliceStationPrisoner = 1;
-              // \todo prison breakout
+              // prison breakout
+              Map dest = map.District.EntryMap;
               // * use Goal_PathTo on all normal prisoners.  Use an extended timer so the prisoners don't forget to escape.
+              var z = dest.GetZoneByPartialName("Police Station");
+              Point doorAt = z.Bounds.Anchor(Compass.XCOMlike.S);   // XXX \todo read this as the chokepoint for this zone
+              var safe_zone = new HashSet<Point>();
+              foreach(Point pt in Enumerable.Range(0,16).Select(i=> doorAt.RadarSweep(2,i))) {
+//              if (!dest.IsInBounds(pt)) continue; // radius 3 would need this test
+                if (!dest.IsWalkableFor(pt, GameActors.MaleCivilian)) continue;
+                if (dest.IsInsideAt(pt)) continue;
+                safe_zone.Add(pt);
+              }
+              var escapees = new List<Actor>();
+              (new Rectangle(1,4,17,1)).DoForEach(pt => {
+                Actor a = map.GetActorAt(pt);
+                if (null != a) escapees.Add(a);
+              });
+              var escape = new Tasks.TaskEscapeNanny(escapees, safe_zone);
+              escape.Trigger(dest);
+              dest.AddTimer(escape);
               // * VAPORWARE: AI isn't otherwise there, so don't worry about waking up anyone who slept through the gates opening (yet)
               // * VAPORWARE: Police that see the escaping prisoners before they get distance 2 beyond the front door will realize there is a breakout and attempt to kill.
               // * VAPORWARE: If the police radio is *on* when the prisoner gives the location of the CHAR base, the police may get the location at the same time.

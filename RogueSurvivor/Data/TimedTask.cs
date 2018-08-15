@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal abstract class TimedTask
   {
-    public int TurnsLeft { get; private set; }
+    public int TurnsLeft { get; protected set; }
 
     public bool IsCompleted { get { return TurnsLeft <= 0; } }
 

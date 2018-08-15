@@ -973,6 +973,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathTo(PathfinderFor(goals,m_Actor.Location.Map));
     }
 
+     public void GoalHeadFor(Map m, HashSet<Point> dest)
+     {
+       var locs = new HashSet<Location>(dest.Select(pt => new Location(m,pt)));
+       Objectives.Insert(0,new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,locs));
+     }
+
 #region damage field
     private void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
