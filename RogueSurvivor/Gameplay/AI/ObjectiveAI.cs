@@ -325,7 +325,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       PlannedMoves.Clear();
       Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
-      if (0 >= dest.Count) return dest;
+      if (null == dest) return dest;
       PlannedMoves[m_Actor.Location.Position] = dest;
       foreach(Point pt in dest.Keys) {
         if (0>navigate.Cost(pt)) continue;
