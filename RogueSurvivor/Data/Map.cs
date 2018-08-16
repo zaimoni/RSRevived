@@ -1566,7 +1566,7 @@ retry:
         // Cf. Actor::GetWorstMeleeWeapon
         {
         var melee = itemsAt.GetItemsByType<ItemMeleeWeapon>().Where(m => !m.Model.IsUnbreakable && !m.IsUnique);
-        if (2 <= melee.Count()) crushed = melee.Minimize(w => w.Model.Attack.Rating);
+        if (2 <= (melee?.Count() ?? 0)) crushed = melee.Minimize(w => w.Model.Attack.Rating);
         }
 
         // other (un)reality checks go here
