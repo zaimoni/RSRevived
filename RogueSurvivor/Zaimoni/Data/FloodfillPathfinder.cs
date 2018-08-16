@@ -194,6 +194,10 @@ namespace Zaimoni.Data
             foreach (T tmp2 in tmp.Keys) {
                 if (_map.TryGetValue(tmp2,out int cost) && cost < current_cost) ret[tmp2] = _map[tmp2];
             }
+            if (0 < ret.Count) return ret;
+            foreach (T tmp2 in tmp.Keys) {
+                if (_map.TryGetValue(tmp2,out int cost) && cost == current_cost) ret[tmp2] = _map[tmp2];
+            }
             return (0 < ret.Count) ? ret : null;
         }
 

@@ -4846,7 +4846,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1] { string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location), SIZE_OF_ACTOR)));
-#if DEBUG
       if (other.Controller is ObjectiveAI ai) {
         Dictionary<Point, int> dests = ai.MovePlanIf(other.Location.Position);
         if (null != dests) {
@@ -4855,7 +4854,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-#endif
 
       bool flag2 = false;
       do {
@@ -11062,6 +11060,15 @@ namespace djack.RogueSurvivor.Engine
 
         // in group with actor
         if (other.IsInGroupWith(actor)) AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
+      }
+
+      if (actor.Controller is ObjectiveAI ai) {
+        Dictionary<Point, int> dests = ai.MovePlanIf(actor.Location.Position);
+        if (null != dests) {
+          foreach(Point pt in dests.Keys) {
+            AddOverlay(new OverlayRect(Color.Green, new Rectangle(MapToScreen(new Location(actor.Location.Map,pt)), SIZE_OF_ACTOR)));
+          }
+        }
       }
     }
 
