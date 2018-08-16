@@ -25,10 +25,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Map _view_map;
     private Dictionary<Point,Actor> _friends;
     private Dictionary<Point,Actor> _enemies;
+    private Dictionary<Point,Inventory> _items;
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
     public Dictionary<Point, Actor> enemies { get { return _enemies; } } // reference-return
+    public Dictionary<Point, Inventory> items { get { return _items; } } // reference-return
 
     public LOSSensor(SensingFilter filters)
     {
@@ -78,6 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     private void _seeItems(List<Percept> perceptList)
     {
+      _items = null;
       foreach (Point pt in FOV) {
         Location tmp = new Location(m_Actor.Location.Map,pt);
         if (!tmp.Map.IsInBounds(pt)) {
@@ -88,11 +91,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         Inventory itemsAt = tmp.Map.GetItemsAt(tmp.Position);
         if (null==itemsAt) continue;
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
+        (_items ?? (_items = new Dictionary<Point,Inventory>()))[pt] = itemsAt;
       }
     }
 
     private void _seeItems(List<Percept> perceptList, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
     {
+      _items = null;
       foreach (Point pt in FOV) {
         Location tmp = new Location(m_Actor.Location.Map,pt);
         if (!tmp.Map.IsInBounds(pt)) {
@@ -106,6 +111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           continue;
         }
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
+        (_items ?? (_items = new Dictionary<Point,Inventory>()))[pt] = itemsAt;
         items.Set(tmp, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), tmp.Map.LocalTime.TurnCounter);
       }
     }

@@ -235,7 +235,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [System.Flags]
     public enum ReactionCode : uint {
       NONE = 0,
-      ENEMY = uint.MaxValue/2+1
+      ENEMY = uint.MaxValue/2+1,
+      ITEM = ENEMY/2
     };
 
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
@@ -245,6 +246,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ReactionCode ret = ReactionCode.NONE;
         if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
         // \todo we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
+        var items = items_in_FOV;
+        if (null != items) {
+          foreach(var x in items) {
+           var loc = new Location(m_Actor.Location.Map,x.Key);
+           if (!loc.Map.IsInBounds(loc.Position)) {
+             Location? test = loc.Map.Normalize(loc.Position);
+             if (null == test) continue;    // XXX invariant violation
+             loc = test.Value;
+           }
+           if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
+           if (BehaviorWouldGrabFromStack(loc, x.Value)?.IsLegal() ?? false) {
+             ret |= ReactionCode.ITEM;
+             break;
+           }
+          }
+        }
         // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
         // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
         return ret;
