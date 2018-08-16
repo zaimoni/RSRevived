@@ -7648,6 +7648,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        RedrawPlayScreen();
         return false;
       }
 #if OBSOLETE
@@ -7687,6 +7688,7 @@ namespace djack.RogueSurvivor.Engine
       if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, origin);
+      RedrawPlayScreen();
       return true;
     }
 
