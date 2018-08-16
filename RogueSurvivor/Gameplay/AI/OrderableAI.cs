@@ -2963,10 +2963,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       ActorAction ret = DecideMove(costs);
 #if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "DecideMove: "+(ret?.ToString() ?? "null"));
-#endif
-      if (null == ret) ret = PlanApproachFailover(navigate);
-#if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final: "+(ret?.ToString() ?? "null"));
 #endif
       if (null == ret) return null; // can happen due to postprocessing
@@ -2987,7 +2983,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       ActorAction ret = DecideMove(PlanApproach(navigate));
-      if (null == ret) ret = PlanApproachFailover(navigate);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -3255,7 +3250,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       ActorAction ret = DecideMove(PlanApproach(navigate));
-      if (null == ret) ret = PlanApproachFailover(navigate);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;

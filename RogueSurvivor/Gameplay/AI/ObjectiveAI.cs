@@ -346,38 +346,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return dest;
     }
 
-    protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
-    {
-      List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
-      if (null != legal_steps) {
-        var costs = new Dictionary<Point,int>();
-        foreach(Point pt in legal_steps) {
-          costs[pt] = navigate.Cost(pt);
-        }
-        int min_cost = costs.Values.Min();
-        if (int.MaxValue == min_cost) return null;
-        costs.OnlyIf(val => val <= min_cost);
-        if (0<costs.Count) return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,RogueForm.Game.Rules.DiceRoller.Choose(costs.Keys.ToList())));
-      }
-      return null;
-    }
-
-    protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Location> navigate)
-    {
-      Dictionary<Location,ActorAction> legal_steps = m_Actor.OnePathRange(m_Actor.Location);
-      if (null != legal_steps) {
-        var costs = new Dictionary<Location,int>();
-        foreach(var loc_action in legal_steps) {
-          costs[loc_action.Key] = navigate.Cost(loc_action.Key);
-        }
-        int min_cost = costs.Values.Min();
-        if (int.MaxValue == min_cost) return null;
-        costs.OnlyIf(val => val <= min_cost);
-        if (0<costs.Count) return legal_steps[RogueForm.Game.Rules.DiceRoller.Choose(costs.Keys.ToList())];
-      }
-      return null;
-    }
-
     protected void ClearMovePlan()
     {
       PlannedMoves.Clear();
@@ -918,7 +886,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
       ActorAction ret = DecideMove(navigate.Approach(m_Actor.Location));
-      if (null == ret) ret = PlanApproachFailover(navigate);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;

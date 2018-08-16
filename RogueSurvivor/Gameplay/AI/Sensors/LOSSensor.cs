@@ -26,7 +26,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Dictionary<Point,Actor> _friends;
     private Dictionary<Point,Actor> _enemies;
 
-
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
     public Dictionary<Point, Actor> enemies { get { return _enemies; } } // reference-return
