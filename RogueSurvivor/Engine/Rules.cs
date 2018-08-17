@@ -424,6 +424,18 @@ namespace djack.RogueSurvivor.Engine
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (loc.IsWalkableFor(actor, out reason)) {
         reason = "";
+        if (map!=actor.Location.Map) {
+          // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
+          Exit exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
+          if (null != exit && exit.Location==loc) {
+           if (string.IsNullOrEmpty(exit.ReasonIsBlocked(actor))) return new ActionUseExit(actor, actor.Location.Position);
+           Actor a = exit.Location.Actor;
+           if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
+           MapObject obj = exit.Location.MapObject;
+           if (obj != null && actor.CanBreak(obj)) return new ActionBreak(actor, obj);
+           return null;
+          }
+        }
         return actionMoveStep;
       }
 

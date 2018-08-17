@@ -186,8 +186,7 @@ namespace Zaimoni.Data
         }
 
         public Dictionary<T, int> Approach(T current_pos) {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
-            int current_cost = _map[current_pos];
+            if (!_map.TryGetValue(current_pos,out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             if (0 == current_cost) return null;   // already at a goal
             Dictionary<T, int> tmp = _inverse(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
@@ -201,9 +200,44 @@ namespace Zaimoni.Data
             return (0 < ret.Count) ? ret : null;
         }
 
+        // normal use case is to set depth and then do local optimizations to the returned path
+        public List<List<T>> MinStepPathTo(T current_pos,int depth = 0)
+        {
+            if (!_map.TryGetValue(current_pos, out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
+            if (0 == current_cost) return null;   // already at a goal
+            var ret = new List<List<T>>();
+            List<T> next = null;
+            var bootstrap = Approach(current_pos);
+            if (null == bootstrap) return null;
+            next = bootstrap.Keys.ToList();
+            ret.Add(next);
+            if (0 < depth && 1 == next.Count) return ret;    // no optimization indicated
+            while (!next.Any(pos => 0 >= _map[pos]) && (0 >= depth || depth > ret.Count)) {
+                List<T> working = null; /// would prefer HashSet, but work to ensure T is hashable is excessive in the general case
+                foreach (T loc in next) {
+                    int reference_cost = Cost(loc);
+                    var tmp = Approach(loc);
+                    if (null == tmp) continue;
+                    tmp.OnlyIf(pt => reference_cost > Cost(pt));
+                    if (0 >= tmp.Count) continue;
+                    if (null == working) {
+                        working = new List<T>(tmp.Keys);
+                        continue;
+                    }
+                    tmp.OnlyIf(pt => !working.Contains(pt));
+                    if (0 >= tmp.Count) continue;
+                    working.AddRange(tmp.Keys);
+                }
+                if (null == working) break;
+                ret.Add(working);
+                next = working;
+            }
+            return ret;
+        }
+
+#if DEAD_FUNC
         public Dictionary<T, int> Flee(T current_pos) {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
-            int current_cost = _map[current_pos];
+            if (!_map.TryGetValue(current_pos,out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             Dictionary<T, int> tmp = _forward(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
             foreach (T tmp2 in tmp.Keys) {
@@ -211,5 +245,6 @@ namespace Zaimoni.Data
             }
             return (0 < ret.Count) ? ret : null;
         }
+#endif
     }
 }

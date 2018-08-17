@@ -902,7 +902,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
-      ActorAction ret = DecideMove(navigate.Approach(m_Actor.Location));
+      Dictionary<Location,int> costs = null;
+      var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      if (null != path) {
+        void purge_non_adjacent(int i) {    // \todo non-local function target?
+          while(0 < i) {
+            var tmp = path[i - 1].Where(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc))).ToList();
+            if (tmp.Count <= path[i - 1].Count || 0>=tmp.Count) return;
+            path[--i] = tmp;
+          }
+        }
+
+        if (1 < path[0].Count) {
+          // work backwards.
+          int i = path.Count;
+          while(0 < --i) {
+            if (1 < path[i].Count) {
+              var no_jump = new List<Location>();
+              var jump = new List<Location>();
+              foreach(Location loc in path[i]) ((loc.MapObject?.IsJumpable ?? false) ? jump : no_jump).Add(loc);
+              if (0<jump.Count && 0<no_jump.Count) {
+                path[i] = no_jump;
+                purge_non_adjacent(i);
+                if (1 == path[0].Count) break;
+              }
+            }
+          }
+        }
+        if (1 == path[0].Count) {
+          ActorAction act = Rules.IsPathableFor(m_Actor,path[0][0]);
+          if (act?.IsLegal() ?? false) {
+            if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position); // XXX should be more tactically aware
+            return act;
+          }
+          return null;
+        }
+        if (0 < path[0].Count) {
+          costs = new Dictionary<Location,int>();
+          foreach(var loc in path[0]) costs[loc] = navigate.Cost(loc);
+        }
+      } else {
+        costs = navigate.Approach(m_Actor.Location);
+      }
+
+      ActorAction ret = DecideMove(costs);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
