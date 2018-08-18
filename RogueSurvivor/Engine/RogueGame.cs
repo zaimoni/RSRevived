@@ -2958,6 +2958,7 @@ namespace djack.RogueSurvivor.Engine
 
         ActorAction tmpAction = (Player.Controller as PlayerController).AutoPilot();
         if (null != tmpAction) {
+          play_timer.Start();
           tmpAction.Perform();
           // XXX following is duplicated code
           player.Controller.UpdateSensors();
