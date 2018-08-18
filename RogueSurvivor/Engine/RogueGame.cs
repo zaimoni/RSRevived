@@ -8118,7 +8118,7 @@ namespace djack.RogueSurvivor.Engine
           if (defender.IsDead) {
             --itemRangedWeapon.Ammo;
             Attack currentRangedAttack = attacker.CurrentRangedAttack;
-            AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, currentRangedAttack.Verb))));
+            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, currentRangedAttack.Verb))));
             break;
           }
           if (itemRangedWeapon.Ammo <= 0) break;

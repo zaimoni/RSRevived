@@ -2918,13 +2918,14 @@ namespace djack.RogueSurvivor.Data
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
       // alpha10 dont bother someone who is fighting or fleeing
-      if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE)
-        return "in combat";
+      if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE) {
+        if (!target.IsPlayer) return "in combat";
+      }
 
 #if OBSOLETE
       if (!IsPlayer) {
 #else
-            if (!IsPlayer && !target.IsPlayer) {
+      if (!IsPlayer && !target.IsPlayer) {
 #endif
         List<Item> theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
         if (null == theirs) return "target unwilling to trade";
