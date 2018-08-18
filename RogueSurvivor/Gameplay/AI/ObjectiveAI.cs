@@ -908,7 +908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         void purge_non_adjacent(int i) {    // \todo non-local function target?
           while(0 < i) {
             var tmp = path[i - 1].Where(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc))).ToList();
-            if (tmp.Count <= path[i - 1].Count || 0>=tmp.Count) return;
+            if (tmp.Count >= path[i - 1].Count || 0>=tmp.Count) return;
             path[--i] = tmp;
           }
         }
