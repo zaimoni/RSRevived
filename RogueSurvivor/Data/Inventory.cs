@@ -73,15 +73,16 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       List<Item> itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
-      if (stackedQuantity == it.Quantity) {
-        int quantity = it.Quantity;
+      if (0 < stackedQuantity) {
+        int quantity = stackedQuantity;
         foreach (Item to in itemsStackableWith) {
           int addThis = Math.Min(to.Model.StackingLimit - to.Quantity, quantity);
           AddToStack(it, addThis, to);
           quantity -= addThis;
+          it.Quantity -= addThis;
           if (quantity <= 0) break;
         }
-        return true;
+        if (0 >= it.Quantity) return true;
       }
       if (IsFull) return false;
       m_Items.Add(it);

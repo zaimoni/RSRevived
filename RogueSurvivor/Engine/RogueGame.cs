@@ -4266,6 +4266,7 @@ namespace djack.RogueSurvivor.Engine
               ClearOverlays();
               RedrawPlayScreen();
               DoTrade(player, inventoryItem, actorAt, true);
+              player.SpendActionPoints(Rules.BASE_ACTION_COST);
               break;
             } else {
               AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
