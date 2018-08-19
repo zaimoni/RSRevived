@@ -90,8 +90,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", 0);
       named.IsUnique = true;
-      tgen.DressCivilian(named);
-//    named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);    // XXX \todo GameImages.ACTOR_FATHER_TIME
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FATHER_TIME);
       named.StartingSkill(Skills.IDs.HAULER,3);
       named.StartingSkill(Skills.IDs.MARTIAL_ARTS, 5);  // to get the most out of his scythe
       named.StartingSkill(Skills.IDs.AGILE, 5);

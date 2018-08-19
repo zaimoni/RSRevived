@@ -850,6 +850,14 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
+        if ((now.Month == 12 && now.Day >= 31) || (now.Month==1 && now.Day <= 2)) {
+          for (int index = 0; index < 10; ++index) {
+            int gx2 = m_Rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
+            int gy2 = m_Rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
+            m_UI.UI_DrawImage(GameImages.ACTOR_FATHER_TIME, gx2, gy2);
+            m_UI.UI_DrawStringBold(Color.Snow, "* Happy New Year *", gx2 - 60, gy2 - 10, new Color?());
+          }
+        }
         return null;
       });
       Func<int, bool?> choice_handler = (c => {

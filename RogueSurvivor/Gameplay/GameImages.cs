@@ -232,6 +232,9 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ACTOR_ROGUEDJACK = "Actors\\roguedjack";
     public const string ACTOR_DUCKMAN = "Actors\\duckman";
     public const string ACTOR_HANS_VON_HANZ = "Actors\\hans_von_hanz";
+    public const string ACTOR_FATHER_TIME = "Actors\\father_time";
+    // Father Time's icon spec: male_skin5.png male_shoes1.png female_pants2.png male_shirt5.png male_eyes6.png [glasses] male_hair8.png (hat concealing baldness)
+    // "shirt" is a black trenchcoat, recolored to 208 248 208 to get a light-green kimono-type outfit
     public const string BLOODIED = "Actors\\Decoration\\bloodied";
     public const string MALE_SKIN1 = "Actors\\Decoration\\male_skin1";
     public const string MALE_SKIN2 = "Actors\\Decoration\\male_skin2";
@@ -648,6 +651,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ACTOR_ROGUEDJACK);
       Load(ACTOR_DUCKMAN);
       Load(ACTOR_HANS_VON_HANZ);
+      Load(ACTOR_FATHER_TIME);
       Notify(ui, "actor decorations...");
       Load(BLOODIED);
       Load(MALE_SKIN1);
