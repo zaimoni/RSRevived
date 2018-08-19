@@ -2074,6 +2074,15 @@ retry:
       return Direction.COMPASS.Select(dir => position + dir).Any(p=>IsInBounds(p) && predicateFn(p));
     }
 
+    public bool HasAnyAdjacent(Point position, Predicate<Point> predicateFn)
+    {
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+#endif
+      if (!IsValid(position)) return false;
+      return position.Adjacent().Any(p=>IsValid(p) && predicateFn(p));
+    }
+
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {
 #if DEBUG

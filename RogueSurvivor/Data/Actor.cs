@@ -1525,11 +1525,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
-      return map.HasAnyAdjacentInMap(p, (Predicate<Point>) (pt =>
-      {
-          Actor actorAt = map.GetActorAt(pt);
-          return null!= actorAt && IsEnemyOf(actorAt);
-      }));
+      return map.HasAnyAdjacent(p, pt => map.GetActorAtExt(pt)?.IsEnemyOf(this) ?? false);
     }
 
     public bool IsAdjacentToEnemy {
@@ -3315,7 +3311,7 @@ namespace djack.RogueSurvivor.Data
         int lightBonus = LightBonus;
         if (lightBonus == 0) {
           Map map = Location.Map;
-          if (map.HasAnyAdjacentInMap(Location.Position, pt => 0 < (map.GetActorAt(pt)?.LightBonus ?? 0)))
+          if (map.HasAnyAdjacent(Location.Position, pt => 0 < (map.GetActorAtExt(pt)?.LightBonus ?? 0)))
             lightBonus = 1;
         }
         FOV += lightBonus;
