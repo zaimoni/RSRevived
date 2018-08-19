@@ -847,9 +847,24 @@ namespace djack.RogueSurvivor.Engine
   } // end Rules class
 
 // still want this
-#if FAIL
   internal static class ext_Rules
   {
-  }
+    public static bool IsScheduledBefore(this Point lhs, Point rhs) { // Cf. ScheduleAdjacentForAdvancePlay.  Almost anti-symmetric, irreflexive relation
+      if (lhs.X <= rhs.X && lhs.Y <= rhs.Y) return false;   // this quadrant comes after us.  Includes equality.
+      if (lhs.X >= rhs.X && lhs.Y >= rhs.Y) return true;    // this quadrant comes before us.  Would include equality except that already happened.
+
+      // strictly speaking, only need to be accurate for adjacent points
+      Point abs_delta = (lhs.Y < rhs.Y) ? new Point(lhs.X-rhs.X,rhs.Y-lhs.Y) : new Point(rhs.X-lhs.Y,lhs.Y-rhs.Y);
+#if REFERENCE
+      if (abs_delta.X  == 2*abs_delta.Y) return false;   // the ambiguity line; overflow-vulnerable
 #endif
+      int diag_delta = abs_delta.X - abs_delta.Y;
+      if (diag_delta == abs_delta.Y) return false;  // the ambiguity line (why we are not anti-symmetric)
+      if (lhs.Y < rhs.Y) {
+        return diag_delta > abs_delta.Y; // we constrain (X-1,Y+1) so 0<1 must fail
+      } else {
+        return diag_delta < abs_delta.Y; // we are constrained by (X+1,Y-1) so 0 < 1 must pass
+      }
+    }
+  }
 }

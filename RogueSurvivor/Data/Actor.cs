@@ -306,7 +306,6 @@ namespace djack.RogueSurvivor.Data
 
     public int ActionPoints { get { return m_ActionPoints; } }
     public void APreset() { m_ActionPoints = 0; }
-    public void APrecharge() { Interlocked.Add(ref m_ActionPoints,Speed); }
 
     public int LastActionTurn { get { return m_LastActionTurn; } }
 

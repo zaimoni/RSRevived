@@ -629,6 +629,17 @@ namespace djack.RogueSurvivor.Gameplay
       if (5 != (int)(PlayerCommand.MOVE_SW) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
       if (6 != (int)(PlayerCommand.MOVE_W) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
       if (7 != (int)(PlayerCommand.MOVE_NW) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+
+      // No good place to do this regression testing either
+      Point origin = new Point(0,0);
+      if (!origin.IsScheduledBefore(origin+Direction.W)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (!origin.IsScheduledBefore(origin+Direction.NW)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (!origin.IsScheduledBefore(origin+Direction.N)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (!origin.IsScheduledBefore(origin+Direction.NE)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (origin.IsScheduledBefore(origin+Direction.E)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (origin.IsScheduledBefore(origin+Direction.SE)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (origin.IsScheduledBefore(origin+Direction.S)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
+      if (origin.IsScheduledBefore(origin+Direction.SW)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
 #endif
       // Medicine
       _setModel(IDs.MEDICINE_BANDAGES, new ItemMedicineModel(DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));

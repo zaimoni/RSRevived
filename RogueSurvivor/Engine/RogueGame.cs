@@ -7673,7 +7673,7 @@ namespace djack.RogueSurvivor.Engine
 #if SPEEDY_GONZALES
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
 #else
-      bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;
+      bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
       if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
 #endif
       if (ForceVisibleToPlayer(actor))
@@ -7685,7 +7685,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
       exitAt.Location.Place(actor); // Adds at last position by default
 #if NO_PEACE_WALLS
-      if (exitAt.ToMap.District == map.District) exitAt.ToMap.MoveActorToFirstPosition(actor); // If we can see what we're getting into, we shouldn't visibly double-move
+      if (   exitAt.ToMap.District == map.District // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
+          || run_was_free_move)
+        exitAt.ToMap.MoveActorToFirstPosition(actor);
 #else
       exitAt.ToMap.MoveActorToFirstPosition(actor);
 #endif
@@ -7693,7 +7695,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
       if (map.District != exitAt.ToMap.District) {
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-        if (!run_was_free_move) actor.APrecharge();
+        if (!run_was_free_move) actor.PreTurnStart();
       }
       if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
