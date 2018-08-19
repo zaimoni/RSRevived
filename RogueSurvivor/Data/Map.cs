@@ -2071,9 +2071,10 @@ retry:
       if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
 #endif
       if (!IsInBounds(position)) return false;
-      return Direction.COMPASS.Select(dir => position + dir).Any(p=>IsInBounds(p) && predicateFn(p));
+      return position.Adjacent().Any(p=>IsInBounds(p) && predicateFn(p));
     }
 
+#if DEAD_FUNC
     public bool HasAnyAdjacent(Point position, Predicate<Point> predicateFn)
     {
 #if DEBUG
@@ -2081,6 +2082,21 @@ retry:
 #endif
       if (!IsValid(position)) return false;
       return position.Adjacent().Any(p=>IsValid(p) && predicateFn(p));
+    }
+#endif
+
+    public bool HasAnyAdjacent(Point position, Predicate<Actor> test)
+    {
+#if DEBUG
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      if (!IsValid(position)) return false;
+      foreach(Point pt in position.Adjacent()) {
+        if (!IsValid(pt)) continue;
+        Actor a = GetActorAtExt(pt);
+        if (null != a && test(a)) return true;
+      }
+      return false;
     }
 
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)

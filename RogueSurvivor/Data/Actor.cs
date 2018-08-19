@@ -1525,7 +1525,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
-      return map.HasAnyAdjacent(p, pt => map.GetActorAtExt(pt)?.IsEnemyOf(this) ?? false);
+      return map.HasAnyAdjacent(p, a => a.IsEnemyOf(this));
     }
 
     public bool IsAdjacentToEnemy {
@@ -3277,13 +3277,6 @@ namespace djack.RogueSurvivor.Data
       return (Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather));
     }
 
-    int LightBonus {
-      get {
-        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
-        return 0;
-      }
-    }
-
     public int FOVrangeNoFlashlight(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0;
@@ -3302,6 +3295,14 @@ namespace djack.RogueSurvivor.Data
       return Math.Max(MINIMAL_FOV, FOV);
     }
 
+    private int LightBonus {
+      get {
+        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
+        return 0;
+      }
+    }
+    private static bool UsingLight(Actor a) { return 0 < a.LightBonus; }
+
     public int FOVrange(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0; // repeat this short-circuit here for correctness
@@ -3309,11 +3310,7 @@ namespace djack.RogueSurvivor.Data
       Lighting light = Location.Map.Lighting;
       if (light == Lighting.DARKNESS || (light == Lighting.OUTSIDE && time.IsNight)) {
         int lightBonus = LightBonus;
-        if (lightBonus == 0) {
-          Map map = Location.Map;
-          if (map.HasAnyAdjacent(Location.Position, pt => 0 < (map.GetActorAtExt(pt)?.LightBonus ?? 0)))
-            lightBonus = 1;
-        }
+        if (0 == lightBonus && Location.Map.HasAnyAdjacent(Location.Position, UsingLight)) lightBonus = 1;
         FOV += lightBonus;
       }
       return Math.Max(MINIMAL_FOV, FOV);
