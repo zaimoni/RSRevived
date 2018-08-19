@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor FatherTime { get; private set; }
     public UniqueActor HansVonHanz { get; private set; }
     public UniqueActor JasonMyers { get; private set; }
-    public UniqueActor PoliceStationPrisonner { get; private set; }
+    public UniqueActor PoliceStationPrisoner { get; private set; }
     public UniqueActor Roguedjack { get; private set; }
     public UniqueActor Santaman { get; private set; }
     public UniqueActor TheSewersThing { get; private set; }
@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Engine
         FamuFataru,
         FatherTime,
         HansVonHanz,
-        PoliceStationPrisonner,
+        PoliceStationPrisoner,
         Roguedjack,
         Santaman,
         TheSewersThing,
@@ -55,12 +55,12 @@ namespace djack.RogueSurvivor.Engine
     public void init_Prisoner(Actor newCivilian)
     {
 #if DEBUG
-      if (null != PoliceStationPrisonner) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
+      if (null != PoliceStationPrisoner) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
 #endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Inventory.AddAll(BaseMapGenerator.MakeItemArmyRation());
-      PoliceStationPrisonner = new UniqueActor(newCivilian,true);
+      PoliceStationPrisoner = new UniqueActor(newCivilian,true);
     }
 
     public void init_JasonMyers()

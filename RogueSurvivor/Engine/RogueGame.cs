@@ -3760,11 +3760,11 @@ namespace djack.RogueSurvivor.Engine
                 // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
                 // XXX if the CHAR default orders document has been read then this text should be revised
                 display.Add("Something's very wrong; CHAR guards are attacking us cops.");
-                if (1==Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make "+HimOrHer(Session.Get.UniqueActors.PoliceStationPrisonner.TheActor)+" squawk.");
+                if (1==Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make "+HimOrHer(Session.Get.UniqueActors.PoliceStationPrisoner.TheActor)+" squawk.");
                 // XXX ok for police to invade CHAR Offices at this point.
                 // XXX police will be able to aggress CHAR without risking murder at this point
               }
-              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; "+HeOrShe(Session.Get.UniqueActors.PoliceStationPrisonner.TheActor) + " was contaminated by a ZM transformer agent.");
+              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; "+HeOrShe(Session.Get.UniqueActors.PoliceStationPrisoner.TheActor) + " was contaminated by a ZM transformer agent.");
               if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should record sighting officer
                 // XXX the cell phone used for last contact should be down here (plausibly not an artifact, however)
@@ -12836,34 +12836,36 @@ namespace djack.RogueSurvivor.Engine
       // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
       // Acceptable factions are civilians and survivors.
       // Even if the player is of an unacceptable faction, he will be thanked if not an enemy.
-      if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisonner.TheActor.IsDead)
+      if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.IsDead)
       {
-        Actor theActor = Session.Get.UniqueActors.PoliceStationPrisonner.TheActor;
+        Actor prisoner = Session.Get.UniqueActors.PoliceStationPrisoner.TheActor;
         Map map = player.Location.Map;
         switch (Session.Get.ScriptStage_PoliceStationPrisoner)
         {
           case 0:
-            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(theActor))  // alpha10 fix: and visible!)
+            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(prisoner))  // alpha10 fix: and visible!)
             {
               lock (Session.Get)
               {
                 string[] local_6 = null;
                 if (player.Faction == GameFactions.TheCivilians || player.Faction == GameFactions.TheSurvivors) {
-                  if (theActor.IsSleeping) DoWakeUp(theActor);
-                  local_6 = new string[13] {    // standard message
+                  if (prisoner.IsSleeping) DoWakeUp(prisoner);
+                  local_6 = new string[] {    // standard message
                     "\" Psssst! Hey! You over there! \"",
-                    string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  theActor.Name,  HisOrHer(theActor)),
+                    string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  prisoner.Name,  HisOrHer(prisoner)),
                     "\" Listen! I shouldn't be here! Just drove a bit too fast!",
                     "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                     "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
                     "  Now listen! Let's make a deal...",
                     "  Stupid cops won't listen to me. You look clever...",
                     "  You just have to push this button to open my cell.",
+//                  "  You just have to push the button at the end of the corridor to open my cell.",   // \todo this text is for when the PC is not adjacent to the relevant generator (RS Alpha 10.1 change)
                     "  The cops are too busy to care about small fish like me!",
                     "  Then I'll tell you where is the underground facility and just get the hell out of here.",
                     "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
+                    "  There are plenty of cool stuff to loot down there!",
                     "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...",  HeOrShe(theActor))
+                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...",  HeOrShe(prisoner))
                   };
                 }
 #if FAIL
@@ -12873,8 +12875,8 @@ namespace djack.RogueSurvivor.Engine
                 }
 #endif
                 if (null != local_6) {
-                  ShowSpecialDialogue(theActor, local_6);
-                  player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", theActor.Name));
+                  ShowSpecialDialogue(prisoner, local_6);
+                  player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", prisoner.Name));
                 }
                 Session.Get.ScriptStage_PoliceStationPrisoner = 1;
                 break;
@@ -12883,7 +12885,7 @@ namespace djack.RogueSurvivor.Engine
             else
               break;
           case 1:
-            if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping && !theActor.IsEnemyOf(player)) {
+            if (!map.HasZonePartiallyNamedAt(prisoner.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
               lock (Session.Get) {
                 string[] local_7 = new string[8]
                 {
@@ -12896,16 +12898,16 @@ namespace djack.RogueSurvivor.Engine
                   "  What's happening? NO!",
                   "  NO NOT ME! aAAAAAaaaa! NOT NOW! AAAGGGGGGGRRR \""
                 };
-                ShowSpecialDialogue(theActor, local_7);
-                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Freed {0}.", theActor.Name));
+                ShowSpecialDialogue(prisoner, local_7);
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Freed {0}.", prisoner.Name));
                 Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
-                KillActor(null, theActor, "transformation");
-                map.TryRemoveCorpseOf(theActor);
-                Actor local_8 = Zombify(null, theActor, false);
+                KillActor(null, prisoner, "transformation");
+                map.TryRemoveCorpseOf(prisoner);
+                Actor local_8 = Zombify(null, prisoner, false);
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.APreset();   // this was warned, player should get the first move
-                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
+                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, local_8.Model.Name));
                 m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 break;
@@ -13072,7 +13074,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
+      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
