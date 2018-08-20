@@ -1528,12 +1528,12 @@ namespace djack.RogueSurvivor.Engine
       };
       string[] entries = idsArray.Select(x => GameOptions.Name(x)).ToArray();
       // alpha10: policy to separate option mode modifiers from main option description
-      entries[(int)GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION] += " !V";
-      entries[(int)GameOptions.IDs.GAME_RATS_UPGRADE] += " !V";
-      entries[(int)GameOptions.IDs.GAME_SKELETONS_UPGRADE] += " !V";
-      entries[(int)GameOptions.IDs.GAME_SHAMBLERS_UPGRADE] += " !V";
-      entries[(int)GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE] += " =S";  // XXX also World War Z but that's vaporware
-      entries[(int)GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE] += " =S";
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION)] += " !V";
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_RATS_UPGRADE)] += " !V";
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_SKELETONS_UPGRADE)] += " !V";
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_SHAMBLERS_UPGRADE)] += " !V";
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE)] += " =S";  // XXX also World War Z but that's vaporware
+      entries[Array.IndexOf(idsArray, GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE)] += " =S";
       char[] newlines = { '\n' };  // alpha10
       char[] spaces = { ' ' }; // alpha10
 
