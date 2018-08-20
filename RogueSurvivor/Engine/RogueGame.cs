@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
     private bool m_IsGameRunning = true;
     private readonly List<Overlay> m_Overlays = new List<Overlay>();
-    private readonly object m_SimMutex = new object();
+    private readonly object m_SimMutex = new object();  // 2018-08-20: almost dead
     readonly Object m_SimStateLock = new Object(); // alpha10 lock when reading sim thread state flags
     bool m_SimThreadDoRun;  // alpha10 sim thread state: set by main thread to false to ask sim thread to stop.
     bool m_SimThreadIsWorking;  // alpha10 sim thread state: set by sim thread to false when has exited loop. 
@@ -3008,14 +3008,10 @@ namespace djack.RogueSurvivor.Engine
                 HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
-                StopSimThread(false);
                 HandleSaveGame();
-                StartSimThread();
                 break;
               case PlayerCommand.LOAD_GAME:
-                StopSimThread(false);
                 HandleLoadGame();
-                StartSimThread();
                 player = Player;
                 flag1 = false;
                 m_HasLoadedGame = true;
@@ -11832,39 +11828,44 @@ namespace djack.RogueSurvivor.Engine
       DoLoadGame(RogueGame.GetUserSave());
     }
 
+    // alpha10.1 start & stop sim thread here instead of caller
     private void DoSaveGame(string saveName)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
+      StopSimThread(false); // alpha10.1
+
       ClearMessages();
       AddMessage(new Data.Message("SAVING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
-      lock (m_SimMutex) {
-        Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
-      }
+      Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
 #if DEBUG
       File.Copy(saveName, RogueGame.GetUserSaveBackup(),true);
 #endif
       AddMessage(new Data.Message("SAVING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
+
+      StartSimThread();  // alpha10.1
     }
 
+    // alpha10.1 start & stop sim thread here instead of caller
     private void DoLoadGame(string saveName)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
+      StopSimThread(false); // alpha10.1
+
       ClearMessages();
       AddMessage(new Data.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
-      lock (m_SimMutex) {
-        if (LoadGame(saveName)) return;
-      }
-      AddMessage(new Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
+      if (!LoadGame(saveName)) AddMessage(new Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
+
+      StartSimThread();  // alpha10.1
     }
 
     private void DeleteSavedGame(string saveName)
