@@ -32,6 +32,8 @@ namespace djack.RogueSurvivor.Engine.Items
       m_Ammo = model.MaxAmmo;
     }
 
+    public override ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Ammo); } }
+
     public override string ToString()
     {
       return Model.ID.ToString()+" ("+Ammo.ToString()+")";

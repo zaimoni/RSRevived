@@ -11,6 +11,19 @@ using Point = System.Drawing.Point;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+  internal struct ItemStruct    // for item memmory
+  {
+    readonly Gameplay.GameItems.IDs ModelID;
+    readonly int QtyLike; // meaning depends on ModelID
+
+    public ItemStruct(Gameplay.GameItems.IDs id, int qty)
+    {
+      ModelID = id;
+      QtyLike = qty;
+    }
+  }
+
+  [Serializable]
   internal class Item
   {
     private readonly int m_ModelID;
@@ -90,6 +103,8 @@ namespace djack.RogueSurvivor.Data
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;
     }
+
+    public virtual ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Quantity); } }
 
     public virtual void OptimizeBeforeSaving() { }  // alpha 10
 
