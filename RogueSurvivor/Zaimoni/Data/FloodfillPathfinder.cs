@@ -97,6 +97,12 @@ namespace Zaimoni.Data
             GoalDistance(goals, tmp, max_cost);
         }
 
+        public void GoalDistance(Predicate<T> goals, T start, int max_cost = int.MaxValue)
+        {
+            T[] tmp = { start };
+            GoalDistance(goals, tmp, max_cost);
+        }
+
         public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
@@ -138,6 +144,57 @@ namespace Zaimoni.Data
               }
               _now.Remove(cost);
             }
+        }
+
+        public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
+        {
+#if DEBUG
+            if (null == start) throw new ArgumentNullException(nameof(start));
+            if (null == goals) throw new ArgumentNullException(nameof(goals));
+#endif
+            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
+            _map.Clear();
+
+            // this morally does a breadth-first search until some goals are found, then recurses to a more normal implementation
+
+            // a proper Dijkstra search is in increasing cost order
+            Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
+            HashSet<T> now = new HashSet<T>(start.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
+            if (0 >= now.Count) return; // XXX error condition
+            HashSet<T> found = new HashSet<T>(now.Where(tmp => goals(tmp)));
+            if (0 < found.Count) return; // XXX error condition
+            foreach(T tmp in now) _map[tmp] = 0;
+            _now[0] = now;
+
+            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
+              int cost = _now.Keys.Min();
+              int max_delta_cost = max_cost - cost;
+              foreach(T tmp in _now[cost]) {
+                Dictionary<T, int> candidates = _forward(tmp);
+                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                  if (_blacklist.Contains(tmp2.Key)) continue;
+                  if (!_inDomain(tmp2.Key)) continue;
+                  if (max_delta_cost<= tmp2.Value) continue;
+#if DEBUG
+                  if (0 >= tmp2.Value) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
+#else
+                  if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
+#endif
+                  int new_cost = cost+tmp2.Value;
+                  if (_map.TryGetValue(tmp2.Key,out int old_cost)) {
+                    if (old_cost <= new_cost) continue;
+                    if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
+                  }
+                  _map[tmp2.Key] = new_cost;
+                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(tmp2.Key);
+                  else _now[new_cost] = new HashSet<T>{tmp2.Key};
+                  if (goals(tmp2.Key)) found.Add(tmp2.Key);
+                }
+              }
+              _now.Remove(cost);
+              if (0 < found.Count) break;
+            }
+            if (0 < found.Count) GoalDistance(found, start, max_cost);
         }
 
         public void ReviseGoalDistance(T pos, int new_cost, T start)
