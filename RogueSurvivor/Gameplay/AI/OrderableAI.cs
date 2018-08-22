@@ -2204,6 +2204,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorNavigateToSleep()
     {
       if (!m_Actor.IsInside) {
+#if PROTOTYPE
+        {
+        var item_memory = m_Actor.Controller.ItemMemory;
+        if (null != item_memory) {
+          bool known_bed(Location loc) {
+            if (!item_memory.HaveEverSeen(loc, out int when)) return false;
+            // be as buggy as the display, which shows objects in their current positions
+            if (!(loc.MapObject?.IsCouch ?? false)) return false;
+            return !(loc.Actor?.IsSleeping ?? false);   // cheat: bed should not have someone already sleeping in it
+          }
+          var pathfinder = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
+          // would like to pathfind to an indoors bed, but the heuristics for finding the goals are inefficient
+//        pathfinder.GoalDistance(known_bed, m_Actor.Location); // \todo implement this
+        }
+        }
+#endif
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop

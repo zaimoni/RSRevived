@@ -668,7 +668,7 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret.ToList() : null);
 	}
 
-    Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
+    static Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
 	{
 	  var ret = new Dictionary<Location, int>();
       Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
@@ -736,7 +736,7 @@ namespace djack.RogueSurvivor.Data
 
       Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(loc, actor, already); }
 
-	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, (loc=> loc.Map.IsInBounds(loc.Position)));
+	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, Location.IsInBounds);
       var ret = new FloodfillPathfinder<Location>(m_StepPather);
       Rect.DoForEach(pt=>ret.Blacklist(new Location(this, pt)),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;

@@ -72,6 +72,7 @@ namespace djack.RogueSurvivor.Data
     public Inventory Items { get { return m_Map.GetItemsAt(m_Position); } }
     public Exit Exit { get { return m_Map.GetExitAt(m_Position); } }
     public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
+    static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
 
     // alpha10
     public int OdorsDecay()
