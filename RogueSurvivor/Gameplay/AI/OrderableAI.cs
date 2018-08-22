@@ -2201,31 +2201,54 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSleep(m_Actor);
     }
 
-    protected ActorAction BehaviorNavigateToSleep()
+    private ActorAction BehaviorNavigateToSleep(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> item_memory)
     {
-      if (!m_Actor.IsInside) {
-        {
-#if PROTOTYPE
-        var item_memory = m_Actor.Controller.ItemMemory;
-        if (null != item_memory) {
-          bool known_bed(Location loc) {
+#if DEBUG
+        if (null == item_memory) throw new ArgumentNullException(nameof(item_memory));
+#endif
+        bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
             if (!loc.Map.IsInsideAt(loc.Position)) return false;
             if (!item_memory.HaveEverSeen(loc, out int when)) return false;
             // be as buggy as the display, which shows objects in their current positions
             if (!(loc.MapObject?.IsCouch ?? false)) return false;
             return !(loc.Actor?.IsSleeping ?? false);   // cheat: bed should not have someone already sleeping in it
-          }
-          var pathfinder = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
-          // would like to pathfind to an indoors bed, but the heuristics for finding the goals are inefficient
-          pathfinder.GoalDistance(known_bed, m_Actor.Location);
         }
-#endif
-        }
+        var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
+        // would like to pathfind to an indoors bed, but the heuristics for finding the goals are inefficient
+        navigate.GoalDistance(known_bed, m_Actor.Location);
+        return BehaviorPathTo(navigate);
+    }
+
+    protected ActorAction BehaviorNavigateToSleep()
+    {
+      var item_memory = m_Actor.Controller.ItemMemory;
+      if (!m_Actor.IsInside) {
+        if (null != item_memory) return BehaviorNavigateToSleep(item_memory);
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop
         IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside && m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
         return BehaviorHeadFor(see_inside, false, false);
+      }
+
+      if (null != item_memory) {
+        // reject if the smallest zone containing this location does not have a bed
+        var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);
+        Zone min_zone = z_list[0];
+        foreach(var z in z_list) {
+          if (min_zone.Bounds.Width < z.Bounds.Width) continue;
+          if (min_zone.Bounds.Height < z.Bounds.Height) continue;
+          if (min_zone.Bounds.Width > z.Bounds.Width || min_zone.Bounds.Height > z.Bounds.Height) min_zone = z;
+        }
+        bool has_free_bed = false;
+        min_zone.Bounds.DoForEach(pt => {   // XXX \todo define Any for a Rectangle
+            Location loc = new Location(m_Actor.Location.Map, pt);
+            if (!loc.Map.IsInsideAt(loc.Position)) return;
+            // be as buggy as the display, which shows objects in their current positions
+            if (!(loc.MapObject?.IsCouch ?? false)) return;
+            if (!(loc.Actor?.IsSleeping ?? false)) has_free_bed = true;   // cheat: bed should not have someone already sleeping in it
+        });
+        if (!has_free_bed) return BehaviorNavigateToSleep(item_memory);
       }
 
       ActorAction tmpAction = null;
