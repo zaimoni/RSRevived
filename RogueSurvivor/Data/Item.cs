@@ -13,8 +13,8 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal struct ItemStruct    // for item memmory
   {
-    readonly Gameplay.GameItems.IDs ModelID;
-    readonly int QtyLike; // meaning depends on ModelID
+    public readonly Gameplay.GameItems.IDs ModelID;
+    public readonly int QtyLike; // meaning depends on ModelID
 
     public ItemStruct(Gameplay.GameItems.IDs id, int qty)
     {
