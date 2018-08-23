@@ -19,7 +19,9 @@ namespace djack.RogueSurvivor.Engine.Items
       get { return 0 >= PaintQuantity; }
     }
 
+#if PROTOTYPE
     public override ItemStruct Struct { get { return new ItemStruct(Model.ID, PaintQuantity); } }
+#endif
 
     public ItemSprayPaint(ItemSprayPaintModel model)
       : base(model)

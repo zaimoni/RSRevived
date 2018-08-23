@@ -77,7 +77,18 @@ namespace djack.RogueSurvivor.Data
           Engine.Items.ItemRangedWeaponModel model = Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel;
           var ammo = m_Actor.Inventory.GetItemsByType < Engine.Items.ItemAmmo >(am => am.AmmoType== model.AmmoType);
           if (null == ammo) {
-            tmp.OnlyIf(loc => null != loc.Map.GetItemsAt(loc.Position)?.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0<rw.Ammo));
+            tmp.OnlyIf(loc => {
+                // Cf. LOSSensor::_seeItems
+                var itemsAt = loc.Map.GetItemsAt(loc.Position);
+                if (null == itemsAt) {
+                  ItemMemory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
+                  return false;
+                }
+                if (null != itemsAt.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0 < rw.Ammo)) return true;
+                if (null == itemsAt.GetFirstByModel(model))
+                  ItemMemory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                return false;
+            });
             if (0 >= tmp.Count) continue;
           }
         }

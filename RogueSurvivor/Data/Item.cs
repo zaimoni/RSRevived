@@ -10,6 +10,7 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
+#if PROTOTYPE
   [Serializable]
   internal struct ItemStruct    // for item memmory
   {
@@ -22,6 +23,7 @@ namespace djack.RogueSurvivor.Data
       QtyLike = qty;
     }
   }
+#endif
 
   [Serializable]
   internal class Item
@@ -104,7 +106,9 @@ namespace djack.RogueSurvivor.Data
       EquippedPart = DollPart.NONE;
     }
 
+#if PROTOTYPE
     public virtual ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Quantity); } }
+#endif
 
     public virtual void OptimizeBeforeSaving() { }  // alpha 10
 

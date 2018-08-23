@@ -1775,7 +1775,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
         if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return 0;
         if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
+#if OBSOLETE
         if (/* 0 >= rw.Ammo && */ null == am) return 0;  // XXX assume no ammo because information not available at this level
+#else
+        /* if (0 >= rw.Ammo && null == am) return 0; */  // XXX assume ammo; information not available at this level but we have a cheating post-processing that will remove zero-ammo ranged weapons
+#endif
         if (0< rws_w_ammo) return 2;
         return 3;
       }
