@@ -34,6 +34,18 @@ namespace djack.RogueSurvivor.Gameplay
             IDs.AMMO_HEAVY_RIFLE,
             IDs.AMMO_BOLTS
     });
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ranged
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.RANGED_ARMY_PISTOL,
+        IDs.RANGED_ARMY_RIFLE,
+        IDs.RANGED_HUNTING_CROSSBOW,
+        IDs.RANGED_HUNTING_RIFLE,
+        IDs.RANGED_KOLT_REVOLVER,
+        IDs.RANGED_PISTOL,
+        IDs.RANGED_PRECISION_RIFLE,
+        IDs.RANGED_SHOTGUN,
+        IDs.UNIQUE_SANTAMAN_SHOTGUN,
+        IDs.UNIQUE_HANS_VON_HANZ_PISTOL
+    });
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> armor
     = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.ARMOR_ARMY_BODYARMOR,
             IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
@@ -47,19 +59,25 @@ namespace djack.RogueSurvivor.Gameplay
             IDs.FOOD_GROCERIES,
             IDs.FOOD_CANNED_FOOD});
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> melee
-    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MELEE_BASEBALLBAT,
-            IDs.MELEE_COMBAT_KNIFE,
-            IDs.MELEE_CROWBAR,
-            IDs.UNIQUE_JASON_MYERS_AXE,
-            IDs.MELEE_HUGE_HAMMER,
-            IDs.MELEE_SMALL_HAMMER,
-            IDs.MELEE_GOLFCLUB,
-            IDs.MELEE_IRON_GOLFCLUB,
-            IDs.MELEE_SHOVEL,
-            IDs.MELEE_SHORT_SHOVEL,
-            IDs.MELEE_TRUNCHEON,
-            IDs.MELEE_IMPROVISED_CLUB,
-            IDs.MELEE_IMPROVISED_SPEAR});
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> {
+        IDs.MELEE_BASEBALLBAT,
+        IDs.MELEE_COMBAT_KNIFE,
+        IDs.MELEE_CROWBAR,
+        IDs.MELEE_GOLFCLUB,
+        IDs.MELEE_HUGE_HAMMER,
+        IDs.MELEE_IRON_GOLFCLUB,
+        IDs.MELEE_SHOVEL,
+        IDs.MELEE_SHORT_SHOVEL,
+        IDs.MELEE_TRUNCHEON,
+        IDs.UNIQUE_JASON_MYERS_AXE,
+        IDs.MELEE_IMPROVISED_CLUB,
+        IDs.MELEE_IMPROVISED_SPEAR,
+        IDs.MELEE_SMALL_HAMMER,
+        IDs.UNIQUE_FAMU_FATARU_KATANA,
+        IDs.UNIQUE_BIGBEAR_BAT,
+        IDs.UNIQUE_ROGUEDJACK_KEYBOARD,
+        IDs.UNIQUE_FATHER_TIME_SCYTHE
+    });
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> medicine
     = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MEDICINE_BANDAGES,
         IDs.MEDICINE_MEDIKIT,
@@ -68,68 +86,68 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.MEDICINE_PILLS_SAN,
         IDs.MEDICINE_PILLS_ANTIVIRAL});
 
-    private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
-    private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
-    private GameItems.MedecineData DATA_MEDICINE_PILLS_STA;
-    private GameItems.MedecineData DATA_MEDICINE_PILLS_SLP;
-    private GameItems.MedecineData DATA_MEDICINE_PILLS_SAN;
-    private GameItems.MedecineData DATA_MEDICINE_PILLS_ANTIVIRAL;
-    private GameItems.FoodData DATA_FOOD_ARMY_RATION;
-    private GameItems.FoodData DATA_FOOD_GROCERIES;
-    private GameItems.FoodData DATA_FOOD_CANNED_FOOD;
-    private GameItems.MeleeWeaponData DATA_MELEE_CROWBAR;
-    private GameItems.MeleeWeaponData DATA_MELEE_BASEBALLBAT;
-    private GameItems.MeleeWeaponData DATA_MELEE_COMBAT_KNIFE;
-    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_JASON_MYERS_AXE;
-    private GameItems.MeleeWeaponData DATA_MELEE_GOLFCLUB;
-    private GameItems.MeleeWeaponData DATA_MELEE_HUGE_HAMMER;
-    private GameItems.MeleeWeaponData DATA_MELEE_SMALL_HAMMER;
-    private GameItems.MeleeWeaponData DATA_MELEE_IRON_GOLFCLUB;
-    private GameItems.MeleeWeaponData DATA_MELEE_SHOVEL;
-    private GameItems.MeleeWeaponData DATA_MELEE_SHORT_SHOVEL;
-    private GameItems.MeleeWeaponData DATA_MELEE_TRUNCHEON;
-    private GameItems.MeleeWeaponData DATA_MELEE_IMPROVISED_CLUB;
-    private GameItems.MeleeWeaponData DATA_MELEE_IMPROVISED_SPEAR;
-    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
-    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE;
-    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_BIGBEAR_BAT;
-    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
-    private GameItems.RangedWeaponData DATA_RANGED_ARMY_PISTOL;
-    private GameItems.RangedWeaponData DATA_RANGED_ARMY_RIFLE;
-    private GameItems.RangedWeaponData DATA_RANGED_HUNTING_CROSSBOW;
-    private GameItems.RangedWeaponData DATA_RANGED_HUNTING_RIFLE;
-    private GameItems.RangedWeaponData DATA_RANGED_KOLT_REVOLVER;
-    private GameItems.RangedWeaponData DATA_RANGED_PISTOL;
-    private GameItems.RangedWeaponData DATA_RANGED_PRECISION_RIFLE;
-    private GameItems.RangedWeaponData DATA_RANGED_SHOTGUN;
-    private GameItems.RangedWeaponData DATA_UNIQUE_SANTAMAN_SHOTGUN;
-    private GameItems.RangedWeaponData DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
-    private GameItems.ExplosiveData DATA_EXPLOSIVE_GRENADE;
-    private GameItems.BarricadingMaterialData DATA_BAR_WOODEN_PLANK;
-    private GameItems.ArmorData DATA_ARMOR_ARMY;
-    private GameItems.ArmorData DATA_ARMOR_CHAR;
-    private GameItems.ArmorData DATA_ARMOR_HELLS_SOULS_JACKET;
-    private GameItems.ArmorData DATA_ARMOR_FREE_ANGELS_JACKET;
-    private GameItems.ArmorData DATA_ARMOR_POLICE_JACKET;
-    private GameItems.ArmorData DATA_ARMOR_POLICE_RIOT;
-    private GameItems.ArmorData DATA_ARMOR_HUNTER_VEST;
-    private GameItems.TrackerData DATA_TRACKER_BLACKOPS_GPS;
-    private GameItems.TrackerData DATA_TRACKER_CELL_PHONE;
-    private GameItems.TrackerData DATA_TRACKER_ZTRACKER;
-    private GameItems.TrackerData DATA_TRACKER_POLICE_RADIO;
-    private GameItems.SprayPaintData DATA_SPRAY_PAINT1;
-    private GameItems.SprayPaintData DATA_SPRAY_PAINT2;
-    private GameItems.SprayPaintData DATA_SPRAY_PAINT3;
-    private GameItems.SprayPaintData DATA_SPRAY_PAINT4;
-    private GameItems.LightData DATA_LIGHT_FLASHLIGHT;
-    private GameItems.LightData DATA_LIGHT_BIG_FLASHLIGHT;
-    private GameItems.ScentSprayData DATA_SCENT_SPRAY_STENCH_KILLER;
-    private GameItems.TrapData DATA_TRAP_EMPTY_CAN;
-    private GameItems.TrapData DATA_TRAP_BEAR_TRAP;
-    private GameItems.TrapData DATA_TRAP_SPIKES;
-    private GameItems.TrapData DATA_TRAP_BARBED_WIRE;
-    private GameItems.EntData DATA_ENT_BOOK;
-    private GameItems.EntData DATA_ENT_MAGAZINE;
+    private MedecineData DATA_MEDICINE_BANDAGE;
+    private MedecineData DATA_MEDICINE_MEDIKIT;
+    private MedecineData DATA_MEDICINE_PILLS_STA;
+    private MedecineData DATA_MEDICINE_PILLS_SLP;
+    private MedecineData DATA_MEDICINE_PILLS_SAN;
+    private MedecineData DATA_MEDICINE_PILLS_ANTIVIRAL;
+    private FoodData DATA_FOOD_ARMY_RATION;
+    private FoodData DATA_FOOD_GROCERIES;
+    private FoodData DATA_FOOD_CANNED_FOOD;
+    private MeleeWeaponData DATA_MELEE_CROWBAR;
+    private MeleeWeaponData DATA_MELEE_BASEBALLBAT;
+    private MeleeWeaponData DATA_MELEE_COMBAT_KNIFE;
+    private MeleeWeaponData DATA_MELEE_UNIQUE_JASON_MYERS_AXE;
+    private MeleeWeaponData DATA_MELEE_GOLFCLUB;
+    private MeleeWeaponData DATA_MELEE_HUGE_HAMMER;
+    private MeleeWeaponData DATA_MELEE_SMALL_HAMMER;
+    private MeleeWeaponData DATA_MELEE_IRON_GOLFCLUB;
+    private MeleeWeaponData DATA_MELEE_SHOVEL;
+    private MeleeWeaponData DATA_MELEE_SHORT_SHOVEL;
+    private MeleeWeaponData DATA_MELEE_TRUNCHEON;
+    private MeleeWeaponData DATA_MELEE_IMPROVISED_CLUB;
+    private MeleeWeaponData DATA_MELEE_IMPROVISED_SPEAR;
+    private MeleeWeaponData DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
+    private MeleeWeaponData DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE;
+    private MeleeWeaponData DATA_MELEE_UNIQUE_BIGBEAR_BAT;
+    private MeleeWeaponData DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
+    private RangedWeaponData DATA_RANGED_ARMY_PISTOL;
+    private RangedWeaponData DATA_RANGED_ARMY_RIFLE;
+    private RangedWeaponData DATA_RANGED_HUNTING_CROSSBOW;
+    private RangedWeaponData DATA_RANGED_HUNTING_RIFLE;
+    private RangedWeaponData DATA_RANGED_KOLT_REVOLVER;
+    private RangedWeaponData DATA_RANGED_PISTOL;
+    private RangedWeaponData DATA_RANGED_PRECISION_RIFLE;
+    private RangedWeaponData DATA_RANGED_SHOTGUN;
+    private RangedWeaponData DATA_UNIQUE_SANTAMAN_SHOTGUN;
+    private RangedWeaponData DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
+    private ExplosiveData DATA_EXPLOSIVE_GRENADE;
+    private BarricadingMaterialData DATA_BAR_WOODEN_PLANK;
+    private ArmorData DATA_ARMOR_ARMY;
+    private ArmorData DATA_ARMOR_CHAR;
+    private ArmorData DATA_ARMOR_HELLS_SOULS_JACKET;
+    private ArmorData DATA_ARMOR_FREE_ANGELS_JACKET;
+    private ArmorData DATA_ARMOR_POLICE_JACKET;
+    private ArmorData DATA_ARMOR_POLICE_RIOT;
+    private ArmorData DATA_ARMOR_HUNTER_VEST;
+    private TrackerData DATA_TRACKER_BLACKOPS_GPS;
+    private TrackerData DATA_TRACKER_CELL_PHONE;
+    private TrackerData DATA_TRACKER_ZTRACKER;
+    private TrackerData DATA_TRACKER_POLICE_RADIO;
+    private SprayPaintData DATA_SPRAY_PAINT1;
+    private SprayPaintData DATA_SPRAY_PAINT2;
+    private SprayPaintData DATA_SPRAY_PAINT3;
+    private SprayPaintData DATA_SPRAY_PAINT4;
+    private LightData DATA_LIGHT_FLASHLIGHT;
+    private LightData DATA_LIGHT_BIG_FLASHLIGHT;
+    private ScentSprayData DATA_SCENT_SPRAY_STENCH_KILLER;
+    private TrapData DATA_TRAP_EMPTY_CAN;
+    private TrapData DATA_TRAP_BEAR_TRAP;
+    private TrapData DATA_TRAP_SPIKES;
+    private TrapData DATA_TRAP_BARBED_WIRE;
+    private EntData DATA_ENT_BOOK;
+    private EntData DATA_ENT_MAGAZINE;
 
     public ItemModel this[int id] {
       get {

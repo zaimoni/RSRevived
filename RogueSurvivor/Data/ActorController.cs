@@ -72,6 +72,15 @@ namespace djack.RogueSurvivor.Data
         if (null == tmp) continue;
         tmp.OnlyIf(loc=>loc.Map == map);
         if (0 >= tmp.Count) continue;
+        // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
+        if (Gameplay.GameItems.ranged.Contains(it)) {
+          Engine.Items.ItemRangedWeaponModel model = Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel;
+          var ammo = m_Actor.Inventory.GetItemsByType < Engine.Items.ItemAmmo >(am => am.AmmoType== model.AmmoType);
+          if (null == ammo) {
+            tmp.OnlyIf(loc => null != loc.Map.GetItemsAt(loc.Position)?.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0<rw.Ammo));
+            if (0 >= tmp.Count) continue;
+          }
+        }
         ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
       }
       // XXX need to ask allies where hey are headed for (or are), to avoid traffic jams
