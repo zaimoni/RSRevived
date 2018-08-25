@@ -17,14 +17,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
 
-    private readonly Queue<Location> m_LocationsQueue;
-    private readonly Queue<Zone> m_ZonesQueue;
+    // alpha 10.1: Queue -> List
+    private readonly List<Location> m_LocationsQueue = new List<Location>(EXPLORATION_LOCATIONS);
+    private readonly List<Zone> m_ZonesQueue = new List<Zone>(EXPLORATION_ZONES);
 
-    public ExplorationData()
-    {
-      m_LocationsQueue = new Queue<Location>(EXPLORATION_LOCATIONS);
-      m_ZonesQueue = new Queue<Zone>(EXPLORATION_ZONES);
-    }
+    public ExplorationData() {}
 
     public void Clear()
     {
@@ -39,9 +36,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void AddExplored(Location loc)
     {
-      if (m_LocationsQueue.Count >= EXPLORATION_LOCATIONS)
-        m_LocationsQueue.Dequeue();
-      m_LocationsQueue.Enqueue(loc);
+      int i = m_LocationsQueue.IndexOf(loc);
+      if (-1 < i) {
+        if (m_LocationsQueue.Count - 1 <= i) return;
+        m_LocationsQueue.RemoveAt(i);   // prevent duplicates
+      } else if (m_LocationsQueue.Count >= EXPLORATION_LOCATIONS) m_LocationsQueue.RemoveAt(0);
+      m_LocationsQueue.Add(loc);
+    }
+
+    // alpha10.1
+    /// <param name="loc"></param>
+    /// <returns>0 for locs not explored</returns>
+    public int GetExploredAge(Location loc)
+    {
+      int i = m_LocationsQueue.LastIndexOf(loc);    // Irrational caution (in case deduplication fails); IndexOf should be fine
+      return (-1 < i) ? m_LocationsQueue.Count-i : 0;
     }
 
     public bool HasExplored(Zone zone)
@@ -56,19 +65,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void AddExplored(Zone zone)
     {
-      if (m_ZonesQueue.Count >= EXPLORATION_ZONES)
-        m_ZonesQueue.Dequeue();
-      m_ZonesQueue.Enqueue(zone);
+      int i = m_ZonesQueue.IndexOf(zone);
+      if (-1 < i) {
+        if (m_ZonesQueue.Count - 1 <= i) return;
+        m_ZonesQueue.RemoveAt(i);   // prevent duplicates
+      } else if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
+      m_ZonesQueue.Add(zone);
+    }
+
+    // alpha10.1
+    /// <param name="zone"></param>
+    /// <returns>0 for zones not explored</returns>
+    public int GetExploredAge(Zone zone)
+    {
+      int i = m_ZonesQueue.LastIndexOf(zone);    // Irrational caution (in case deduplication fails); IndexOf should be fine
+      return (-1 < i) ? m_ZonesQueue.Count-i : 0;
+    }
+
+    /// <summary>
+    /// Get age of most recently explored from list ("youngest")
+    /// </summary>
+    /// <param name="zones">can be null or empty, will return 0</param>
+    /// <returns></returns>
+    public int GetExploredAge(List<Zone> zones)
+    {
+      if (0 >= (zones?.Count ?? 0)) return 0;
+
+      int youngestAge = int.MaxValue;
+      foreach (Zone z in zones) {
+        int age = GetExploredAge(z);
+        if (age < youngestAge) youngestAge = age;
+      }
+      return youngestAge;
     }
 
     public void Update(Location location)
     {
       AddExplored(location);
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
-      if (zonesAt == null || zonesAt.Count <= 0) return;
-      foreach (Zone zone in zonesAt) {
-        if (!HasExplored(zone)) AddExplored(zone);
-      }
+      if (0 >= (zonesAt?.Count ?? 0)) return;
+      foreach (Zone zone in zonesAt) AddExplored(zone);
     }
   }
 }
