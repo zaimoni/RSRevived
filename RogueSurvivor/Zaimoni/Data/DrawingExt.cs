@@ -369,14 +369,18 @@ namespace Zaimoni.Data
       foreach (T x in src) fn(x);
     }
 
-    // logic operations -- C# does not actually support lambda calculus, idioms like ok = ok.Or(...) will fail by infinite recursion
+    // logic operations
     public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
-      bool and(T src) { return lhs(src) && rhs(src); };
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      bool and(T src) { return l(src) && r(src); };
       return and;
     }
 
     public static Predicate<T> Or<T>(this Predicate<T> lhs, Predicate<T> rhs) {
-      bool or(T src) { return lhs(src) || rhs(src); };
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      bool or(T src) { return l(src) || r(src); };
       return or;
     }
 

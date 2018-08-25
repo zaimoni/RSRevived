@@ -43,13 +43,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
           var zzz = new HashSet<Point>();
           var shed_claimed = new HashSet<Point>();
-          Predicate<Point> ok_2 = inside_test;
+          Predicate<Point> ok = inside_test;
           // Park sheds can get crowded fast.  #1 takes the central square (5 in reach).
           // VAPORWARE #2 takes the square between the central square and the door.
           // disallow more than 2.
           if (null != unclaimed_sheds) {
             if (null != claimed_sheds) {
-              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+              ok = ok.And(pt => {
                 if (null != claimed_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 } else return false;
               });
             } else {
-              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+              ok = ok.And(pt => {
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
                 Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             }
           } else if (null != claimed_sheds) {
             if (null != full_sheds) {
-              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+              ok = ok.And(pt => {
                 if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 return false;
               });
             } else {
-              ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+              ok = ok.And(pt => {
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
                 Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
@@ -104,24 +104,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               });
             }
           } else if (null != full_sheds) {
-            ok_2 = ((Predicate<Point>)inside_test).And(pt => {
+            ok = ok.And(pt => {
               if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;
               return true;
             });
           }
 
-          Predicate<Point> ok_1 = ok_2;
           // Unfortunately, CHAR did represent to the police that the offices were ok as curfew refuges.
           // The CHAR Guard Manuals only approve of this for lesser disasters than a z apocalypse.
           // Fortunately, airliners that crash have 1/3rd fewer passengers than those that don't!
           // There may also be some "prison barge" rumors circulating (cf. the 2018 Hawaii volcanic eruption, and graffiti at game start)
-          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok_1 = ok_2.And(pt => !map.HasZonePartiallyNamedAt(pt, "CHAR Office"));
+          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok= ok.And(pt => !map.HasZonePartiallyNamedAt(pt, "CHAR Office"));
           // subways are now early-spawn.  Since they're a legal area for the PC to spawn we have to allow them, but 
           // they're not really emergency shelters (the trains are in storage).
-          Predicate<Point> ok = ok_1;
           if (has_subway) {
             if (m_DiceRoller.RollChance(50)) { // \todo tune this empirical constant.  Ideally would respond to charisma skill, but that's not player-visible
-              ok = ok_1.And(pt => {
+              ok = ok.And(pt => {
                 if (!map.HasZonePartiallyNamedAt(pt, "Subway Station")) return true;
                 if (map.GetMapObjectAt(pt)?.IsCouch ?? false) {
                   zzz.Add(pt);  // side-effecting, so prefers to be last
@@ -129,7 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 } else return false;
               });
             } else {    // not convincing: bounced
-              ok = ok_1.And(pt => !map.HasZonePartiallyNamedAt(pt, "Subway Station"));
+              ok = ok.And(pt => !map.HasZonePartiallyNamedAt(pt, "Subway Station"));
             }
           }
 
