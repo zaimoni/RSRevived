@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       m_Actor.Activity = Activity.IDLE;
-      return BehaviorWander();
+      return BehaviorWander();  // alpha 10.1: do not use exploration data even though we have it
     }
   }
 }

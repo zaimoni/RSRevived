@@ -204,21 +204,54 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
     // a behavior should handle all free actions itself and return only non-free actions.
 
-    protected ActorAction BehaviorWander(Predicate<Location> goodWanderLocFn=null)
+    /// <param name="exploration">can be null for ais with no exploration</param>
+    protected ActorAction BehaviorWander(ExplorationData exploration=null, Predicate<Location> goodWanderLocFn=null)
     {
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
-        Location loc = m_Actor.Location + dir;
-        if (null != goodWanderLocFn && !goodWanderLocFn(loc)) return float.NaN;
-        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
-        if (!loc.Map.IsInBounds(loc.Position)) {
-          Location? test = loc.Map.Normalize(loc.Position);
+        Location next = m_Actor.Location + dir;
+        if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
+        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, next))) return float.NaN;
+        if (!next.Map.IsInBounds(next.Position)) {
+          Location? test = next.Map.Normalize(next.Position);
           if (null == test) return float.NaN;
-          loc = test.Value;
+          next = test.Value;
         }
-        int num = RogueForm.Game.Rules.Roll(0, 666);
-        if (m_Actor.Model.Abilities.IsIntelligent && 0 < loc.Map.TrapsMaxDamageAtFor(loc.Position,m_Actor))
-          num -= 1000;
-        return (float) num;
+        int score = 0;
+
+        // alpha10.1
+        const int BREAKING_OBJ = -50000;
+        const int BACKTRACKING = -10000;
+        const int BREAKING_BARRICADES = -1000;
+        const int AVOID_TRAPS = -1000;
+        const int UNEXPLORED_LOC = 1000;  // should not happen, see below
+        const int DOORWINDOWS = 100;
+        const int EXITS = 50;
+        const int INSIDE_WHEN_ALMOST_SLEEPY = 100;
+        const int WANDER_RANDOM = 10;  // alpha10.1 much smaller random factor
+
+        if (next == m_prevLocation) score += BACKTRACKING;
+        if (m_Actor.Model.Abilities.IsIntelligent && 0 < next.Map.TrapsMaxDamageAtFor(next.Position,m_Actor)) score += AVOID_TRAPS;
+
+        // alpha10.1 prefer unexplored/oldest
+        // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...
+        if (exploration != null) {
+          int locAge = exploration.GetExploredAge(next);
+          score += (0 == locAge) ? UNEXPLORED_LOC : locAge;
+        }
+
+        // alpha10.1 prefer wandering to doorwindows and exits. 
+        // helps civs ai getting stuck in semi-infinite loop when running out of new exploration to do.
+        // as a side effect, make ais with no exploration data (eg zombies) more eager to visit door/windows and exits.
+        if (next.MapObject is DoorWindow) score += DOORWINDOWS;
+        if (null != next.Exit) score += EXITS;
+
+        // alpha10.1 prefer inside when almost sleepy
+        if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
+
+        // alpha10.1 add random factor
+        score += RogueForm.Game.Rules.Roll(0, WANDER_RANDOM);
+
+        return (float) score;
       }, (a, b) => a > b);
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }

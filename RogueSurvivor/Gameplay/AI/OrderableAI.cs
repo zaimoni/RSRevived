@@ -727,7 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (actorAction4 != null) return actorAction4;
 
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position);
-      return BehaviorWander(loc =>
+      return BehaviorWander(null, loc =>
       {
         List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
         if (zonesAt == null) return false;
@@ -2255,7 +2255,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches, out Dictionary<Point,int> doors);
       if (0 >= sleep_locs.Count) {
          // \todo we probably should be using full pathing to the nearest valid location anyway
-         return BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
+         // XXX \todo exploration data available for *some* OrderableAI subclasses: is it useful here?
+         return BehaviorWander(null, loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
       }
 
       // \todo trigger secure perimeter if we have appropriate squares whose viewability is not blocked by doors

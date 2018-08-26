@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "THAT WAS COMPLETLY UNCALLED FOR!",
       "ROBOTS WON'T FOOL ME!"
     };
-    private const int ATTACK_CHANCE = 80;
+    // private const int ATTACK_CHANCE = 80;    // alpha 10.1: obsolete
     private const int SHOUT_CHANCE = 80;
     private const int USE_EXIT_CHANCE = 50;
 
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.IsRunning = false;    // alpha 10: don't run by default
       ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) return tmpAction;
-      if (game.Rules.RollChance(ATTACK_CHANCE)) {
+      /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
         List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
         if (enemies != null) {
           tmpAction = TargetGridMelee(FilterCurrent(enemies));
