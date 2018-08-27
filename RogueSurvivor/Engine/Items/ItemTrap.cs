@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine.Items
     // alpha10
     public int TriggerChanceFor(Actor a)
     {
-      if (Owner == a) return 0; // owners never trigger their own trap
+      if (a.IsSafeFrom(this)) return 0;    // alpha 10.1: safe from trap, means safe from trap
 
       const int TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY = 30;
       const int TRAP_SMALL_ACTOR_AVOID_BONUS = 90;
