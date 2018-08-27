@@ -621,7 +621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.PATROL:
           return ExecutePatrol(order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.DROP_ALL_ITEMS:
-          return ExecuteDropAllItems(game);
+          return ExecuteDropAllItems();
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
           return ExecuteBuildFortification(order.Location, false);
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
@@ -740,12 +740,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
     }
 
-    private ActorAction ExecuteDropAllItems(RogueGame game)
+    private ActorAction ExecuteDropAllItems()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
-      Item it = m_Actor.Inventory[0];
-      if (it.IsEquipped) game.DoUnequipItem(m_Actor, it);
-      return new ActionDropItem(m_Actor, it);
+
+      // alpha10.1 bugfix followers drop all was looping
+      // use drop item behaviour on the first item it can.
+      foreach(Item it in m_Actor.Inventory.Items) {
+        ActorAction dropAction = BehaviorDropItem(it);
+        if (null != dropAction) return dropAction;
+      }
+
+      // we still have at least one item but cannot drop it for some reason,
+      // consider the order done.
+      return null;
     }
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
