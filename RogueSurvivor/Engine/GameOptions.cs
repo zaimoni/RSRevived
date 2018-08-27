@@ -622,13 +622,18 @@ namespace djack.RogueSurvivor.Engine
       //////////////////
       // Dynamic factors:
       // !reversed for undeads!
-      // - Density            : f(citysize, mapsize, civs+undeads), +/- 99%
+      // - Density            : f(mapsize, civs+undeads), +/- 99%   // alpha10.1 removed citysize from difficulty formula
       // - Undeads            : f(undeads/civs, day0, invasion%), +/- 50%
       // - Civilians          : f(zombification%, canstarve&starvedzomb%), +/- 50%
       ////////////////////
       {
+#if OBSOLETE
       float reference = (float) Math.Sqrt(DEFAULT_MAX_UNDEADS+ DEFAULT_MAX_CIVILIANS) / (DEFAULT_CITY_SIZE * DEFAULT_DISTRICT_SIZE * DEFAULT_DISTRICT_SIZE);
       float relative_deviation = ((float) Math.Sqrt((double) (MaxCivilians + MaxUndeads)) / (float) (CitySize * DistrictSize * DistrictSize) - reference) / reference;
+#else
+      float reference = (float) Math.Sqrt(DEFAULT_MAX_UNDEADS+ DEFAULT_MAX_CIVILIANS) / (DEFAULT_DISTRICT_SIZE * DEFAULT_DISTRICT_SIZE);
+      float relative_deviation = ((float) Math.Sqrt((double) (MaxCivilians + MaxUndeads)) / (float) (DistrictSize * DistrictSize) - reference) / reference;
+#endif
       rating += relative_deviation * (!Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? - 0.99f :  0.99f);
       }
 
