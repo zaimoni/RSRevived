@@ -731,8 +731,8 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorUnsuspicousChance(Actor observer, Actor actor)
     {
-      const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
-      const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
+      const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 75;   // these two are logically independent
+      const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 75;
       int baseChance = SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
 
       // retain general-purpose code within the cases
