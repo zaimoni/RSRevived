@@ -559,6 +559,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+
+      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
+        tmpAction = BehaviorBuildTrap(game);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
+#endif
+        if (null != tmpAction) return tmpAction;
+      }
+
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
+        tmpAction = BehaviorBuildLargeFortification(game, 1);
+        if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
+#endif
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildSmallFortification(game);
+        if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
+#endif
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         // \todo interposition target for pathing hints, etc. from leader
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
@@ -841,35 +871,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       }
 #endregion
-
-      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
-        tmpAction = BehaviorBuildTrap(game);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
-#endif
-        if (null != tmpAction) return tmpAction;
-      }
-
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
-        tmpAction = BehaviorBuildLargeFortification(game, 1);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
-#endif
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
-      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
-        tmpAction = BehaviorBuildSmallFortification(game);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
-#endif
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
 
 	  if (null != friends) {
         if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
