@@ -6098,19 +6098,20 @@ namespace djack.RogueSurvivor.Engine
           body = new string[6]
           {
             "You can JUMP on or over an obstacle next to you.",
-            "Typical jumpable objects are cars, fences and furnitures.",
+            "Typical jumpable objects are cars, fences and furniture.",
             "The object is described with 'Can be jumped on'.",
             "Some enemies can't jump and won't be able to follow you.",
-            "Jumping is tiring and spend stamina.",
+            "Jumping is tiring and spends stamina.",
             "To jump, just MOVE on the obstacle."
           };
           break;
         case AdvisorHint.ITEM_GRAB_CONTAINER:
           title = "TAKING AN ITEM FROM A CONTAINER";
-          body = new string[2]
-          {
+          body = new string[] {
             "You are next to a container, such as a warbrobe or a shelf.",
-            "You can TAKE the item there by MOVING into the object."
+            "You can TAKE the item there by MOVING into the object.",
+            string.Format("To INITIATE THE TRADE : move the mouse over your item and press <{0}>.",  s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()),
+            string.Format("To GIVE AN ITEM : move the mouse over your item and press <{0}>.",  s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString())
           };
           break;
         case AdvisorHint.ITEM_GRAB_FLOOR:
@@ -6170,7 +6171,8 @@ namespace djack.RogueSurvivor.Engine
           body = new string[] {
             "You have found a lighting item, such as a flashlight.",
             "Equip the item to increase your view distance (FoV).",
-            "Standing next to someone with a light on has the same effect."
+            "Standing next to someone with a light on has the same effect.",
+            "You can recharge flashlights at power generators."
           };
           break;
         case AdvisorHint.CELLPHONES:
@@ -6178,7 +6180,8 @@ namespace djack.RogueSurvivor.Engine
           body = new string[] {
             "You have found a cellphone.",
             "Cellphones are useful to keep contact with your follower(s).",
-            "You and your follower(s) must have a cellphone equipped."
+            "You and your follower(s) must have a cellphone equipped.",
+            "You can recharge cellphones at power generators."
           };
           break;
         case AdvisorHint.SPRAYS_PAINT:
