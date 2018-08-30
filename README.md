@@ -23,5 +23,6 @@ http://roguesurvivor.proboards.com/thread/377/rs-alive
 
 Please note a recent reversion in the release format.  To accommodate incremental upgrades for players with weak Internet connections, binary-only and media-only ZIPs that are not intended to be playable out of the box are being provided for the unstable releases starting with 2018-04-04.
 
-First installs on a machine should use a complete ZIP archive.  If the media archive matching a binary archive does not exist (e.g., 2018-04-07 has no media-only archive), there has been no change since
-the most recent media-only archive -- and the binary-only archive is sufficient to upgrade.
+Starting with August 18 2018, there are three such archives: binary-only, sound-only, and media-no-sound.
+
+First installs on a machine should use a complete ZIP archive.  FOr incremental upgrades, the binary archive is always required.  The media archives are needed if and only if they exist.
