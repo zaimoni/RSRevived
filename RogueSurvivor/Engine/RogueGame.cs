@@ -4107,7 +4107,7 @@ namespace djack.RogueSurvivor.Engine
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
       } else {
-        int chance = m_Rules.CorpseReviveChance(actor, corpse);
+        int chance = actor.ReviveChance(corpse);
         Item firstMatching = actor.Inventory.GetFirstByModel(GameItems.MEDIKIT);
         actor.Inventory.Consume(firstMatching);
         if (m_Rules.RollChance(chance)) {
@@ -6924,7 +6924,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
         " ",
 	    DescribeCorpseLong_DescRotLevel(c.RotLevel),
-        string.Format("Revive    : {0}.", (Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(m_Rules.CorpseReviveChance(Player, c)) : "???"))
+        string.Format("Revive    : {0}.", (Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
       };
       if (isInPlayerTile) {
         stringList.Add(" ");
@@ -7338,7 +7338,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.MARTIAL_ARTS:
           return string.Format("unarmed only +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
-          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
+          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Rules.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
           return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:

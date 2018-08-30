@@ -62,6 +62,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1f;
+    public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
@@ -2579,6 +2580,13 @@ namespace djack.RogueSurvivor.Data
     public bool CanRevive(Corpse corpse)
     {
       return string.IsNullOrEmpty(ReasonCantRevive(corpse));
+    }
+
+
+    public int ReviveChance(Corpse corpse)
+    {
+      if (!CanRevive(corpse)) return 0;
+      return corpse.FreshnessPercent / 4 + Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 
     // sleep

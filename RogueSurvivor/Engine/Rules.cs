@@ -43,7 +43,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15; // alpha10
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
     public static double SKILL_MEDIC_BONUS = 0.15;
-    public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public const int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
@@ -799,12 +798,6 @@ namespace djack.RogueSurvivor.Engine
       }
       float num4 = 0.0f + 1f * (float) num2 - (float) (int) ((double) num1 / (double) WorldTime.TURNS_PER_DAY);
       return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * CORPSE_ZOMBIFY_DAY_FACTOR) : (int) (num4 * CORPSE_ZOMBIFY_NIGHT_FACTOR)));
-    }
-
-    public int CorpseReviveChance(Actor actor, Corpse corpse)
-    {
-      if (!actor.CanRevive(corpse)) return 0;
-      return corpse.FreshnessPercent / 4 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)

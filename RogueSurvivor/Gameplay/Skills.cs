@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_MARTIAL_ARTS_DMG_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[14];
       Rules.SKILL_MEDIC_BONUS = skillData2.VALUE1;
-      Rules.SKILL_MEDIC_REVIVE_BONUS = (int) skillData2.VALUE2;
+      Actor.SKILL_MEDIC_REVIVE_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[15];
       Actor.SKILL_NECROLOGY_UNDEAD_BONUS = (int) skillData2.VALUE1;
       Rules.SKILL_NECROLOGY_CORPSE_BONUS = (int) skillData2.VALUE2;
