@@ -10,18 +10,18 @@
 "HIGH_STAMINA","High Stamina",8,0,0,0
 "LEADERSHIP","Leadership",1,0,0,0
 "LIGHT_EATER","Light Eater",0.15,0.10,0,0
-"LIGHT_FEET","Light Feet",5,0,0,0
-"LIGHT_SLEEPER","Light Sleeper",10,0,0,0
+"LIGHT_FEET","Light Feet",15,0,0,0
+"LIGHT_SLEEPER","Light Sleeper",20,0,0,0
 "MARTIAL_ARTS","Martial Arts",6,2,0,0
 "MEDIC","Medic",0.15,10,0,0
 "NECROLOGY","Necrology",2,4,0,0
 "STRONG","Strong",3,1,0,0
 "STRONG_PSYCHE","Strong Psyche",0.15,0.15,0,0
 "TOUGH","Tough",6,0,0,0
-"UNSUSPICIOUS","Unsuspicious",15,0,0,0
+"UNSUSPICIOUS","Unsuspicious",20,0,0,0
 "Z_AGILE","Z-Agile",1,2,0,0
 "Z_EATER","Z-Eater",0.15,0,0,0
-"Z_GRAB","Z-Grab",2,0,0,0
+"Z_GRAB","Z-Grab",4,0,0,0
 "Z_INFECTOR","Z-Infector",0.15,0,0,0
 "Z_LIGHT_EATER","Z-Light Eater",0.15,0.10,0,0
 "Z_LIGHT_FEET","Z-Light Feet",3,0,0,0

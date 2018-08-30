@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Data
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
-    public static int SKILL_TOUGH_HP_BONUS = 3;
+    public static int SKILL_TOUGH_HP_BONUS = 6;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
     public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1f;

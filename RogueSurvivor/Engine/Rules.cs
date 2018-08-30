@@ -40,8 +40,8 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 2;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
-    public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
-    public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
+    public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15; // alpha10
+    public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
     public static double SKILL_MEDIC_BONUS = 0.15;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
@@ -50,11 +50,11 @@ namespace djack.RogueSurvivor.Engine
     public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static double SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15;
-    public static int SKILL_UNSUSPICIOUS_BONUS = 25;
+    public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
-    public static int SKILL_ZGRAB_CHANCE = 2;
+    public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
     public static double SKILL_ZINFECTOR_BONUS = 0.15f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
