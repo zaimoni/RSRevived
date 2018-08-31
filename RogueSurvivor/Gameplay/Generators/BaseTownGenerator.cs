@@ -1732,28 +1732,30 @@ restart:
       map.AddZone(MakeUniqueZone("Subway Station", b.BuildingRect));
     }
 
-    protected virtual void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsSize)
+    // alpha10.1 allow different x and y min size
+    protected void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0)
     {
-      QuadSplit(rect, minRoomsSize, minRoomsSize, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
+      QuadSplit(rect, minRoomsXSize, minRoomsYSize, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
       } else {
-        MakeRoomsPlan(map, ref list, topLeft, minRoomsSize);
+        MakeRoomsPlan(map, ref list, topLeft, minRoomsXSize, minRoomsYSize);
         if (!topRight.IsEmpty) {
           topRight.Offset(-1, 0);
           ++topRight.Width;
-          MakeRoomsPlan(map, ref list, topRight, minRoomsSize);
+          MakeRoomsPlan(map, ref list, topRight, minRoomsXSize, minRoomsYSize);
         }
         if (!bottomLeft.IsEmpty) {
           bottomLeft.Offset(0, -1);
           ++bottomLeft.Height;
-          MakeRoomsPlan(map, ref list, bottomLeft, minRoomsSize);
+          MakeRoomsPlan(map, ref list, bottomLeft, minRoomsXSize, minRoomsYSize);
         }
         if (bottomRight.IsEmpty) return;
         bottomRight.Offset(-1, -1);
         ++bottomRight.Width;
         ++bottomRight.Height;
-        MakeRoomsPlan(map, ref list, bottomRight, minRoomsSize);
+        MakeRoomsPlan(map, ref list, bottomRight, minRoomsXSize, minRoomsYSize);
       }
     }
 
