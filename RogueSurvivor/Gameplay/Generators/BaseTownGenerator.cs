@@ -1773,10 +1773,17 @@ restart:
       foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);
     }
 
-    protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect)
+    // alpha10.1 can force room role (optional param)
+    // FIXME -- room role should be an enum and not hardcoded numbers -_-
+    /// <param name="role">-1 roll at random; 0-4 bedroom, 5-7 living room, 8-9 kitchen</param>
+    protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect, int role = -1)
     {
       Rectangle insideRoom = new Rectangle(roomRect.Left + 1, roomRect.Top + 1, roomRect.Width - 2, roomRect.Height - 2);
-      switch (m_DiceRoller.Roll(0, 10))
+
+      if (-1 == role) role = m_DiceRoller.Roll(0, 10);  // alpha10.1 roll room role if not set
+
+      // alpha10.1 added restriction to not place a mapobj if adj to at least 5 mapobj as to not cramp apartements
+      switch (role)
       {
         case 0:
         case 1:
@@ -1787,14 +1794,14 @@ restart:
           for (int index = 0; index < num1; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
+              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0;
+                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 map.DropItemAt(MakeRandomBedroomItem(), pt2);
@@ -1807,7 +1814,7 @@ restart:
           for (int index = 0; index < num2; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               map.DropItemAt(MakeRandomBedroomItem(), pt);
@@ -1822,7 +1829,7 @@ restart:
           for (int index1 = 0; index1 < num3; ++index1)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt);
+              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
@@ -1833,7 +1840,7 @@ restart:
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2);
+                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
               return MakeObjTable(GameImages.OBJ_TABLE);
             }));
@@ -1841,14 +1848,14 @@ restart:
           for (int index = 0; index < num4; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) == 0 && !map.AnyAdjacent<DoorWindow>(pt);
+            return CountAdjWalls(map, pt.X, pt.Y) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
@@ -1857,13 +1864,13 @@ restart:
             Session.Get.PoliceInvestigate.Record(map, pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
             {
-              return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2);
+              return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
             return MakeObjTable(GameImages.OBJ_TABLE);
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
+            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
@@ -1874,7 +1881,7 @@ restart:
           }));
           break;
         default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+          throw new InvalidOperationException("unhandled roll");
       }
     }
 
