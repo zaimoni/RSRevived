@@ -1319,6 +1319,197 @@ restart:
       });
     }
 
+
+        // alpha10.1 apartment houses
+        protected virtual bool MakeApartmentsBuilding(Map map, Block b)
+        {
+            ////////////////////////
+            // 0. Check suitability
+            ////////////////////////
+            if (b.InsideRect.Width < 9 || b.InsideRect.Height < 9) return false;
+            if (b.InsideRect.Width > 17 || b.InsideRect.Height > 17) return false;
+
+            // I pretty much copied and edited the char office algorithm. lame but i'm lazy.
+
+            /////////////////////////////
+            // 1. Walkway, floor & walls
+            /////////////////////////////
+            TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
+            TileRectangle(map, GameTiles.WALL_BRICK, b.BuildingRect);
+            TileFill(map, GameTiles.FLOOR_PLANKS, b.InsideRect, true);
+
+            //////////////////////////
+            // 2. Decide orientation.
+            //////////////////////////          
+            bool horizontalCorridor = (b.InsideRect.Width >= b.InsideRect.Height);
+
+            /////////////////////////////////////
+            // 3. Entry door and opposite window
+            /////////////////////////////////////
+            #region
+            int midX = b.Rectangle.Left + b.Rectangle.Width / 2;
+            int midY = b.Rectangle.Top + b.Rectangle.Height / 2;
+            Direction doorSide;
+
+            if (horizontalCorridor)
+            {
+                bool west = m_DiceRoller.RollChance(50);
+
+                if (west)
+                {
+                    doorSide = Direction.W;
+                    // west
+                    PlaceDoor(map, b.BuildingRect.Left, midY, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+                else
+                {
+                    doorSide = Direction.E;
+                    // east
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+            }
+            else
+            {
+                bool north = m_DiceRoller.RollChance(50);
+
+                if (north)
+                {
+                    doorSide = Direction.N;
+                    // north
+                    PlaceDoor(map, midX, b.BuildingRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+                else
+                {
+                    doorSide = Direction.S;
+                    // south
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+            }
+            #endregion
+
+            //////////////////////////////////////////////
+            // 4. Make central corridor & side apartments
+            //////////////////////////////////////////////
+            #region
+            Rectangle corridorRect;
+            if (doorSide == Direction.N)
+                corridorRect = new Rectangle(midX, b.InsideRect.Top, 1, b.BuildingRect.Height - 1);
+            else if (doorSide == Direction.S)
+                corridorRect = new Rectangle(midX, b.BuildingRect.Top, 1, b.BuildingRect.Height - 1);
+            else if (doorSide == Direction.E)
+                corridorRect = new Rectangle(b.BuildingRect.Left, midY, b.BuildingRect.Width - 1, 1);
+            else if (doorSide == Direction.W)
+                corridorRect = new Rectangle(b.InsideRect.Left, midY, b.BuildingRect.Width - 1, 1);
+            else
+                throw new InvalidOperationException("apartment: unhandled door side");
+            #endregion
+
+            //////////////////////
+            // 5. Make apartments
+            //////////////////////
+            #region
+            // make wings.
+            Rectangle wingOne;
+            Rectangle wingTwo;
+            if (horizontalCorridor)
+            {
+                // top side.
+                wingOne = Rectangle.FromLTRB(b.BuildingRect.Left, b.BuildingRect.Top, b.BuildingRect.Right, corridorRect.Top);
+                // bottom side.
+                wingTwo = Rectangle.FromLTRB(b.BuildingRect.Left, corridorRect.Bottom, b.BuildingRect.Right, b.BuildingRect.Bottom);
+            }
+            else
+            {
+                // left side
+                wingOne = Rectangle.FromLTRB(b.BuildingRect.Left, b.BuildingRect.Top, corridorRect.Left, b.BuildingRect.Bottom);
+                // right side
+                wingTwo = Rectangle.FromLTRB(corridorRect.Right, b.BuildingRect.Top, b.BuildingRect.Right, b.BuildingRect.Bottom);
+            }
+
+            // make apartements in each wing with doors leaving toward corridor and windows to the outside
+            // pick sizes so the apartements are not cut into multiple rooms by MakeRoomsPlan
+            int apartmentMinXSize, apartmentMinYSize;
+            if (horizontalCorridor)
+            {
+                apartmentMinXSize = 4;
+                apartmentMinYSize = b.BuildingRect.Height / 2;
+            }
+            else
+            {
+                apartmentMinXSize = b.BuildingRect.Width / 2;
+                apartmentMinYSize = 4;
+            }
+
+            List<Rectangle> apartementsWingOne = new List<Rectangle>();
+            MakeRoomsPlan(map, ref apartementsWingOne, wingOne, apartmentMinXSize, apartmentMinYSize);
+            List<Rectangle> apartementsWingTwo = new List<Rectangle>();
+            MakeRoomsPlan(map, ref apartementsWingTwo, wingTwo, apartmentMinXSize, apartmentMinYSize);
+
+            List<Rectangle> allApartments = new List<Rectangle>(apartementsWingOne.Count + apartementsWingTwo.Count);
+            allApartments.AddRange(apartementsWingOne);
+            allApartments.AddRange(apartementsWingTwo);
+
+            foreach (Rectangle apartRect in apartementsWingOne)
+                TileRectangle(map, GameTiles.WALL_BRICK, apartRect);
+            foreach (Rectangle roomRect in apartementsWingTwo)
+                TileRectangle(map, GameTiles.WALL_BRICK, roomRect);
+
+            // put door leading to corridor; and an opposite window if outer wall / a door if inside
+            foreach (Rectangle apartRect in apartementsWingOne)
+            {
+                if (horizontalCorridor)
+                {
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+                else
+                {
+                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+            }
+            foreach (Rectangle apartRect in apartementsWingTwo)
+            {
+                if (horizontalCorridor)
+                {
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+                else
+                {
+                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                }
+            }
+
+            // fill appartements with furniture and items
+            // an "apartement" is one big room that fits all the housing roles: bedroom, kitchen and living room.
+            foreach (Rectangle apartRect in allApartments)
+            {
+                // bedroom
+                FillHousingRoomContents(map, apartRect, 0);
+                // kitchen
+                FillHousingRoomContents(map, apartRect, 8);
+                // living room
+                FillHousingRoomContents(map, apartRect, 5);
+            }
+            #endregion
+
+            ///////////
+            // 6. Zone
+            ///////////
+            Zone zone = MakeUniqueZone("Apartements", b.BuildingRect);
+            map.AddZone(zone);
+            MakeWalkwayZones(map, b);
+
+            // done
+            return true;
+        }
+
     protected virtual bool MakeHousingBuilding(Map map, Block b)
     {
       ////////////////////////
