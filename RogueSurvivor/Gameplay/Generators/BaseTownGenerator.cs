@@ -86,6 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int HOUSE_OUTSIDE_ROOM_CHANCE = 75;
     private const int HOUSE_GARDEN_TREE_CHANCE = 10;  // per tile
     private const int HOUSE_PARKING_LOT_CAR_CHANCE = 10;  // per tile
+    private const int HOUSE_IS_APARTMENTS_CHANCE = 50;  // alpha10.1 new house floorplan: apartements
     private const int SHOP_BASEMENT_CHANCE = 30;
     private const int SHOP_BASEMENT_SHELF_CHANCE_PER_TILE = 5;
     private const int SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF = 33;
@@ -1319,8 +1320,18 @@ restart:
       });
     }
 
+        // alpha10.1 makes apartements or vanilla house
+        protected virtual bool MakeHousingBuilding(Map map, Block b)
+        {
+            // alpha10.1 decide floorplan
+            // apartment?
+            if (MakeApartmentsBuilding(map, b)) return true;
 
-        // alpha10.1 apartment houses
+            // vanilla house?
+            return MakeVanillaHousingBuilding(map, b);
+        }
+
+        // alpha10.1 apartment houses.  These do *not* have basements
         protected virtual bool MakeApartmentsBuilding(Map map, Block b)
         {
             ////////////////////////
@@ -1328,6 +1339,7 @@ restart:
             ////////////////////////
             if (b.InsideRect.Width < 9 || b.InsideRect.Height < 9) return false;
             if (b.InsideRect.Width > 17 || b.InsideRect.Height > 17) return false;
+            if (!m_DiceRoller.RollChance(HOUSE_IS_APARTMENTS_CHANCE)) return false; // only check RNG if dimensions ok
 
             // I pretty much copied and edited the char office algorithm. lame but i'm lazy.
 
@@ -1510,7 +1522,8 @@ restart:
             return true;
         }
 
-    protected virtual bool MakeHousingBuilding(Map map, Block b)
+    // alpha10.1 pre alpha10.1 regular houses
+    protected virtual bool MakeVanillaHousingBuilding(Map map, Block b)
     {
       ////////////////////////
       // 0. Check suitability
