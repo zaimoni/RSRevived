@@ -7469,7 +7469,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < actor.ActionPoints) actor.DropScent();    // alpha10 fix
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
-        OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
+        OnLoudNoise(newLocation, "A loud SCREAM");
         if (!ForceVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
@@ -8004,7 +8004,7 @@ namespace djack.RogueSurvivor.Engine
       // 2x damage against sleeping targets
       int dmg = (hitRoll > defRoll ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
-      OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
+      OnLoudNoise(attacker.Location, "Nearby fighting");
       bool isDefVisible = ForceVisibleToPlayer(defender);
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
@@ -8314,7 +8314,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
-      OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
+      OnLoudNoise(location, "A loud EXPLOSION");
       bool isVisible = ForceVisibleToPlayer(location);
       if (isVisible) {
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
@@ -8807,7 +8807,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoShout(Actor speaker, string text)
     {
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
-      OnLoudNoise(speaker.Location.Map, speaker.Location.Position, "A SHOUT");
+      OnLoudNoise(speaker.Location, "A SHOUT");
       if (!AreLinkedByPhone(speaker, Player) && !ForceVisibleToPlayer(speaker)) return;
       if (Player == speaker.Leader) {
         ClearMessages();
@@ -9228,7 +9228,7 @@ namespace djack.RogueSurvivor.Engine
         doorWindow.SetState(DoorWindow.STATE_BROKEN);
       else
         mapObj.Remove();
-      OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+      OnLoudNoise(mapObj.Location, "A loud *CRASH*");
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -9246,7 +9246,7 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.Barricade(-attack.DamageValue);
-        OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
+        OnLoudNoise(doorWindow.Location, "A loud *BASH*");
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH))));
         } else {
@@ -9272,7 +9272,7 @@ namespace djack.RogueSurvivor.Engine
           // players may both self-order breaking a barricade, etc. and give an order to followers to that effect.
 #endif
         }
-        OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+        OnLoudNoise(mapObj.Location, "A loud *CRASH*");
         bool player1 = ForceVisibleToPlayer(actor);
         bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
