@@ -7599,6 +7599,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim, MapObject mobj)
     {
+#if DEBUG
+      if ((null==victim) != (null==mobj)) throw new ArgumentNullException(nameof(victim));  // exactly one of these should be non-null (better API would be to specialize)
+#endif
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
@@ -7630,7 +7633,7 @@ namespace djack.RogueSurvivor.Engine
         if (victim != null)
           AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
         else if (mobj != null)
-          AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));
+          AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));   // XXX \todo remove risk of the the
       }
       --trap.Quantity;
     }
