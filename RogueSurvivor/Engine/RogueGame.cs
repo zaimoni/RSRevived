@@ -7675,6 +7675,16 @@ namespace djack.RogueSurvivor.Engine
 #if SPEEDY_GONZALES
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
 #else
+      if (actor.Location.Map.District != exitAt.ToMap.District) {   // check for movement speed artifacts
+        if (actor.Location.Map.District.WorldPosition.IsScheduledBefore(exitAt.ToMap.District.WorldPosition)) {
+          // the move itself is a free move; do not want to burn a run-is-free move on this
+          if (actor.IsRunning && actor.RunIsFreeMove) {
+            actor.IsRunning = false;    // cancel wasted running
+            if (isPlayer) AddMessage(new Data.Message("It doesn't feel worth running right now.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+//        } else if (!actor.IsRunning && !actor.RunIsFreeMove && actor.CanRun() && false) { // Objective::RunIfAdvisable will get this right, so don't need to redo its stamina cutoff that is the proper fourth test here.
+          }
+        }
+      }
       bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
       if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
 #endif
