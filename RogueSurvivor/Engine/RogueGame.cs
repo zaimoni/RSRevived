@@ -7678,6 +7678,8 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Location.Map.District != exitAt.ToMap.District) {   // check for movement speed artifacts
         if (actor.Location.Map.District.WorldPosition.IsScheduledBefore(exitAt.ToMap.District.WorldPosition)) {
           // the move itself is a free move; do not want to burn a run-is-free move on this
+          // XXX \todo but if the free move denies an attack from a known attacker in the destination we'd want it anyway; it just won't do so for the source district.
+          // Consider delegating to ObjectiveAI.
           if (actor.IsRunning && actor.RunIsFreeMove) {
             actor.IsRunning = false;    // cancel wasted running
             if (isPlayer) AddMessage(new Data.Message("It doesn't feel worth running right now.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
