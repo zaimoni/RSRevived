@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.Any()) return true;
         tmp = tmp.Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
-        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+        if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);
         return true;
       }
@@ -187,6 +187,42 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return "Breaking line of sight to "+_locs.to_s();
       }
     }
+
+#if PROTOTYPE
+    [Serializable]
+    internal class Goal_AcquireLineOfSight : Objective
+    {
+      readonly private HashSet<Location> _locs;
+
+      public Goal_AcquireLineOfSight(int t0, Actor who, Location loc)
+      : base(t0,who)
+      {
+        _locs = new HashSet<Location>{loc};
+      }
+
+      public Goal_AcquireLineOfSight(int t0, Actor who, IEnumerable<Location> locs)
+      : base(t0,who)
+      {
+        _locs = new HashSet<Location>(locs);
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        IEnumerable<Point> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(loc));
+        if (!tmp.Any()) return true;
+        // XXX \todo if any in-communication ally can see the location, clear it
+        if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
+        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);   // replace w/pathing to
+        return true;
+      }
+
+      public override string ToString()
+      {
+        return "Breaking line of sight to "+_locs.to_s();
+      }
+    }
+#endif
 
     [Serializable]
     internal class Goal_PathTo : Objective
