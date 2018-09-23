@@ -209,9 +209,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        IEnumerable<Point> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(loc));
+        IEnumerable<Location> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(loc));
         if (!tmp.Any()) return true;
-        // XXX \todo if any in-communication ally can see the location, clear it
+        // if any in-communication ally can see the location, clear it
+        foreach(Actor friend in m_Actor.Allies) {
+          if (!InCommunicationWith(friend)) continue;
+          tmp = tmp.Where(loc => !friend.Controller.CanSee(loc));
+          if (!tmp.Any()) return true;
+        }
+        _locs.Clear();
+        _locs.UnionWith(tmp);
         if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);   // replace w/pathing to
         return true;
