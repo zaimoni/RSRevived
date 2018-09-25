@@ -188,7 +188,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if PROTOTYPE
     [Serializable]
     internal class Goal_AcquireLineOfSight : Objective
     {
@@ -211,25 +210,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         IEnumerable<Location> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(loc));
         if (!tmp.Any()) return true;
+        ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
         // if any in-communication ally can see the location, clear it
         foreach(Actor friend in m_Actor.Allies) {
-          if (!InCommunicationWith(friend)) continue;
+          if (!ai.InCommunicationWith(friend)) continue;
           tmp = tmp.Where(loc => !friend.Controller.CanSee(loc));
           if (!tmp.Any()) return true;
         }
-        _locs.Clear();
-        _locs.UnionWith(tmp);
-        if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
-        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);   // replace w/pathing to
+        if (_locs.Count > tmp.Count()) {
+          _locs.Clear();
+          _locs.UnionWith(tmp);
+          // once we are caching inverse-FOV, clear that here
+        }
+        if (0 < ai.InterruptLongActivity()) return false;
+        // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
+        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(l => l.Map==m).Select(l => l.Position)));
         return true;
       }
 
       public override string ToString()
       {
-        return "Breaking line of sight to "+_locs.to_s();
+        return "Acquiring line of sight to "+_locs.to_s();
       }
     }
-#endif
 
     [Serializable]
     internal class Goal_PathTo : Objective
