@@ -410,6 +410,32 @@ namespace djack.RogueSurvivor.Engine
       foreach(var msg in msgs) m_MessageManager.Add(msg);
     }
 
+#if PROTOTYPE
+    // allows propagating sound to NPCs, in theory (API needs extending)
+    // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
+    public void PropagateSound(Location loc, string text, Action<Actor> doFn)
+    {
+      Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
+      survey.DoForEach(pt => {
+          Actor a = loc.Map.GetActorAtExt(pt);
+          if (a?.IsSleeping ?? true) return;    // XXX \todo integrate loud noise wakeup here
+          if (a.Controller.CanSee(loc)) return;
+          if (Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
+          if (null != Player && Player == a) {
+            AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+            RedrawPlayScreen();
+            return;
+          }
+          if (a.Controller is PlayerController player) {
+            player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+            return;
+          }
+          // NPC ai hooks go here
+          doFn(a);
+      });
+    }
+#endif
+
     // XXX just about everything that rates this is probable cause for police investigation
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void AddMessageIfAudibleForPlayer(Location loc, string text)
@@ -13360,7 +13386,6 @@ namespace djack.RogueSurvivor.Engine
       foreach (MapObject obj in map.MapObjects) {
         if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_CLOSED;
-//      RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell closing" : "gate closing");
         OnLoudNoise(obj.Location,map== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell closing" : "gate closing");
 
         Actor actorAt = map.GetActorAt(obj.Location.Position);
