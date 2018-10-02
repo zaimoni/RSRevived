@@ -2717,6 +2717,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
+    public bool CombatUnready()
+    {
+      foreach(var x in GameItems.ammo) {
+        if (3 == RatingCode(x)) return true;
+      }
+      foreach(var x in GameItems.ranged) {
+        if (3 == RatingCode(x)) return true;
+      }
+      return false;
+    }
+
     protected static int ScoreRangedWeapon(ItemRangedWeapon w)
     {
       Attack rw_attack = w.Model.Attack;
