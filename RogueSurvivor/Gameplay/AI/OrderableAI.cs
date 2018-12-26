@@ -235,6 +235,64 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
+    internal class Goal_Terminate : Objective
+    {
+      readonly private HashSet<Location> _locs = new HashSet<Location>();
+      readonly private HashSet<Actor> _targets = new HashSet<Actor>();
+
+      public void NewTarget(Actor target)
+      {
+#if DEBUG
+        if (target?.IsEnemyOf(m_Actor) ?? false) throw new ArgumentNullException(nameof(target));
+#endif
+        _targets.Add(target);
+      }
+
+      public Goal_Terminate(int t0, Actor who, Actor target)
+      : base(t0,who)
+      {
+        NewTarget(target);
+      }
+
+      public Goal_Terminate(int t0, Actor who, IEnumerable<Actor> targets)
+      : base(t0,who)
+      {
+        foreach(Actor a in targets) NewTarget(a);
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        _targets.RemoveWhere(a => a.IsDead);
+        if (0 >= _targets.Count) return true;
+        _locs.UnionWith(_targets.Select(a => a.Location));
+        if (0<m_Actor.Controller.enemies_in_FOV.Count) return false;    // we do use InterruptLongActivity later.  Don't want non-combat interrupts to interfere here
+        _locs.RemoveWhere(loc => m_Actor.Controller.CanSee(loc));
+        if (0 >= _locs.Count) return true;
+
+        ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
+        // if any in-communication ally can see the location, clear it
+        foreach(Actor friend in m_Actor.Allies) {
+          if (!ai.InCommunicationWith(friend)) continue;
+          if (0<friend.Controller.enemies_in_FOV.Count) continue;
+         _locs.RemoveWhere(loc => friend.Controller.CanSee(loc));
+          if (0 >= _locs.Count) break;
+        }
+        _locs.UnionWith(_targets.Select(a => a.Location));
+        if (0 >= _locs.Count) return true;
+        if (0 < ai.InterruptLongActivity()) return false;
+        // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
+        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(l => l.Map==m).Select(l => l.Position)));
+        return true;
+      }
+
+      public override string ToString()
+      {
+        return "Securing "+_locs.to_s();
+      }
+    }
+
+    [Serializable]
     internal class Goal_PathTo : Objective
     {
       private readonly HashSet<Location> _locs;

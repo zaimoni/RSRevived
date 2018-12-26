@@ -1116,6 +1116,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
+    public void Terminate(Actor a)
+    {
+      var test = Goal<Goal_Terminate>();
+      if (null==test) {
+        Objectives.Add(new Goal_Terminate(m_Actor.Location.Map.LocalTime.Tick,m_Actor,a));
+      } else test.NewTarget(a);
+    }
+
     public bool InCommunicationWith(Actor a)
     {
       if (m_Actor==a) return true;

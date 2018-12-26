@@ -410,10 +410,9 @@ namespace djack.RogueSurvivor.Engine
       foreach(var msg in msgs) m_MessageManager.Add(msg);
     }
 
-#if PROTOTYPE
     // allows propagating sound to NPCs, in theory (API needs extending)
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
-    public void PropagateSound(Location loc, string text, Action<Actor> doFn)
+    public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
     {
       Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
       survey.DoForEach(pt => {
@@ -422,11 +421,13 @@ namespace djack.RogueSurvivor.Engine
           if (a.Controller.CanSee(loc)) return;
           if (Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
           if (null != Player && Player == a) {
+            if (player_knows(a)) return;
             AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
             RedrawPlayScreen();
             return;
           }
           if (a.Controller is PlayerController player) {
+            if (player_knows(a)) return;
             player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
             return;
           }
@@ -434,7 +435,6 @@ namespace djack.RogueSurvivor.Engine
           doFn(a);
       });
     }
-#endif
 
     // XXX just about everything that rates this is probable cause for police investigation
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -8050,8 +8050,26 @@ namespace djack.RogueSurvivor.Engine
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
       bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
-      if (!isDefVisible && !isAttVisible && (!isPlayer && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-        AddMessageIfAudibleForPlayer(attacker.Location, "You hear fighting");
+
+      bool player_knows(Actor a) {
+        if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
+        if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return true;  // not clear enough; no message
+        return false;
+      }
+      void react(Actor a) {
+        if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+        if (!a.IsEnemyOf(attacker) && !a.IsEnemyOf(defender)) return;   // not relevant
+        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return;  // not clear enough
+        if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+          if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
+          if (a.IsEnemyOf(defender)) ai.Terminate(defender);
+          return;
+        }
+        // \todo: get away from the fighting
+      }
+
+      PropagateSound(attacker.Location, "You hear fighting",react,player_knows);
       if (isAttVisible) {
         AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
         if (display_defender) AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
