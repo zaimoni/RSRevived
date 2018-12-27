@@ -989,6 +989,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(var where_enemy in enemies) {
         Actor a = where_enemy.Value;
         int a_turns = m_Actor.HowManyTimesOtherActs(1,a);
+        if (a.CanRun() && a.RunIsFreeMove) a_turns++;
         int a_turns_bak = a_turns;
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
         if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
