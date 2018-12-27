@@ -249,6 +249,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var items = items_in_FOV;
         if (null != items) {
           foreach(var x in items) {
+           if (x.Value.IsEmpty) continue;
            var loc = new Location(m_Actor.Location.Map,x.Key);
            if (!loc.Map.IsInBounds(loc.Position)) {
              Location? test = loc.Map.Normalize(loc.Position);
@@ -1118,6 +1119,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void Terminate(Actor a)
     {
+#if DEBUG            
+      if ((m_Actor.Controller as ObjectiveAI).CombatUnready()) throw new ArgumentNullException(nameof(m_Actor));
+      if (m_Actor.Inventory.IsEmpty) throw new ArgumentNullException(nameof(m_Actor));
+#endif
       var test = Goal<Goal_Terminate>();
       if (null==test) {
         Objectives.Add(new Goal_Terminate(m_Actor.Location.Map.LocalTime.Tick,m_Actor,a));

@@ -8058,7 +8058,12 @@ namespace djack.RogueSurvivor.Engine
       }
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
-        if (!a.IsEnemyOf(attacker) && !a.IsEnemyOf(defender)) return;   // not relevant
+        bool attacker_relevant = a.IsEnemyOf(attacker);
+        bool defender_relevant = a.IsEnemyOf(defender);
+        if (a.Controller is CHARGuardAI && !IsInCHAROffice(attacker.Location)) attacker_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+
+        if (!attacker_relevant && !defender_relevant) return;   // not relevant
         if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
         if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return;  // not clear enough
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
@@ -8234,8 +8239,31 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
-        if (!see_defender && !see_attacker && (!player_involved && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-          AddMessageIfAudibleForPlayer(attacker.Location, "You hear firing");
+
+        bool player_knows(Actor a) {
+          if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
+          if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return true;  // not clear enough; no message
+          return false;
+        }
+        void react(Actor a) {
+          if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+          bool attacker_relevant = a.IsEnemyOf(attacker);
+          bool defender_relevant = a.IsEnemyOf(defender);
+          if (a.Controller is CHARGuardAI && !IsInCHAROffice(attacker.Location)) attacker_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+
+          if (!attacker_relevant && !defender_relevant) return;   // not relevant
+          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return;  // not clear enough
+          if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+            if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
+            if (a.IsEnemyOf(defender)) ai.Terminate(defender);
+            return;
+          }
+          // \todo: get away from the fighting
+        }
+
+        PropagateSound(attacker.Location, "You hear firing",react,player_knows);
         if (see_attacker) {
           AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
           AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
@@ -9308,9 +9336,25 @@ namespace djack.RogueSurvivor.Engine
         OnLoudNoise(doorWindow.Location, "A loud *BASH*");
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH))));
-        } else {
-          if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) AddMessageIfAudibleForPlayer(doorWindow.Location, "You hear someone bashing barricades");
         }
+        bool player_knows(Actor a) {
+          if (a.Controller.CanSee(actor.Location)) return true; // we already checked the door/window visibility, it's the sound origin
+          if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return true;  // not clear enough; no message
+          return false;
+        }
+        void react(Actor a) {
+          if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+          if (!a.IsEnemyOf(actor)) return;   // not relevant \todo Civilian vs. GangAI may disagree with this, but would want to retreat
+          if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;  // not clear enough
+          if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+            /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
+            return;
+          }
+          // \todo: get away from the fighting
+        }
+        PropagateSound(doorWindow.Location, "You hear someone bashing barricades",react,player_knows);
         if (doorWindow.IsBarricaded) {
           if (actor.Controller is ObjectiveAI ai) ai.DeBarricade(doorWindow);
         }
@@ -9354,11 +9398,26 @@ namespace djack.RogueSurvivor.Engine
             AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           ClearOverlays();
-        } else if (flag) {
-          if (m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
-            AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone breaking furniture");
-        } else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
-          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone bashing furniture");
+        }
+
+        bool player_knows(Actor a) {
+          if (a.Controller.CanSee(actor.Location)) return true; // we already checked the object visibility, it's the sound origin
+          if (!m_Rules.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE)) return true;  // not clear enough; no message
+          return false;
+        }
+        void react(Actor a) {
+          if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+          if (!a.IsEnemyOf(actor)) return;   // not relevant
+          if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (!m_Rules.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE)) return;  // not clear enough
+          if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+            /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
+            return;
+          }
+          // \todo: get away from the fighting
+        }
+        PropagateSound(mapObj.Location,(flag ? "You hear someone breaking furniture" : "You hear someone bashing furniture"),react,player_knows);
       }
     }
 
@@ -9404,11 +9463,26 @@ namespace djack.RogueSurvivor.Engine
       if (flag) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
         RedrawPlayScreen();
-      } else {
-        OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
-        if (m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))
-          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
       }
+      OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
+      bool player_knows(Actor a) {
+        if (a.Controller.CanSee(actor.Location)) return true; // we already checked the attacker visibility, he's the sound origin
+        if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return true;  // not clear enough; no message
+        return false;
+      }
+      void react(Actor a) {
+        if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+        if (!a.IsEnemyOf(actor)) return;   // not relevant
+        if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return;  // not clear enough
+        if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+          /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
+          return;
+        }
+        // \todo: get away from the fighting
+      }
+      PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
       CheckMapObjectTriggersTraps(o_loc.Map, toPos);
     }
 
@@ -9466,15 +9540,28 @@ namespace djack.RogueSurvivor.Engine
       if (isVisible) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PULL), mapObj));
         RedrawPlayScreen();
-      } else {
-        // loud noise.
-        OnLoudNoise(map, mapObj.Location.Position, "Something being pushed");
-
-        // player hears?
-        if (m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) {
-          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
-        }
       }
+      // loud noise.
+      OnLoudNoise(map, mapObj.Location.Position, "Something being pushed");
+
+      bool player_knows(Actor a) {
+        if (a.Controller.CanSee(actor.Location)) return true; // we already checked the attacker visibility, he's the sound origin
+        if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return true;  // not clear enough; no message
+        return false;
+      }
+      void react(Actor a) {
+        if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+        if (!a.IsEnemyOf(actor)) return;   // not relevant
+        if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return;  // not clear enough
+        if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+          /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
+          return;
+        }
+        // \todo: get away from the fighting
+      }
+      PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
 
       // check triggers
       OnActorEnterTile(actor);

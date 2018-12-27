@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public void NewTarget(Actor target)
       {
 #if DEBUG
-        if (target?.IsEnemyOf(m_Actor) ?? false) throw new ArgumentNullException(nameof(target));
+        if (!(target?.IsEnemyOf(m_Actor) ?? false)) throw new ArgumentNullException(nameof(target));
 #endif
         _targets.Add(target);
       }
@@ -266,7 +266,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _targets.RemoveWhere(a => a.IsDead);
         if (0 >= _targets.Count) return true;
         _locs.UnionWith(_targets.Select(a => a.Location));
-        if (0<m_Actor.Controller.enemies_in_FOV.Count) return false;    // we do use InterruptLongActivity later.  Don't want non-combat interrupts to interfere here
+        if (null != m_Actor.Controller.enemies_in_FOV) return false;    // we do use InterruptLongActivity later.  Don't want non-combat interrupts to interfere here
         _locs.RemoveWhere(loc => m_Actor.Controller.CanSee(loc));
         if (0 >= _locs.Count) return true;
 
@@ -274,7 +274,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // if any in-communication ally can see the location, clear it
         foreach(Actor friend in m_Actor.Allies) {
           if (!ai.InCommunicationWith(friend)) continue;
-          if (0<friend.Controller.enemies_in_FOV.Count) continue;
+          if (null != friend.Controller.enemies_in_FOV) continue;
          _locs.RemoveWhere(loc => friend.Controller.CanSee(loc));
           if (0 >= _locs.Count) break;
         }
