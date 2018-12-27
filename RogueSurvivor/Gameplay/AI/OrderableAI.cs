@@ -272,11 +272,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
         // if any in-communication ally can see the location, clear it
-        foreach(Actor friend in m_Actor.Allies) {
-          if (!ai.InCommunicationWith(friend)) continue;
-          if (null != friend.Controller.enemies_in_FOV) continue;
-         _locs.RemoveWhere(loc => friend.Controller.CanSee(loc));
-          if (0 >= _locs.Count) break;
+        var allies = m_Actor.Allies;
+        if (null != allies) {
+          foreach(Actor friend in allies) {
+            if (!ai.InCommunicationWith(friend)) continue;
+            if (null != friend.Controller.enemies_in_FOV) continue;
+           _locs.RemoveWhere(loc => friend.Controller.CanSee(loc));
+            if (0 >= _locs.Count) break;
+          }
         }
         _locs.UnionWith(_targets.Select(a => a.Location));
         if (0 >= _locs.Count) return true;

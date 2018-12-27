@@ -257,7 +257,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
              loc = test.Value;
            }
            if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
-           if (BehaviorWouldGrabFromStack(loc, x.Value)?.IsLegal() ?? false) {
+           Inventory inv = loc.Items;
+           if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(loc, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
              ret |= ReactionCode.ITEM;
              break;
            }
