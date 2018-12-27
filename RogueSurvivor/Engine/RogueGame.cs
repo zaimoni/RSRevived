@@ -7724,7 +7724,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
+      bool need_stamina_regen = !actor.IsRunning || !actor.RunIsFreeMove;
       if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
+      if (actor.IsRunning) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
 #endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
@@ -7745,7 +7747,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
       if (map.District != exitAt.ToMap.District) {
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-        if (!run_was_free_move) actor.PreTurnStart();
+        if (need_stamina_regen) actor.PreTurnStart();
       }
       if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
