@@ -7559,7 +7559,7 @@ namespace djack.RogueSurvivor.Engine
     private bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
       if (m_Rules.CheckTrapTriggers(trap, victim))
-        DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim, null);
+        DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim);
       else if (IsVisibleToPlayer(victim))
         AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
       return trap.Quantity == 0;
@@ -7606,7 +7606,7 @@ namespace djack.RogueSurvivor.Engine
       List<Item> objList = null;
       foreach (Item obj in itemsAt.Items) {
         if (obj is ItemTrap trap && trap.IsActivated) {
-          DoTriggerTrap(trap, map, pos, null, mapObjectAt);
+          DoTriggerTrap(trap, map, pos, mapObjectAt);
           if (trap.Quantity <= 0) {
             (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
           }
@@ -7623,16 +7623,16 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim, MapObject mobj)
+    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim)
     {
 #if DEBUG
-      if ((null==victim) != (null==mobj)) throw new ArgumentNullException(nameof(victim));  // exactly one of these should be non-null (better API would be to specialize)
+      if (null==victim) throw new ArgumentNullException(nameof(victim));
 #endif
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
       int dmg = trapModel.Damage * trap.Quantity;
-      if (dmg > 0 && victim != null) {
+      if (dmg > 0) {
         InflictDamage(victim, dmg);
         if (player) {
           AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)));
@@ -7644,23 +7644,33 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (trapModel.IsNoisy) {
-        if (player) {
-          if (victim != null)
-            AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
-          else if (mobj != null)
-            AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
-        }
+        if (player) AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
+        OnLoudNoise(map, pos, trapModel.NoiseName);
+      }
+      if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
+
+      if (!m_Rules.CheckTrapStepOnBreaks(trap)) return;
+      if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
+      --trap.Quantity;
+    }
+
+    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, MapObject mobj)
+    {
+#if DEBUG
+      if (null==mobj) throw new ArgumentNullException(nameof(mobj));
+#endif
+      ItemTrapModel trapModel = trap.Model;
+      bool player = ForceVisibleToPlayer(map, pos);
+      trap.IsTriggered = true;
+      int dmg = trapModel.Damage * trap.Quantity;
+      if (trapModel.IsNoisy) {
+        if (player) AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
         OnLoudNoise(map, pos, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
       if (!m_Rules.CheckTrapStepOnBreaks(trap, mobj)) return;
-      if (player) {
-        if (victim != null)
-          AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
-        else if (mobj != null)
-          AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));   // XXX \todo remove risk of the the
-      }
+      if (player) AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));   // XXX \todo remove risk of the the
       --trap.Quantity;
     }
 
