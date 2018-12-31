@@ -7899,8 +7899,7 @@ namespace djack.RogueSurvivor.Engine
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
       if (!target.IsPlayer && !target.IsSleeping && !wasAlreadyEnemy )
         DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
-      aggressor.MarkAsAgressorOf(target);
-      target.MarkAsSelfDefenceFrom(aggressor);
+      aggressor.RecordAggression(target);
       if (target.IsSleeping) return;
       Faction faction = target.Faction;
       if (GameFactions.ThePolice == faction) {
@@ -8029,10 +8028,7 @@ namespace djack.RogueSurvivor.Engine
       // we then have a concept of "radio-equivalent coordinates"; subway and sewer are 1-1 with entry map, basement embeds in entry map
       // police station, hospital, CHAR base are problematic
       Faction faction = target.Faction;
-      void IsAggressed(Actor a){
-        aggressor.MarkAsAgressorOf(a);
-        a.MarkAsSelfDefenceFrom(aggressor);
-      }
+      void IsAggressed(Actor a){ aggressor.RecordAggression(a); }
       bool IsAggressable(Actor a) {
         if (a == aggressor) return false;
         if (a.Leader == aggressor) return false;

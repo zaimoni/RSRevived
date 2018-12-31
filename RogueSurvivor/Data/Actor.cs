@@ -1318,22 +1318,32 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Actor> Aggressing { get { return m_AggressorOf ?? new List<Actor>(); } }
     public IEnumerable<Actor> Aggressors { get { return m_SelfDefenceFrom ?? new List<Actor>(); } }
 
-    public void MarkAsAgressorOf(Actor other)
+    // these two are tightly integrated.
+    private void MarkAsAggressorOf(Actor other)
     {
-      if (other == null || other.IsDead) return;
       if (m_AggressorOf == null) m_AggressorOf = new List<Actor>{ other };
       else if (m_AggressorOf.Contains(other)) return;
       else m_AggressorOf.Add(other);
       Threats?.RecordTaint(other, other.Location);
     }
 
-    public void MarkAsSelfDefenceFrom(Actor other)
+    private void MarkAsSelfDefenceFrom(Actor other)
     {
-      if (other == null || other.IsDead) return;
       if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>{ other };
       else if (m_SelfDefenceFrom.Contains(other)) return;
       else m_SelfDefenceFrom.Add(other);
       Threats?.RecordTaint(other, other.Location);
+    }
+
+    // No UI updates here (that differs by context)
+    public void RecordAggression(Actor other)
+    {
+#if DEBUG
+       if (null==other || other.IsDead) throw new ArgumentNullException(nameof(other));
+       if (IsDead) throw new ArgumentNullException("this.IsDead");
+#endif
+       MarkAsAggressorOf(other);
+       other.MarkAsSelfDefenceFrom(this);
     }
 
     public bool IsAggressorOf(Actor other)
