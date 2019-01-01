@@ -102,6 +102,12 @@ namespace djack.RogueSurvivor.Data
     public override Dictionary<Point,Inventory> items_in_FOV { get { return m_LOSSensor.items; } }
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
+    // if the underlying controller has a non-default behavior we do want that here
+    public override string AggressedBy(Actor aggressor)
+    {
+      return null;
+    }
+
     public override ActorAction GetAction(RogueGame game)
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");

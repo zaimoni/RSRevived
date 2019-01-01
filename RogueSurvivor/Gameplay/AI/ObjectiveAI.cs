@@ -269,6 +269,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return ret;
     }
 
+    // rethinking aggression.  Would have to lift this to handle feral dogs barking back/calling for help
+    /// <returns>message to say</returns>
+    public virtual string AggressedBy(Actor aggressor)
+    {
+      return "BASTARD! TRAITOR!";
+    }
+
     private void AvoidBeingCornered()
     {
 #if DEBUG

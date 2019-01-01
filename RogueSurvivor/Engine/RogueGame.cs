@@ -7897,10 +7897,13 @@ namespace djack.RogueSurvivor.Engine
     {
       if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
-      if (!target.IsPlayer && !target.IsSleeping && !wasAlreadyEnemy )
-        DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       aggressor.RecordAggression(target);
+      // XXX \todo check for allies who witness this
       if (target.IsSleeping) return;
+      if (!wasAlreadyEnemy) {
+        string msg = (target.Controller as ObjectiveAI)?.AggressedBy(aggressor);
+        if (!string.IsNullOrEmpty(msg)) DoSay(target, aggressor, msg, RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+      }
       Faction faction = target.Faction;
       if (GameFactions.ThePolice == faction) {
         if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
@@ -7953,7 +7956,11 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnMakeEnemyOfCop(Actor aggressor, Actor cop, bool wasAlreadyEnemy)
     {
+#if DEBUG
+      if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) throw new InvalidOperationException("GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)");
+#else
       if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) return;
+#endif
       if (!wasAlreadyEnemy)
         DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
@@ -7990,7 +7997,11 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnMakeEnemyOfSoldier(Actor aggressor, Actor soldier, bool wasAlreadyEnemy)
     {
+#if DEBUG
+      if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) throw new InvalidOperationException("GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)");;
+#else
       if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) return;
+#endif
       if (!wasAlreadyEnemy)
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
