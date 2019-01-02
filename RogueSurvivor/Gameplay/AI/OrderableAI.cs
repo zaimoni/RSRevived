@@ -8,6 +8,7 @@
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TIME_TURNS
+#define NEW_GOAL_TERMINATE
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -234,18 +235,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    // \todo re-implement as mini-threat tracking
     [Serializable]
     internal class Goal_Terminate : Objective
     {
+#if NEW_GOAL_TERMINATE
+      readonly private Dictionary<Actor,HashSet<Location>> _target_locs = new Dictionary<Actor, HashSet<Location>>();
+#else
       readonly private HashSet<Location> _locs = new HashSet<Location>();
       readonly private HashSet<Actor> _targets = new HashSet<Actor>();
+#endif
 
       public void NewTarget(Actor target)
       {
 #if DEBUG
         if (!(target?.IsEnemyOf(m_Actor) ?? false)) throw new ArgumentNullException(nameof(target));
 #endif
+#if NEW_GOAL_TERMINATE
+        if (_target_locs.TryGetValue(target, out var locs)) {
+          locs.Clear();
+          locs.Add(target.Location);
+        } else _target_locs[target] = new HashSet<Location> { target.Location };
+#else
         _targets.Add(target);
+#endif
       }
 
       public Goal_Terminate(int t0, Actor who, Actor target)
@@ -260,15 +273,59 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(Actor a in targets) NewTarget(a);
       }
 
+      private bool SuppressVisibleFor(Actor a)
+      {
+#if NEW_GOAL_TERMINATE
+        foreach(var x in _target_locs) {
+          x.Value.RemoveWhere(loc => a.Controller.CanSee(loc));
+        }
+        return false;
+#else
+        _locs.RemoveWhere(loc => a.Controller.CanSee(loc));
+        return 0 >= _locs.Count;
+#endif
+      }
+
+      private void RefreshLocations()
+      {
+#if NEW_GOAL_TERMINATE
+        foreach(var x in _target_locs) {
+          if (x.Value.Contains(x.Key.Location)) continue;
+          if (x.Key.Controller is ObjectiveAI) {
+            var candidates = x.Key.OnePathRange(x.Key.Location);  // XXX fails for Z
+            x.Value.IntersectWith(candidates.Keys);
+          }
+          // XXX \todo would like a little more fuzz in the results, but need CPU down first (start-game less than 1 second?)
+          x.Value.Add(x.Key.Location);
+        }
+#else
+        _locs.UnionWith(_targets.Select(a => a.Location));
+#endif
+      }
+
+      private HashSet<Point> WhereIn(Map m)
+      {
+#if NEW_GOAL_TERMINATE
+        var ret = new HashSet<Point>();
+        foreach(var x in _target_locs) ret.UnionWith(x.Value.Where(y=>y.Map==m).Select(y=>y.Position));
+        return ret;
+#else
+        return new HashSet<Point>(_locs.Where(l => l.Map==m).Select(l => l.Position));
+#endif
+      }
+
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
+#if NEW_GOAL_TERMINATE
+        _target_locs.OnlyIf(a => !a.IsDead);
+        if (0 >= _target_locs.Count) return true;
+#else
         _targets.RemoveWhere(a => a.IsDead);
         if (0 >= _targets.Count) return true;
-        _locs.UnionWith(_targets.Select(a => a.Location));
+#endif
         if (null != m_Actor.Controller.enemies_in_FOV) return false;    // we do use InterruptLongActivity later.  Don't want non-combat interrupts to interfere here
-        _locs.RemoveWhere(loc => m_Actor.Controller.CanSee(loc));
-        if (0 >= _locs.Count) return true;
+        if (SuppressVisibleFor(m_Actor)) return true;
 
         ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
         // if any in-communication ally can see the location, clear it
@@ -277,21 +334,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(Actor friend in allies) {
             if (!ai.InCommunicationWith(friend)) continue;
             if (null != friend.Controller.enemies_in_FOV) continue;
-           _locs.RemoveWhere(loc => friend.Controller.CanSee(loc));
-            if (0 >= _locs.Count) break;
+            if (SuppressVisibleFor(friend)) return true;
           }
         }
-        _locs.UnionWith(_targets.Select(a => a.Location));
-        if (0 >= _locs.Count) return true;
+        RefreshLocations();
         if (0 < ai.InterruptLongActivity()) return false;
         // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
-        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(l => l.Map==m).Select(l => l.Position)));
+        ret = ai.BehaviorPathTo(m => WhereIn(m));
         return true;
       }
 
       public override string ToString()
       {
+#if NEW_GOAL_TERMINATE
+        return "Securing area";
+#else
         return "Securing "+_locs.to_s();
+#endif
       }
     }
 
