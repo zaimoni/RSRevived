@@ -7727,6 +7727,17 @@ namespace djack.RogueSurvivor.Engine
       bool need_stamina_regen = !actor.IsRunning || !actor.RunIsFreeMove;
       if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
       if (actor.IsRunning) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
+      MapObject mapObjectAt = exitAt.Location.Map.GetMapObjectAt(exitAt.Location.Position);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
+        if (ForceVisibleToPlayer(actor))
+          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+        if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
+          actor.SpendActionPoints(Rules.JUMP_STUMBLE_ACTION_COST);
+          if (IsVisibleToPlayer(actor))
+            AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+        }
+      }
 #endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
