@@ -103,8 +103,16 @@ namespace djack.RogueSurvivor.Data
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
     // if the underlying controller has a non-default behavior we do want that here
+    // i.e. a full migration of legacy code merely ends up relocating the complexity; rationale needed to proceed
     public override string AggressedBy(Actor aggressor)
     {
+      if (Gameplay.GameFactions.ThePolice == aggressor.Faction && Gameplay.GameFactions.TheCHARCorporation==m_Actor.Faction && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+        // same technical issues as DoMakeEnemyOfCop
+        Session.Get.ScriptStage_PoliceCHARrelations = 1;
+//      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
+        RogueGame.DamnCHARtoPoliceInvestigation();
+        return "Just following ORDERS!";
+      }
       return null;
     }
 

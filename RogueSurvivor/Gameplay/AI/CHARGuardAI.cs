@@ -57,6 +57,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Point,Inventory> items_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).items; } }
     protected override void SensorsOwnedBy(Actor actor) { (m_MemLOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
 
+    public override string AggressedBy(Actor aggressor)
+    {
+      if (GameFactions.ThePolice == aggressor.Faction && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+        // same technical issues as DoMakeEnemyOfCop
+        Session.Get.ScriptStage_PoliceCHARrelations = 1;
+//      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
+        RogueGame.DamnCHARtoPoliceInvestigation();
+        return "Just following ORDERS!";
+      }
+      return base.AggressedBy(aggressor);
+    }
+
     protected override ActorAction SelectAction(RogueGame game)
     {
       ClearMovePlan();

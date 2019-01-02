@@ -7923,7 +7923,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private static void DamnCHARtoPoliceInvestigation()
+    public static void DamnCHARtoPoliceInvestigation()
     {
 #region 1) examine the underground base
       Map m = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
