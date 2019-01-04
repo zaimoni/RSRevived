@@ -1242,7 +1242,7 @@ retry:
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.N] && is_wall[(int)Compass.XCOMlike.NE] && !is_wall[(int)Compass.XCOMlike.S] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
       if (is_wall[(int)Compass.XCOMlike.SW] && is_wall[(int)Compass.XCOMlike.S] && is_wall[(int)Compass.XCOMlike.SE] && !is_wall[(int)Compass.XCOMlike.N] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.W] && is_wall[(int)Compass.XCOMlike.SW] && !is_wall[(int)Compass.XCOMlike.E] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
-      if (is_wall[(int)Compass.XCOMlike.NE] && is_wall[(int)Compass.XCOMlike.E] && is_wall[(int)Compass.XCOMlike.NW] && !is_wall[(int)Compass.XCOMlike.W] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
+      if (is_wall[(int)Compass.XCOMlike.NE] && is_wall[(int)Compass.XCOMlike.E] && is_wall[(int)Compass.XCOMlike.SE] && !is_wall[(int)Compass.XCOMlike.W] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
 
       // blocking access to something that could be next to wall/corner is problematic
       if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.NW] 
