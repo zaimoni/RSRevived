@@ -1631,6 +1631,39 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public List<Location> OneStepRange(Location loc)
+    {
+      var ret = new List<Location>();
+      foreach(Direction dir in Direction.COMPASS) {
+        Location test = loc+dir;
+        if (!test.Map.IsWalkableFor(test.Position, this)) continue;
+        if (!test.Map.IsInBounds(test.Position)) {
+          Location? test2 = test.Map.Normalize(test.Position);
+          if (null == test2) throw new ArgumentNullException(nameof(test2));
+          test = test2.Value;
+        }
+        ret.Add(test);
+      }
+      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      if (null != exit) {
+        ActionUseExit tmp = new ActionUseExit(this, loc.Position);
+        if (loc == Location) {
+          if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location);
+        } else {
+          ret.Add(exit.Location);
+          // simulate Exit::ReasonIsBlocked
+          switch(exit.Location.IsBlockedForPathing) {
+          case 0: break;
+          case 1: if (!CanJump) ret.Remove(exit.Location);
+            break;
+          default: ret.Remove(exit.Location);
+            break;
+          }
+        }
+      }
+      return 0 < ret.Count ? ret : null;
+    }
+
     public List<Point> OneStepRange(Map m,Point p)
     {
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));
