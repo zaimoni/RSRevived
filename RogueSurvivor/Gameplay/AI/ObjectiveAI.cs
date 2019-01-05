@@ -871,6 +871,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (already_seen.Contains(m)) continue;
         Goals(targets_at,m,already_seen,goals);
       }
+      // \todo 2019-01-04 BehaviorResupply is causing a substantial slowdown at Day 0 hour 3 onwards
+      // an obvious "prefilter" is to exclude goals that are "too distant" from the actor
       return goals;
     }
 

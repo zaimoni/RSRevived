@@ -1238,7 +1238,7 @@ retry:
         if (IsValid(pt2) && GetTileModelAtExt(pt2.X, pt2.Y).IsWalkable) blocked[dir.Index] = true;
         else is_wall[dir.Index] = true;
       }
-      // corners and walls are generally ok
+      // corners and walls are generally ok.  2019-01-04: preliminary tests suggest this is not a micro-optimization target
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.N] && is_wall[(int)Compass.XCOMlike.NE] && !is_wall[(int)Compass.XCOMlike.S] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
       if (is_wall[(int)Compass.XCOMlike.SW] && is_wall[(int)Compass.XCOMlike.S] && is_wall[(int)Compass.XCOMlike.SE] && !is_wall[(int)Compass.XCOMlike.N] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.W] && is_wall[(int)Compass.XCOMlike.SW] && !is_wall[(int)Compass.XCOMlike.E] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
