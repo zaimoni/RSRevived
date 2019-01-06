@@ -18,7 +18,7 @@ namespace Zaimoni.Data
         readonly private Func<T, Dictionary<T, int>> _forward;
         readonly private Func<T, Dictionary<T, int>> _inverse;
 
-        public FloodfillPathfinder(Func<T, Dictionary<T,int>> Forward, Func<T,Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
+        public FloodfillPathfinder(Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
         {
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException(nameof(Forward));
@@ -84,14 +84,14 @@ namespace Zaimoni.Data
             _blacklist.Remove(src);
         }
 
-		public void GoalDistance(T goal, T start, int max_cost=int.MaxValue)
-		{
-		  T[] tmp = { goal };
-		  GoalDistance(tmp,start,max_cost);
-		}
+        public void GoalDistance(T goal, T start, int max_cost = int.MaxValue)
+        {
+            T[] tmp = { goal };
+            GoalDistance(tmp, start, max_cost);
+        }
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
-        public void GoalDistance(IEnumerable<T> goals, T start, int max_cost=int.MaxValue)
+        public void GoalDistance(IEnumerable<T> goals, T start, int max_cost = int.MaxValue)
         {
             T[] tmp = { start };
             GoalDistance(goals, tmp, max_cost);
@@ -103,22 +103,67 @@ namespace Zaimoni.Data
             GoalDistance(goals, tmp, max_cost);
         }
 
-        public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
+        // the calculation state at any time is an ordered map _map,__now.  _map is a member variable, while _now historically was a local variable
+        public void _reset(Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
-            if (null == start) throw new ArgumentNullException(nameof(start));
-            if (null == goals) throw new ArgumentNullException(nameof(goals));
+            if (null == _now) throw new ArgumentNullException(nameof(_now));
 #endif
-            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
             _map.Clear();
+            _now.Clear();
+        }
 
-            // a proper Dijkstra search is in increasing cost order
-            Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
-            HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
-            foreach(T tmp in now) _map[tmp] = 0;
-            _now[0] = now;
+        public Dictionary<T, int> _snapshot() { return new Dictionary<T, int>(_map); }
 
-            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
+        public void _restore(Dictionary<T, int> src, Dictionary<int, HashSet<T>> _now, Dictionary<int, HashSet<T>> src_now)
+        {
+            var working_src_now = new Dictionary<int, HashSet<T>>(src_now); // need a value copy here
+            foreach (var x in src) {
+                bool exists = _map.TryGetValue(x.Key, out int old_cost);
+                if (exists && old_cost <= x.Value) {
+                    if (working_src_now.TryGetValue(x.Value, out var dest2)) {
+                        if (dest2.Remove(x.Key) && 0 >= dest2.Count) working_src_now.Remove(x.Value);
+                    }
+                    continue;
+                }
+                // XXX \todo some sense of where to re-start based on geometry rather than full forward testing
+                if (_now.TryGetValue(old_cost, out var dest)) {
+                    if (dest.Remove(x.Key) && 0 >= dest.Count) _now.Remove(old_cost);
+                }
+                if (working_src_now.TryGetValue(x.Value, out var dest3) && dest3.Contains(x.Key)) {
+                    if (_now.TryGetValue(x.Value, out HashSet<T> dest4)) dest4.Add(x.Key);
+                    else _now[x.Value] = new HashSet<T> { x.Key };
+                }
+            }
+        }
+
+        public bool _bootstrap(IEnumerable<T> goals, Dictionary<int, HashSet<T>> _now)
+        {
+#if DEBUG
+            if (null == _now) throw new ArgumentNullException(nameof(_now));
+#endif
+            IEnumerable<T> legal_goals = goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
+            if (!legal_goals.Any()) return false; // not an error condition when merging in new goals into an existing map
+            bool old_key = _now.TryGetValue(0, out var now);
+            if (!old_key) now = new HashSet<T>();
+#if OBSOLETE
+            // 2019-01-06 the corner case this tries to micro-optimize for doesn't happen often enough
+            foreach (T tmp in legal_goals) {
+                if (_map.TryGetValue(tmp, out int test) && 0 == test) continue;
+                _map[tmp] = 0;
+                now.Add(tmp);
+            }
+            if (!old_key && 0<now.Count) _now[0] = now;
+#else
+            foreach (T tmp in legal_goals) _map[tmp] = 0;
+            now.UnionWith(legal_goals);
+            if (!old_key) _now[0] = now;
+#endif
+            return true;
+        }
+
+        public void _iterate(Dictionary<int, HashSet<T>> _now, int max_cost = int.MaxValue)
+        {
               int cost = _now.Keys.Min();
               int max_delta_cost = max_cost - cost;
               foreach(T tmp in _now[cost]) {
@@ -143,7 +188,23 @@ namespace Zaimoni.Data
                 }
               }
               _now.Remove(cost);
-            }
+        }
+
+        // \todo need to be able to checkpoint/resume this (CPU optimization)
+        public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
+        {
+#if DEBUG
+            if (null == start) throw new ArgumentNullException(nameof(start));
+            if (null == goals) throw new ArgumentNullException(nameof(goals));
+#endif
+            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
+            _map.Clear();
+
+            // a proper Dijkstra search is in increasing cost order
+            Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
+            if (!_bootstrap(goals, _now)) throw new InvalidOperationException("must have at least one goal");
+
+            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now,max_cost);
         }
 
         public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
@@ -159,14 +220,14 @@ namespace Zaimoni.Data
 
             // a proper Dijkstra search is in increasing cost order
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
-            HashSet<T> now = new HashSet<T>(start.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
-            if (0 >= now.Count) return; // XXX error condition
-            HashSet<T> found = new HashSet<T>(now.Where(tmp => goals(tmp)));
-            if (0 < found.Count) return; // XXX error condition
-            foreach(T tmp in now) _map[tmp] = 0;
-            _now[0] = now;
+            IEnumerable<T> legal_start = start.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
+            if (!legal_start.Any()) throw new InvalidOperationException("no legal starting points");
+            if (legal_start.Any(tmp => goals(tmp))) return;    // no-op; not a hard error but should not have called
+            if (!_bootstrap(legal_start, _now)) return;    // no-op; should be a hard error but a runtime issue
 
-            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
+            var found = new HashSet<T>();
+
+            while (0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
               int cost = _now.Keys.Min();
               int max_delta_cost = max_cost - cost;
               foreach(T tmp in _now[cost]) {

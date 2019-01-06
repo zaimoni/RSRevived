@@ -96,5 +96,13 @@ namespace djack.RogueSurvivor.Data
       if (!(obj is _T_)) throw new InvalidOperationException("not of requested type");
       return (_T_) obj;
     }
+
+    public bool Unset(string key)
+    {
+#if DEBUG
+      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+#endif
+      return m_Cache.Remove(key);
+    }
   }
 }

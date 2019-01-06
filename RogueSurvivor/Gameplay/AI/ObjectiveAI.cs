@@ -905,6 +905,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       var navigate = dest.PathfindLocSteps(m_Actor);
 
+      // \todo BehaviorResupply needs some pathfinding algebra here
+      // 1) maps that do not contain the actor just need a cost map to the (relevant) exits i.e are cacheable in principle
+      // 2) cache will be invalidated by just about any game-state change affecting pathability since we're "too low" to know where the goal list is coming from.
+      // We should be fine using Zaimoni.Data.TimeCache here (at map level).
+      // 2a) The key will have to be a unique equality-comparable representation of the goal points on the map (i.e. HashSet won't work)  It doesn't have to be reversible.
+      // ** C# char is an unsigned short (2 bytes); this should allow a Map object to convert an in-bounds HashSet<Point> to a unique C# string reliably (lexical ordering)
+      // 3) the factored pathfinders will be based on Point rather than location.  The interpolated _now will be based on their exits
+      // 4) a map that does not contain a goal, does not contain the origin location, and is not in a closed loop that is qualified may be blacklisted for pathing.
+
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;
     }
