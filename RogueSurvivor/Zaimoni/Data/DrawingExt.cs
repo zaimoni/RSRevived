@@ -123,6 +123,24 @@ namespace Zaimoni.Data
       return  null != rect.FirstOrDefault(testFn);
     }
 
+    // morally a dual-Any test that only iterates once.
+    public static KeyValuePair<bool,bool> HaveItBothWays<T>(this IEnumerable<T> src, Predicate<T> test)
+    {
+      if (null==src || !src.Any()) return new KeyValuePair<bool, bool>(false,false);
+      bool yes = false;
+      bool no = false;
+      foreach(var x in src) {
+        if (test(x)) {
+          yes = true;
+          if (no) return new KeyValuePair<bool, bool>(true, true);
+        } else {
+          no = true;
+          if (yes) return new KeyValuePair<bool, bool>(true, true);
+        }
+      }
+      return new KeyValuePair<bool, bool>(yes, no);
+    }
+
     // Angband-style rarity table support
     public static T UseRarityTable<T>(this IEnumerable<KeyValuePair<T,int>> src, int r)
     {

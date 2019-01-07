@@ -915,6 +915,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
+#if PROTOTYPE
+      // \todo map prefilter -- essentially a functional blacklist rather than an enumerated one
+      var undecided = new HashSet<Map>();   // \todo get global map list?  May not actually need that
+      var required = new HashSet<Map>();
+      var excluded = new HashSet<Map>();
+
+      required.Add(m_Actor.Location.Map);
+      foreach(var goal in goals) required.Add(goal.Map);
+
+      // \todo hospital and police station have unusual behavior (multi-level linear)
+      var police_station = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
+      if (!police_station.Value) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
+      else if (!police_station.Key) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
+      else {
+      }
+      var hospital = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
+
+      foreach(Map m in required) {
+        foreach(Map test in m.destination_maps.Get) {
+          if (required.Contains(test)) continue;
+          if (excluded.Contains(test)) continue;
+          // dead end that is not already required, is excluded
+          if (1==test.destination_maps.Get.Count) {
+            excluded.Add(test);
+            continue;
+          }
+          undecided.Add(test);
+        }
+      }
+
+      // \todo once excluded is known, we can construct a lambda function and use that as an additional blacklist.
+#endif
+
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;
     }
