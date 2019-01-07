@@ -898,12 +898,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals, Map dest)
+    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals)
     {
 #if DEBUG
       if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
 #endif
-      var navigate = dest.PathfindLocSteps(m_Actor);
+      var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
 
       // \todo BehaviorResupply needs some pathfinding algebra here
       // 1) maps that do not contain the actor just need a cost map to the (relevant) exits i.e are cacheable in principle
@@ -1021,7 +1021,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
 
-      return BehaviorPathTo(PathfinderFor(goals,m_Actor.Location.Map));
+      return BehaviorPathTo(PathfinderFor(goals));
     }
 
      public void GoalHeadFor(Map m, HashSet<Point> dest)
