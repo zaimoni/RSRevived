@@ -66,6 +66,12 @@ namespace djack.RogueSurvivor.Data
 
     [NonSerialized] private readonly Dictionary<string, object> m_Cache = new Dictionary<string,object>();
 
+    public ZoneLoc(Map _m, Zone _z)
+    {
+      m = _m;
+      z = _z;
+    }
+
     public bool Contains(Location loc) { return m == loc.Map && z.Bounds.Contains(loc.Position); }
     public bool ContainsExt(Location loc) {
       if (loc.Map.IsInBounds(loc.Position)) return Contains(loc);
