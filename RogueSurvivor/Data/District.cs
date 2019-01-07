@@ -235,6 +235,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void EndTurn()
+    {
+        foreach(Map m in Maps) {
+          m.EndTurn();
+        }
+    }
+
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;

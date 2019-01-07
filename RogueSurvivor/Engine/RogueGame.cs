@@ -1892,6 +1892,7 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_BlackOpsRaid(district.EntryMap)) FireEvent_BlackOpsRaid(district.EntryMap);
       if (CheckForEvent_BandOfSurvivors(district.EntryMap)) FireEvent_BandOfSurvivors(district.EntryMap);
       if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
+      district.EndTurn();
       } // end lock (district)
 
 #if DATAFLOW_TRACE
