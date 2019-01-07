@@ -920,9 +920,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var undecided = new HashSet<Map>();   // \todo get global map list?  May not actually need that
       var required = new HashSet<Map>();
       var excluded = new HashSet<Map>();
+      Predicate<T> blacklist = null;
 
       required.Add(m_Actor.Location.Map);
       foreach(var goal in goals) required.Add(goal.Map);
+
+      // early exit: unique map, not-sewer: only need that map (but should handle at caller level)
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
       var police_station = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
@@ -1020,6 +1023,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       }
+
+      // \todo if all goals are in the same not-sewer map, use a point-based floodfill instead (ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate))
+#if PROTOTYPE
+      var test = new HashSet<Map>();
+      foreach(var x in goals) test.Add(x.Map);
+      if (1==test.Count) {
+        Map prescreen = test.First();
+        if (prescreen != prescreen.District.SewersMap) throw new InvalidProgramException("need to implement all-goals in one map path");    // yes, this exception does throw when enabled
+      }
+#endif
 
       return BehaviorPathTo(PathfinderFor(goals));
     }
