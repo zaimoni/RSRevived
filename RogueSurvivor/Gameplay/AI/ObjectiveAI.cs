@@ -912,7 +912,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 2a) The key will have to be a unique equality-comparable representation of the goal points on the map (i.e. HashSet won't work)  It doesn't have to be reversible.
       // ** C# char is an unsigned short (2 bytes); this should allow a Map object to convert an in-bounds HashSet<Point> to a unique C# string reliably (lexical ordering)
       // 3) the factored pathfinders will be based on Point rather than location.  The interpolated _now will be based on their exits
-      // 4) a map that does not contain a goal, does not contain the origin location, and is not in a closed loop that is qualified may be blacklisted for pathing.
+      // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
+      // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;

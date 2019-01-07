@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Data
 	public readonly WorldTime LocalTime;
 	public readonly int Width;
 	public readonly int Height;
-	public readonly Rectangle Rect;
+	public readonly Rectangle Rect; // \todo next savefile break: doesn't have to be in savefile, could rebuild this on load
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
