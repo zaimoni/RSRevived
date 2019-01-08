@@ -3456,23 +3456,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return navigate;
     }
 
-    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
-    {
-      if (null == navigate) return null;
-      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
-        int current_cost = navigate.Cost(m_Actor.Location.Position);
-        if (!legal_steps?.Any(pt => navigate.Cost(pt)<=current_cost) ?? true) {
-          return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
-        }
-      }
-      ActorAction ret = DecideMove(PlanApproach(navigate));
-      if (null == ret) return null;
-      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-      return ret;
-    }
-
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
       Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);

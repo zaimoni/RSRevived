@@ -955,6 +955,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return navigate;
     }
 
+    protected FloodfillPathfinder<Point> PathfinderFor(List<Point> goals)
+    {
+#if DEBUG
+      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
+#endif
+      var navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+
+      navigate.GoalDistance(goals, m_Actor.Location.Position);
+      return navigate;
+    }
+
+    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
+    {
+      if (null == navigate) return null;
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        int current_cost = navigate.Cost(m_Actor.Location.Position);
+        if (!legal_steps?.Any(pt => navigate.Cost(pt)<=current_cost) ?? true) {
+          return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
+        }
+      }
+      ActorAction ret = DecideMove(PlanApproach(navigate));
+      if (null == ret) return null;
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
+    }
+
     protected ActorAction BehaviorPathTo(FloodfillPathfinder<Location> navigate)
     {
       if (null == navigate) return null;
@@ -1024,16 +1052,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
 
-      // \todo if all goals are in the same not-sewer map, use a point-based floodfill instead (ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate))
 #if PROTOTYPE
-      var test = new HashSet<Map>();
-      foreach(var x in goals) test.Add(x.Map);
-      if (1==test.Count) {
-        Map prescreen = test.First();
-        if (prescreen != prescreen.District.SewersMap) throw new InvalidProgramException("need to implement all-goals in one map path");    // yes, this exception does throw when enabled
-      }
+      {
+      // 2019-01-07: works, but is not a clear win and obvious micro-optimzation strategies pessimize
+      // does (mostly) remove a degenerate case
+      if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
+         && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position).ToList()));
+     }
 #endif
-
       return BehaviorPathTo(PathfinderFor(goals));
     }
 
