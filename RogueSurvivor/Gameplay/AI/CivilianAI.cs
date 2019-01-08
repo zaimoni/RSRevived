@@ -412,7 +412,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
-        Map map = m_Actor.Location.Map;
         var interestingStacks = GetInterestingInventoryStacks(percepts1);
         if (interestingStacks != null) {
           var at_target = interestingStacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));

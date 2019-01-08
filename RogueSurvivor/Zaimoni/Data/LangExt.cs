@@ -122,7 +122,7 @@ namespace Zaimoni.Data
         // numeric.  The verbal version would be FormalQtyDesc or QtyDescFormal
         public static string QtyDesc(this string name, int qty)
         {
-            return qty.ToString() + " " + name.Plural(qty);
+            return qty + " " + name.Plural(qty);
         }
     }
 }

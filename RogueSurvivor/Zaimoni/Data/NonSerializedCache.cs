@@ -5,7 +5,7 @@ namespace Zaimoni.Data
 {
     class NonSerializedCache<src,T,U> where src:class where U : class, IEnumerable<T>
     {
-        private src m_src;
+        private readonly src m_src;
         private U m_cache;
         private readonly Func<src,U> m_bootstrap;
         private readonly Action<src> m_invalidate;
@@ -30,7 +30,7 @@ namespace Zaimoni.Data
 
     public class Dataflow<src,T> where T : struct
     {
-        private src m_src;
+        private readonly src m_src;
         private T? m_cache;
         private readonly Func<src,T> m_bootstrap;
         private readonly Action<src> m_invalidate;
@@ -61,7 +61,7 @@ namespace Zaimoni.Data
 
     public class Dataflow<src,Key,Value>
     {
-        private src m_src;
+        private readonly src m_src;
         private Dictionary<Key,Value> m_cache;
         private readonly Func<src, Dictionary<Key, Value>> m_bootstrap;
         private readonly Action<src> m_invalidate;

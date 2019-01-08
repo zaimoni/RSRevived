@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class CHARGuardAI : OrderableAI
   {
-    private static string[] FIGHT_EMOTES = new string[3]
+    private static readonly string[] FIGHT_EMOTES = new string[3]
     {
       "Go away",
       "Damn it I'm trapped!",

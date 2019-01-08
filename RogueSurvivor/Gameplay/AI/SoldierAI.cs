@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class SoldierAI : OrderableAI
   {
-    private static string[] FIGHT_EMOTES = new string[3]
+    private static readonly string[] FIGHT_EMOTES = new string[3]
     {
       "Damn",
       "Fuck I'm cornered",

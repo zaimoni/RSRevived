@@ -121,7 +121,7 @@ namespace Zaimoni.Data
           private uint _radix_point = 0;
           private uint _radix_segment = 0;
           private uint _graph = 0;
-          Func<uint,uint, bool> _contains = null;
+          private readonly Func<uint,uint, bool> _contains = null;
 
           public uint Radix { get { return _radix_point; } }
 

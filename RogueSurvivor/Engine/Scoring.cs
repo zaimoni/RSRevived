@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Scoring_fatality
   {
-    private List<Actor> m_FollowersWhenDied = null;
+    private readonly List<Actor> m_FollowersWhenDied = null;
     public readonly Actor Killer;
     private Actor m_ZombifiedPlayer;
     public readonly string DeathPlace;

@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
 {
   internal class Tile
   {
-    private int m_ModelID;
+    private readonly int m_ModelID; // \todo savefile break: convert to public readonly int
     private Flags m_Flags;
     private Location m_Location;
 

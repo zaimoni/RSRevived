@@ -765,7 +765,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name, true));
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;
       }
       return null;

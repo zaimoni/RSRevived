@@ -6458,7 +6458,7 @@ namespace djack.RogueSurvivor.Engine
           title = "EATING CORPSES";
           body = new string[] {
             "You can eat a corpse to regain health.",
-            String.Format("TO EAT A CORPSE : <RMB> on it in the corpse list.")
+            "TO EAT A CORPSE : <RMB> on it in the corpse list."
           };
           break;
         // alpha10 new hints
@@ -7278,7 +7278,7 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeItemTrap(ItemTrap tr)
     {
       var lines = new List<string>();
-      ItemTrapModel itemTrapModel = tr.Model as ItemTrapModel;
+      ItemTrapModel itemTrapModel = tr.Model;
       lines.Add("> trap");
       if (tr.IsActivated) {
         lines.Add("** Activated! **");
@@ -7663,7 +7663,6 @@ namespace djack.RogueSurvivor.Engine
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
-      int dmg = trapModel.Damage * trap.Quantity;
       if (trapModel.IsNoisy) {
         if (player) AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
         OnLoudNoise(map, pos, trapModel.NoiseName);
@@ -9456,7 +9455,6 @@ namespace djack.RogueSurvivor.Engine
     {
       bool isVisibleMobj = IsVisibleToPlayer(mapObj);
 
-      Location objLoc = new Location(actor.Location.Map, mapObj.Location.Position);
       List<Actor> helpers = null;
       foreach (Actor fo in actor.Followers) {
         // follower can help if: not sleeping, idle and adj to map object.
@@ -11228,8 +11226,6 @@ namespace djack.RogueSurvivor.Engine
     /// <param name="actor"></param>
     private void DrawActorRelations(Actor actor)
     {
-      Point offset = new Point(TILE_SIZE / 2, TILE_SIZE / 2);
-
       // target of this actor
       if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
         AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));

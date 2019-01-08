@@ -9,7 +9,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionChain : ActorAction
     {
-        private List<ActorAction> m_Actions;
+        private readonly List<ActorAction> m_Actions;
 
         public ActionChain(Actor actor, List<ActorAction> actions)
         : base(actor)

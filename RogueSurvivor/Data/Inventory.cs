@@ -180,12 +180,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     public _T_ GetSmallestStackOf<_T_>() where _T_ : Item   // alpha10 equivalent: GetSmallestStackByType
-        {
+    {
       _T_ smallest = null;
 
       foreach (Item it in m_Items) {
         if (it is _T_ obj) {
-          int q = obj.Quantity;
           if (null == smallest || obj.Quantity < smallest.Quantity) {
             smallest = obj;
           }
