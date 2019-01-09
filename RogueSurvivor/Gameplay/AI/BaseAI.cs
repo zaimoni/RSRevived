@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((this as ObjectiveAI)?.VetoAction(actorAction) ?? false) actorAction = null;
       (this as ObjectiveAI)?.ResetAICache();
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
-      return null != actorAction ? actorAction : new ActionWait(m_Actor);
+      return actorAction ?? new ActionWait(m_Actor);
     }
 
     protected abstract ActorAction SelectAction(RogueGame game);

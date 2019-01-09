@@ -4517,8 +4517,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
         return HandlePlayerThrowGrenade(player);
-      var itemRangedWeapon = player.GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon == null) {
+      if (!(player.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) {
         AddMessage(MakeErrorMessage("No weapon ready to fire."));
         RedrawPlayScreen();
         return false;
@@ -8385,8 +8384,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoThrowGrenadeUnprimed(Actor actor, Point targetPos)
     {
-      ItemGrenade itemGrenade = actor.GetEquippedWeapon() as ItemGrenade;
-      if (itemGrenade == null) throw new InvalidOperationException("throwing grenade but no grenade equiped ");
+      if (!(actor.GetEquippedWeapon() is ItemGrenade itemGrenade)) throw new InvalidOperationException("throwing grenade but no grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
@@ -8404,9 +8402,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoThrowGrenadePrimed(Actor actor, Point targetPos)
     {
-      ItemGrenadePrimed itemGrenadePrimed = actor.GetEquippedWeapon() as ItemGrenadePrimed;
-      if (itemGrenadePrimed == null)
-        throw new InvalidOperationException("throwing primed grenade but no primed grenade equiped ");
+      if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
       actor.Location.Map.DropItemAtExt(itemGrenadePrimed, targetPos);
@@ -8541,8 +8537,7 @@ namespace djack.RogueSurvivor.Engine
       List<ItemExplosive> itemExplosiveList = null;
       List<ItemPrimedExplosive> itemPrimedExplosiveList = null;
       foreach (Item obj in inv.Items) {
-        ItemExplosive itemExplosive = obj as ItemExplosive;
-		if (null == itemExplosive) continue;
+        if (!(obj is ItemExplosive itemExplosive)) continue;
         if (itemExplosive is ItemPrimedExplosive primed) {
           primed.FuseTimeLeft = 0;
         } else {

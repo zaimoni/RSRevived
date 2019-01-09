@@ -424,7 +424,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        HashSet<Point> fov = m_Actor.Controller.FOV;
         int i = _stacks.Count;
         if (0 >= i) {
           _isExpired = true;
@@ -2010,7 +2009,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // get safe range from enemy, just out of his reach.
       int safeRange = Math.Max(2, enemyAttack.Range + 1);  // melee attack range is 0 not 1!
       int distToEnemy = Rules.GridDistance(m_Actor.Location, enemy.Location);
-      bool inSafeRange = distToEnemy >= safeRange;
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);

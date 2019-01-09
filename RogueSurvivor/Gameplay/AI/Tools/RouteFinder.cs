@@ -121,8 +121,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         {
             Actor a = m_AI.ControlledActor;
             Location start_loc = a.Location;
-            Point start = a.Location.Position;
-            Map map = a.Location.Map;
 
             // trivial case of starting adj to dest
             bool adjToDestIsGoal = (AllowedActions & SpecialActions.ADJ_TO_DEST_IS_GOAL) != 0;

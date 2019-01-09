@@ -683,8 +683,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (target.IsDead) return "already dead!";
@@ -734,8 +733,7 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       LoF?.Clear();
-      var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (!LOS.CanTraceFireLine(Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
@@ -1273,8 +1271,7 @@ namespace djack.RogueSurvivor.Data
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
       other.m_Leader = null;
-      var aiController = other.Controller as Gameplay.AI.OrderableAI;
-      if (aiController == null) return;
+      if (!(other.Controller is Gameplay.AI.OrderableAI aiController)) return;
       aiController.Directives.Reset();
       aiController.SetOrder(null);
     }
@@ -3013,8 +3010,7 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
       if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
-      if (it is ItemAmmo) {
-        ItemAmmo itemAmmo = it as ItemAmmo;
+      if (it is ItemAmmo itemAmmo) {
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
         if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
@@ -3620,8 +3616,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool Equals(object obj)
     {
-      Actor tmp = obj as Actor;
-      if (null == tmp) return false;
+      if (!(obj is Actor tmp)) return false;
       return Equals(tmp);
     }
 

@@ -3331,7 +3331,6 @@ restart:
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
       Direction facing = isFacingEast ? Direction.E : Direction.W;
-      int x = isFacingEast ? room.Right - 1 : room.Left;
       PlaceDoor(map, room.Anchor((Compass.XCOMlike)facing.Index)+Direction.N, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());    // this door is offset from the usual position
       Point bedAt = room.Anchor(Compass.XCOMlike.S)+Direction.N;
       map.PlaceAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), bedAt);
