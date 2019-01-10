@@ -1231,9 +1231,9 @@ retry:
     {
       if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
 
-      bool[] is_wall = new bool[8];   // these default-initialize to false
-      bool[] blocked = new bool[8];
-      bool[] no_go = new bool[8];
+      Span<bool> is_wall = stackalloc bool[8];   // these default-initialize to false
+      Span<bool> blocked = stackalloc bool[8];
+      Span<bool> no_go = stackalloc bool[8];
       foreach(Point pt2 in dest.Adjacent()) {
         if (IsWalkableFor(pt2,model)) continue;
         Direction dir = Direction.FromVector(pt2.X-dest.X,pt2.Y-dest.Y);
