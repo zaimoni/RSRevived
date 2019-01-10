@@ -1726,10 +1726,8 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         ActorAction tmp = Rules.IsPathableFor(this, dest);
-        if (null == tmp) {
-          if (dest.Map.GetMapObjectAt(dest.Position)?.IsContainer ?? false) tmp = new Engine.Actions.ActionMoveStep(this, dest.Position); // XXX wrong no matter what
-        }
         if (null != tmp) ret[dest] = tmp;
+        else if (dest.MapObject?.IsContainer ?? false) ret[dest] = new Engine.Actions.ActionMoveStep(this, dest.Position); // XXX wrong no matter what
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
@@ -2443,12 +2441,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#if PROFILE_SLOW
     public bool IsStarving {
       get {
         if (Model.Abilities.HasToEat) return 0 >= m_FoodPoints;
         return false;
       }
     }
+#else
+    public bool IsStarving { get { return Model.Abilities.HasToEat && 0 >= m_FoodPoints; } }
+#endif
 
     public bool IsRotHungry {
       get {

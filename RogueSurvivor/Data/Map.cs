@@ -8,6 +8,7 @@
 // #define AUDIT_ACTOR_MOVEMENT
 // # define LOCK_ACTORSLIST
 // #define PATHING_CACHE
+// #define AUDIT_ITEM_INVARIANTS
 
 using System;
 using System.Collections.Generic;
@@ -628,11 +629,16 @@ namespace djack.RogueSurvivor.Data
 
     public Exit GetExitAt(Point pos)
     {
+#if PROFILE_SLOW
       if (m_Exits.TryGetValue(pos, out Exit exit)) return exit;
       return null;
-    }
+#else
+      m_Exits.TryGetValue(pos, out Exit exit);
+      return exit;
+#endif
+     }
 
-    public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
+     public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
 
     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
 #if DEBUG
@@ -1025,7 +1031,7 @@ retry:
       if (IsInBounds(position)) return false;
       Location? tmp = Normalize(position);
       if (null == tmp) return false;
-      return tmp.Value.Map.HasActorAt(tmp.Value.Position);
+      return tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
 #else
       return m_aux_ActorsByPosition.ContainsKey(position);
 #endif
@@ -1461,7 +1467,9 @@ retry:
 
     public bool HasItemsAt(Point position)
     {
+#if AUDIT_ITEM_INVARIANTS
       if (!IsInBounds(position)) return false;
+#endif
       return m_GroundItemsByPosition.ContainsKey(position);
     }
 
@@ -1474,7 +1482,7 @@ retry:
     {
       if (!IsInBounds(position)) return null;
       if (m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory)) {
-#if DEBUG
+#if AUDIT_ITEM_INVARIANTS
         if (inventory?.IsEmpty ?? true) throw new ArgumentNullException(nameof(inventory));
 #endif
         return inventory;
@@ -1548,6 +1556,8 @@ retry:
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+#if AUDIT_ITEM_INVARIANTS
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
       Inventory itemsAt = GetItemsAt(position);
@@ -2002,6 +2012,7 @@ retry:
       return 2;
     }
 
+#if DEAD_FUNC
     /// <returns>0 not blocked, 1 jumping required both ways, 2 one wall one jump, 3 two walls (for livings)</returns>
     private int IsPathingChokepoint(Point x0, Point x1)
     {
@@ -2011,6 +2022,7 @@ retry:
       // range is: 0,1,2,4; want to return 0...3
       return 4==blocked ? 3 : blocked;
     }
+#endif
 
     /// <returns>worst blockage status code of IsBlockedForPathing</returns>
     public int CreatesPathingChokepoint(Point pt)

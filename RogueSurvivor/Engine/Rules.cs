@@ -589,12 +589,11 @@ namespace djack.RogueSurvivor.Engine
         Location? test = a.Map.Denormalize(b);
         if (null == test) {
           Exit exit = a.Exit;
-          if (null != exit && exit.Location==b) return true;
-          return false;
+          return null != exit && exit.Location == b;
         }
         b = test.Value;
       }
-      return Rules.IsAdjacent(a.Position, b.Position);
+      return IsAdjacent(a.Position, b.Position);
     }
 
     public static bool IsAdjacent(Point pA, Point pB)
