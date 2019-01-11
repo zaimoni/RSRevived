@@ -1381,7 +1381,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsEnemyOf(Actor target, bool checkGroups = true)    // extra parameter from RS Alpha 10
     {
-      if (null == target) return false;
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (Faction.IsEnemyOf(target.Faction)) return true;
       if (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
       if (ArePersonalEnemies(target)) return true;
@@ -1390,7 +1392,7 @@ namespace djack.RogueSurvivor.Data
 
     private bool ArePersonalEnemies(Actor other) // RS alpha 10 had better name
     {
-      if (other?.IsDead ?? true) return false;
+      if (other.IsDead) return false;
       // following *should* be symmetric
       return (m_AggressorOf?.Contains(other) ?? false) || (m_SelfDefenceFrom?.Contains(other) ?? false) || other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this);
     }
