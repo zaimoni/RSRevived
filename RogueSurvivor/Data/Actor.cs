@@ -1353,14 +1353,14 @@ namespace djack.RogueSurvivor.Data
       return m_SelfDefenceFrom?.Contains(other) ?? false;
     }
 
-    public void RemoveAggressorOf(Actor other)
+    private void RemoveAggressorOf(Actor other)
     {
       if (m_AggressorOf == null) return;
       m_AggressorOf.Remove(other);
       if (0 >= m_AggressorOf.Count) m_AggressorOf = null;
     }
 
-    public void RemoveSelfDefenceFrom(Actor other)
+    private void RemoveSelfDefenceFrom(Actor other)
     {
       if (m_SelfDefenceFrom == null) return;
       m_SelfDefenceFrom.Remove(other);
