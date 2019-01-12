@@ -920,7 +920,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var undecided = new HashSet<Map>();   // \todo get global map list?  May not actually need that
       var required = new HashSet<Map>();
       var excluded = new HashSet<Map>();
-      Predicate<T> blacklist = null;
+      Predicate<Location> blacklist = null;
 
       required.Add(m_Actor.Location.Map);
       foreach(var goal in goals) required.Add(goal.Map);
@@ -930,19 +930,49 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // early exit: unique map, not-sewer: should be handled at caller level (do not enforce until we no longer have a serious CPU problem)
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
-      var police_station = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
+      var police_station = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
       if (!police_station.Value) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
       else if (!police_station.Key) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
       else {
+        required.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
+        required.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
       }
-      var hospital = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
+      var hospital = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigateHospital(m));
+      if (!hospital.Value) excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
+      else if (!hospital.Key) excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
+      else {
+        required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
+        required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
+      }
+      var using_subway = required_0.Where(m => m==m.District.SubwayMap);
+      var using_sewer = required_0.Where(m => m==m.District.SewersMap);
 
       foreach(Map m in required) {
-        foreach(Map test in m.destination_maps.Get) {
+        var dests = m.destination_maps.Get;
+        if (1==dests.Count) {
+          Map test2 = dests.First();
+#if DEBUG
+          if (excluded.Contains(test2)) throw new InvalidProgramException("logic paradox: excluded map is also required");
+#else
+          if (excluded.Contains(test2)) continue;
+#endif
+          required.Add(test2);
+          continue;
+        }
+        foreach(Map test in dests) {
           if (required.Contains(test)) continue;
           if (excluded.Contains(test)) continue;
           // dead end that is not already required, is excluded
           if (1==test.destination_maps.Get.Count) {
+            excluded.Add(test);
+            continue;
+          }
+          // do not consider entering subway or sewers if no goals there
+          if (test==test.District.SubwayMap && !using_subway.Any()) {
+            excluded.Add(test);
+            continue;
+          }
+          if (test==test.District.SewersMap && !using_sewer.Any()) {
             excluded.Add(test);
             continue;
           }
