@@ -1210,7 +1210,8 @@ retry:
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
-          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP) return "not enough stamina to jump";
+          // We only have to be completely accurate when adjacent to a square.
+          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP && Engine.Rules.IsAdjacent(actor.Location,new Location(this,new Point(x,y)))) return "not enough stamina to jump";
         } else if (actor.Model.Abilities.IsSmall) {
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
