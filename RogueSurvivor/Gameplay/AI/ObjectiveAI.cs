@@ -1041,8 +1041,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
       if (0 >= goals.Count) return null;
       {
-      var already = new Dictionary<Location, ActorAction>();
-      Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location, already);
+      Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
       foreach(Location loc in goals) {
         if (moves.TryGetValue(loc,out var tmp)) {
           if (!tmp.IsLegal()) return null;

@@ -1746,6 +1746,12 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public Dictionary<Location,ActorAction> OnePath(Location loc)   // adapter
+    {
+      var already = new Dictionary<Location, ActorAction>();
+      return OnePath(loc,already);
+    }
+
     public Dictionary<Point,ActorAction> OnePath(Map m, Point p, Dictionary<Point, ActorAction> already)
     {
       var ret = new Dictionary<Point, ActorAction>(9);
