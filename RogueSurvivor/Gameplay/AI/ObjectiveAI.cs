@@ -925,7 +925,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       required.Add(m_Actor.Location.Map);
       foreach(var goal in goals) required.Add(goal.Map);
 
-      // early exit: unique map, not-sewer: only need that map (but should handle at caller level)
+      var required_0 = new HashSet<Map>(required);
+
+      // early exit: unique map, not-sewer: should be handled at caller level (do not enforce until we no longer have a serious CPU problem)
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
       var police_station = required.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));

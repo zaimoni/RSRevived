@@ -1513,17 +1513,21 @@ namespace djack.RogueSurvivor.Data
     /// <returns></returns>
     public bool IsInGroupWith(Actor other)
     {
-      if (HasLeader && m_Leader == other) return true; // my leader?
-      if (other.HasLeader && other.Leader == m_Leader) return true;    // a mate?
-      if (m_Followers?.Contains(other) ?? false) return true; // a follower?
-      return false; // nope
+      var leader = LiveLeader;
+      if (null != leader) {
+        if (   other == leader   // my leader?
+            || other.Leader == leader)    // a mate?
+          return true;
+      } 
+      return m_Followers?.Contains(other) ?? false; // a follower?
     }
 
     public bool IsSafeFrom(ItemTrap trap)  // alpha10
     {
-      if (null == trap.Owner) return false;
-      if (this == trap.Owner) return true;
-      return IsInGroupWith(trap.Owner);
+      var owner = trap.Owner;
+      if (null == owner) return false;
+      if (this == owner) return true;
+      return IsInGroupWith(owner);
     }
 
     // map-related, loosely
