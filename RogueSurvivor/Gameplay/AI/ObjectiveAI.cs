@@ -1052,15 +1052,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
 
-#if PROTOTYPE
-      {
-      // 2019-01-07: works, but is not a clear win and obvious micro-optimzation strategies pessimize
-      // does (mostly) remove a degenerate case
+      // remove a degenerate case from consideration
       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
-     }
-#endif
+
       return BehaviorPathTo(PathfinderFor(goals));
     }
 
