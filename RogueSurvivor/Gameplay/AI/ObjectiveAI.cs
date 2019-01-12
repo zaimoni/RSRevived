@@ -955,10 +955,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return navigate;
     }
 
-    protected FloodfillPathfinder<Point> PathfinderFor(List<Point> goals)
+    protected FloodfillPathfinder<Point> PathfinderFor(IEnumerable<Point> goals)
     {
 #if DEBUG
-      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
+      if (!goals?.Any() ?? true) throw new ArgumentNullException(nameof(goals));
 #endif
       var navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
 
@@ -1058,7 +1058,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // does (mostly) remove a degenerate case
       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position).ToList()));
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
      }
 #endif
       return BehaviorPathTo(PathfinderFor(goals));
