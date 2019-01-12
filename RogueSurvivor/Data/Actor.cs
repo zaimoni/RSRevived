@@ -1594,7 +1594,7 @@ namespace djack.RogueSurvivor.Data
     {
       int dist = Rules.GridDistance(src,dest);
       if (1==dist) return new List<Point>{ dest };
-      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>src+dir).Where(pt=> dist>Rules.GridDistance(pt,dest) && m.IsWalkableFor(pt,this));
+      IEnumerable<Point> tmp = src.Adjacent().Where(pt=> dist>Rules.GridDistance(pt,dest) && m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
     }
 
@@ -1669,7 +1669,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<Point> OneStepRange(Map m,Point p)
     {
-      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));
+      IEnumerable<Point> tmp = p.Adjacent().Where(pt=>m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
     }
 

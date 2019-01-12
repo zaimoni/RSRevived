@@ -545,7 +545,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
         }
 
-        IEnumerable<Point> dest_pts = Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
+        IEnumerable<Point> dest_pts = m_Actor.Location.Position.Adjacent().Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
         ActorAction ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
         return (ret?.IsLegal() ?? false) ? ret : null;
       }
