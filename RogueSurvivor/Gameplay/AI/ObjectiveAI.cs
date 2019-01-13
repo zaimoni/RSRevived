@@ -1,4 +1,5 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
+#define PATHFIND_IMPLEMENTATION_GAPS
 
 using System;
 using System.Collections.Generic;
@@ -1146,6 +1147,34 @@ restart:
       return ret;
     }
 
+    private bool GoalRewrite(List<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest)
+    {
+        if (!map_goals.TryGetValue(src,out var test)) return false;
+
+        var navigate = PathfinderFor(test, src);
+        var exits = src.ExitsFor(dest);
+        if (!map_goals.TryGetValue(dest,out var cache)) {
+          cache = new Dictionary<Point,int>();
+          map_goals[dest] = cache;
+        }
+
+        foreach(var x in exits) {
+          // these are all in bounds; different logic for out-of-bounds exits
+          int cost = navigate.Cost(x.Key) + 1;
+          goal_costs[x.Value.Location] = cost;
+          cache[x.Value.Location.Position] = cost;
+          goals.Add(x.Value.Location);
+        }
+        foreach(var x in test) {
+          Location tmp = new Location(src, x.Key);
+          goal_costs.Remove(tmp);
+          goals.Remove(tmp);
+        }
+        map_goals.Remove(src);
+
+        return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
+    }
+
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
     {
       List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
@@ -1171,30 +1200,24 @@ restart:
 
       var map_goals = RadixSortLocations(goal_costs);
 
+restart_single_exit:
+      foreach(var x in map_goals) {
+        var tmp = x.Key.destination_maps.Get;
+        // 2019-01-13: triggers on subways (diagonal connectors not generated properly)
+        if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
+          if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First()))
+            return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
+          goto restart_single_exit;
+        }
+      }
+
       var in_police_station = Session.Get.UniqueMaps.NavigatePoliceStation(m_Actor.Location.Map);
       if (null==in_police_station) {
-#if PROTOTYPE
+#if PATHFIND_IMPLEMENTATION_GAPS
         if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
 #endif
-        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap,out var test)) {
-          var navigate = PathfinderFor(test, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-          var exits = Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
-          if (!map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap,out var cache)) {
-            cache = new Dictionary<Point,int>();
-            map_goals[Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap] = cache;
-          }
-
-          foreach(var x in exits) {
-            // these are all in bounds; different logic for out-of-bounds exits
-            int cost = navigate.Cost(x.Key) + 1;
-            goal_costs[x.Value.Location] = cost;
-            cache[x.Value.Location.Position] = cost;
-          }
-          foreach(var x in test) {
-            goal_costs.Remove(new Location(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, x.Key));
-          }
-          map_goals.Remove(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-        }
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
       }
 
       return BehaviorPathTo(PathfinderFor(goal_costs));

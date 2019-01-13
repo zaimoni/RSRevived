@@ -685,12 +685,20 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public void SetExitAt(Point pos, Exit exit) { m_Exits.Add(pos, exit); }
+    public void SetExitAt(Point pos, Exit exit) {
+      m_Exits.Add(pos, exit);
+      AI_exits.Recalc();
+      destination_maps.Recalc();
+      entrymap_exits.Recalc();
+      entrymap_destination_maps.Recalc();
+    }
 
+#if DEAD_FUNC
     public void RemoveExitAt(Point pos)
     {
       m_Exits.Remove(pos);
     }
+#endif
 
     public bool HasAnExitIn(Rectangle rect)
     {
