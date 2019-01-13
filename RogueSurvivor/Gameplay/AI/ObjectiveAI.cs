@@ -943,7 +943,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var using_subway = required_0.Where(m => m==m.District.SubwayMap);
       var using_sewer = required_0.Where(m => m==m.District.SewersMap);
 
-      foreach(Map m in required) {
+      var now = new HashSet<Map>(required);
+restart:
+      var next = new HashSet<Map>();
+      foreach(Map m in now) {
         var dests = m.destination_maps.Get;
         if (1==dests.Count) {
           Map test2 = dests.First();
@@ -976,11 +979,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
             excluded.Add(test);
             continue;
           }
-          undecided.Add(test);
+          next.Add(test);   // assume that if it passes all pre-screens it may be needed
         }
       }
+      if (0 < next.Count)
+            {
+            required.UnionWith(next);
+            now = next;
+            goto restart;
+            }
 
       // \todo once excluded is known, we can construct a lambda function and use that as an additional blacklist.
+      ret = loc => excluded.Contains(loc.Map);
+
       return ret;
     }
 
@@ -1001,10 +1012,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
-#if PROTOTYPE
       Predicate<Location> blacklist = BlacklistFunction(goals);
-      if (null != blacklist) navigate.InstallBlacklist(blacklist);  // \todo implement
-#endif
+      if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;
