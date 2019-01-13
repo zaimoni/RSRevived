@@ -909,6 +909,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return map_goals;
     }
 
+    private Dictionary<Map, Dictionary<Point,int>> RadixSortLocations(Dictionary<Location,int> goals)
+    {
+      var map_goals = new Dictionary<Map, Dictionary<Point, int>>();
+      foreach(var goal in goals) {
+        if (map_goals.TryGetValue(goal.Key.Map,out var cache)) {
+          cache[goal.Key.Position] = goal.Value;
+        } else {
+           var tmp = new Dictionary<Point, int>();
+           tmp[goal.Key.Position] = goal.Value;
+           map_goals[goal.Key.Map] = tmp;
+        }
+      }
+      return map_goals;
+    }
+
     private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals)
     {
        Predicate<Location> ret = null;

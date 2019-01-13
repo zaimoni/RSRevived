@@ -435,20 +435,44 @@ namespace Zaimoni.Data
 
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
     // the resulting UNICODE string need not be valid as a UNICODE string.  We just need value-comparison of strings to be value-comparison of the hashset it came from.
+    public static string Encode(this Rectangle rect, Point pt)
+    {
+      // C# char is 16-bit unsigned
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (255<rect.Width || 255<rect.Height) throw new InvalidProgramException("must extend Zaimoni.Data.Encode(Rectangle,Point)");
+      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
+      return new string(new char[] { (char)(256 * (pt.X - rect.Left) + (pt.Y - rect.Top)) });
+    }
+
+    public static string Encode(this uint src)
+    {
+       if (char.MaxValue >= src) return new string(new char[] { (char)src });
+       return new string(new char[] { (char)(src>>16),(char)(src & char.MaxValue) });
+    }
+
     public static string Encode(this Rectangle rect, HashSet<Point> src)
     {
       if (null==src || 0 >= src.Count) return string.Empty;
-      // C# char is 16-bit unsigned
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (255<rect.Width || 255<rect.Height) throw new InvalidProgramException("must extend Zaimoni.Data.Encode(Rectangle,HashSet<Point>)");
-      if (src.Any(pt => !rect.Contains(pt))) throw new InvalidOperationException("tried to encode points not in rectangle");
       var tmp = src.ToList();
       tmp.Sort((a,b)=> {
           var test = a.X.CompareTo(b.X);
           if (0 != test) return test;
           return a.Y.CompareTo(b.Y);
       });
-      return new string(tmp.Select(pt => (char)(256*(pt.X-rect.Left)+(pt.Y-rect.Top))).ToArray());
+      return string.Concat(tmp.Select(pt => rect.Encode(pt)));
+    }
+
+    // encode a dictionary to a string
+    public static string Encode(this Rectangle rect, Dictionary<Point,int> src)
+    {
+      if (null==src || 0 >= src.Count) return string.Empty;
+      var tmp = src.Keys.ToList();
+      tmp.Sort((a,b)=> {
+          var test = a.X.CompareTo(b.X);
+          if (0 != test) return test;
+          return a.Y.CompareTo(b.Y);
+      });
+      return string.Concat(tmp.Select(pt => rect.Encode(pt)+((uint)(src[pt])).Encode()));
     }
 
     // Some library classes have less than useful ToString() overrides.
