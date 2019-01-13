@@ -982,6 +982,15 @@ restart:
           next.Add(test);   // assume that if it passes all pre-screens it may be needed
         }
       }
+      { // 2019-01-12: unsure if this block actually helps
+      var next2 = new HashSet<Map>();
+      foreach(Map m in next) {
+         var screen = new HashSet<Map>(m.destination_maps.Get);
+         screen.RemoveWhere(x => excluded.Contains(m));
+         ((1 >= screen.Count) ? excluded : next2).Add(m);
+      }
+      next = next2;
+      }
       if (0 < next.Count)
             {
             required.UnionWith(next);
