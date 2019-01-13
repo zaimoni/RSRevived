@@ -145,6 +145,35 @@ namespace Zaimoni.Data
             }
         }
 
+#if PROTOTYPE
+        public bool _bootstrap(Dictionary<T,int> goal_costs, Dictionary<int, HashSet<T>> _now)
+        {
+#if DEBUG
+            if (null == _now) throw new ArgumentNullException(nameof(_now));
+#endif
+            bool have_updated = false;
+            foreach(var x in goal_costs) {
+                if (_blacklist.Contains(x.Key)) continue;
+                if (!_inDomain(x.Key)) continue;
+                if (null != _blacklist_fn && _blacklist_fn(x.Key)) continue;
+                bool has_prior_cost = _map.TryGetValue(x.Key, out int old_cost);
+                if (has_prior_cost && old_cost <= x.Value) continue;
+                bool old_key = _now.TryGetValue(x.Value, out var now);
+                if (!old_key) now = new HashSet<T>();
+                _map[x.Key] = x.Value;
+                now.Add(x.Key);
+                if (!old_key) _now[x.Value] = now;
+                have_updated = true;
+                if (has_prior_cost) {
+                    if (_now.TryGetValue(old_cost, out var elder)) {
+                        if (elder.Remove(x.Key) && 0 >= elder.Count) _now.Remove(old_cost);
+                    }
+                }
+            }
+            return have_updated;
+        }
+#endif
+
         public bool _bootstrap(IEnumerable<T> goals, Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
@@ -225,6 +254,24 @@ namespace Zaimoni.Data
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
         }
+
+#if PROTOTYPE
+        public void GoalDistance(Dictionary<T,int> goal_costs, IEnumerable<T> start, int max_cost=int.MaxValue)
+        {
+#if DEBUG
+            if (null == start) throw new ArgumentNullException(nameof(start));
+            if (null == goal_costs) throw new ArgumentNullException(nameof(goal_costs));
+#endif
+            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
+            _map.Clear();
+
+            // a proper Dijkstra search is in increasing cost order
+            Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
+            if (!_bootstrap(goal_costs, _now)) throw new InvalidOperationException("must have at least one goal");
+
+            while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
+        }
+#endif
 
         // \todo need to be able to checkpoint/resume this (CPU optimization)
         public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)

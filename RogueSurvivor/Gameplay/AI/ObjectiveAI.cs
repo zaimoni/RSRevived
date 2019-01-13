@@ -902,8 +902,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
        Predicate<Location> ret = null;
 
-      // \todo map prefilter -- essentially a functional blacklist rather than an enumerated one
-      var undecided = new HashSet<Map>();   // \todo get global map list?  May not actually need that
+      // map prefilter -- essentially a functional blacklist rather than an enumerated one
       var required = new HashSet<Map>();
       var excluded = new HashSet<Map>();
 
