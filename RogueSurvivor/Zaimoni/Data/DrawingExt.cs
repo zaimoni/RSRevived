@@ -391,6 +391,8 @@ namespace Zaimoni.Data
     public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
       bool and(T src) { return l(src) && r(src); };
       return and;
     }
@@ -398,6 +400,8 @@ namespace Zaimoni.Data
     public static Predicate<T> Or<T>(this Predicate<T> lhs, Predicate<T> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
       bool or(T src) { return l(src) || r(src); };
       return or;
     }

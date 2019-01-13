@@ -989,8 +989,8 @@ restart:
             goto restart;
             }
 
-      // \todo once excluded is known, we can construct a lambda function and use that as an additional blacklist.
-      ret = loc => excluded.Contains(loc.Map);
+      // once excluded is known, we can construct a lambda function and use that as an additional blacklist.
+      if (0<excluded.Count) ret = ret.Or(loc => excluded.Contains(loc.Map));
 
       return ret;
     }
