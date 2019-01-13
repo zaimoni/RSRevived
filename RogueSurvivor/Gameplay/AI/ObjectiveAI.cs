@@ -922,8 +922,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var excluded = new HashSet<Map>();
       Predicate<Location> blacklist = null;
 
+      // any map not containing us but containing goals, will need its distance-to-exits set
+      // index is Encode(this Rectangle rect, HashSet<Point> src)
+      var map_goals = new Dictionary<Map,HashSet<Point>>();
+
       required.Add(m_Actor.Location.Map);
-      foreach(var goal in goals) required.Add(goal.Map);
+      foreach(var goal in goals) {
+        required.Add(goal.Map);
+        if (map_goals.TryGetValue(goal.Map,out var cache)) {
+          cache.Add(goal.Position);
+        } else map_goals[goal.Map] = new HashSet<Point> { goal.Position };
+      }
 
       var required_0 = new HashSet<Map>(required);
 

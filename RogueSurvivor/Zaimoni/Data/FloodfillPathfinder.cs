@@ -190,6 +190,15 @@ namespace Zaimoni.Data
               _now.Remove(cost);
         }
 
+        public void PartialGoalDistance(IEnumerable<T> start, Dictionary<int, HashSet<T>> _now, int max_cost=int.MaxValue)
+        {
+#if DEBUG
+            if (null == start) throw new ArgumentNullException(nameof(start));
+            if (null == _now) throw new ArgumentNullException(nameof(_now));
+#endif
+            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now,max_cost);
+        }
+
         // \todo need to be able to checkpoint/resume this (CPU optimization)
         public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
@@ -204,9 +213,10 @@ namespace Zaimoni.Data
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
             if (!_bootstrap(goals, _now)) throw new InvalidOperationException("must have at least one goal");
 
-            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now,max_cost);
+            while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
         }
 
+        // \todo need to be able to checkpoint/resume this (CPU optimization)
         public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
