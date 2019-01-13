@@ -898,37 +898,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals)
+    private Predicate<Location> BlacklistFunction(List<Location> goals)
     {
-#if DEBUG
-      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
-#endif
-      var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
+       Predicate<Location> ret = null;
 
-      // \todo BehaviorResupply needs some pathfinding algebra here
-      // 1) maps that do not contain the actor just need a cost map to the (relevant) exits i.e are cacheable in principle
-      // 2) cache will be invalidated by just about any game-state change affecting pathability since we're "too low" to know where the goal list is coming from.
-      // We should be fine using Zaimoni.Data.TimeCache here (at map level).
-      // 2a) The key will have to be a unique equality-comparable representation of the goal points on the map (i.e. HashSet won't work)  It doesn't have to be reversible.
-      // ** C# char is an unsigned short (2 bytes); this should allow a Map object to convert an in-bounds HashSet<Point> to a unique C# string reliably (lexical ordering)
-      // 3) the factored pathfinders will be based on Point rather than location.  The interpolated _now will be based on their exits
-      // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
-      // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
-
-#if PROTOTYPE
       // \todo map prefilter -- essentially a functional blacklist rather than an enumerated one
       var undecided = new HashSet<Map>();   // \todo get global map list?  May not actually need that
       var required = new HashSet<Map>();
       var excluded = new HashSet<Map>();
-      Predicate<Location> blacklist = null;
 
       // any map not containing us but containing goals, will need its distance-to-exits set
       // index is Encode(this Rectangle rect, HashSet<Point> src)
       var map_goals = new Dictionary<Map,HashSet<Point>>();
+      Rectangle district_span = m_Actor.Location.Map.NavigationScope;
 
       required.Add(m_Actor.Location.Map);
       foreach(var goal in goals) {
         required.Add(goal.Map);
+        district_span = Rectangle.Union(district_span,goal.Map.NavigationScope);
         if (map_goals.TryGetValue(goal.Map,out var cache)) {
           cache.Add(goal.Position);
         } else map_goals[goal.Map] = new HashSet<Point> { goal.Position };
@@ -985,11 +972,38 @@ namespace djack.RogueSurvivor.Gameplay.AI
             excluded.Add(test);
             continue;
           }
+          if (!district_span.Contains(test.District.WorldPosition)) {
+            excluded.Add(test);
+            continue;
+          }
           undecided.Add(test);
         }
       }
 
       // \todo once excluded is known, we can construct a lambda function and use that as an additional blacklist.
+      return ret;
+    }
+
+    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals)
+    {
+#if DEBUG
+      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
+#endif
+      var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
+
+      // \todo BehaviorResupply needs some pathfinding algebra here
+      // 1) maps that do not contain the actor just need a cost map to the (relevant) exits i.e are cacheable in principle
+      // 2) cache will be invalidated by just about any game-state change affecting pathability since we're "too low" to know where the goal list is coming from.
+      // We should be fine using Zaimoni.Data.TimeCache here (at map level).
+      // 2a) The key will have to be a unique equality-comparable representation of the goal points on the map (i.e. HashSet won't work)  It doesn't have to be reversible.
+      // ** C# char is an unsigned short (2 bytes); this should allow a Map object to convert an in-bounds HashSet<Point> to a unique C# string reliably (lexical ordering)
+      // 3) the factored pathfinders will be based on Point rather than location.  The interpolated _now will be based on their exits
+      // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
+      // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
+
+#if PROTOTYPE
+      Predicate<Location> blacklist = BlacklistFunction(goals);
+      if (null != blacklist) navigate.InstallBlacklist(blacklist);  // \todo implement
 #endif
 
       navigate.GoalDistance(goals, m_Actor.Location);
