@@ -640,13 +640,47 @@ namespace djack.RogueSurvivor.Data
 
      public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
 
-    public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
+     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
       var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
         if (fn(x.Value)) ret[x.Key] = x.Value;
+      }
+      return ret;
+    }
+
+    public List<Point> GetEdge()    // \todo refactor to a cache variable setter
+    {
+      var ret = new List<Point>();
+      bool explicit_edge = false;
+      foreach(var x in m_Exits) {
+        if (IsInBounds(x.Key)) ret.Add(x.Key);
+        else explicit_edge = true;
+      }
+      if (explicit_edge) {
+        for(int x = 0; x<Width; x++) {
+          Point test = new Point(x,0);
+          if (GetTileModelAt(test).IsWalkable) ret.Add(test);
+          test = new Point(x,Height-1);
+          if (GetTileModelAt(test).IsWalkable) ret.Add(test);
+        }
+        for(int y = 1; y<Height-1; y++) {
+          Point test = new Point(0,y);
+          if (GetTileModelAt(test).IsWalkable) ret.Add(test);
+          test = new Point(Width-1,y);
+          if (GetTileModelAt(test).IsWalkable) ret.Add(test);
+        }
+      }
+      return ret;
+    }
+
+    public Dictionary<Point,Exit> ExitsFor(Map m) // \todo convert to cache variable setter
+    {
+      var ret = new Dictionary<Point, Exit>();
+      foreach(var x in m_Exits) {
+        if (x.Value.ToMap == m) ret[x.Key] = x.Value;
       }
       return ret;
     }
@@ -663,7 +697,7 @@ namespace djack.RogueSurvivor.Data
       return rect.Any(pt => HasExitAt(pt));
     }
 
-    // <remakr>only caller wants result in-bounds</remark>
+    // <remarl>only caller wants result in-bounds</remark>
 	public List<Point> ExitLocations(HashSet<Exit> src)
 	{
       if (0 >= (src?.Count ?? 0)) return null;

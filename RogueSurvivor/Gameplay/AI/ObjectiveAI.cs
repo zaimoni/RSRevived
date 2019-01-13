@@ -1050,6 +1050,21 @@ restart:
       return navigate;
     }
 
+    protected FloodfillPathfinder<Point> PathfinderFor(Dictionary<Point, int> goal_costs,Map m)
+    {
+#if DEBUG
+      if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
+#endif
+      var navigate = m.PathfindSteps(m_Actor);
+
+      if (m_Actor.Location.Map == m) {
+        navigate.GoalDistance(goal_costs, m_Actor.Location.Position);
+      } else {
+        navigate.GoalDistance(goal_costs, m.GetEdge());
+      }
+      return navigate;
+    }
+
     protected FloodfillPathfinder<Point> PathfinderFor(IEnumerable<Point> goals)
     {
 #if DEBUG
@@ -1154,15 +1169,33 @@ restart:
       var goal_costs = new Dictionary<Location,int>();
       foreach(var goal in goals) goal_costs[goal] = 0;
 
-#if PROTOTYPE
-      var map_goals = RadixSortLocations(goal_costs.Keys);
+      var map_goals = RadixSortLocations(goal_costs);
 
       var in_police_station = Session.Get.UniqueMaps.NavigatePoliceStation(m_Actor.Location.Map);
       if (null==in_police_station) {
+#if PROTOTYPE
         if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
-        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap,out test)) throw new InvalidProgramException("need goal rewriter for police office");
-      }
 #endif
+        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap,out var test)) {
+          var navigate = PathfinderFor(test, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
+          var exits = Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
+          if (!map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap,out var cache)) {
+            cache = new Dictionary<Point,int>();
+            map_goals[Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap] = cache;
+          }
+
+          foreach(var x in exits) {
+            // these are all in bounds; different logic for out-of-bounds exits
+            int cost = navigate.Cost(x.Key) + 1;
+            goal_costs[x.Value.Location] = cost;
+            cache[x.Value.Location.Position] = cost;
+          }
+          foreach(var x in test) {
+            goal_costs.Remove(new Location(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, x.Key));
+          }
+          map_goals.Remove(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
+        }
+      }
 
       return BehaviorPathTo(PathfinderFor(goal_costs));
     }
