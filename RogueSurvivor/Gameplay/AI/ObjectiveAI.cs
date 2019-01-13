@@ -898,7 +898,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
-    private Predicate<Location> BlacklistFunction(List<Location> goals)
+    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals)
     {
        Predicate<Location> ret = null;
 
@@ -913,11 +913,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       required.Add(m_Actor.Location.Map);
       foreach(var goal in goals) {
-        required.Add(goal.Map);
-        district_span = Rectangle.Union(district_span,goal.Map.NavigationScope);
-        if (map_goals.TryGetValue(goal.Map,out var cache)) {
-          cache.Add(goal.Position);
-        } else map_goals[goal.Map] = new HashSet<Point> { goal.Position };
+        required.Add(goal.Key.Map);
+        district_span = Rectangle.Union(district_span,goal.Key.Map.NavigationScope);
+        if (map_goals.TryGetValue(goal.Key.Map,out var cache)) {
+          cache.Add(goal.Key.Position);
+        } else map_goals[goal.Key.Map] = new HashSet<Point> { goal.Key.Position };
       }
 
       var required_0 = new HashSet<Map>(required);
@@ -1020,10 +1020,13 @@ restart:
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
-      Predicate<Location> blacklist = BlacklistFunction(goals);
+      var goal_costs = new Dictionary<Location,int>();
+      foreach(var goal in goals) goal_costs[goal] = 0;
+
+      Predicate<Location> blacklist = BlacklistFunction(goal_costs);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
-      navigate.GoalDistance(goals, m_Actor.Location);
+      navigate.GoalDistance(goal_costs, m_Actor.Location);
       return navigate;
     }
 

@@ -105,6 +105,12 @@ namespace Zaimoni.Data
             GoalDistance(goals, tmp, max_cost);
         }
 
+        public void GoalDistance(Dictionary<T,int> goals, T start, int max_cost = int.MaxValue)
+        {
+            T[] tmp = { start };
+            GoalDistance(goals, tmp, max_cost);
+        }
+
         public void GoalDistance(Predicate<T> goals, T start, int max_cost = int.MaxValue)
         {
             T[] tmp = { start };
@@ -145,7 +151,6 @@ namespace Zaimoni.Data
             }
         }
 
-#if PROTOTYPE
         public bool _bootstrap(Dictionary<T,int> goal_costs, Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
@@ -172,7 +177,6 @@ namespace Zaimoni.Data
             }
             return have_updated;
         }
-#endif
 
         public bool _bootstrap(IEnumerable<T> goals, Dictionary<int, HashSet<T>> _now)
         {
@@ -255,7 +259,6 @@ namespace Zaimoni.Data
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
         }
 
-#if PROTOTYPE
         public void GoalDistance(Dictionary<T,int> goal_costs, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
@@ -271,7 +274,6 @@ namespace Zaimoni.Data
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
         }
-#endif
 
         // \todo need to be able to checkpoint/resume this (CPU optimization)
         public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
