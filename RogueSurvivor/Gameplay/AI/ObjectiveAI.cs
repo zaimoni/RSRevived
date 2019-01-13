@@ -898,31 +898,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
+    private Dictionary<Map, HashSet<Point>> RadixSortLocations(IEnumerable<Location> goals)
+    {
+      var map_goals = new Dictionary<Map,HashSet<Point>>();
+      foreach(var goal in goals) {
+        if (map_goals.TryGetValue(goal.Map,out var cache)) {
+          cache.Add(goal.Position);
+        } else map_goals[goal.Map] = new HashSet<Point> { goal.Position };
+      }
+      return map_goals;
+    }
+
     private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals)
     {
        Predicate<Location> ret = null;
 
       // map prefilter -- essentially a functional blacklist rather than an enumerated one
-      var required = new HashSet<Map>();
-      var excluded = new HashSet<Map>();
+      var required_0 = new HashSet<Map>();
 
       // any map not containing us but containing goals, will need its distance-to-exits set
       // index is Encode(this Rectangle rect, HashSet<Point> src)
-      var map_goals = new Dictionary<Map,HashSet<Point>>();
       Rectangle district_span = m_Actor.Location.Map.NavigationScope;
 
-      required.Add(m_Actor.Location.Map);
+      required_0.Add(m_Actor.Location.Map);
       foreach(var goal in goals) {
-        required.Add(goal.Key.Map);
+        required_0.Add(goal.Key.Map);
         district_span = Rectangle.Union(district_span,goal.Key.Map.NavigationScope);
-        if (map_goals.TryGetValue(goal.Key.Map,out var cache)) {
-          cache.Add(goal.Key.Position);
-        } else map_goals[goal.Key.Map] = new HashSet<Point> { goal.Key.Position };
       }
 
-      var required_0 = new HashSet<Map>(required);
+      var required = new HashSet<Map>(required_0);
 
       // early exit: unique map, not-sewer: should be handled at caller level (do not enforce until we no longer have a serious CPU problem)
+
+      var excluded = new HashSet<Map>();
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
       var police_station = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
@@ -1003,10 +1011,10 @@ restart:
       return ret;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals)
+    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs)
     {
 #if DEBUG
-      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
+      if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
 #endif
       var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
 
@@ -1019,9 +1027,6 @@ restart:
       // 3) the factored pathfinders will be based on Point rather than location.  The interpolated _now will be based on their exits
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
-
-      var goal_costs = new Dictionary<Location,int>();
-      foreach(var goal in goals) goal_costs[goal] = 0;
 
       Predicate<Location> blacklist = BlacklistFunction(goal_costs);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
@@ -1131,7 +1136,20 @@ restart:
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
 
-      return BehaviorPathTo(PathfinderFor(goals));
+      var goal_costs = new Dictionary<Location,int>();
+      foreach(var goal in goals) goal_costs[goal] = 0;
+
+#if PROTOTYPE
+      var map_goals = RadixSortLocations(goal_costs.Keys);
+
+      var in_police_station = Session.Get.UniqueMaps.NavigatePoliceStation(m_Actor.Location.Map);
+      if (null==in_police_station) {
+        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
+        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap,out test)) throw new InvalidProgramException("need goal rewriter for police office");
+      }
+#endif
+
+      return BehaviorPathTo(PathfinderFor(goal_costs));
     }
 
      public void GoalHeadFor(Map m, HashSet<Point> dest)
