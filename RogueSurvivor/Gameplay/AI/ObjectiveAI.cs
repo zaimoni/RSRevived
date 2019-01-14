@@ -1399,7 +1399,7 @@ restart_single_exit:
     public void Terminate(Actor a)
     {
 #if DEBUG            
-      if ((m_Actor.Controller as ObjectiveAI).CombatUnready()) throw new ArgumentNullException(nameof(m_Actor));
+      if (CombatUnready()) throw new InvalidOperationException("cannot consider terminate order when combat unready");
       if (m_Actor.Inventory.IsEmpty) throw new ArgumentNullException(nameof(m_Actor));
 #endif
       var test = Goal<Goal_Terminate>();
