@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason);
+      return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason) && Rules.IsAdjacent(m_Actor.Location, m_NewLocation);
     }
 
     public override void Perform()

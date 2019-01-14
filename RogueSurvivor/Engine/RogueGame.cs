@@ -7453,6 +7453,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMoveActor(Actor actor, Location newLocation)
     {
+#if DEBUG
+      if (!Rules.IsAdjacent(actor.Location,newLocation)) throw new InvalidOperationException("tried to teleport from "+actor.Location+" to "+newLocation);
+#endif
       if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         return;

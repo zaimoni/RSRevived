@@ -438,12 +438,6 @@ namespace djack.RogueSurvivor.Engine
         return actionMoveStep;
       }
 
-      // only have to be completely accurate for adjacent squares
-      if (!Rules.IsAdjacent(actor.Location, loc)) {
-        if ("not enough stamina to jump"==actionMoveStep.FailReason) return actionMoveStep;
-        if ("someone is there"==actionMoveStep.FailReason) return actionMoveStep;
-      }
-
       reason = actionMoveStep.FailReason;
       Actor actorAt = map.GetActorAt(point);
       if (actorAt != null) {
