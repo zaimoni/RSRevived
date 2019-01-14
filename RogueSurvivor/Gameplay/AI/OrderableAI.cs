@@ -206,6 +206,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _locs = new HashSet<Location>(locs);
       }
 
+      public void NewTarget(Location target)
+      {
+        _locs.Add(target);
+      }
+
+      public void NewTarget(IEnumerable<Location> target)
+      {
+        _locs.UnionWith(target);
+      }
+
+      public void RemoveTarget(Location target)
+      {
+        _locs.Remove(target);
+      }
+
+      public void RemoveTarget(IEnumerable<Location> target)
+      {
+        _locs.ExceptWith(target);
+      }
+
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
