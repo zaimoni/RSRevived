@@ -7,7 +7,7 @@
 #define NO_PEACE_WALLS
 // #define AUDIT_ACTOR_MOVEMENT
 // # define LOCK_ACTORSLIST
-// #define PATHING_CACHE
+#define PATHING_CACHE
 // #define AUDIT_ITEM_INVARIANTS
 
 using System;
@@ -165,6 +165,9 @@ namespace djack.RogueSurvivor.Data
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       entrymap_exits = new Dataflow<Map, Point, Exit>(this, _Find_entrymap_exits);
       entrymap_destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(entrymap_exits.Get.Values.Select(exit => exit.ToMap)));
+#if PATHING_CACHE
+      pathing_exits_to_goals.Now(LocalTime.TurnCounter);
+#endif
     }
 
 #region Implement ISerializable
@@ -199,6 +202,9 @@ namespace djack.RogueSurvivor.Data
       entrymap_exits = new Dataflow<Map, Point, Exit>(this, _Find_entrymap_exits);
       entrymap_destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(entrymap_exits.Get.Values.Select(exit => exit.ToMap)));
       ReconstructAuxiliaryFields();
+#if PATHING_CACHE
+      pathing_exits_to_goals.Now(LocalTime.TurnCounter);
+#endif
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -676,6 +682,11 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public void ForEachExit(Action<Point,Exit> op)
+    {
+       foreach(var x in m_Exits) op(x.Key,x.Value);
+    }
+
     public Dictionary<Point,Exit> ExitsFor(Map m) // \todo convert to cache variable setter
     {
       var ret = new Dictionary<Point, Exit>();
@@ -687,10 +698,6 @@ namespace djack.RogueSurvivor.Data
 
     public void SetExitAt(Point pos, Exit exit) {
       m_Exits.Add(pos, exit);
-      AI_exits.Recalc();
-      destination_maps.Recalc();
-      entrymap_exits.Recalc();
-      entrymap_destination_maps.Recalc();
     }
 
 #if DEAD_FUNC
@@ -1258,7 +1265,9 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
+      // 1) does not have to be accurate except when adjacent
+      // 2) treat null map as "omni-adjacent" (happens during spawning)
+      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,new Location(this,new Point(x,y)))) && HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }

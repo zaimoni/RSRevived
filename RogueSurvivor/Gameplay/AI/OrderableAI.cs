@@ -2115,9 +2115,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
-	{
-      if (dest.Map!=m_Actor.Location.Map) {
+    public ActorAction BehaviorUseAdjacentStack()
+    {
         Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
         if (0 < (stacks?.Count ?? 0)) {
           foreach(var x in stacks) {
@@ -2127,6 +2126,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != tmpAction) return tmpAction;
           }
         }
+        return null;
+    }
+
+	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
+	{
+      var tmp = BehaviorUseAdjacentStack();
+      if (null != tmp) return tmp;
+
+      if (dest.Map!=m_Actor.Location.Map) {
         return BehaviorPathTo(m => (m==dest.Map ? new HashSet<Point> { dest.Position } : new HashSet<Point>()));
       }
 
@@ -3350,15 +3358,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return null;
 
-      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-      if (0 < (stacks?.Count ?? 0)) {
-        foreach(var x in stacks) {
-          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
-          if (null == loc) throw new ArgumentNullException(nameof(loc));
-          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
-          if (null != tmpAction) return tmpAction;
-        }
-      }
+      var tmp = BehaviorUseAdjacentStack();
+      if (null != tmp) return tmp;
+
       HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
       var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
@@ -3372,15 +3374,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LocationSet sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return null;
 
-      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-      if (0 < (stacks?.Count ?? 0)) {
-        foreach(var x in stacks) {
-          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
-          if (null == loc) throw new ArgumentNullException(nameof(loc));
-          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
-          if (null != tmpAction) return tmpAction;
-        }
-      }
+      var tmp = BehaviorUseAdjacentStack();
+      if (null != tmp) return tmp;
 
       HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
@@ -3454,15 +3449,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
-      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-      if (0 < (stacks?.Count ?? 0)) {
-        foreach(var x in stacks) {
-          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
-          if (null == loc) throw new ArgumentNullException(nameof(loc));
-          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
-          if (null != tmpAction) return tmpAction;
-        }
-      }
+      var tmp = BehaviorUseAdjacentStack();
+      if (null != tmp) return tmp;
       return BehaviorPathTo(m => WhereIs(critical, m));
     }
 

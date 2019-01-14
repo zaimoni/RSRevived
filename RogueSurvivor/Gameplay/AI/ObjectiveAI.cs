@@ -1151,20 +1151,42 @@ restart:
     {
         if (!map_goals.TryGetValue(src,out var test)) return false;
 
-        var navigate = PathfinderFor(test, src);
-        var exits = src.ExitsFor(dest);
+        string index = src.Rect.Encode(test);
         if (!map_goals.TryGetValue(dest,out var cache)) {
           cache = new Dictionary<Point,int>();
           map_goals[dest] = cache;
         }
 
-        foreach(var x in exits) {
-          // these are all in bounds; different logic for out-of-bounds exits
-          int cost = navigate.Cost(x.Key) + 1;
-          goal_costs[x.Value.Location] = cost;
-          cache[x.Value.Location.Position] = cost;
-          goals.Add(x.Value.Location);
+        if (src.pathing_exits_to_goals.TryGetValue(index,out var saved)) {
+          foreach(var x in saved) {
+            if (x.Key.Map!=dest) continue;
+            int cost = x.Value;
+            goal_costs[x.Key] = cost;
+            cache[x.Key.Position] = cost;
+            goals.Add(x.Key);
+          }
+        } else {
+          var archive = new Dictionary<Location,int>();
+          var navigate = PathfinderFor(test, src);
+          var exits = src.ExitsFor(dest);
+
+          int exit_cost(Point pt) {
+            if (src.IsInBounds(pt)) return navigate.Cost(pt) + 1;
+            return pt.Adjacent().Where(pt2 => src.IsInBounds(pt2)).Select(pt2 => navigate.Cost(pt2) + 1).Min();
+          }
+
+          src.ForEachExit((pt,e)=> {
+            int cost = exit_cost(pt);
+            archive[e.Location] = cost;
+            if (e.Location.Map!=dest) return;
+            goal_costs[e.Location] = cost;
+            cache[e.Location.Position] = cost;
+            goals.Add(e.Location);
+          });
+
+          src.pathing_exits_to_goals.Set(index,archive);
         }
+
         foreach(var x in test) {
           Location tmp = new Location(src, x.Key);
           goal_costs.Remove(tmp);
@@ -1179,6 +1201,7 @@ restart:
     {
       List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
       if (0 >= goals.Count) return null;
+
       {
       Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
       foreach(Location loc in goals) {
@@ -1189,6 +1212,9 @@ restart:
         }
       }
       }
+
+      var adjacent = goals.Where(loc => Rules.IsAdjacent(m_Actor.Location,loc));
+      if (adjacent.Any() && !adjacent.Any(loc => null==loc.Actor)) return new ActionWait(m_Actor);
 
       // remove a degenerate case from consideration
       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
