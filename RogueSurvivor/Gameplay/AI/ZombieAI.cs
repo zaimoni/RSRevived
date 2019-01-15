@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
-      if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
+      if (m_Actor.Model.Abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
 
       List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       ActorAction tmpAction;

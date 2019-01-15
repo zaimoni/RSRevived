@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE; // backstop
 
-      m_Exploration.Update(m_Actor.Location);
+      if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
 
       // New objectives system
 #if TRACE_SELECTACTION
