@@ -1152,6 +1152,7 @@ restart:
     private bool GoalRewrite(List<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest)
     {
         if (!map_goals.TryGetValue(src,out var test)) return false;
+        if (src.Exits.Any(e => e.Location==m_Actor.Location)) return false; // would be very bad to remap a goal w/cost onto the actor
 
         string index = src.Rect.Encode(test);
         if (!map_goals.TryGetValue(dest,out var cache)) {
