@@ -23,11 +23,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ExplorationData() {}
 
+#if DEAD_FUNC
     public void Clear()
     {
       m_LocationsQueue.Clear();
       m_ZonesQueue.Clear();
     }
+#endif
 
     public bool HasExplored(Location loc)
     {
@@ -53,10 +55,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (-1 < i) ? m_LocationsQueue.Count-i : 0;
     }
 
+#if DEAD_FUNC
     public bool HasExplored(Zone zone)
     {
       return m_ZonesQueue.Contains(zone);
     }
+#endif
 
     public bool HasExplored(List<Zone> zones)
     {
@@ -70,6 +74,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_ZonesQueue.Count - 1 <= i) return;
         m_ZonesQueue.RemoveAt(i);   // prevent duplicates
       } else if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
+      m_ZonesQueue.Add(zone);
+    }
+
+    private void AddExplored(Zone zone, Action<Zone> new_zone_handler)
+    {
+      int i = m_ZonesQueue.IndexOf(zone);
+      if (-1 < i) {
+        if (m_ZonesQueue.Count - 1 <= i) return;
+        m_ZonesQueue.RemoveAt(i);   // prevent duplicates
+      } else {
+        if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
+        if (null!= new_zone_handler) new_zone_handler(zone);
+      }
       m_ZonesQueue.Add(zone);
     }
 
@@ -105,6 +122,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
       if (0 >= (zonesAt?.Count ?? 0)) return;
       foreach (Zone zone in zonesAt) AddExplored(zone);
+    }
+
+    public void Update(Location location, Action<Zone> new_zone_handler)
+    {
+      AddExplored(location);
+      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
+      if (0 >= (zonesAt?.Count ?? 0)) return;
+      foreach (Zone zone in zonesAt) AddExplored(zone, new_zone_handler);
     }
   }
 }

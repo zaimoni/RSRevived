@@ -195,7 +195,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE; // backstop
 
-      if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
+      if (m_Actor.Location!=PrevLocation) {
+         
+        if (null!=ItemMemory && null!=m_Actor.InterestingLocs) {
+          var _items = ItemMemory;
+          var tourism = m_Actor.InterestingLocs;
+          var map = m_Actor.Location.Map;
+          m_Exploration.Update(m_Actor.Location,zone => {
+            zone.Bounds.DoForEach(pt => { if (!_items.HaveEverSeen(new Location(map, pt))) tourism.Record(map, pt); });
+          });
+        } else {
+          m_Exploration.Update(m_Actor.Location);
+        }
+      }
 
       ExpireTaboos();
 
