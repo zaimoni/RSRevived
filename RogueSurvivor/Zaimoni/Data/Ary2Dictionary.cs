@@ -30,13 +30,11 @@ namespace Zaimoni.Data
             _second_first_dict.Clear();
         }
 
-#if DEAD_FUNC
         public bool HaveEverSeen(Key1 key) {
             if (_no_entries.ContainsKey(key)) return true;
             if (_first_second_dict.ContainsKey(key)) return true;
             return false;
         }
-#endif
 
         public bool HaveEverSeen(Key1 key, out Range value) {
             if (_no_entries.TryGetValue(key, out value)) return true;

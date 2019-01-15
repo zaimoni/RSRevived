@@ -7960,7 +7960,7 @@ namespace djack.RogueSurvivor.Engine
          if (map != map.District.EntryMap) continue;
          foreach(Zone zone in map.Zones) {
            if (!zone.Name.Contains("CHAR Office")) continue;
-           zone.Bounds.DoForEach(pt => Session.Get.PoliceInvestigate.Record(map, pt));
+           zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, pt); });
          }
        }
      });
