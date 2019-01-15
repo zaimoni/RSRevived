@@ -1247,6 +1247,20 @@ restart_single_exit:
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
       }
+      var in_hospital = Session.Get.UniqueMaps.NavigateHospital(m_Actor.Location.Map);
+      if (null==in_hospital) {
+#if PATHFIND_IMPLEMENTATION_GAPS
+        if (map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
+#endif
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Patients.TheMap, Session.Get.UniqueMaps.Hospital_Offices.TheMap))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Offices.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+      }
 
       return BehaviorPathTo(PathfinderFor(goal_costs));
     }
