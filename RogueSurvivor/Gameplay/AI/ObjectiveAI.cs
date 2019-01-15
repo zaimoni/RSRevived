@@ -237,7 +237,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public enum ReactionCode : uint {
       NONE = 0,
       ENEMY = uint.MaxValue/2+1,
-      ITEM = ENEMY/2
+      ITEM = ENEMY/2,
+      TRADE = ITEM/2
     };
 
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
@@ -246,7 +247,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
         ReactionCode ret = ReactionCode.NONE;
         if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
-        // \todo we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
+        // we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
+        // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
         var items = items_in_FOV;
         if (null != items) {
           foreach(var x in items) {
@@ -265,8 +267,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
            }
           }
         }
-        // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
         // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
+        if (HaveTradingTargets()) ret |= ReactionCode.TRADE;
         return ret;
     }
 
@@ -1616,6 +1618,30 @@ restart_single_exit:
           }
           return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
         });
+    }
+
+    protected bool HaveTradingTargets()
+    {
+        if (!m_Actor.Model.Abilities.CanTrade) return false; // arguably an invariant but not all PCs are overriding appropriate base AIs
+        if (null == friends_in_FOV) return false;
+        var TradeableItems = GetTradeableItems();
+        if (0>=(TradeableItems?.Count ?? 0)) return false;
+        Map map = m_Actor.Location.Map;
+
+        foreach(var x in friends_in_FOV) {
+          if (x.Value.IsDead) continue;
+          if (x.Value.IsPlayer) continue;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(x.Value)) continue;
+          if (!m_Actor.CanTradeWith(x.Value)) continue;
+          if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Value.Location)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+          if (1 == TradeableItems.Count) {
+            List<Item> other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
+            if (null == other_TradeableItems) continue;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
+          }
+          if ((x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return true;    // other half of m_Actor.GetInterestingTradeableItems(...)
+        }
+        return false;
     }
 
     private ActorAction _PrefilterDrop(Item it)
