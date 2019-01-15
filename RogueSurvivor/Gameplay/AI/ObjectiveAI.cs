@@ -1171,7 +1171,6 @@ restart:
         } else {
           var archive = new Dictionary<Location,int>();
           var navigate = PathfinderFor(test, src);
-          var exits = src.ExitsFor(dest);
 
           int exit_cost(Point pt) {
             if (src.IsInBounds(pt)) return navigate.Cost(pt) + 1;

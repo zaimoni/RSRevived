@@ -671,15 +671,6 @@ namespace djack.RogueSurvivor.Data
        foreach(var x in m_Exits) op(x.Key,x.Value);
     }
 
-    public Dictionary<Point,Exit> ExitsFor(Map m) // \todo convert to cache variable setter
-    {
-      var ret = new Dictionary<Point, Exit>();
-      foreach(var x in m_Exits) {
-        if (x.Value.ToMap == m) ret[x.Key] = x.Value;
-      }
-      return ret;
-    }
-
     public void SetExitAt(Point pos, Exit exit) {
       m_Exits.Add(pos, exit);
     }
