@@ -790,6 +790,12 @@ restart:
       // 6. Music.
       subway.BgMusic = GameMusics.SUBWAY;
 
+      // not practical to do this piecewise
+      subway.Rect.DoForEach(pt => {
+          if (subway.GetTileModelAt(pt).IsWalkable) Session.Get.ForcePoliceKnown(new Location(subway, pt));
+          else if (subway.HasAnyAdjacentInMap(pt,pt2 => subway.GetTileModelAt(pt2).IsWalkable)) Session.Get.ForcePoliceKnown(new Location(subway, pt));
+      });
+
       return subway;
     }
 
