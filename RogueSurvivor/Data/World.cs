@@ -124,6 +124,16 @@ namespace djack.RogueSurvivor.Data
       foreach(District d in m_DistrictsGrid) op(d);
     }
 
+    public void DoForAllMaps(Action<Map> op)
+    {
+#if DEBUG
+      if (null == op) throw new ArgumentNullException(nameof(op));
+#endif
+      foreach(District d in m_DistrictsGrid) {
+        foreach(Map m in d.Maps) op(m);
+      }
+    }
+
     public void DoForAllActors(Action<Actor> op)
     {
 #if DEBUG

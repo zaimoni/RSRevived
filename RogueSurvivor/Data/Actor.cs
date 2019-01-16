@@ -1477,8 +1477,14 @@ namespace djack.RogueSurvivor.Data
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
-          foreach(Map m in Location.Map.District.Maps) ret.UnionWith(m.Police.Get);
-          ret.Remove(this);
+          Location radio_pos = Rules.PoliceRadioLocation(Location);
+          Engine.Session.Get.World.DoForAllMaps(m=> {
+              foreach(var a in m.Police.Get) {
+                if (a == this) continue;
+                Location other_radio_pos = Rules.PoliceRadioLocation(Location);
+                if (Engine.RogueGame.MINIMAP_RADIUS >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
+              }
+          });
         }
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);

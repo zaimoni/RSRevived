@@ -446,8 +446,14 @@ namespace djack.RogueSurvivor.Engine
         }
 		// player as leader should be able to switch with player as follower
 		// NPCs shouldn't be leading players anyway
-        if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
-          return new ActionSwitchPlace(actor, actorAt);
+        if (actor.IsPlayer || !actorAt.IsPlayer) {
+          if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
+          if (   !((actor.Controller as Gameplay.AI.OrderableAI)?.RejectSwap(actorAt.Location) ?? true)
+              && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwap(actor.Location) ?? true)) {
+           return new ActionSwitchPlaceEmergency(actor, actorAt);
+          }
+        }
+        
         // no chat when pathfinding
         // but it is ok to shove other actors
         if (actor.AbleToPush && actor.CanShove(actorAt)) {
@@ -830,6 +836,58 @@ namespace djack.RogueSurvivor.Engine
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
     }
+
+    // unsure where this should go...parking here for now
+    public static Location PoliceRadioLocation(Location loc)
+    {
+      if (loc.Map == loc.Map.District.EntryMap) return loc;
+      // sewers and subway are 1-1 with entry map
+      if (loc.Map == loc.Map.District.SewersMap || loc.Map==loc.Map.District.SubwayMap) return new Location(loc.Map.District.EntryMap,loc.Position);
+      // \todo rewrite to not churn GC
+retry:
+      var exits = loc.Map.ExitsFor(loc.Map.District.EntryMap);
+      if (0 < exits.Count) {
+        foreach(var x in exits) {
+          Size delta = new Size(loc.Position.X-x.Key.X, loc.Position.Y - x.Key.Y);
+          return new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
+        }
+      }
+      // end rewrite to not churn GC
+      // far from surface.  Currently one of hospital or police station
+      var in_hospital = Session.Get.UniqueMaps.NavigateHospital(loc.Map);
+      if (null != in_hospital) {
+        exits = loc.Map.ExitsFor(in_hospital.Value.Key);
+#if DEBUG
+        if (0 < exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+#endif
+        // admissions->offices and offices->patients are both 180 degrees
+        // \todo patients->storeroom should be 90 degrees counter-clockwise
+        // \todo storeroom -> power should be 90 degrees clockwise
+        foreach(var x in exits) {
+          Size delta = new Size(-(loc.Position.X - x.Key.X), -(loc.Position.Y - x.Key.Y));
+          loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
+          goto retry;
+        }
+      }
+      var in_police_Station = Session.Get.UniqueMaps.NavigatePoliceStation(loc.Map);
+      if (null != in_police_Station) {
+        // Jails.  Considered rotated 90 counterclockwise
+#if DEBUG
+        if (loc.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) throw new InvalidProgramException("police station only has two levels");
+#endif
+        exits = loc.Map.ExitsFor(in_police_Station.Value.Key);
+#if DEBUG
+        if (0 < exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+#endif
+        foreach(var x in exits) {
+          Size delta = new Size(loc.Position.Y - x.Key.Y, -(loc.Position.X - x.Key.X));
+          loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
+          goto retry;
+        }
+      }
+      return loc;   // if not in the entry map, source map is not close to surface
+    }
+
   } // end Rules class
 
 // still want this

@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Engine
     bool m_SimThreadIsWorking;  // alpha10 sim thread state: set by sim thread to false when has exited loop. 
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
-    public const int MINIMAP_RADIUS = 50;
+    public const int MINIMAP_RADIUS = 50;   // also police radio range
 
     public const int TILE_SIZE = 32;    // ACTOR_SIZE+ACTOR_OFFSET <= TILE_SIZE
     public const int ACTOR_SIZE = 32;
@@ -7956,12 +7956,10 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 2) examine all CHAR offices
      Session.Get.World.DoForAllDistricts(d=> {
-       foreach(Map map in d.Maps) {
-         if (map != map.District.EntryMap) continue;
-         foreach(Zone zone in map.Zones) {
-           if (!zone.Name.Contains("CHAR Office")) continue;
-           zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, pt); });
-         }
+       Map map = d.EntryMap;
+       foreach(Zone zone in map.Zones) {
+         if (!zone.Name.Contains("CHAR Office")) continue;
+         zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, pt); });
        }
      });
 #endregion
