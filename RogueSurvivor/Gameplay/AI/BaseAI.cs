@@ -55,8 +55,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
+#if PROToTYPE
         ActorAction alt = ai.RewriteAction(actorAction);
         if (alt?.IsLegal() ?? false) actorAction = alt;
+#endif
         ai.ResetAICache();
       }
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;

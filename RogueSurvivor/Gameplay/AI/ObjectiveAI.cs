@@ -648,18 +648,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+#if PROTOTYPE
     public ActorAction RewriteAction(ActorAction x)
     {
-#if PROTOTYPE
       if (x is ActionShove shove && 2==Rules.GridDistance(m_Actor.Location.Position,shove.To)) {
         // check for a valid push to the same destination.  Not as likely to resist.
         var candidates = shove.To.Adjacent().Where(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt) && m_Actor.Location.Map.HasMapObjectAt(pt)).Select(pt => new Engine.Actions.ActionPush(m_Actor,m_Actor.Location.Map.GetMapObjectAt(pt),Direction.FromVector(shove.To.Y-pt.X,shove.To.X-pt.Y)));
         candidates = candidates.Where(Action => Action.IsLegal());
         if (candidates.Any()) return RogueForm.Game.Rules.DiceRoller.Choose(candidates.ToList());
       }
-#endif
       return null;
     }
+#endif
 
     protected ActorAction DecideMove(Dictionary<Location,int> src)
 	{
