@@ -32,4 +32,28 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueForm.Game.DoSwitchPlace(m_Actor, m_Target);
     }
   }
+
+  internal class ActionSwitchPlaceEmergency : ActorAction
+  {
+    private readonly Actor m_Target;
+
+    public ActionSwitchPlaceEmergency(Actor actor, Actor target)
+      : base(actor)
+    {
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
+      m_Target = target;
+    }
+
+    public override bool IsLegal()
+    {
+      return Rules.IsAdjacent(m_Actor.Location,m_Target.Location);  // XXX doesn't set FailReason
+    }
+
+    public override void Perform()
+    {
+      RogueForm.Game.DoSwitchPlace(m_Actor, m_Target);
+    }
+  }
 }

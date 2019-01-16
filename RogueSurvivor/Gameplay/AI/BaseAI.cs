@@ -53,10 +53,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (!(actorAction?.IsLegal() ?? true)) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
-      if ((this as ObjectiveAI)?.VetoAction(actorAction) ?? false) actorAction = null;
-      (this as ObjectiveAI)?.ResetAICache();
+      if ((this is ObjectiveAI ai)) {
+        if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
+        ActorAction alt = ai.RewriteAction(actorAction);
+        if (alt?.IsLegal() ?? false) actorAction = alt;
+        ai.ResetAICache();
+      }
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
-      return actorAction ?? new ActionWait(m_Actor);
+      return actorAction ?? new ActionWait(m_Actor);    // likely redundant
     }
 
     protected abstract ActorAction SelectAction(RogueGame game);

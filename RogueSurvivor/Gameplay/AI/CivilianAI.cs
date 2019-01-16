@@ -700,7 +700,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
 #region floodfill pathfinder
-      if (null != _legal_steps) {
+      var pathing = m_Actor.OnePath(m_Actor.Location);
+      pathing.OnlyIf(action => action.IsLegal());
+      
+      if (null != _legal_steps || 0<pathing.Count) {
         // advanced pathing ultimately reduces to various flavors of calls to (specializations) of 
         // public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
 #if TRACE_SELECTACTION
@@ -880,7 +883,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
 #endif
-      }
+      } else {
+#if PROTOTYPE
+        // \todo if we have no legal steps (null == _legal_steps) then we should try to resolve this
+        var candidates = new List<Actor>();
+        if (null != friends_in_FOV) {
+          foreach(var x in friends_in_FOV) {
+            if (!Rules.IsAdjacent(x.Key,m_Actor.Location.Position)) continue;
+            if (x.Value.IsSleeping) continue;
+            if ((x.Value.Controller as OrderableAI)?.RejectSwap(m_Actor.Location) ?? true) {
+              if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(x.Value.Name+" should not have rejected swap");
+              continue;
+            }
+            if (RejectSwap(x.Value.Location)) {
+              if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(m_Actor.Name+" should not have rejected swap");
+              continue;
+            }
+            candidates.Add(x.Value);
+          }
+          if (0<candidates.Count) return new ActionSwitchPlaceEmergency(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(candidates));
+        }
+        // emergency switch place: any non-enemy actor will do.  Better if he/she wants to be where we are.  Possibly could be handled as part of pathing
+        // check for pathing moves, not just steps (push/pull that changes position would count)
+#endif
+            }
 #endregion
 
 	  if (null != friends) {

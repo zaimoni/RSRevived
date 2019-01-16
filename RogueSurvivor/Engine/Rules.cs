@@ -314,7 +314,11 @@ namespace djack.RogueSurvivor.Engine
 		// NPCs shouldn't be leading players anyway
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
-        return (actor.CanChatWith(actorAt, out reason) ? new ActionChat(actor, actorAt) : null);
+        if (!actor.CanChatWith(actorAt, out reason)) return null;
+        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
+            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true))
+           return new ActionSwitchPlaceEmergency(actor,actorAt);
+        return new ActionChat(actor, actorAt);
 #if B_MOVIE_MARTIAL_ARTS
       } else if (0<actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
         Actor target = null;
@@ -448,10 +452,6 @@ namespace djack.RogueSurvivor.Engine
 		// NPCs shouldn't be leading players anyway
         if (actor.IsPlayer || !actorAt.IsPlayer) {
           if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
-          if (   !((actor.Controller as Gameplay.AI.OrderableAI)?.RejectSwap(actorAt.Location) ?? true)
-              && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwap(actor.Location) ?? true)) {
-           return new ActionSwitchPlaceEmergency(actor, actorAt);
-          }
         }
         
         // no chat when pathfinding

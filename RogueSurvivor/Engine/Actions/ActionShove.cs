@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Actor Target { get { return m_Target; } }
     public Point To { get { return m_To; } }
+    public Direction Dir { get { return m_Direction; } }
 
     public override bool IsLegal()
     {

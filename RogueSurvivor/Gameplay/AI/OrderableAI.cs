@@ -396,6 +396,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
 
       public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Percepted); } }
+      public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Location); } }
 
       public Goal_PathToStack(int t0, Actor who, Location loc)
       : base(t0,who)
@@ -2104,13 +2105,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-
-    public ActorAction BehaviorUseAdjacentStack()
-    {
-        Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+    
+    public ActorAction WouldUseAccessibleStack(Location dest) {
+        Dictionary<Point, Inventory> stacks = dest.Map.GetAccessibleInventories(dest.Position);
         if (0 < (stacks?.Count ?? 0)) {
           foreach(var x in stacks) {
-            Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
+            Location? loc = (dest.Map.IsInBounds(x.Key) ? new Location(dest.Map, x.Key) : dest.Map.Normalize(x.Key));
             if (null == loc) throw new ArgumentNullException(nameof(loc));
             ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
             if (null != tmpAction) return tmpAction;
@@ -2118,6 +2118,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return null;
     }
+
+    public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location); }
 
 	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
 	{
@@ -3442,6 +3444,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
       return BehaviorPathTo(m => WhereIs(critical, m));
+    }
+
+    public bool ProposeSwitchPlaces(Location dest)
+    {
+      if (null!=BehaviorUseAdjacentStack()) return false;
+      if (null!=WouldUseAccessibleStack(dest)) return true;
+      var track_inv = Goal<Goal_PathToStack>();
+      if (null != track_inv) {
+        if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
+//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return true;
+      }
+      return true;
+    }
+
+    public bool RejectSwitchPlaces(Location dest)
+    {
+      if (null!=BehaviorUseAdjacentStack()) return true;
+      if (null!=WouldUseAccessibleStack(dest)) return false;
+      var track_inv = Goal<Goal_PathToStack>();
+      if (null != track_inv) {
+        if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
+//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return true;
+      }
+      return true;
     }
 
     protected bool NeedsLight()

@@ -3,6 +3,7 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* police radio range has been respecified as the minimap radius.  Reduction from being underground is not in (yet).
 * Many RS Alpha 10 changes merged in
 ** This does include the park shed and residential outdoor rooms changes, and corresponding map objects.
 ** The safety from traps implementation is in, but due for a re-implementation (blocked by police radio range re-implementation)

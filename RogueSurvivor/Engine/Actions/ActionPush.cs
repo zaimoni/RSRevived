@@ -16,6 +16,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Direction m_Direction;
     private readonly Point m_To;
 
+    public MapObject Target { get { return m_Object; } }
+    public Point To { get { return m_To; } }
+
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
       : base(actor)
     {

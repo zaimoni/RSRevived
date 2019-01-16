@@ -641,6 +641,17 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+     public Dictionary<Point,Exit> ExitsFor(Map dest) {
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      var ret = new Dictionary<Point, Exit>();
+      foreach(var x in m_Exits) {
+        if (x.Value.ToMap == dest) ret[x.Key] = x.Value;
+      }
+      return ret;
+    }
+
     public List<Point> GetEdge()    // \todo refactor to a cache variable setter
     {
       var ret = new List<Point>();
@@ -796,6 +807,7 @@ namespace djack.RogueSurvivor.Data
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
         if (GetMapObjectAt(pt)?.IsContainer ?? true) return false;
+        if (GetMapObjectAt(pt) is Engine.MapObjects.PowerGenerator) return false;
         return true;
       });
       return ret;
