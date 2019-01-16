@@ -2401,7 +2401,7 @@ restart_single_exit:
         // this is expected to correctly handle the food glut case (item rating 1)
         int i = 0;
         while(++i < it_rating) {
-          Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i));
+          Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (null == worst) continue;
           return _BehaviorDropOrExchange(worst, it, position);
         }
@@ -3023,6 +3023,7 @@ restart_single_exit:
       case GameItems.IDs.RANGED_SHOTGUN:
         if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
         break;
+
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
       case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
         if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
@@ -3030,6 +3031,40 @@ restart_single_exit:
         break;
       case GameItems.IDs.LIGHT_FLASHLIGHT:
         if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        break;
+      }
+      return false;
+    }
+
+    /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
+    static public bool InventoryTradeVeto(Item mine, Item theirs)
+    {
+      // reject identity trades for now.  This will change once AI state is involved.
+      if (mine.Model == theirs.Model) return true;
+
+      switch(mine.Model.ID)
+      {
+      // two weapons for the ammo
+      case GameItems.IDs.RANGED_PRECISION_RIFLE:
+      case GameItems.IDs.RANGED_ARMY_RIFLE:
+        if (GameItems.IDs.AMMO_HEAVY_RIFLE==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_PISTOL:
+      case GameItems.IDs.RANGED_KOLT_REVOLVER:
+        if (GameItems.IDs.AMMO_LIGHT_PISTOL==theirs.Model.ID) return true;
+        break;
+      // one weapon for the ammo
+      case GameItems.IDs.RANGED_ARMY_PISTOL:
+        if (GameItems.IDs.AMMO_HEAVY_PISTOL==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
+        if (GameItems.IDs.AMMO_BOLTS==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_RIFLE:
+        if (GameItems.IDs.AMMO_LIGHT_RIFLE==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_SHOTGUN:
+        if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
         break;
       }
       return false;
