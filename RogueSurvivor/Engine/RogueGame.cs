@@ -7779,7 +7779,7 @@ namespace djack.RogueSurvivor.Engine
         if (fo.Location.Map.District != to.Map.District) continue;  // cross-district change
         List<Point> pointList = null;
         if (Rules.IsAdjacent(from, fo.Location)) {
-          pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo));
+          pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo) && !to.Map.HasActorAt(pt));
           flag3 = (0 < (pointList?.Count ?? 0));
         }
 
