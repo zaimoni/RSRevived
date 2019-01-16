@@ -230,6 +230,11 @@ namespace djack.RogueSurvivor.Data
       return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
     }
 
+    public bool IsOnEdge(Point p)   // but not necessarily in bounds
+    {
+      return 0==p.X || Width-1==p.X || 0==p.Y || Height-1==p.Y;
+    }
+
     // return value of zero may be either "in bounds", or "not valid at all"
     public int DistrictDeltaCode(Point pt)
     {

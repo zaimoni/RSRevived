@@ -2354,20 +2354,16 @@ restart:
         if (corner==basementStairs) {
           // The Sokoban gate is required to work.
           basement.SetTileModelAt(diag_step, GameTiles.FLOOR_CONCRETE);
-          Session.Get.PoliceInvestigate.Record(basement,diag_step);
           basement.SetTileModelAt(large, GameTiles.FLOOR_CONCRETE);
-          Session.Get.PoliceInvestigate.Record(basement,large);
         } else if (   GameTiles.WALL_BRICK == basement.GetTileModelAt(diag_step)
                    && GameTiles.FLOOR_CONCRETE == basement.GetTileModelAt(corner)) {
           basement.SetTileModelAt(corner, GameTiles.WALL_BRICK);
           basement.SetTileModelAt(diag_step, GameTiles.FLOOR_CONCRETE);
-          Session.Get.PoliceInvestigate.Record(basement,diag_step);
-          Session.Get.PoliceInvestigate.Seen(basement,corner);
         }
       }
     }
 
-    private static bool _ForceHouseBasementConnected(Map basement,Point basementStairs)
+    private bool _ForceHouseBasementConnected(Map basement,Point basementStairs)
     {
       // basement.Rect.Top and basement.Rect.Left are hardcoded 0
       // coordinates 0, width-1, height-1 are already brick walls
@@ -2379,6 +2375,48 @@ restart:
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1, basement.Rect.Bottom-2), new Point(2, basement.Rect.Bottom - 3));
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, 1), new Point(basement.Rect.Right - 3, 2));
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, basement.Rect.Bottom - 2), new Point(basement.Rect.Right - 3, basement.Rect.Bottom - 3));
+
+      var inner = new Rectangle(1,1,basement.Rect.Width-2, basement.Rect.Height - 2);   // \todo ? could precalculate this in constructor
+restart:
+      var candidates = new HashSet<Point>();    // for being the center of a canonical disconnect
+      inner.DoForEach(pt => candidates.Add(pt));
+      while(0<candidates.Count) {
+        var test = candidates.First();
+        if (!basement.GetTileModelAt(test).IsWalkable) {
+          candidates.Remove(test);
+          continue;
+        }
+        bool no_problem = false;
+        foreach(var test2 in test.Adjacent()) {
+          if (basement.GetTileModelAt(test2).IsWalkable) {
+            no_problem = true;
+            break;
+          } else {
+            candidates.Remove(test2);
+          }
+        }
+        if (no_problem) {
+          candidates.Remove(test);
+          continue;
+        }
+        // still here...problem
+        if (!basement.HasExitAt(test)) {
+          var air = new Dictionary<Point, int>();
+          foreach(var test3 in test.Adjacent()) {
+            if (test3 == test) continue;
+            if (basement.IsOnEdge(test3)) continue;
+            air[test3] = basement.CountAdjacentTo(test3,pt => basement.GetTileModelAt(pt).IsWalkable);
+            int max = air.Values.Max();
+            air.OnlyIf(val => val==max);
+          }
+          var exchange = m_DiceRoller.Choose(air).Key;
+          basement.SetTileModelAt(test, GameTiles.WALL_BRICK);
+          basement.SetTileModelAt(exchange, GameTiles.FLOOR_CONCRETE);
+          goto restart;  
+        }
+        // silently fail
+        candidates.Remove(test);
+      }
 #if FAIL
       HashSet<Point> tainted = Session.Get.PoliceInvestigate.In(basement);
       // 0<tainted.Count by construction
@@ -2413,18 +2451,21 @@ restart:
       AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP, true);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
-        Session.Get.PoliceInvestigate.Record(basement,pt);
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
         if (GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) return; // already wall
         // We are iterating all rows Y in each column X
         // XXX so if we end up disconnecting we find out vertically
         // basement.Rect.Top and basement.Rect.Left are hardcoded 0
         // coordinates 0, width-1, height-1 are already brick walls
-        Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
         basement.SetTileModelAt(pt, GameTiles.WALL_BRICK);
       }));
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
+      // set up police investigation after floor layout is stable
+      basement.Rect.DoForEach(pt => {
+          if (!basement.GetTileModelAt(pt).IsWalkable) return;
+          Session.Get.PoliceInvestigate.Record(basement, pt);
+      });
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
