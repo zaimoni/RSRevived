@@ -2162,12 +2162,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
-	  if (other.Location.Map == m_Actor.Location.Map) {
-        if (   CanSee(other.Location)
-            && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
-            && null != m_Actor.MinStepPathTo(m_Actor.Location, other.Location))
-            return new ActionWait(m_Actor);
-	  }
+      if (   CanSee(other.Location)
+          && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
+          && null != m_Actor.MinStepPathTo(m_Actor.Location, other.Location))
+          return new ActionWait(m_Actor);
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
       if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
