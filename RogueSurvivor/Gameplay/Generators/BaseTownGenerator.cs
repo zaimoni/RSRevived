@@ -3444,30 +3444,26 @@ restart:
             case 4: return GameItems.COMBAT_KNIFE.create();
 #if DEBUG
             case 5: return MakeItemPillsAntiviral();
-            default: throw new ArgumentOutOfRangeException("unhandled roll");
+            default: throw new InvalidProgramException("unhandled roll");
 #else
             default: return MakeItemPillsAntiviral();
 #endif
           }
         }
-    
-        switch (roller.Roll(0, 10)) {
-          case 0: return MakeRandomShopItem(ShopType.CONSTRUCTION);
-          case 1: return MakeRandomShopItem(ShopType.GENERAL_STORE);
-          case 2: return MakeRandomShopItem(ShopType.GROCERY);
-          case 3: return MakeRandomShopItem(ShopType.GUNSHOP);
-          case 4: return MakeRandomShopItem(ShopType.PHARMACY);
-          case 5: return MakeRandomShopItem(ShopType.SPORTSWEAR);
-          case 6: return MakeRandomShopItem(ShopType.HUNTING);
-          case 7: return MakeRandomParkItem();
-          case 8: return MakeRandomBedroomItem();
-#if DEBUG
-          case 9: return MakeRandomKitchenItem();
-          default: throw new ArgumentOutOfRangeException("unhandled roll");
+
+        int choice = roller.Roll(0, (int)ShopType._COUNT + 3);
+        switch (choice) {
+          case (int)ShopType._COUNT: return MakeRandomParkItem();
+          case (int)ShopType._COUNT + 1: return MakeRandomBedroomItem();
+          case (int)ShopType._COUNT + 2: return MakeRandomKitchenItem();
+#if DEBUG 
+          default:
+            if ((int)ShopType._COUNT > choice) return MakeRandomShopItem((ShopType)choice);
+            throw new InvalidProgramException("unhandled roll");
 #else
-          default: return MakeRandomKitchenItem();
+          default: return MakeRandomShopItem((ShopType)choice);
 #endif
-        }
+         }
       };
 
       actor.Inventory.AddAll(equip_this());
@@ -3896,7 +3892,7 @@ restart:
       CONSTRUCTION = 4,
       GUNSHOP = 5,
       HUNTING = 6,
-      _COUNT = 7,
+      _COUNT    // auto-define to force correctness
     }
 
     protected enum CHARBuildingType : byte
