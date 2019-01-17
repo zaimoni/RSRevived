@@ -818,7 +818,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorUseExit(BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = m_Actor.Location.Exit;
-      if (!exitAt?.IsAnAIExit ?? true) return null;
+      if (null == exitAt) return null;
       if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       string reason = exitAt.ReasonIsBlocked(m_Actor);
       if (string.IsNullOrEmpty(reason)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);

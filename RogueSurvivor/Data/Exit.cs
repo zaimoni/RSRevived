@@ -15,22 +15,16 @@ namespace djack.RogueSurvivor.Data
   internal class Exit
   {
     private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
-    public readonly bool IsAnAIExit;
 
     public Map ToMap { get { return m_Location.Map; } }
     public Location Location { get { return m_Location; } }
 
-    public Exit(Map toMap, Point toPosition, bool AIexit=false)
+    public Exit(Map toMap, Point toPosition)
     {
 #if DEBUG
       if (null == toMap) throw new ArgumentNullException(nameof(toMap));
 #endif
       m_Location = new Location(toMap,toPosition);
-#if XDISTRICT_PATHING
-	  IsAnAIExit = true;
-#else
-	  IsAnAIExit = AIexit;
-#endif
     }
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however

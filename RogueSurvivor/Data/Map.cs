@@ -64,8 +64,6 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
     [NonSerialized]
-    public readonly Dataflow<Map,Point,Exit> AI_exits;
-    [NonSerialized]
     public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
     // this is going to want an end-of-turn map updater
     [NonSerialized]
@@ -129,8 +127,6 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList());
     }
 
-    private static Dictionary<Point,Exit> _FindAIexits(Map m) { return m.GetExits(exit => exit.IsAnAIExit); }
-
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
 #if DEBUG
@@ -153,8 +149,7 @@ namespace djack.RogueSurvivor.Data
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList, _countUndead); // XXX ... could eliminate this by rewriting end-of-turn event simulation
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
-      AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
-      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       pathing_exits_to_goals.Now(LocalTime.TurnCounter);
     }
 
@@ -185,8 +180,7 @@ namespace djack.RogueSurvivor.Data
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList,_countUndead);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
-      AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
-      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       ReconstructAuxiliaryFields();
       pathing_exits_to_goals.Now(LocalTime.TurnCounter);
     }
@@ -822,7 +816,7 @@ namespace djack.RogueSurvivor.Data
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
     { // disallow secret maps
 	  // should be at least one by construction
-	  exits = new HashSet<Exit>(AI_exits.Get.Values.Where(e => string.IsNullOrEmpty(e.ReasonIsBlocked())));
+	  exits = new HashSet<Exit>(m_Exits.Values.Where(e => string.IsNullOrEmpty(e.ReasonIsBlocked())));
 	  var exit_maps = new HashSet<Map>(destination_maps.Get);
       if (1>=exit_maps.Count) return exit_maps;
 retry:

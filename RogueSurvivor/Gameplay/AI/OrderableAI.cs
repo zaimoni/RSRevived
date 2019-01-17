@@ -3389,8 +3389,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return navigate;
       }
 
-      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
-      valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit => {  // simulate Exit::ReasonIsBlocked
 #if DEBUG
         int blocked = exit.Location.IsBlockedForPathing;
         switch(blocked)

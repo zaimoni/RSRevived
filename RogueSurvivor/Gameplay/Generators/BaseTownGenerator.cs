@@ -358,8 +358,8 @@ restart:
           if (sewers.HasAnyAdjacentInMap(pt, p => sewers.HasExitAt(p))) continue;
           if (surface.HasAnyAdjacentInMap(pt, p => surface.HasExitAt(p))) continue;
           if (1<candidates.Count && !m_DiceRoller.RollChance(3)) continue;
-          AddExit(sewers, pt, surface, pt, GameImages.DECO_SEWER_LADDER, true);
-          AddExit(surface, pt, sewers, pt, GameImages.DECO_SEWER_HOLE, true);
+          AddExit(sewers, pt, surface, pt, GameImages.DECO_SEWER_LADDER);
+          AddExit(surface, pt, sewers, pt, GameImages.DECO_SEWER_HOLE);
           ++countLinks;
         }
       }
@@ -1012,8 +1012,8 @@ restart:
         Point basementCorner = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
         Point shopCorner = new Point(basementCorner.X - 1 + rectangle.Left, basementCorner.Y - 1 + rectangle.Top);
-        AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP, true);
-        AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN, true);
+        AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP);
+        AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN);
 
         if (!map.HasMapObjectAt(shopCorner)) map.RemoveMapObjectAt(shopCorner);
 
@@ -1686,7 +1686,7 @@ restart:
 
       PlaceDoor(map, doorAt, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
-      AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER), true);
+      AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER));
       if (!isSurface) {
         Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
@@ -1784,7 +1784,7 @@ restart:
       }
       for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
-        AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP), true);
+        AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP));
       }
       if (!isSurface) {
         Point p = doorAt;
@@ -2165,9 +2165,9 @@ restart:
     private Item MakeShopConstructionItem()
     {
 #if DEBUG
-      if (56 != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
+      if (48 != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ construction_shop_stock.Sum(x => x.Value));
 #endif
-      var ret = construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 56)).create();
+      var ret = construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 48)).create();
       // would need a version of the create call w/RNG parameter to fold it in (global instance isn't what is wanted here)
      switch(ret.Model.ID)
       {
@@ -2446,8 +2446,8 @@ restart:
       buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt));
       Point point = m_DiceRoller.Choose(candidates);
       Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
-      AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP, true);
+      AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
@@ -2571,8 +2571,8 @@ restart:
         surfaceMap.PlaceAt(doorWindow, pt);
       });
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
-      AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP, true);
-      AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP);
+      AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN);
       underground.ForEachAdjacent(point2, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
@@ -2770,10 +2770,10 @@ restart:
       Map officesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
       officesLevel.BgMusic = jailsLevel.BgMusic = GameMusics.SURFACE;   // alpha10 music
-      AddExit(map, stairsToLevel1, officesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(officesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP, true);
-      AddExit(officesLevel, new Point(1, officesLevel.Height - 2), jailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(jailsLevel, new Point(1, 1), officesLevel, new Point(1, officesLevel.Height - 2), GameImages.DECO_STAIRS_UP, true);
+      AddExit(map, stairsToLevel1, officesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN);
+      AddExit(officesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP);
+      AddExit(officesLevel, new Point(1, officesLevel.Height - 2), jailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN);
+      AddExit(jailsLevel, new Point(1, 1), officesLevel, new Point(1, officesLevel.Height - 2), GameImages.DECO_STAIRS_UP);
       m_Params.District.AddUniqueMap(officesLevel);
       m_Params.District.AddUniqueMap(jailsLevel);
       Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(officesLevel);
@@ -3102,28 +3102,28 @@ restart:
 
       Point entryStairs = new Point(hospitalBlock.InsideRect.Left + hospitalBlock.InsideRect.Width / 2, hospitalBlock.InsideRect.Top);
       Point admissionsUpStairs = new Point(admissions.Width / 2, 1);
-      AddExit(map, entryStairs, admissions, admissionsUpStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(admissions, admissionsUpStairs, map, entryStairs, GameImages.DECO_STAIRS_UP, true);
+      AddExit(map, entryStairs, admissions, admissionsUpStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(admissions, admissionsUpStairs, map, entryStairs, GameImages.DECO_STAIRS_UP);
 
       Point admissionsDownStairs = new Point(admissions.Width / 2, admissions.Height - 2);
       Point officesUpStairs = new Point(offices.Width / 2, 1);
-      AddExit(admissions, admissionsDownStairs, offices, officesUpStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(offices, officesUpStairs, admissions, admissionsDownStairs, GameImages.DECO_STAIRS_UP, true);
+      AddExit(admissions, admissionsDownStairs, offices, officesUpStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(offices, officesUpStairs, admissions, admissionsDownStairs, GameImages.DECO_STAIRS_UP);
 
       Point officesDownStairs = new Point(offices.Width / 2, offices.Height - 2);
       Point patientsUpStairs = new Point(patients.Width / 2, 1);
-      AddExit(offices, officesDownStairs, patients, patientsUpStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(patients, patientsUpStairs, offices, officesDownStairs, GameImages.DECO_STAIRS_UP, true);
+      AddExit(offices, officesDownStairs, patients, patientsUpStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(patients, patientsUpStairs, offices, officesDownStairs, GameImages.DECO_STAIRS_UP);
 
       Point patientsDownStairs = new Point(patients.Width / 2, patients.Height - 2);
       Point storageUpStairs = new Point(1, 1);
-      AddExit(patients, patientsDownStairs, storage, storageUpStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(storage, storageUpStairs, patients, patientsDownStairs, GameImages.DECO_STAIRS_UP, true);
+      AddExit(patients, patientsDownStairs, storage, storageUpStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(storage, storageUpStairs, patients, patientsDownStairs, GameImages.DECO_STAIRS_UP);
 
       Point storageDownStairs = new Point(storage.Width - 2, 1);
       Point powerUpStairs = new Point(1, 1);
-      AddExit(storage, storageDownStairs, power, powerUpStairs, GameImages.DECO_STAIRS_DOWN, true);
-      AddExit(power, powerUpStairs, storage, storageDownStairs, GameImages.DECO_STAIRS_UP, true);
+      AddExit(storage, storageDownStairs, power, powerUpStairs, GameImages.DECO_STAIRS_DOWN);
+      AddExit(power, powerUpStairs, storage, storageDownStairs, GameImages.DECO_STAIRS_UP);
 
       m_Params.District.AddUniqueMap(admissions);
       m_Params.District.AddUniqueMap(offices);
@@ -3707,9 +3707,9 @@ restart:
       return numberedName;
     }
 
-    static private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID, bool isAnAIExit)
+    static private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID)
     {
-      from.SetExitAt(fromPosition, new Exit(to, toPosition, isAnAIExit));
+      from.SetExitAt(fromPosition, new Exit(to, toPosition));
       from.AddDecorationAt(exitImageID, fromPosition);
     }
 
