@@ -2461,9 +2461,11 @@ restart:
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
       // set up police investigation after floor layout is stable
+      var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key.ID));  // XXX \todo could be done early but only needed during world generation
       basement.Rect.DoForEach(pt => {
           if (!basement.GetTileModelAt(pt).IsWalkable) return;
           Session.Get.PoliceInvestigate.Record(basement, pt);
+          Session.Get.PoliceItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
       });
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
