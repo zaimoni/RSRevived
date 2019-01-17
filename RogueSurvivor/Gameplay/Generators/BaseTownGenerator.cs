@@ -679,29 +679,29 @@ restart:
       void lay_NW_SE_rail(Point pt)
       {
         if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW_WALL_W);
-        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SENW_WALL_E);
-        foreach (int delta in Enumerable.Range(1, height)) {
+        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+height, GameTiles.RAIL_SENW_WALL_E);
+        foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
           if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW);
         }
       }
       void lay_NE_SW_rail(Point pt)
       {
-        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE_WALL_W);
-        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+4, GameTiles.RAIL_SWNE_WALL_E);
-        foreach (int delta in Enumerable.Range(1, height)) {
+        if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE_WALL_E);
+        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+height, GameTiles.RAIL_SWNE_WALL_W);
+        foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
           if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);
         }
       }
       if (!have_NS && !have_EW) {
-        if (geometry.ContainsLineSegment(N_E)) {
-          for (int y = 0; subway.Width > rail.X + y; y++) lay_NE_SW_rail(new Point(rail.X+y,y));
-        } else if (geometry.ContainsLineSegment(S_W)) {
-          for (int y = 0; -height <= rail.X - 1 - y; y++) lay_NE_SW_rail(new Point(rail.X-1-y, subway.Height - 1 - y));
-        } else if (geometry.ContainsLineSegment(N_W)) {
-          for (int y = 0; -height <= rail.X - 1 - y; y++) lay_NW_SE_rail(new Point(rail.X-1-y,y));
-        } else if (geometry.ContainsLineSegment(S_E)) {
+        if (geometry.ContainsLineSegment(N_E)) {	// N ok; E two too high i.e. wanted rail.Y as rail.Y-2
+          for (int x = rail.X; x < subway.Width; x++) lay_NE_SW_rail(new Point(x,x-rail.X-height));
+        } else if (geometry.ContainsLineSegment(S_W)) {	// W ok; slope 2 short of S endpoint i.e. wanted rail.Y as rail.Y-2
+          for (int x = 0; subway.Height > rail.Y+x; x++) lay_NE_SW_rail(new Point(x, rail.Y + x));
+        } else if (geometry.ContainsLineSegment(N_W)) {	// ok (rail.X==rail.Y as constructed)
+          for (int x = 0; x <= rail.X - 1 +height; x++) lay_NW_SE_rail(new Point(x, rail.Y - 1 - x));
+        } else if (geometry.ContainsLineSegment(S_E)) {	// ok (rail.X==rail.Y as constructed)
           for (int y = 0; subway.Width > rail.X + y; y++) lay_NW_SE_rail(new Point(rail.X+y,subway.Height-1-y));
         }
       }
@@ -766,7 +766,6 @@ restart:
           subway.PlaceAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         });
-        DoForEachTile(rect, (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
         break;
       }
 #endregion

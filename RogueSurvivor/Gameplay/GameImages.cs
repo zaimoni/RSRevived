@@ -879,10 +879,10 @@ namespace djack.RogueSurvivor.Gameplay
 #endif
       // \todo 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);
-      TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SWNE,TILE_WALL_STONE);
-      BRTLSplice(TILE_RAIL_SWNE_WALL_W,TILE_WALL_STONE,TILE_RAIL_SWNE);
-      BLTRSplice(TILE_RAIL_SENW_WALL_E,TILE_RAIL_SENW,TILE_WALL_STONE);
-      TRBLSplice(TILE_RAIL_SENW_WALL_W,TILE_WALL_STONE,TILE_RAIL_SENW);
+      TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SWNE, TILE_WALL_BRICK);
+      BRTLSplice(TILE_RAIL_SWNE_WALL_W, TILE_WALL_BRICK, TILE_RAIL_SWNE);
+      BLTRSplice(TILE_RAIL_SENW_WALL_E,TILE_RAIL_SENW, TILE_WALL_BRICK);
+      TRBLSplice(TILE_RAIL_SENW_WALL_W, TILE_WALL_BRICK, TILE_RAIL_SENW);
       RotateTile(TILE_ROAD_ASPHALT_NS, TILE_ROAD_ASPHALT_EW);
       RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       Notify(ui, "done!");
@@ -994,13 +994,13 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void BLTRSplice(string id, string lhs, string rhs)
     {
-      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftInclusive);
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopRightInclusive);
       s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopRightInclusive);
     }
 
     private static void TRBLSplice(string id, string lhs, string rhs)
     {
-      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopLeftExclusive);
+      s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopRightExclusive);
       s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopRightExclusive);
     }
 
