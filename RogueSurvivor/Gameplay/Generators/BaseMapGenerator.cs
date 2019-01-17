@@ -675,20 +675,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemTrap(GameItems.BEAR_TRAP);
     }
 
-    public ItemTrap MakeItemSpikes()
-    {
-      return new ItemTrap(GameItems.SPIKES) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit)  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
-      };
-    }
-
-    public ItemTrap MakeItemBarbedWire()
-    {
-      return new ItemTrap(GameItems.BARBED_WIRE) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit)
-      };
-    }
-
     static public ItemEntertainment MakeItemBook()
     {
       return new ItemEntertainment(GameItems.BOOK);

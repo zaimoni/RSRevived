@@ -2148,39 +2148,39 @@ restart:
       return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
     }
 
+    // original was 1..24 in groups of 3, with some 50-50 splits
+    private readonly KeyValuePair<ItemModel, int>[] construction_shop_stock = {
+        new KeyValuePair<ItemModel,int>(GameItems.SHOVEL,3),
+        new KeyValuePair<ItemModel,int>(GameItems.SHORT_SHOVEL,3),
+        new KeyValuePair<ItemModel,int>(GameItems.CROWBAR,6),
+        new KeyValuePair<ItemModel,int>(GameItems.HUGE_HAMMER,3),
+        new KeyValuePair<ItemModel,int>(GameItems.SMALL_HAMMER,3),
+        new KeyValuePair<ItemModel,int>(GameItems.WOODENPLANK,6),
+        new KeyValuePair<ItemModel,int>(GameItems.FLASHLIGHT,6),
+        new KeyValuePair<ItemModel,int>(GameItems.BIG_FLASHLIGHT,6),
+        new KeyValuePair<ItemModel,int>(GameItems.SPIKES,6),
+        new KeyValuePair<ItemModel,int>(GameItems.BARBED_WIRE,6)
+    };
+
     private Item MakeShopConstructionItem()
     {
-      switch (m_DiceRoller.Roll(0, 24)) {
-        case 0:
-        case 1:
-        case 2: return (m_DiceRoller.RollChance(50) ? GameItems.SHOVEL : GameItems.SHORT_SHOVEL).create();
-        case 3:
-        case 4:
-        case 5: return MakeItemCrowbar();
-        case 6:
-        case 7:
-        case 8: return (m_DiceRoller.RollChance(50) ? GameItems.HUGE_HAMMER : GameItems.SMALL_HAMMER).create();
-        case 9:
-        case 10:
-        case 11: return GameItems.WOODENPLANK.create();
-        case 12:
-        case 13:
-        case 14: return GameItems.FLASHLIGHT.create();
-        case 15:
-        case 16:
-        case 17: return GameItems.BIG_FLASHLIGHT.create();
-        case 18:
-        case 19:
-        case 20: return MakeItemSpikes();
 #if DEBUG
-        case 21:
-        case 22:
-        case 23: return MakeItemBarbedWire();
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return MakeItemBarbedWire();
+      if (56 != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
+      var ret = construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 56)).create();
+      // would need a version of the create call w/RNG parameter to fold it in (global instance isn't what is wanted here)
+     switch(ret.Model.ID)
+      {
+      case GameItems.IDs.TRAP_SPIKES:
+        ret.Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit);  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
+        break;
+      //
+      case GameItems.IDs.TRAP_BARBED_WIRE:
+      case GameItems.IDs.MELEE_CROWBAR:
+        ret.Quantity = m_DiceRoller.Roll(1, ret.Model.StackingLimit);
+        break;
       }
+      return ret;      
     }
 
     private Item MakeShopGunshopItem()
