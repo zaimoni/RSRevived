@@ -2149,17 +2149,17 @@ restart:
     }
 
     // original was 1..24 in groups of 3, with some 50-50 splits
-    private readonly KeyValuePair<ItemModel, int>[] construction_shop_stock = {
-        new KeyValuePair<ItemModel,int>(GameItems.SHOVEL,3),
-        new KeyValuePair<ItemModel,int>(GameItems.SHORT_SHOVEL,3),
-        new KeyValuePair<ItemModel,int>(GameItems.CROWBAR,6),
-        new KeyValuePair<ItemModel,int>(GameItems.HUGE_HAMMER,3),
-        new KeyValuePair<ItemModel,int>(GameItems.SMALL_HAMMER,3),
-        new KeyValuePair<ItemModel,int>(GameItems.WOODENPLANK,6),
-        new KeyValuePair<ItemModel,int>(GameItems.FLASHLIGHT,6),
-        new KeyValuePair<ItemModel,int>(GameItems.BIG_FLASHLIGHT,6),
-        new KeyValuePair<ItemModel,int>(GameItems.SPIKES,6),
-        new KeyValuePair<ItemModel,int>(GameItems.BARBED_WIRE,6)
+    private readonly KeyValuePair<GameItems.IDs, int>[] construction_shop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHOVEL,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHORT_SHOVEL,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_CROWBAR,6),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_HUGE_HAMMER,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SMALL_HAMMER,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.BAR_WOODEN_PLANK,6),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,6),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_BIG_FLASHLIGHT,6),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_SPIKES,6),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_BARBED_WIRE,6)
     };
 
     private Item MakeShopConstructionItem()
@@ -2167,7 +2167,7 @@ restart:
 #if DEBUG
       if (48 != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ construction_shop_stock.Sum(x => x.Value));
 #endif
-      var ret = construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 48)).create();
+      var ret = Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 48))].create();
       // would need a version of the create call w/RNG parameter to fold it in (global instance isn't what is wanted here)
      switch(ret.Model.ID)
       {
@@ -2461,7 +2461,7 @@ restart:
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
       // set up police investigation after floor layout is stable
-      var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key.ID));  // XXX \todo could be done early but only needed during world generation
+      var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
       basement.Rect.DoForEach(pt => {
           if (!basement.GetTileModelAt(pt).IsWalkable) return;
           Session.Get.PoliceInvestigate.Record(basement, pt);
