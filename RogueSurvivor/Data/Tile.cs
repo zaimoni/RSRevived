@@ -11,11 +11,11 @@ namespace djack.RogueSurvivor.Data
 {
   internal class Tile
   {
-    private readonly int m_ModelID; // \todo savefile break: convert to public readonly int
+    public readonly byte ID;
     private Flags m_Flags;
     private Location m_Location;
 
-    public TileModel Model { get { return Models.Tiles[m_ModelID]; } }
+    public TileModel Model { get { return Models.Tiles[ID]; } }
 
     public bool IsInside {
       get {
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0>modelID || 255<modelID) throw new InvalidOperationException("0 > modelID || 255 < modelID");
 #endif
-      m_ModelID = (byte)modelID;
+      ID = (byte)modelID;
       IsInside = inside;
       m_Location = loc;
     }
