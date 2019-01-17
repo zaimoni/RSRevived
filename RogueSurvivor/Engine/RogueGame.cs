@@ -11883,7 +11883,9 @@ namespace djack.RogueSurvivor.Engine
             default: break; // intentionally do not handle all commands
           }
           if (null == tmp) continue;
-          if (!Player.Controller.IsKnown(tmp.Value)) continue;    // XXX probably should have some feedback here
+          if (    !Player.Controller.IsKnown(tmp.Value)                             // disallow not-known
+              && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.District!=tmp.Value.Map.District))    // but ok if same-district different map i.e. stairway
+              continue;    // XXX probably should have some feedback here
           viewpoint = tmp.Value;
           PanViewportTo(viewpoint);
         }
