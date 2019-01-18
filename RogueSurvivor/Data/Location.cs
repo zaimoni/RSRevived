@@ -101,6 +101,36 @@ namespace djack.RogueSurvivor.Data
       return decay;
     }
 
+    public Rectangle RadioDistricts {
+      get {
+        Rectangle ret = new Rectangle(Map.District.WorldPosition,new Size(1,1));
+        if (Map != Map.District.EntryMap) return ret;  // RS behavior
+        const int radius = Engine.RogueGame.MINIMAP_RADIUS+100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
+        Point topleft = new Point(Position.X-radius,Position.Y-radius);
+        while(0>topleft.X && 0<ret.Left) {
+          topleft.X += Engine.RogueGame.Options.DistrictSize;
+          --ret.X;
+          ++ret.Width;
+        }
+        while(0>topleft.Y && 0<ret.Top) {
+          topleft.Y += Engine.RogueGame.Options.DistrictSize;
+          --ret.Y;
+          ++ret.Height;
+        }
+        Point bottomright = new Point(Position.X+radius,Position.Y+radius);
+        while(Engine.RogueGame.Options.DistrictSize <= bottomright.X) {
+          bottomright.X -= Engine.RogueGame.Options.DistrictSize;
+          ++ret.Width;
+        }
+        while(Engine.RogueGame.Options.DistrictSize <= bottomright.Y) {
+          bottomright.Y -= Engine.RogueGame.Options.DistrictSize;
+          ++ret.Height;
+        }
+        Engine.Session.Get.World.TrimToBounds(ref ret);
+        return ret;
+      }
+    }
+
     public override int GetHashCode()
     {
       return m_Map.GetHashCode() ^ m_Position.GetHashCode();

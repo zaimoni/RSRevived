@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Data
     private int m_JumpLevel;
     public readonly byte Weight; // Weight is positive if and only if the object is movable
     private Break m_BreakState;
-    private readonly int m_MaxHitPoints;
+    public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
     private Location m_Location;
@@ -145,12 +145,6 @@ namespace djack.RogueSurvivor.Data
       }
       set {
         m_HitPoints = value;
-      }
-    }
-
-    public int MaxHitPoints {   // \todo SAVEFILE BREAK: convert to readonly
-      get {
-        return m_MaxHitPoints;
       }
     }
 
@@ -395,7 +389,7 @@ namespace djack.RogueSurvivor.Data
       _InitModel();
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
-      m_HitPoints = m_MaxHitPoints = hitPoints;
+      m_HitPoints = MaxHitPoints = hitPoints;
     }
 
     private void _InitModel()

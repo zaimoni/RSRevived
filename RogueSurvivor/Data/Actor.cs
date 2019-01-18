@@ -1218,7 +1218,10 @@ namespace djack.RogueSurvivor.Data
       if (police_radio && army_radio) throw new InvalidOperationException("need to implement dual police and army radio case");
 #endif
       if (null == origin) origin = Location;
-      foreach (Map map in origin.Value.Map.District.Maps) {
+
+      var radio_location = Rules.PoliceRadioLocation(origin.Value);
+      var radio_range = radio_location.RadioDistricts;
+      Engine.Session.Get.World.DoForAllMaps(map => {
         foreach (Actor actor in map.Actors) {
           if (this == actor) continue;
           // XXX defer implementing dual radios
@@ -1228,6 +1231,8 @@ namespace djack.RogueSurvivor.Data
             if (!actor.HasActiveArmyRadio) continue;
           }
           if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
+          var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
+          if (Engine.RogueGame.MINIMAP_RADIUS < Rules.GridDistance(radio_location,dest_radio_location)) continue;
 
           if (actor.IsPlayer && msg_player_test(actor)) {
             RogueForm.Game.PanViewportTo(actor);
@@ -1239,7 +1244,7 @@ namespace djack.RogueSurvivor.Data
           // reporting z: civilian can initiate and respond (but threat tracking needed to respond)
           if (test(actor)) op(actor);
         }
-      }
+        },d => radio_range.Contains(d.WorldPosition));
     }
 
     public Actor Sees(Actor a)

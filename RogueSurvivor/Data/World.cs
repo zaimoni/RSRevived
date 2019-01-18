@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 #endif
 using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
@@ -124,12 +125,13 @@ namespace djack.RogueSurvivor.Data
       foreach(District d in m_DistrictsGrid) op(d);
     }
 
-    public void DoForAllMaps(Action<Map> op)
+    public void DoForAllMaps(Action<Map> op,Predicate<District> ok=null)
     {
 #if DEBUG
       if (null == op) throw new ArgumentNullException(nameof(op));
 #endif
       foreach(District d in m_DistrictsGrid) {
+        if (null != ok && !ok(d)) continue;
         foreach(Map m in d.Maps) op(m);
       }
     }
@@ -617,6 +619,27 @@ restart:
       else if (x >= m_Size) x = m_Size - 1;
       if (y < 0) y = 0;
       else if (y >= m_Size) y = m_Size - 1;
+    }
+
+    public void TrimToBounds(ref Rectangle src)
+    {
+      var test = src.Left;
+      if (0>test) {
+        src.Width += test;
+        src.X = 0;
+      }
+
+      test = src.Right;
+      if (Size < test) src.Width -= (test-Size);
+
+      test = src.Top;
+      if (0>test) {
+        src.Height += test;
+        src.Y = 0;
+      }
+
+      test = src.Bottom;
+      if (Size < test) src.Width -= (test-Size);
     }
 
     public static string CoordToString(int x, int y)
