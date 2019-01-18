@@ -107,9 +107,9 @@ namespace djack.RogueSurvivor.Data
     private int m_LastActionTurn;
     private Actor m_TargetActor;
     private int m_AudioRangeMod;
-    private Attack m_CurrentMeleeAttack;
-    private Attack m_CurrentRangedAttack;
-    private Defence m_CurrentDefence;
+    private Attack m_CurrentMeleeAttack;    // dataflow candidate
+    private Attack m_CurrentRangedAttack;    // dataflow candidate
+    private Defence m_CurrentDefence;    // dataflow candidate
     private Actor m_Leader;
     private List<Actor> m_Followers;
     private int m_TrustInLeader;
@@ -117,10 +117,10 @@ namespace djack.RogueSurvivor.Data
     private int m_KillsCount;
     private List<Actor> m_AggressorOf;
     private List<Actor> m_SelfDefenceFrom;
-    private int m_MurdersCounter;
+    private int m_MurdersCounter;   // sparse field
     private int m_Infection;
-    private Corpse m_DraggedCorpse;
-    public int OdorSuppressorCounter;   // XXX sparse field so possible candidate for a setter/getter backed by Dictionary<Actor,int>
+    private Corpse m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
+    public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
 
     public ActorModel Model
@@ -561,7 +561,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("Cop Isaac Brown"==Name) return true;
         return false;
       }
     }
