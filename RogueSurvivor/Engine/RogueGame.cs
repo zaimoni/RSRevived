@@ -9875,10 +9875,11 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (killer != null && isMurder) {
-        ++killer.MurdersCounter;
+        killer.HasMurdered(deadGuy);
         killer.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
         if (IsVisibleToPlayer(killer))
           AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
+        // XXX \todo: convert this to a proper scan for "all who can see"
         Map map = killer.Location.Map;
         Point position = killer.Location.Position;
         foreach (Actor actor in map.Actors) {

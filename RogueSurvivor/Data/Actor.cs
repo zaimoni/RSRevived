@@ -532,12 +532,15 @@ namespace djack.RogueSurvivor.Data
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int planning_to_murder = 0;
-        if (IsHungry) planning_to_murder = m_AggressorOf?.Count(a=> null != a?.Inventory.GetItemsByType<ItemFood>()) ?? 0;
+        if (IsHungry && !Model.Abilities.IsLawEnforcer) planning_to_murder = m_AggressorOf?.Count(a=> null != a?.Inventory.GetItemsByType<ItemFood>()) ?? 0;
         return m_MurdersCounter+planning_to_murder;
       }
-      set { // nominates chunk of RogueGame::KillActor as member function
-        m_MurdersCounter = value;
-      }
+    }
+
+    public void HasMurdered(Actor victim)
+    {
+        ++m_MurdersCounter; // bypasses hungry civilian adjustment
+        ActorScoring.AddEvent(Engine.Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", victim.TheName, victim.Model.Name));
     }
 
     public int Infection { get { return m_Infection; } }
