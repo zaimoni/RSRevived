@@ -1026,8 +1026,8 @@ retry:
 
     public Actor GetActorAt(Point position)
     {
-      if (m_aux_ActorsByPosition.TryGetValue(position, out Actor actor)) return actor;
-      return null;
+      m_aux_ActorsByPosition.TryGetValue(position, out Actor actor);
+      return actor;
     }
 
     public Actor GetActorAt(int x, int y)

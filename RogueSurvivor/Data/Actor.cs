@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data
     private Attack m_CurrentMeleeAttack;    // dataflow candidate
     private Attack m_CurrentRangedAttack;    // dataflow candidate
     private Defence m_CurrentDefence;    // dataflow candidate
-    private Actor m_Leader;
+    private Actor m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
     private List<Actor> m_Followers;
     private int m_TrustInLeader;
     private Dictionary<Actor,int> m_TrustDict;
