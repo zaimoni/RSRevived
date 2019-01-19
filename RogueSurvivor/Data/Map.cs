@@ -618,13 +618,8 @@ namespace djack.RogueSurvivor.Data
 
     public Exit GetExitAt(Point pos)
     {
-#if PROFILE_SLOW
-      if (m_Exits.TryGetValue(pos, out Exit exit)) return exit;
-      return null;
-#else
       m_Exits.TryGetValue(pos, out Exit exit);
       return exit;
-#endif
      }
 
      public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }

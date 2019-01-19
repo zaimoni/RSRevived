@@ -914,6 +914,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
+#if DEAD_FUNC
     private Dictionary<Map, HashSet<Point>> RadixSortLocations(IEnumerable<Location> goals)
     {
       var map_goals = new Dictionary<Map,HashSet<Point>>();
@@ -924,6 +925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return map_goals;
     }
+#endif
 
     private Dictionary<Map, Dictionary<Point,int>> RadixSortLocations(Dictionary<Location,int> goals)
     {

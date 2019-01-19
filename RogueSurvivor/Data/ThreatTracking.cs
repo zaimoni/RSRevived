@@ -365,9 +365,8 @@ namespace djack.RogueSurvivor.Data
             view.Height = new_height;
           };
 		  lock(_locs) {
-            var tmp = new HashSet<Point>();
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
-            tmp.UnionWith(tmp2);    // want a value copy here
+            var tmp = new HashSet<Point>(tmp2); // want a value copy here
 #if PROTOTYPE
             tmp.RemoveWhere(pt => !view.Contains(pt));
             if (tmp.Any(pt => !view.Contains(pt))) throw new InvalidOperationException("trace");
