@@ -2445,11 +2445,7 @@ namespace djack.RogueSurvivor.Data
       m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
 
-    public bool IsDisturbed {
-      get {
-        return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this);
-      }
-    }
+    public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this); } }
 
     public int HoursUntilUnstable {
       get {
@@ -2460,37 +2456,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     // hunger
-    public bool IsHungry {
-      get {
-        if (Model.Abilities.HasToEat) return FOOD_HUNGRY_LEVEL >= m_FoodPoints;
-        return false;
-      }
-    }
-
-#if PROFILE_SLOW
-    public bool IsStarving {
-      get {
-        if (Model.Abilities.HasToEat) return 0 >= m_FoodPoints;
-        return false;
-      }
-    }
-#else
+    public bool IsHungry { get { return Model.Abilities.HasToEat && FOOD_HUNGRY_LEVEL >= m_FoodPoints; } }
     public bool IsStarving { get { return Model.Abilities.HasToEat && 0 >= m_FoodPoints; } }
-#endif
-
-    public bool IsRotHungry {
-      get {
-        if (Model.Abilities.IsRotting) return ROT_HUNGRY_LEVEL >= m_FoodPoints;
-        return false;
-      }
-    }
-
-    public bool IsRotStarving {
-      get {
-        if (Model.Abilities.IsRotting) return 0 >= m_FoodPoints;
-        return false;
-      }
-    }
+    public bool IsRotHungry { get { return Model.Abilities.IsRotting && ROT_HUNGRY_LEVEL >= m_FoodPoints; } }
+    public bool IsRotStarving { get { return Model.Abilities.IsRotting && 0 >= m_FoodPoints; } }
 
     public int HoursUntilHungry {
       get {
@@ -2499,11 +2468,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsAlmostHungry {
-      get {
-        return Model.Abilities.HasToEat && HoursUntilHungry <= 3;
-      }
-    }
+    public bool IsAlmostHungry { get { return Model.Abilities.HasToEat && HoursUntilHungry <= 3; } }
 
     public int HoursUntilRotHungry {
       get {
@@ -2512,11 +2477,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsAlmostRotHungry  {
-      get {
-        return Model.Abilities.IsRotting && HoursUntilRotHungry <= 3;
-      }
-    }
+    public bool IsAlmostRotHungry  { get { return Model.Abilities.IsRotting && HoursUntilRotHungry <= 3; } }
 
     public int MaxFood {
       get {
