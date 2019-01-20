@@ -355,8 +355,7 @@ namespace djack.RogueSurvivor.Data
       else if (-1==district_delta.X) pt.X += dest.Width;
       if (1==district_delta.Y) pt.Y -= Height;
       else if (-1==district_delta.Y) pt.Y += dest.Height;
-      if (dest.IsInBounds(pt)) return new Location(dest,pt);
-      return dest.Normalize(pt);
+      return dest.IsInBounds(pt) ? new Location(dest, pt) : dest.Normalize(pt);
     }
 
     public Location? Denormalize(Location loc)
