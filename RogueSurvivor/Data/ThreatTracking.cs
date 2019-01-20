@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Data
             view.Width = new_width;
           };
           if (0 > view.Top) {
-            if (0<pos.Y && 0<crossdistrict_ok.Get && 3!= crossdistrict_ok.Get) {
+            if (0<pos.Y && 0<crossdistrict_ok.Get) {
               HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
             }
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Data
           };
           if (map.Height < view.Bottom) {
             int new_height = map.Height-view.Top;
-            if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get && 3 != crossdistrict_ok.Get) {
+            if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get) {
               HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y+1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
             }
