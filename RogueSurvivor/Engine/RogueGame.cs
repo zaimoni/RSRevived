@@ -11392,18 +11392,16 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + (MapViewRect.Left-view.Left) * MINITILE_SIZE, MINIMAP_Y + (MapViewRect.Top-view.Top) * MINITILE_SIZE, MapViewRect.Width * MINITILE_SIZE, MapViewRect.Height * MINITILE_SIZE));
       if (s_Options.ShowPlayerTagsOnMinimap) {
         view.DoForEach(pt => {
-                Tile tileAt = map.GetTileAtExt(pt);
-                string imageID = null;
-                if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG1)) imageID = GameImages.MINI_PLAYER_TAG1;
-                else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG2)) imageID = GameImages.MINI_PLAYER_TAG2;
-                else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG3)) imageID = GameImages.MINI_PLAYER_TAG3;
-                else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG4)) imageID = GameImages.MINI_PLAYER_TAG4;
-                if (imageID != null) {
-                  Point point = new Point(MINIMAP_X + (pt.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (pt.Y - view.Top) * MINITILE_SIZE);
-                  m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
-                }
-            },
-            pt => { return Player.Controller.IsKnown(new Location(map, pt)); });
+            string imageID = null;
+            if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG1, pt)) imageID = GameImages.MINI_PLAYER_TAG1;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, pt)) imageID = GameImages.MINI_PLAYER_TAG2;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, pt)) imageID = GameImages.MINI_PLAYER_TAG3;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG4, pt)) imageID = GameImages.MINI_PLAYER_TAG4;
+            if (imageID != null) {
+              m_UI.UI_DrawImage(imageID, MINIMAP_X + (pt.X - view.Left) * MINITILE_SIZE - 1, MINIMAP_Y + (pt.Y - view.Top) * MINITILE_SIZE - 1);
+            }
+        },
+        pt => { return Player.Controller.IsKnown(new Location(map, pt)); });
       }
       if (!Player.IsSleeping) {
 	    // normal detectors/lights
