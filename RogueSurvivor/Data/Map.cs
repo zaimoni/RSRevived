@@ -1035,8 +1035,7 @@ retry:
 #if NO_PEACE_WALLS
       if (IsInBounds(x,y)) return GetActorAt(new Point(x, y));
       Location? test = Normalize(new Point(x,y));
-      if (null==test) return null;
-      return test.Value.Map.GetActorAt(test.Value.Position);
+      return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
 #else
       return GetActorAt(new Point(x, y));
 #endif
@@ -1047,8 +1046,7 @@ retry:
 #if NO_PEACE_WALLS
       if (IsInBounds(pt)) return GetActorAt(pt);
       Location? test = Normalize(pt);
-      if (null==test) return null;
-      return test.Value.Map.GetActorAt(test.Value.Position);
+      return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
 #else
       return GetActorAt(pt);
 #endif

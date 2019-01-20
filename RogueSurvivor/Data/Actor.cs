@@ -2426,11 +2426,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int MaxSanity {
-      get {
-        return Sheet.BaseSanity;
-      }
-    }
+    public int MaxSanity { get { return Sheet.BaseSanity; } }
 
     public void SpendSanity(int sanCost)
     {
