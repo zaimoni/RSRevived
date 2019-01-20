@@ -118,17 +118,8 @@ namespace djack.RogueSurvivor.Data
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
               tmp.UnionWith(src);
-#if PROTOTYPE
-              tmp.RemoveWhere(pt => !view.Contains(pt));
-#endif
             }
-#if PROTOTYPE
-            if (tmp.Any(pt => !view.Contains(pt))) throw new InvalidOperationException("trace");
-#endif
-//            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
-//            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
-//            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
-//            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
+            if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
             if (0 >= ret.Count) ret = tmp;
             else ret.UnionWith(tmp);
 		  }
