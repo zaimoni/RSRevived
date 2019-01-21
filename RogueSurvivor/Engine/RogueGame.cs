@@ -9905,6 +9905,15 @@ namespace djack.RogueSurvivor.Engine
           if (!a.HasActivePoliceRadio) return false;
           return true;
         });
+#if PROTOTYPE
+        // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
+        // also need to consider background thread to main thread issues
+        killer.MessageAllInDistrictByRadio(a => { }, a => false, a => {
+            int turnCounter = Session.Get.WorldTime.TurnCounter;
+            // possible verbs: killed, terminated, erased, downed, wasted.
+            AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), turnCounter, Color.White));
+        }, a => true);
+#endif
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
