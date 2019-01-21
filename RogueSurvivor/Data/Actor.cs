@@ -512,14 +512,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // aggression statistics, etc.
-    public int KillsCount {
-      get {
-        return m_KillsCount;
-      }
-      set {
-        m_KillsCount = value;
-      }
-    }
+    public int KillsCount { get { return m_KillsCount; } }
 
 #if DEAD_FUNC
     public IEnumerable<Actor> AggressorOf { get { return m_AggressorOf; } }
@@ -3487,6 +3480,13 @@ namespace djack.RogueSurvivor.Data
 
     public static event EventHandler Moving;
     public void Moved() { Moving?.Invoke(this, null); }
+
+    // death-related administrative functions
+    public void RecordKill(Actor victim)
+    {
+      ++m_KillsCount;
+      ActorScoring.AddKill(victim, Engine.Session.Get.WorldTime.TurnCounter);
+    }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)

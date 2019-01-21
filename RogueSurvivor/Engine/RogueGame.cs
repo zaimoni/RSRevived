@@ -9836,10 +9836,7 @@ namespace djack.RogueSurvivor.Engine
       else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);
 #endif
       if (Session.Get.HasCorpses && !deadGuy.Model.Abilities.IsUndead) DropCorpse(deadGuy);
-      if (killer != null) {
-        ++killer.KillsCount;
-        killer.ActorScoring.AddKill(deadGuy, Session.Get.WorldTime.TurnCounter);
-      }
+      killer?.RecordKill(deadGuy);
       if (killer != null && Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
         ActorModel actorModel = CheckUndeadEvolution(killer);
         if (actorModel != null) {
@@ -9876,7 +9873,6 @@ namespace djack.RogueSurvivor.Engine
       }
       if (killer != null && isMurder) {
         killer.HasMurdered(deadGuy);
-        killer.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
         if (IsVisibleToPlayer(killer))
           AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
         // XXX \todo: convert this to a proper scan for "all who can see"
