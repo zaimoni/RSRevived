@@ -11,6 +11,7 @@ using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 using ItemRangedWeaponModel = djack.RogueSurvivor.Engine.Items.ItemRangedWeaponModel;
+using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -246,6 +247,11 @@ namespace djack.RogueSurvivor.Data
       return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
     }
 
+    public void UntriggerAllTraps() {
+      foreach (Item obj in m_Items) {
+        if (obj is ItemTrap trap && trap.IsTriggered) trap.IsTriggered = false;
+      }
+    }
 
     public bool Contains(Item it)
     {

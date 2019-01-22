@@ -7546,7 +7546,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           map.RemoveAt(objList, position);
-          if (canLeave && flag) UntriggerAllTrapsHere(actor.Location);
+          if (canLeave && flag) actor.Location.Items?.UntriggerAllTraps();
         }
       }
       bool visible = ForceVisibleToPlayer(actor);
@@ -7589,15 +7589,6 @@ namespace djack.RogueSurvivor.Engine
       else if (player)
         AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", trap.TheName)));
       return flag;
-    }
-
-    static private void UntriggerAllTrapsHere(Location loc)
-    {
-      Inventory itemsAt = loc.Map.GetItemsAt(loc.Position);
-      if (itemsAt == null) return;
-      foreach (Item obj in itemsAt.Items) {
-        if (obj is ItemTrap trap && trap.IsTriggered) trap.IsTriggered = false;
-      }
     }
 
     private void CheckMapObjectTriggersTraps(Map map, Point pos)
@@ -9751,9 +9742,7 @@ namespace djack.RogueSurvivor.Engine
       // As in RS alpha 9.  Give a very high survival rate to ammo and food for balance, not so high for other items
       // appropriate for zombification and optimistic for explosions and crushing by gates
       default: return (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
-      }
-      // default, from RS Alpha 9
-      ;
+      };
     }
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
@@ -9773,7 +9762,7 @@ namespace djack.RogueSurvivor.Engine
       bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
       DoStopDragCorpse(deadGuy);
-      UntriggerAllTrapsHere(deadGuy.Location);
+      deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
       Actor deadGuy_leader = deadGuy.LiveLeader;
