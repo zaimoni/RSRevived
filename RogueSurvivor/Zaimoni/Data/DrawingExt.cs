@@ -433,6 +433,22 @@ namespace Zaimoni.Data
        return ret;
     }
 
+    // interpreting points to linear arrays
+    public static void convert(this Rectangle rect, Point pt, ref int i)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
+      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
+    }
+
+    public static void convert(this Rectangle rect, int i, ref Point pt)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (0 > i) throw new InvalidOperationException("index not in rectangle");
+      pt.X = i%rect.Width + rect.Left;
+      pt.Y = i/rect.Width + rect.Top;
+    }
+
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
     // the resulting UNICODE string need not be valid as a UNICODE string.  We just need value-comparison of strings to be value-comparison of the hashset it came from.
     public static string Encode(this Rectangle rect, Point pt)

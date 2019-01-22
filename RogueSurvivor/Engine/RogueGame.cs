@@ -10805,6 +10805,11 @@ namespace djack.RogueSurvivor.Engine
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
 
+      // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
+#if PROTOTYPE
+      const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
+#endif
+
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
       HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
       HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
@@ -10831,14 +10836,17 @@ namespace djack.RogueSurvivor.Engine
             tile.IsInView = player;
             tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
-            if (tainted.Contains(point)) {
-              if (tourism.Contains(point)) {
-                m_UI.UI_DrawImage(GameImages.THREAT_AND_TOURISM_OVERLAY, screen.X, screen.Y, tint);
-              } else {
-                m_UI.UI_DrawImage(GameImages.THREAT_OVERLAY, screen.X, screen.Y, tint);
+            // tourism and taint are both cleared by LoS processing
+            if (!player) {
+              if (tainted.Contains(point)) {
+                if (tourism.Contains(point)) {
+                  m_UI.UI_DrawImage(GameImages.THREAT_AND_TOURISM_OVERLAY, screen.X, screen.Y, tint);
+                } else {
+                  m_UI.UI_DrawImage(GameImages.THREAT_OVERLAY, screen.X, screen.Y, tint);
+                }
+              } else if (tourism.Contains(point)) {
+                m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
               }
-            } else if (tourism.Contains(point)) {
-              m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
             }
 #if NO_PEACE_WALLS
 #else
