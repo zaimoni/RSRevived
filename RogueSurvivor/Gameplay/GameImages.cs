@@ -437,6 +437,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string THREAT_OVERLAY = "threat";
     public const string TOURISM_OVERLAY = "tourism";
     public const string THREAT_AND_TOURISM_OVERLAY = "threat_tourism";
+    public const string LINE_OF_FIRE_OVERLAY = "lof";
 
     public static void LoadResources(IRogueUI ui)
     {
@@ -869,6 +870,7 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
       MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
       MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
+      MonochromeTile(LINE_OF_FIRE_OVERLAY, Color.FromArgb(0x32ff7f00));
 #if CGI_ICONS
       // cf competing implementation : RogueGame::OverlayRect class
       MonochromeBorderTile(ITEM_EQUIPPED, Color.FromArgb(0x26,0x80,0), Color.FromArgb(0x4c,0xff,0));    // PNG measured background was a5h ffh 7fh, no easy way to reconcile with screen
@@ -877,7 +879,7 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
-      // \todo 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
+      // 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);
       TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SWNE, TILE_WALL_BRICK);
       BRTLSplice(TILE_RAIL_SWNE_WALL_W, TILE_WALL_BRICK, TILE_RAIL_SWNE);

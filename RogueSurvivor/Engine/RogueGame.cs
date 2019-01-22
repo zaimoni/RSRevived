@@ -8202,6 +8202,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
       if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
+      (attacker.Controller as ObjectiveAI)?.RecordLoF(LoF);
       switch (mode) {
         case FireMode.DEFAULT:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);

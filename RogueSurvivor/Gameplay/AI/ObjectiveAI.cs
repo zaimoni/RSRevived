@@ -165,9 +165,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal abstract class ObjectiveAI : BaseAI
   {
+    public enum SparseData {
+      LoF = 0   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
+    };
+
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
     readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
+    readonly private UntypedCache<SparseData> _sparse = new UntypedCache<SparseData>();
     private int _STA_reserve;
     int STA_reserve { get { return _STA_reserve; } }
 
@@ -203,6 +208,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // morally a constructor-type function
     protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
     {
+      // sparse data reset is here (start of select action) so it persists during other actors' turns
+      _sparse.Unset(SparseData.LoF);
+
+      // AI cache fields
       _legal_steps = m_Actor.LegalSteps;
       _damage_field = new Dictionary<Point, int>();
       _slow_melee_threat = new List<Actor>();
@@ -232,6 +241,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
     }
+
+    public void RecordLoF(List<Point> LoF)  // XXX access control weakness required by RogueGame
+    {
+      if (null == LoF || 1>=LoF.Count) return;
+      _sparse.Set(SparseData.LoF,LoF);
+    }
+
+    public List<Point> GetLoF() { return _sparse.Get<List<Point>>(SparseData.LoF); }   // XXX reference-copy return 
 
     [System.Flags]
     public enum ReactionCode : uint {
