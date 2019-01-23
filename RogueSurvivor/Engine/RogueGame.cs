@@ -2938,6 +2938,7 @@ namespace djack.RogueSurvivor.Engine
         TimingCache.Clear();
       }
 #endif
+      (player.Controller as ObjectiveAI).SparseReset();
       player.Controller.UpdateSensors();
       m_Player = player;
       SetCurrentMap(player.Location.Map);  // multi-PC support
@@ -10805,16 +10806,51 @@ namespace djack.RogueSurvivor.Engine
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
 
-      // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
-#if PROTOTYPE
-      const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
-#endif
-
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
       HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
       HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
 
       Point point = new Point();
+
+      // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
+      const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
+      Span<bool> is_visible = stackalloc bool[view_squares];
+      string[] overlays = new string[view_squares];
+      Point delta = new Point();
+      int working = 0;
+      int i = view_squares;
+      while(0 < i--) {
+        MapViewRect.convert(i,ref point);
+        is_visible[i] = IsVisibleToPlayer(map, point);
+        if (is_visible[i]) { 
+          Actor actorAt = map.GetActorAtExt(point);
+          if (null == actorAt) continue;
+          List<Point> LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
+          if (null == LoF) continue;
+          foreach(Point pt in LoF) {
+            if (pt==actorAt.Location.Position) continue;
+            delta.X = pt.X- actorAt.Location.Position.X+point.X;
+            delta.Y = pt.Y- actorAt.Location.Position.Y+point.Y;
+            MapViewRect.convert(delta,ref working);
+            if (0 > working || view_squares <= working) continue;
+            if (   i > working // not yet visibility-checked
+                || is_visible[working])   // known-visible
+              overlays[working] = GameImages.LINE_OF_FIRE_OVERLAY;
+          }
+        } else {
+          overlays[i] = null;
+          if (tainted.Contains(point)) {
+            if (tourism.Contains(point)) {
+              overlays[i] = GameImages.THREAT_AND_TOURISM_OVERLAY;
+            } else {
+              overlays[i] = GameImages.THREAT_OVERLAY;
+            }
+          } else if (tourism.Contains(point)) {
+            overlays[i] = GameImages.TOURISM_OVERLAY;
+          }
+        }
+      }
+
       bool isUndead = Player.Model.Abilities.IsUndead;
       bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
       for (int x = num1; x < num2; ++x) {
@@ -10824,8 +10860,9 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
           if (!map.IsValid(x, y)) continue;
 #endif
+          MapViewRect.convert(point,ref working);
           Point screen = MapToScreen(x, y);
-          bool player = IsVisibleToPlayer(map, point);
+          bool player = is_visible[working];
           bool flag2 = false;
 #if NO_PEACE_WALLS
           Tile tile = map.GetTileAtExt(x, y);   // non-null for valid coordinates by construction
@@ -10836,18 +10873,8 @@ namespace djack.RogueSurvivor.Engine
             tile.IsInView = player;
             tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
-            // tourism and taint are both cleared by LoS processing
-            if (!player) {
-              if (tainted.Contains(point)) {
-                if (tourism.Contains(point)) {
-                  m_UI.UI_DrawImage(GameImages.THREAT_AND_TOURISM_OVERLAY, screen.X, screen.Y, tint);
-                } else {
-                  m_UI.UI_DrawImage(GameImages.THREAT_OVERLAY, screen.X, screen.Y, tint);
-                }
-              } else if (tourism.Contains(point)) {
-                m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
-              }
-            }
+            if (!string.IsNullOrEmpty(overlays[working])) m_UI.UI_DrawImage(overlays[working], screen.X, screen.Y, tint);
+
 #if NO_PEACE_WALLS
 #else
           } else if (map.IsMapBoundary(x, y)) {

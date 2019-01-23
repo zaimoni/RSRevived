@@ -205,11 +205,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _safe_run_retreat = false;
     }
 
+    public void SparseReset()
+    {
+      _sparse.Unset(SparseData.LoF);
+    }
+
     // morally a constructor-type function
     protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
     {
       // sparse data reset is here (start of select action) so it persists during other actors' turns
-      _sparse.Unset(SparseData.LoF);
+      SparseReset();
 
       // AI cache fields
       _legal_steps = m_Actor.LegalSteps;

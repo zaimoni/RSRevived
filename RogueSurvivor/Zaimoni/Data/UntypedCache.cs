@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
+    [Serializable]
     class UntypedCache<K>
     {
         private Dictionary<K, object> _map = null;
