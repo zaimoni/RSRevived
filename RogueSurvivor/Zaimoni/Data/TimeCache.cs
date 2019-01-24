@@ -32,6 +32,7 @@ namespace Zaimoni.Data
 
       public void Set(K key, V value)
       {
+        if (!_map.ContainsKey(_now)) _map[_now] = new Dictionary<K, V>();
         _map[_now][key] = value;
         foreach(KeyValuePair<int, Dictionary<K, V> > x in _map) {
           if (x.Key == _now) continue;
