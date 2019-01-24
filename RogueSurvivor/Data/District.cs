@@ -46,6 +46,7 @@ namespace djack.RogueSurvivor.Data
         AddMap(value);
         // the police faction knows all outside squares (map revealing effect)
         m_EntryMap.Rect.DoForEach(pt=> {
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Subway Station")) return; // police guard starts in the subway station
           if (!m_EntryMap.IsInsideAt(pt)) {
             Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
             return;

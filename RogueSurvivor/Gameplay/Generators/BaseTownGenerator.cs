@@ -473,6 +473,26 @@ restart:
       return sewers;
     }
 
+    // N-S and E-W rails use this as their reference point.
+    private Point SubwayRail(District d) {
+      // original version was reading the incoming dimensions off of the incoming entryMap
+      // but this was simply the district size
+      int deviate_at = Session.Get.World.CitgSize-1;
+      int half_dim = RogueGame.Options.DistrictSize/2;
+      Point mid_map = new Point(half_dim, half_dim);
+      // need diagonals at An and n0 flush
+      if (deviate_at==d.WorldPosition.X) {
+        mid_map += Direction.W;
+        mid_map += Direction.W;
+      }
+      if (deviate_at==d.WorldPosition.Y) {
+        mid_map += Direction.N;
+        mid_map += Direction.N;
+      }
+        
+      return mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+    }
+
     // geometry is a Godel-encoded series of compass-point line segments
     public List<Block> GetSubwayStationBlocks(Map entryMap, uint geometry)
     {
@@ -482,8 +502,7 @@ restart:
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // EW: reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       const int height = 4;
-      Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
-      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+      Point rail = SubwayRail(entryMap.District);  // both the N-S and E-W railways use this as their reference point
       const int minDistToRails = 8;
       // precompute some important line segments of interest
       const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
@@ -577,8 +596,7 @@ restart:
 #region 1. Trace rail line.
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
-      Point mid_map = new Point(entryMap.Width / 2, entryMap.Height / 2);
-      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+      Point rail = SubwayRail(district);  // both the N-S and E-W railways use this as their reference point
       const int height = 4;
 
       // precompute some important line segments of interest
@@ -1736,8 +1754,7 @@ restart:
                                     // with late generation it was possible to overwrite a park
       });
       const int height = 4;
-      Point mid_map = new Point(map.Width / 2, map.Height / 2);
-      Point rail = mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+      Point rail = SubwayRail(map.District);  // both the N-S and E-W railways use this as their reference point
 
       Direction direction = null;
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
