@@ -23,5 +23,15 @@ namespace djack.RogueSurvivor.Engine.Items
       MaxPaintQuantity = paintQuantity;
       TagImageID = tagImageID;
     }
+
+    public override Item create()
+    {
+      return new ItemSprayPaint(this);
+    }
+
+    public ItemSprayPaint instantiate()
+    {
+      return new ItemSprayPaint(this);
+    }
   }
 }

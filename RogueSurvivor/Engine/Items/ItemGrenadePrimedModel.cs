@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using DollPart = djack.RogueSurvivor.Data.DollPart;
+using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -20,6 +20,16 @@ namespace djack.RogueSurvivor.Engine.Items
       if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));
 #endif
       GrenadeModel = grenadeModel;
+    }
+
+    public override Item create()
+    {
+      return new ItemGrenade(GrenadeModel,this);
+    }
+
+    public ItemGrenade instantiate()
+    {
+      return new ItemGrenade(GrenadeModel, this);
     }
   }
 }

@@ -54,7 +54,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     };
 
     // not going full read-only types on these two for now (relying on access control instead)
-    private readonly GameItems.IDs[] bedroom_ranged_candidates;
     private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
 
     private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
@@ -116,18 +115,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_Params = parameters;
       if (Engine.Session.CommandLineOptions.ContainsKey("PC")) m_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
 
+#if DEBUG
+      if (bedroom_checksum != bedroom_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ bedroom_stock.Sum(x => x.Value));
+      if (CHAR_office_checksum != CHAR_office_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ CHAR_office_stock.Sum(x => x.Value));
+      if (construction_shop_checksum != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ construction_shop_stock.Sum(x => x.Value));
+      if (gunshop_checksum != gunshop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + gunshop_stock.Sum(x => x.Value));
+      if (hospital_shop_checksum != hospital_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ hospital_shop_stock.Sum(x => x.Value));
+      if (hunting_shop_checksum != hunting_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + hunting_shop_stock.Sum(x => x.Value));
+      if (park_checksum != park_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + park_stock.Sum(x => x.Value));
+      if (sportswear_shop_checksum != sportswear_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck " + sportswear_shop_stock.Sum(x => x.Value));
+#endif
+
       // hook for planned pre-apocalypse politics
       // following is RED STATE, RED CITY
-      List<GameItems.IDs> working_bedroom = new List<GameItems.IDs> {
-        // XXX these three require firearms to be legal for civilians to generate in bedrooms
-        GameItems.IDs.RANGED_HUNTING_CROSSBOW,
-        GameItems.IDs.RANGED_HUNTING_RIFLE,
-        GameItems.IDs.RANGED_SHOTGUN,
-        // XXX these two require concealed carry to be legal to generate in bedrooms
-        GameItems.IDs.RANGED_PISTOL,
-        GameItems.IDs.RANGED_KOLT_REVOLVER
-      };
-      bedroom_ranged_candidates = working_bedroom.ToArray();
 
       // any not-so-legal ranged weapons were obtained the same way the grenades were.  (U.S.: could be obtained via connections with a grade C license
       // holder [registered private army] under the 1934 automatic weapons ban.)
@@ -2108,47 +2108,72 @@ restart:
       }
     }
 
-    private ItemFood MakeShopGroceryItem()
+    // hospital storeroom wants to simply maximize quantities, not randomize
+    private void PostprocessQuantity(Item it)   // relies on Item being a class rather than a struct
     {
-      return (m_DiceRoller.RollChance(50) ? MakeItemCannedFood() : MakeItemGroceries());
-    }
-
-    private Item MakeShopPharmacyItem()
-    {
-      switch (m_DiceRoller.Roll(0, 6)) {
-        case 0: return MakeItemBandages();
-        case 1: return MakeItemMedikit();
-        case 2: return MakeItemPillsSLP();
-        case 3: return MakeItemPillsSTA();
-        case 4: return MakeItemPillsSAN();
-#if DEBUG
-        case 5: return GameItems.STENCH_KILLER.create();
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return GameItems.STENCH_KILLER.create();
-#endif
+      switch(it.Model.ID) {
+      case GameItems.IDs.TRAP_SPIKES:
+        it.Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit);  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
+        break;
+      //
+      case GameItems.IDs.TRAP_BARBED_WIRE:
+      case GameItems.IDs.MELEE_CROWBAR:
+      case GameItems.IDs.FOOD_CANNED_FOOD:
+      case GameItems.IDs.ENT_MAGAZINE:
+      case GameItems.IDs.EXPLOSIVE_GRENADE:
+      case GameItems.IDs.MEDICINE_BANDAGES:
+      case GameItems.IDs.MEDICINE_PILLS_SLP:
+      case GameItems.IDs.MEDICINE_PILLS_STA:
+      case GameItems.IDs.MEDICINE_PILLS_SAN:
+      case GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL:
+        it.Quantity = m_DiceRoller.Roll(1, it.Model.StackingLimit);
+        break;
       }
     }
 
+    private ItemFood MakeShopGroceryItem()
+    {
+      return (m_DiceRoller.RollChance(50) ? MakeItemCannedFood() : MakeItemGroceries());    // groceries duration requires weakening object orientation to post-process
+    }
+
+    // hospital and pharmacy use similar item lists
+    private const int hospital_shop_checksum = 7;
+    private readonly KeyValuePair<GameItems.IDs, int>[] hospital_shop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SCENT_SPRAY_STENCH_KILLER,1),  // unclear why here rather than hunting shop
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL,1)   // not in pharmacy; requires infection
+    };
+
+    private Item MakeShopPharmacyItem()
+    {
+      var ret = Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hospital_shop_checksum-1))].create();
+      PostprocessQuantity(ret);
+      return ret;
+    }
+
+    // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
+    private const int sportswear_shop_checksum = 100;
+    private readonly KeyValuePair<GameItems.IDs, int>[] sportswear_shop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,7),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,40),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_IRON_GOLFCLUB,20),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_GOLFCLUB,20)
+    };
+
     private Item MakeShopSportsWearItem()
     {
-      // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
-      KeyValuePair<ItemModel, int>[] stock = {
-        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_RIFLE,3),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_RIFLE,7),
-        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_CROSSBOW,3),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_BOLTS,7),
-        new KeyValuePair<ItemModel,int>(GameItems.BASEBALLBAT,40),
-        new KeyValuePair<ItemModel,int>(GameItems.IRON_GOLFCLUB,20),
-        new KeyValuePair<ItemModel,int>(GameItems.GOLFCLUB,20)
-      };
-#if DEBUG
-      if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
-#endif
-      return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
+      return Models.Items[(int)sportswear_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, sportswear_shop_checksum))].create();
     }
 
     // original was 1..24 in groups of 3, with some 50-50 splits
+    private const int construction_shop_checksum = 48;
     private readonly KeyValuePair<GameItems.IDs, int>[] construction_shop_stock = {
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHOVEL,3),
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHORT_SHOVEL,3),
@@ -2164,52 +2189,44 @@ restart:
 
     private Item MakeShopConstructionItem()
     {
-#if DEBUG
-      if (48 != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ construction_shop_stock.Sum(x => x.Value));
-#endif
-      var ret = Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, 48))].create();
-      // would need a version of the create call w/RNG parameter to fold it in (global instance isn't what is wanted here)
-     switch(ret.Model.ID)
-      {
-      case GameItems.IDs.TRAP_SPIKES:
-        ret.Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit);  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
-        break;
-      //
-      case GameItems.IDs.TRAP_BARBED_WIRE:
-      case GameItems.IDs.MELEE_CROWBAR:
-        ret.Quantity = m_DiceRoller.Roll(1, ret.Model.StackingLimit);
-        break;
-      }
-      return ret;      
+      var ret = Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, construction_shop_checksum))].create();
+      PostprocessQuantity(ret);
+      return ret;
     }
+
+    // RS Alpha 9: 40% ranged weapons, 60% ammo
+    private const int gunshop_checksum = 100;
+    KeyValuePair<GameItems.IDs, int>[] gunshop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_PISTOL,5),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_KOLT_REVOLVER,5),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,15),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_PISTOL,15),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,15),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,15)
+    };
 
     private Item MakeShopGunshopItem()
     {
-      // RS Alpha 9: 40% ranged weapons, 60% ammo
-      KeyValuePair<ItemModel, int>[] stock = {
-        new KeyValuePair<ItemModel,int>(GameItems.PISTOL,5),
-        new KeyValuePair<ItemModel,int>(GameItems.KOLT_REVOLVER,5),
-        new KeyValuePair<ItemModel,int>(GameItems.SHOTGUN,10),
-        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_RIFLE,10),
-        new KeyValuePair<ItemModel,int>(GameItems.HUNTING_CROSSBOW,10),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_SHOTGUN,15),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_PISTOL,15),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_RIFLE,15),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_BOLTS,15)
-      };
-#if DEBUG
-      if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
-#endif
-      return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
+      return Models.Items[(int)gunshop_stock.UseRarityTable(m_DiceRoller.Roll(0, gunshop_checksum))].create();
     }
+
+    // RS Alpha 9: 50% weapons, 50% other.  Why no stench killer?
+    private const int hunting_shop_checksum = 40;
+    private readonly KeyValuePair<GameItems.IDs, int>[] hunting_shop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,7),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_HUNTER_VEST,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_BEAR_TRAP,10)
+    };
 
     private Item MakeHuntingShopItem()
     {
-      if (m_DiceRoller.RollChance(50)) {
-        if (m_DiceRoller.RollChance(40)) return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.HUNTING_RIFLE : GameItems.HUNTING_CROSSBOW).create();
-        return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.AMMO_LIGHT_RIFLE : GameItems.AMMO_BOLTS).create();
-      }
-      return (0 == m_DiceRoller.Roll(0, 2) ? GameItems.HUNTER_VEST.create() : (Item)MakeItemBearTrap());
+      return Models.Items[(int)hunting_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hunting_shop_checksum))].create();
     }
 
     private Item MakeShopGeneralItem()
@@ -2231,106 +2248,92 @@ restart:
 
     private Item MakeHospitalItem()
     {
-      switch (m_DiceRoller.Roll(0, (Session.Get.HasInfection ? 7 : 6))) {
-        case 0: return MakeItemBandages();
-        case 1: return MakeItemMedikit();
-        case 2: return MakeItemPillsSLP();
-        case 3: return MakeItemPillsSTA();
-        case 4: return MakeItemPillsSAN();
-        case 5: return GameItems.STENCH_KILLER.create();
-#if DEBUG
-        case 6: return MakeItemPillsAntiviral();
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return MakeItemPillsAntiviral();
-#endif
-      }
+      var ret = Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, (Session.Get.HasInfection ? hospital_shop_checksum : hospital_shop_checksum-1)))].create();
+      PostprocessQuantity(ret);
+      return ret;
     }
+
+//  This should be influenced by pre-apocalypse politics.  This is the reference red state, red city set the other politics post-process
+    private const int bedroom_checksum = 480;
+    private readonly KeyValuePair<GameItems.IDs, int>[] bedroom_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,40),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,20),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,20),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,20),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,80),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_CELL_PHONE,60),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,40),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SCENT_SPRAY_STENCH_KILLER,40),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_HUNTER_VEST,20),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ENT_BOOK,30),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ENT_MAGAZINE,30),
+        // firearms must be civilian-legal for these to be allowed (for this purpose a crossbow is a low-noise firearm, but RS9 doesn't have crossbows as a bedroom item)
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,7),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
+        // concealed carry must be civilian-legal for these to be allowed
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_PISTOL,10),            // RS9: same weight for these due to function with 50/50 weight
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_KOLT_REVOLVER,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_PISTOL,40)
+    };
+
 
     private Item MakeRandomBedroomItem()
     {
-      switch (m_DiceRoller.Roll(0, 24)) {
-        case 0:
-        case 1: return MakeItemBandages();
-        case 2: return MakeItemPillsSTA();
-        case 3: return MakeItemPillsSLP();
-        case 4: return MakeItemPillsSAN();
-        case 5:
-        case 6:
-        case 7:
-        case 8: return GameItems.BASEBALLBAT.create();
-        case 9: return MakeItemRandomPistol();
-        case 10:
-          if (m_DiceRoller.RollChance(30)) return (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create();
-          return (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create();
-        case 11:
-        case 12:
-        case 13: return GameItems.CELL_PHONE.create();
-        case 14:
-        case 15: return GameItems.FLASHLIGHT.create();
-        case 16:
-        case 17: return GameItems.AMMO_LIGHT_PISTOL.create();
-        case 18:
-        case 19: return GameItems.STENCH_KILLER.create();
-        case 20: return GameItems.HUNTER_VEST.create();
-#if DEBUG
-        case 21:
-        case 22:
-        case 23: return (m_DiceRoller.RollChance(50) ? MakeItemBook() : MakeItemMagazines());
-        default: throw new ArgumentOutOfRangeException("unhandled roll");
-#else
-        default: return (m_DiceRoller.RollChance(50) ? MakeItemBook() : MakeItemMagazines());
-#endif
-      }
+      var ret = Models.Items[(int)bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))].create();
+      PostprocessQuantity(ret);
+      return ret;
     }
 
-    private ItemFood MakeRandomKitchenItem()
+    private ItemFood MakeRandomKitchenItem()    // not obviously the same as grocery item
     {
       return (m_DiceRoller.RollChance(50) ? MakeItemCannedFood() : MakeItemGroceries());
     }
 
+    // RS 9 CHAR office had a high rate of null return when creating items
+    private const int CHAR_office_checksum = 450;
+    private readonly KeyValuePair<GameItems.IDs, int>[] CHAR_office_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,10),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,27),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,63),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,100),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,100),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.FOOD_CANNED_FOOD,100),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_ZTRACKER,25),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_BLACKOPS,25)
+    };
+
+
     public Item MakeRandomCHAROfficeItem()
     {
-      switch (m_DiceRoller.Roll(0, 10))
-      {
-        case 0:
-          if (m_DiceRoller.RollChance(10)) return MakeItemGrenade();
-          return (m_DiceRoller.RollChance(30) ? GameItems.SHOTGUN.create() : GameItems.AMMO_SHOTGUN.create());
-        case 1:
-        case 2:
-          if (m_DiceRoller.RollChance(50))
-            return MakeItemBandages();
-          return MakeItemMedikit();
-        case 3:
-          return MakeItemCannedFood();
-        case 4:
-          if (!m_DiceRoller.RollChance(50)) return null;
-          return (m_DiceRoller.RollChance(50) ? GameItems.ZTRACKER : GameItems.BLACKOPS_GPS).create();
-        default: return null;
-      }
+      int choice = m_DiceRoller.Roll(0, CHAR_office_checksum/45*100);   // historically 45% chance of an item
+      if (CHAR_office_checksum <= choice) return null;
+      var ret = Models.Items[(int)CHAR_office_stock.UseRarityTable(choice)].create();
+      PostprocessQuantity(ret);
+      return ret;
     }
+
+    private const int park_checksum = 32;
+    private readonly KeyValuePair<GameItems.IDs, int>[] park_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT1,1),  // RS9: these four have same weight due to a function
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT2,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT3,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT4,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_CELL_PHONE,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.BAR_WOODEN_PLANK,4)
+    };
 
     public Item MakeRandomParkItem()
     {
-      switch (m_DiceRoller.Roll(0, 8))
-      {
-        case 0: return MakeItemSprayPaint();
-        case 1: return GameItems.BASEBALLBAT.create();
-        case 2: return MakeItemPillsSLP();
-        case 3: return MakeItemPillsSTA();
-        case 4: return MakeItemPillsSAN();
-        case 5: return GameItems.FLASHLIGHT.create();
-        case 6: return GameItems.CELL_PHONE.create();
-#if DEBUG
-        case 7:
-#else
-        default:
-#endif
-          return GameItems.WOODENPLANK.create();
-#if DEBUG
-        default: throw new ArgumentOutOfRangeException("unhandled item roll");
-#endif
-      }
+      var ret = Models.Items[(int)park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))].create();
+      PostprocessQuantity(ret);
+      return ret;
     }
 
     protected virtual void DecorateOutsideWallsWithPosters(Map map, Rectangle rect, int chancePerWall)

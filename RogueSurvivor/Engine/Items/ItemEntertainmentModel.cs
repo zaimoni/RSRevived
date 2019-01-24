@@ -20,5 +20,15 @@ namespace djack.RogueSurvivor.Engine.Items
       BoreChance = boreChance;
       StackingLimit = stacking;
     }
+
+    public override Item create()
+    {
+      return new ItemEntertainment(this);
+    }
+
+    public ItemEntertainment instantiate()
+    {
+      return new ItemEntertainment(this);
+    }
   }
 }

@@ -29,5 +29,15 @@ namespace djack.RogueSurvivor.Engine.Items
         StackingLimit = stackingLimit;
       }
     }
+
+    public override Item create()
+    {
+      return new ItemMedicine(this);
+    }
+
+    public ItemMedicine instantiate()
+    {
+      return new ItemMedicine(this);
+    }
   }
 }

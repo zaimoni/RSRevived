@@ -27,5 +27,20 @@ namespace djack.RogueSurvivor.Engine.Items
       IsPlural = (aName==theNames);
       StackingLimit = stackingLimit;
     }
+
+    public override Item create()
+    {
+      return new ItemFood(this);
+    }
+
+    public ItemFood instantiate()
+    {
+      return new ItemFood(this);
+    }
+
+    public ItemFood instantiate(int bestBefore)
+    {
+      return new ItemFood(this, bestBefore);
+    }
   }
 }

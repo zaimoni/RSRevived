@@ -670,21 +670,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    static public ItemTrap MakeItemBearTrap()
-    {
-      return new ItemTrap(GameItems.BEAR_TRAP);
-    }
-
     static public ItemEntertainment MakeItemBook()
     {
       return new ItemEntertainment(GameItems.BOOK);
-    }
-
-    public ItemEntertainment MakeItemMagazines()
-    {
-      return new ItemEntertainment(GameItems.MAGAZINE) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.MAGAZINE.StackingLimit)
-      };
     }
 
     protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
