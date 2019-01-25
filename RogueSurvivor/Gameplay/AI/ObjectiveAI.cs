@@ -964,7 +964,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return map_goals;
     }
 
-    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals)
+    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals, HashSet<Map> excluded)
     {
        Predicate<Location> ret = null;
 
@@ -984,8 +984,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var required = new HashSet<Map>(required_0);
 
       // early exit: unique map, not-sewer: should be handled at caller level (do not enforce until we no longer have a serious CPU problem)
-
-      var excluded = new HashSet<Map>();
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
       var police_station = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
@@ -1066,10 +1064,11 @@ restart:
       return ret;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs)
+    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs, HashSet<Map> excluded)
     {
 #if DEBUG
       if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
+      if (null == excluded) throw new ArgumentNullException(nameof(excluded));
 #endif
       var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
 
@@ -1083,7 +1082,7 @@ restart:
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
-      Predicate<Location> blacklist = BlacklistFunction(goal_costs);
+      Predicate<Location> blacklist = BlacklistFunction(goal_costs,excluded);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
       navigate.GoalDistance(goal_costs, m_Actor.Location);
@@ -1186,9 +1185,12 @@ restart:
       return ret;
     }
 
-    private bool GoalRewrite(List<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest)
+    private bool GoalRewrite(List<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest, HashSet<Map> excluded)
     {
-        if (!map_goals.TryGetValue(src,out var test)) return false;
+        if (!map_goals.TryGetValue(src,out var test)) {
+          excluded.Add(src);
+          return false;
+        }
         if (src.Exits.Any(e => e.Location==m_Actor.Location)) return false; // would be very bad to remap a goal w/cost onto the actor
 
         string index = src.Rect.Encode(test);
@@ -1232,6 +1234,7 @@ restart:
           goals.Remove(tmp);
         }
         map_goals.Remove(src);
+        excluded.Add(src);
 
         return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
     }
@@ -1265,12 +1268,14 @@ restart:
 
       var map_goals = RadixSortLocations(goal_costs);
 
+      var excluded = new HashSet<Map>();
+
 restart_single_exit:
       foreach(var x in map_goals) {
         var tmp = x.Key.destination_maps.Get;
         // 2019-01-13: triggers on subways (diagonal connectors not generated properly)
         if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
-          if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First()))
+          if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First(),excluded))
             return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
           goto restart_single_exit;
         }
@@ -1281,25 +1286,25 @@ restart_single_exit:
 #if PATHFIND_IMPLEMENTATION_GAPS
         if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
 #endif
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap, excluded))
+         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
       }
       var in_hospital = Session.Get.UniqueMaps.NavigateHospital(m_Actor.Location.Map);
       if (null==in_hospital) {
 #if PATHFIND_IMPLEMENTATION_GAPS
         if (map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
 #endif
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap))
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Patients.TheMap, Session.Get.UniqueMaps.Hospital_Offices.TheMap))
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Patients.TheMap, Session.Get.UniqueMaps.Hospital_Offices.TheMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Offices.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap))
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Offices.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap))
+        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
       }
 
-      return BehaviorPathTo(PathfinderFor(goal_costs));
+      return BehaviorPathTo(PathfinderFor(goal_costs,excluded));
     }
 
      public void GoalHeadFor(Map m, HashSet<Point> dest)
