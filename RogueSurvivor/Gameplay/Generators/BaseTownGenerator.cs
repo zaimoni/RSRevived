@@ -3365,7 +3365,7 @@ restart:
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
-      numberedName.Inventory.AddAll(MakeItemBandages());
+      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
       return numberedName;
     }
 
@@ -3379,7 +3379,7 @@ restart:
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       numberedName.Inventory.AddAll(MakeItemMedikit());
-      numberedName.Inventory.AddAll(MakeItemBandages());
+      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
       return numberedName;
     }
 
@@ -3441,23 +3441,20 @@ restart:
       });
     }
 
+    static private readonly GameItems.IDs[] rare_random_item = new GameItems.IDs[] {
+        GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,
+        GameItems.IDs.ARMOR_ARMY_BODYARMOR,
+        GameItems.IDs.AMMO_HEAVY_PISTOL,
+        GameItems.IDs.AMMO_HEAVY_RIFLE,
+        GameItems.IDs.MELEE_COMBAT_KNIFE,
+        GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL
+    };
+
     private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
     {
       Item equip_this() {
         if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
-          switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))) {
-            case 0: return MakeItemGrenade();
-            case 1: return GameItems.ARMY_BODYARMOR.create();
-            case 2: return GameItems.AMMO_HEAVY_PISTOL.create();
-            case 3: return GameItems.AMMO_HEAVY_RIFLE.create();
-            case 4: return GameItems.COMBAT_KNIFE.create();
-#if DEBUG
-            case 5: return MakeItemPillsAntiviral();
-            default: throw new InvalidProgramException("unhandled roll");
-#else
-            default: return MakeItemPillsAntiviral();
-#endif
-          }
+          return PostprocessQuantity(Models.Items[(int)rare_random_item[roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))]].create());
         }
 
         int choice = roller.Roll(0, (int)ShopType._COUNT + 3);
@@ -3491,6 +3488,8 @@ restart:
       return actor;
     }
 
+    private static readonly GameItems.IDs[] survivor_pills = new GameItems.IDs[] { GameItems.IDs.MEDICINE_PILLS_SLP, GameItems.IDs.MEDICINE_PILLS_STA, GameItems.IDs.MEDICINE_PILLS_SAN };
+
     public Actor CreateNewSurvivor(int spawnTime)
     {
       bool flag = m_DiceRoller.Roll(0, 2) == 0;
@@ -3509,18 +3508,7 @@ restart:
         numberedName.Inventory.AddAll(MakeItemGrenade());
       }
       numberedName.Inventory.AddAll(MakeItemMedikit());
-      switch (m_DiceRoller.Roll(0, 3))
-      {
-        case 0:
-          numberedName.Inventory.AddAll(MakeItemPillsSLP());
-          break;
-        case 1:
-          numberedName.Inventory.AddAll(MakeItemPillsSTA());
-          break;
-        case 2:
-          numberedName.Inventory.AddAll(MakeItemPillsSAN());
-          break;
-      }
+      numberedName.Inventory.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
       numberedName.Inventory.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);

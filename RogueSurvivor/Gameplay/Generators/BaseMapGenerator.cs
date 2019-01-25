@@ -535,44 +535,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public ItemMedicine MakeItemBandages()
-    {
-      return new ItemMedicine(GameItems.BANDAGE) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.BANDAGE.StackingLimit)
-      };
-    }
-
     static public ItemMedicine MakeItemMedikit()
     {
       return new ItemMedicine(GameItems.MEDIKIT);
-    }
-
-    public ItemMedicine MakeItemPillsSTA()
-    {
-      return new ItemMedicine(GameItems.PILLS_STA) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_STA.StackingLimit)
-      };
-    }
-
-    public ItemMedicine MakeItemPillsSLP()
-    {
-      return new ItemMedicine(GameItems.PILLS_SLP) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_SLP.StackingLimit)
-      };
-    }
-
-    public ItemMedicine MakeItemPillsSAN()
-    {
-      return new ItemMedicine(GameItems.PILLS_SAN) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_SAN.StackingLimit)
-      };
-    }
-
-    public ItemMedicine MakeItemPillsAntiviral()
-    {
-      return new ItemMedicine(GameItems.PILLS_ANTIVIRAL) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_ANTIVIRAL.StackingLimit)
-      };
     }
 
     public ItemFood MakeItemGroceries()
