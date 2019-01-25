@@ -2126,7 +2126,7 @@ restart:
     }
 
     // hospital storeroom wants to simply maximize quantities, not randomize
-    private void PostprocessQuantity(Item it)   // relies on Item being a class rather than a struct
+    private Item PostprocessQuantity(Item it)   // relies on Item being a class rather than a struct
     {
       switch(it.Model.ID) {
       case GameItems.IDs.TRAP_SPIKES:
@@ -2146,6 +2146,7 @@ restart:
         it.Quantity = m_DiceRoller.Roll(1, it.Model.StackingLimit);
         break;
       }
+      return it;
     }
 
     private ItemFood MakeShopGroceryItem()
@@ -2167,9 +2168,7 @@ restart:
 
     private Item MakeShopPharmacyItem()
     {
-      var ret = Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hospital_shop_checksum-1))].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hospital_shop_checksum-1))].create());
     }
 
     // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
@@ -2206,9 +2205,7 @@ restart:
 
     private Item MakeShopConstructionItem()
     {
-      var ret = Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, construction_shop_checksum))].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, construction_shop_checksum))].create());
     }
 
     // RS Alpha 9: 40% ranged weapons, 60% ammo
@@ -2265,9 +2262,7 @@ restart:
 
     private Item MakeHospitalItem()
     {
-      var ret = Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, (Session.Get.HasInfection ? hospital_shop_checksum : hospital_shop_checksum-1)))].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, (Session.Get.HasInfection ? hospital_shop_checksum : hospital_shop_checksum-1)))].create());
     }
 
 //  This should be influenced by pre-apocalypse politics.  This is the reference red state, red city set the other politics post-process
@@ -2298,9 +2293,7 @@ restart:
 
     private Item MakeRandomBedroomItem()
     {
-      var ret = Models.Items[(int)bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))].create());
     }
 
     private ItemFood MakeRandomKitchenItem()    // not obviously the same as grocery item
@@ -2326,9 +2319,7 @@ restart:
     {
       int choice = m_DiceRoller.Roll(0, CHAR_office_checksum/45*100);   // historically 45% chance of an item
       if (CHAR_office_checksum <= choice) return null;
-      var ret = Models.Items[(int)CHAR_office_stock.UseRarityTable(choice)].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)CHAR_office_stock.UseRarityTable(choice)].create());
     }
 
     private const int park_checksum = 32;
@@ -2348,9 +2339,7 @@ restart:
 
     public Item MakeRandomParkItem()
     {
-      var ret = Models.Items[(int)park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))].create();
-      PostprocessQuantity(ret);
-      return ret;
+      return PostprocessQuantity(Models.Items[(int)park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))].create());
     }
 
     protected virtual void DecorateOutsideWallsWithPosters(Map map, Rectangle rect, int chancePerWall)
