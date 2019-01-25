@@ -1263,6 +1263,14 @@ restart:
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
 
+#if PROTOTYPE
+      if (   1==m_Actor.Location.Map.destination_maps.Get.Count
+          && !goals.Any(loc => loc.Map == m_Actor.Location.Map))
+            {
+            throw new InvalidProgramException("need to handle single-map escape case");
+            }
+#endif
+
       var goal_costs = new Dictionary<Location,int>();
       foreach(var goal in goals) goal_costs[goal] = 0;
 

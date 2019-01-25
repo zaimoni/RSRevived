@@ -131,9 +131,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // note that System.Drawing.Point's hashcode implementation is XOR of coordinates
+    // i.e. has a high collision rate.
     public override int GetHashCode()
     {
-      return m_Map.GetHashCode() ^ m_Position.GetHashCode();
+      return m_Map.GetHashCode() ^ (m_Position.X+Engine.RogueGame.MAP_MAX_WIDTH*m_Position.Y);
     }
 
     public override string ToString()
