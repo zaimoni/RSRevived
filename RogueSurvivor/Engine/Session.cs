@@ -10,8 +10,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
+#if OBSOLETE
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Xml.Serialization;
+#endif
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -224,12 +226,16 @@ namespace djack.RogueSurvivor.Engine
         case SaveFormat.FORMAT_BIN:
           SaveBin(session, filepath);
           break;
+#if NOT_NET_CORE
         case SaveFormat.FORMAT_SOAP:
           SaveSoap(session, filepath);
           break;
+#endif
+#if OBSOLETE
         case SaveFormat.FORMAT_XML:
           SaveXml(session, filepath);
           break;
+#endif
       }
     }
 
@@ -243,8 +249,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
       switch (format) {
         case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
+#if NOT_NET_CORE
         case SaveFormat.FORMAT_SOAP: return LoadSoap(filepath);
+#endif
+#if OBSOLETE
         case SaveFormat.FORMAT_XML: return LoadXml(filepath);
+#endif
         default: return false;
       }
     }
@@ -283,6 +293,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#if NOT_NET_CORE
     private static void SaveSoap(Session session, string filepath)
     {
 #if DEBUG
@@ -312,7 +323,9 @@ namespace djack.RogueSurvivor.Engine
      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
      return true;
     }
+#endif
 
+#if OBSOLETE
     private static void SaveXml(Session session, string filepath)
     {
 #if DEBUG
@@ -346,6 +359,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
+#endif
 
     public static bool Delete(string filepath)
     {
@@ -367,10 +381,12 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
+#if NOT_NET_CORE
     private static IFormatter CreateSoapFormatter()
     {
       return new SoapFormatter();
     }
+#endif
 
     // game mode support
     public static string DescGameMode(GameMode mode)
