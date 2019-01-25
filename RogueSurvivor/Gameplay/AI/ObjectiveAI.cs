@@ -1255,8 +1255,14 @@ restart:
       }
       }
 
-      var adjacent = goals.Where(loc => Rules.IsAdjacent(m_Actor.Location,loc));
-      if (adjacent.Any() && !adjacent.Any(loc => null==loc.Actor)) return new ActionWait(m_Actor);
+      // if we couldn't path to an adjacent goal, wait
+      if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, loc))) {
+#if DEBUG
+        var e = m_Actor.Location.Exit;
+        if (null!=e && goals.Contains(e.Location)) throw new InvalidProgramException("need to handle adjacent to blocked exit");
+#endif
+        return new ActionWait(m_Actor);
+      }
 
       // remove a degenerate case from consideration
       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
