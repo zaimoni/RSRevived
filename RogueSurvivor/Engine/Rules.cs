@@ -858,7 +858,7 @@ retry:
       if (null != in_hospital) {
         exits = loc.Map.ExitsFor(in_hospital.Value.Key);
 #if DEBUG
-        if (0 < exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+        if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         // admissions->offices and offices->patients are both 180 degrees
         // \todo patients->storeroom should be 90 degrees counter-clockwise
@@ -877,7 +877,7 @@ retry:
 #endif
         exits = loc.Map.ExitsFor(in_police_Station.Value.Key);
 #if DEBUG
-        if (0 < exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+        if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         foreach(var x in exits) {
           Size delta = new Size(loc.Position.Y - x.Key.Y, -(loc.Position.X - x.Key.X));
