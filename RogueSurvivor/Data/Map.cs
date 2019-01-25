@@ -1188,6 +1188,7 @@ retry:
       }
     }
 
+    // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
     private string ReasonNotWalkableFor(int x, int y, ActorModel model)
     {
 #if DEBUG
