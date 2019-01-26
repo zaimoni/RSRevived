@@ -27,7 +27,6 @@ using djack.RogueSurvivor.Gameplay.Generators;
 using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -37,6 +36,14 @@ using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
+// game coordinate types
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+// GDI+ types
+using Color = System.Drawing.Color;
+using GDI_Point = System.Drawing.Point;
+using GDI_Rectangle = System.Drawing.Rectangle;
+using Size = System.Drawing.Size;
 
 namespace djack.RogueSurvivor.Engine
 {
