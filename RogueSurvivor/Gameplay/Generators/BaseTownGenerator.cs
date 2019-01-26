@@ -2747,7 +2747,7 @@ restart:
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
-        map.DropItemAt(PostprocessQuantity(GameItems.CANNED_FOOD.create()), pt);
+        map.DropItemAt(MakeItemCannedFood(), pt);
         return MakeObjTable(GameImages.OBJ_CHAR_TABLE);
       }));
     }
@@ -3448,7 +3448,7 @@ restart:
       DoForEachTile(room, pt => {
         if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
         map.PlaceAt(MakeObjShelf(), pt);
-        Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : PostprocessQuantity(GameItems.CANNED_FOOD.create());
+        Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         map.DropItemAt(it, pt);
       });
@@ -3510,7 +3510,7 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
-      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.CANNED_FOOD.create()));
+      numberedName.Inventory.AddAll(MakeItemCannedFood());
       numberedName.Inventory.AddAll(MakeItemArmyRation());
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
