@@ -335,6 +335,7 @@
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
+    <Compile Include="Zaimoni\Data\Vector.cs" />
     <Compile Include="Zaimoni\Data\UntypedCache.cs" />
     <Compile Include="Zaimoni\Data\Compass.cs" />
     <Compile Include="Zaimoni\Data\NonSerializedCache.cs" />
