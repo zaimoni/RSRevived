@@ -535,11 +535,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    static public ItemMedicine MakeItemMedikit()
-    {
-      return new ItemMedicine(GameItems.MEDIKIT);
-    }
-
     public ItemFood MakeItemGroceries()
     {
       int turnCounter = Session.Get.WorldTime.TurnCounter;
@@ -552,13 +547,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new ItemFood(GameItems.CANNED_FOOD) {
         Quantity = m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit)
-      };
-    }
-
-    public ItemMeleeWeapon MakeItemCrowbar()
-    {
-      return new ItemMeleeWeapon(GameItems.CROWBAR) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.CROWBAR.StackingLimit)
       };
     }
 
@@ -594,35 +582,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public ItemSprayPaint MakeItemSprayPaint()
-    {
-      ItemSprayPaintModel itemSprayPaintModel;
-      switch (m_DiceRoller.Roll(0, 4))
-      {
-        case 0:
-          itemSprayPaintModel = GameItems.SPRAY_PAINT1;
-          break;
-        case 1:
-          itemSprayPaintModel = GameItems.SPRAY_PAINT2;
-          break;
-        case 2:
-          itemSprayPaintModel = GameItems.SPRAY_PAINT3;
-          break;
-#if DEBUG
-        case 3:
-#else
-        default:
-#endif
-          itemSprayPaintModel = GameItems.SPRAY_PAINT4;
-          break;
-#if DEBUG
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
-#endif
-      }
-      return new ItemSprayPaint(itemSprayPaintModel);
-    }
-
     static public ItemFood MakeItemArmyRation()
     {
       return new ItemFood(GameItems.ARMY_RATION, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * GameItems.ARMY_RATION.BestBeforeDays);
@@ -633,11 +592,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemGrenade(GameItems.GRENADE, GameItems.GRENADE_PRIMED) {
         Quantity = m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit)
       };
-    }
-
-    static public ItemEntertainment MakeItemBook()
-    {
-      return new ItemEntertainment(GameItems.BOOK);
     }
 
     protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)

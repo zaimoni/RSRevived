@@ -2579,7 +2579,7 @@ namespace djack.RogueSurvivor.Engine
       Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
       map.TrimToBounds(ref survey);
       survey.DoForEach(pt => {
-          map.DropItemAt((m_Rules.RollChance(80) ? BaseMapGenerator.MakeItemArmyRation() : (Item)BaseMapGenerator.MakeItemMedikit()), pt);
+          map.DropItemAt((m_Rules.RollChance(80) ? BaseMapGenerator.MakeItemArmyRation() : GameItems.MEDIKIT.create()), pt);
           Session.Get.PoliceInvestigate.Record(map, pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures propor prioritzation
@@ -2862,7 +2862,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_Rules.RollChance(50))
         armyNationalGuard.Inventory.AddAll(GameItems.COMBAT_KNIFE.create());
       else
-        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
+        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
       return (SpawnActorNear(leader.Location.Map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? armyNationalGuard : null);
     }
 

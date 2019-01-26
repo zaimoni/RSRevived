@@ -123,6 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (hospital_shop_checksum != hospital_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ hospital_shop_stock.Sum(x => x.Value));
       if (hunting_shop_checksum != hunting_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + hunting_shop_stock.Sum(x => x.Value));
       if (park_checksum != park_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + park_stock.Sum(x => x.Value));
+      if (sewer_checksum != sewer_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck " + sewer_stock.Sum(x => x.Value));
       if (sportswear_shop_checksum != sportswear_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck " + sportswear_shop_stock.Sum(x => x.Value));
 #endif
 
@@ -272,6 +273,16 @@ restart:
       map.BgMusic = GameMusics.SURFACE; // alpha10: music
       return map;
     }
+
+    private const int sewer_checksum = 12;
+    private readonly KeyValuePair<GameItems.IDs, int>[] sewer_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_BIG_FLASHLIGHT,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_CROWBAR,4),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT1,1),  // RS9: all spray paints equal weight due to function
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT2,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT3,1),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT4,1)
+    };
 
     public virtual Map GenerateSewersMap(int seed, District district)
     {
@@ -429,19 +440,7 @@ restart:
 
 #region 8. Items.
       Item sewers_stock() {
-        switch (m_DiceRoller.Roll(0, 3)) {
-          case 0: return GameItems.BIG_FLASHLIGHT.create();
-          case 1: return  MakeItemCrowbar();
-#if DEBUG
-          case 2:
-#else
-          default:
-#endif
-            return MakeItemSprayPaint();
-#if DEBUG
-          default: throw new ArgumentOutOfRangeException("unhandled roll");
-#endif
-        }
+          return PostprocessQuantity(Models.Items[(int)sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))].create());
       };
       sewers.Rect.DoForEach(pt => {
         sewers.DropItemAt(sewers_stock(), pt);
@@ -2733,9 +2732,8 @@ restart:
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
-        MapObject mapObject = MakeObjTable(GameImages.OBJ_CHAR_TABLE);
-        map.DropItemAt(MakeItemCannedFood(), pt);
-        return mapObject;
+        map.DropItemAt(PostprocessQuantity(GameItems.CANNED_FOOD.create()), pt);
+        return MakeObjTable(GameImages.OBJ_CHAR_TABLE);
       }));
     }
 
@@ -3378,7 +3376,7 @@ restart:
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      numberedName.Inventory.AddAll(MakeItemMedikit());
+      numberedName.Inventory.AddAll(GameItems.MEDIKIT.instantiate());
       numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
       return numberedName;
     }
@@ -3401,10 +3399,10 @@ restart:
           case 0: return MakeShopPharmacyItem();
           case 1: return MakeItemGroceries();
 #if DEBUG
-          case 2: return MakeItemBook();
+          case 2: return GameItems.BOOK.create();
           default: throw new InvalidOperationException("unhandled roll result");
 #else
-          default: return MakeItemBook();
+          default: return GameItems.BOOK.create();
 #endif
         }
       };
@@ -3435,7 +3433,7 @@ restart:
       DoForEachTile(room, pt => {
         if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
         map.PlaceAt(MakeObjShelf(), pt);
-        Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
+        Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : PostprocessQuantity(GameItems.CANNED_FOOD.create());
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         map.DropItemAt(it, pt);
       });
@@ -3497,7 +3495,7 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
-      numberedName.Inventory.AddAll(MakeItemCannedFood());
+      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.CANNED_FOOD.create()));
       numberedName.Inventory.AddAll(MakeItemArmyRation());
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
@@ -3507,7 +3505,7 @@ restart:
       else
         numberedName.Inventory.AddAll(MakeItemGrenade());
       }
-      numberedName.Inventory.AddAll(MakeItemMedikit());
+      numberedName.Inventory.AddAll(GameItems.MEDIKIT.instantiate());
       numberedName.Inventory.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
       numberedName.Inventory.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
@@ -3664,7 +3662,7 @@ restart:
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : GameItems.BASEBALLBAT.create());
+      numberedName.Inventory.AddAll(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
