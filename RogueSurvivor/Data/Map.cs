@@ -799,8 +799,11 @@ namespace djack.RogueSurvivor.Data
       Rect.DoForEach(pt=>ret.Blacklist(pt),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
-        if (GetMapObjectAt(pt)?.IsContainer ?? true) return false;
-        if (GetMapObjectAt(pt) is Engine.MapObjects.PowerGenerator) return false;
+        var mapobj = GetMapObjectAt(pt);
+        if (null!=mapobj) {
+          if (mapobj.IsContainer) return false;
+          if (mapobj is Engine.MapObjects.PowerGenerator) return false;
+        }
         return true;
       });
       return ret;

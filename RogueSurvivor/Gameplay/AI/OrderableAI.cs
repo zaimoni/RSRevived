@@ -609,12 +609,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var helpers_at = new Dictionary<Point,Actor>();
         var move_to = new HashSet<Point>();
         foreach(Point pt in _dest.Position.Adjacent()) {
-          if (!_dest.Map.GetTileModelAt(pt).IsWalkable) continue;
-          Actor a = _dest.Map.GetActorAt(pt);
-          if (null == a) {
+          if (_dest.Map.IsWalkableFor(pt,m_Actor.Model)) {
             move_to.Add(pt);
             continue;
-          }
+          };
+          Actor a = _dest.Map.GetActorAt(pt);
+          if (null == a) continue;
           var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==door);
           if (null != is_helping) helpers_at[pt] = a;
           else move_to.Add(pt);
@@ -634,8 +634,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(var x in helpers_at) {
               foreach(Point pt in x.Key.Adjacent()) {
                 if (move_to.Contains(pt)) continue;
-                if (!_dest.Map.GetTileModelAt(pt).IsWalkable) continue;
-                if (null!=_dest.Map.GetActorAt(pt)) continue;
+                if (!_dest.Map.IsWalkableFor(pt,m_Actor.Model)) continue;
                 move_to.Add(pt);
               }
             }
