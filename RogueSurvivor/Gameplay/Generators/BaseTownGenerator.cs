@@ -117,6 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
 #if DEBUG
       if (bedroom_checksum != bedroom_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ bedroom_stock.Sum(x => x.Value));
+      if (CHAR_armory_checksum != CHAR_armory_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ CHAR_armory_stock.Sum(x => x.Value));
       if (CHAR_office_checksum != CHAR_office_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ CHAR_office_stock.Sum(x => x.Value));
       if (construction_shop_checksum != construction_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ construction_shop_stock.Sum(x => x.Value));
       if (gunshop_checksum != gunshop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: " + gunshop_stock.Sum(x => x.Value));
@@ -2685,14 +2686,28 @@ restart:
       return underground;
     }
 
+
+    private const int CHAR_armory_checksum = 2500;
+    private readonly KeyValuePair<GameItems.IDs, int>[] CHAR_armory_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,192),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,192),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,448),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,448),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,320),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_ZTRACKER,200),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_BLACKOPS,200),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR,500)
+    };
+
     private void MakeCHARArmoryRoom(Map map, Rectangle roomRect)
     {
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
         if (map.HasExitAt(pt)) return null;
-        if (!m_DiceRoller.RollChance(20)) return null;
-        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? GameItems.AMMO_SHOTGUN : GameItems.AMMO_LIGHT_RIFLE).create() : (m_DiceRoller.RollChance(50) ? GameItems.SHOTGUN : GameItems.HUNTING_RIFLE).create()) : (Item)MakeItemGrenade()) : (m_DiceRoller.RollChance(50) ? GameItems.ZTRACKER : GameItems.BLACKOPS_GPS).create()) : GameItems.CHAR_LT_BODYARMOR.create(), pt);
+        int choice = m_DiceRoller.Roll(0, CHAR_armory_checksum / 4*5);   // historically 80% chance of an item
+        if (CHAR_armory_checksum <= choice) return null;
+        map.DropItemAt(PostprocessQuantity(Models.Items[(int)CHAR_armory_stock.UseRarityTable(choice)].create()), pt);
         return MakeObjShelf();
       }));
     }
