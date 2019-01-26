@@ -516,6 +516,7 @@ namespace djack.RogueSurvivor.Engine
            Dictionary<Point,Direction> push_dest = map.ValidDirections(mapObjectAt.Location.Position, (m, pt) => {
                // short-circuit language requirement on operator && failed here
                if (!mapObjectAt.CanPushTo(pt)) return false;
+               if (m.HasExitAt(pt) && m.IsInBounds(pt)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
                return !m.PushCreatesSokobanPuzzle(pt, actor.Model);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)
 
