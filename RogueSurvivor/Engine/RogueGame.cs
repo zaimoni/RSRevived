@@ -7761,10 +7761,10 @@ namespace djack.RogueSurvivor.Engine
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
         if (need_stamina_regen) actor.PreTurnStart();
       }
-      if (isPlayer) SetCurrentMap(exitAt.ToMap);
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, origin);
-      RedrawPlayScreen();
+      if (isPlayer) PanViewportTo(actor.Location);
+      else RedrawPlayScreen();
       return true;
     }
 
