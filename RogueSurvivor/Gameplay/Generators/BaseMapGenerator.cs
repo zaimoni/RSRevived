@@ -582,11 +582,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    static public ItemFood MakeItemArmyRation()
-    {
-      return new ItemFood(GameItems.ARMY_RATION, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * GameItems.ARMY_RATION.BestBeforeDays);
-    }
-
     public ItemGrenade MakeItemGrenade()
     {
       return new ItemGrenade(GameItems.GRENADE, GameItems.GRENADE_PRIMED) {

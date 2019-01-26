@@ -3511,7 +3511,7 @@ restart:
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
       numberedName.Inventory.AddAll(MakeItemCannedFood());
-      numberedName.Inventory.AddAll(MakeItemArmyRation());
+      numberedName.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
       numberedName.Inventory.AddAll(rw);

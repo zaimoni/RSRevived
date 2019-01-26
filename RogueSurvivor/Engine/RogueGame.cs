@@ -2579,7 +2579,7 @@ namespace djack.RogueSurvivor.Engine
       Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
       map.TrimToBounds(ref survey);
       survey.DoForEach(pt => {
-          map.DropItemAt((m_Rules.RollChance(80) ? BaseMapGenerator.MakeItemArmyRation() : GameItems.MEDIKIT.create()), pt);
+          map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), pt);
           Session.Get.PoliceInvestigate.Record(map, pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures propor prioritzation

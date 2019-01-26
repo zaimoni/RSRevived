@@ -28,13 +28,17 @@ namespace djack.RogueSurvivor.Engine.Items
       StackingLimit = stackingLimit;
     }
 
+    // while a case can be made for army rations to be permanent food, it's much easier to see cans not degrading quickly than the ration packaging.
+    // RS 9 does not have a random component to their duration, unlike groceries
     public override Item create()
     {
+      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(this, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays);
       return new ItemFood(this);
     }
 
     public ItemFood instantiate()
     {
+      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(this, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays);
       return new ItemFood(this);
     }
 

@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
-        newCivilian.Inventory.AddAll(BaseMapGenerator.MakeItemArmyRation());
+        newCivilian.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());
       PoliceStationPrisoner = new UniqueActor(newCivilian,true);
     }
 
@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.AGILE, 5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FATHER_TIME_SCYTHE));
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemArmyRation());    // Doesn't want to be a target, so only one ration
+      named.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());    // Doesn't want to be a target, so only one ration
       FatherTime = new UniqueActor(named,false,true,null, "You hear new year's music.");  // XXX \todo GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
     }
 
