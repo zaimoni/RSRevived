@@ -332,7 +332,7 @@ namespace djack.RogueSurvivor.Data
       int delta_code = DistrictDeltaCode(pt);
       if (0==delta_code) return null;
       Point new_district = District.WorldPosition;    // System.Drawing.Point is a struct: this is a value copy
-      Point district_delta = new Point(0,0);
+      Vector2D_int_stack district_delta = new Vector2D_int_stack(0,0);
       while(0!=delta_code) {
         Point tmp = Zaimoni.Data.ext_Drawing.sgn_from_delta_code(ref delta_code);
         // XXX: reject Y other than 0,1 in debug mode
