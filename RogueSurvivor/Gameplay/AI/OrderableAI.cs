@@ -2539,7 +2539,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
         if (!exploration.HasExplored(loc)) num += EXPLORE_LOCS;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += EXPLORE_BARRICADES;
+        // this is problematic when the door is the previous location.  Do not overwhelm in/out
+        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
+          num += (loc != PrevLocation ? EXPLORE_BARRICADES : -EXPLORE_DIRECTION);
+        }
         if (0<trap_max_damage) num += trap_max_damage*AVOID_TRAPS;
         if (map.IsInsideAtExt(position)) {
           if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
