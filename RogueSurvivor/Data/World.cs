@@ -5,17 +5,16 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define SCHEDULER_IS_RACY
-#define INTERLOCK_SCHEDULER
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if INTERLOCK_SCHEDULER
 using System.Threading;
-#endif
+using Zaimoni.Data;
+
+// 2019-01-27 not expecting a use case for switching away from System.Drawing.Point
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
-using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -32,15 +31,9 @@ namespace djack.RogueSurvivor.Data
 
     private readonly District[,] m_DistrictsGrid;
     private readonly int m_Size;
-#if INTERLOCK_SCHEDULER
     private District m_PlayerDistrict = null; 
     private District m_SimDistrict = null; 
     private readonly Queue<District> m_Ready;
-#else
-    private readonly Queue<District> m_PCready;
-    private readonly Queue<District> m_NPCready;
-    private readonly Queue<District> m_NPClive;
-#endif
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
@@ -159,16 +152,11 @@ namespace djack.RogueSurvivor.Data
 //    Weather = Weather.CLEAR;
       Weather = (Weather)(RogueForm.Game?.Rules.Roll(0, (int)Weather._COUNT) ?? 0);
       NextWeatherCheckTurn = (RogueForm.Game?.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION) ?? 0);  // alpha10
-#if INTERLOCK_SCHEDULER
       m_Ready = new Queue<District>(size*size);
-#else
-      m_PCready = new Queue<District>(size*size);
-      m_NPCready = new Queue<District>(size*size);
-      m_NPClive = new Queue<District>(1);
-#endif
     }
 
     // low-level utilities
+#if DEAD_FUNC
     public Dictionary<Map, HashSet<Point>> BlankPositionDict {
       get {
         if (null == m_BlankPositionDict) {
@@ -183,6 +171,7 @@ namespace djack.RogueSurvivor.Data
         return new Dictionary<Map, HashSet<Point>>(m_BlankPositionDict);
       }
     }
+#endif
 
     public void DaimonMap()
     {
@@ -298,11 +287,7 @@ namespace djack.RogueSurvivor.Data
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
     // an inconsistent state
     public void ScheduleForAdvancePlay() {
-#if INTERLOCK_SCHEDULER
       lock(m_Ready) {
-#else
-      lock(m_PCready) {
-#endif
         ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
       }
     }
@@ -343,15 +328,9 @@ namespace djack.RogueSurvivor.Data
       District irrational_caution = d; // so we don't write to a locked variable while it is locked
 retry:
       d = irrational_caution;
-#if INTERLOCK_SCHEDULER
       if (d == m_PlayerDistrict) return;
       if (d == m_SimDistrict) return;
       if (m_Ready.Contains(d)) return;
-#else
-      if (m_PCready.Contains(d)) return;
-      if (m_NPCready.Contains(d)) return;
-      if (m_NPClive.Contains(d)) return;
-#endif
 
       // these are based on morally readonly properties and thus can be used without a lock
       int x = d.WorldPosition.X;
@@ -501,12 +480,7 @@ retry:
 #endif
 
         // we're clear.
-#if INTERLOCK_SCHEDULER
         m_Ready.Enqueue(d);
-#else
-        if (d.RequiresUI) m_PCready.Enqueue(d);
-        else m_NPCready.Enqueue(d);
-#endif
 #if SCHEDULER_IS_RACY
 #else
       }
@@ -529,15 +503,9 @@ retry:
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
 #endif
 
-#if INTERLOCK_SCHEDULER
       lock(m_Ready) {
         Interlocked.CompareExchange(ref m_PlayerDistrict, null, d);
         Interlocked.CompareExchange(ref m_SimDistrict, null, d);
-#else
-      lock(m_PCready) {
-        if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
-        if (0 < m_NPClive.Count && d == m_NPClive.Peek()) m_NPClive.Dequeue();
-#endif
 
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
@@ -562,7 +530,6 @@ retry:
     // avoiding property idiom for these as they affect World state
     public District CurrentPlayerDistrict()
     {
-#if INTERLOCK_SCHEDULER
       if (null != m_PlayerDistrict) return m_PlayerDistrict;
       lock (m_Ready) {
 restart:
@@ -575,23 +542,10 @@ restart:
         Interlocked.CompareExchange(ref m_SimDistrict, tmp, null);
         goto restart;
       }
-#else
-      lock(m_PCready) {
-        while(0 < m_PCready.Count) {
-          District tmp = m_PCready.Peek();
-          if (1 == m_PCready.Count || tmp.RequiresUI) return tmp;
-          m_NPCready.Enqueue(m_PCready.Dequeue());
-        }
-        if (0 >= m_NPCready.Count) return null;
-        m_PCready.Enqueue(m_NPCready.Dequeue());
-        return m_PCready.Peek();
-      }
-#endif
     }
 
     public District CurrentSimulationDistrict()
     {
-#if INTERLOCK_SCHEDULER
       if (null != m_SimDistrict) return m_SimDistrict;
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;
@@ -601,17 +555,6 @@ restart:
         Interlocked.CompareExchange(ref m_SimDistrict, tmp, null);
         return m_SimDistrict;
       }
-#else
-      lock(m_PCready) {
-        while(0 == m_NPClive.Count && 0 < m_NPCready.Count) {
-          District tmp = m_NPCready.Peek();
-          if (!tmp.RequiresUI) m_NPClive.Enqueue(m_NPCready.Dequeue());
-          else m_PCready.Enqueue(m_NPCready.Dequeue());
-        }
-        if (0 < m_NPClive.Count) return m_NPClive.Peek();
-      }
-      return null;
-#endif
     }
 
     public void TrimToBounds(ref int x, ref int y)
