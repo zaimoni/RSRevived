@@ -363,9 +363,8 @@ namespace djack.RogueSurvivor.Data
       if (this == loc.Map && IsValid(loc.Position)) return loc;
 #if NO_PEACE_WALLS
       int map_code = UsesCrossDistrictView(this);
-      if (0>=map_code) return null;
-      if (map_code != UsesCrossDistrictView(loc.Map)) return null;
-      Point district_delta = new Point(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
+      if (0>=map_code || map_code != UsesCrossDistrictView(loc.Map)) return null;
+      Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
