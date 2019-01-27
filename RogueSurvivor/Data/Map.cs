@@ -691,7 +691,7 @@ namespace djack.RogueSurvivor.Data
       return rect.Any(pt => HasExitAt(pt));
     }
 
-    // <remarl>only caller wants result in-bounds</remark>
+    // <remark>only caller wants result in-bounds</remark>
 	public List<Point> ExitLocations(HashSet<Exit> src)
 	{
       if (0 >= (src?.Count ?? 0)) return null;

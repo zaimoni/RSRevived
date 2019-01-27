@@ -2969,7 +2969,7 @@ namespace djack.RogueSurvivor.Engine
           // alpha10 fix properly handle hint overlay
           int availableHint = -1;
           if (s_Options.IsAdvisorEnabled && (availableHint = GetAdvisorFirstAvailableHint()) != -1) {
-            Point overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
+            var overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
             if (m_HintAvailableOverlay == null) {
               m_HintAvailableOverlay = new OverlayPopup(null, Color.White, Color.White, Color.Black, overlayPos);
               AddOverlay(m_HintAvailableOverlay);
@@ -3874,10 +3874,10 @@ namespace djack.RogueSurvivor.Engine
       if (!CurrentMap.IsValid(pt)) return true;
       ClearOverlays();
       if (IsVisibleToPlayer(CurrentMap, pt)) {
-        Point screen = MapToScreen(pt);
+        var screen = MapToScreen(pt);
         string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (lines != null) {
-          Point screenPos = new Point(screen.X + TILE_SIZE, screen.Y);
+          var screenPos = new GDI_Point(screen.X + TILE_SIZE, screen.Y);
           AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
           if (s_Options.ShowTargets) {
             Actor actorAt = CurrentMap.GetActorAt(pt);
@@ -7620,7 +7620,7 @@ namespace djack.RogueSurvivor.Engine
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
     {
       if (!IsInViewRect(defender.Location)) return;
-      Point screenPos = MapToScreen(defender.Location);
+      var screenPos = MapToScreen(defender.Location);
       AddOverlay(new OverlayImage(screenPos, icon));
       AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
     }
@@ -8417,7 +8417,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    private void ShowBlastImage(Point screenPos, BlastAttack attack, int damage)
+    private void ShowBlastImage(GDI_Point screenPos, BlastAttack attack, int damage)
     {
       float alpha = (float) (0.1 + damage / (double)attack.Damage[0]);
       if (alpha > 1.0) alpha = 1f;
@@ -10868,7 +10868,7 @@ namespace djack.RogueSurvivor.Engine
           if (!map.IsValid(x, y)) continue;
 #endif
           MapViewRect.convert(point,ref working);
-          Point screen = MapToScreen(x, y);
+          var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
 #if NO_PEACE_WALLS
@@ -11295,12 +11295,12 @@ namespace djack.RogueSurvivor.Engine
     public void DrawPlayerActorTargets(Actor player)
     {
       if (null != player.Sees(player.TargetActor)) {
-        Point screen = MapToScreen(player.TargetActor.Location);
+        var screen = MapToScreen(player.TargetActor.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
       foreach (Actor actor in player.Location.Map.Actors) {
         if (null != player.Sees(actor) && actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
-          Point screen = MapToScreen(player.Location);
+          var screen = MapToScreen(player.Location);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
         }
@@ -11370,7 +11370,7 @@ namespace djack.RogueSurvivor.Engine
       Point point = new Point(MINIMAP_X + (loc.Position.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (loc.Position.Y - view.Top) * MINITILE_SIZE);
       m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
       if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
-        Point screen = MapToScreen(loc);
+        var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
     }
@@ -11387,7 +11387,7 @@ namespace djack.RogueSurvivor.Engine
       }
 	  m_UI.UI_SetMinimapColor((loc.Position.X - view.Left), (loc.Position.Y - view.Top), minimap_color);
       if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
-        Point screen = MapToScreen(loc);
+        var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
       m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
@@ -11770,17 +11770,17 @@ namespace djack.RogueSurvivor.Engine
       lock (m_Overlays) { return m_Overlays.Contains(o); }
     }
 
-    private static Point MapToScreen(int x, int y)
+    private static GDI_Point MapToScreen(int x, int y)
     {
       return new Point((x - MapViewRect.Left) * TILE_SIZE, (y - MapViewRect.Top) * TILE_SIZE);
     }
 
-    private static Point MapToScreen(Point mapPosition)
+    private static GDI_Point MapToScreen(Point mapPosition)
     {
       return MapToScreen(mapPosition.X, mapPosition.Y);
     }
 
-    public static Point MapToScreen(Location loc)
+    public static GDI_Point MapToScreen(Location loc)
     {
       if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
       Location? tmp = CurrentMap.Denormalize(loc);
