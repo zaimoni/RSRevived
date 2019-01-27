@@ -54,9 +54,8 @@ namespace djack.RogueSurvivor.Data
 
     public override bool Equals(object obj)
     {
-      Location? tmp = obj as Location?;
-      if (null == tmp) return false;
-      return Equals(tmp.Value);
+      var tmp = obj as Location?;
+      return null != tmp && Equals(tmp.Value);
     }
 
     public static Location operator +(Location lhs, Direction rhs)
