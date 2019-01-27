@@ -5,7 +5,12 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Drawing;
+using Zaimoni.Data;
+
+// map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
 
 namespace djack.RogueSurvivor.Data
 {
@@ -106,7 +111,7 @@ namespace djack.RogueSurvivor.Data
         Rectangle ret = new Rectangle(Map.District.WorldPosition,new Size(1,1));
         if (Map != Map.District.EntryMap) return ret;  // RS behavior
         const int radius = Engine.RogueGame.MINIMAP_RADIUS+100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
-        Point topleft = new Point(Position.X-radius,Position.Y-radius);
+        var topleft = new Vector2D_int_stack(Position.X-radius,Position.Y-radius);
         while(0>topleft.X && 0<ret.Left) {
           topleft.X += Engine.RogueGame.Options.DistrictSize;
           --ret.X;
@@ -117,7 +122,7 @@ namespace djack.RogueSurvivor.Data
           --ret.Y;
           ++ret.Height;
         }
-        Point bottomright = new Point(Position.X+radius,Position.Y+radius);
+        var bottomright = new Vector2D_int_stack(Position.X+radius,Position.Y+radius);
         while(Engine.RogueGame.Options.DistrictSize <= bottomright.X) {
           bottomright.X -= Engine.RogueGame.Options.DistrictSize;
           ++ret.Width;

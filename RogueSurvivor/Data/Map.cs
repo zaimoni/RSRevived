@@ -12,13 +12,17 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
+
+// map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
 
 namespace djack.RogueSurvivor.Data
 {
