@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Data
         if (null == test) return false;
         loc = test.Value;
       }
-      return view.Left <= loc.Position.X && view.Right > loc.Position.X && view.Top <= loc.Position.Y && view.Bottom > loc.Position.Y;
+      return view.Contains(loc.Position);
     }
 
     // these two look wrong, may need fixing later
