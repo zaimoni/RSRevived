@@ -488,8 +488,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (IsInBounds(p)) return IsInsideAt(p);
       Location? test = Normalize(p);
-      if (null == test) return false;
-      return test.Value.Map.IsInsideAt(test.Value.Position);
+      return null!=test && test.Value.Map.IsInsideAt(test.Value.Position);
     }
 
     public void SetTileModelAt(int x, int y, TileModel model)
@@ -598,10 +597,10 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveDecorationAt(string imageID, Point pt)
     {
-      if (!m_Decorations.TryGetValue(pt, out HashSet<string> ret)) return;
-      if (!ret.Remove(imageID)) return;
-      if (0 < ret.Count) return;
-      m_Decorations.Remove(pt);
+      if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)
+          && ret.Remove(imageID)
+          && 0 >= ret.Count)
+          m_Decorations.Remove(pt);
     }
 
     public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
@@ -657,13 +656,13 @@ namespace djack.RogueSurvivor.Data
         for(int x = 0; x<Width; x++) {
           Point test = new Point(x,0);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
-          test = new Point(x,Height-1);
+          test.Y = Height-1;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
         for(int y = 1; y<Height-1; y++) {
           Point test = new Point(0,y);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
-          test = new Point(Width-1,y);
+          test.X = Width-1;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
       }
