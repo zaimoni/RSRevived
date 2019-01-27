@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
     private Dictionary<Map, HashSet<Point>> m_BlankPositionDict;
 
     public int Size { get { return m_Size; } }
-    public int CitgSize { get { return m_Size; } }  // not guaranteed to be the same as the above
+    public int CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
     public District this[int x, int y]
     {

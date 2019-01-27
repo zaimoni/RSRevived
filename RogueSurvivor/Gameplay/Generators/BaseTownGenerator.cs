@@ -479,7 +479,7 @@ restart:
     private Point SubwayRail(District d) {
       // original version was reading the incoming dimensions off of the incoming entryMap
       // but this was simply the district size
-      int deviate_at = Session.Get.World.CitgSize-1;
+      int deviate_at = Session.Get.World.CitySize-1;
       int half_dim = RogueGame.Options.DistrictSize/2;
       Point mid_map = new Point(half_dim, half_dim);
       // need diagonals at An and n0 flush
