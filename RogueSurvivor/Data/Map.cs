@@ -813,6 +813,7 @@ namespace djack.RogueSurvivor.Data
         if (null!=mapobj) {
           if (mapobj.IsContainer) return false;
           if (mapobj is Engine.MapObjects.PowerGenerator) return false;
+          if (mapobj is DoorWindow) return false;
         }
         return true;
       });
