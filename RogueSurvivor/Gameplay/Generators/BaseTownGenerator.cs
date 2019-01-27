@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define MORE_AGGRESSIVE_CONNECTED_BASEMENTS
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
@@ -2386,21 +2388,82 @@ restart:
 
       var inner = new Rectangle(1,1,basement.Rect.Width-2, basement.Rect.Height - 2);   // \todo ? could precalculate this in constructor
 restart:
-      var candidates = new HashSet<Point>();    // for being the center of a canonical disconnect
+      // anchor point is the top-left walkable tile being cut off
+      var candidates = new HashSet<Point>();    // for being the center of a canonical 1x1 disconnect
+#if MORE_AGGRESSIVE_CONNECTED_BASEMENTS
+      var candidates_1x2 = new HashSet<Point>();    // width 1 height 2 disconnect
+      var candidates_2x1 = new HashSet<Point>();    // width 2 height 1 disconnect
+      inner.DoForEach(pt => {
+          candidates.Add(pt);
+          if (pt.X < basement.Rect.Width - 2) candidates_2x1.Add(pt);
+          if (pt.Y < basement.Rect.Height - 2) candidates_1x2.Add(pt);
+      });
+#else
       inner.DoForEach(pt => candidates.Add(pt));
-      while(0<candidates.Count) {
-        var test = candidates.First();
+#endif
+      bool walkable_loc(Point test) {
         if (!basement.GetTileModelAt(test).IsWalkable) {
           candidates.Remove(test);
-          continue;
+#if MORE_AGGRESSIVE_CONNECTED_BASEMENTS
+          candidates_1x2.Remove(test);
+          candidates_2x1.Remove(test);
+          candidates_1x2.Remove(test+Direction.N);
+          candidates_2x1.Remove(test+Direction.W);
+#endif
+          return false;
         }
+        // we want to actually inspect all points so do not clear 1x1 candidates that are ruled out by being walkable
+        // ok to rule out larger disconnects
+#if MORE_AGGRESSIVE_CONNECTED_BASEMENTS
+        // these five are the inverse of the top-left corner for rectangular disconnects
+        Point tmp_pt = test+Direction.NE;
+        candidates_1x2.Remove(tmp_pt);
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt = test+Direction.E;
+        candidates_1x2.Remove(tmp_pt);
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt = test+Direction.SE;
+        candidates_1x2.Remove(tmp_pt);
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt = test+Direction.S;
+        candidates_1x2.Remove(tmp_pt);
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt = test+Direction.SW;
+        candidates_2x1.Remove(tmp_pt);
+        // inverse-SE
+        tmp_pt = test+Direction.NW;
+        candidates_1x2.Remove(tmp_pt);
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt += Direction.W;
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt += Direction.NE;
+        candidates_1x2.Remove(tmp_pt);
+        // inverse-S
+        tmp_pt = test+Direction.N;
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt += Direction.N;
+        candidates_1x2.Remove(tmp_pt);
+        tmp_pt += Direction.E;
+        candidates_1x2.Remove(tmp_pt);
+        // inverse-W
+        tmp_pt = test+Direction.W;
+        candidates_1x2.Remove(tmp_pt);
+        tmp_pt += Direction.W;
+        candidates_2x1.Remove(tmp_pt);
+        tmp_pt += Direction.S;
+        candidates_2x1.Remove(tmp_pt);
+#endif
+        return true;
+      }
+
+      while(0<candidates.Count) {
+        var test = candidates.First();
+        if (!walkable_loc(test)) continue;
         bool no_problem = false;
         foreach(var test2 in test.Adjacent()) {
-          if (basement.GetTileModelAt(test2).IsWalkable) {
+          if (walkable_loc(test2)) {
             no_problem = true;
             break;
-          } else {
-            candidates.Remove(test2);
           }
         }
         if (no_problem) {
@@ -2408,35 +2471,30 @@ restart:
           continue;
         }
         // still here...problem
-        if (!basement.HasExitAt(test)) {
-          var air = new Dictionary<Point, int>();
-          foreach(var test3 in test.Adjacent()) {
+        var air = new Dictionary<Point, int>();
+        foreach(var test3 in test.Adjacent()) {
             if (test3 == test) continue;
             if (basement.IsOnEdge(test3)) continue;
             air[test3] = basement.CountAdjacentTo(test3,pt => basement.GetTileModelAt(pt).IsWalkable);
-            int max = air.Values.Max();
-            air.OnlyIf(val => val==max);
-          }
+        }
+        if (!basement.HasExitAt(test)) {
+          int max = air.Values.Max();
+          air.OnlyIf(val => val==max);
           var exchange = m_DiceRoller.Choose(air).Key;
           basement.SetTileModelAt(test, GameTiles.WALL_BRICK);
           basement.SetTileModelAt(exchange, GameTiles.FLOOR_CONCRETE);
           goto restart;  
         }
+#if DEBUG
+        throw new InvalidProgramException("need to handle 1x1 exit isolation");
+#else
         // silently fail
         candidates.Remove(test);
+#endif
       }
-#if FAIL
-      HashSet<Point> tainted = Session.Get.PoliceInvestigate.In(basement);
-      // 0<tainted.Count by construction
-      // basementStairs not tainted by construction
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = basement.PathfindSteps();   // assume an actor suitable for OrderableAI.  No actors yet so that simplifies things
-      navigate.GoalDistance(basementStairs, tainted);   // may need another thin wrapper
-      tainted.ExceptWith(navigate.Domain);
-      if (0<tainted.Count) {
-        // recovery code: find a brick wall that is adjacent to both unreachable and reachable squares, preferably 2+ uncreachable
-        // reposition brick wall from into an unreachable square
-        // redo
-      }
+#if MORE_AGGRESSIVE_CONNECTED_BASEMENTS
+      if (0 < candidates_2x1.Count) throw new InvalidProgramException("need to handle 2x1 disconnect");
+      if (0 < candidates_1x2.Count) throw new InvalidProgramException("need to handle 1x2 disconnect");
 #endif
       return true;
     }
