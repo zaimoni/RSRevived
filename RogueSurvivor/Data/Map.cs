@@ -221,12 +221,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInBounds(Point p)
     {
-      return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
+      int test;
+      return 0 <= (test = p.X) && test < Width && 0 <= (test = p.Y) && test < Height;
     }
 
     public bool IsOnEdge(Point p)   // but not necessarily in bounds
     {
-      return 0==p.X || Width-1==p.X || 0==p.Y || Height-1==p.Y;
+      int test;
+      return 0==(test = p.X) || Width-1==test || 0==(test = p.Y) || Height-1==test;
     }
 
     // return value of zero may be either "in bounds", or "not valid at all"
@@ -234,29 +236,33 @@ namespace djack.RogueSurvivor.Data
     {
       int ret = 0;
 
-      if (0>pt.X) ret -= 1;
-      else if (Width <= pt.X) ret += 1;
+      int test;
+      if (0>(test = pt.X)) ret -= 1;
+      else if (Width <= test) ret += 1;
 
-      if (0>pt.Y) ret -= 3;
-      else if (Height <= pt.Y) ret += 3;
+      if (0>(test = pt.Y)) ret -= 3;
+      else if (Height <= test) ret += 3;
 
       return ret;
     }
 
     public void TrimToBounds(ref int x, ref int y)
     {
+      int nonstrict_ub;
       if (x < 0) x = 0;
-      else if (x > Width - 1) x = Width - 1;
+      else if (x > (nonstrict_ub = Width - 1)) x = nonstrict_ub;
       if (y < 0) y = 0;
-      else if (y > Height - 1) y = Height - 1;
+      else if (y > (nonstrict_ub = Height - 1)) y = nonstrict_ub;
     }
 
     public void TrimToBounds(ref Point p)
     {
-      if (p.X < 0) p.X = 0;
-      else if (p.X > Width - 1) p.X = Width - 1;
-      if (p.Y < 0) p.Y = 0;
-      else if (p.Y > Height - 1) p.Y = Height - 1;
+      int nonstrict_ub;
+      int test;
+      if ((test = p.X) < 0) p.X = 0;
+      else if (test > (nonstrict_ub = Width - 1)) p.X = nonstrict_ub;
+      if ((test = p.Y) < 0) p.Y = 0;
+      else if (test> (nonstrict_ub = Height - 1)) p.Y = nonstrict_ub;
     }
 
     public void TrimToBounds(ref Rectangle r)
@@ -267,18 +273,20 @@ namespace djack.RogueSurvivor.Data
       if (0 > r.Right) throw new ArgumentOutOfRangeException(nameof(r.Right),r.Right, "0 > r.Right");
       if (0 > r.Bottom) throw new ArgumentOutOfRangeException(nameof(r.Bottom),r.Bottom, "0 > r.Bottom");
 #endif
-      if (r.X < 0) {
-        r.Width += r.X;
+      int nonstrict_ub;
+      int test;
+      if ((test = r.X) < 0) {
+        r.Width += test;
         r.X = 0;
       }
 
-      if (r.Y < 0) {
-        r.Width += r.Y;
+      if ((test = r.Y) < 0) {
+        r.Width += test;
         r.Y = 0;
       }
 
-      if (r.Right > Width-1)  r.Width -= (r.Right - Width + 1);
-      if (r.Bottom > Height-1) r.Height -= (r.Bottom - Height +1);
+      if ((test = r.Right) > (nonstrict_ub = Width - 1))  r.Width -= (test - nonstrict_ub);
+      if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (test - nonstrict_ub);
     }
 
     // placeholder for define-controlled redefinitions
