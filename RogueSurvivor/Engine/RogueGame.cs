@@ -11299,8 +11299,12 @@ namespace djack.RogueSurvivor.Engine
         var screen = MapToScreen(player.TargetActor.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
-      foreach (Actor actor in player.Location.Map.Actors) {
-        if (null != player.Sees(actor) && actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
+      Actor actor;
+      foreach(var pt in player.Controller.FOV) {
+        if (pt == player.Location.Position) continue;
+        actor = player.Location.Map.GetActorAtExt(pt);
+        if (null==actor || actor.IsDead) continue;
+        if (actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
           var screen = MapToScreen(player.Location);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
