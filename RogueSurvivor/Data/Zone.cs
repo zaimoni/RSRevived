@@ -62,53 +62,19 @@ namespace djack.RogueSurvivor.Data
   internal class ZoneLoc
   {
     public readonly Map m;
-    public readonly Zone z;
+    public readonly Rectangle Rect; // doesn't have to be normalized
 
-    [NonSerialized] private readonly Dictionary<string, object> m_Cache = new Dictionary<string,object>();
-
-    public ZoneLoc(Map _m, Zone _z)
+    public ZoneLoc(Map _m, Rectangle _r)
     {
       m = _m;
-      z = _z;
+      Rect = _r;
     }
 
-    public bool Contains(Location loc) { return m == loc.Map && z.Bounds.Contains(loc.Position); }
+    public bool Contains(Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
     public bool ContainsExt(Location loc) {
-      if (loc.Map.IsInBounds(loc.Position)) return Contains(loc);
-      Location? test = loc.Map.Normalize(loc.Position);
-      if (null==test) return false;
-      return Contains(test.Value);
-    }
-
-    public bool Has(string key)
-    {
-      return m_Cache.ContainsKey(key);
-    }
-
-    public void Set<_T_>(string key, _T_ value)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-#endif
-      m_Cache[key] = value;
-    }
-
-    public _T_ Get<_T_>(string key)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-#endif
-      if (!m_Cache.TryGetValue(key, out object obj)) return default (_T_);
-      if (!(obj is _T_)) throw new InvalidOperationException("not of requested type");
-      return (_T_) obj;
-    }
-
-    public bool Unset(string key)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-#endif
-      return m_Cache.Remove(key);
+      if (m == loc.Map) return Rect.Contains(loc.Position);
+      var test = m.Denormalize(loc);
+      return null!=test && Rect.Contains(test.Value.Position);
     }
   }
 }
