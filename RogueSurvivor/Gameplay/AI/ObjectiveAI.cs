@@ -2352,9 +2352,7 @@ restart_single_exit:
 
     protected T GetWorst<T>(IEnumerable<T> src) where T:Item
     {
-#if DEBUG
       if (!src?.Any() ?? true) return null;
-#endif
       T worst = null;
       foreach(T test in src) {
         if (null == worst) worst = test;
@@ -2445,6 +2443,11 @@ restart_single_exit:
         ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
         if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
+          if (null!=position) { // only do this when right on top of the inventory containing the ammo
+            var already = inv.GetBestDestackable(am) as ItemAmmo;
+            if (null!=already) return new ActionUseItem(m_Actor, already);
+          }
+
           // 1) we would re-pickup food.
           // 2) it would not be a big deal if something less important than ammo were not re-picked up.
           Item drop = inv.GetFirst<ItemFood>();
