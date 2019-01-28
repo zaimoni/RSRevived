@@ -3085,7 +3085,7 @@ namespace djack.RogueSurvivor.Data
     public bool MayTakeFromStackAt(Location loc)
     {
       if (Location == loc) return true;
-      if (!Rules.IsAdjacent(Location,loc)) return false;
+      if (1 != Rules.GridDistance(Location, loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
       // currently all containers are not-walkable for UI reasons.
       return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
     }

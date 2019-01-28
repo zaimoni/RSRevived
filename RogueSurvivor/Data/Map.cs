@@ -800,7 +800,7 @@ namespace djack.RogueSurvivor.Data
               // cheating ai: update item memory immediately since we had to check anyway
               actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
             } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
-            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.BehaviorGrabFromAccessibleStack(loc, inv)) return false;
+            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
           }
           if (mapobj is Engine.MapObjects.PowerGenerator) return false;
           if (mapobj is DoorWindow) return false;
@@ -831,7 +831,7 @@ namespace djack.RogueSurvivor.Data
               // cheating ai: update item memory immediately since we had to check anyway
               actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
             } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
-            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.BehaviorGrabFromAccessibleStack(loc, inv)) return false;
+            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
           }
           if (mapobj is Engine.MapObjects.PowerGenerator) return false;
           if (mapobj is DoorWindow) return false;

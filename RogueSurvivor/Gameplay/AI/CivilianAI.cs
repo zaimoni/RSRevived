@@ -429,7 +429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var at_target = interestingStacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
           if (null != at_target) {
             m_LastItemsSaw = at_target;
-            tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
+            tmpAction = BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
             if (tmpAction?.IsLegal() ?? false) {
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;

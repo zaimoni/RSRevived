@@ -2105,20 +2105,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
     
-    public ActorAction WouldUseAccessibleStack(Location dest) {
+    public ActorAction WouldUseAccessibleStack(Location dest,bool is_real=false) {
         Dictionary<Point, Inventory> stacks = dest.Map.GetAccessibleInventories(dest.Position);
         if (0 < (stacks?.Count ?? 0)) {
           foreach(var x in stacks) {
             Location? loc = (dest.Map.IsInBounds(x.Key) ? new Location(dest.Map, x.Key) : dest.Map.Normalize(x.Key));
             if (null == loc) throw new ArgumentNullException(nameof(loc));
-            ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
+            ActorAction tmpAction = WouldGrabFromAccessibleStack(loc.Value, x.Value, is_real);
             if (null != tmpAction) return tmpAction;
           }
         }
         return null;
     }
 
-    public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location); }
+    public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
 
 	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
 	{
@@ -2831,7 +2831,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
-    public ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
+    public ActorAction WouldGrabFromAccessibleStack(Location loc, Inventory stack, bool is_real=false)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -2861,11 +2861,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = null;
-      if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+      ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
 
-      tmp = new ActionTakeItem(m_Actor, loc, obj);
       if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
         if (null == recover) return null;
         if (!recover.IsLegal()) return null;
@@ -2874,9 +2871,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
         }
         Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+        if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return recover;
       }
-      return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
+      if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
+      if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+      return tmp;
+    }
+
+
+    public ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
+    {
+      return WouldGrabFromAccessibleStack(loc, stack, true);
     }
 
     protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
@@ -2912,14 +2920,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
-      if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-      bool may_take = (loc == m_Actor.Location);
       // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
-      // currently all containers are not-walkable for UI reasons.
-      if (mapObjectAt != null && mapObjectAt.IsContainer /* && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor) */
-          && 1==Rules.GridDistance(m_Actor.Location,loc))
-        may_take = true;
+      bool may_take = m_Actor.MayTakeFromStackAt(loc);
 
       if (may_take) {
         tmp = new ActionTakeItem(m_Actor, loc, obj);
@@ -2931,9 +2933,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
           }
           Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+          if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+            RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
           return recover;
         }
-        return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
+        if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
+        if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+        return tmp;
       }
       { // scoping brace
       if (null == _legal_steps) return null;
@@ -2975,12 +2982,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
         m_Actor.Activity = Activity.IDLE;
+        if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return tmpAction;
       }
       tmpAction = DecideMove(costs.Keys);
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
         m_Actor.Activity = Activity.IDLE;
+        if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return tmpAction;
       }
       } // end scoping brace
