@@ -24,6 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
 #if DEBUG
       if (null == pushObj) throw new ArgumentNullException(nameof(pushObj));
+      if (null == pushDir) throw new ArgumentNullException(nameof(pushDir));
 #endif
       m_Object = pushObj;
       m_Direction = pushDir;

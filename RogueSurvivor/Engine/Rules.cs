@@ -442,6 +442,7 @@ namespace djack.RogueSurvivor.Engine
         return actionMoveStep;
       }
 
+      // respec of IsWalkableFor guarantees that any actor will be adjacent
       reason = actionMoveStep.FailReason;
       Actor actorAt = map.GetActorAt(point);
       if (actorAt != null) {
@@ -453,6 +454,11 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsPlayer || !actorAt.IsPlayer) {
           if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
         }
+
+        // check for mutual-advantage switching place between ais
+        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
+            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true))
+           return new ActionSwitchPlaceEmergency(actor,actorAt);
         
         // no chat when pathfinding
         // but it is ok to shove other actors

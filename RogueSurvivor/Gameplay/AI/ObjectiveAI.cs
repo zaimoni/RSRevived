@@ -166,7 +166,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal abstract class ObjectiveAI : BaseAI
   {
     public enum SparseData {
-      LoF = 0   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
+      LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
+      CloseToActor
     };
 
     readonly protected List<Objective> Objectives = new List<Objective>();
@@ -208,6 +209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void SparseReset()
     {
       _sparse.Unset(SparseData.LoF);
+      _sparse.Unset(SparseData.CloseToActor);
     }
 
     // morally a constructor-type function
@@ -247,6 +249,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#region sparse data accessors
+    // protected setters could be eliminated by downgrading _sparse to protected, but types have to be manually aligned between set/get anyway
     public void RecordLoF(List<Point> LoF)  // XXX access control weakness required by RogueGame
     {
       if (null == LoF || 1>=LoF.Count) return;
@@ -254,6 +258,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public List<Point> GetLoF() { return _sparse.Get<List<Point>>(SparseData.LoF); }   // XXX reference-copy return 
+    protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
+    public KeyValuePair<Actor, int> GetCloseToActor() { return _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor); }
+#endregion
 
     [System.Flags]
     public enum ReactionCode : uint {
@@ -675,7 +682,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (x is ActionShove shove && 2==Rules.GridDistance(m_Actor.Location.Position,shove.To)) {
         // check for a valid push to the same destination.  Not as likely to resist.
-        var candidates = shove.To.Adjacent().Where(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt) && m_Actor.Location.Map.HasMapObjectAt(pt)).Select(pt => new Engine.Actions.ActionPush(m_Actor,m_Actor.Location.Map.GetMapObjectAt(pt),Direction.FromVector(shove.To.Y-pt.X,shove.To.X-pt.Y)));
+        // XXX there is only one location generating shoves (pathing), do this rewrite there instead
+        var candidates = shove.To.Adjacent().Where(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt) && m_Actor.Location.Map.HasMapObjectAt(pt) && shove.To.Adjacent().Contains(pt)).Select(pt => new Engine.Actions.ActionPush(m_Actor,m_Actor.Location.Map.GetMapObjectAt(pt),Direction.FromVector(shove.To.X-pt.X,shove.To.Y-pt.Y)));
         candidates = candidates.Where(Action => Action.IsLegal());
         if (candidates.Any()) return RogueForm.Game.Rules.DiceRoller.Choose(candidates.ToList());
       }

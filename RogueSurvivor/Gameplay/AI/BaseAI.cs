@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
-#if PROToTYPE
+#if PROTOTYPE
         ActorAction alt = ai.RewriteAction(actorAction);
         if (alt?.IsLegal() ?? false) actorAction = alt;
 #endif

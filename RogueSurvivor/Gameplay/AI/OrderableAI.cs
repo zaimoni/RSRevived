@@ -2158,13 +2158,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
+    private bool InProximity(Location src, Location dest, int maxDist)
+    {  // due to definitions, for maxDist=1 the other two tests are implied by the GridDistance test for m_Actor.Location
+       return Rules.GridDistance(src, dest) <= maxDist
+           && (1 >= maxDist || (CanSee(dest) && null != m_Actor.MinStepPathTo(src, dest)));
+    }
+
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
-      if (   CanSee(other.Location)
-          && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
-          && null != m_Actor.MinStepPathTo(m_Actor.Location, other.Location))
+      if (InProximity(m_Actor.Location, other.Location, maxDist)) {
+          RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
+      }
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
       if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
@@ -3463,9 +3469,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null!=WouldUseAccessibleStack(dest)) return false;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
-//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return true;
+        var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min();
+        var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(loc, dest)).Min();
+        if (old_dist > new_dist) return false;
+        if (old_dist < new_dist) return true;
       }
+      if (MovePlanIf(m_Actor.Location.Position)?.ContainsKey(dest.Position) ?? false) return false;    // needs adjusting for cross-district
+
+      var already_near_actor = GetCloseToActor();
+      if (   null!=already_near_actor.Key && 0<already_near_actor.Value // reject default-initialization
+          && InProximity(dest, already_near_actor.Key.Location, already_near_actor.Value))
+        return false;
+
       return true;
     }
 
