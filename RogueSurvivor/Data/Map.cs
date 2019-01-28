@@ -791,7 +791,20 @@ namespace djack.RogueSurvivor.Data
       Rect.DoForEach(pt=>ret.Blacklist(new Location(this, pt)),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
-        if (GetMapObjectAt(pt)?.IsContainer ?? true) return false;
+        var mapobj = GetMapObjectAt(pt);
+        if (null!=mapobj) {
+          Location loc = new Location(this, pt);
+          if (mapobj.IsContainer) {
+            var inv = GetItemsAt(pt);
+            if (null==inv || inv.IsEmpty) {
+              // cheating ai: update item memory immediately since we had to check anyway
+              actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
+            } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
+            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.BehaviorGrabFromAccessibleStack(loc, inv)) return false;
+          }
+          if (mapobj is Engine.MapObjects.PowerGenerator) return false;
+          if (mapobj is DoorWindow) return false;
+        }
         return true;
       });
       return ret;
@@ -811,7 +824,15 @@ namespace djack.RogueSurvivor.Data
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
         var mapobj = GetMapObjectAt(pt);
         if (null!=mapobj) {
-          if (mapobj.IsContainer) return false;
+          Location loc = new Location(this, pt);
+          if (mapobj.IsContainer) {
+            var inv = GetItemsAt(pt);
+            if (null==inv || inv.IsEmpty) {
+              // cheating ai: update item memory immediately since we had to check anyway
+              actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
+            } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
+            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.BehaviorGrabFromAccessibleStack(loc, inv)) return false;
+          }
           if (mapobj is Engine.MapObjects.PowerGenerator) return false;
           if (mapobj is DoorWindow) return false;
         }
@@ -1278,7 +1299,7 @@ retry:
 
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
-    public bool PushCreatesSokobanPuzzle(Point dest,ActorModel model)
+    public bool PushCreatesSokobanPuzzle(Point dest,Actor actor)
     {
       if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
 
@@ -1286,7 +1307,8 @@ retry:
       Span<bool> blocked = stackalloc bool[8];
       Span<bool> no_go = stackalloc bool[8];
       foreach(Point pt2 in dest.Adjacent()) {
-        if (IsWalkableFor(pt2,model)) continue;
+        if (actor.Location.Map==this && actor.Location.Position==pt2) continue;
+        if (IsWalkableFor(pt2,actor.Model)) continue;   // not interested in stamina for this
         Direction dir = Direction.FromVector(pt2.X-dest.X,pt2.Y-dest.Y);
 #if DEBUG
         if (null == dir) throw new ArgumentNullException(nameof(dir));

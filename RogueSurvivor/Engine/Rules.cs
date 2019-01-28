@@ -523,7 +523,7 @@ namespace djack.RogueSurvivor.Engine
                // short-circuit language requirement on operator && failed here
                if (!mapObjectAt.CanPushTo(pt)) return false;
                if (m.HasExitAt(pt) && m.IsInBounds(pt)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
-               return !m.PushCreatesSokobanPuzzle(pt, actor.Model);
+               return !m.PushCreatesSokobanPuzzle(pt, actor);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)
 
            bool is_adjacent = Rules.IsAdjacent(actor.Location, mapObjectAt.Location);

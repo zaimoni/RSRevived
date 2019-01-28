@@ -561,6 +561,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < critical.Count) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+critical.to_s());
 #endif
           tmpAction = BehaviorResupply(critical);
 #if TRACE_SELECTACTION
@@ -715,7 +716,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != items) want.IntersectWith(items);
         bool early_hunt_threat_other_maps = (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap && 0 >= want.Count);
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+combat_critical.to_s());
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 #endif
 

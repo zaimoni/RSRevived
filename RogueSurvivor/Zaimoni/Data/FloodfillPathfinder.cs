@@ -82,6 +82,11 @@ namespace Zaimoni.Data
 
         public HashSet<T> black_list { get { return new HashSet<T>(_blacklist); } }
 
+        public bool IsBlacklisted(T src) {
+          if (_blacklist.Contains(src)) return true;
+          return null!=_blacklist_fn && _blacklist_fn(src);
+        }
+
         public void Approve(IEnumerable<T> src)
         {
             _blacklist.ExceptWith(src);

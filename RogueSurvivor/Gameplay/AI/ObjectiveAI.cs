@@ -1172,7 +1172,13 @@ restart:
           }
         }
         if (1 == path[0].Count) {
+#if DEBUG
+          if (navigate.IsBlacklisted(path[0][0])) throw new InvalidOperationException("blacklisted path: "+path.to_s());
+#endif
           ActorAction act = Rules.IsPathableFor(m_Actor,path[0][0]);
+#if DEBUG
+          if (null == act) throw new InvalidOperationException("unpathable square not blacklisted: "+path.to_s());
+#endif
           if (act?.IsLegal() ?? false) {
             if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position); // XXX should be more tactically aware
             return act;
