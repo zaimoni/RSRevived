@@ -9026,6 +9026,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEquipItem(Actor actor, Item it)
     {
+      if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       it.Equip();
