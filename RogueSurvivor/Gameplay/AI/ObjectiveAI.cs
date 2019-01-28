@@ -2226,6 +2226,7 @@ restart_single_exit:
 
     private ActorAction _BehaviorDropOrExchange(Item give, Item take, Point? position)
     {
+      if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
       ActorAction tmp = _PrefilterDrop(give);
       if (null != tmp) return tmp;
       if (null != position) return new ActionTradeWithContainer(m_Actor,give,take,position.Value);
@@ -2459,6 +2460,7 @@ restart_single_exit:
           if (null == drop) drop = inv.GetFirst<ItemAmmo>();
           if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (null != drop) {
+            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (null != position) {
               ActorAction tmp = _PrefilterDrop(drop);
@@ -2496,6 +2498,7 @@ restart_single_exit:
           if (null == drop) drop = inv.GetFirst<ItemAmmo>();
           if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (null != drop) {
+            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (null != position) {
               ActorAction tmp = _PrefilterDrop(drop);
@@ -2533,6 +2536,7 @@ restart_single_exit:
             if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           }
           if (null != drop) {
+            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
             List<ActorAction> recover = new List<ActorAction>(2);
             // 3a) drop target without triggering the no-pickup schema
@@ -2569,7 +2573,6 @@ restart_single_exit:
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
         if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position);
-
       }
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
@@ -3035,6 +3038,8 @@ restart_single_exit:
         if (mine.Model is ItemRangedWeaponModel) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
         // battery-powered items: require strictly less charge (police radios not included as they are low-grade generators)
         if (mine is BatteryPowered test && mine.Model.ID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
+        // generally, if stackable we want to trade away the smaller stack (intercepting partial take from ground inventory is a higher order test)
+        if (1<mine.Model.StackingLimit) return mine.Quantity >= theirs.Quantity;
         // default is to reject.   Expected to change once AI state is involved
         return true;
       }
