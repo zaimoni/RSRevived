@@ -1761,30 +1761,6 @@ restart_single_exit:
       ActorAction tmp = _PrefilterDrop(it);
       if (null != tmp) return tmp;
 
-      // use stimulants before dropping them
-      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
-          int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
-          if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
-        }
-      }
-
-      // reload weapons before dropping ammo
-      { // scoping brace
-      if (it is ItemAmmo ammo) {
-        foreach(Item obj in m_Actor.Inventory.Items) {
-          if (   obj is ItemRangedWeapon rw 
-              && rw.AmmoType==ammo.AmmoType 
-              && rw.Ammo < rw.Model.MaxAmmo) {
-            RogueForm.Game.DoEquipItem(m_Actor,rw);
-            return new ActionUseItem(m_Actor, ammo);
-          }
-        }
-      }
-      } // end scoping brace
-
-
       if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
 
       List<Point> has_container = new List<Point>();
@@ -3054,7 +3030,14 @@ restart_single_exit:
     static public bool TradeVeto(Item mine, Item theirs)
     {
       // reject identity trades for now.  This will change once AI state is involved.
-      if (mine.Model == theirs.Model) return true;
+      if (mine.Model == theirs.Model) {
+        // ranged weapons: require ours to have strictly less ammo
+        if (mine.Model is ItemRangedWeaponModel) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
+        // battery-powered items: require strictly less charge (police radios not included as they are low-grade generators)
+        if (mine is BatteryPowered test && mine.Model.ID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
+        // default is to reject.   Expected to change once AI state is involved
+        return true;
+      }
 
       switch(mine.Model.ID)
       {
@@ -3096,9 +3079,6 @@ restart_single_exit:
     /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
     static public bool InventoryTradeVeto(Item mine, Item theirs)
     {
-      // reject identity trades for now.  This will change once AI state is involved.
-      if (mine.Model == theirs.Model) return true;
-
       switch(mine.Model.ID)
       {
       // two weapons for the ammo
