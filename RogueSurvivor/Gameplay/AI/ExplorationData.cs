@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal class ExplorationData
   {
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
-    private const int EXPLORATION_ZONES = 3;
+    private const int EXPLORATION_ZONES = 3;    // unsure whether this space-time scales or not; WorldTime.TURNS_PER_HOUR/10 if it scales
 
     // alpha 10.1: Queue -> List
     private readonly List<Location> m_LocationsQueue = new List<Location>(EXPLORATION_LOCATIONS);

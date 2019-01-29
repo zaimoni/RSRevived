@@ -6,9 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
+
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
