@@ -4,10 +4,16 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define XDISTRICT_PATHING
+// #define Z_VECTOR
 
 using System;
-using System.Drawing;
+
+#if Z_VECTOR
+using Zaimoni.Data;
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {

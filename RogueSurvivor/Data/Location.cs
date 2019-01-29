@@ -4,13 +4,21 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define Z_VECTOR
+
 using System;
 using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = System.Drawing.Rectangle;
+using Size = Zaimoni.Data.Vector2D_int;   // likely to go obsolete with transition to a true vector type
+#else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
+#endif
 
 namespace djack.RogueSurvivor.Data
 {
