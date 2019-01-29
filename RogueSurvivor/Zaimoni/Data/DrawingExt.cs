@@ -656,4 +656,13 @@ namespace Zaimoni.Data
       return low<high;
     }
   }
+
+  // not nearly as agile as C++
+  public static class Functor
+  {
+    // trivial functors
+    public static void NOP<T>(T x) { }
+    public static bool TRUE<T>(T x) { return true; }
+    public static bool FALSE<T>(T x) { return false; }
+  }
 }   // Zaimoni.Data

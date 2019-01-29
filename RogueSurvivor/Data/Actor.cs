@@ -1185,27 +1185,17 @@ namespace djack.RogueSurvivor.Data
       return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
 
-    public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
-    {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-#endif
-      if (IsPlayer && !IsDead && (null == pred || pred(this))) {
-        fn(this);
-        return true;
-      }
-      if (Location.Map.MessagePlayerOnce(fn,pred)) return true;
-      return Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
-    }
-
-    public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
+    public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
 #if DEBUG
       if (null == op) throw new ArgumentNullException(nameof(op));
       if (null == test) throw new ArgumentNullException(nameof(test));
       if (null == msg_player) throw new ArgumentNullException(nameof(msg_player));
+      if (null == defer_msg_player) throw new ArgumentNullException(nameof(msg_player));
       if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
 #endif
+      bool player_initiated = Engine.RogueGame.IsPlayer(this);
+      bool simulating = RogueForm.Game.IsSimulating;
       bool police_radio = HasActivePoliceRadio;
       bool army_radio = HasActiveArmyRadio;
       if (!police_radio && !army_radio) return;
@@ -1229,9 +1219,16 @@ namespace djack.RogueSurvivor.Data
           var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
           if (Engine.RogueGame.MINIMAP_RADIUS < Rules.GridDistance(radio_location,dest_radio_location)) continue;
 
+          // note: UI redraw will fail if IsSimulating; should be deferring message in that case
           if (actor.IsPlayer && msg_player_test(actor)) {
-            RogueForm.Game.PanViewportTo(actor);
-            msg_player(actor);
+            // IsSimulating: defer
+            // actor is RogueGame::Player: maybe don't need this at all, maybe defer (option?)
+            // otherwise: pan and live display
+            if (player_initiated || simulating) defer_msg_player(actor);
+            else {
+              RogueForm.Game.PanViewportTo(actor);
+              msg_player(actor);
+            }
           }
 
           // use cases.

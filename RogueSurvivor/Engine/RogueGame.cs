@@ -35,6 +35,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
+using static Zaimoni.Data.Functor;
+
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 // game coordinate types
 using Point = System.Drawing.Point;
@@ -335,7 +337,8 @@ namespace djack.RogueSurvivor.Engine
     private readonly GameItems m_GameItems;
     private Thread m_SimThread;
 
-    private static Actor Player { get { return m_Player; } }
+    private static Actor Player { get { return m_Player; } }  // too dangerous to allow anything other than public
+    public static bool IsPlayer(Actor a) { return a == m_Player; }
     public static Map CurrentMap { get { return m_CurrentMap; } }
     private static Rectangle MapViewRect { get { return m_MapViewRect; } }
     public Rules Rules { get { return m_Rules; } }
@@ -7981,14 +7984,11 @@ namespace djack.RogueSurvivor.Engine
       };
 
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => {
-        if (a.IsEnemyOf(aggressor)) return; // already informed
-        if (Player == a) {
-          ClearMessages();
-          AddMessages(player_msgs);
-          AddMessagePressEnter();
-        } else {
-          (a.Controller as PlayerController).DeferMessages(player_msgs);
-        }
+        ClearMessages();
+        AddMessages(player_msgs);
+        AddMessagePressEnter();
+      }, a => {
+        (a.Controller as PlayerController).DeferMessages(player_msgs);
       }, a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -8021,14 +8021,11 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => {
-        if (a.IsEnemyOf(aggressor)) return; // already informed
-        if (Player == a) {
-          ClearMessages();
-          AddMessages(player_msgs);
-          AddMessagePressEnter();
-        } else {
-          (a.Controller as PlayerController).DeferMessages(player_msgs);
-        }
+        ClearMessages();
+        AddMessages(player_msgs);
+        AddMessagePressEnter();
+      }, a => {
+        (a.Controller as PlayerController).DeferMessages(player_msgs);
       }, a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -8036,12 +8033,12 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
-    // fn is the UI message
-    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Func<Actor, bool> pred)
+    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test)
     {
 #if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == pred) throw new ArgumentNullException(nameof(pred));
+      if (null == msg_player) throw new ArgumentNullException(nameof(msg_player));
+      if (null == defer_msg_player) throw new ArgumentNullException(nameof(defer_msg_player));
+      if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
 #endif
       // XXX this should actually be based on radio range
       // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
@@ -8056,8 +8053,7 @@ namespace djack.RogueSurvivor.Engine
         return a.Faction == faction;
       }
 
-      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, fn, pred);
-      if (target.Location.Map.District!=aggressor.Location.Map.District) target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, fn, pred, aggressor.Location);
+      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, defer_msg_player, msg_player_test);
     }
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
@@ -9895,24 +9891,15 @@ namespace djack.RogueSurvivor.Engine
 
       // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
       if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.IsPlayer && !isMurder) {
-        killer.MessagePlayerOnce(a => {
-          int turnCounter = Session.Get.WorldTime.TurnCounter;
-          // possible verbs: killed, terminated, erased, downed, wasted.
-          AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), turnCounter, Color.White));
-        }, a => {
-          if (a.IsSleeping) return false;
-          if (!a.HasActivePoliceRadio) return false;
-          return true;
-        });
-#if PROTOTYPE
         // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
         // also need to consider background thread to main thread issues
-        killer.MessageAllInDistrictByRadio(a => { }, a => false, a => {
-            int turnCounter = Session.Get.WorldTime.TurnCounter;
             // possible verbs: killed, terminated, erased, downed, wasted.
-            AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), turnCounter, Color.White));
-        }, a => true);
-#endif
+        var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
+        killer.MessageAllInDistrictByRadio(NOP, FALSE, a => {
+            AddMessage(msg);
+        }, a => {
+            (a.Controller as PlayerController).DeferMessage(msg);
+        }, TRUE);
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
