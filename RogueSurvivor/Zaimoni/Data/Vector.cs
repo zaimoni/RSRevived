@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Zaimoni.Data
 {
@@ -284,4 +280,89 @@ namespace Zaimoni.Data
         public static Vector2D<sbyte> Add(this Vector2D<sbyte> lhs, Vector2D<sbyte> rhs) { return new Vector2D<sbyte>((sbyte)(lhs.X + rhs.X), (sbyte)(lhs.Y + rhs.Y)); }
     };
 #endif
+
+    public struct Box2D_int : IComparable<Box2D_int>, IEquatable<Box2D_int>
+    {
+        private Vector2D_int _anchor;
+        private Vector2D_int _dim;
+
+        public Box2D_int(Vector2D_int origin, Vector2D_int size)
+        {
+            _anchor = origin;
+            _dim = size;
+        }
+
+#region pure getters
+        int Bottom { get { return _anchor.Y + _dim.Y; } }
+        int Left { get { return _anchor.X; } }
+        int Right { get { return _anchor.X + _dim.X; } }
+        int Top { get { return _anchor.Y; } }
+#endregion
+
+#region get/set pairs
+        public int Height {
+            get { return _dim.Y; }
+            set { _dim.Y = value; }
+        }
+
+        public int Width
+        {
+            get { return _dim.X; }
+            set { _dim.X = value; }
+        }
+
+        public Vector2D_int Size
+        {
+            get { return _dim; }
+            set { _dim = value; }
+        }
+
+        public Vector2D_int Location
+        {
+            get { return _anchor; }
+            set { _anchor = value; }
+        }
+
+        public int X
+        {
+            get { return _anchor.X; }
+            set { _anchor.X = value; }
+        }
+
+        public int Y
+        {
+            get { return _anchor.Y; }
+            set { _anchor.Y = value; }
+        }
+#endregion
+
+        // these are not the safest implementations for integer math
+        public bool Contains(Vector2D_int src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
+        public bool Contains(Box2D_int src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
+
+        // lexicographic sort; IComparable<>
+        public int CompareTo(Box2D_int other)
+        {
+            int ret = _anchor.CompareTo(other._anchor);
+            if (0 != ret) return ret;
+            return _dim.CompareTo(other._dim);
+        }
+
+        // IEquatable<>
+        public bool Equals(Box2D_int other)
+        {
+            return _anchor == other._anchor && _dim == other._dim;
+        }
+
+        public bool Equals(object obj)
+        {
+            return obj is Box2D_int test && Equals(test);
+        }
+
+        public override int GetHashCode()
+        {
+            return _anchor.GetHashCode()^_dim.GetHashCode();
+        }
+
+    }
 }
