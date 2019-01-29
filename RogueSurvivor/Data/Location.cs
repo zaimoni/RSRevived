@@ -63,6 +63,19 @@ namespace djack.RogueSurvivor.Data
     public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
     static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
 
+    // AI should have similar UI to player
+    // analogs of various viewing rectangles for AI use
+    public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
+
+    public Rectangle MiniMapView { get {
+      if (0 >= Map.UsesCrossDistrictView(Map)) {
+        return Map.Rect;
+      } else {
+        return new Rectangle(Position.X - Engine.RogueGame.MINIMAP_RADIUS, Position.Y - Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS);
+      }
+    } }
+
+
     // alpha10
     public int OdorsDecay()
     {
