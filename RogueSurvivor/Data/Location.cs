@@ -25,8 +25,8 @@ namespace djack.RogueSurvivor.Data
   // This must *not* implement ISerializable.  Save-load puts the Prisoner Who Should Not Be at 0,0 rather than his intended location if the reasonable optimization
   // of saving/loading short rather than int is done.
   [Serializable]
-  internal struct Location
-  {
+  internal struct Location : IEquatable<Location>
+    {
     private readonly Map m_Map;
     private Point m_Position;
 
@@ -41,29 +41,6 @@ namespace djack.RogueSurvivor.Data
 #endif
       m_Map = map;
       m_Position = position;
-    }
-
-    // == operator is useful
-    public static bool operator ==(Location lhs, Location rhs)
-    {
-      return lhs.Equals(rhs);
-    }
-
-    public static bool operator !=(Location lhs, Location rhs)
-    {
-      return !lhs.Equals(rhs);
-    }
-    
-    // silence compiler warnings
-    public bool Equals(Location x)
-    {
-      return m_Map == x.m_Map && m_Position == x.m_Position;
-    }
-
-    public override bool Equals(object obj)
-    {
-      var tmp = obj as Location?;
-      return null != tmp && Equals(tmp.Value);
     }
 
     public static Location operator +(Location lhs, Direction rhs)
@@ -143,12 +120,35 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#region IEquatable<>
+    public static bool operator ==(Location lhs, Location rhs)
+    {
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Location lhs, Location rhs)
+    {
+      return !lhs.Equals(rhs);
+    }
+
+    public bool Equals(Location x)
+    {
+      return m_Map == x.m_Map && m_Position == x.m_Position;
+    }
+
+    public override bool Equals(object obj)
+    {
+      var tmp = obj as Location?;
+      return null != tmp && Equals(tmp.Value);
+    }
+
     // note that System.Drawing.Point's hashcode implementation is XOR of coordinates
     // i.e. has a high collision rate.
     public override int GetHashCode()
     {
       return m_Map.GetHashCode() ^ (m_Position.X+Engine.RogueGame.MAP_MAX_WIDTH*m_Position.Y);
     }
+#endregion
 
     public override string ToString()
     {
