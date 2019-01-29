@@ -2752,7 +2752,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) return null;
+      if (m_Actor.StackIsBlocked(loc)) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
@@ -2793,7 +2793,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) return false;
+      if (m_Actor.StackIsBlocked(loc)) return false;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return false;
@@ -2868,9 +2868,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!recover.IsLegal()) return null;
         if (recover is ActionDropItem drop) {
           if (obj.Model.ID == drop.Item.Model.ID) return null;
-          Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
+          if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
         }
-        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+        if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return recover;
@@ -2892,7 +2892,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) return null;
+      if (m_Actor.StackIsBlocked(loc)) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;

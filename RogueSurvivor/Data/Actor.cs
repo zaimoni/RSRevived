@@ -3090,9 +3090,9 @@ namespace djack.RogueSurvivor.Data
       return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
     }
 
-    public bool StackIsBlocked(Location loc, out MapObject obj)
+    public bool StackIsBlocked(Location loc)
     {
-      obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      MapObject obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
       if (null == obj) return false;
       if (!obj.IsContainer && !loc.IsWalkableFor(this)) {
         // Cf. Actor::CanOpen

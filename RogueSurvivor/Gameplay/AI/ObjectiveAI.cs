@@ -288,7 +288,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              if (null == test) continue;    // XXX invariant violation
              loc = test.Value;
            }
-           if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
+           if (m_Actor.StackIsBlocked(loc)) continue; // XXX ignore items under barricades or fortifications
            Inventory inv = loc.Items;
            if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(loc, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
              ret |= ReactionCode.ITEM;
@@ -1578,7 +1578,7 @@ restart_single_exit:
       foreach(Percept p in src) {
         if (!(p.Percepted is Inventory inv)) continue;
         if (p.Turn != t0) continue;    // not in sight
-        if (m_Actor.StackIsBlocked(p.Location, out MapObject mapObjectAt)) continue; // XXX ignore items under barricades or fortifications
+        if (m_Actor.StackIsBlocked(p.Location)) continue; // XXX ignore items under barricades or fortifications
         if (!BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true) {
           boringStacks.Add(p);
           continue;
