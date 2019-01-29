@@ -8089,7 +8089,7 @@ namespace djack.RogueSurvivor.Engine
         if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
 
         if (!attacker_relevant && !defender_relevant) return;   // not relevant
-        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
         if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return;  // not clear enough
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
@@ -8216,13 +8216,13 @@ namespace djack.RogueSurvivor.Engine
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
           DoSingleRangedAttack(attacker, defender, LoF, 1);
           ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
+          if (itemRangedWeapon.Ammo <= 0) break;
           if (defender.IsDead) {
             --itemRangedWeapon.Ammo;
             Attack currentRangedAttack = attacker.CurrentRangedAttack;
             if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, currentRangedAttack.Verb))));
             break;
           }
-          if (itemRangedWeapon.Ammo <= 0) break;
           DoSingleRangedAttack(attacker, defender, LoF, 2);
           break;
         default:
@@ -8279,7 +8279,7 @@ namespace djack.RogueSurvivor.Engine
           if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
 
           if (!attacker_relevant && !defender_relevant) return;   // not relevant
-          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
           if (!m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)) return;  // not clear enough
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
@@ -9369,7 +9369,7 @@ namespace djack.RogueSurvivor.Engine
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant \todo Civilian vs. GangAI may disagree with this, but would want to retreat
           if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
           if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;  // not clear enough
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
@@ -9432,7 +9432,7 @@ namespace djack.RogueSurvivor.Engine
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant
           if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-          if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+          if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
           if (!m_Rules.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE)) return;  // not clear enough
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
@@ -9496,7 +9496,7 @@ namespace djack.RogueSurvivor.Engine
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
         if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
         if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return;  // not clear enough
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
@@ -9575,7 +9575,7 @@ namespace djack.RogueSurvivor.Engine
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
         if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-        if (ObjectiveAI.ReactionCode.NONE!=ai.InterruptLongActivity()) return;  // distracted
+        if (ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)) return;
         if (!m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE)) return;  // not clear enough
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);

@@ -301,6 +301,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return ret;
     }
 
+    public bool IsDistracted(ReactionCode Priority) {
+      switch(Priority)
+      {
+      case ReactionCode.NONE:   // would be noticed if paying full attention to environment
+        if (ReactionCode.NONE != InterruptLongActivity()) return true;
+        break;
+      case ReactionCode.ENEMY:  // direct communication from leader, or other credible survival mutual advantage
+        if (null != enemies_in_FOV) return true;
+        break;
+      default: throw new InvalidProgramException("Unsupported priority of event");  // need to specify what happens
+      }
+      // \todo check for objectives and/or legacy orders that override
+      return false;
+    }
+
     // rethinking aggression.  Would have to lift this to handle feral dogs barking back/calling for help
     /// <returns>message to say</returns>
     public virtual string AggressedBy(Actor aggressor)
