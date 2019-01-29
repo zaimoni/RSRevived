@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionTakeItem : ActorAction
   {
-    private readonly Point m_Position;
+    private readonly Location m_Location;
     private readonly Item m_Item;
 
     public ActionTakeItem(Actor actor, Location loc, Item it)
@@ -29,10 +29,10 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (null == test) throw new InvalidOperationException("tried to take " + it.ToString() + " from invalid location");
         loc = test.Value;
       }
-      m_Position = loc.Position;
+      m_Location = loc;
       m_Item = it;
 #if DEBUG
-      Inventory itemsAt = actor.Location.Map.GetItemsAtExt(loc.Position);
+      Inventory itemsAt = loc.Map.GetItemsAtExt(loc.Position);
       if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
 #endif
     }
@@ -42,14 +42,14 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Position);
+      Inventory itemsAt = m_Location.Map.GetItemsAtExt(m_Location.Position);
       if (!itemsAt?.Contains(m_Item) ?? true) return false;
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      RogueForm.Game.DoTakeItem(m_Actor, m_Position, m_Item);
+      if (m_Location.Map==m_Actor.Location.Map) RogueForm.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
     }
 
     public override string ToString()

@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           // invariant failure
 #if DEBUG
-          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+ret.to_s());
+          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+ret.to_s()+"; "+ at_target.Percepted.ToString()+"; "+ (m_Actor.Controller as OrderableAI).WouldGrabFromStack(at_target.Location, at_target.Percepted).ToString());
 #else
           _stacks.Remove(at_target);
           if (0 >= _stacks.Count) {
@@ -2794,41 +2794,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
       if (m_Actor.StackIsBlocked(loc)) return false;
-
-      Item obj = MostInterestingItemInStack(stack);
-      if (obj == null) return false;
-
-      // but if we cannot take it, ignore anyway
-      bool cant_get = !m_Actor.CanGet(obj);
-      bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
-#if DEBUG
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
-      if (cant_get && null == recover) {
-        int obj_code = ItemRatingCode(obj);
-        foreach(Item it in m_Actor.Inventory.Items) {
-          int it_code = ItemRatingCode(it);
-          if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
-        }
-        return false;
-      }
-#else
-      if (cant_get && null == recover) return false;
-#endif
-#else
-      if (cant_get && null == recover) return false;
-#endif
-      return true;
-#if OFTEN_THROWS
-      // the get item checks do not validate that inventory is not full
-      ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
-      if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
-        if (null == recover) return null;
-        if (!recover.IsLegal()) return null;
-        return recover;
-      }
-      return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
-#endif
+      return WouldGrabFromAccessibleStack(loc,stack)?.IsLegal() ?? false;
     }
 
     public ActorAction WouldGrabFromAccessibleStack(Location loc, Inventory stack, bool is_real=false)
