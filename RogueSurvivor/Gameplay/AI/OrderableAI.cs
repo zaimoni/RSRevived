@@ -1289,13 +1289,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)
     {
       var ret = new HashSet<Point>();
-//    HashSet<Point> danger = new HashSet<Point>();
+      var danger = new HashSet<Point>();
+      foreach(Percept en in enemies) {
+        if (null!=((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) continue;
+        foreach(var pt in en.Location.Position.Adjacent()) danger.Add(pt);
+      }
       int range = m_Actor.CurrentRangedAttack.Range;
       System.Collections.ObjectModel.ReadOnlyCollection<Point> optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
         foreach(Point pt in optimal_FOV.Select(p => new Point(p.X+en.Location.Position.X,p.Y+en.Location.Position.Y))) {
           if (ret.Contains(pt)) continue;
-//        if (danger.Contains(pt)) continue;
+          if (danger.Contains(pt)) continue;
           if (!m_Actor.Location.Map.IsValid(pt)) continue;
           var LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
           if (LOS.CanTraceHypotheticalFireLine(new Location(en.Location.Map,pt), en.Location.Position, range, m_Actor, LoF)) ret.UnionWith(LoF);
@@ -1391,7 +1395,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         // XXX need to use floodfill pathfinder
-        HashSet<Point> fire_from_here = GetRangedAttackFromZone(enemies);
+        var fire_from_here = GetRangedAttackFromZone(enemies);
         if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
         tmpAction = BehaviorNavigate(fire_from_here);
         if (null != tmpAction) return tmpAction;

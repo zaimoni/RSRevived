@@ -3264,7 +3264,7 @@ restart_single_exit:
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
     public ItemRangedWeapon GetBestRangedWeaponWithAmmo()
     {
-      if (m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory
       var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
         if (0 < rw.Ammo) return true;
         var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
