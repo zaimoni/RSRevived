@@ -24,6 +24,9 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (null == it) throw new ArgumentNullException(nameof(it));
       if (!(actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
+#if TRACER
+      if (actor.IsDebuggingTarget && Gameplay.GameItems.IDs.==it.Model.ID) throw new InvalidOperationException(actor.Name+": "+it.ToString());
+#endif
       m_Location = loc;
       m_Item = it;
 #if DEBUG

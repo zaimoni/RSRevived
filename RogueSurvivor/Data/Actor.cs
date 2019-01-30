@@ -557,6 +557,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
+#if TRACER
+        if ("" == Name) return true;
+#endif
         return false;
       }
     }

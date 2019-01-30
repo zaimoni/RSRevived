@@ -426,18 +426,56 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         var interestingStacks = GetInterestingInventoryStacks(percepts1);
         if (interestingStacks != null) {
-          var at_target = interestingStacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
-          if (null != at_target) {
-            m_LastItemsSaw = at_target;
+          {
+          var get_item = new Dictionary<Location, ActorAction>();
+          foreach(var at_target in interestingStacks.Where(p => m_Actor.MayTakeFromStackAt(p.Location))) {
             tmpAction = BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
-            if (tmpAction?.IsLegal() ?? false) {
-              m_Actor.Activity = Activity.IDLE;
-              return tmpAction;
+            if (tmpAction?.IsLegal() ?? false) get_item[at_target.Location] = tmpAction;
+          }
+          if (1<get_item.Count) {
+            var considering = new List<Location>(get_item.Count);
+            var dominated = new List<Location>(get_item.Count);
+            foreach(var x in get_item) {
+              if (0 >= considering.Count) {
+                considering.Add(x.Key);
+                continue;
+              }
+              // the ActionTakeItem screen
+              if (x.Value is ActionTakeItem new_take) {
+                int item_compare = 1;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                foreach(var old_loc in considering) {
+                  var test = get_item[old_loc];
+                  if (test is ActionTakeItem old_take) {
+                     if (RHSMoreInteresting(new_take.Item,old_take.Item)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);                       
+                     else item_compare = 0;
+                  }
+                }
+                if (1 == item_compare) {
+                  considering.Clear();
+                  dominated.Clear();
+                } else if (0 < dominated.Count) {
+                  foreach(var reject in dominated) considering.Remove(reject);
+                  dominated.Clear();
+                }
+                if (-1 == item_compare) continue;
+              }
+              // final
+              considering.Add(x.Key);
             }
-            // invariant failure
+            get_item.OnlyIf(loc => considering.Contains(loc));
+          }
 #if DEBUG
-            throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+tmpAction.to_s());
+          if (/* m_Actor.IsDebuggingTarget && */ 1<get_item.Count) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
 #endif
+          if (0<get_item.Count) {
+            var take = get_item.FirstOrDefault();
+            m_Actor.Activity = Activity.IDLE;
+            return take.Value;
+          }
           }
 
           // no accessible interesting stacks.  Memorize them just in case.
