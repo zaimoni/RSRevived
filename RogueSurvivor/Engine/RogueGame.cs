@@ -8201,12 +8201,14 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
+      if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
     }
 
     public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
       if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
-      (attacker.Controller as ObjectiveAI)?.RecordLoF(LoF);
+      var ai = attacker.Controller as ObjectiveAI;
+      ai?.RecordLoF(LoF);
       switch (mode) {
         case FireMode.DEFAULT:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8228,6 +8230,7 @@ namespace djack.RogueSurvivor.Engine
         default:
           throw new ArgumentOutOfRangeException("unhandled mode");
       }
+      if (!defender.IsDead) ai?.RecruitHelp(defender);
     }
 
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>

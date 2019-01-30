@@ -1521,6 +1521,45 @@ restart_single_exit:
       return false;
     }
 
+    public void RecruitHelp(Actor enemy) {
+#if DEBUG
+      if (enemy?.IsDead ?? true) throw new ArgumentNullException(nameof(enemy));
+#endif
+      // message leader and followers, but *not* mates (chain of command) in communication by any means
+      // message friends that can see us
+      bool is_available(Actor a, ObjectiveAI.ReactionCode priority) {
+        if (null == a) return false;
+        if (a.IsDead) return false;
+        if (!(a.Controller is ObjectiveAI test_ai)) return false;
+        if (!InCommunicationWith(a)) return false;
+        if (!a.IsEnemyOf(enemy)) return false;
+        return !test_ai.IsDistracted(priority);
+      }
+
+      var responders = new List<Actor>();
+      var test_actor = m_Actor.LiveLeader;
+      if (is_available(test_actor,ObjectiveAI.ReactionCode.ENEMY)) responders.Add(test_actor);
+      if (0<m_Actor.CountFollowers) {
+        foreach(Actor fo in m_Actor.Followers) {
+          if (is_available(fo, ObjectiveAI.ReactionCode.ENEMY)) responders.Add(fo);
+        }
+      }
+      // XXX should be inverse-visibility
+      if (null!= friends_in_FOV) {
+        foreach(var x in friends_in_FOV) {
+          if (!responders.Contains(x.Value) && is_available(x.Value, ObjectiveAI.ReactionCode.ENEMY)) responders.Add(x.Value);
+        }
+      }
+      // \todo recruit allies by radio if needed
+      // \todo filter responders by tactical requirements (goes in before recruiting allies by radio)
+      foreach(var a in responders) {
+        if (!(a.Controller is ObjectiveAI test_ai)) continue;  // invariant failure
+        if (!test_ai.CombatUnready()) {   // part of the planned filter testing (need to allow combat-unready ais to participate if relevant)
+          test_ai.Terminate(enemy);
+        }
+      }
+    }
+
     protected void AdviseFriendsOfSafety()
     {
 #if DEBUG
@@ -3159,13 +3198,9 @@ restart_single_exit:
 
     public bool CombatUnready()
     {
-      foreach(var x in GameItems.ammo) {
-        if (3 == RatingCode(x)) return true;
-      }
-      foreach(var x in GameItems.ranged) {
-        if (3 == RatingCode(x)) return true;
-      }
-      return false;
+      if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(rw => null!=m_Actor.Inventory.GetCompatibleAmmoItem(rw))) return false;
+      // further one-on-one evaluation requires either an actor model, or an actor, as target
+      return true;
     }
 
     protected static int ScoreRangedWeapon(ItemRangedWeapon w)
