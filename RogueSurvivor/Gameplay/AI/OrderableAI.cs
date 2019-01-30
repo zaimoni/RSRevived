@@ -3062,7 +3062,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 
       Dictionary<Point, int> dest = PlanApproach(navigate);
-      if (0 >= dest.Count) {
+      if (null==dest || 0 >= dest.Count) {
         Dictionary<Point, ActorAction> legal = m_Actor.OnePath(m_Actor.Location.Map, m_Actor.Location.Position, new Dictionary<Point, ActorAction>());  // \todo not truly reliable w/o proper get-from-container action
         if (0 < legal.Count) {
           // workaround
@@ -3077,6 +3077,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #if DEBUG
         if (0 >= dest.Count) throw new InvalidOperationException("should be able to close in");
+#else
+        if (0 >= dest.Count) return null;
 #endif      
       }
 

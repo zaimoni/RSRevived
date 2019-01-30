@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Gameplay
         // There are no transparent walls at this time.
         // There are no opaque non-walls at this time.
         // According to the map class, a transparent wall permits ranged combat, and blocks both walking and throwing.
-        // * use this to implement a gun port
+        // * use this to implement a gun port.  May need to be adjacent to the transparent wall before it's transparent.
         // According to the map class, an opaque non-wall blocks ranged combat, but permits both walking and throwing.
         // * use this to implement a smoke grenade, or thick smoke from a fire
         static GameTiles()

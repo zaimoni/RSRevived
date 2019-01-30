@@ -381,13 +381,21 @@ namespace djack.RogueSurvivor.Engine
       { // if visibility is blocked for cardinal directions, post-processing merely makes what should be invisible, visible
         if (position.X == point2.X) continue;   // due N/S
         if (position.Y == point2.Y) continue;   // due E/W
-        // tests for due NE/NW/SE/SW are more complex.
+        // tests for due NE/NW/SE/SW are more complex.  Unfortunately, the legacy postprocessing fails with barricaded glass doors
+        // ..@.
+        // #+++
+        // S.Z.
 
         int num = 0;
         foreach (Point point3 in Direction.COMPASS.Select(dir=> point2 + dir)) {
           if (!visibleSet.Contains(point3)) continue;
+#if OBSOLETE
+          // unfortunately, a barricaded glass door is
           TileModel tileModel = map.GetTileModelAtExt(point3);
           if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
+#else
+          if (map.IsTransparent(point3.X,point3.Y)) ++num;  // RS alpha 9 does not have transparent walls.  Review at time of introduction.
+#endif
         }
         if (num >= 3) pointList2.Add(point2);
       }
