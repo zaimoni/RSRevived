@@ -3310,9 +3310,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
       if (0 >= tainted.Count) return null;
-      tainted = PartialInvertLOS(tainted,m_Actor.Location.Map,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime,Session.Get.World.Weather));
       if (2<=tainted.Count) NavigateFilter(tainted);
-      return BehaviorNavigate(tainted);
+      return BehaviorNavigate(PartialInvertLOS(tainted, m_Actor.Location.Map, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)));
     }
 
     protected ActorAction BehaviorHuntDownThreatOtherMaps()
