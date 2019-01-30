@@ -788,6 +788,27 @@ namespace djack.RogueSurvivor.Data
 	  return ret;
 	}
 
+    public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
+    {
+      if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+      if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
+      var mapobj = GetMapObjectAtExt(pt);
+      if (null!=mapobj) {
+        Location loc = new Location(this, pt);
+        if (mapobj.IsContainer) {
+          var inv = GetItemsAt(pt);
+          if (null==inv || inv.IsEmpty) {
+            // cheating ai: update item memory immediately since we had to check anyway
+            if (is_real) actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
+          } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
+          else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
+        }
+        if (mapobj is Engine.MapObjects.PowerGenerator) return false;
+        if (mapobj is DoorWindow) return false;
+      }
+      return true;
+    }
+
 	public Zaimoni.Data.FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
 	{
       var already = new Dictionary<Location,ActorAction>();
@@ -796,25 +817,7 @@ namespace djack.RogueSurvivor.Data
 
 	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, Location.IsInBounds);
       var ret = new FloodfillPathfinder<Location>(m_StepPather);
-      Rect.DoForEach(pt=>ret.Blacklist(new Location(this, pt)),pt=> {
-        if (pt == actor.Location.Position && this == actor.Location.Map) return false;
-        if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
-        var mapobj = GetMapObjectAt(pt);
-        if (null!=mapobj) {
-          Location loc = new Location(this, pt);
-          if (mapobj.IsContainer) {
-            var inv = GetItemsAt(pt);
-            if (null==inv || inv.IsEmpty) {
-              // cheating ai: update item memory immediately since we had to check anyway
-              actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
-            } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
-            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
-          }
-          if (mapobj is Engine.MapObjects.PowerGenerator) return false;
-          if (mapobj is DoorWindow) return false;
-        }
-        return true;
-      });
+      Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
 
@@ -827,25 +830,7 @@ namespace djack.RogueSurvivor.Data
 
 	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
       var ret = new FloodfillPathfinder<Point>(m_StepPather);
-      Rect.DoForEach(pt=>ret.Blacklist(pt),pt=> {
-        if (pt == actor.Location.Position && this == actor.Location.Map) return false;
-        if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
-        var mapobj = GetMapObjectAt(pt);
-        if (null!=mapobj) {
-          Location loc = new Location(this, pt);
-          if (mapobj.IsContainer) {
-            var inv = GetItemsAt(pt);
-            if (null==inv || inv.IsEmpty) {
-              // cheating ai: update item memory immediately since we had to check anyway
-              actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
-            } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
-            else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
-          }
-          if (mapobj is Engine.MapObjects.PowerGenerator) return false;
-          if (mapobj is DoorWindow) return false;
-        }
-        return true;
-      });
+      Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
 

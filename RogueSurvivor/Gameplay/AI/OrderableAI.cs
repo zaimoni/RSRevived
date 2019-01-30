@@ -3273,6 +3273,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
+    private HashSet<Point> PartialInvertLOS(HashSet<Point> tainted, Map m, int radius)
+    {
+      var ret = new HashSet<Point>(tainted);
+      var ideal = LOS.OptimalFOV(radius);
+      foreach(var pt in tainted) {
+        if (!m.WouldBlacklistFor(pt,m_Actor)) continue;
+        foreach(var offset in ideal) {
+          Point test = new Point(pt.X+offset.X,pt.Y+offset.Y);
+          if (!m.IsInBounds(pt)) continue;  // have commited to point-based pathfinding when calling this
+          if (ret.Contains(test)) continue;
+          if (LOS.CanTraceViewLine(new Location(m,test),pt)) ret.Add(test);
+        }
+      }
+      return ret;
+    }
+
     protected bool HaveTourismInCurrentMap()
     {
       LocationSet sights_to_see = m_Actor.InterestingLocs;
@@ -3288,6 +3304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
       if (0 >= tainted.Count) return null;
+      tainted = PartialInvertLOS(tainted,m_Actor.Location.Map,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime,Session.Get.World.Weather));
       if (2<=tainted.Count) NavigateFilter(tainted);
       return BehaviorNavigate(tainted);
     }
