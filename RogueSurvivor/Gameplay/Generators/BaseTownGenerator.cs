@@ -927,6 +927,32 @@ restart:
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }
 
+    // belongs in Map but required reference data is here.  Not guaranteed to remain static.
+    static public Zone InChokepointZone(Map m,Point pt)
+    {
+      var zoneList = m.GetZonesAt(pt);
+      foreach(var z in zoneList) {
+        foreach(var x in shop_name_images) {
+          if (z.Name.Contains(x.Key)) return z;
+        }
+      }
+      return null;
+    }
+
+      // \todo pull additional shop types from Staying Alive
+      // Horticulture/gardening store
+      // * grow lights require a working generator.
+      // * bamboo can provide "wood".  At one foot per day (i.e. it actually *recovers* if only damaged, and can spread if planted in parks)
+    static private KeyValuePair<string, string>[] shop_name_images = new KeyValuePair<string, string>[] {
+      new KeyValuePair<string,string>("GeneralStore", GameImages.DECO_SHOP_GENERAL_STORE),
+      new KeyValuePair<string,string>("Grocery", GameImages.DECO_SHOP_GROCERY),
+      new KeyValuePair<string,string>("Sportswear", GameImages.DECO_SHOP_SPORTSWEAR),
+      new KeyValuePair<string,string>("Pharmacy", GameImages.DECO_SHOP_PHARMACY),
+      new KeyValuePair<string,string>("Construction", GameImages.DECO_SHOP_CONSTRUCTION),
+      new KeyValuePair<string,string>("Gunshop", GameImages.DECO_SHOP_GUNSHOP),
+      new KeyValuePair<string,string>("Hunting Shop", GameImages.DECO_SHOP_HUNTING)
+    };
+
     protected virtual bool MakeShopBuilding(Map map, Block b)
     {
 #if DEBUG
@@ -961,24 +987,7 @@ restart:
       });
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
 
-      // \todo pull additional shop types from Staying Alive
-      // Horticulture/gardening store
-      // * grow lights require a working generator.
-      // * bamboo can provide "wood".  At one foot per day (i.e. it actually *recovers* if only damaged, and can spread if planted in parks)
-      KeyValuePair<string,string> shopNameImage() {
-        switch (shopType) {
-          case ShopType.GENERAL_STORE: return new KeyValuePair<string,string>("GeneralStore", GameImages.DECO_SHOP_GENERAL_STORE);
-          case ShopType.GROCERY: return new KeyValuePair<string,string>("Grocery", GameImages.DECO_SHOP_GROCERY);
-          case ShopType.SPORTSWEAR: return new KeyValuePair<string,string>("Sportswear", GameImages.DECO_SHOP_SPORTSWEAR);
-          case ShopType.PHARMACY: return new KeyValuePair<string,string>("Pharmacy", GameImages.DECO_SHOP_PHARMACY);
-          case ShopType.CONSTRUCTION: return new KeyValuePair<string,string>("Construction", GameImages.DECO_SHOP_CONSTRUCTION);
-          case ShopType.GUNSHOP: return new KeyValuePair<string,string>("Gunshop", GameImages.DECO_SHOP_GUNSHOP);
-          case ShopType.HUNTING: return new KeyValuePair<string,string>("Hunting Shop", GameImages.DECO_SHOP_HUNTING);
-          default: throw new ArgumentOutOfRangeException("unhandled shoptype");
-        }
-      }
-
-      KeyValuePair<string,string> shop_name_image = shopNameImage();
+      KeyValuePair<string,string> shop_name_image = shop_name_images[(int)shopType];
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
         if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
