@@ -477,7 +477,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != remote) {
           tmpAction = remote.Pathing();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "remote.Pathing(): "+tmpAction.to_s());
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": "+tmpAction.to_s());
 #endif
           if (null != tmpAction) return tmpAction;
         }
@@ -494,7 +494,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != remote) {
           tmpAction = remote.Pathing();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "remote.Pathing(): "+tmpAction.to_s());
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": " +tmpAction.to_s());
 #endif
           if (null != tmpAction) return tmpAction;
         }

@@ -498,6 +498,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
         return (ret?.IsLegal() ?? false) ? ret : null;
       }
+
+      public override string ToString()
+      {
+        return "Pathing to "+ _stacks.to_s();
+      }
     }
 
     [Serializable]
