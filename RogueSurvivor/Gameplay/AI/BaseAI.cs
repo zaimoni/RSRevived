@@ -249,7 +249,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // helps civs ai getting stuck in semi-infinite loop when running out of new exploration to do.
         // as a side effect, make ais with no exploration data (eg zombies) more eager to visit door/windows and exits.
         if (next.MapObject is DoorWindow) score += DOORWINDOWS;
-        if (null != next.Exit) score += EXITS;
+        if (null != next.Exit) score += (next.Exit.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
 
         // alpha10.1 prefer inside when almost sleepy
         if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
