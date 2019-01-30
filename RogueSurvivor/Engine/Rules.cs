@@ -424,7 +424,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(x, y)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, loc);
       if (loc.IsWalkableFor(actor, out reason)) {
         reason = "";
         if (map!=actor.Location.Map) {

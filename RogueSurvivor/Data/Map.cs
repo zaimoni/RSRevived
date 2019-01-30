@@ -731,7 +731,6 @@ namespace djack.RogueSurvivor.Data
 	  var ret = new Dictionary<Location, int>();
       Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
       foreach(var move in moves) {
-        if (move.Value is Engine.Actions.ActionLeaveMap) continue; // not really in bounds
         if (move.Value is Engine.Actions.ActionShove) {    // impolite so penalize just more than walking around
             ret[move.Key] = 4;
             continue;

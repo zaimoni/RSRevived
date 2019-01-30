@@ -27,6 +27,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_NewLocation = new Location(actor.Location.Map, to);
     }
 
+    public ActionMoveStep(Actor actor, Location to)
+      : base(actor)
+    {
+      m_NewLocation = to;
+    }
+
     public override bool IsLegal()
     {
       return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason) && Rules.IsAdjacent(m_Actor.Location, m_NewLocation);
@@ -34,7 +40,11 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoMoveActor(m_Actor, m_NewLocation);
+      if (m_Actor.Location.Map==m_NewLocation.Map) RogueForm.Game.DoMoveActor(m_Actor, m_NewLocation);
+      else if (m_Actor.Location.Map.District!=m_NewLocation.Map.District) {
+        var test = m_Actor.Location.Map.Denormalize(m_NewLocation);
+        RogueForm.Game.DoLeaveMap(m_Actor, test.Value.Position, true);
+      } else RogueForm.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position, true);
     }
 
     public override string ToString()
