@@ -927,7 +927,9 @@ restart:
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }
 
+#if DEAD_FUNC
     // belongs in Map but required reference data is here.  Not guaranteed to remain static.
+    // Could be constructed on game load as a nonserialized cache
     static public Zone InChokepointZone(Map m,Point pt)
     {
       var zoneList = m.GetZonesAt(pt);
@@ -938,6 +940,7 @@ restart:
       }
       return null;
     }
+#endif
 
     static public bool PoliceKnowAtGameStart(Map m,Point pt)
     {

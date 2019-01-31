@@ -1739,6 +1739,7 @@ retry:
       if (null == src) return false;
       Item it = src.Value.Value.GetFirst(want);
       if (null == it) return false;
+      it.Unequip();
 
       src.Value.Value.RemoveAllQuantity(it);
       dest.RemoveAllQuantity(giving);
