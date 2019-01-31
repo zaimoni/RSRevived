@@ -621,6 +621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           };
           Actor a = _dest.Map.GetActorAt(pt);
           if (null == a) continue;
+          if (m_Actor.IsEnemyOf(a)) continue;   // XXX intelligent enemies might react, but that's handled in sound processing
           var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==door);
           if (null != is_helping) helpers_at[pt] = a;
           else move_to.Add(pt);
