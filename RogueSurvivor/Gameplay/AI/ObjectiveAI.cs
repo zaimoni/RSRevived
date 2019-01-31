@@ -1315,6 +1315,7 @@ restart:
 
 restart_single_exit:
       foreach(var x in map_goals) {
+        if (m_Actor.Location.Map == x.Key) continue;    // do not try to goal-rewrite the map we are in
         var tmp = x.Key.destination_maps.Get;
         // 2019-01-13: triggers on subways (diagonal connectors not generated properly)
         if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
@@ -1327,7 +1328,7 @@ restart_single_exit:
       var in_police_station = Session.Get.UniqueMaps.NavigatePoliceStation(m_Actor.Location.Map);
       if (null==in_police_station) {
 #if PATHFIND_IMPLEMENTATION_GAPS
-        if (map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
+        if (m_Actor.Location.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
 #endif
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
@@ -1335,7 +1336,7 @@ restart_single_exit:
       var in_hospital = Session.Get.UniqueMaps.NavigateHospital(m_Actor.Location.Map);
       if (null==in_hospital) {
 #if PATHFIND_IMPLEMENTATION_GAPS
-        if (map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
+        if (m_Actor.Location.Map != Session.Get.UniqueMaps.Hospital_Power.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
 #endif
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
