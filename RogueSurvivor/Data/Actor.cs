@@ -3591,16 +3591,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region IEquatable<>
-    public static bool operator ==(Actor lhs, Actor rhs)
-    {
-      return lhs.Equals(rhs);
-    }
-
-    public static bool operator !=(Actor lhs, Actor rhs)
-    {
-      return !lhs.Equals(rhs);
-    }
-
 	// C# docs indicate using Actor as a key wants these
     public bool Equals(Actor x)
     {
