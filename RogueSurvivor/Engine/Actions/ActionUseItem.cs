@@ -23,6 +23,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       actor.Activity = Activity.IDLE;
     }
 
+    public Item Item { get { return m_Item; } }
+
     public override bool IsLegal()
     {
       return m_Actor.CanUse(m_Item, out m_FailReason);

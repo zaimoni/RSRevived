@@ -450,8 +450,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
                        item_compare = -1;
                        break;
                      }
-                     if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);                       
+                     if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);
                      else item_compare = 0;
+                  } else if (test is ActionUseItem old_use) {
+                    // generally better to take than use
+                    if (old_use.Item.Model.ID!=new_take.Item.Model.ID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                  }
+                }
+                if (1 == item_compare) {
+                  considering.Clear();
+                  dominated.Clear();
+                } else if (0 < dominated.Count) {
+                  foreach(var reject in dominated) considering.Remove(reject);
+                  dominated.Clear();
+                }
+                if (-1 == item_compare) continue;
+              } else if (x.Value is ActionUseItem new_use) { 
+                int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                foreach(var old_loc in considering) {
+                  var test = get_item[old_loc];
+                  if (test is ActionUseItem old_use) {
+                    if (old_use.Item.Model.ID==new_use.Item.Model.ID) { // duplicate
+                      item_compare = -1;
+                      break;
+                    }
+                  } else if (test is ActionTakeItem old_take) {
+                    if (old_take.Item.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
+                      item_compare = -1;
+                      break;
+                    }
                   }
                 }
                 if (1 == item_compare) {
