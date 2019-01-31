@@ -440,58 +440,97 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 considering.Add(x.Key);
                 continue;
               }
-              // the ActionTakeItem screen
-              if (x.Value is ActionTakeItem new_take) {
-                int item_compare = 1;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+              int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+              switch(x.Value) {
+              case ActionTakeItem new_take:
+                item_compare = 1;
                 foreach(var old_loc in considering) {
-                  var test = get_item[old_loc];
-                  if (test is ActionTakeItem old_take) {
+                  switch(get_item[old_loc]) {
+                  case ActionTakeItem old_take:
                      if (RHSMoreInteresting(new_take.Item,old_take.Item)) {
                        item_compare = -1;
                        break;
                      }
                      if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);
                      else item_compare = 0;
-                  } else if (test is ActionUseItem old_use) {
+                    break;
+                  case ActionTradeWithContainer old_trade:
+                     if (RHSMoreInteresting(new_take.Item,old_trade.Take)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_trade.Take, new_take.Item)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionUseItem old_use:
                     // generally better to take than use
                     if (old_use.Item.Model.ID!=new_take.Item.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
+                    break;
                   }
+                  if (-1==item_compare) break;
                 }
-                if (1 == item_compare) {
-                  considering.Clear();
-                  dominated.Clear();
-                } else if (0 < dominated.Count) {
-                  foreach(var reject in dominated) considering.Remove(reject);
-                  dominated.Clear();
-                }
-                if (-1 == item_compare) continue;
-              } else if (x.Value is ActionUseItem new_use) { 
-                int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                break;
+              case ActionTradeWithContainer new_trade:
+                item_compare = 1;
                 foreach(var old_loc in considering) {
-                  var test = get_item[old_loc];
-                  if (test is ActionUseItem old_use) {
-                    if (old_use.Item.Model.ID==new_use.Item.Model.ID) { // duplicate
-                      item_compare = -1;
-                      break;
-                    }
-                  } else if (test is ActionTakeItem old_take) {
-                    if (old_take.Item.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
-                      item_compare = -1;
-                      break;
-                    }
+                  switch(get_item[old_loc]) {
+                  case ActionTakeItem old_take:
+                     if (RHSMoreInteresting(new_trade.Take,old_take.Item)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_take.Item, new_trade.Take)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionTradeWithContainer old_trade:
+                     if (RHSMoreInteresting(new_trade.Take, old_trade.Take)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_trade.Take, new_trade.Take)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionUseItem old_use:
+                    // generally better to take than use
+                    if (old_use.Item.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                    break;
                   }
+                  if (-1==item_compare) break;
                 }
-                if (1 == item_compare) {
-                  considering.Clear();
-                  dominated.Clear();
-                } else if (0 < dominated.Count) {
-                  foreach(var reject in dominated) considering.Remove(reject);
-                  dominated.Clear();
+                break;
+              case ActionUseItem new_use:
+                item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                foreach(var old_loc in considering) {
+                  bool early_exit = false;
+                  switch(get_item[old_loc]) {
+                    case ActionUseItem old_use:
+                      if (old_use.Item.Model.ID==new_use.Item.Model.ID) { // duplicate
+                        item_compare = -1;
+                        break;
+                      }
+                      break;
+                    case ActionTakeItem old_take:
+                      if (old_take.Item.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
+                        item_compare = -1;
+                        break;
+                      }
+                      break;
+                  }
+                  if (-1==item_compare) break;
                 }
-                if (-1 == item_compare) continue;
+                break;
               }
-              // final
+              // respond to item comparison
+              if (1 == item_compare) {
+                considering.Clear();
+                dominated.Clear();
+              } else if (0 < dominated.Count) {
+                foreach(var reject in dominated) considering.Remove(reject);
+                dominated.Clear();
+              }
+              if (-1 == item_compare) continue;
               considering.Add(x.Key);
             }
             get_item.OnlyIf(loc => considering.Contains(loc));
