@@ -942,6 +942,7 @@ restart:
     static public bool PoliceKnowAtGameStart(Map m,Point pt)
     {
       if (m.HasZonePartiallyNamedAt(pt, "Subway Station")) return true; // police guard starts in the subway station
+      if (m.HasZonePartiallyNamedAt(pt, "Police Station")) return true;
       if (m.HasZonePartiallyNamedAt(pt, "CHAR Office")) return true;   // CHAR company town, police first assume things ok
       if (m.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return true;   // CHAR company town, police first assume things ok
       // stores have their own police AI cheat
