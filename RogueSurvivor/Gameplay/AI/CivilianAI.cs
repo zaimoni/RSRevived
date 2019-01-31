@@ -447,6 +447,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
                   case ActionTakeItem old_take:
+                     if (new_take.Item.Model.ID==old_take.Item.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                       item_compare = -1;
+                       break;
+                     }
                      if (RHSMoreInteresting(new_take.Item,old_take.Item)) {
                        item_compare = -1;
                        break;
@@ -484,6 +488,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      else item_compare = 0;
                     break;
                   case ActionTradeWithContainer old_trade:
+                     if (new_trade.Take.Model.ID == old_trade.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                       item_compare = -1;
+                       break;
+                     }
                      if (RHSMoreInteresting(new_trade.Take, old_trade.Take)) {
                        item_compare = -1;
                        break;
@@ -534,8 +542,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             get_item.OnlyIf(loc => considering.Contains(loc));
           }
-#if DEBUG
-          if (/* m_Actor.IsDebuggingTarget && */ 1<get_item.Count) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
+#if FALSE_POSITIVE
+          if (/* m_Actor.IsDebuggingTarget && */ 1<get_item.Count && !m_Actor.Inventory.IsEmpty) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
 #endif
           if (0<get_item.Count) {
             var take = get_item.FirstOrDefault();
