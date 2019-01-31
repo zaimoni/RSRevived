@@ -46,23 +46,12 @@ namespace djack.RogueSurvivor.Data
         AddMap(value);
         // the police faction knows all outside squares (map revealing effect)
         m_EntryMap.Rect.DoForEach(pt=> {
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Subway Station")) return; // police guard starts in the subway station
+          if (Gameplay.Generators.BaseTownGenerator.PoliceKnowAtGameStart(m_EntryMap,pt)) return;
           if (!m_EntryMap.IsInsideAt(pt)) {
             Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
             return;
           }
           if (Engine.Session.Get.PoliceInvestigate.Contains(new Location(m_EntryMap,pt))) return; // already known
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Office")) return;   // CHAR company town, police first assume things ok
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return;   // CHAR company town, police first assume things ok
-          // stores have their own police AI cheat
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "GeneralStore")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Grocery")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Sportswear")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Pharmacy")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Construction")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Gunshop")) return;
-          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Hunting Shop")) return;
-
           Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap, pt);
         });
       }
@@ -72,7 +61,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_SewersMap;
       }
-      set {
+      set { // used from BaseTownGenerator::GenerateSewersMap
         if (m_SewersMap != null) RemoveMap(m_SewersMap);
         m_SewersMap = value;
         if (value == null) return;
@@ -84,7 +73,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_SubwayMap;
       }
-      set {
+      set { // used from BaseTownGenerator::GenerateSubwayMap
         if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
         m_SubwayMap = value;
         if (value == null) return;

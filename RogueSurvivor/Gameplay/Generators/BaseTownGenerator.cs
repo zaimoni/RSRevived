@@ -939,6 +939,18 @@ restart:
       return null;
     }
 
+    static public bool PoliceKnowAtGameStart(Map m,Point pt)
+    {
+      if (m.HasZonePartiallyNamedAt(pt, "Subway Station")) return true; // police guard starts in the subway station
+      if (m.HasZonePartiallyNamedAt(pt, "CHAR Office")) return true;   // CHAR company town, police first assume things ok
+      if (m.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return true;   // CHAR company town, police first assume things ok
+      // stores have their own police AI cheat
+      foreach(var x in shop_name_images) {
+        if (m.HasZonePartiallyNamedAt(pt, x.Key)) return true;
+      }
+      return false;
+    }
+
       // \todo pull additional shop types from Staying Alive
       // Horticulture/gardening store
       // * grow lights require a working generator.
