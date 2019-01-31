@@ -120,12 +120,23 @@ namespace djack.RogueSurvivor.Data
 //    map.District = null;
     }
 
-    // return value is 0 for "no", otherwise something that should have been an enum
-    public int UsesCrossDistrictView(Map m)
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="m"></param>
+    /// <returns>positive: cross-district viewing
+    /// zero: not at all
+    /// negative: large map that doesn't actually go cross-district</returns>
+    // positive return codes are cross-district viewing
+    // zero is "not at all"
+    // negative values are "large maps, but no going off edges" (maps close to police radio radius e.g. CHAR Undergound base)
+    private int CrossDistrictView_code(Map m)
     {
       if (m==m_EntryMap) return 1;
       if (m==m_SewersMap) return 2;
       if (m==m_SubwayMap) return 3;
+      if (m==Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) return -1;
       return 0;
     }
 
@@ -139,6 +150,12 @@ namespace djack.RogueSurvivor.Data
       default: return null;
       }
     }
+
+    static public int UsesCrossDistrictView(Map m)
+    {
+      return m.District.CrossDistrictView_code(m);
+    }
+
 
     public bool HasAccessiblePowerGenerators {
       get {

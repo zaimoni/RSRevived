@@ -339,15 +339,10 @@ namespace djack.RogueSurvivor.Data
     }
     // end placeholder for define-controlled redefinitions
 
-    static public int UsesCrossDistrictView(Map m)
-    {
-      return m.District.UsesCrossDistrictView(m);
-    }
-
     public Location? Normalize(Point pt)
     {
       if (IsInBounds(pt)) return null;
-      int map_code = UsesCrossDistrictView(this);
+      int map_code = District.UsesCrossDistrictView(this);
       if (0>=map_code) return null;
       int delta_code = DistrictDeltaCode(pt);
       if (0==delta_code) return null;
@@ -382,8 +377,8 @@ namespace djack.RogueSurvivor.Data
     {
       if (this == loc.Map && IsValid(loc.Position)) return loc;
 #if NO_PEACE_WALLS
-      int map_code = UsesCrossDistrictView(this);
-      if (0>=map_code || map_code != UsesCrossDistrictView(loc.Map)) return null;
+      int map_code = District.UsesCrossDistrictView(this);
+      if (0>=map_code || map_code != District.UsesCrossDistrictView(loc.Map)) return null;
       Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
@@ -882,7 +877,7 @@ retry:
       }
 
       if (dest.District != District) {
-        int dest_extended = UsesCrossDistrictView(dest);
+        int dest_extended = District.UsesCrossDistrictView(dest);
         if (0 == dest_extended) {
           dest = dest.District.EntryMap;
           goto retry;
@@ -891,7 +886,7 @@ retry:
           dest = dest.District.EntryMap;
           goto retry;
         }
-        int this_extended = UsesCrossDistrictView(this);
+        int this_extended = District.UsesCrossDistrictView(this);
         if (0==this_extended) {
           dest = District.EntryMap;
           goto retry;

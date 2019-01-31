@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
 		{
           var ret = new HashSet<Point>();
           if (null == map) return ret;
-          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
+          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,District.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           // subway may be null
           if (0> view.Left) {
@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Data
             foreach(Actor a in amnesia) _threats.Remove(a);
           }
           // FOV is small compared to district size so will not overflow both ways
-          int crossdistrict_ok = Map.UsesCrossDistrictView(m);
+          int crossdistrict_ok = District.UsesCrossDistrictView(m);
           if (0 >= crossdistrict_ok) return;
           Point pos = m.District.WorldPosition;   // only used in denormalized cases
           var invalid_xy = new List<Point>(pts.Count());
@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Data
 	  {
           var ret = new HashSet<Point>();
           if (null == map) return ret;
-          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
+          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,District.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok.Get) {

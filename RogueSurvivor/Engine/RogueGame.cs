@@ -10692,7 +10692,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, RIGHTPANEL_Y, LOCATIONPANEL_X, LOCATIONPANEL_Y);
                 DrawMap(CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, MINIMAP_Y- MINITILE_SIZE, CANVAS_WIDTH, MINIMAP_Y - MINITILE_SIZE);
-                if (0 >= Map.UsesCrossDistrictView(CurrentMap)) {
+                if (0 >= District.UsesCrossDistrictView(CurrentMap)) {
                     DrawMiniMap(CurrentMap.Rect);
                 } else {
                     Rectangle view = new Rectangle(Player.Location.Position.X-MINIMAP_RADIUS, Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
