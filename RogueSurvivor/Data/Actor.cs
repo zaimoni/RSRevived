@@ -26,7 +26,7 @@ using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Actor
+  internal class Actor : IEquatable<Actor>
   {
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
@@ -3590,6 +3590,17 @@ namespace djack.RogueSurvivor.Data
       m_Inventory?.OptimizeBeforeSaving();
     }
 
+#region IEquatable<>
+    public static bool operator ==(Actor lhs, Actor rhs)
+    {
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Actor lhs, Actor rhs)
+    {
+      return !lhs.Equals(rhs);
+    }
+
 	// C# docs indicate using Actor as a key wants these
     public bool Equals(Actor x)
     {
@@ -3609,6 +3620,7 @@ namespace djack.RogueSurvivor.Data
     {
       return m_SpawnTime ^ m_Name.GetHashCode();
     }
+#endregion
 
     [System.Flags]
     private enum Flags
