@@ -1946,6 +1946,8 @@ namespace djack.RogueSurvivor.Engine
 
 #if DEBUG
       if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
+      // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
+      if (nextActorToAct.ActionPoints > nextActorToAct.Doll.Body.Speed) throw new InvalidOperationException(nextActorToAct.Name+" is hyperactive: energy limit, "+ nextActorToAct.Doll.Body.Speed.ToString() + " actual "+ nextActorToAct.ActionPoints.ToString());
 #endif
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
       if (nextActorToAct.Controller == null)
