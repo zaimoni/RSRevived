@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data
       get {
         Rectangle ret = new Rectangle(Map.District.WorldPosition,new Size(1,1));
         if (Map != Map.District.EntryMap) return ret;  // RS behavior
-        const int radius = Engine.RogueGame.MINIMAP_RADIUS+100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
+        const int radius = Engine.RogueGame.POLICE_RADIO_RANGE + 100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
         var topleft = new Vector2D_int_stack(Position.X-radius,Position.Y-radius);
         while(0>topleft.X && 0<ret.Left) {
           topleft.X += Engine.RogueGame.Options.DistrictSize;

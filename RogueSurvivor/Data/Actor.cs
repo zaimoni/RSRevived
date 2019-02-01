@@ -1220,7 +1220,7 @@ namespace djack.RogueSurvivor.Data
           }
           if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
           var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
-          if (Engine.RogueGame.MINIMAP_RADIUS < Rules.GridDistance(radio_location,dest_radio_location)) continue;
+          if (Engine.RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location,dest_radio_location)) continue;
 
           // note: UI redraw will fail if IsSimulating; should be deferring message in that case
           if (actor.IsPlayer && msg_player_test(actor)) {
@@ -1483,7 +1483,7 @@ namespace djack.RogueSurvivor.Data
               foreach(var a in m.Police.Get) {
                 if (a == this) continue;
                 Location other_radio_pos = Rules.PoliceRadioLocation(Location);
-                if (Engine.RogueGame.MINIMAP_RADIUS >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
+                if (Engine.RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
               }
           });
         }

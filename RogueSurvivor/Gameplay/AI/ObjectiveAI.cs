@@ -1516,8 +1516,8 @@ restart_single_exit:
       if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
       if (a.IsSleeping) return false;
       if (a.Location.Map == m_Actor.Location.Map && a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
-      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
-      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
+      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location),Rules.PoliceRadioLocation(a.Location));
+      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location), Rules.PoliceRadioLocation(a.Location));
       if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
       return false;
     }

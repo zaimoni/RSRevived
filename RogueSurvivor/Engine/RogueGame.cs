@@ -201,7 +201,8 @@ namespace djack.RogueSurvivor.Engine
     bool m_SimThreadIsWorking;  // alpha10 sim thread state: set by sim thread to false when has exited loop. 
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
-    public const int MINIMAP_RADIUS = 50;   // also police radio range
+    public const int MINIMAP_RADIUS = 50;
+    public const int POLICE_RADIO_RANGE = MINIMAP_RADIUS;   // may need to adjust this when space-time scaling
 
     public const int TILE_SIZE = 32;    // ACTOR_SIZE+ACTOR_OFFSET <= TILE_SIZE
     public const int ACTOR_SIZE = 32;
