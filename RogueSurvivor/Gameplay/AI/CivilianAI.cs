@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using Zaimoni.Data;
+using static Zaimoni.Data.Functor;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -839,6 +840,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if PROTOTYPE
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
+        Func<Map,Map> prefilter_m = IDENTITY;
+        Func<Location,bool> postfilter_loc = TRUE;
+
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
@@ -878,6 +882,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
         if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
         if (null != pathing_targets) {
+          var view = m_Actor.Location.View;
+
+          Map prefilter_view(Map m) {
+            if (m==m_Actor.Location.Map) return m;
+            int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
+            if (0 >= map_code) return null;
+            if (map_code != District.UsesCrossDistrictView(m)) return null;
+            // view is small relative to a district, so it can't see districts on both sides of the current one.  Just check the four corners.
+            return m; // \todo implement
+          }
+
+          // these two may need to be new parameters for BehaviorPathTo
+          bool reject_view(Location loc) { return !view.Contains(loc); }
+
+          // myopic and does not consider stair destinations
+          HashSet<Point> postfilter_view(Map m, HashSet<Point> goals)
+          {
+            goals.RemoveWhere(pt => reject_view(new Location(m,pt)));
+            return goals;
+          }
+
+          // 1) view pathing
+          tmpAction = BehaviorPathTo(new Func<Map,Map>(prefilter_view).Compose(pathing_targets));
+          if (null!=tmpAction) return tmpAction;
+          // 2) minimap range pathing, if distinct from view
+          if (0!=District.UsesCrossDistrictView(m_Actor.Location.Map)) {
+            Map prefilter_minimap(Map m) {
+              if (m==m_Actor.Location.Map) return m;
+              int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
+              if (0 >= map_code) return null;
+              if (map_code != District.UsesCrossDistrictView(m)) return null;
+              // this could span 3 districts if the district size is small; check corners and edge midpoints
+              return m; // \todo implement
+            }
+
+            // possible default blacklisting is fine for this
+            HashSet<Point> postfilter_minimap(HashSet<Point> goals)
+            {
+              return goals;   // \todo implement
+            }
+            tmpAction = BehaviorPathTo(new Func<Map, Map>(prefilter_minimap).Compose(pathing_targets).Compose(postfilter_minimap));
+            if (null!=tmpAction) return tmpAction;
+          }
+          // 3) world pathing
           tmpAction = BehaviorPathTo(pathing_targets);
           if (null!=tmpAction) return tmpAction;
         }

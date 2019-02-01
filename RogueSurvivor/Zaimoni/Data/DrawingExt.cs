@@ -416,7 +416,9 @@ namespace Zaimoni.Data
       if (null == rhs) return l;
       HashSet<U> ret(T src) {
         var x = lhs(src);
-        x.UnionWith(rhs(src));
+        var y = rhs(src);
+        if (null == x) return y;
+        if (null != y) x.UnionWith(y);
         return x;
       }
       return ret;
@@ -431,26 +433,28 @@ namespace Zaimoni.Data
       if (null == rhs) return l;
       HashSet<U> ret(T src) {
         var x = lhs(src);
-        if (0<x.Count) return x;
+        if (null!=x && 0<x.Count) return x;
         return rhs(src);
       }
       return ret;
     }
 
-    // function composition is right-associative
-    public static Func<T,V> Compose<T,U,V>(this Func<U,V> lhs,Func<T,U> rhs)
+    // function composition is right-associative in higher math
+    // reverse parameter order here to make function call chaining clean
+    public static Func<T,V> Compose<T,U,V>(this Func<T,U> rhs, Func<U, V> lhs)
     {
-      var l = lhs;  // local copies needed to get true lambda calculus
-      var r = rhs;
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
       V ret(T src) {
         return lhs(rhs(src));
       }
       return ret;
     }
 
-    public static Func<T,U> Compose<T,U>(this Func<T,U> lhs,Func<T,T> rhs)
+#if CTHORPE_DEFECTIVE_GENERICS
+    public static Func<T,U> Compose<T,U>(this Func<T,T> rhs, Func<T, U> lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
@@ -462,7 +466,7 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Func<T,U> Compose<T,U>(this Func<U,U> lhs,Func<T,U> rhs)
+    public static Func<T,U> Compose<T,U>(this Func<T,U> rhs, Func<U, U> lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
@@ -473,6 +477,7 @@ namespace Zaimoni.Data
       }
       return ret;
     }
+#endif
 
     // interpreting points to linear arrays
     public static void convert(this Rectangle rect, Point pt, ref int i)
@@ -705,5 +710,6 @@ namespace Zaimoni.Data
     public static void NOP<T>(T x) { }
     public static bool TRUE<T>(T x) { return true; }
     public static bool FALSE<T>(T x) { return false; }
+    public static T IDENTITY<T>(T x) { return x; }
   }
 }   // Zaimoni.Data
