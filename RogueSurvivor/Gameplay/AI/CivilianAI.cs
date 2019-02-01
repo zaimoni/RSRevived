@@ -831,6 +831,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 #endif
 
+        // 2019-01-31: range sorting is:, This map, other maps
+        // However, this equates the district entry map with the much smaller basement, and does not cope well with space-time scaling or the cross-district minimap
+        // what would make sense is: local, radio range, "world" (last may not need immediate implementing, other maps may do for now)
+        // local is the viewport for large maps, and the map for small maps (CHAR Underground base is "large" but does not cross-district path)
+        // radio range is everything that fits on the minimap; distinct from local only for large maps
 #if PROTOTYPE
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;

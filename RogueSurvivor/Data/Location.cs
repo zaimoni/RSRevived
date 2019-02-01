@@ -75,6 +75,9 @@ namespace djack.RogueSurvivor.Data
       }
     } }
 
+    public Rectangle LocalView { get {
+      return (0 == District.UsesCrossDistrictView(Map)) ? Map.Rect : ViewRect;
+    } }
 
     // alpha10
     public int OdorsDecay()

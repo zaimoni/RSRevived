@@ -410,27 +410,68 @@ namespace Zaimoni.Data
     // we accept null as a shorthand for the function on domain T that returns constant empty set HashSet<U>
     public static Func<T, HashSet<U>> Union<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
     {
-       if (null == lhs) return rhs;
-       if (null == rhs) return lhs;
-       HashSet<U> ret(T src) {
-          var x = lhs(src);
-          x.UnionWith(rhs(src));
-          return x;
-       }
-       return ret;
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
+      HashSet<U> ret(T src) {
+        var x = lhs(src);
+        x.UnionWith(rhs(src));
+        return x;
+      }
+      return ret;
     }
 
     // logic operation ... want to use rhs only if lhs has no targets
     public static Func<T, HashSet<U>> Otherwise<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
     {
-       if (null == lhs) return rhs;
-       if (null == rhs) return lhs;
-       HashSet<U> ret(T src) {
-          var x = lhs(src);
-          if (0<x.Count) return x;
-          return rhs(src);
-       }
-       return ret;
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
+      HashSet<U> ret(T src) {
+        var x = lhs(src);
+        if (0<x.Count) return x;
+        return rhs(src);
+      }
+      return ret;
+    }
+
+    // function composition is right-associative
+    public static Func<T,V> Compose<T,U,V>(this Func<U,V> lhs,Func<T,U> rhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      V ret(T src) {
+        return lhs(rhs(src));
+      }
+      return ret;
+    }
+
+    public static Func<T,U> Compose<T,U>(this Func<T,U> lhs,Func<T,T> rhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == rhs) return l;
+      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+      U ret(T src) {
+        return lhs(rhs(src));
+      }
+      return ret;
+    }
+
+    public static Func<T,U> Compose<T,U>(this Func<U,U> lhs,Func<T,U> rhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      U ret(T src) {
+        return lhs(rhs(src));
+      }
+      return ret;
     }
 
     // interpreting points to linear arrays
