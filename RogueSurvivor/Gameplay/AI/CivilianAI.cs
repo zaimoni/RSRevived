@@ -833,29 +833,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // 2019-01-31: range sorting is:, This map, other maps
         // However, this equates the district entry map with the much smaller basement, and does not cope well with space-time scaling or the cross-district minimap
-        // what would make sense is: local, radio range, "world" (last may not need immediate implementing, other maps may do for now)
+        // what would make sense is: local, radio range (minimap), "world" (last may not need immediate implementing, other maps may do for now)
         // local is the viewport for large maps, and the map for small maps (CHAR Underground base is "large" but does not cross-district path)
         // radio range is everything that fits on the minimap; distinct from local only for large maps
 #if PROTOTYPE
+        // convention: a null map has been blacklisted
+        // if the final return value is null, we know the map was blacklisted and do not need to expand from it
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
+          if (null == m) return null;
           if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>();
           return threats.ThreatWhere(m);
         }
 
-        if (0 >= combat_critical.Count && null != threats && threats.Any()) pathing_targets = hunt_threat;
+        if (!combat_unready && null != threats && threats.Any()) pathing_targets = hunt_threat;
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
+          if (null == m) return null;
           return sights_to_see.In(m);
         }
-        if (null != sights_to_see) pathing_targets = pathing_targets.Union(tourism);
+        if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
 
         HashSet<Point> generators(Map m) {
+          if (null == m) return null;
           if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap==m) return new HashSet<Point>();  // plot-sensitive; if recharging there's a much closer one to the surface
-          if (WantToRecharge()) return new HashSet<Point>(m.PowerGenerators.Get.Select(obj => obj.Location.Position));
-          if (generators_off?.Any() ?? false) return new HashSet<Point>(generators_off.Select(obj => obj.Location.Position));
+          var gens = m.PowerGenerators.Get;
+          if (!gens.Any()) return new HashSet<Point>();
+          if (WantToRecharge()) return new HashSet<Point>(gens.Select(obj => obj.Location.Position));
+          var gens_off = gens.Where(obj => !obj.IsOn);
+          if (gens_off.Any()) return new HashSet<Point>(gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
           return new HashSet<Point>();
         }
 
@@ -863,11 +871,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         HashSet<Point> resupply_want(Map m)
         {
+          if (null == m) return null;
           return WhereIs(want,m);
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
-        if (0 < combat_critical.Count && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+        if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
         if (null != pathing_targets) {
           tmpAction = BehaviorPathTo(pathing_targets);
           if (null!=tmpAction) return tmpAction;
