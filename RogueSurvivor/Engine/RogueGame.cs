@@ -321,8 +321,12 @@ namespace djack.RogueSurvivor.Engine
 
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor m_Player;
+#if PROTOTYPE
     private static Map m_CurrentMap;    // Formerly Session.Get.CurrentMap
     private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
+#else
+    private static ZoneLoc m_MapView;
+#endif
 
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
@@ -340,8 +344,8 @@ namespace djack.RogueSurvivor.Engine
 
     private static Actor Player { get { return m_Player; } }  // too dangerous to allow anything other than public
     public static bool IsPlayer(Actor a) { return a == m_Player; }
-    public static Map CurrentMap { get { return m_CurrentMap; } }
-    private static Rectangle MapViewRect { get { return m_MapViewRect; } }
+    public static Map CurrentMap { get { return m_MapView.m; } }
+    private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
     public Rules Rules { get { return m_Rules; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
@@ -359,8 +363,7 @@ namespace djack.RogueSurvivor.Engine
     static public void Load(SerializationInfo info, StreamingContext context)
     {
       m_Player = (Actor) info.GetValue("m_Player",typeof(Actor));
-      m_CurrentMap = m_Player.Location.Map;
-      ComputeViewRect(m_Player.Location.Position);
+      m_MapView = m_Player.Location.View;
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
@@ -370,7 +373,7 @@ namespace djack.RogueSurvivor.Engine
 
     static public void Reset()  // very severe access control issue...should be called only from Session::Reset()
     {
-      m_CurrentMap = null;
+      m_MapView = default;
     }
 #endregion
 
@@ -1818,7 +1821,7 @@ namespace djack.RogueSurvivor.Engine
        if (null != tmp) {
          m_Player = tmp;
          Player.Controller.UpdateSensors();
-         ComputeViewRect(Player.Location.Position);
+         SetCurrentMap(Player.Location);
          RedrawPlayScreen();
          return;
        }
@@ -1938,9 +1941,8 @@ namespace djack.RogueSurvivor.Engine
         Actor tmp = map.FindPlayer;
         if (null != tmp) {
           m_Player = tmp;
-          SetCurrentMap(map);  // multi-PC support
           Player.Controller.UpdateSensors();
-          ComputeViewRect(Player.Location.Position);
+          SetCurrentMap(Player.Location);  // multi-PC support
           RedrawPlayScreen();
         }
       }
@@ -2226,7 +2228,7 @@ namespace djack.RogueSurvivor.Engine
               }
               if (actor == Player) {
                 Player.Controller.UpdateSensors();
-                ComputeViewRect(Player.Location.Position);
+                SetCurrentMap(Player.Location);
                 RedrawPlayScreen();
               }
 #endregion
@@ -2954,8 +2956,7 @@ namespace djack.RogueSurvivor.Engine
       (player.Controller as ObjectiveAI).SparseReset();
       player.Controller.UpdateSensors();
       m_Player = player;
-      SetCurrentMap(player.Location.Map);  // multi-PC support
-      ComputeViewRect(player.Location.Position);
+      SetCurrentMap(player.Location);  // multi-PC support
 
       GC.Collect(); // force garbage collection when things should be slow anyway
       GC.WaitForPendingFinalizers();
@@ -2965,8 +2966,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         if (Player!=player) {
           m_Player = player;
-          SetCurrentMap(player.Location.Map);  // multi-PC support
-          ComputeViewRect(player.Location.Position);
+          SetCurrentMap(player.Location);  // multi-PC support
         }
         m_UI.UI_SetCursor(null);
         // hint available?
@@ -3011,7 +3011,7 @@ namespace djack.RogueSurvivor.Engine
           tmpAction.Perform();
           // XXX following is duplicated code
           player.Controller.UpdateSensors();
-          ComputeViewRect(player.Location.Position);
+          SetCurrentMap(player.Location);
           (player.Controller as PlayerController).UpdatePrevLocation();
           Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
           return;
@@ -3236,7 +3236,7 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       player.Controller.UpdateSensors();
-      ComputeViewRect(player.Location.Position);
+      SetCurrentMap(player.Location);
       (player.Controller as PlayerController)?.UpdatePrevLocation();    // abandon PC results in null here
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
       play_timer.Restart();
@@ -10653,13 +10653,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // These are closely coordinated with Session.Get.CurrentMap
-    private static void ComputeViewRect(Point mapCenter)
-    {
-      int x = mapCenter.X - HALF_VIEW_WIDTH;
-      int y = mapCenter.Y - HALF_VIEW_HEIGHT;
-      m_MapViewRect = new Rectangle(x, y, 1+2* HALF_VIEW_WIDTH, 1 + 2 * HALF_VIEW_HEIGHT);
-    }
-
     private static bool IsInViewRect(Point mapPosition)
     {
       return MapViewRect.Contains(mapPosition);
@@ -10667,10 +10660,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool IsInViewRect(Location loc)
     {
-      if (loc.Map == CurrentMap) return MapViewRect.Contains(loc.Position);
-      Location? tmp = CurrentMap.Denormalize(loc);
-      if (null == tmp) return false;
-      return MapViewRect.Contains(tmp.Value.Position);
+      return m_MapView.Contains(loc);
     }
 
     static private ColorString WeatherStatusText()
@@ -11846,8 +11836,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void PanViewportTo(Location loc)
     {
-      m_CurrentMap = loc.Map;
-      ComputeViewRect(loc.Position);
+      m_MapView = loc.View;
       RedrawPlayScreen();
     }
 
@@ -12603,7 +12592,7 @@ namespace djack.RogueSurvivor.Engine
         if (0 >= world.PlayerCount) throw new InvalidOperationException("hard to start a game with zero PCs");
         entryMap = world.PlayerDistricts[0].EntryMap;
       }
-      SetCurrentMap(entryMap);
+      SetCurrentMap(new Location(entryMap,default));    // just need a valid map value to allow player refresh
       RefreshPlayer();
       foreach(Actor player in entryMap.Players.Get) {
         player.Controller.UpdateSensors();
@@ -12755,12 +12744,12 @@ namespace djack.RogueSurvivor.Engine
       Actor tmp = CurrentMap.Players.Get.FirstOrDefault();
       if (null == tmp) return;
       m_Player = tmp;
-      ComputeViewRect(Player.Location.Position);
+      SetCurrentMap(Player.Location);
     }
 
-    private void SetCurrentMap(Map map)
+    private void SetCurrentMap(Location loc)
     {
-      m_CurrentMap = map;
+      m_MapView = loc.View;
 
       // alpha10 update background music
       UpdateBgMusic();
@@ -13226,14 +13215,13 @@ namespace djack.RogueSurvivor.Engine
       if (newPlayerAvatar.Activity != Activity.SLEEPING) newPlayerAvatar.Activity = Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
       m_Player = newPlayerAvatar;
-      m_CurrentMap = newPlayerAvatar.Location.Map;
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.Stop();
       Player.Controller.UpdateSensors();
-      ComputeViewRect(Player.Location.Position);
+      SetCurrentMap(Player.Location);
       ClearMessages();
       AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();

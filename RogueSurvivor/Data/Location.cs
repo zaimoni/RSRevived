@@ -66,6 +66,7 @@ namespace djack.RogueSurvivor.Data
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
     public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
+    public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT)); } }
 
     public Rectangle MiniMapView { get {
       if (0 >= District.UsesCrossDistrictView(Map)) {
