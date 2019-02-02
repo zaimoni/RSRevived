@@ -883,7 +883,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
        }
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
@@ -902,6 +902,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
       if (0==where_to_go.Count) {
         var maps = new HashSet<Map>(dest.destination_maps.Get);
+        if (null != preblacklist) maps.RemoveWhere(preblacklist);
         if (1<maps.Count) {
           foreach(Map m in maps.ToList()) {
             if (1<m.destination_maps.Get.Count) continue;
@@ -930,14 +931,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;
-        Goals(targets_at,m,already_seen,goals);
+        if (null!=preblacklist && preblacklist(m)) continue;
+        Goals(targets_at,m, preblacklist, already_seen,goals);
       }
       // \todo 2019-01-04 BehaviorResupply is causing a substantial slowdown at Day 0 hour 3 onwards
       // an obvious "prefilter" is to exclude goals that are "too distant" from the actor
       return goals;
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen, List<Location> goals)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist, List<Map> already_seen, List<Location> goals)
     {
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 2+)");
@@ -954,7 +956,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;
-        Goals(targets_at,m,already_seen,goals);
+        if (null != preblacklist && preblacklist(m)) continue;
+        Goals(targets_at,m, preblacklist, already_seen,goals);
       }
       return goals;
     }
@@ -1268,9 +1271,14 @@ restart:
         return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
     }
 
-    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
+    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
-      List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
+      List<Location> goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
+      if (null != postblacklist) {
+        int i = goals.Count;
+        while(0 < i--) if (postblacklist(goals[i])) goals.RemoveAt(i);
+      }
+      // \todo apply postfilter
       if (0 >= goals.Count) return null;
 
       {
