@@ -884,13 +884,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != pathing_targets) {
           var view = m_Actor.Location.View;
 
-          Map prefilter_view(Map m) {
-            if (m==m_Actor.Location.Map) return m;
+          bool prefilter_view(Map m) {
+            if (m==m_Actor.Location.Map) return true;
             int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
-            if (0 >= map_code) return null;
-            if (map_code != District.UsesCrossDistrictView(m)) return null;
+            if (0 >= map_code) return false;
+            if (map_code != District.UsesCrossDistrictView(m)) return false;
             // view is small relative to a district, so it can't see districts on both sides of the current one.  Just check the four corners.
-            return m; // \todo implement
+            return true; // \todo implement
           }
 
           // these two may need to be new parameters for BehaviorPathTo
@@ -904,28 +904,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
 
           // 1) view pathing
-          tmpAction = BehaviorPathTo(new Func<Map,Map>(prefilter_view).Compose(pathing_targets));
+          tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
           if (null!=tmpAction) return tmpAction;
           // 2) minimap range pathing, if distinct from view
           if (0!=District.UsesCrossDistrictView(m_Actor.Location.Map)) {
-            Map prefilter_minimap(Map m) {
-              if (m==m_Actor.Location.Map) return m;
+            bool prefilter_minimap(Map m) {
+              if (m==m_Actor.Location.Map) return true;
               int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
-              if (0 >= map_code) return null;
-              if (map_code != District.UsesCrossDistrictView(m)) return null;
+              // XXX \todo would like to react to basements when on entry map, etc.
+              if (0 >= map_code) return false;
+              if (map_code != District.UsesCrossDistrictView(m)) return false;
               // this could span 3 districts if the district size is small; check corners and edge midpoints
-              return m; // \todo implement
+              return true; // \todo implement
             }
 
             // possible default blacklisting is fine for this
-            HashSet<Point> postfilter_minimap(HashSet<Point> goals)
+            bool postfilter_minimap(Location goals)
             {
-              return goals;   // \todo implement
+              return true;   // \todo implement
             }
-            tmpAction = BehaviorPathTo(new Func<Map, Map>(prefilter_minimap).Compose(pathing_targets).Compose(postfilter_minimap));
+            tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap,postfilter_minimap);
             if (null!=tmpAction) return tmpAction;
           }
-          // 3) world pathing
+          // 3) world pathing (no prefilter/postfilter)
           tmpAction = BehaviorPathTo(pathing_targets);
           if (null!=tmpAction) return tmpAction;
         }
