@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanClose(m_Door, out m_FailReason);
+      return Rules.IsAdjacent(m_Actor.Location,m_Door.Location) && m_Actor.CanClose(m_Door, out m_FailReason);
     }
 
     public override void Perform()
