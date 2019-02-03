@@ -844,7 +844,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
-          if (null == m) return null;
           if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>();
           return threats.ThreatWhere(m);
         }
@@ -853,13 +852,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
-          if (null == m) return null;
           return sights_to_see.In(m);
         }
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
 
         HashSet<Point> generators(Map m) {
-          if (null == m) return null;
           if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap==m) return new HashSet<Point>();  // plot-sensitive; if recharging there's a much closer one to the surface
           var gens = m.PowerGenerators.Get;
           if (!gens.Any()) return new HashSet<Point>();
@@ -873,7 +870,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         HashSet<Point> resupply_want(Map m)
         {
-          if (null == m) return null;
           return WhereIs(want,m);
         }
 
