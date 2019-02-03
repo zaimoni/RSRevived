@@ -68,11 +68,11 @@ namespace djack.RogueSurvivor.Data
     public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
     public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT)); } }
 
-    public Rectangle MiniMapView { get {
+    public ZoneLoc MiniMapView { get {
       if (0 >= District.UsesCrossDistrictView(Map)) {
-        return Map.Rect;
+        return new ZoneLoc(Map,Map.Rect);
       } else {
-        return new Rectangle(Position.X - Engine.RogueGame.MINIMAP_RADIUS, Position.Y - Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS);
+        return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.MINIMAP_RADIUS, Position.Y - Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS));
       }
     } }
 

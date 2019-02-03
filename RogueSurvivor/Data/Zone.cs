@@ -11,8 +11,10 @@ using System.Collections.Generic;
 
 #if Z_VECTOR
 using Rectangle = Zaimoni.Data.Box2D_int;
+using Size = Zaimoni.Data.Vector2D_int;
 #else
 using Rectangle = System.Drawing.Rectangle;
+using Size = System.Drawing.Size;
 #endif
 
 namespace djack.RogueSurvivor.Data
@@ -82,5 +84,36 @@ namespace djack.RogueSurvivor.Data
       var test = m.Denormalize(loc);
       return null!=test && Rect.Contains(test.Value.Position);
     }
+
+    public Rectangle DistrictSpan { get {
+      var ret = new Rectangle(m.District.WorldPosition,new Size(1,1));
+      if (0 < District.UsesCrossDistrictView(m)) {
+        int test = Rect.Left;
+        int delta = m.Width;
+        while (0 > test) {
+          test += delta;
+          ret.X -= 1;
+          ret.Width += 1;
+        }
+        test = Rect.Right;
+        while (delta <= test) {
+          test -= delta;
+          ret.Width += 1;
+        }
+        test = Rect.Top;
+        delta = m.Height;
+        while (0 > test) {
+          test += delta;
+          ret.Y -= 1;
+          ret.Height += 1;
+        }
+        test = Rect.Bottom;
+        while (delta <= test) {
+          test -= delta;
+          ret.Height += 1;
+        }
+      }
+      return ret;
+    } }
   }
 }

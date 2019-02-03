@@ -840,9 +840,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if PROTOTYPE
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
-        Func<Map,Map> prefilter_m = IDENTITY;
-        Func<Location,bool> postfilter_loc = TRUE;
-
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
@@ -880,53 +877,59 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
-        if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
         if (null != pathing_targets) {
           var view = m_Actor.Location.View;
+          var d_span = view.DistrictSpan;
+          int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
 
           bool prefilter_view(Map m) {
             if (m==m_Actor.Location.Map) return true;
-            int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
             if (0 >= map_code) return false;
             if (map_code != District.UsesCrossDistrictView(m)) return false;
-            // view is small relative to a district, so it can't see districts on both sides of the current one.  Just check the four corners.
-            return true; // \todo implement
+            return d_span.Contains(m.District.WorldPosition);
           }
 
           // these two may need to be new parameters for BehaviorPathTo
           bool reject_view(Location loc) { return !view.Contains(loc); }
 
-          // myopic and does not consider stair destinations
-          HashSet<Point> postfilter_view(Map m, HashSet<Point> goals)
-          {
-            goals.RemoveWhere(pt => reject_view(new Location(m,pt)));
-            return goals;
-          }
-
           // 1) view pathing
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
           if (null!=tmpAction) return tmpAction;
           // 2) minimap range pathing, if distinct from view
-          if (0!=District.UsesCrossDistrictView(m_Actor.Location.Map)) {
+          if (0!= map_code) {
+            view = m_Actor.Location.MiniMapView;
+            d_span = view.DistrictSpan;
+
             bool prefilter_minimap(Map m) {
               if (m==m_Actor.Location.Map) return true;
-              int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
-              // XXX \todo would like to react to basements when on entry map, etc.
-              if (0 >= map_code) return false;
-              if (map_code != District.UsesCrossDistrictView(m)) return false;
-              // this could span 3 districts if the district size is small; check corners and edge midpoints
-              return true; // \todo implement
+              if (0 >= map_code) return false;  // large maps like the CHAR undergound base
+              if (!d_span.Contains(m.District.WorldPosition)) return false;
+              // entry map is code 1, and is promiscuous (want to respond to basements, etc.)
+              int other_map_code = District.UsesCrossDistrictView(m);
+              if (map_code == other_map_code) return true;
+              if (1< map_code) return 1==other_map_code;    // only consider entry map from subway/sewer for minimap pathfinding
+              // entry map cares "where" the other map's entrance is
+              if (1 < other_map_code) return true;  // subway and sewer always ok
+              // hospital and police station go fully into scope if the entrance is there; basements can just check directly
+              if (m.destination_maps.Get.Contains(m.District.EntryMap)) return m.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              if (null!=Session.Get.UniqueMaps.NavigatePoliceStation(m)) return Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              else if (null != Session.Get.UniqueMaps.NavigateHospital(m)) return Session.Get.UniqueMaps.Hospital_Admissions.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              return false;
             }
 
+#if PROTOTYPE
             // possible default blacklisting is fine for this
             bool postfilter_minimap(Location goals)
             {
               return true;   // \todo implement
             }
-            tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap,postfilter_minimap);
+#endif
+            tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap /*,postfilter_minimap*/);
             if (null!=tmpAction) return tmpAction;
           }
-          // 3) world pathing (no prefilter/postfilter)
+          // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
+          if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+
           tmpAction = BehaviorPathTo(pathing_targets);
           if (null!=tmpAction) return tmpAction;
         }
