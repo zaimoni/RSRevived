@@ -9,7 +9,6 @@
 // #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
 #define NO_PEACE_WALLS
-// #define SPEEDY_GONZALES
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
@@ -7715,9 +7714,6 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayer) AddMessage(MakeErrorMessage(reason));
         return true;
       }
-#if SPEEDY_GONZALES
-      if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-#else
       if (actor.Location.Map.District != exitAt.ToMap.District) {   // check for movement speed artifacts
         if (actor.Location.Map.District.WorldPosition.IsScheduledBefore(exitAt.ToMap.District.WorldPosition)) {
           // the move itself is a free move; do not want to burn a run-is-free move on this
@@ -7745,7 +7741,6 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
         }
       }
-#endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       actor.RemoveFromMap();
@@ -7795,9 +7790,6 @@ namespace djack.RogueSurvivor.Engine
           to.Map.PlaceAt(fo, position);
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
-#if SPEEDY_GONZALES
-          if (fromMap.District != to.Map.District) fo.ActionPoints += fo.Speed; // Yes, run *four* squares on the first turn in a new district!
-#endif
         }
       }
       if (actorList == null) return;
