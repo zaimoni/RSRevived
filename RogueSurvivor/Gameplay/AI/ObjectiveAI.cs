@@ -899,7 +899,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var already_seen = new List<Map>{ dest };
       var scheduled = new List<Map>();
-
+      // upper/lower bounds; using X as lower, Y as upper bound
+        
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
       if (0==where_to_go.Count) {
         var maps = new HashSet<Map>(dest.destination_maps.Get);
@@ -939,35 +940,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       while(0 < scheduled.Count) {
         var m = scheduled[0];
-        Goals(targets_at,m, preblacklist, already_seen, scheduled,goals);
+
+        HashSet<Point> dests = targets_at(m);
+        if (0 < dests.Count) {
+          foreach(Point pt in dests) goals.Add(new Location(m,pt));
+        }
+
+        already_seen.Add(m);
+
+        foreach(Map m2 in m.destination_maps.Get) {
+          if (already_seen.Contains(m2)) continue;
+          if (scheduled.Contains(m2)) continue;
+          if (null != preblacklist && preblacklist(m2)) continue;
+          scheduled.Add(m2);
+        }
+
         scheduled.RemoveAt(0);
       }
       // \todo 2019-01-04 BehaviorResupply is causing a substantial slowdown at Day 0 hour 3 onwards
       // an obvious "prefilter" is to exclude goals that are "too distant" from the actor
-      return goals;
-    }
-
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist, List<Map> already_seen, List<Map> scheduled, List<Location> goals)
-    {
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 2+)");
-#endif
-      HashSet<Point> where_to_go = targets_at(dest);
-      if (0 < where_to_go.Count) {
-        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
-      }
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
-#endif
-
-      already_seen.Add(dest);
-
-      foreach(Map m in dest.destination_maps.Get) {
-        if (already_seen.Contains(m)) continue;
-        if (scheduled.Contains(m)) continue;
-        if (null != preblacklist && preblacklist(m)) continue;
-        scheduled.Add(m);
-      }
       return goals;
     }
 
