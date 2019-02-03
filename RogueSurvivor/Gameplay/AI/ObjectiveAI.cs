@@ -889,16 +889,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
 #endif
       var goals = new List<Location>();
-      HashSet<Point> where_to_go = targets_at(dest);
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
-#endif
-      if (0 < where_to_go.Count) {
-        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
+      var already_seen = new List<Map>();
+      var scheduled = new List<Map>();
+
+      HashSet<Point> obtain_goals(Map m) {
+        var dests = targets_at(m);
+        if (0 < dests.Count) foreach(var pt in dests) goals.Add(new Location(m,pt));
+        already_seen.Add(m);
+        return dests;
       }
 
-      var already_seen = new List<Map>{ dest };
-      var scheduled = new List<Map>();
+      var where_to_go = obtain_goals(dest);
+
       // upper/lower bounds; using X as lower, Y as upper bound
         
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
@@ -908,13 +910,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (1<maps.Count) {
           foreach(Map m in maps.ToList()) {
             if (1<m.destination_maps.Get.Count) continue;
-            HashSet<Point> go_here = targets_at(m);
-            if (0<go_here.Count) {
-              foreach(Point pt in go_here) goals.Add(new Location(m,pt));
-              already_seen.Add(m);
-              continue;
-            }
-            maps.Remove(m);
+            if (0 >= obtain_goals(m).Count) maps.Remove(m);
           }
         }
         if (1==maps.Count && 0==goals.Count) {
@@ -931,29 +927,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // if that isn't enough, we could also use the police and hospital geometries
       } 
 
-      foreach(Map m in dest.destination_maps.Get) {
-        if (already_seen.Contains(m)) continue;
-        if (scheduled.Contains(m)) continue;
-        if (null!=preblacklist && preblacklist(m)) continue;
-        scheduled.Add(m);
+      void schedule_maps(Map m2) {
+        foreach(Map m in m2.destination_maps.Get) {
+          if (already_seen.Contains(m)) continue;
+          if (scheduled.Contains(m)) continue;
+          if (null!=preblacklist && preblacklist(m)) continue;
+          scheduled.Add(m);
+        }
       }
+
+      schedule_maps(dest);
 
       while(0 < scheduled.Count) {
         var m = scheduled[0];
 
-        HashSet<Point> dests = targets_at(m);
-        if (0 < dests.Count) {
-          foreach(Point pt in dests) goals.Add(new Location(m,pt));
-        }
-
-        already_seen.Add(m);
-
-        foreach(Map m2 in m.destination_maps.Get) {
-          if (already_seen.Contains(m2)) continue;
-          if (scheduled.Contains(m2)) continue;
-          if (null != preblacklist && preblacklist(m2)) continue;
-          scheduled.Add(m2);
-        }
+        obtain_goals(m);
+        schedule_maps(m);
 
         scheduled.RemoveAt(0);
       }
@@ -1271,9 +1260,27 @@ restart:
         return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
     }
 
+    private void PartialInvertLOS(List<Location> tainted, int radius)
+    {
+      var ideal = LOS.OptimalFOV(radius);
+      foreach(var loc in tainted.ToList()) {
+        if (!loc.Map.WouldBlacklistFor(loc.Position,m_Actor)) continue;
+        foreach(var offset in ideal) {
+          var test = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
+          var legal = loc.Map.IsInBounds(loc.Position) ? test : loc.Map.Normalize(loc.Position);
+          if (null == legal) continue;
+          if (tainted.Contains(legal.Value)) continue;
+          if (legal.Value.Map.WouldBlacklistFor(legal.Value.Position,m_Actor)) continue;
+          if (LOS.CanTraceViewLine(test,loc.Position)) tainted.Add(legal.Value);
+        }
+        tainted.Remove(loc);
+      }
+    }
+
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
       List<Location> goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
+      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
       if (null != postblacklist) {
         int i = goals.Count;
         while(0 < i--) if (postblacklist(goals[i])) goals.RemoveAt(i);
