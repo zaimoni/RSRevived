@@ -6,6 +6,7 @@
 
 // #define TRACE_SELECTACTION
 // #define TIME_TURNS
+#define LAMBDA_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -837,7 +838,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // what would make sense is: local, radio range (minimap), "world" (last may not need immediate implementing, other maps may do for now)
         // local is the viewport for large maps, and the map for small maps (CHAR Underground base is "large" but does not cross-district path)
         // radio range is everything that fits on the minimap; distinct from local only for large maps
-#if PROTOTYPE
+#if LAMBDA_PATHING
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
         Func<Map,HashSet<Point>> pathing_targets = null;

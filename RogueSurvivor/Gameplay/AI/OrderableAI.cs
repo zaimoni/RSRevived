@@ -3230,7 +3230,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // threat hunting has some unusual features relative to other types of pathing
       // * we are guaranteed that no condidate squares are in our LOS
       // * we would rather not end our move adjacent to threat if we have a ranged weapon
-#if DEBUG
       int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
 #if TIME_TURNS
       timer.Restart();
@@ -3269,7 +3268,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0<safe_exposed.Count) return GreedyStep(safe_exposed);
         if (0<exposed.Count) return GreedyStep(exposed);
       }
-#endif
 
       // this call is measuring as significant CPU on the larger maps
 #if TIME_TURNS
