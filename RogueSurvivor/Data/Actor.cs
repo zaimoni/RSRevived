@@ -2339,6 +2339,7 @@ namespace djack.RogueSurvivor.Data
     }
 
 	public bool RunIsFreeMove { get { return Rules.BASE_ACTION_COST/2 < m_ActionPoints; } }
+	public bool WalkIsFreeMove { get { return Rules.BASE_ACTION_COST < m_ActionPoints; } }
 
     public bool CanJump {
       get {
