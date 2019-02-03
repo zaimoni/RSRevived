@@ -898,6 +898,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var already_seen = new List<Map>{ dest };
+      var scheduled = new List<Map>();
 
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
       if (0==where_to_go.Count) {
@@ -931,15 +932,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;
+        if (scheduled.Contains(m)) continue;
         if (null!=preblacklist && preblacklist(m)) continue;
-        Goals(targets_at,m, preblacklist, already_seen,goals);
+        scheduled.Add(m);
+      }
+
+      while(0 < scheduled.Count) {
+        var m = scheduled[0];
+        Goals(targets_at,m, preblacklist, already_seen, scheduled,goals);
+        scheduled.RemoveAt(0);
       }
       // \todo 2019-01-04 BehaviorResupply is causing a substantial slowdown at Day 0 hour 3 onwards
       // an obvious "prefilter" is to exclude goals that are "too distant" from the actor
       return goals;
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist, List<Map> already_seen, List<Location> goals)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist, List<Map> already_seen, List<Map> scheduled, List<Location> goals)
     {
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 2+)");
@@ -956,8 +964,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;
+        if (scheduled.Contains(m)) continue;
         if (null != preblacklist && preblacklist(m)) continue;
-        Goals(targets_at,m, preblacklist, already_seen,goals);
+        scheduled.Add(m);
       }
       return goals;
     }
