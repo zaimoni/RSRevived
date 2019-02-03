@@ -1701,8 +1701,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
     {
-      if (!(previousLocation.Map.GetMapObjectAt(previousLocation.Position) is DoorWindow door)) return null;
-      if (!m_Actor.CanClose(door)) return null;
+      if (!(previousLocation.MapObject is DoorWindow door)) return null;
+      if (!Rules.IsAdjacent(previousLocation,m_Actor.Location) || !m_Actor.CanClose(door)) return null;
       foreach(var pt in previousLocation.Position.Adjacent()) {
         Actor actor = previousLocation.Map.GetActorAtExt(pt);
         if (null == actor) continue;
