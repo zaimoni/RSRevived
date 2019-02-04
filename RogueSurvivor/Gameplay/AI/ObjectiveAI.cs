@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
@@ -1277,6 +1278,38 @@ restart:
       }
     }
 
+    // usage: put the actor's location first so we can early-exit if there are any goals in LOS
+    private KeyValuePair<Dictionary<Location, int>,Dictionary<Location, int>> DestsinLoS(List<Location> src, HashSet<Location> inspect)
+    {
+        var inspect_view = new Dictionary<Map, HashSet<Point>>();
+        var exposed = new Dictionary<Location,int>();
+        var safe_exposed = new Dictionary<Location,int>();
+        foreach (var x in src) {
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, x);
+          if (!inspect_view.TryGetValue(x.Map,out var cache)) {
+            cache = new HashSet<Point>();
+            foreach(var loc in inspect) {
+              if (loc.Map==x.Map) cache.Add(loc.Position);
+              else {
+                var test = x.Map.Denormalize(loc);
+                cache.Add(test.Value.Position);
+              }
+            }
+            inspect_view[x.Map] = cache;
+          }
+          los.IntersectWith(cache);
+          if (0 >= los.Count) continue;
+          exposed[x] = los.Count;
+          if (   m_Actor.RunIsFreeMove
+              || !los.Any(pt2 => Rules.IsAdjacent(pt2, x.Position))
+              || (x.MapObject is DoorWindow door && door.IsClosed)) {
+            safe_exposed[x] = los.Count;
+          }
+          if (x == m_Actor.Location) break;
+        }
+        return new KeyValuePair<Dictionary<Location, int>, Dictionary<Location, int>>(safe_exposed,exposed);
+    }
+
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
       List<Location> goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
@@ -1297,7 +1330,6 @@ restart:
           return tmp;
         }
       }
-      }
 
       // if we couldn't path to an adjacent goal, wait
       if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, loc))) {
@@ -1308,8 +1340,31 @@ restart:
         return new ActionWait(m_Actor);
       }
 
-      // remove a degenerate case from consideration
-      if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
+#if PROTOTYPE
+      { // Adaptation of prior "almost in view" heuristic for threat hunting
+      int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      double edge_of_maxrange = fov+1.5;
+
+      var near_tainted = new HashSet<Location>();
+      foreach(var loc in goals) {
+        if (fov + 1 < Rules.GridDistance(loc, m_Actor.Location)) continue;
+        if (edge_of_maxrange > Rules.StdDistance(loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
+      }
+      if (0<near_tainted.Count) {
+        var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
+        candidates.AddRange(moves.Keys);
+        var goals_in_sight = DestsinLoS(candidates, near_tainted);
+        if (goals_in_sight.Value.ContainsKey(m_Actor.Location)) {   // already had goal in sight
+          throw new InvalidProgramException("need to handle goals in sight when pathfinding");
+        } else if (0<goals_in_sight.Key.Count) return GreedyStep(goals_in_sight.Key);   // expose goals safely
+        else if (0<goals_in_sight.Value.Count) return GreedyStep(goals_in_sight.Value);   // expose goals unsafely
+      }
+      }
+#endif
+      }
+
+       // remove a degenerate case from consideration
+       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
 
