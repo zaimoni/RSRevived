@@ -371,7 +371,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn;    // reused much later
+      IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn(m_Actor.Location.Map);    // formerly reused much later
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == generators_off ? "no generators to turn on" : generators_off.Count().ToString()+" genberators to turn on"));
 #endif
@@ -857,9 +857,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
 
         HashSet<Point> generators(Map m) {
-          if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap==m) return new HashSet<Point>();  // plot-sensitive; if recharging there's a much closer one to the surface
-          var gens = m.PowerGenerators.Get;
-          if (!gens.Any()) return new HashSet<Point>();
+          var gens = Generators(m);
+          if (null == gens) return new HashSet<Point>();
           if (WantToRecharge()) return new HashSet<Point>(gens.Select(obj => obj.Location.Position));
           var gens_off = gens.Where(obj => !obj.IsOn);
           if (gens_off.Any()) return new HashSet<Point>(gens_off.Select(obj => obj.Location.Position));   // XXX should be for map

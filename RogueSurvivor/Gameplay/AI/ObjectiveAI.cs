@@ -3212,6 +3212,22 @@ restart_single_exit:
       return ret;
     }
 
+    // arguable whether these twp should be public in Map
+    static protected IEnumerable<Engine.MapObjects.PowerGenerator> GeneratorsToTurnOn(Map m)
+    {
+      if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap == m) return null; // plot consequences until Prisoner That Should Not Be is dead, does not light level.
+      if (0 >= m.PowerGenerators.Get.Count) return null;
+      if (1.0 <= m.PowerRatio) return null;
+      return m.PowerGenerators.Get.Where(obj => !obj.IsOn);
+    }
+
+    static protected IEnumerable<Engine.MapObjects.PowerGenerator> Generators(Map m)
+    {
+      if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap == m) return null; // plot consequences until Prisoner That Should Not Be is dead, does not light level.
+      if (0 >= m.PowerGenerators.Get.Count) return null;
+      return m.PowerGenerators.Get;
+    }
+
     public bool CombatUnready()
     {
       if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(rw => null!=m_Actor.Inventory.GetCompatibleAmmoItem(rw))) return false;
