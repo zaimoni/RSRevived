@@ -1278,6 +1278,67 @@ restart:
       }
     }
 
+    protected ActorAction GreedyStep(Dictionary<Point, int> move_scores)
+    {
+#if DEBUG
+      if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
+#endif
+      var ret = new List<KeyValuePair<Point, int>>();
+      foreach(var x in move_scores) {
+        if (0 >= ret.Count || ret[0].Value==x.Value) {
+          ret.Add(x);
+          continue;
+        }
+        if (ret[0].Value > x.Value) continue;
+        ret.Clear();
+        ret.Add(x);
+      }
+
+      var dests = new List<Point>();
+      foreach(var x in ret) dests.Add(x.Key);
+
+      ActorAction tmp = DecideMove(dests);
+#if DEBUG
+      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+#endif
+      if (tmp is ActionMoveStep test) {
+        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
+        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        ReserveSTA(0,0,0,0);
+      }
+      return tmp;
+    }
+
+    protected ActorAction GreedyStep(Dictionary<Location, int> move_scores)
+    {
+#if DEBUG
+      if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
+#endif
+      var ret = new Dictionary<Location, int>();
+      int max_seen = int.MinValue;
+      int tmp2;
+      foreach(var x in move_scores) {
+        if (max_seen == (tmp2 = x.Value)) {
+          ret[x.Key] = tmp2;
+          continue;
+        }
+        if (max_seen > tmp2) continue;
+        ret.Clear();
+        ret[x.Key] = (max_seen = tmp2);
+      }
+
+      ActorAction tmp = DecideMove(ret);
+#if DEBUG
+      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+#endif
+      if (tmp is ActionMoveStep test) {
+        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
+        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        ReserveSTA(0,0,0,0);
+      }
+      return tmp;
+    }
+
     // usage: put the actor's location first so we can early-exit if there are any goals in LOS
     private KeyValuePair<Dictionary<Location, int>,Dictionary<Location, int>> DestsinLoS(List<Location> src, HashSet<Location> inspect)
     {
@@ -1323,12 +1384,15 @@ restart:
 
       {
       Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
-      foreach(Location loc in goals) {
+      {
+      bool null_return = false;
+      foreach(Location loc in goals) {  // \todo should only null-return if no legal adjacent goals at all
         if (moves.TryGetValue(loc,out var tmp)) {
-          if (!tmp.IsLegal()) return null;
-          if (VetoAction(tmp)) return null;
-          return tmp;
+          if (tmp.IsLegal() && !VetoAction(tmp)) return tmp;
+          null_return = true;
         }
+      }
+      if (null_return) return null;
       }
 
       // if we couldn't path to an adjacent goal, wait
@@ -1340,7 +1404,6 @@ restart:
         return new ActionWait(m_Actor);
       }
 
-#if PROTOTYPE
       { // Adaptation of prior "almost in view" heuristic for threat hunting
       int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
       double edge_of_maxrange = fov+1.5;
@@ -1351,16 +1414,15 @@ restart:
         if (edge_of_maxrange > Rules.StdDistance(loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
       }
       if (0<near_tainted.Count) {
+        moves.OnlyIf(action => action.IsLegal() && !VetoAction(action));    // might want to do this unconditionally, after the null return has happened
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
-        if (goals_in_sight.Value.ContainsKey(m_Actor.Location)) {   // already had goal in sight
-          throw new InvalidProgramException("need to handle goals in sight when pathfinding");
+        if (goals_in_sight.Value.ContainsKey(m_Actor.Location)) {   // already had goal in sight; not an error condition
         } else if (0<goals_in_sight.Key.Count) return GreedyStep(goals_in_sight.Key);   // expose goals safely
         else if (0<goals_in_sight.Value.Count) return GreedyStep(goals_in_sight.Value);   // expose goals unsafely
       }
       }
-#endif
       }
 
        // remove a degenerate case from consideration

@@ -3172,37 +3172,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<tainted.Count;   // XXX could be more efficient?
     }
 
-    private ActorAction GreedyStep(Dictionary<Point, int> move_scores)
-    {
-#if DEBUG
-      if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
-#endif
-      var ret = new List<KeyValuePair<Point, int>>();
-      foreach(var x in move_scores) {
-        if (0 >= ret.Count || ret[0].Value==x.Value) {
-          ret.Add(x);
-          continue;
-        }
-        if (ret[0].Value > x.Value) continue;
-        ret.Clear();
-        ret.Add(x);
-      }
-
-      var dests = new List<Point>();
-      foreach(var x in ret) dests.Add(x.Key);
-
-      ActorAction tmp = DecideMove(dests);
-#if DEBUG
-      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
-#endif
-      if (tmp is ActionMoveStep test) {
-        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
-        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-        ReserveSTA(0,0,0,0);
-      }
-      return tmp;
-    }
-
     protected ActorAction BehaviorHuntDownThreatCurrentMap()
     {
       ThreatTracking threats = m_Actor.Threats;
