@@ -17,6 +17,7 @@ using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
+using ActionPush = djack.RogueSurvivor.Engine.Actions.ActionPush;
 using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
 using ActionRechargeItemBattery = djack.RogueSurvivor.Engine.Actions.ActionRechargeItemBattery;
 using ActionShove = djack.RogueSurvivor.Engine.Actions.ActionShove;
@@ -505,6 +506,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
+    private static List<T> DecideMove_NoShove<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
+    {
+      IEnumerable<T> no_shove = src.Where(loc=> !(legal_steps[loc] is ActionShove));
+	  int new_dest = no_shove.Count();
+      return ((0 < new_dest && new_dest < src.Count) ? no_shove.ToList() : src);
+    }
+
+    private static List<T> DecideMove_NoPush<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
+    {
+      IEnumerable<T> no_push = src.Where(loc => !(legal_steps[loc] is ActionPush));
+	  int new_dest = no_push.Count();
+      return ((0 < new_dest && new_dest < src.Count) ? no_push.ToList() : src);
+    }
+
     static private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
         tainted.IntersectWith(new_los);
         if (0>=tainted.Count) return dests;
@@ -546,12 +561,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return taint_exposed.Keys.ToList();
     }
 
-    private ActorAction _finalDecideMove(List<Point> tmp)
+    private ActorAction _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
     {
 	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
-		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)));
-        if (!ret?.IsLegal() ?? true) continue;  // not really an option
+		ActorAction ret = legal_steps[RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)];
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
            if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
@@ -580,12 +594,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
-	  List<Point> tmp = src.ToList();
-      if (1 >= tmp.Count) return _finalDecideMove(tmp);
+      var legal_steps = m_Actor.OnePathPt(m_Actor.Location); // other half
+      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+
+	  List<Point> tmp = src.Where(pt => legal_steps.ContainsKey(pt)).ToList();
+      if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 
 	  // do not get in the way of allies' line of fire
 	  tmp = DecideMove_Avoid(tmp, FriendsLoF());
-      if (1 >= tmp.Count) return _finalDecideMove(tmp);
+      if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
@@ -615,17 +632,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
-        if (1 >= tmp.Count) return _finalDecideMove(tmp);
+        if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 	  }
 	  if (null != sights_to_see) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
-        if (1 >= tmp.Count) return _finalDecideMove(tmp);
+        if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 	  }
+
+      // weakly prefer not to shove
+      tmp = DecideMove_NoShove(tmp, legal_steps);
+
+      // weakly prefer not to push
+      tmp = DecideMove_NoPush(tmp, legal_steps);
 
       // weakly prefer not to jump
       tmp = DecideMove_NoJump(tmp);
-      return _finalDecideMove(tmp);
+      return _finalDecideMove(tmp, legal_steps);
 	}
 
     private ActorAction _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
@@ -633,7 +656,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
         var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp);
-        if (!legal_steps.TryGetValue(dest, out var ret) || !ret.IsLegal()) continue; // not really an option
+        var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
         if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
           continue;
         };
@@ -711,7 +734,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
       if (null == src) return null; // does happen
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
-      legal_steps.OnlyIf(action => !VetoAction(action));
+      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      src.OnlyIf(loc => legal_steps.ContainsKey(loc));
+
+      int min_cost = src.Values.Min();
+      src.OnlyIf(val => min_cost>=val);
+
       // XXX \todo if there are maps we do not want to path to, screen those here
 	  List<Location> tmp = src.Keys.ToList();
       if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
@@ -761,6 +789,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
         }
 	  }
+
+      // weakly prefer not to shove
+      tmp = DecideMove_NoShove(tmp, legal_steps);
+
+      // weakly prefer not to push
+      tmp = DecideMove_NoPush(tmp, legal_steps);
 
       // weakly prefer not to jump
       tmp = DecideMove_NoJump(tmp);
@@ -1401,7 +1435,7 @@ restart:
         var e = m_Actor.Location.Exit;
         if (null!=e && goals.Contains(e.Location)) throw new InvalidProgramException("need to handle adjacent to blocked exit");
 #endif
-        return new ActionWait(m_Actor);
+        return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
       }
 
       { // Adaptation of prior "almost in view" heuristic for threat hunting

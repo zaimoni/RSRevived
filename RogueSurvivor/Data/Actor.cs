@@ -1784,6 +1784,12 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public Dictionary<Point,ActorAction> OnePathPt(Location loc)   // adapter
+    {
+      var already = new Dictionary<Point, ActorAction>();
+      return OnePath(loc.Map,loc.Position,already);
+    }
+
     public List<Point> LegalSteps { get { return OneStepRange(Location.Map, Location.Position);  } }
 
     public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
