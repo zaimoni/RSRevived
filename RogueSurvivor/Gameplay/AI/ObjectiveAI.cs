@@ -1353,7 +1353,7 @@ restart:
               if (loc.Map==x.Map) cache.Add(loc.Position);
               else {
                 var test = x.Map.Denormalize(loc);
-                cache.Add(test.Value.Position);
+                if (null!=test) cache.Add(test.Value.Position);
               }
             }
             inspect_view[x.Map] = cache;
