@@ -225,11 +225,11 @@ namespace djack.RogueSurvivor.Engine
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142
-    private const int GROUNDINVENTORYPANEL_Y = 224;
-    private const int CORPSESPANEL_Y = 288;
+    private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
+    private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
     private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
-    private const int SKILLTABLE_Y = 352;
+    private const int SKILLTABLE_Y = CORPSESPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int SKILLTABLE_LINES = 8;  // alpha10; formerly 10
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
     private const int LOCATIONPANEL_Y = 676;
@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Engine
     private const int MAX_MESSAGES = 7;
     private const int MESSAGES_HISTORY = 59;
     public const int MINITILE_SIZE = 2;
-    private const int MINIMAP_X = 750;
+    private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
     private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
     private const int MINI_TRACKER_OFFSET = 1;
     private const int DELAY_SHORT = 250;
