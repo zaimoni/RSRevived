@@ -453,7 +453,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
       if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
-      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
+      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(pt)));
 //    ret.RemoveWhere(pt => !_legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());    // predicted to work but fails due to MS C# compiler bug April 12 2018
       ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(pt,pt2))); // this does work and would be more efficient than the broken version above
 
