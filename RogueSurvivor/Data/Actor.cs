@@ -4,7 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define XDISTRICT_PATHING
 #define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Engine.Items;
@@ -2377,14 +2376,9 @@ namespace djack.RogueSurvivor.Data
 	// Ultimately, we do plan to allow the AI to cross district boundaries
 	private string ReasonCantLeaveMap(Point dest)
 	{
-#if XDISTRICT_PATHING
       Exit exitAt = Location.Map.GetExitAt(dest);
       if (null == exitAt) return "no exit to leave map with";
       return exitAt.ReasonIsBlocked(this);
-#else
-      if (!IsPlayer) return "can't leave maps";
-      return "";
-#endif
 	}
 
     public bool CanLeaveMap(Point dest, out string reason)

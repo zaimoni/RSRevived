@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define XDISTRICT_PATHING
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.AI;
 using System;
@@ -49,10 +47,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       int num = actor.SmellThreshold;  // floors at 1
       Rectangle survey = new Rectangle(actor.Location.Position.X - 1, actor.Location.Position.Y - 1, 3, 3);
       Map map = actor.Location.Map;
-#if XDISTRICT_PATHING
-#else
-      map.TrimToBounds(ref survey); // XXX change target for cross-district pathing
-#endif
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
       int scentByOdorAt = 0;
       survey.DoForEach(pt => { 
