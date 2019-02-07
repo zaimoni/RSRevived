@@ -14,6 +14,7 @@
 // #define REFUGEES_IN_SUBWAY
 // #define PANOPTIC_HOLYVISION
 // #define TIME_TURNS
+#define EXIT_VIEW
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -245,6 +246,12 @@ namespace djack.RogueSurvivor.Engine
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
     private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
+#if EXIT_VIEW
+    private const int EXIT_SLOTS = MINITILE_SIZE * (2 + 2 * MINIMAP_RADIUS) / TILE_SIZE;
+    private const int ENTRYMAP_EXIT_SLOT = EXIT_SLOTS-2;
+    private const int EXIT_SLOT_X = RIGHTPANEL_X+4;
+    private const int EXIT_SLOT_Y0 = LOCATIONPANEL_Y-TILE_SIZE* EXIT_SLOTS;
+#endif
     private const int MINI_TRACKER_OFFSET = 1;
     private const int DELAY_SHORT = 250;
     private const int DELAY_NORMAL = 500;
@@ -10940,6 +10947,52 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
       }
+#if EXIT_VIEW
+      // \todo exit display
+      var e = Player.Location.Exit; // XXX does not change w/remote viewing
+      if (null != e) {
+        // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
+        int slot = e.Location.Map == e.Location.Map.District.EntryMap ? ENTRYMAP_EXIT_SLOT : ENTRYMAP_EXIT_SLOT+1;  // XXX \todo not correct for hospital or police station (function of both map and exit destination)
+        GDI_Point screen = new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE*slot);
+        Tile tile = e.Location.Map.GetTileAt(e.Location.Position);   // non-null for valid coordinates by construction
+        tile.IsInView = !Player.IsSleeping; // these two forced-true by adjacency, when awake
+        tile.IsVisited = true;
+        DrawTile(tile, screen, tint);   // mostly ignore overlays (tourism and line of fire auto-cleared, threat may be inferred by other means)
+        if (tile.IsInView) {
+          // XXX should be visible only if underlying AI sees corpses
+          List<Corpse> corpsesAt = e.Location.Map.GetCorpsesAt(e.Location.Position);
+          if (corpsesAt != null) {
+            foreach (Corpse c in corpsesAt)
+              DrawCorpse(c, screen.X, screen.Y, tint);
+          }
+        }
+        // XXX DrawPlayerActorTargets should take account of threat at the exit
+        bool flag2 = false;
+        MapObject mapObjectAt = e.Location.MapObject;
+        if (mapObjectAt != null) {
+          DrawMapObject(mapObjectAt, screen, tile, tint);
+          flag2 = true;
+        }
+        // XXX currently smell does not go through (vertical) exits directly
+        if (tile.IsInView) {
+            // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
+            Inventory itemsAt = e.Location.Items;
+            if (itemsAt != null) {
+              DrawItemsStack(itemsAt, screen, tint);
+              flag2 = true;
+            }
+            Actor actorAt = e.Location.Actor;
+            if (actorAt != null) {
+              DrawActorSprite(actorAt, screen, tint);
+              flag2 = true;
+            }
+        }
+       if (tile.HasDecorations) flag2 = true;
+       if (flag2 && tile.Model.IsWater) DrawTileWaterCover(tile, screen, tint);
+       if (tile.IsInView && imageID != null && !tile.IsInside)
+         m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
+      }
+#endif
     }
 
     static private string MovingWaterImage(TileModel model, int turnCount)
