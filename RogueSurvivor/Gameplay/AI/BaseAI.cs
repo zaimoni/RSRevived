@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define EXIT_VIEW
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -75,7 +77,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept_<_T_>> FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
+#if EXIT_VIEW
+      Func< Percept_ < _T_ >,bool> same_map = p => null != map.Denormalize(p.Location);
+      var e = m_Actor.Location.Exit;
+      if (null != e) same_map = same_map.Or(p => e.Location==p.Location);
+      return percepts.Filter(same_map);
+#else
       return percepts.Filter(p => null != map.Denormalize(p.Location));
+#endif
     }
 
 #if DEAD_FUNC

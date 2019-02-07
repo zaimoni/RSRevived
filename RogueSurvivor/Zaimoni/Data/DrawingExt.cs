@@ -406,6 +406,15 @@ namespace Zaimoni.Data
       return or;
     }
 
+    public static Func<T,bool> Or<T>(this Func<T, bool> lhs, Func<T, bool> rhs) {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
+      bool or(T src) { return l(src) || r(src); };
+      return or;
+    }
+
     // set theory operations
     // we accept null as a shorthand for the function on domain T that returns constant empty set HashSet<U>
     public static Func<T, HashSet<U>> Union<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
