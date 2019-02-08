@@ -198,8 +198,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Activity = Activity.IDLE; // backstop
 
       if (m_Actor.Location!=PrevLocation) {
-         
-        if (null!=ItemMemory && null!=m_Actor.InterestingLocs) {
+        // sewers are not a good choice for default-tourism
+        if (null!=ItemMemory && null!=m_Actor.InterestingLocs && m_Actor.Location.Map!= m_Actor.Location.Map.District.SewersMap) {
           var _items = ItemMemory;
           var tourism = m_Actor.InterestingLocs;
           var map = m_Actor.Location.Map;
