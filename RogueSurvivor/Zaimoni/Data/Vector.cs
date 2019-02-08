@@ -47,7 +47,7 @@ namespace Zaimoni.Data
             return X == other.X && Y == other.Y;
         }
 
-        public bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             return obj is Vector2D_int test && Equals(test);
         }
@@ -114,7 +114,7 @@ namespace Zaimoni.Data
             return X == other.X && Y == other.Y;
         }
 
-        public bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             return obj is Vector2D_int test && Equals(test);
         }
@@ -168,7 +168,7 @@ namespace Zaimoni.Data
             return X == other.X && Y == other.Y;
         }
 
-        public bool Equals(object obj) => throw new NotSupportedException();
+        public override bool Equals(object obj) => throw new NotSupportedException();
         public override int GetHashCode() => throw new NotSupportedException();
         public override string ToString() => throw new NotSupportedException(); // arguable, but example class did this
     };
@@ -216,7 +216,7 @@ namespace Zaimoni.Data
             return X == other.X && Y == other.Y;
         }
 
-        public bool Equals(object obj) => throw new NotSupportedException();
+        public override bool Equals(object obj) => throw new NotSupportedException();
         public override int GetHashCode() => throw new NotSupportedException();
         public override string ToString() => throw new NotSupportedException();
     };
@@ -354,7 +354,7 @@ namespace Zaimoni.Data
             return _anchor == other._anchor && _dim == other._dim;
         }
 
-        public bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             return obj is Box2D_int test && Equals(test);
         }
