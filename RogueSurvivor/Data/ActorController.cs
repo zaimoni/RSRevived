@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Data
     public abstract HashSet<Point> FOV { get; }
     public abstract Dictionary<Point,Actor> friends_in_FOV { get; }
     public abstract Dictionary<Point,Actor> enemies_in_FOV { get; }
-    public virtual Dictionary<Point,Inventory> items_in_FOV { get { return null; } }
+    public virtual Dictionary<Location, Inventory> items_in_FOV { get { return null; } }
 
     public bool CanSee(Location x)  // correctness requires Location being value-copied
     {

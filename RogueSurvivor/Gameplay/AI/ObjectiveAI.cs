@@ -284,15 +284,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != items) {
           foreach(var x in items) {
            if (x.Value.IsEmpty) continue;
-           var loc = new Location(m_Actor.Location.Map,x.Key);
-           if (!loc.Map.IsInBounds(loc.Position)) {
-             Location? test = loc.Map.Normalize(loc.Position);
-             if (null == test) continue;    // XXX invariant violation
-             loc = test.Value;
-           }
-           if (m_Actor.StackIsBlocked(loc)) continue; // XXX ignore items under barricades or fortifications
-           Inventory inv = loc.Items;
-           if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(loc, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
+           if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
+           Inventory inv = x.Key.Items;
+           if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(x.Key, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
              ret |= ReactionCode.ITEM;
              break;
            }

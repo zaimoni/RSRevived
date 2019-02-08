@@ -25,12 +25,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     // Actor caches for AI pruposes
     private Dictionary<Point,Actor> _friends;   // \todo savefile break: retype
     private Dictionary<Point,Actor> _enemies;   // \todo savefile break: retype
-    private Dictionary<Point,Inventory> _items;   // \todo savefile break: retype
+    private Dictionary<Location,Inventory> _items;
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
     public Dictionary<Point, Actor> enemies { get { return _enemies; } } // reference-return
-    public Dictionary<Point, Inventory> items { get { return _items; } } // reference-return
+    public Dictionary<Location, Inventory> items { get { return _items; } } // reference-return
 
     public LOSSensor(SensingFilter filters)
     {
@@ -96,9 +96,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         Inventory itemsAt = loc.Items;
         if (null==itemsAt) continue;
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
-        var test = m_Actor.Location.Map.Denormalize(loc);
-        if (null == test) continue;
-        (_items ?? (_items = new Dictionary<Point,Inventory>()))[test.Value.Position] = itemsAt;
+        (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
       }
     }
 
@@ -113,9 +111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         }
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
         items.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);
-        var test = m_Actor.Location.Map.Denormalize(loc);
-        if (null == test) continue;
-        (_items ?? (_items = new Dictionary<Point,Inventory>()))[test.Value.Position] = itemsAt;
+        (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
       }
     }
 
