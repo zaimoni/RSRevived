@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define EXIT_VIEW
+
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
@@ -22,10 +24,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI pruposes
-    private Map _view_map;
-    private Dictionary<Point,Actor> _friends;
-    private Dictionary<Point,Actor> _enemies;
-    private Dictionary<Point,Inventory> _items;
+    private Map _view_map;                      // \todo savefile break: remove or expose
+    private Dictionary<Point,Actor> _friends;   // \todo savefile break: retype
+    private Dictionary<Point,Actor> _enemies;   // \todo savefile break: retype
+    private Dictionary<Point,Inventory> _items;   // \todo savefile break: retype
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
@@ -42,77 +44,74 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Actor = actor;
     }
 
-    private void _seeActors(List<Percept> perceptList)
+    private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
       _enemies = null;
       _friends = null;
-      foreach (Point pt in FOV) {
-        Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
+      foreach (var loc in normalized_FOV) {
+        Actor actorAt = loc.Actor;
         if (null==actorAt) continue;
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
-        else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
+        var test = m_Actor.Location.Map.Denormalize(loc);
+        if (null == test) continue;
+        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
+        else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
       }
     }
 
-    private void _seeActors(List<Percept> perceptList, ThreatTracking threats)
+    private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV, ThreatTracking threats)
     {
         _enemies = null;
         _friends = null;
         HashSet<Point> has_threat = new HashSet<Point>();
-        foreach (Point pt in FOV) {
-          Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
+        foreach (var loc in normalized_FOV) {
+          Actor actorAt = loc.Actor;
           if (null==actorAt) continue;
           if (actorAt== m_Actor) continue;
           if (actorAt.IsDead) continue;
           perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-          if (m_Actor.IsEnemyOf(actorAt)) {
-            (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
-            threats.Sighted(actorAt, actorAt.Location); // XXX change target for cross-district vision
-            has_threat.Add(pt);
-          } else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
+          bool is_enemy = m_Actor.IsEnemyOf(actorAt);
+          if (is_enemy) threats.Sighted(actorAt, actorAt.Location);
+          var test = m_Actor.Location.Map.Denormalize(loc);
+          if (null == test) continue;
+          if (is_enemy) {
+            (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
+            has_threat.Add(test.Value.Position);
+          } else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
         }
         // ensure fact what is in sight is current, is recorded
 		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));
     }
 
-    private void _seeItems(List<Percept> perceptList)
+    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV)
     {
       _items = null;
-      foreach (Point pt in FOV) {
-        Location tmp = new Location(m_Actor.Location.Map,pt);
-        if (!tmp.Map.IsInBounds(pt)) {
-          Location? test = m_Actor.Location.Map.Normalize(pt);
-          if (null == test) continue;
-          tmp = test.Value;
-        }
-        Inventory itemsAt = tmp.Map.GetItemsAt(tmp.Position);
+      foreach (var loc in normalized_FOV) {
+        Inventory itemsAt = loc.Items;
         if (null==itemsAt) continue;
-        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
-        (_items ?? (_items = new Dictionary<Point,Inventory>()))[pt] = itemsAt;
+        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
+        var test = m_Actor.Location.Map.Denormalize(loc);
+        if (null == test) continue;
+        (_items ?? (_items = new Dictionary<Point,Inventory>()))[test.Value.Position] = itemsAt;
       }
     }
 
-    private void _seeItems(List<Percept> perceptList, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
+    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
     {
       _items = null;
-      foreach (Point pt in FOV) {
-        Location tmp = new Location(m_Actor.Location.Map,pt);
-        if (!tmp.Map.IsInBounds(pt)) {
-          Location? test = m_Actor.Location.Map.Normalize(pt);
-          if (null == test) continue;
-          tmp = test.Value;
-        }
-        Inventory itemsAt = tmp.Map.GetItemsAt(tmp.Position);
+      foreach (var loc in normalized_FOV) {
+        Inventory itemsAt = loc.Items;
         if (null==itemsAt) {
-          items.Set(tmp,null,tmp.Map.LocalTime.TurnCounter);
+          items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;
         }
-        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
-        (_items ?? (_items = new Dictionary<Point,Inventory>()))[pt] = itemsAt;
-        items.Set(tmp, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), tmp.Map.LocalTime.TurnCounter);
+        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
+        items.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);
+        var test = m_Actor.Location.Map.Denormalize(loc);
+        if (null == test) continue;
+        (_items ?? (_items = new Dictionary<Point,Inventory>()))[test.Value.Position] = itemsAt;
       }
     }
 
@@ -121,27 +120,51 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Actor = actor;
       _view_map = m_Actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
-      actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);
+      actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);    // will have seen everything; note this
+#if EXIT_VIEW
+      var e = m_Actor.Location.Exit;
+      var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
+      {
+      int i = 0;
+      foreach(var pt in m_FOV) {
+        if (_view_map.IsInBounds(pt)) normalized_FOV[i++] = new Location(_view_map,pt);
+        else {
+          Location? test = _view_map.Normalize(pt);
+          if (null == test) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
+          normalized_FOV[i++] = test.Value;
+        }
+      }
+      if (null != e) normalized_FOV[i] = e.Location;
+      }
+#else
+      var normalized_FOV = new Location[m_FOV.Count];
+      int i = 0;
+      foreach(var pt in m_FOV) {
+        if (_view_map.IsInBounds(pt)) normalized_FOV[i++] = new Location(_view_map,pt);
+        else {
+          Location? test = _view_map.Normalize(pt);
+          if (null == test) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
+          normalized_FOV[i++] = test.Value;
+        }
+      }
+#endif
       List<Percept> perceptList = new List<Percept>();
       if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
         ThreatTracking threats = actor.Threats;
-        if (null != threats) _seeActors(perceptList,threats);
-        else _seeActors(perceptList);
+        if (null != threats) _seeActors(perceptList, normalized_FOV, threats);
+        else _seeActors(perceptList, normalized_FOV);
       }
       if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
         Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
-        if (null != items) _seeItems(perceptList, items);
-        else _seeItems(perceptList);
+        if (null != items) _seeItems(perceptList, normalized_FOV, items);
+        else _seeItems(perceptList, normalized_FOV);
       }
       if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
-        foreach (Point position in m_FOV) {
-          List<Corpse> corpsesAt = actor.Location.Map.GetCorpsesAtExt(position.X, position.Y);
-          if (corpsesAt != null)
-            perceptList.Add(new Percept((object) corpsesAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
+        foreach (var loc in normalized_FOV) {
+          List<Corpse> corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
+          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, actor.Location.Map.LocalTime.TurnCounter, loc));
         }
       }
-      // now have seen everything; note this
-      actor.InterestingLocs?.Seen(actor.Location.Map, m_FOV);
       return perceptList;
     }
 
