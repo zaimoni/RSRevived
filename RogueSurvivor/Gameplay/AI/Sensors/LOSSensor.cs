@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Sensor = djack.RogueSurvivor.Engine.AI.Sensor;
@@ -68,14 +69,20 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         HashSet<Point> has_threat = new HashSet<Point>();
         foreach (var loc in normalized_FOV) {
           Actor actorAt = loc.Actor;
-          if (null==actorAt) continue;
-          if (actorAt== m_Actor) continue;
-          if (actorAt.IsDead) continue;
+          var test = m_Actor.Location.Map.Denormalize(loc);
+          if (   null==actorAt
+              || actorAt== m_Actor
+              || actorAt.IsDead) {
+            if (null == test) threats.Cleared(loc.Map,new Point[1] { loc.Position });
+            continue;
+          }
           perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
           bool is_enemy = m_Actor.IsEnemyOf(actorAt);
           if (is_enemy) threats.Sighted(actorAt, actorAt.Location);
-          var test = m_Actor.Location.Map.Denormalize(loc);
-          if (null == test) continue;
+          if (null == test) {
+            if (!is_enemy) threats.Cleared(loc.Map,new Point[1] { loc.Position });
+            continue;
+          }
           if (is_enemy) {
             (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
             has_threat.Add(test.Value.Position);
@@ -134,7 +141,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           normalized_FOV[i++] = test.Value;
         }
       }
-      if (null != e) normalized_FOV[i] = e.Location;
+      if (null != e) {
+        normalized_FOV[i] = e.Location;
+        actor.InterestingLocs?.Seen(e.Location);
+      }
       }
 #else
       var normalized_FOV = new Location[m_FOV.Count];

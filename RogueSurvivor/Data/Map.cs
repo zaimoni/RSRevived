@@ -2063,10 +2063,10 @@ retry:
       // walls (hard) !map.GetTileModelAt(pt).IsWalkable
       // non-enterable objects (hard)
       // jumpable objects (soft) map.GetMapObjectAt(pt)
-      if (!GetTileModelAtExt(pt)?.IsWalkable ?? true) return 2;
       MapObject obj = GetMapObjectAtExt(pt);
       if (null == obj) return 0;
       if (obj.IsCouch) return 0;
+      if (obj.IsWalkable) return 0;
       if (obj.IsJumpable) return 1;
       return 2;
     }

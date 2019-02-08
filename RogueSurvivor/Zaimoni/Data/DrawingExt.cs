@@ -572,6 +572,18 @@ namespace Zaimoni.Data
       return string.Join(",\n",tmp);
     }
 
+    public static string to_s<T>(this T[] x) {
+      if (null == x) return "null";
+      if (0 >= x.Length) return "[]";
+      var tmp = new List<string>(x.Length);
+      foreach(var iter in x) {
+        tmp.Add(iter.to_s());
+      }
+      tmp[0] = "["+ tmp[0];
+      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      return string.Join(",\n",tmp);
+    }
+
     public static string to_s<T>(this List<T> x) {
       if (null == x) return "null";
       if (0 >= x.Count) return "[]";
