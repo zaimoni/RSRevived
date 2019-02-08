@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define EXIT_VIEW
-
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
@@ -127,7 +125,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       var _view_map = m_Actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);    // will have seen everything; note this
-#if EXIT_VIEW
       var e = m_Actor.Location.Exit;
       var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
       {
@@ -145,18 +142,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         actor.InterestingLocs?.Seen(e.Location);
       }
       }
-#else
-      var normalized_FOV = new Location[m_FOV.Count];
-      int i = 0;
-      foreach(var pt in m_FOV) {
-        if (_view_map.IsInBounds(pt)) normalized_FOV[i++] = new Location(_view_map,pt);
-        else {
-          Location? test = _view_map.Normalize(pt);
-          if (null == test) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
-          normalized_FOV[i++] = test.Value;
-        }
-      }
-#endif
       List<Percept> perceptList = new List<Percept>();
       if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
         ThreatTracking threats = actor.Threats;

@@ -14,7 +14,6 @@
 // #define REFUGEES_IN_SUBWAY
 // #define PANOPTIC_HOLYVISION
 // #define TIME_TURNS
-#define EXIT_VIEW
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -246,12 +245,10 @@ namespace djack.RogueSurvivor.Engine
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
     private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
-#if EXIT_VIEW
     private const int EXIT_SLOTS = MINITILE_SIZE * (2 + 2 * MINIMAP_RADIUS) / TILE_SIZE;
     private const int ENTRYMAP_EXIT_SLOT = EXIT_SLOTS-2;
     private const int EXIT_SLOT_X = RIGHTPANEL_X+4;
     private const int EXIT_SLOT_Y0 = LOCATIONPANEL_Y-TILE_SIZE* EXIT_SLOTS;
-#endif
     private const int MINI_TRACKER_OFFSET = 1;
     private const int DELAY_SHORT = 250;
     private const int DELAY_NORMAL = 500;
@@ -10947,8 +10944,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
       }
-#if EXIT_VIEW
-      // \todo exit display
+      // exit display
       var e = Player.Location.Exit; // XXX does not change w/remote viewing
       if (null != e) {
         // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
@@ -10992,7 +10988,6 @@ namespace djack.RogueSurvivor.Engine
        if (tile.IsInView && imageID != null && !tile.IsInside)
          m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
       }
-#endif
     }
 
     static private string MovingWaterImage(TileModel model, int turnCount)
