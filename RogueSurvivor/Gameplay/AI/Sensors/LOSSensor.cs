@@ -25,7 +25,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI pruposes
-    private Map _view_map;                      // \todo savefile break: remove or expose
     private Dictionary<Point,Actor> _friends;   // \todo savefile break: retype
     private Dictionary<Point,Actor> _enemies;   // \todo savefile break: retype
     private Dictionary<Point,Inventory> _items;   // \todo savefile break: retype
@@ -125,7 +124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public List<Percept> Sense(Actor actor)
     {
       m_Actor = actor;
-      _view_map = m_Actor.Location.Map;
+      var _view_map = m_Actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);    // will have seen everything; note this
 #if EXIT_VIEW
