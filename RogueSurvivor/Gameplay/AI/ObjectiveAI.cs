@@ -1531,7 +1531,7 @@ restart_single_exit:
         if (a.CanRun() && a.RunIsFreeMove) a_turns++;
         int a_turns_bak = a_turns;
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
-        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
+        if (0==a.CurrentRangedAttack.Range && Rules.IsAdjacent(m_Actor.Location, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;

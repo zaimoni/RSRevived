@@ -1871,7 +1871,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         int range = rw.Model.Attack.Range;
         // XXX not quite right (visibiblity range check omitted)
-        if (LOS.CanTraceViewLine(new Location(m_Actor.Location.Map,friend_where.Key), enemy.Location, range, LoF)) {
+        if (LOS.CanTraceViewLine(friend_where.Key, enemy.Location, range, LoF)) {
           ret.UnionWith(LoF);
           continue;
         }
@@ -1894,6 +1894,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
+        if (LoF_reserve?.Contains(location.Position) ?? false) --num;
+        if (null != leader) {
+          num -= (float)Rules.StdDistance(location, leader.Location);
+          if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
+        }
+        return num;
+      }, (a, b) => a > b);
+      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+    }
+
+    private ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
+    {
+      Actor leader = m_Actor.LiveLeader;
+      var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
+      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
+      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
+      List<Point> leaderLoF = null;
+      if (checkLeaderLoF) {
+        leaderLoF = new List<Point>(1);
+        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
+      }
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+        Location location = m_Actor.Location + dir;
+        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
+        float num = SafetyFrom(location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
           num -= (float)Rules.StdDistance(location, leader.Location);
@@ -2189,12 +2214,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("!m_Actor.Model.Abilities.IsLawEnforcer");
 #endif
       // XXX this should affect reputation
-      Dictionary<Point,Actor> friends = friends_in_FOV;
+      var friends = friends_in_FOV;
       if (null == friends) return null;
-      Dictionary<Point,Actor> murderers = null;
+      Dictionary<Location,Actor> murderers = null;
       foreach(var x in friends) {
         if (0 >= x.Value.MurdersCounter) continue;
-        (murderers ?? (murderers = new Dictionary<Point, Actor>()))[x.Key] = x.Value;
+        (murderers ?? (murderers = new Dictionary<Location, Actor>()))[x.Key] = x.Value;
       }
       if (null == murderers) return null;
       RogueGame game = RogueForm.Game;
@@ -2202,7 +2227,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       friends = null;  // enable auto GC
       foreach(var x in murderers) {
         if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, x.Value))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
-        else (friends ?? new Dictionary<Point, Actor>())[x.Key] = x.Value;
+        else (friends ?? new Dictionary<Location, Actor>())[x.Key] = x.Value;
       }
       if (null == friends) return null;
       // at this point, entries in friends are murderers that have elicited suspicion

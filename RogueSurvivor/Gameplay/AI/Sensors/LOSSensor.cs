@@ -23,13 +23,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI pruposes
-    private Dictionary<Point,Actor> _friends;   // \todo savefile break: retype
-    private Dictionary<Point,Actor> _enemies;   // \todo savefile break: retype
+    private Dictionary<Location, Actor> _friends;
+    private Dictionary<Location, Actor> _enemies;
     private Dictionary<Location,Inventory> _items;
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
-    public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
-    public Dictionary<Point, Actor> enemies { get { return _enemies; } } // reference-return
+    public Dictionary<Location,Actor> friends { get { return _friends; } } // reference-return
+    public Dictionary<Location, Actor> enemies { get { return _enemies; } } // reference-return
     public Dictionary<Location, Inventory> items { get { return _items; } } // reference-return
 
     public LOSSensor(SensingFilter filters)
@@ -52,10 +52,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-        var test = m_Actor.Location.Map.Denormalize(loc);
-        if (null == test) continue;
-        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
-        else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
+        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Location, Actor>()))[loc] = actorAt;
+        else (_friends ?? (_friends = new Dictionary<Location, Actor>()))[loc] = actorAt;
       }
     }
 
@@ -81,9 +79,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
             continue;
           }
           if (is_enemy) {
-            (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
+            (_enemies ?? (_enemies = new Dictionary<Location, Actor>()))[loc] = actorAt;
             has_threat.Add(test.Value.Position);
-          } else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[test.Value.Position] = actorAt;
+          } else (_friends ?? (_friends = new Dictionary<Location, Actor>()))[loc] = actorAt;
         }
         // ensure fact what is in sight is current, is recorded
 		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));

@@ -605,11 +605,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	protected HashSet<Point> FriendsLoF()
 	{
-      Dictionary<Point,Actor> enemies = enemies_in_FOV;
-      Dictionary<Point,Actor> friends = friends_in_FOV;
+      var enemies = enemies_in_FOV;
+      var friends = friends_in_FOV;
 	  if (0 >= (enemies?.Count ?? 0)) return null;
 	  if (0 >= (friends?.Count ?? 0)) return null;
-	  HashSet<Point> tmp = new HashSet<Point>();
+	  var tmp = new HashSet<Point>();
 	  foreach(var f in friends) {
         if (!f.Value.HasEquipedRangedWeapon()) continue;
 	    foreach(var e in enemies) {
@@ -909,6 +909,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
         MapObject mapObjectAt = map.GetMapObjectAtExt(from);
         if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
+      }
+#endregion
+      float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
+      return avgDistance * heuristicFactorBonus;
+    }
+
+    // as above, but location-based
+    protected float SafetyFrom(Location from, IEnumerable<Location> dangers)
+    {
+      Map map = m_Actor.Location.Map;
+
+      // Heuristics:
+      // Primary: Get away from dangers.
+      // Weighting factors:
+      // 1 Avoid getting in corners.
+      // 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      // 3 If can tire, prefer not jumping.
+#region Primary: Get away from dangers.
+      float avgDistance = (float) (dangers.Sum(pt => (Rules.IsAdjacent(from,pt) ? 1 : Rules.GridDistance(from, pt))) / (1 + dangers.Count()));  // other side of exit is int.MaxValue distance but should be 1 here
+#endregion
+#region 1 Avoid getting in corners.
+      int countFreeSquares = map.CountAdjacentTo(from.Position,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
+      float avoidCornerBonus = countFreeSquares * 0.1f;
+#endregion
+#region 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      bool isFromInside = from.Map.IsInsideAtExt(from.Position);
+      int majorityDangersInside = 0;
+      foreach (var danger in dangers) {
+        if (danger.Map.IsInsideAt(danger.Position))
+          ++majorityDangersInside;
+        else
+          --majorityDangersInside;
+      }
+      const float inOutFactor = 1.25f;
+      float inOutBonus = 0.0f;
+      if (isFromInside) {
+        if (majorityDangersInside < 0) inOutBonus = inOutFactor;
+      }
+      else if (majorityDangersInside > 0) inOutBonus = inOutFactor;
+#endregion
+#region 3 If can tire, prefer not jumping.
+      float jumpPenalty = 0.0f;
+      if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
+        MapObject mapObjectAt = from.MapObject;
+        if (mapObjectAt?.IsJumpable ?? false) jumpPenalty = 0.1f;
       }
 #endregion
       float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
