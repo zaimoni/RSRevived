@@ -2965,7 +2965,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // We are having CPU loading problems, so don't retest the legality of the trade
         if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
           MarkActorAsRecentTrade(actor);
-          RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
+          RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
           return new ActionTrade(m_Actor, actor);
         }
         ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location, false, false);

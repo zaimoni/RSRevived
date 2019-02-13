@@ -8561,10 +8561,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoChat(Actor speaker, Actor target)
     {
-      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
-      if (speaker.IsPlayer || !speaker.CanTradeWith(target)) return;
+      if (speaker.IsPlayer || !speaker.CanTradeWith(target)) {
+        speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+        return;
+      }
       DoTrade(speaker, target);
 
       // alpha10 recover san after "normal" chat or fast trade
@@ -8711,6 +8713,8 @@ namespace djack.RogueSurvivor.Engine
       if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
 #endif
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
+      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);    // prevent hyper-active player trades
+      
       // bail on null item from speaker early
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
@@ -8719,10 +8723,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, trade.Value.Key);
-      if (target.Leader == speaker)
-        wantedItem = true;
-      else if (doesTargetCheckForInterestInOffer)
-        wantedItem = flag3;
+      if (target.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
 
       if (!wantedItem)
       { // offered item is not of perceived use
@@ -8730,20 +8731,13 @@ namespace djack.RogueSurvivor.Engine
         return;
       };
 
-#if OBSOLETE
-      Item trade2 = PickItemToTrade(target, speaker, itSpeaker);
-      if (null == trade2) {
-        if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
-        return;
-      };
-#endif
-
-      bool isPlayer = speaker.IsPlayer;
       if (flag1)
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", Conjugate(target, VERB_OFFER), trade.Value.Value.AName, trade.Value.Key.AName)));
 
+#if SPEAKER_IS_PLAYER_OK
+      bool isPlayer = speaker.IsPlayer;
       bool acceptDeal = true;
-      if (speaker.IsPlayer) {
+      if (isPlayer) {
         AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
         RedrawPlayScreen();
         acceptDeal = WaitYesOrNo();
@@ -8764,6 +8758,17 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
         if (isPlayer) RedrawPlayScreen();
       }
+#else
+      bool acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
+
+      if (!acceptDeal) {
+        if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+        return;
+      }
+
+      if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+#endif
+
       if (target.Leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
       if (trade.Value.Key.IsEquipped) DoUnequipItem(speaker, trade.Value.Key);
