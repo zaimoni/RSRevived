@@ -510,11 +510,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_HintPathToActor : Objective
     {
       private readonly Actor _dest;
+      private readonly ActorAction _when_at_target;
 
-      public Goal_HintPathToActor(int t0, Actor who, Actor dest)
+      public Goal_HintPathToActor(int t0, Actor who, Actor dest, ActorAction at_target=null)
       : base(t0,who)
       {
         _dest = dest;
+        _when_at_target = at_target;
       }
 
       public override bool UrgentAction(out ActorAction ret)
@@ -526,7 +528,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
-          ret = new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
+          ret = _when_at_target ?? new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;
         }
         return false;
@@ -2979,7 +2981,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // need an after-action "hint" to the target on where/who to go to
         if (!m_Actor.WillActAgainBefore(actor)) {
           int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
-          (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
+          (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor, new ActionTrade(actor,m_Actor)));    // AI disallowed from initiating trades with player so fine
         }
         return tmpAction;
     }

@@ -9,6 +9,7 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  [Serializable]
   internal class ActionTrade : ActorAction
   {
     private readonly Actor m_Target;
