@@ -128,6 +128,21 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
+    // VAPORWARE: faction Failed Black Ops
+    // true Black Ops are something like U.S. Navy SEALS or U.S. Army Rangers (i.e., they've gone through a 16-week-ish program including things like Hell Week)
+    // that is, they really do *not* have material guilt about implementing orders to terminate civilians.
+    // Failed Black Ops do experience material guilt and thus are not reliably hostile to civilians/survivors, and even less reliably hostile to National Guard and police.
+    // At Day 0, there should be only 2,500-3,000 Black Ops Army and 2,500-3,000 Black Ops Navy
+    // At Day 0, there should be about 3x as many Failed Black Ops that could be activated
+    // * above assumes something like U.S. or U.K. level standing forces.
+    // ** competent Communist banana republic: ~50%?  (Researchable: Cuba/Cold War)
+    // ** incompetent Communist banana republic: ~10%?  (Researchable: Venezuela/2016)
+    // ** Large Middle east dictatorship/oligarchy: ~25%? (researchable: Saudi Arabia, Iran, Iraq (check both Saddam Hussein and the U.S.-installed regime).  Climate doesn't match, however.)
+    // ** India/China: 200%-300%? (researchable.  Again, climate doesn't match.)
+    // ** anyone not mentioned other than Russia: 0%-10% (either from lack of interest pre-apocalypse or lack of resources)
+    // recruiting more Black Ops takes some administrative overhead (to schedule the training session) and then 16 weeks.  Assuming pre-qualification standards are maintained,
+    // the ratio of Black Ops to Failed Black Ops from the 16-week program will be 1:3
+    // Weaker pre-qualification standards will only create more Failed Black Ops.
     public enum IDs
     {
       TheCHARCorporation = 0,
