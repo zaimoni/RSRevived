@@ -1764,6 +1764,14 @@ restart_single_exit:
       foreach(Actor ally in cell) {
         if (!(ally.Controller is OrderableAI ai)) continue;
         if (!InCommunicationWith(ally)) continue;
+        var ai_items = ai.ItemMemory;
+        if (null != ai_items) {
+          if (null!= ItemMemory && ItemMemory == ai_items) continue; // already updated
+          foreach (Percept p in stacks) {
+            ai_items.Set(p.Location, new HashSet<Gameplay.GameItems.IDs>((p.Percepted as Inventory).Items.Select(x => x.Model.ID)), p.Location.Map.LocalTime.TurnCounter);
+          }
+          continue; // followers with item memory can decide on their own what to do
+        }
         var track_inv = ai.Goal<Goal_PathToStack>();
         foreach(Percept p in stacks) {
           if (m_Actor.Location != p.Location && ai.CanSee(p.Location)) continue;
