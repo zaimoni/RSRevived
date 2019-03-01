@@ -183,7 +183,7 @@ namespace djack.RogueSurvivor.Engine
       if (0>=valid_spawn.Count) return false;
       position = roller.Choose(valid_spawn);
       map.PlaceAt(actor, position);
-      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
+      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))   // next test game \todo restrict this to origin point, then postprocess back up
         Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
       return true;
     }

@@ -118,4 +118,43 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.Name + " takes " + m_ID.ToString();
     }
   } // ActionTake
+
+  [Serializable]
+  internal class ActionGiveTo : ActorAction // next test game \todo wire into CivilianAI
+  {
+    private readonly Gameplay.GameItems.IDs m_ID;
+    private Actor m_Target;
+
+    public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it)
+      : base(actor)
+    {
+      m_ID = it;
+      m_Target = target;
+    }
+
+    public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+
+    // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
+    public override bool IsLegal()
+    {
+      var gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]);
+      if (null==gift) { m_FailReason = "not in inventory"; return false; }
+      if (!m_Target.IsPlayer && m_Target.Inventory.IsFull) {
+        var trade = RogueForm.Game.PickItemsToTrade(m_Actor, m_Target, gift);   // micro-optimize \todo just need boolean here, so could bypass List<> internal temporary
+        if (null == trade) { m_FailReason = "target does not have room in inventory"; return false; }
+      }
+
+      return true;
+    }
+
+    public override void Perform()
+    {
+      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, m_ID);
+    }
+
+    public override string ToString()
+    {
+      return m_Actor.Name + " giving " + m_ID.ToString() + " to " + m_Target.Name;
+    }
+  } // ActionTake
 }

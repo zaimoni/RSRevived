@@ -526,6 +526,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
+        if (null != _when_at_target && !_when_at_target.IsLegal()) {    // no longer viable
+          _isExpired = true;
+          return true;
+        }
         if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
           ret = _when_at_target ?? new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action

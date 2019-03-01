@@ -8805,6 +8805,22 @@ namespace djack.RogueSurvivor.Engine
           negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
         }
       }
+      if (0 >= negotiate.Count) return null;
+      return Rules.DiceRoller.Choose(negotiate);
+    }
+
+    public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
+    {
+      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
+      if (0>=(buyer_offers?.Count ?? 0)) return null;
+      var negotiate = new List<KeyValuePair<Item,Item>>(buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
+      foreach(var b_item in buyer_offers) {
+        if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
+        if (ObjectiveAI.TradeVeto(b_item,gift)) continue;
+        // charisma can't do everything
+        negotiate.Add(new KeyValuePair<Item,Item>(gift,b_item));
+      }
+      if (0 >= negotiate.Count) return null;
       return Rules.DiceRoller.Choose(negotiate);
     }
 
@@ -8978,6 +8994,26 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
 #endif
+    }
+
+    public void DoGiveItemTo(Actor actor, Actor target, GameItems.IDs donate)
+    {
+      var gift = actor.Inventory.GetBestDestackable(Models.Items[(int)donate]);
+      if (null==gift) throw new ArgumentNullException(nameof(gift));    // invariant failure
+
+      // try to trade with NPC first
+      if (!target.IsPlayer) {
+        var trade = PickItemsToTrade(actor, target, gift);
+        if (null != trade) {
+          DoTrade(actor, trade, target, false);
+          return;
+        }
+      }
+      // \todo trade with player path (blocked by aligning trade UI with RS Alpha 10.1)
+
+      // If cannot trade, outright give
+      if (target.Inventory.IsFull) throw new InvalidOperationException(target.Name+"'s inventory full, cannot give "+gift.ToString());   // invariant failure
+        DoGiveItemTo(actor,target,gift);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
@@ -11991,7 +12027,7 @@ namespace djack.RogueSurvivor.Engine
         if (!player?.Location.Map.HasActor(player) ?? false) throw new InvalidOperationException("misplaced player on map");
 #else
         if (player?.IsDead ?? true) return;
-#endif        
+#endif
         if (!player.Controller.CanSee(new Location(map, position))) return;
         players.Add(player);
       });
