@@ -16,6 +16,7 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
+using ActionGiveTo = djack.RogueSurvivor.Engine.Actions.ActionGiveTo;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
 using ActionPush = djack.RogueSurvivor.Engine.Actions.ActionPush;
 using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
@@ -194,6 +195,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}
     public T Goal<T>() where T:Objective { return Objectives.FirstOrDefault(o => o is T) as T;}
+
+#if DEAD_FUNC
+    // thin wrapper for when the key logic is elsewhere; we still prefer central-logic specializations)
+    public void SetObjective(Objective src) {
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      bool authorized = src.Actor == m_Actor;   // retain this as we may want more precision later (e.g, some things we may accept from leader but not from mates)
+      if (!authorized)
+#if DEBUG
+        throw new InvalidOperationException(src.Actor.Name+" not allowed to give objectives to "+m_Actor.Name);
+#else
+        return;
+#endif
+      // for now, treat this as "early"
+      Objectives.Insert(0,src);
+    }
+#endif
 
     public void ResetAICache()
     {
@@ -1675,7 +1694,7 @@ restart_single_exit:
       if (m_Actor==a) return true;
       if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
       if (a.IsSleeping) return false;
-      if (a.Location.Map == m_Actor.Location.Map && a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
+      if (a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
       if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location),Rules.PoliceRadioLocation(a.Location));
       if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location), Rules.PoliceRadioLocation(a.Location));
       if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
@@ -3363,6 +3382,20 @@ restart_single_exit:
         if (2==ItemRatingCode(i)) ret.Add(i);
       }
       return ret;
+    }
+
+    public KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>> NonCriticalInInventory()
+    {
+      var insurance = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
+      var want = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);
+      GameItems.IDs i = GameItems.IDs._COUNT;
+      while(0 < i--) {
+        var code = ItemRatingCode(i);
+        if (3<=code) continue;
+        if (2==ItemRatingCode(i)) want.Add(i);
+        else insurance.Add(i);
+      }
+      return new KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
     // arguable whether these twp should be public in Map

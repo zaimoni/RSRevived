@@ -2960,6 +2960,97 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    protected ActorAction BehaviorRequestCriticalFromGroup()
+    {
+        var clan = m_Actor.ChainOfCommand;
+        if (null == clan) return null;
+        var critical = WhatDoINeedNow();
+        if (0 >= critical.Count) return null;
+        var insurance = new Dictionary<Actor, GameItems.IDs>();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
+        var want = new Dictionary<Actor, GameItems.IDs>();
+        foreach (var a in clan) {
+            if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
+            if (!InCommunicationWith(a)) continue;
+            if (a.IsPlayer) continue; // \todo self-order for this
+            var have = (a.Controller as ObjectiveAI).NonCriticalInInventory();
+            if (null != have.Key) {
+                foreach (var x in have.Key) {
+                    if (critical.Contains(x)) {
+                        insurance[a] = x;
+                        break;
+                    }
+                }
+                if (insurance.ContainsKey(a)) continue; // possible MSIL compaction here (local bool vs. member function call); may not be a real micro-optimization
+            }
+            if (null != have.Value) {
+                foreach (var x in have.Value) {
+                    if (critical.Contains(x)) {
+                        want[a] = x;
+                        break;
+                    }
+                }
+            }
+        }
+        ActorAction tmpAction = null;
+        int min_dist = int.MaxValue;
+        Actor donor = null;
+        ActionGiveTo donate = null;
+        if (0 < insurance.Count) {
+            foreach (var x in insurance) {
+                int dist = Rules.IsAdjacent(m_Actor.Location, x.Key.Location) ? 1 : Rules.GridDistance(m_Actor.Location, x.Key.Location);
+                if (dist >= min_dist) continue;
+                var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
+                if (!request.IsLegal()) continue;
+                if (1 >= dist) return request;
+                min_dist = dist;
+                donor = x.Key;
+                donate = request;
+            }
+            if (null != donate) {
+                // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
+                int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
+
+                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);
+                tmpAction = my_plan.Pathing();
+                if (null != tmpAction) {
+                    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
+                    var your_plan = new Goal_HintPathToActor(t0, donor, m_Actor, donate);
+                    (donor.Controller as OrderableAI).Objectives.Insert(0,your_plan);
+                    Objectives.Insert(0,my_plan);
+                    return tmpAction;
+                }
+                return null;
+            }
+        }
+        if (0 < want.Count) {
+            foreach (var x in want) {
+                int dist = Rules.IsAdjacent(m_Actor.Location, x.Key.Location) ? 1 : Rules.GridDistance(m_Actor.Location, x.Key.Location);
+                if (dist >= min_dist) continue;
+                var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
+                if (!request.IsLegal()) continue;
+                if (1 >= dist) return request;
+                min_dist = dist;
+                donor = x.Key;
+                donate = request;
+            }
+            if (null != donate) {
+                // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
+                int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
+
+                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);
+                tmpAction = my_plan.Pathing();
+                if (null != tmpAction) {    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
+                    var your_plan = new Goal_HintPathToActor(t0, donor, m_Actor, donate);
+                    (donor.Controller as OrderableAI).Objectives.Insert(0,your_plan);
+                    Objectives.Insert(0,my_plan);
+                    return tmpAction;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+
     protected ActorAction BehaviorFindTrade(List<Percept> friends)
     {
 #if DEBUG

@@ -8824,6 +8824,19 @@ namespace djack.RogueSurvivor.Engine
       return Rules.DiceRoller.Choose(negotiate);
     }
 
+    static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
+    {
+      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
+      if (0>=(buyer_offers?.Count ?? 0)) return false;
+      foreach(var b_item in buyer_offers) {
+        if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
+        if (ObjectiveAI.TradeVeto(b_item,gift)) continue;
+        // charisma can't do everything
+        return true;
+      }
+      return false;
+    }
+
     private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
     {
 #if OBSOLETE

@@ -139,9 +139,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       var gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]);
       if (null==gift) { m_FailReason = "not in inventory"; return false; }
-      if (!m_Target.IsPlayer && m_Target.Inventory.IsFull) {
-        var trade = RogueForm.Game.PickItemsToTrade(m_Actor, m_Target, gift);   // micro-optimize \todo just need boolean here, so could bypass List<> internal temporary
-        if (null == trade) { m_FailReason = "target does not have room in inventory"; return false; }
+      if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
+        m_FailReason = "target does not have room in inventory";
+        return false;
       }
 
       return true;
