@@ -135,29 +135,29 @@ namespace djack.RogueSurvivor.Data
 		}
 #endif
 
-        public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts) // \todo next test game : apply TryGetValue
+        public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
-		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    _threats[a][m] = new HashSet<Point>(pts);
+            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
+		    cache[m] = new HashSet<Point>(pts);
           }
         }
 
         public void RecordTaint(Actor a, Location loc)
         {
 		  lock(_threats) {
-		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    if (!_threats[a].ContainsKey(loc.Map)) _threats[a][loc.Map] = new HashSet<Point>();
-            _threats[a][loc.Map].Add(loc.Position);
+            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
+            else cache[loc.Map] = new HashSet<Point> { loc.Position };
 		  }
         }
 
         public void RecordTaint(Actor a, Map m, Point p)
         {
 		  lock(_threats) {
-		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
-            _threats[a][m].Add(p);
+            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
+            else _threats[a][m] = new HashSet<Point> { p };
 		  }
         }
 
