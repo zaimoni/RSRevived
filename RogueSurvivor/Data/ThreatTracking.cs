@@ -135,11 +135,12 @@ namespace djack.RogueSurvivor.Data
 		}
 #endif
 
-        public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
+        public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts) // \todo next test game : apply TryGetValue
         {
           lock(_threats) {
 		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    _threats[a][m] = new HashSet<Point>(pts); }
+		    _threats[a][m] = new HashSet<Point>(pts);
+          }
         }
 
         public void RecordTaint(Actor a, Location loc)

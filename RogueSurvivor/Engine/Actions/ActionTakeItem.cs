@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionTake
 
   [Serializable]
-  internal class ActionGiveTo : ActorAction // next test game \todo wire into CivilianAI
+  internal class ActionGiveTo : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     private Actor m_Target;

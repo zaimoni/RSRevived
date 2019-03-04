@@ -155,10 +155,44 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         ActorPlace(m_DiceRoller, map, newFeralDog, outside_test);
       }
       int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
+      var threats = new List<Actor>(num);
       for (int index = 0; index < num; ++index) {
         Actor newUndead = CreateNewUndead(0);
         ActorPlace(m_DiceRoller, map, newUndead, outside_test);
+        threats.Add(newUndead);
       }
+      // post-processing \todo next test game : need this for sewers as well
+      var fulltaint = Session.Get.PoliceThreatTracking.ThreatWhere(map);
+      var accounted_for = new HashSet<Point>();
+      var boundary = new Dictionary<Point,HashSet<Actor>>();
+      foreach(var a in threats) {
+        Session.Get.PoliceThreatTracking.Sighted(a,a.Location);
+        accounted_for.Add(a.Location.Position);
+        foreach(var pt in a.Location.Position.Adjacent()) {
+          if (!fulltaint.Contains(pt)) continue;
+          if (accounted_for.Contains(pt)) continue;
+          if (boundary.TryGetValue(pt,out var cache)) cache.Add(a);
+          else boundary[pt] = new HashSet<Actor> { a };
+        }
+      }
+      fulltaint.ExceptWith(accounted_for);
+      while(0 < fulltaint.Count && 0 < boundary.Count) {
+        accounted_for.Clear();
+        var new_boundary = new Dictionary<Point,HashSet<Actor>>();
+        foreach(var x in boundary) {
+          foreach(var a in x.Value) Session.Get.PoliceThreatTracking.RecordTaint(a, map, x.Key);
+          accounted_for.Add(x.Key);
+          foreach(var pt in x.Key.Adjacent()) {
+            if (!fulltaint.Contains(pt)) continue;
+            if (accounted_for.Contains(pt)) continue;
+            if (new_boundary.TryGetValue(pt,out var cache)) cache.UnionWith(x.Value);
+            else new_boundary[pt] = new HashSet<Actor>(x.Value);
+          }
+        }
+        fulltaint.ExceptWith(accounted_for);
+        boundary = new_boundary;
+      }
+
       map.OnMapGenerated(); // remove deadwood that should not hit the savefile
       return map;
     }
