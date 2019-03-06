@@ -126,14 +126,12 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
 		}
 
-#if DEAD_FUNC
         public List<Actor> ThreatIn(Map map)
 		{
 		  lock(_threats) {
 			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(map)).ToList();
 		  }
 		}
-#endif
 
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
@@ -268,24 +266,73 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) {  _threats.Remove(a); }
         }
 
-        // cheating die handler
-        private void HandleDie(object sender, Actor.DieArgs e)
+        // huge cheat ... requires any tainted location to be assigned to its "nearest threat on-map"
+        // mainly of use at game start
+        public void Rebuild(Map m)
         {
-          lock(_threats) { _threats.Remove(sender as Actor); }
-        }
+            var who = new List<Actor>();
+            var fulltaint = new HashSet<Point>();
+            lock (_threats) {
+                foreach (var x in _threats) {
+                    if (x.Key.Location.Map != m) continue;  // ignore threats not on current map
+                    if (x.Value.TryGetValue(m, out var src)) {
+                        fulltaint.UnionWith(src);
+                        who.Add(x.Key);
+                    }
+                }
+            }
 
-        // cheating move handler
-        private void HandleMove(object sender, EventArgs e)
-        {
-          Actor moving = (sender as Actor);
-          lock(_threats) {
-            if (!_threats.ContainsKey(moving)) return;
-            List<Point> tmp = moving.LegalSteps;
-            if (null == tmp) return;
-			tmp.Add(moving.Location.Position);
-            RecordTaint(moving,moving.Location.Map, tmp);
+            if (0 >= who.Count) return; // no-op for completely inappropriate call
+
+            var accounted_for = new HashSet<Point>();
+            var boundary = new Dictionary<Point, HashSet<Actor>>();
+            foreach (var a in who) {
+                Sighted(a, a.Location);
+                accounted_for.Add(a.Location.Position);
+                foreach (var pt in a.Location.Position.Adjacent()) {
+                    if (!fulltaint.Contains(pt)) continue;
+                    if (accounted_for.Contains(pt)) continue;
+                    if (boundary.TryGetValue(pt, out var cache)) cache.Add(a);
+                    else boundary[pt] = new HashSet<Actor> { a };
+                }
+            }
+            fulltaint.ExceptWith(accounted_for);
+            while (0 < fulltaint.Count && 0 < boundary.Count) {
+                accounted_for.Clear();
+                var new_boundary = new Dictionary<Point, HashSet<Actor>>();
+                foreach (var x in boundary) {
+                    foreach (var a in x.Value) RecordTaint(a, m, x.Key);
+                    accounted_for.Add(x.Key);
+                    foreach (var pt in x.Key.Adjacent()) {
+                        if (!fulltaint.Contains(pt)) continue;
+                        if (accounted_for.Contains(pt)) continue;
+                        if (new_boundary.TryGetValue(pt, out var cache)) cache.UnionWith(x.Value);
+                        else new_boundary[pt] = new HashSet<Actor>(x.Value);
+                    }
+                }
+                fulltaint.ExceptWith(accounted_for);
+                boundary = new_boundary;
+            }
           }
-        }
+
+          // cheating die handler
+          private void HandleDie(object sender, Actor.DieArgs e)
+          {
+            lock(_threats) { _threats.Remove(sender as Actor); }
+          }
+
+          // cheating move handler
+          private void HandleMove(object sender, EventArgs e)
+          {
+            Actor moving = (sender as Actor);
+            lock(_threats) {
+              if (!_threats.ContainsKey(moving)) return;
+              List<Point> tmp = moving.LegalSteps;
+              if (null == tmp) return;
+			  tmp.Add(moving.Location.Position);
+              RecordTaint(moving,moving.Location.Map, tmp);
+            }
+          }
     }   // end ThreatTracking definition
 
     // stripped down version of above, just managing locations of interest across maps
