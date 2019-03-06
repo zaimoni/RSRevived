@@ -1472,6 +1472,7 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       RedrawPlayScreen();
+      play_timer.Start();
       Session.Get.World.ScheduleForAdvancePlay();   // simulation starts at district A1
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
