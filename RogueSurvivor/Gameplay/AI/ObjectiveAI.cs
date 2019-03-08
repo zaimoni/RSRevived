@@ -931,12 +931,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
        }
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
+    private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
 #endif
-      var goals = new List<Location>();
+      var goals = new HashSet<Location>();
       var already_seen = new List<Map>();
       var scheduled = new List<Map>();
 
@@ -1254,7 +1254,7 @@ restart:
       return ret;
     }
 
-    private bool GoalRewrite(List<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest, HashSet<Map> excluded)
+    private bool GoalRewrite(HashSet<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest, HashSet<Map> excluded)
     {
         if (!map_goals.TryGetValue(src,out var test)) {
           excluded.Add(src);
@@ -1308,7 +1308,7 @@ restart:
         return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
     }
 
-    private void PartialInvertLOS(List<Location> tainted, int radius)
+    private void PartialInvertLOS(HashSet<Location> tainted, int radius)
     {
       var ideal = LOS.OptimalFOV(radius);
       foreach(var loc in tainted.ToList()) {
@@ -1420,12 +1420,9 @@ restart:
 
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
-      List<Location> goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
+      var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
-      if (null != postblacklist) {
-        int i = goals.Count;
-        while(0 < i--) if (postblacklist(goals[i])) goals.RemoveAt(i);
-      }
+      if (null != postblacklist) goals.RemoveWhere(postblacklist);
       // \todo apply postfilter
       if (0 >= goals.Count) return null;
 
