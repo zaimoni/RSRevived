@@ -56,6 +56,16 @@ namespace Zaimoni.Data
             return null;
         }
 
+        public Dictionary<Key1, Range> WhereIs(Key2 key, Predicate<Key1> test)
+        {   // copy constructor failed by race condition: need to use a multi-threaded dictionary
+            if (_second_first_dict.TryGetValue(key, out var src)) {
+                var ret = new Dictionary<Key1, Range>(src.Count);
+                foreach (var x in src) if (test(x.Key)) ret.Add(x.Key,x.Value);
+                return ret;
+            }
+            return null;
+        }
+
         public List<Key2> WhatHaveISeen() {
             return new List<Key2>(_second_first_dict.Keys);
         }

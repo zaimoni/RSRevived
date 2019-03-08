@@ -67,11 +67,10 @@ namespace djack.RogueSurvivor.Data
 
     public HashSet<Point> WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
       var ret = new HashSet<Point>();
+      bool IsInHere(Location loc) { return loc.Map == map; };
       foreach(Gameplay.GameItems.IDs it in src) {
-        Dictionary<Location, int> tmp = WhereIs(it);
+        Dictionary<Location, int> tmp = ItemMemory?.WhereIs(it, IsInHere);
         if (null == tmp) continue;
-        tmp.OnlyIf(loc=>loc.Map == map);
-        if (0 >= tmp.Count) continue;
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (Gameplay.GameItems.ranged.Contains(it)) {
           Engine.Items.ItemRangedWeaponModel model = Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel;
