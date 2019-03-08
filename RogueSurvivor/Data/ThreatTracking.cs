@@ -40,7 +40,10 @@ namespace djack.RogueSurvivor.Data
 
         public void Clear()
         {
-          lock(_threats) { _threats.Clear(); }
+          lock(_threats) {
+            _threats.Clear();
+            _ThreatWhere_cache.Clear();
+          }
         }
 
         public bool IsThreat(Actor a)
@@ -63,13 +66,16 @@ namespace djack.RogueSurvivor.Data
 		}
 #endif
 
+        [NonSerialized] Dictionary<Map, HashSet<Point>> _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
 		public HashSet<Point> ThreatWhere(Map map)
 		{
+          if (_ThreatWhere_cache.TryGetValue(map, out var cache)) return new HashSet<Point>(cache);   // value copy for correctness
           var ret = new HashSet<Point>();
 		  lock(_threats) {
             foreach (var x in _threats) {
               if (x.Value.TryGetValue(map, out var src)) ret.UnionWith(src);
             }
+            _ThreatWhere_cache[map] = new HashSet<Point>(ret);
 		  }
 		  return ret;
 		}
@@ -136,6 +142,7 @@ namespace djack.RogueSurvivor.Data
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
+            _ThreatWhere_cache.Remove(m);
             if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
 		    cache[m] = new HashSet<Point>(pts);
           }
@@ -144,6 +151,7 @@ namespace djack.RogueSurvivor.Data
         public void RecordTaint(Actor a, Location loc)
         {
 		  lock(_threats) {
+            _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
             if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
             if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
             else cache[loc.Map] = new HashSet<Point> { loc.Position };
@@ -153,6 +161,7 @@ namespace djack.RogueSurvivor.Data
         public void RecordTaint(Actor a, Map m, Point p)
         {
 		  lock(_threats) {
+            _ThreatWhere_cache.Remove(m); // XXX could be more selective
             if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
             if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
             else _threats[a][m] = new HashSet<Point> { p };
@@ -167,6 +176,7 @@ namespace djack.RogueSurvivor.Data
             (m.IsInBounds(pt) ? local : other).Add(pt);
           }
 		  lock(_threats) {
+            _ThreatWhere_cache.Remove(m); // XXX could be more selective
 		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
 		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
             _threats[a][m].UnionWith(local);
@@ -182,6 +192,7 @@ namespace djack.RogueSurvivor.Data
         public void Sighted(Actor a, Location loc)
         {
           lock(_threats) {
+            _ThreatWhere_cache.Remove(loc.Map);
             _threats[a] = new Dictionary<Map, HashSet<Point>>(1) {
               [loc.Map] = new HashSet<Point> { loc.Position }
             };
@@ -191,6 +202,7 @@ namespace djack.RogueSurvivor.Data
 		public void Cleared(Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
+            _ThreatWhere_cache.Remove(m);   // XXX could be more selective
             var amnesia = new List<Actor>();
             foreach(var x in _threats) {
               if (!x.Value.TryGetValue(m, out var test)) continue;
@@ -263,7 +275,12 @@ namespace djack.RogueSurvivor.Data
 
         public void Cleared(Actor a)
         {
-          lock(_threats) {  _threats.Remove(a); }
+          lock(_threats) {
+            if (_threats.TryGetValue(a, out var cache)) {
+              foreach(var x in cache) _ThreatWhere_cache.Remove(x.Key);   // XXX could be more selective
+              _threats.Remove(a);
+            }
+          }
         }
 
         // huge cheat ... requires any tainted location to be assigned to its "nearest threat on-map"
