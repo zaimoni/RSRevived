@@ -61,13 +61,11 @@ namespace Zaimoni.Data
         public Dictionary<Key1, Range> WhereIs(Key2 key, Predicate<Key1> test)
         {   // copy constructor failed by race condition: need to use a multi-threaded dictionary
             lock (_second_first_dict) {
-                if (_second_first_dict.TryGetValue(key, out var src)) {
-                    var ret = new Dictionary<Key1, Range>(src.Count);
-                    foreach (var x in src) if (test(x.Key)) ret.Add(x.Key, x.Value);
-                    return ret;
-                }
+                if (!_second_first_dict.TryGetValue(key, out var src)) return null;
+                var ret = new Dictionary<Key1, Range>(src.Count);
+                foreach (var x in src) if (test(x.Key)) ret.Add(x.Key, x.Value);
+                return 0<ret.Count ? ret : null;
             }
-            return null;
         }
 
         public List<Key2> WhatHaveISeen() {
@@ -75,8 +73,6 @@ namespace Zaimoni.Data
         }
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
-            List<Key2> expired = new List<Key2>();
-            Range val;
             if (!keys2?.Any() ?? true) {
                 lock (_no_entries) {
                 lock (_first_second_dict) {
@@ -90,7 +86,8 @@ namespace Zaimoni.Data
                 return;
             }
 
-            HashSet<Key2> incoming = new HashSet<Key2>(keys2);
+            var incoming = new HashSet<Key2>(keys2);
+            List<Key2> expired = new List<Key2>();
             lock (_no_entries) {
             lock (_first_second_dict) {
             lock (_second_first_dict) {
