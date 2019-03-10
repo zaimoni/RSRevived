@@ -939,12 +939,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var goals = new HashSet<Location>();
       var already_seen = new List<Map>();
       var scheduled = new List<Map>();
+      var obtain_goals_cache = new Dictionary<Map,HashSet<Point>>();
 
-      HashSet<Point> obtain_goals(Map m) {
+      HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
+        if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
         var dests = targets_at(m);
         if (0 < dests.Count) foreach(var pt in dests) goals.Add(new Location(m,pt));
         already_seen.Add(m);
-        return dests;
+        return obtain_goals_cache[m] = dests;
       }
 
       var where_to_go = obtain_goals(dest);
