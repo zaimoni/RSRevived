@@ -87,7 +87,7 @@ namespace Zaimoni.Data
             }
 
             var incoming = new HashSet<Key2>(keys2);
-            List<Key2> expired = new List<Key2>();
+            List<Key2> expired = null;
             lock (_no_entries) {
             lock (_first_second_dict) {
             lock (_second_first_dict) {
@@ -98,9 +98,9 @@ namespace Zaimoni.Data
                   incoming.Remove(x.Key);
                   continue;
                 }
-                if (x.Value.Remove(key) && 0 >= x.Value.Count) expired.Add(x.Key);
+                if (x.Value.Remove(key) && 0 >= x.Value.Count) (expired ?? (expired = new List<Key2>(_second_first_dict.Count))).Add(x.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            if (null != expired) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
             foreach(Key2 tmp in incoming) {
               _second_first_dict[tmp] = new Dictionary<Key1, Range> { [key] = value };
             }
@@ -113,11 +113,11 @@ namespace Zaimoni.Data
 
         private void Remove(Key1 key)   // uses caller for the required lock
         {
-            List<Key2> expired = new List<Key2>();
+            List<Key2> expired = null;
             foreach (var x in _second_first_dict) {
-                if (x.Value.Remove(key) && 0 >= x.Value.Count) expired.Add(x.Key);
+                if (x.Value.Remove(key) && 0 >= x.Value.Count) (expired ?? (expired = new List<Key2>(_second_first_dict.Count))).Add(x.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            if (null != expired) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
         }
 
 #if FAIL
