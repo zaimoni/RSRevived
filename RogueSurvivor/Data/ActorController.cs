@@ -66,10 +66,12 @@ namespace djack.RogueSurvivor.Data
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
     public HashSet<Point> WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
+      var it_memory = ItemMemory;
+      if (null == it_memory) return null;
       var ret = new HashSet<Point>();
       bool IsInHere(Location loc) { return loc.Map == map; };
       foreach(Gameplay.GameItems.IDs it in src) {
-        Dictionary<Location, int> tmp = ItemMemory?.WhereIs(it, IsInHere);
+        Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (Gameplay.GameItems.ranged.Contains(it)) {
@@ -80,12 +82,12 @@ namespace djack.RogueSurvivor.Data
                 // Cf. LOSSensor::_seeItems
                 var itemsAt = loc.Map.GetItemsAt(loc.Position);
                 if (null == itemsAt) {
-                  ItemMemory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
+                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
                 }
                 if (null != itemsAt.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0 < rw.Ammo)) return true;
                 if (null == itemsAt.GetFirstByModel(model))
-                  ItemMemory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
                 return false;
             });
             if (0 >= tmp.Count) continue;
