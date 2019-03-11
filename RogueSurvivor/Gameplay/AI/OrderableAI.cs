@@ -1322,7 +1322,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
       if (null != enemies) {
-        if (1==Rules.GridDistance(enemies[0].Location,m_Actor.Location)) {
+        if (1==Rules.InteractionDistance(enemies[0].Location,m_Actor.Location)) {
           // something adjacent...check for one-shotting
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
@@ -1424,7 +1424,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1<available_ranged_weapons.Count) {
         foreach(Percept p in en_in_range) {
           Actor a = p.Percepted as Actor;
-          int range = Rules.GridDistance(m_Actor.Location, p.Location);
+          int range = Rules.InteractionDistance(m_Actor.Location, p.Location);
           foreach(ItemRangedWeapon rw in available_ranged_weapons) {
             if (range > rw.Model.Attack.Range) continue;
             ETAToKill(a, range, rw,best_weapon_ETAs, best_weapons);
@@ -1433,7 +1433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } else {
         foreach(Percept p in en_in_range) {
           Actor a = p.Percepted as Actor;
-          ETAToKill(a,Rules.GridDistance(m_Actor.Location,p.Location), available_ranged_weapons[0], best_weapon_ETAs);
+          ETAToKill(a,Rules.InteractionDistance(m_Actor.Location,p.Location), available_ranged_weapons[0], best_weapon_ETAs);
         }
       }
 
@@ -1454,8 +1454,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
           if (2 <= immediate_threat_in_range.Count) {
-           int dist_min = immediate_threat_in_range.Select(a => Rules.GridDistance(m_Actor.Location,a.Location)).Min();
-           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.GridDistance(m_Actor.Location, a.Location) == dist_min));
+           int dist_min = immediate_threat_in_range.Select(a => Rules.InteractionDistance(m_Actor.Location,a.Location)).Min();
+           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min));
           }
         }
         Actor actor = immediate_threat_in_range.First();
@@ -1475,8 +1475,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
             en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
             if (2<=en_in_range.Count) {
-             int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location,p.Location)).Min();
-             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location, p.Location) == dist_min));
+             int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
             }
           }
           Actor actor = en_in_range.First().Percepted as Actor;
@@ -1490,8 +1490,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // just deal with something close
       {
-        int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location,p.Location)).Min();
-        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location, p.Location) == dist_min));
+        int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
         if (2<=en_in_range.Count) {
           int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
           en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
@@ -2030,7 +2030,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get safe range from enemy, just out of his reach.
       int safeRange = Math.Max(2, enemyAttack.Range + 1);  // melee attack range is 0 not 1!
-      int distToEnemy = Rules.GridDistance(m_Actor.Location, enemy.Location);
+      int distToEnemy = Rules.InteractionDistance(m_Actor.Location, enemy.Location);
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);
@@ -2087,10 +2087,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      List<Percept> approachable_enemies = null;
+      List<Percept> approachable_enemies = enemies.Where(p => Rules.IsAdjacent(m_Actor.Location, p.Location)).ToList();
 
-      // enemies list is sorted by grid distance; and preclude their grids from being legal steps
-      if (1 < Rules.GridDistance(m_Actor.Location, enemies[0].Location)) {
+      if (0 >= approachable_enemies.Count) {
         if (null != legal_steps) {
           // nearest enemy is not adjacent.  Filter by whether it's legal to approach.
           approachable_enemies = enemies.Where(p => {
@@ -2099,8 +2098,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }).ToList();
           if (0 >= approachable_enemies.Count) approachable_enemies = null;
         }
-      } else {
-        approachable_enemies = enemies.Where(p => 1==Rules.GridDistance(m_Actor.Location,p.Location)).ToList();
       }
 
       // if enemy is not approachable then following checks are invalid
@@ -2997,7 +2994,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActionGiveTo donate = null;
         if (0 < insurance.Count) {
             foreach (var x in insurance) {
-                int dist = Rules.IsAdjacent(m_Actor.Location, x.Key.Location) ? 1 : Rules.GridDistance(m_Actor.Location, x.Key.Location);
+                int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.Location);
                 if (dist >= min_dist) continue;
                 var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
                 if (!request.IsLegal()) continue;
@@ -3024,7 +3021,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (0 < want.Count) {
             foreach (var x in want) {
-                int dist = Rules.IsAdjacent(m_Actor.Location, x.Key.Location) ? 1 : Rules.GridDistance(m_Actor.Location, x.Key.Location);
+                int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.Location);
                 if (dist >= min_dist) continue;
                 var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
                 if (!request.IsLegal()) continue;

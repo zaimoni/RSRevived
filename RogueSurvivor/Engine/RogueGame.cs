@@ -4559,7 +4559,7 @@ namespace djack.RogueSurvivor.Engine
         Actor currentTarget = enemiesInFov[index];
         LoF.Clear();
         bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
-        int num1 = Rules.GridDistance(player.Location, currentTarget.Location);
+        int num1 = Rules.InteractionDistance(player.Location, currentTarget.Location);
 
         string modeDesc = (mode == FireMode.RAPID ? string.Format("RAPID fire average hit chances {0}% {1}%", player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2))
                                                   : string.Format("Normal fire average hit chance {0}%", player.ComputeChancesRangedHit(currentTarget, 0)));
@@ -6737,12 +6737,12 @@ namespace djack.RogueSurvivor.Engine
       lines.Add("% be hit: "+melee_a_hit.ToString());
 //       Attack attack = attacker.RangedAttack(distance, defender);
       if (0<Player.CurrentRangedAttack.Range) {
-        Attack r_p_attack = Player.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), actor);
+        Attack r_p_attack = Player.RangedAttack(Rules.InteractionDistance(Player.Location,actor.Location), actor);
         float ranged_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
         lines.Add("% shot: "+ranged_p_hit.ToString());
       }
       if (0<actor.CurrentRangedAttack.Range) {
-        Attack r_a_attack = actor.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), Player);
+        Attack r_a_attack = actor.RangedAttack(Rules.InteractionDistance(Player.Location,actor.Location), Player);
         float ranged_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
         lines.Add("% be shot: "+ranged_a_hit.ToString());
       }
@@ -8244,7 +8244,7 @@ namespace djack.RogueSurvivor.Engine
       {
         AddMessage(MakeMessage(attacker, " : weapon jam!"));
       } else {
-        int distance = Rules.GridDistance(attacker.Location, defender.Location);
+        int distance = Rules.InteractionDistance(attacker.Location, defender.Location);
         ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;

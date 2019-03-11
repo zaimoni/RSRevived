@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Location from = m_Actor.Location;
       Dictionary<Percept_<_T_>, int> dict = new Dictionary<Percept_<_T_>, int>(perceptList.Count);
       foreach(Percept_<_T_> p in perceptList) {
-        dict.Add(p,Rules.GridDistance(p.Location, from));
+        dict.Add(p,Rules.InteractionDistance(p.Location, from));
       }
       perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
       return perceptList;
@@ -464,7 +464,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
       FireMode fireMode = FireMode.DEFAULT;
       if ((m_Actor.GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2) {
-        Attack rangedAttack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location, target.Location), target);
+        Attack rangedAttack = m_Actor.RangedAttack(Rules.InteractionDistance(m_Actor.Location, target.Location), target);
         if (rangedAttack.DamageValue < target.HitPoints) {
           int rapidHit1Chance = m_Actor.ComputeChancesRangedHit(target, 1);
           int rapidHit2Chance = m_Actor.ComputeChancesRangedHit(target, 2);

@@ -653,6 +653,20 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (num1 * num1 + num2 * num2));
     }
 
+    // allows stairways for melee range, etc.
+    public static int InteractionDistance(Location a, Location b)
+    {
+      if (a.Map != b.Map) {
+        Location? test = a.Map.Denormalize(b);
+        if (null == test) {
+          Exit exit = a.Exit;
+          return (null != exit && exit.Location == b) ? 1 : int.MaxValue;
+        }
+        b = test.Value;
+      }
+      return GridDistance(a.Position, b.Position);
+    }
+
     public static bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;
@@ -764,7 +778,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorSpotMurdererChance(Actor spotter, Actor murderer)
     {
-      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location, murderer.Location);
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * InteractionDistance(spotter.Location, murderer.Location);
     }
 
     public static int ActorBiteHpRegen(Actor a, int dmg)
