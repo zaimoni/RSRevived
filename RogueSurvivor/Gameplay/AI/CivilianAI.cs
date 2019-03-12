@@ -846,8 +846,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
-          if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>();
-          return threats.ThreatWhere(m);
+          return (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) ? new HashSet<Point>() : threats.ThreatWhere(m);
         }
 
         if (!combat_unready && null != threats && threats.Any()) pathing_targets = hunt_threat;

@@ -3287,8 +3287,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return false;
-      HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
-      return 0<tainted.Count;   // XXX could be more efficient?
+      if (m_Actor.Location.Map == m_Actor.Location.Map.District.SewersMap && Session.Get.HasZombiesInSewers) return false;
+      return 0< threats.ThreatWhere(m_Actor.Location.Map).Count;   // XXX could be more efficient?
     }
 
     protected ActorAction BehaviorHuntDownThreatCurrentMap()
