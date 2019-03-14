@@ -450,8 +450,8 @@ namespace djack.RogueSurvivor.Data
       {
         lock(_locs) {
           if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles
-		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
-          _locs[m].Add(pt);
+          if (!_locs.TryGetValue(m, out var cache)) _locs.Add(m,(cache = new HashSet<Point>()));
+          cache.Add(pt);
         }
       }
 
