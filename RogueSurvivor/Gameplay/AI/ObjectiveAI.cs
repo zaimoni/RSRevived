@@ -3,13 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;

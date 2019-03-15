@@ -9,9 +9,14 @@
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 

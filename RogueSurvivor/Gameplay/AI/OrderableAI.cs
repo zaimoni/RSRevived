@@ -19,12 +19,19 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 #if TIME_TURNS
 using System.Diagnostics;
 #endif
 using System.Linq;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 

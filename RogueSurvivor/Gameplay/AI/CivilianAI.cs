@@ -20,10 +20,15 @@ using System.Collections.Generic;
 #if TIME_TURNS
 using System.Diagnostics;
 #endif
-using System.Drawing;
 using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 

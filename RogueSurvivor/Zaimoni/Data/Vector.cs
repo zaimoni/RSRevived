@@ -292,11 +292,17 @@ namespace Zaimoni.Data
             _dim = size;
         }
 
+        public Box2D_int(int originx, int originy, int sizex, int sizey)
+        {
+            _anchor = new Vector2D_int(originx,originy);
+            _dim = new Vector2D_int(sizex, sizey);
+        }
+
 #region pure getters
-        int Bottom { get { return _anchor.Y + _dim.Y; } }
-        int Left { get { return _anchor.X; } }
-        int Right { get { return _anchor.X + _dim.X; } }
-        int Top { get { return _anchor.Y; } }
+        public int Bottom { get { return _anchor.Y + _dim.Y; } }
+        public int Left { get { return _anchor.X; } }
+        public int Right { get { return _anchor.X + _dim.X; } }
+        public int Top { get { return _anchor.Y; } }
 #endregion
 
 #region get/set pairs

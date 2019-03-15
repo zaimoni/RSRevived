@@ -12,9 +12,13 @@ using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
 
-// 2019-01-27 not expecting a use case for switching away from System.Drawing.Point
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {
