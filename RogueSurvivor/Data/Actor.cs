@@ -8,12 +8,18 @@
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
-using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
 
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
+
+using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
