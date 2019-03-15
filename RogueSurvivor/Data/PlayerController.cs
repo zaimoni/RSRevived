@@ -314,7 +314,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (!e._important) return;
 
-      RogueForm.Game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
+      RogueForm.Game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
       RogueForm.Game.AddMessagePressEnter();
       RogueForm.Game.ClearOverlays();
 //    RogueForm.Game.RemoveLastMessage();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
@@ -340,11 +341,71 @@ namespace Zaimoni.Data
             get { return _anchor.Y; }
             set { _anchor.Y = value; }
         }
-#endregion
+        #endregion
 
         // these are not the safest implementations for integer math
+        public bool Contains(int x, int y) { return _anchor.X <= x && x < Right && _anchor.Y <= y && y < Bottom; }
         public bool Contains(Vector2D_int src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_int src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
+
+    public Vector2D_int? FirstOrDefault(Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      Vector2D_int point = new Vector2D_int();
+      for (point.X = Left; point.X < Right; ++point.X) {
+        for (point.Y = Top; point.Y < Bottom; ++point.Y) {
+          if (testFn(point)) return point;
+        }
+      }
+      return null;
+    }
+
+    public bool Any(Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      return  null != FirstOrDefault(testFn);
+    }
+
+    public void DoForEach(Action<Vector2D_int> doFn, Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      Vector2D_int point = new Vector2D_int();
+      for (point.X = Left; point.X < Right; ++point.X) {
+        for (point.Y = Top; point.Y < Bottom; ++point.Y) {
+          if (testFn(point)) doFn(point);
+        }
+      }
+    }
+
+    public void DoForEach(Action<Vector2D_int> doFn)
+    {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+#endif
+      Vector2D_int point = new Vector2D_int();
+      for (point.X = Left; point.X < Right; ++point.X) {
+        for (point.Y = Top; point.Y < Bottom; ++point.Y) {
+          doFn(point);
+        }
+      }
+    }
+
+    public List<Vector2D_int> Where(Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      List<Vector2D_int> ret = new List<Vector2D_int>();
+      DoForEach(pt => ret.Add(pt),testFn);
+      return ret;
+    }
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Box2D_int other)

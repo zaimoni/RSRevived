@@ -1,8 +1,15 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {

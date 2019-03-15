@@ -5,8 +5,12 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Drawing;
-using System.Diagnostics.Contracts;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {

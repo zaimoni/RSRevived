@@ -6,9 +6,13 @@
 
 using System;
 using System.Collections.Generic;
-using Zaimoni.Data;
 
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Zaimoni.Data;
 using Point = System.Drawing.Point;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {

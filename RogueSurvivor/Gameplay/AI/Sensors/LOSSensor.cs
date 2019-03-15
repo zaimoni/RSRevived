@@ -8,8 +8,12 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Drawing;
-using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Sensor = djack.RogueSurvivor.Engine.AI.Sensor;

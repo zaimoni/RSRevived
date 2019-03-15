@@ -8,8 +8,13 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Rectangle = System.Drawing.Rectangle;
+#endif
 
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors

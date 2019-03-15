@@ -9,8 +9,16 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Drawing;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
+
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -178,10 +186,9 @@ namespace djack.RogueSurvivor.Engine
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-      Point position = new Point();
       List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
-      position = roller.Choose(valid_spawn);
+      var position = roller.Choose(valid_spawn);
       map.PlaceAt(actor, position);
       if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
         Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);

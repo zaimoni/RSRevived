@@ -7,9 +7,14 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using System;
-using System.Drawing;
 using System.Collections.Generic;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {

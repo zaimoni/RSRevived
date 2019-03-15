@@ -14,9 +14,14 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -1224,7 +1229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-        protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
+    protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
     {
       int x = goal.X + rules.Roll(-range, range);
       int y = goal.Y + rules.Roll(-range, range);
