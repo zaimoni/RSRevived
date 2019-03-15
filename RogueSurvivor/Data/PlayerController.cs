@@ -8,9 +8,17 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
+
+using Color = System.Drawing.Color;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;
 using ItemMedicine = djack.RogueSurvivor.Engine.Items.ItemMedicine;

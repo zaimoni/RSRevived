@@ -209,7 +209,7 @@ diagonalExit:
 
     public static Direction ApproximateFromVector(Point v)
     {
-      PointF pointF = (PointF) v;
+      PointF pointF = new PointF(v.X, v.Y);
       float num1 = (float) Math.Sqrt((double) pointF.X * (double) pointF.X + (double) pointF.Y * (double) pointF.Y);
       if ((double) num1 == 0.0) return N;
       pointF.X /= num1;

@@ -7,7 +7,11 @@
 using System;
 using Zaimoni.Data;
 
-using Point = System.Drawing.Point; // map coordinate
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+#else
+using Point = System.Drawing.Point;
+#endif
 
 namespace djack.RogueSurvivor.Data
 {
