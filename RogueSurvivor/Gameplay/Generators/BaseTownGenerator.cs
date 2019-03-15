@@ -1277,7 +1277,7 @@ restart:
         if (rect4.IsEmpty) continue;
         Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
         rect5.Intersect(rect4);
-        rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> !map.HasMapObjectAt(pt));    // table is already placed
+        rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));    // table is already placed
         if (2 >= chair_pos.Count) {
           foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,pt);
           chair_pos.Clear();
@@ -2011,8 +2011,8 @@ restart:
         MakeRoomsPlan(map, ref list, topLeft, minRoomsXSize, minRoomsYSize);
         if (!topRight.IsEmpty) {
 #if Z_VECTOR
-          bottomRight.Location += Direction.W;
-          bottomRight.Size += Direction.E;
+          topRight.Location += Direction.W;
+          topRight.Size += Direction.E;
 #else
           topRight.Offset(-1, 0);
           ++topRight.Width;
@@ -2021,8 +2021,8 @@ restart:
         }
         if (!bottomLeft.IsEmpty) {
 #if Z_VECTOR
-          bottomRight.Location += Direction.N;
-          bottomRight.Size += Direction.S;
+          bottomLeft.Location += Direction.N;
+          bottomLeft.Size += Direction.S;
 #else
           bottomLeft.Offset(0, -1);
           ++bottomLeft.Height;

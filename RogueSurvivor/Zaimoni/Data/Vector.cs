@@ -285,6 +285,7 @@ namespace Zaimoni.Data
     };
 #endif
 
+    [Serializable]
     public struct Box2D_int : IComparable<Box2D_int>, IEquatable<Box2D_int>
     {
         private Vector2D_int _anchor;

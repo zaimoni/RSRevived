@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == createFn) throw new ArgumentNullException(nameof(createFn));
       if (null == isGoodPosFn) throw new ArgumentNullException(nameof(isGoodPosFn));
 #endif
-      List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && !map.HasMapObjectAt(pt));
+      List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
       if (0 >= pointList.Count) return;
       Point pt2 = roller.Choose(pointList);
       createFn(pt2)?.PlaceAt(map,pt2);

@@ -332,7 +332,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
 
-        private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
+    private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
@@ -362,7 +362,11 @@ namespace djack.RogueSurvivor.Engine
     // the return of a cached value is assumed to be by value
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-      if (!FOVcache.ContainsKey(a_loc.Map)) FOVcache[a_loc.Map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
+      if (!FOVcache.ContainsKey(a_loc.Map)) {
+        var tmp = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
+        tmp.Now(Session.Get.WorldTime.TurnCounter);
+        FOVcache[a_loc.Map] = tmp;
+      }
       if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
