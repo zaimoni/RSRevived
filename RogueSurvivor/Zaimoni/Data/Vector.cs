@@ -16,6 +16,9 @@ namespace Zaimoni.Data
             Y = y;
         }
 
+        static readonly public Vector2D_int Empty = new Vector2D_int(0, 0);
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+
         static public bool operator ==(Vector2D_int lhs, Vector2D_int rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_int lhs, Vector2D_int rhs) { return !lhs.Equals(rhs); }
         static public bool operator <(Vector2D_int lhs, Vector2D_int rhs) { return 0 > lhs.CompareTo(rhs); }
@@ -295,11 +298,23 @@ namespace Zaimoni.Data
 
         public Box2D_int(int originx, int originy, int sizex, int sizey)
         {
-            _anchor = new Vector2D_int(originx,originy);
+            _anchor = new Vector2D_int(originx, originy);
             _dim = new Vector2D_int(sizex, sizey);
         }
 
-#region pure getters
+        static public Box2D_int FromLTRB(int left, int top, int right, int bottom) { return new Box2D_int(left,top,right-left,bottom-top); }
+
+        static readonly public Box2D_int Empty = new Box2D_int(0, 0, 0, 0);
+        public bool IsEmpty { get { return 0 == _anchor.X && 0 == _anchor.Y && 0 == _dim.X && 0 == _dim.Y; } }
+
+        static public bool operator ==(Box2D_int lhs, Box2D_int rhs) { return lhs.Equals(rhs); }
+        static public bool operator !=(Box2D_int lhs, Box2D_int rhs) { return !lhs.Equals(rhs); }
+        static public bool operator <(Box2D_int lhs, Box2D_int rhs) { return 0 > lhs.CompareTo(rhs); }
+        static public bool operator >(Box2D_int lhs, Box2D_int rhs) { return 0 < lhs.CompareTo(rhs); }
+        static public bool operator <=(Box2D_int lhs, Box2D_int rhs) { return 0 >= lhs.CompareTo(rhs); }
+        static public bool operator >=(Box2D_int lhs, Box2D_int rhs) { return 0 <= lhs.CompareTo(rhs); }
+
+        #region pure getters
         public int Bottom { get { return _anchor.Y + _dim.Y; } }
         public int Left { get { return _anchor.X; } }
         public int Right { get { return _anchor.X + _dim.X; } }
@@ -342,6 +357,36 @@ namespace Zaimoni.Data
             set { _anchor.Y = value; }
         }
         #endregion
+
+        static public Box2D_int Union(Box2D_int lhs, Box2D_int rhs) {
+            Box2D_int ret = lhs;
+            if (ret.X > rhs.X) {
+              ret.Width += ret.X - rhs.X;
+              ret.X = rhs.X;
+            }
+            if (ret.Y > rhs.Y) {
+                ret.Height += ret.Y - rhs.Y;
+                ret.Y = rhs.Y;
+            }
+            if (ret.Right < rhs.Right) ret.Width += rhs.Right - ret.Right;
+            if (ret.Bottom < rhs.Bottom) ret.Height += rhs.Bottom - ret.Bottom;
+            return ret;
+        }
+
+        public Box2D_int Intersect(Box2D_int rhs) {
+            Box2D_int ret = this;
+            if (ret.X < rhs.X) {
+              ret.Width -= rhs.X - ret.X;
+              ret.X = rhs.X;
+            }
+            if (ret.Y < rhs.Y) {
+                ret.Height -= rhs.Y - ret.Y;
+                ret.Y = rhs.Y;
+            }
+            if (ret.Right > rhs.Right) ret.Width -= ret.Right - rhs.Right;
+            if (ret.Bottom > rhs.Bottom) ret.Height -= ret.Bottom - rhs.Bottom;
+            return ret;
+        }
 
         // these are not the safest implementations for integer math
         public bool Contains(int x, int y) { return _anchor.X <= x && x < Right && _anchor.Y <= y && y < Bottom; }
@@ -397,6 +442,28 @@ namespace Zaimoni.Data
       }
     }
 
+    public void DoForEachOnEdge(Action<Vector2D_int> doFn, Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      var point = new Vector2D_int();
+      for (point.X = Left; point.X < Right; ++point.X) {
+        point.Y = Top;
+        if (testFn(point)) doFn(point);
+        point.Y = Bottom-1;
+        if (testFn(point)) doFn(point);
+      }
+      if (2 >= Height) return;
+      for (point.Y = Top+1; point.Y < Bottom-2; ++point.Y) {
+        point.X = Left;
+        if (testFn(point)) doFn(point);
+        point.X = Right-1;
+        if (testFn(point)) doFn(point);
+      }
+    }
+
     public List<Vector2D_int> Where(Predicate<Vector2D_int> testFn)
     {
 #if DEBUG
@@ -404,6 +471,16 @@ namespace Zaimoni.Data
 #endif
       List<Vector2D_int> ret = new List<Vector2D_int>();
       DoForEach(pt => ret.Add(pt),testFn);
+      return ret;
+    }
+
+    public List<Vector2D_int> WhereOnEdge(Predicate<Vector2D_int> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      var ret = new List<Vector2D_int>();
+      DoForEachOnEdge(pt => ret.Add(pt),testFn);
       return ret;
     }
 

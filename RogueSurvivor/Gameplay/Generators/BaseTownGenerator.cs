@@ -887,9 +887,14 @@ restart:
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Left, rect.Top, 1, rect.Height));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Right - 1, rect.Top, 1, rect.Height));
+#if Z_VECTOR
+          topLeft.Location += Direction.SE;
+          topLeft.Size += 2*Direction.NW;
+#else
           topLeft.Width -= 2;
           topLeft.Height -= 2;
           topLeft.Offset(1, 1);
+#endif
         }
         list.Add(new Block(topLeft));
       } else {
@@ -2005,19 +2010,34 @@ restart:
       } else {
         MakeRoomsPlan(map, ref list, topLeft, minRoomsXSize, minRoomsYSize);
         if (!topRight.IsEmpty) {
+#if Z_VECTOR
+          bottomRight.Location += Direction.W;
+          bottomRight.Size += Direction.E;
+#else
           topRight.Offset(-1, 0);
           ++topRight.Width;
+#endif
           MakeRoomsPlan(map, ref list, topRight, minRoomsXSize, minRoomsYSize);
         }
         if (!bottomLeft.IsEmpty) {
+#if Z_VECTOR
+          bottomRight.Location += Direction.N;
+          bottomRight.Size += Direction.S;
+#else
           bottomLeft.Offset(0, -1);
           ++bottomLeft.Height;
+#endif
           MakeRoomsPlan(map, ref list, bottomLeft, minRoomsXSize, minRoomsYSize);
         }
         if (bottomRight.IsEmpty) return;
+#if Z_VECTOR
+        bottomRight.Location += Direction.NW;
+        bottomRight.Size += Direction.SE;
+#else
         bottomRight.Offset(-1, -1);
         ++bottomRight.Width;
         ++bottomRight.Height;
+#endif
         MakeRoomsPlan(map, ref list, bottomRight, minRoomsXSize, minRoomsYSize);
       }
     }

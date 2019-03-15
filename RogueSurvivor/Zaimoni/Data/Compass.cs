@@ -43,6 +43,22 @@ namespace Zaimoni.Data
         }
         }
 
+        static public Vector2D_int Anchor(this Box2D_int src, XCOMlike dir_code)  // Tk/Tcl anchor point for aligning a rectangle
+        {
+        switch(dir_code)
+        {
+        case XCOMlike.N: return new Vector2D_int(src.Width / 2 + src.Left, src.Top);
+        case XCOMlike.NE: return new Vector2D_int(src.Right - 1, src.Top);
+        case XCOMlike.E: return new Vector2D_int(src.Right - 1, src.Height / 2 + src.Top);
+        case XCOMlike.SE: return new Vector2D_int(src.Right - 1, src.Bottom - 1);
+        case XCOMlike.S: return new Vector2D_int(src.Width / 2 + src.Left, src.Bottom - 1);
+        case XCOMlike.SW: return new Vector2D_int(src.Left, src.Bottom - 1);
+        case XCOMlike.W: return new Vector2D_int(src.Left, src.Height / 2 + src.Top);
+        case XCOMlike.NW: return new Vector2D_int(src.Left, src.Top);
+        default: throw new InvalidOperationException("direction code out of range");
+        }
+        }
+
         static public Rectangle Edge(this Rectangle src, XCOMlike dir_code)
         {
         switch(dir_code)
@@ -51,6 +67,18 @@ namespace Zaimoni.Data
         case XCOMlike.S: return new Rectangle(src.Left, src.Bottom-1, src.Width, 1);
         case XCOMlike.W: return new Rectangle(src.Left, src.Top, 1, src.Height);
         case XCOMlike.E: return new Rectangle(src.Right-1, src.Top, 1, src.Height);
+        default: throw new InvalidOperationException("direction code out of range");
+        }
+        }
+
+        static public Box2D_int Edge(this Box2D_int src, XCOMlike dir_code)
+        {
+        switch(dir_code)
+        {
+        case XCOMlike.N: return new Box2D_int(src.Left,src.Top,src.Width,1);
+        case XCOMlike.S: return new Box2D_int(src.Left, src.Bottom-1, src.Width, 1);
+        case XCOMlike.W: return new Box2D_int(src.Left, src.Top, 1, src.Height);
+        case XCOMlike.E: return new Box2D_int(src.Right-1, src.Top, 1, src.Height);
         default: throw new InvalidOperationException("direction code out of range");
         }
         }

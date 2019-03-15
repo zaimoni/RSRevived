@@ -9,7 +9,12 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
-using System.Drawing;
+
+#if Z_VECTOR
+using Rectangle = Zaimoni.Data.Box2D_int;
+#else
+using Rectangle = System.Drawing.Rectangle;
+#endif
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {

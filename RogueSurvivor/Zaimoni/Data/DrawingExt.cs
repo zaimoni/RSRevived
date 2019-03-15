@@ -30,6 +30,24 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
+    public static Vector2D_int RadarSweep(this Vector2D_int origin,int radius,int i)
+    {
+#if DEBUG
+      if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
+      if (int.MaxValue - radius < origin.X || int.MinValue + radius > origin.X) throw new ArgumentOutOfRangeException(nameof(origin.X),origin.X.ToString(), "must be in "+(int.MinValue + radius).ToString()+".." +(int.MaxValue - radius).ToString());
+      if (int.MaxValue - radius < origin.Y || int.MinValue + radius > origin.Y) throw new ArgumentOutOfRangeException(nameof(origin.Y),origin.Y.ToString(), "must be in "+(int.MinValue + radius).ToString()+".." +(int.MaxValue - radius).ToString());
+#endif
+      // normalize i
+      i %= 8*radius;
+      if (0>i) i+=8*radius;
+
+      // parentheses are to deny compiler the option to reorder to overflow
+      if (2*radius>i) return new Vector2D_int((i-radius)+origin.X,radius + origin.Y);
+      if (4*radius>i) return new Vector2D_int(radius + origin.X, (3*radius- i) + origin.Y);
+      if (6*radius>i) return new Vector2D_int((5*radius-i) + origin.X, -radius + origin.Y);
+      /* if (8*radius>i) */ return new Vector2D_int(-radius + origin.X, (i-7* radius) + origin.Y);
+    }
+
     // null testFn is a different signature for efficiency reasons
     public static void DoForEach(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
     {
@@ -504,9 +522,33 @@ namespace Zaimoni.Data
       pt.Y = i/rect.Width + rect.Top;
     }
 
+    public static void convert(this Box2D_int rect, Vector2D_int pt, ref int i)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
+      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
+    }
+
+    public static void convert(this Box2D_int rect, int i, ref Vector2D_int pt)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (0 > i) throw new InvalidOperationException("index not in rectangle");
+      pt.X = i%rect.Width + rect.Left;
+      pt.Y = i/rect.Width + rect.Top;
+    }
+
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
     // the resulting UNICODE string need not be valid as a UNICODE string.  We just need value-comparison of strings to be value-comparison of the hashset it came from.
     public static string Encode(this Rectangle rect, Point pt)
+    {
+      // C# char is 16-bit unsigned
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (255<rect.Width || 255<rect.Height) throw new InvalidProgramException("must extend Zaimoni.Data.Encode(Rectangle,Point)");
+      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
+      return new string(new char[] { (char)(256 * (pt.X - rect.Left) + (pt.Y - rect.Top)) });
+    }
+
+    public static string Encode(this Box2D_int rect, Vector2D_int pt)
     {
       // C# char is 16-bit unsigned
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
@@ -535,6 +577,18 @@ namespace Zaimoni.Data
 
     // encode a dictionary to a string
     public static string Encode(this Rectangle rect, Dictionary<Point,int> src)
+    {
+      if (null==src || 0 >= src.Count) return string.Empty;
+      var tmp = src.Keys.ToList();
+      tmp.Sort((a,b)=> {
+          var test = a.X.CompareTo(b.X);
+          if (0 != test) return test;
+          return a.Y.CompareTo(b.Y);
+      });
+      return string.Concat(tmp.Select(pt => rect.Encode(pt)+((uint)(src[pt])).Encode()));
+    }
+
+    public static string Encode(this Box2D_int rect, Dictionary<Vector2D_int, int> src)
     {
       if (null==src || 0 >= src.Count) return string.Empty;
       var tmp = src.Keys.ToList();
