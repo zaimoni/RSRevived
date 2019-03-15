@@ -5,12 +5,21 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Drawing;
 #if PROTOTYPE
 using System.Collections.Generic;
 #endif
 using System.Linq;
 using Zaimoni.Data;
+
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
+using Size = Zaimoni.Data.Vector2D_int;   // likely to go obsolete with transition to a true vector type
+#else
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
+#endif
+using PointF = System.Drawing.PointF;
+
 
 // XXX C# Point is not a point in a vector space at all.
 // C# Size  is closer (closed under + but doesn't honor left/right multiplication by a scalar)
