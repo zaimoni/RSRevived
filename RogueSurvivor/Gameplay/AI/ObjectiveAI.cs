@@ -947,11 +947,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var already_seen = new List<Map>();
       var scheduled = new List<Map>();
       var obtain_goals_cache = new Dictionary<Map,HashSet<Point>>();
+      // branch-bound prefiltering support
+      var min_dist = new Dictionary<Location,int>();
+      var max_dist = new Dictionary<Location,int>();
+      int lb = int.MaxValue;
+      int ub = int.MaxValue;
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
         var dests = targets_at(m);
-        if (0 < dests.Count) foreach(var pt in dests) goals.Add(new Location(m,pt));
+        if (0 < dests.Count) {
+          foreach(var pt in dests) {
+            var loc = new Location(m,pt);
+            int dist = Rules.InteractionDistance(m_Actor.Location,loc);
+            if (int.MaxValue>dist) {
+              if (ub < dist) continue;    // reject
+              if (lb > dist) {  // could be closest; includes "first goal with valid denormalized coordinates"
+                lb = dist;
+                if (int.MaxValue/2 >= dist) {
+                  ub = 2*dist;
+                  List<Location> remove = null;
+                  foreach(var x in min_dist) {
+                    if (ub < x.Value) (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+                  }
+                  if (null != remove) foreach(var x in remove) {
+                    goals.Remove(x);
+                    min_dist.Remove(x);
+                    max_dist.Remove(x);
+                  }
+                }
+                min_dist[loc] = dist;
+                max_dist[loc] = ub;
+                goals.Add(loc);
+                continue;
+              }
+              min_dist[loc] = dist;
+              max_dist[loc] = (int.MaxValue/2 >= dist) ? 2*dist : int.MaxValue;
+              goals.Add(loc);
+              continue;
+            }
+            goals.Add(loc);
+          }
+        }
         already_seen.Add(m);
         return obtain_goals_cache[m] = dests;
       }
