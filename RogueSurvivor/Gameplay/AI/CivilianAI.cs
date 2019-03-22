@@ -6,7 +6,6 @@
 
 // #define TRACE_SELECTACTION
 // #define TIME_TURNS
-#define LAMBDA_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -840,12 +839,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 #endif
 
-        // 2019-01-31: range sorting is:, This map, other maps
+        // 2019-01-31: historical range sorting is:, This map, other maps [old implementation pruned 2019-03-18]
         // However, this equates the district entry map with the much smaller basement, and does not cope well with space-time scaling or the cross-district minimap
         // what would make sense is: local, radio range (minimap), "world" (last may not need immediate implementing, other maps may do for now)
         // local is the viewport for large maps, and the map for small maps (CHAR Underground base is "large" but does not cross-district path)
         // radio range is everything that fits on the minimap; distinct from local only for large maps
-#if LAMBDA_PATHING
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
         Func<Map,HashSet<Point>> pathing_targets = null;
@@ -935,158 +933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorPathTo(pathing_targets);
           if (null!=tmpAction) return tmpAction;
         }
-#else
-        if (!combat_unready) {
-          // hunt down threats -- works for police
-#if TIME_TURNS
-         timer.Restart();
-#endif
-#if TRACE_SELECTACTION
-         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ammo not critically low");
-#endif
-         tmpAction = BehaviorHuntDownThreatCurrentMap();
-#if TIME_TURNS
-         timer.Stop();
-         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorHuntDownThreatCurrentMap " + timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
-
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map: "+(tmpAction?.ToString() ?? "null"));
-#endif
-          if (null != tmpAction) return tmpAction;
-
-          // hunt down threats -- works for police
-          if (early_hunt_threat_other_maps) {
-#if TIME_TURNS
-         timer.Restart();
-#endif
-            tmpAction = BehaviorHuntDownThreatOtherMaps();
-#if TIME_TURNS
-         timer.Stop();
-         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorHuntDownThreatOtherMaps " + timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
-#endif
-            if (null != tmpAction) return tmpAction;
-          }
-        }
-
-        // tourism -- works for police
-        tmpAction = BehaviorTourismCurrentMap();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map: "+(tmpAction?.ToString() ?? "null"));
-#endif
-        if (null != tmpAction) return tmpAction;
-
-        if (generators_off?.Any() ?? false) {
-          tmpAction = BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
-          if (null != tmpAction) return tmpAction;
-        }
-
-        if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators) {
-          if (WantToRecharge()) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering recharge");
-#endif
-            FloodfillPathfinder<Point> navigate = PathfinderFor(m => new HashSet<Point>(m.PowerGenerators.Get.Select(obj => obj.Location.Position)));
-            tmpAction = BehaviorPathTo(navigate);
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering recharge: "+(tmpAction?.ToString() ?? "null"));
-#endif
-            if (null != tmpAction) return tmpAction;
-          }
-#if FAIL
-          if (WantToRechargeAtDawn()) {
-            FloodfillPathfinder<Point> navigate = PathfinderFor(m => new HashSet<Point>(m.PowerGenerators.Get.Select(obj => obj.Location.Position));
-            if (navigate.Cost(m_Actor.Location.Position) <= ...) {
-              tmpAction = BehaviorPathTo(navigate);
-              if (null != tmpAction) return tmpAction;
-            }
-          }
-#endif
-        }
-
-        if (0 < want.Count) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply (want)");
-#endif
-            tmpAction = BehaviorResupply(want);
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok: "+(tmpAction?.ToString() ?? "null"));
-#endif
-            if (null != tmpAction) return tmpAction;
-        }
-
-        if (!combat_unready && !early_hunt_threat_other_maps) {
-          // hunt down threats -- works for police
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHuntDownThreatOtherMaps");
-#endif
-            tmpAction = BehaviorHuntDownThreatOtherMaps();
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface: "+(tmpAction?.ToString() ?? "null"));
-#endif
-            if (null != tmpAction) return tmpAction;
-        }
-
-        // tourism -- works for police
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorTourismOtherMaps");
-#endif
-        tmpAction = BehaviorTourismOtherMaps();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, other map: "+(tmpAction?.ToString() ?? "null"));
-#endif
-        if (null != tmpAction) return tmpAction;
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "advanced pathing failed");
-#endif
-
-        // if we cannot do anyting constructive, hunt down threat even if critical shortage
-        if (combat_unready) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat even though unprepared");
-#endif
-          // hunt down threats -- works for police
-          tmpAction = BehaviorHuntDownThreatCurrentMap();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map: "+(tmpAction?.ToString() ?? "null"));
-#endif
-          if (null != tmpAction) return tmpAction;
-
-          // hunt down threats -- works for police
-          tmpAction = BehaviorHuntDownThreatOtherMaps();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- cannot prepare: " + (tmpAction?.ToString() ?? "null"));
-#endif
-          if (null != tmpAction) return tmpAction;
-        }
-#endif
-      } else {
-#if PROTOTYPE
-        // \todo if we have no legal steps (null == _legal_steps) then we should try to resolve this
-        var candidates = new List<Actor>();
-        if (null != friends_in_FOV) {
-          foreach(var x in friends_in_FOV) {
-            if (!Rules.IsAdjacent(x.Key,m_Actor.Location.Position)) continue;
-            if (x.Value.IsSleeping) continue;
-            if ((x.Value.Controller as OrderableAI)?.RejectSwap(m_Actor.Location) ?? true) {
-              if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(x.Value.Name+" should not have rejected swap");
-              continue;
-            }
-            if (RejectSwap(x.Value.Location)) {
-              if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(m_Actor.Name+" should not have rejected swap");
-              continue;
-            }
-            candidates.Add(x.Value);
-          }
-          if (0<candidates.Count) return new ActionSwitchPlaceEmergency(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(candidates));
-        }
-        // emergency switch place: any non-enemy actor will do.  Better if he/she wants to be where we are.  Possibly could be handled as part of pathing
-        // check for pathing moves, not just steps (push/pull that changes position would count)
-#endif
-            }
+      }
 #endregion
 
 	  if (null != friends) {

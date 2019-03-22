@@ -1117,31 +1117,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
     }
 
-    protected bool WantToRechargeAtDawn(ItemLight it)
-    {
-      int burn_time = 0;
-      int reserve = 0;
-      switch(it.Model.ID)
-      {
-      case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration;
-        reserve = 2*WorldTime.TURNS_PER_HOUR;
-        break;
-      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration;
-        reserve = WorldTime.TURNS_PER_HOUR;
-        break;
-#if DEBUG
-      default: throw new InvalidOperationException("Unhandled light type " + it.Model.ID.ToString());
-#else
-      default: return false;
-#endif
-      }
-      return it.Batteries-burn_time<reserve;
-    }
-
-    protected bool WantToRechargeAtDawn() {
-      return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRechargeAtDawn(it)) ?? false;
-    }
-
     // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
     public void OnRaid(RaidType raid, Location location, int turn)
     {
@@ -3298,77 +3273,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0< threats.ThreatWhere(m_Actor.Location.Map).Count;   // XXX could be more efficient?
     }
 
-    protected ActorAction BehaviorHuntDownThreatCurrentMap()
-    {
-      ThreatTracking threats = m_Actor.Threats;
-      if (null == threats) return null;
-      // 1) clear the current map, unless it's non-vintage sewers
-#if TIME_TURNS
-      Stopwatch timer = Stopwatch.StartNew();
-#endif
-      HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
-#if TIME_TURNS
-      timer.Stop();
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": obtain tainted "+timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
-      if (0 >= tainted.Count) return null;
-      // threat hunting has some unusual features relative to other types of pathing
-      // * we are guaranteed that no condidate squares are in our LOS
-      // * we would rather not end our move adjacent to threat if we have a ranged weapon
-      int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
-#if TIME_TURNS
-      timer.Restart();
-#endif
-      var near_tainted = new HashSet<Point>();
-      foreach(Point pt in tainted) {
-        if (fov+1 >= Rules.GridDistance(pt,m_Actor.Location.Position)) near_tainted.Add(pt);
-      }
-#if TIME_TURNS
-      timer.Stop();
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": near-tainted "+timer.ElapsedMilliseconds.ToString()+"ms, "+near_tainted.Count.ToString());
-#endif
-      if (0<near_tainted.Count) {
-        if (null == _legal_steps) return null;
-
-        var exposed = new Dictionary<Point,int>();
-        var safe_exposed = new Dictionary<Point,int>();
-#if TIME_TURNS
-        timer.Restart();
-#endif
-        foreach (Point pt in _legal_steps) {
-          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
-          los.IntersectWith(near_tainted);
-          if (0 >= los.Count) continue;
-          exposed[pt] = los.Count;
-          if (   m_Actor.RunIsFreeMove
-              || !los.Any(pt2 => Rules.IsAdjacent(pt2, pt))
-              || (m_Actor.Location.Map.GetMapObjectAtExt(pt) is DoorWindow door && door.IsClosed)) {
-            safe_exposed[pt] = los.Count;
-          }
-        }
-#if TIME_TURNS
-        timer.Stop();
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": safe_exposed "+timer.ElapsedMilliseconds.ToString()+"ms, "+safe_exposed.Count.ToString());
-#endif
-        if (0<safe_exposed.Count) return GreedyStep(safe_exposed);
-        if (0<exposed.Count) return GreedyStep(exposed);
-      }
-
-      // this call is measuring as significant CPU on the larger maps
-#if TIME_TURNS
-      timer.Restart();
-      {
-      var ret = BehaviorNavigate(tainted);
-      timer.Stop();
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": BehaviorNavigate "+timer.ElapsedMilliseconds.ToString()+"ms");
-      return ret;
-      }
-#else
-      if (2<=tainted.Count) NavigateFilter(tainted);
-      return BehaviorNavigate(tainted);
-#endif
-    }
-
     private HashSet<Point> PartialInvertLOS(HashSet<Point> tainted, Map m, int radius)
     {
       var ret = new HashSet<Point>(tainted);
@@ -3391,48 +3295,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == sights_to_see) return false;
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
       return 0<tainted.Count;   // XXX could be more efficient?
-    }
-
-    protected ActorAction BehaviorTourismCurrentMap()
-    {
-      LocationSet sights_to_see = m_Actor.InterestingLocs;
-      if (null == sights_to_see) return null;
-      // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
-      HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
-      if (0 >= tainted.Count) return null;
-      if (2<=tainted.Count) NavigateFilter(tainted);
-      return BehaviorNavigate(PartialInvertLOS(tainted, m_Actor.Location.Map, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)));
-    }
-
-    protected ActorAction BehaviorHuntDownThreatOtherMaps()
-    {
-      ThreatTracking threats = m_Actor.Threats;
-      if (null == threats) return null;
-
-      var tmp = BehaviorUseAdjacentStack();
-      if (null != tmp) return tmp;
-
-      HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
-      allies.IntersectWith(allies.Where(a => !a.HasLeader));
-      var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
-      covered.RemoveWhere(m => m==m.District.EntryMap);
-      return BehaviorPathTo(m => (covered.Contains(m) || (Session.Get.HasZombiesInSewers && m.District.SewersMap==m) ? new HashSet<Point>() : threats.ThreatWhere(m)));
-    }
-
-    // XXX sewers are not guaranteed to be fully connected, so we want reachable exits
-    protected ActorAction BehaviorTourismOtherMaps()
-    {
-      LocationSet sights_to_see = m_Actor.InterestingLocs;
-      if (null == sights_to_see) return null;
-
-      var tmp = BehaviorUseAdjacentStack();
-      if (null != tmp) return tmp;
-
-      HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
-      allies.IntersectWith(allies.Where(a => !a.HasLeader));
-      var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
-      covered.RemoveWhere(m => m==m.District.EntryMap);
-      return BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
     }
 
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)

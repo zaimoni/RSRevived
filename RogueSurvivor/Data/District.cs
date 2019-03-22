@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Data
     }
 
 
-    public bool HasAccessiblePowerGenerators {
+    public bool HasAccessiblePowerGenerators {  // \todo 2019-03-20: currently dead; unsure whether this is reusable or not
       get {
         if (0 < (m_SubwayMap?.PowerGenerators.Get.Count ?? 0)) return true;
         // The hospital doesn't count, here.
