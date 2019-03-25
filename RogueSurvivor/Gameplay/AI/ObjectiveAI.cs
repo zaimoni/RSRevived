@@ -1,6 +1,6 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
-// #define PREFILTER_GOALS
+#define PREFILTER_GOALS
 
 using System;
 using System.Collections.Generic;
@@ -1071,12 +1071,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
           Point dist = waypoint_bounds(new Location(m2, pt));
-          if (m2.IsInBounds(pt)) {
+          bool in_bounds = m2.IsInBounds(pt);
+          if (in_bounds) {
             dist.X += 1;
             dist.Y += 1;
           }
           if (ub < dist.X) return;
-          waypoint_dist[e.Location] = dist;
+          if (in_bounds) waypoint_dist[e.Location] = dist;
           ok_maps.Add(e.ToMap);
         });
         scheduled.AddRange(ok_maps);
