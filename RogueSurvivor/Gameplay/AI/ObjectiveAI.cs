@@ -1,5 +1,6 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
+// #define PREFILTER_GOALS
 
 using System;
 using System.Collections.Generic;
@@ -949,9 +950,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var obtain_goals_cache = new Dictionary<Map,HashSet<Point>>();
       // branch-bound prefiltering support
       var min_dist = new Dictionary<Location,int>();
-      var max_dist = new Dictionary<Location,int>();
       int lb = int.MaxValue;
       int ub = int.MaxValue;
+      // following was a significant de-optimization
+#if PREFILTER_GOALS
+      var waypoint_dist = new Dictionary<Location,Point>(); // X lower bound, Y upper bound
+      waypoint_dist[m_Actor.Location] = new Point(0,0);
+      bool last_waypoint_ok = false;
+
+      Point waypoint_bounds(Location loc) {
+        Point ret = new Point(int.MaxValue,int.MaxValue);
+        last_waypoint_ok = false;
+        foreach(var x in waypoint_dist) {
+          if (x.Key==loc) return x.Value;
+          int dist = Rules.InteractionDistance(x.Key,loc);
+          if (int.MaxValue <= dist || int.MaxValue - dist <= x.Value.X) continue;
+          last_waypoint_ok = true;
+          int lb_dist = dist + x.Value.X;
+          if (ub < lb_dist) continue;
+          if (ret.X < lb_dist) continue;
+          if (ret.X > dist) ret.X = dist;
+          int ub_dist = int.MaxValue;
+          if (int.MaxValue/2 >= dist && int.MaxValue-2*dist > x.Value.Y) ub_dist = 2*dist + x.Value.Y;
+          if (ret.Y > ub_dist) ret.Y = ub_dist;
+        }
+        return ret;
+      }
+#endif
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
@@ -959,6 +984,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < dests.Count) {
           foreach(var pt in dests) {
             var loc = new Location(m,pt);
+#if PREFILTER_GOALS
+            Point dist = waypoint_bounds(loc);
+            if (last_waypoint_ok) {
+              if (ub < dist.X) continue;
+              if (ub > dist.Y) {
+                ub = dist.Y;
+                List<Location> remove = null;
+                foreach(var x in min_dist) {
+                  if (ub < x.Value) (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+                }
+                if (null != remove) foreach(var x in remove) {
+                  goals.Remove(x);
+                  min_dist.Remove(x);
+                }
+              }
+              if (lb > dist.X) lb = dist.X;
+              if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
+            } else goals.Add(loc);
+#else
             int dist = Rules.InteractionDistance(m_Actor.Location,loc);
             if (int.MaxValue>dist) {
               if (ub < dist) continue;    // reject
@@ -973,20 +1017,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (null != remove) foreach(var x in remove) {
                     goals.Remove(x);
                     min_dist.Remove(x);
-                    max_dist.Remove(x);
                   }
                 }
                 min_dist[loc] = dist;
-                max_dist[loc] = ub;
                 goals.Add(loc);
                 continue;
               }
               min_dist[loc] = dist;
-              max_dist[loc] = (int.MaxValue/2 >= dist) ? 2*dist : int.MaxValue;
               goals.Add(loc);
               continue;
             }
             goals.Add(loc);
+#endif
           }
         }
         already_seen.Add(m);
@@ -1022,12 +1064,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } 
 
       void schedule_maps(Map m2) {
+#if PREFILTER_GOALS
+        var ok_maps = new HashSet<Map>();
+        m2.ForEachExit((pt,e) => {
+          if (already_seen.Contains(e.ToMap)) return;
+          if (scheduled.Contains(e.ToMap)) return;
+          if (null!=preblacklist && preblacklist(e.ToMap)) return;
+          Point dist = waypoint_bounds(new Location(m2, pt));
+          if (m2.IsInBounds(pt)) {
+            dist.X += 1;
+            dist.Y += 1;
+          }
+          if (ub < dist.X) return;
+          waypoint_dist[e.Location] = dist;
+          ok_maps.Add(e.ToMap);
+        });
+        scheduled.AddRange(ok_maps);
+#else
         foreach(Map m in m2.destination_maps.Get) {
           if (already_seen.Contains(m)) continue;
           if (scheduled.Contains(m)) continue;
           if (null!=preblacklist && preblacklist(m)) continue;
           scheduled.Add(m);
         }
+#endif
       }
 
       schedule_maps(dest);
