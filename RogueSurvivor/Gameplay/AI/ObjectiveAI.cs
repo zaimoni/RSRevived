@@ -1,6 +1,5 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
-#define PREFILTER_GOALS
 
 using System;
 using System.Collections.Generic;
@@ -953,7 +952,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int lb = int.MaxValue;
       int ub = int.MaxValue;
       // following was a significant de-optimization
-#if PREFILTER_GOALS
       var waypoint_dist = new Dictionary<Location,Point>(); // X lower bound, Y upper bound
       waypoint_dist[m_Actor.Location] = new Point(0,0);
       bool last_waypoint_ok = false;
@@ -976,7 +974,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return ret;
       }
-#endif
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
@@ -984,7 +981,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < dests.Count) {
           foreach(var pt in dests) {
             var loc = new Location(m,pt);
-#if PREFILTER_GOALS
             Point dist = waypoint_bounds(loc);
             if (last_waypoint_ok) {
               if (ub < dist.X) continue;
@@ -1002,33 +998,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (lb > dist.X) lb = dist.X;
               if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
             } else goals.Add(loc);
-#else
-            int dist = Rules.InteractionDistance(m_Actor.Location,loc);
-            if (int.MaxValue>dist) {
-              if (ub < dist) continue;    // reject
-              if (lb > dist) {  // could be closest; includes "first goal with valid denormalized coordinates"
-                lb = dist;
-                if (int.MaxValue/2 >= dist) {
-                  ub = 2*dist;
-                  List<Location> remove = null;
-                  foreach(var x in min_dist) {
-                    if (ub < x.Value) (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
-                  }
-                  if (null != remove) foreach(var x in remove) {
-                    goals.Remove(x);
-                    min_dist.Remove(x);
-                  }
-                }
-                min_dist[loc] = dist;
-                goals.Add(loc);
-                continue;
-              }
-              min_dist[loc] = dist;
-              goals.Add(loc);
-              continue;
-            }
-            goals.Add(loc);
-#endif
           }
         }
         already_seen.Add(m);
@@ -1064,7 +1033,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } 
 
       void schedule_maps(Map m2) {
-#if PREFILTER_GOALS
         var ok_maps = new HashSet<Map>();
         m2.ForEachExit((pt,e) => {
           if (already_seen.Contains(e.ToMap)) return;
@@ -1081,14 +1049,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ok_maps.Add(e.ToMap);
         });
         scheduled.AddRange(ok_maps);
-#else
-        foreach(Map m in m2.destination_maps.Get) {
-          if (already_seen.Contains(m)) continue;
-          if (scheduled.Contains(m)) continue;
-          if (null!=preblacklist && preblacklist(m)) continue;
-          scheduled.Add(m);
-        }
-#endif
       }
 
       schedule_maps(dest);
@@ -1101,8 +1061,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         scheduled.RemoveAt(0);
       }
-      // \todo 2019-01-04 BehaviorResupply is causing a substantial slowdown at Day 0 hour 3 onwards
-      // an obvious "prefilter" is to exclude goals that are "too distant" from the actor
       return goals;
     }
 
