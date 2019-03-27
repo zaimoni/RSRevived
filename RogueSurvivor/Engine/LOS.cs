@@ -163,13 +163,13 @@ namespace djack.RogueSurvivor.Engine
             do  {
                 start += tmp;
                 if (!fn(start.X, start.Y)) return false;
-                line?.Add(new Point(start.X, start.Y));
+                line?.Add(start);
                 }
             while (++i < actualRange);
             return start.X == xTo && start.Y == yTo;
             }
         Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
-        Point err = new Point(xTo - end.X, yTo - end.Y);
+        var err = new Point(xTo - end.X, yTo - end.Y);
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
 
