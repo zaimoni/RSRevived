@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept_<_T_> FilterNearest<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      return percepts.Minimize(p=>Rules.StdDistance(m_Actor.Location, p.Location));
+      return percepts.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
     }
 
     static private Percept_<AIScent> FilterStrongestScent(List<Percept_<AIScent>> scents)
