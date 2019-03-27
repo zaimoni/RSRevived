@@ -1869,7 +1869,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor leader = m_Actor.LiveLeader;
       var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
       Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
-      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
+      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;    // XXX \todo cross-map conversion
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);
@@ -1894,7 +1894,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor leader = m_Actor.LiveLeader;
       var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
       Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
-      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
+      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;    // XXX \todo cross-map conversion
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);

@@ -442,17 +442,16 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(pt => {
           Actor a = loc.Map.GetActorAtExt(pt);
           if (a?.IsSleeping ?? true) return;    // XXX \todo integrate loud noise wakeup here
-          if (a.Controller.CanSee(loc)) return;
-          if (Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
-          if (null != Player && Player == a) {
-            if (player_knows(a)) return;
-            AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
-            RedrawPlayScreen();
-            return;
-          }
+          if (a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
           if (a.Controller is PlayerController player) {
             if (player_knows(a)) return;
-            player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+            var msg = player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR);
+            if (null != Player && Player == a) {
+              AddMessage(msg);
+              RedrawPlayScreen();
+              return;
+            }
+            player.DeferMessage(msg);
             return;
           }
           // NPC ai hooks go here
@@ -478,10 +477,7 @@ namespace djack.RogueSurvivor.Engine
         }
       },pt=>{
         a = loc.Map.GetActorAtExt(pt);
-        if (a?.IsSleeping ?? true) return false;
-        if (Player == a) return false;
-        if (a.Controller.CanSee(loc)) return false;
-        return Rules.StdDistance(a.Location, loc) <= a.AudioRange;
+        return null!=a && !a.IsSleeping && Player!=a && !a.Controller.CanSee(loc) && Rules.StdDistance(a.Location, loc) <= a.AudioRange;
       });
     }
 
