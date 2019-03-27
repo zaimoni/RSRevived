@@ -1652,28 +1652,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       Dictionary<Point,Actor> friends = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
         Actor a = m.GetActorAtExt(pt);
-        if (a?.IsSleeping ?? true) return null;
-        return (m_Actor.IsEnemyOf(a) ? null : a);
+        return (null == a || a.IsSleeping || m_Actor.IsEnemyOf(a)) ? null : a;
       });
       if (0 >= friends.Count) return null;
       Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(friends).Value;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
-      string str2 = string.Format("{0} ago", (object) WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+      string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
       string text;
-      if (percept.Percepted is Actor)
-        text = string.Format("I saw {0} {1} {2}.", (object) (percept.Percepted as Actor).Name, (object) str1, (object) str2);
-      else if (percept.Percepted is Inventory) {
-        Inventory inventory = percept.Percepted as Inventory;
+      if (percept.Percepted is Actor old_a)
+        text = string.Format("I saw {0} {1} {2}.", old_a.Name, str1, str2);
+      else if (percept.Percepted is Inventory inventory) {
         if (inventory.IsEmpty) return null;
         Item it = game.Rules.DiceRoller.Choose(inventory.Items);
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
         if ((double) Rules.StdDistance(percept.Location, actorAt1.Location) <= (double) (2 + num)) return null;
         text = string.Format("I saw {0} {1} {2}.", it.AName, str1, str2);
-      } else {
-        if (!(percept.Percepted is string)) throw new InvalidOperationException("unhandled percept.Percepted type");
-        text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), str1, str2);
-      }
+      } else if (percept.Percepted is string str3) {
+        text = string.Format("I heard {0} {1} {2}!", str3, str1, str2);
+      } else throw new InvalidOperationException("unhandled percept.Percepted type");
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
