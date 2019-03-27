@@ -181,12 +181,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        IEnumerable<Point> tmp = _locs.Where(loc => loc.Map==m_Actor.Location.Map).Select(loc => loc.Position);
-        if (!tmp.Any()) return true;
-        tmp = tmp.Intersect(m_Actor.Controller.FOV);
+        var denorm = m_Actor.Location.Map.Denormalize(_locs);
+        if (null == denorm) return true;
+        IEnumerable<Point> tmp =  denorm.Select(loc => loc.Position).Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
         if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
-        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);
+        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(denorm,null);
         return true;
       }
 
@@ -1864,6 +1864,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (0 < ret.Count ? ret : null);
     }
 
+#if DEAD_FUNC
     public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals, HashSet<Point> LoF_reserve)
     {
       Actor leader = m_Actor.LiveLeader;
@@ -1888,8 +1889,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }, (a, b) => a > b);
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
+#endif
 
-    private ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
+    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
     {
       Actor leader = m_Actor.LiveLeader;
       var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);

@@ -394,6 +394,17 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+    public List<Location> Denormalize(IEnumerable<Location> locs)
+    {
+      if (null == locs) return null;
+      var ret = new List<Location>(locs.Count());
+      foreach(var x in locs) {
+        Location? test = Denormalize(x);
+        if (null != test) ret.Add(test.Value);
+      }
+      return 0<ret.Count ? ret : null;
+    }
+
     public bool IsInViewRect(Location loc, Rectangle view)
     {
       if (this != loc.Map) {
