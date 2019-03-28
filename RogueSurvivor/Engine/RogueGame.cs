@@ -9030,7 +9030,9 @@ namespace djack.RogueSurvivor.Engine
 
       // If cannot trade, outright give
       if (target.Inventory.IsFull) throw new InvalidOperationException(target.Name+"'s inventory full, cannot give "+gift.ToString());   // invariant failure
-        DoGiveItemTo(actor,target,gift);
+      // but if it's the *target's* turn, bundle that in to prevent a hard crash
+      if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
+      DoGiveItemTo(actor,target,gift);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)

@@ -552,12 +552,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var goals = new Dictionary<Point, int>{
             [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
           };
-          return (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
+          ActorAction head_for = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
+          if (null==head_for || !head_for.IsLegal()) {
+           _isExpired = true;
+            return null;
+          }
+          return head_for;
         }
 
         IEnumerable<Point> dest_pts = m_Actor.Location.Position.Adjacent().Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
         ActorAction ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
-        return (ret?.IsLegal() ?? false) ? ret : null;
+        if (null== ret || !ret.IsLegal()) {
+         _isExpired = true;
+          return null;
+        }
+        return ret;
       }
 
       public override string ToString()
@@ -2987,8 +2996,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != donate) {
                 // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
                 int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
-
-                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);
+                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);    // XXX \todo any reasonable action that stays in range 1 of the donor is fine
                 tmpAction = my_plan.Pathing();
                 if (null != tmpAction) {
                     // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
@@ -3015,7 +3023,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
                 int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
 
-                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);
+                var my_plan = new Goal_HintPathToActor(t0, m_Actor, donor, donate);    // XXX \todo any reasonable action that stays in range 1 of the donor is fine
                 tmpAction = my_plan.Pathing();
                 if (null != tmpAction) {    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
                     var your_plan = new Goal_HintPathToActor(t0, donor, m_Actor, donate);
