@@ -365,22 +365,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, goal);
-      ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
-      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) =>
-      {
+      Func<Point,Point,float> close_in = (ptA,ptB) => {
         if (ptA == ptB) return 0.0f;
         float num = (float)Rules.StdDistance(ptA, ptB);
-        if ((double) num >= (double) currentDistance) return float.NaN;
-        if (!imStarvingOrCourageous) {
+        return (num >= currentDistance) ? float.NaN : num;
+      };
+
+      ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
           int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA,m_Actor);
           if (trapsMaxDamage > 0) {
-            if (trapsMaxDamage >= m_Actor.HitPoints) return float.NaN;
-            num += MOVE_INTO_TRAPS_PENALTY;
+            return (trapsMaxDamage >= m_Actor.HitPoints) ? float.NaN : dist+ MOVE_INTO_TRAPS_PENALTY;
           }
-        }
-        return num;
+          return dist;
       });
+       
+      return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, close_in);
     }
 
     protected ActorAction BehaviorIntelligentBumpToward(Location goal, bool canCheckBreak, bool canCheckPush)
@@ -1257,6 +1258,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BREAK_BLOCKING_OBJECTS = 1,
       ATTACK_BLOCKING_ENEMIES = 2,
       DONT_BACKTRACK = 4,
+    }
+  }
+
+  internal static class ext_BaseAI
+  {
+    public static Func<Point, Point, float> Postprocess(this Func<Point, Point, float> src, Func<Point, Point, float, float> post)
+    {
+      if (null == post) {
+        Func<Point, Point, float> l = src;  // local copies needed to get true lambda calculus
+        return l;
+      }
+      float ret(Point ptA,Point ptB) {
+        float x = src(ptA,ptB);
+        if (!float.IsNaN(x)) x = post(ptA,ptB,x);
+        return x;
+      }
+      return ret;
     }
   }
 }
