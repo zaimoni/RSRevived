@@ -1300,7 +1300,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // if "safe" attack possible init danger in different/earlier loop
         }
       }
-      return ret;   // XXX \todo prone to causing crashes by including m_Actor.Location in the destination set which is invalid
+      ret.Remove(m_Actor.Location.Position);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
+      return ret;
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
@@ -1836,7 +1837,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return DoctrineRecoverSTA(Actor.STAMINA_MIN_FOR_ACTIVITY + Rules.STAMINA_COST_MELEE_ATTACK + tmp.StaminaPenalty);
 #endif
         }
-        tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);  // XXX \todo needs to use allied line of fire information if available (at least one caller has this precalculated)
+      // we want to allow moving *away* from the target if that unblocks lines of fire from allies (but keep in mind short-term memory overload)
+      // should be more careful about damaging traps
+        Func<Point,Point,float> close_in = (ptA,ptB) => {
+          if (ptA == ptB) return 0.0f;
+          if (0 < m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA, m_Actor)) return float.NaN; // just cancel the move
+          return (float)Rules.StdDistance(ptA, ptB);
+        };
+        var friends = friends_in_FOV;
+        if (null != friends) {
+          List<List<Point>> LoF = null;
+          foreach(var x in friends) {
+            var rw = (x.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
+            if (null == rw) continue;
+            // contrafactual fire test, with the best rw rather than the equipped rw (if any)
+            if (rw.Model.Attack.Range < Rules.GridDistance(x.Key, target.Location)) continue;
+            var line = new List<Point>();
+            if (!LOS.CanTraceHypotheticalFireLine(x.Key, target.Location.Position, rw.Model.Attack.Range, x.Value, line)) continue;
+            (LoF ?? (LoF = new List<List<Point>>())).Add(line);
+          }
+          if (null != LoF) {
+            close_in = close_in.Postprocess((ptA,ptB,dist) => {
+                foreach (var line in LoF) {
+                    if (line.Contains(ptA)) dist += 1;
+                }
+                return dist;
+            });
+          }
+        }
+        tmpAction = BehaviorBumpToward(target.Location, canCheckBreak, canCheckPush, close_in); // end inlining modifications to intelligent bumping toward
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;

@@ -344,6 +344,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    protected ActorAction BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
+    {
+      if (m_Actor.Location.Map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
+      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      if (null == test) return null;
+      return BehaviorBumpToward(test.Value.Position, canCheckBreak, canCheckPush, distanceFn);
+    }
+
     protected ActorAction BehaviorStupidBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) => {
