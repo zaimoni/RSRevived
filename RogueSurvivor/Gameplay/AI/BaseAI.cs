@@ -314,28 +314,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // alpha10 check special actions
           if (canCheckBreak) {
             MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
-            if (obj != null) {
-              if (m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
-            }
+            if (null != obj && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
           }
           if (canCheckPush) {
             MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
-            if (obj != null) {
-              if (m_Actor.CanPush(obj)) {
+            if (null != obj && m_Actor.CanPush(obj)) {
                 // push in a valid direction at random
                 List<Direction> validPushes = new List<Direction>(8);
                 foreach (Direction pushDir in Direction.COMPASS) {
                   if (obj.CanPushTo(obj.Location.Position + pushDir)) validPushes.Add(pushDir);
                 }
                 if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, RogueForm.Game.Rules.DiceRoller.Choose(validPushes));
-              }
             }
           }
 
           return null;
         }
-        if (next.Position == goal || IsValidMoveTowardGoalAction(a)) return a;
-        return null;
+        return (next.Position == goal || IsValidMoveTowardGoalAction(a)) ? a : null;
       }, (dir, action) => {
         Location next = m_Actor.Location + dir;
         float cost = distanceFn(next.Position, goal);

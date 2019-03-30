@@ -1300,7 +1300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // if "safe" attack possible init danger in different/earlier loop
         }
       }
-      return ret;
+      return ret;   // XXX \todo prone to causing crashes by including m_Actor.Location in the destination set which is invalid
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
@@ -1836,7 +1836,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return DoctrineRecoverSTA(Actor.STAMINA_MIN_FOR_ACTIVITY + Rules.STAMINA_COST_MELEE_ATTACK + tmp.StaminaPenalty);
 #endif
         }
-        tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);
+        tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);  // XXX \todo needs to use allied line of fire information if available (at least one caller has this precalculated)
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
