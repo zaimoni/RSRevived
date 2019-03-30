@@ -9022,6 +9022,8 @@ namespace djack.RogueSurvivor.Engine
       if (!target.IsPlayer) {
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
+          // but if it's the *target's* turn, bundle that in to prevent a hard crash
+          if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
           DoTrade(actor, trade, target, false);
           return;
         }
