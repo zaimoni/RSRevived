@@ -1787,7 +1787,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
         return new ActionTakeLead(m_Actor, target1);
       // need an after-action "hint" to the target on where/who to go to
-      if (!m_Actor.WillActAgainBefore(target1)) {
+      if (!m_Actor.WillActAgainBefore(target1) && null == (target1.Controller as OrderableAI)?.Goal<Goal_HintPathToActor>()) {
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
         (target1.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
       }
@@ -3018,6 +3018,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
                 if (!request.IsLegal()) continue;
                 if (1 >= dist) return request;
+                if (null!=(x.Key.Controller as ObjectiveAI).Goal<Goal_HintPathToActor>()) continue; // stacking this can backfire badly
                 min_dist = dist;
                 donor = x.Key;
                 donate = request;
@@ -3044,6 +3045,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
                 if (!request.IsLegal()) continue;
                 if (1 >= dist) return request;
+                if (null!=(x.Key.Controller as ObjectiveAI).Goal<Goal_HintPathToActor>()) continue; // stacking this can backfire badly
                 min_dist = dist;
                 donor = x.Key;
                 donate = request;
@@ -3089,7 +3091,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.FOLLOWING;
         m_Actor.TargetActor = actor;
         // need an after-action "hint" to the target on where/who to go to
-        if (!m_Actor.WillActAgainBefore(actor)) {
+        if (!m_Actor.WillActAgainBefore(actor) && null==(actor.Controller as OrderableAI)?.Goal<Goal_HintPathToActor>()) {
           int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
           (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor, new ActionTrade(actor,m_Actor)));    // AI disallowed from initiating trades with player so fine
         }
