@@ -757,6 +757,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
       legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
       src.OnlyIf(loc => legal_steps.ContainsKey(loc));
+      if (0 >= src.Count) return null;
 
       int min_cost = src.Values.Min();
       src.OnlyIf(val => min_cost>=val);
