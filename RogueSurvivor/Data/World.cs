@@ -45,6 +45,15 @@ namespace djack.RogueSurvivor.Data
     public int Size { get { return m_Size; } }
     public int CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
+    public bool InBounds(int x,int y) {
+      return 0 <= x && m_Size > x && 0 <= y && m_Size > y;
+    }
+    public bool InBounds(Point pt) {
+      return 0 <= pt.X && m_Size > pt.X && 0 <= pt.Y && m_Size > pt.Y;
+    }
+    public District At(Point pt) { return InBounds(pt) ? m_DistrictsGrid[pt.X, pt.Y] : null; }
+
+
     public District this[int x, int y]
     {
       get {
@@ -325,100 +334,139 @@ namespace djack.RogueSurvivor.Data
  All of C2, A3, and A1 can be scheduled.  In "standard" we would defer A1 until after C2 had been scheduled, but that is a "global"
  constraint.  We do want A1 run twice before B2 is run twice.
  */
-    private void ScheduleForAdvancePlay(District d)
+    private void ScheduleForAdvancePlay(District d, District origin=null)
     {
-      District irrational_caution = d; // so we don't write to a locked variable while it is locked
+      District irrational_caution = d; // retain original district for debugging purposes
 retry:
-      d = irrational_caution;
-      if (d == m_PlayerDistrict) return;
-      if (d == m_SimDistrict) return;
-      if (m_Ready.Contains(d)) return;
+      if (irrational_caution == m_PlayerDistrict) return;
+      if (irrational_caution == m_SimDistrict) return;
+      if (m_Ready.Contains(irrational_caution)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
-      int x = d.WorldPosition.X;
-      int y = d.WorldPosition.Y;
       District tmp = null;
 
-        int district_turn = d.EntryMap.LocalTime.TurnCounter;
-        // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
-        tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
+      int district_turn = irrational_caution.EntryMap.LocalTime.TurnCounter;
+      // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
+      tmp = At(irrational_caution.WorldPosition+Direction.NW);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
         // district 1 north must be at a strictly later gametime to not be lagged relative to us
-        tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 northeast must be at a strictly later gametime to not be lagged relative to us
-        tmp = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 west must be at a strictly later gametime to not be lagged relative to us
-        tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 east must not be too far behind us
-        tmp = (m_Size > x + 1 ? m_DistrictsGrid[x + 1,y] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 southwest must not be too far behind us
-        tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 south must not be too far behind us
-        tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
-        // district 1 southeast must not be too far behind us
-        tmp = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1,y + 1] : null);
-        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-          irrational_caution = tmp;
-          goto retry;
-        }
+      tmp = At(irrational_caution.WorldPosition+Direction.N);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 northeast must be at a strictly later gametime to not be lagged relative to us
+      tmp = At(irrational_caution.WorldPosition+Direction.NE);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 west must be at a strictly later gametime to not be lagged relative to us
+      tmp = At(irrational_caution.WorldPosition+Direction.W);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 east must not be too far behind us
+      tmp = At(irrational_caution.WorldPosition+Direction.E);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 southwest must not be too far behind us
+      tmp = At(irrational_caution.WorldPosition+Direction.SW);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 south must not be too far behind us
+      tmp = At(irrational_caution.WorldPosition+Direction.S);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
+      // district 1 southeast must not be too far behind us
+      tmp = At(irrational_caution.WorldPosition+Direction.SE);
+      if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+#if DEBUG
+        if (tmp==d) throw new InvalidOperationException("causality loop through "+d.Name+" closed by "+irrational_caution.Name);
+        if (tmp==origin) throw new InvalidOperationException("causality loop through "+origin.Name+" closed by "+irrational_caution.Name);
+#endif
+        irrational_caution = tmp;
+        goto retry;
+      }
 
-        // we're clear.
-        m_Ready.Enqueue(d);
+      // we're clear.
+      m_Ready.Enqueue(irrational_caution);
     }
 
     public void ScheduleAdjacentForAdvancePlay(District d)
     {
       // d.WorldPosition is morally readonly
-      int x = d.WorldPosition.X;
-      int y = d.WorldPosition.Y;
-      District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
-      District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+      District tmp_E = At(d.WorldPosition + Direction.E);
+      District tmp_SW = At(d.WorldPosition + Direction.SW);
 #if FAIL
-      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
-      District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
-      District tmp_W = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
-      District tmp_S = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
-      District tmp_NE = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
-      District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
+      District tmp_NW = ...;
+      District tmp_N = ...;
+      District tmp_W = ...;
+      District tmp_S = ...;
+      District tmp_NE = ...;
+      District tmp_SE = ...;
 #endif
 
       lock(m_Ready) {
+#if DEBUG
+        if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
+#endif
         Interlocked.CompareExchange(ref m_PlayerDistrict, null, d);
         Interlocked.CompareExchange(ref m_SimDistrict, null, d);
         // the ones that would typically be scheduled
-        if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
-        if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
+        if (null != tmp_E) ScheduleForAdvancePlay(tmp_E,d);
+#if DEBUG
+        if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
+#endif
+        if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW, d);
+#if DEBUG
+        if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
+#endif
 #if OBSOLETE
         if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);	// XXX causes global vs. local time skew
 #else
-		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
+		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0], d);
+#if DEBUG
+        if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
+#endif
 #endif
 
         // backstops
