@@ -671,7 +671,7 @@ namespace djack.RogueSurvivor.Data
     if (null == target) throw new ArgumentNullException(nameof(target));
     if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
 #endif
-    Attack attack = RangedAttack(Rules.GridDistance(Location,target.Location),target);
+    Attack attack = RangedAttack(Rules.InteractionDistance(Location,target.Location),target);
     Defence defence = target.Defence;
 
     int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
@@ -688,7 +688,7 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
+      if (CurrentRangedAttack.Range+1 < Rules.InteractionDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (target.IsDead) return "already dead!";
       return "";
@@ -714,7 +714,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      if (range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
+      if (range+1 < Rules.InteractionDistance(Location, target.Location)) return "out of range";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -738,9 +738,10 @@ namespace djack.RogueSurvivor.Data
 #endif
       LoF?.Clear();
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range < Rules.GridDistance(Location, target.Location)) return "out of range";
+      int dist = Rules.InteractionDistance(Location, target.Location);
+      if (CurrentRangedAttack.Range < dist) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (!LOS.CanTraceFireLine(Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (1<dist && !LOS.CanTraceFireLine(Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -768,8 +769,9 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       LoF?.Clear();
-      if (range < Rules.GridDistance(Location, target.Location)) return "out of range";
-      if (!LOS.CanTraceFireLine(Location, target.Location, range, LoF)) return "no line of fire";
+      int dist = Rules.InteractionDistance(Location, target.Location);
+      if (range < dist) return "out of range";
+      if (1<dist && !LOS.CanTraceFireLine(Location, target.Location, range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
