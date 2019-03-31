@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define SCHEDULER_IS_RACY
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -341,154 +339,58 @@ retry:
       int y = d.WorldPosition.Y;
       District tmp = null;
 
-#if SCHEDULER_IS_RACY
-#else
-      lock(d) {
-#endif
         int district_turn = d.EntryMap.LocalTime.TurnCounter;
         // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
         tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 north must be at a strictly later gametime to not be lagged relative to us
         tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 northeast must be at a strictly later gametime to not be lagged relative to us
         tmp = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 west must be at a strictly later gametime to not be lagged relative to us
         tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 east must not be too far behind us
         tmp = (m_Size > x + 1 ? m_DistrictsGrid[x + 1,y] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 southwest must not be too far behind us
         tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 south must not be too far behind us
         tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
         // district 1 southeast must not be too far behind us
         tmp = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1,y + 1] : null);
-#if SCHEDULER_IS_RACY
         if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
           irrational_caution = tmp;
           goto retry;
         }
-#else
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-#endif
 
         // we're clear.
         m_Ready.Enqueue(d);
-#if SCHEDULER_IS_RACY
-#else
-      }
-#endif
     }
 
     public void ScheduleAdjacentForAdvancePlay(District d)
@@ -510,7 +412,6 @@ retry:
       lock(m_Ready) {
         Interlocked.CompareExchange(ref m_PlayerDistrict, null, d);
         Interlocked.CompareExchange(ref m_SimDistrict, null, d);
-
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
         if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
