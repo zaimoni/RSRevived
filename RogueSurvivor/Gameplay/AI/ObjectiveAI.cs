@@ -618,6 +618,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
 
 	  List<Point> tmp = src.Where(pt => legal_steps.ContainsKey(pt)).ToList();
+      if (0 >= tmp.Count) return null;
       if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 
 	  // do not get in the way of allies' line of fire
