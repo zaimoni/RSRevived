@@ -1860,6 +1860,7 @@ namespace djack.RogueSurvivor.Engine
       lock (district) {
       bool IsPCdistrict = (0 < district.PlayerCount);
 
+      do {
       foreach(Map current in district.Maps) {
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
@@ -1870,12 +1871,9 @@ namespace djack.RogueSurvivor.Engine
           if (!m_IsGameRunning || m_HasLoadedGame || (IsPCdistrict && 0>=Session.Get.World.PlayerCount)) return;
         }
       }
+      } while(!district.ReadyForNextTurn);  // do-while prevents time skew at world level
 
-      if (district.ReadyForNextTurn) {
-        foreach(Map current in district.Maps) {
-          NextMapTurn(current, sim);
-        }
-      }
+      foreach(Map current in district.Maps) NextMapTurn(current, sim);
 
       // XXX message generation wrappers do not have access to map time, only world time
       // XXX this set of messages must execute only once
