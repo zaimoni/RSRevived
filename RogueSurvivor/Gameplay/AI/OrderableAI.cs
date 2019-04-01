@@ -571,7 +571,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public override string ToString()
       {
-        return "Pathing to "+_dest.Name;
+        return "Pathing to "+_dest.Name + " for " + (_when_at_target?.ToString() ?? "null");
       }
     }
 
