@@ -8,7 +8,6 @@
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TIME_TURNS
-#define NEW_GOAL_TERMINATE
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -102,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
         // XXX need some sense of what a combat action is
-        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+        if (null != m_Actor.Controller.enemies_in_FOV) return false;
        _isExpired = true;
         if (Intent.IsLegal()) ret = Intent;
         return true;
@@ -454,7 +453,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+        if (m_Actor.Controller.InCombat) return false;
 
         var at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
         if (null != at_target) {
@@ -537,7 +536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
-        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+        if (m_Actor.Controller.InCombat) return false;
         if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
           ret = _when_at_target ?? new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;

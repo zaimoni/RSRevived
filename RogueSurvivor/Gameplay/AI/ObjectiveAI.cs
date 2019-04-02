@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+      if (null != m_Actor.Controller.enemies_in_FOV) return false;
       if (m_Actor.CanActNextTurn) return false;
       ret = new ActionWait(m_Actor);
       return true;
@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
-      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+      if (null != m_Actor.Controller.enemies_in_FOV) {
         _isExpired = true;
         return true;
       }
@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
-      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+      if (null != m_Actor.Controller.enemies_in_FOV) {
         _isExpired = true;
         return true;
       }
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
-      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+      if (null != m_Actor.Controller.enemies_in_FOV) {
         _isExpired = true;
         return true;
       }
@@ -162,7 +162,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
-      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+      if (null != m_Actor.Controller.enemies_in_FOV) {
         _isExpired = true;
         return true;
       }
@@ -220,6 +220,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Objectives.Insert(0,src);
     }
 #endif
+
+    public override bool InCombat { get {
+      if (base.InCombat) return true;
+      // \todo also check for threat tainting within view rectangle (this may want to harness the sparse AI cache)
+      return null!=Goal<Goal_Terminate>();
+    } }
+
 
     public void ResetAICache()
     {

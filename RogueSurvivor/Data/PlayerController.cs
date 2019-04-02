@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Data
     public List<string> GetValidSelfOrders()
     { 
       var ret = new List<string>();
-      bool in_combat = (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0));
+      bool in_combat = (null!=m_Actor.Controller.enemies_in_FOV);   // not using InCombat getter as we don't want to be that draconian
 
       if (!in_combat) {
       if (m_Actor.IsTired && null == enemies_in_FOV) ret.Add("Rest in place");

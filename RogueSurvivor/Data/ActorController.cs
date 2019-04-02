@@ -112,6 +112,10 @@ namespace djack.RogueSurvivor.Data
     public abstract Dictionary<Location, Actor> enemies_in_FOV { get; }
     public virtual Dictionary<Location, Inventory> items_in_FOV { get { return null; } }
 
+    public virtual bool InCombat { get {
+      return null!=enemies_in_FOV;
+    } }
+
     public bool CanSee(Location x)  // correctness requires Location being value-copied
     {
       if (null == m_Actor) return false;
