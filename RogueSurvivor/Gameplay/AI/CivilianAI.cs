@@ -287,6 +287,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == enemies) AdviseFriendsOfSafety();
 
+      // \todo change target for using Goal_CombatNextAction to short-circuit unhealthy cowardice
+      // this action tests whether enemies are in sight and chooses which action to take based on this
+      // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
+
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 #if TIME_TURNS
         timer.Restart();
