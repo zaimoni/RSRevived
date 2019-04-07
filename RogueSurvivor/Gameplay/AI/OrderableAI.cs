@@ -109,6 +109,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
+    internal class Goal_NextCombatAction : Objective
+    {
+        public readonly ActorAction Intent_engaged;
+        public readonly ActorAction Intent_disengaged;
+
+        public Goal_NextCombatAction(int t0, Actor who, ActorAction engaged, ActorAction disengaged)
+        : base(t0, who)
+        {
+#if DEBUG
+            if (null == engaged && null==disengaged) throw new ArgumentNullException(nameof(engaged)+"; "+nameof(disengaged));
+#endif
+            Intent_engaged = engaged;
+            Intent_disengaged = disengaged;
+        }
+
+        // always execute.  Expire on execution
+        public override bool UrgentAction(out ActorAction ret)
+        {
+            ret = null;
+            _isExpired = true;
+            var test = m_Actor.Controller.enemies_in_FOV;
+            if (null == test) {
+                if (null != Intent_disengaged && Intent_disengaged.IsLegal()) ret = Intent_disengaged;  // \todo may need to call auxilliary function instead
+            } else {
+                if (null != Intent_engaged && Intent_engaged.IsLegal()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead
+            }
+            return true;
+        }
+    }
+
+    [Serializable]
     internal class Goal_LastAction<T> : Objective
     {
       public readonly T Intent;
