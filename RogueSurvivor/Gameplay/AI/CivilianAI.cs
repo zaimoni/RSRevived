@@ -838,7 +838,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         HashSet<Gameplay.GameItems.IDs> want = (null != items ? WhatDoIWantNow() : new HashSet<Gameplay.GameItems.IDs>());    // non-emergency things
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         if (null != items) want.IntersectWith(items);
-        bool early_hunt_threat_other_maps = (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap && 0 >= want.Count);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 #endif

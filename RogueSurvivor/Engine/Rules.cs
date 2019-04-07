@@ -851,11 +851,6 @@ namespace djack.RogueSurvivor.Engine
       return RollChance(trap.TriggerChanceFor(a));
     }
 
-    public bool CheckTrapTriggers(ItemTrap trap, MapObject mobj)
-    {
-      return RollChance(trap.Model.TriggerChance * mobj.Weight);
-    }
-
     public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
     {
       int breakChance = trap.Model.BreakChance;

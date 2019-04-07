@@ -1399,37 +1399,6 @@ restart:
       }
     }
 
-    protected ActorAction GreedyStep(Dictionary<Point, int> move_scores)
-    {
-#if DEBUG
-      if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
-#endif
-      var ret = new List<KeyValuePair<Point, int>>();
-      foreach(var x in move_scores) {
-        if (0 >= ret.Count || ret[0].Value==x.Value) {
-          ret.Add(x);
-          continue;
-        }
-        if (ret[0].Value > x.Value) continue;
-        ret.Clear();
-        ret.Add(x);
-      }
-
-      var dests = new List<Point>();
-      foreach(var x in ret) dests.Add(x.Key);
-
-      ActorAction tmp = DecideMove(dests);
-#if DEBUG
-      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
-#endif
-      if (tmp is ActionMoveStep test) {
-        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
-        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-        ReserveSTA(0,0,0,0);
-      }
-      return tmp;
-    }
-
     protected ActorAction GreedyStep(Dictionary<Location, int> move_scores)
     {
 #if DEBUG
@@ -2023,7 +1992,6 @@ restart_single_exit:
         if (null == friends_in_FOV) return false;
         var TradeableItems = GetTradeableItems();
         if (0>=(TradeableItems?.Count ?? 0)) return false;
-        Map map = m_Actor.Location.Map;
 
         foreach(var x in friends_in_FOV) {
           if (x.Value.IsDead) continue;
@@ -2557,24 +2525,18 @@ restart_single_exit:
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
-        if (lhs is BatteryPowered)
-          {
-          return ((lhs as BatteryPowered).Batteries < (rhs as BatteryPowered).Batteries);
-          }
-        else if (lhs is ItemFood && (lhs as ItemFood).IsPerishable)
+        if (lhs is BatteryPowered lhs_batt) return (lhs_batt.Batteries < (rhs as BatteryPowered).Batteries);
+        else if (lhs is ItemFood lhs_food && lhs_food.IsPerishable)
           { // complicated
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+          int lhs_nutrition = lhs_food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
           int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
           if (lhs_nutrition==rhs_nutrition) return false;
           if (need < lhs_nutrition && need >= rhs_nutrition) return true;
           if (need < rhs_nutrition && need >= lhs_nutrition) return false;
           return lhs_nutrition < rhs_nutrition;
           }
-        else if (lhs is ItemRangedWeapon)
-          {
-          return ((lhs as ItemRangedWeapon).Ammo < (rhs as ItemRangedWeapon).Ammo);
-          }
+        else if (lhs is ItemRangedWeapon lhs_rw) return (lhs_rw.Ammo < (rhs as ItemRangedWeapon).Ammo);
         return false;
       }
 
@@ -3110,10 +3072,10 @@ restart_single_exit:
         }
         return true;
       }
-      if (it is ItemBodyArmor) {
+      if (it is ItemBodyArmor new_armor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
-        return armor.Rating < (it as ItemBodyArmor).Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
+        return armor.Rating < new_armor.Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
 
       // No specific heuristic.

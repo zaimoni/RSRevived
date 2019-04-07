@@ -1192,7 +1192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemBodyArmor) return obj as ItemBodyArmor;
+        if (obj.IsEquipped && obj is ItemBodyArmor armor) return armor;
       }
       return null;
     }
@@ -1883,7 +1883,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // contrafactual fire test, with the best rw rather than the equipped rw (if any)
             if (rw.Model.Attack.Range < Rules.GridDistance(x.Key, target.Location)) continue;
             var line = new List<Point>();
-            if (!LOS.CanTraceHypotheticalFireLine(x.Key, target.Location.Position, rw.Model.Attack.Range, x.Value, line)) continue;
+            if (!LOS.CanTraceHypotheticalFireLine(x.Key, target.Location, rw.Model.Attack.Range, x.Value, line)) continue;
             (LoF ?? (LoF = new List<List<Point>>())).Add(line);
           }
           if (null != LoF) {
@@ -2073,13 +2073,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
       Actor enemy = target.Percepted as Actor;
-
-      // alpha10
-      Attack enemyAttack = (enemy.GetEquippedWeapon() is ItemRangedWeapon) ? enemy.CurrentRangedAttack : enemy.CurrentMeleeAttack;   // get enemy attack
-
-      // get safe range from enemy, just out of his reach.
-      int safeRange = Math.Max(2, enemyAttack.Range + 1);  // melee attack range is 0 not 1!
-      int distToEnemy = Rules.InteractionDistance(m_Actor.Location, enemy.Location);
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);
@@ -2441,18 +2434,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>=SleepLocationRating(m_Actor.Location)) {
         return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
       }
-      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (m_Actor.IsOnCouch) {
-        if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
-        return new ActionSleep(m_Actor);
+      if (!m_Actor.IsOnCouch) { // head for a couch if in plain sight
+        ActorAction tmpAction = BehaviorEfficientlyHeadFor(couches);
+        if (null != tmpAction) return tmpAction;
       }
-
-      // head for a couch if in plain sight
-      ActorAction tmpAction = BehaviorEfficientlyHeadFor(couches);
-      if (null != tmpAction) return tmpAction;
 
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
+      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(m_Actor);
     }
@@ -3166,7 +3155,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActionSwitchPlace) return true;
       if (act is ActionOpenDoor) return true;
       if (act is ActionBashDoor) return true;
-      if (act is ActionMoveStep) return true;
       if (act is ActionBreak) return true;
       if (act is ActionPush) return true;
       if (act is ActionShove) return true;

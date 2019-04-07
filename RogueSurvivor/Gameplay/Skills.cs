@@ -35,11 +35,6 @@ namespace djack.RogueSurvivor.Gameplay
       return s_Names[(int) id];
     }
 
-    public static string Name(int id)
-    {
-      return Skills.Name((Skills.IDs) id);
-    }
-
     public static int MaxSkillLevel(Skills.IDs id)
     {
       return id == Skills.IDs.HAULER ? 3 : 5;

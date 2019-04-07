@@ -3958,9 +3958,6 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
       if (inventoryItem != null) {
         string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
-        int num = 1 + FindLongestLine(lines);
-        int x = itemPos.X - 7 * num;
-        int y = itemPos.Y + TILE_SIZE;
         AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
         if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
@@ -4041,9 +4038,6 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(corpsePos.X + 1, corpsePos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
 
       string[] lines = DescribeCorpseLong(corpse, true);
-      int num = 1 + FindLongestLine(lines);
-      int x = corpsePos.X - 7 * num;
-      int y = corpsePos.Y + TILE_SIZE;
       AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
       if (mouseButtons.HasValue) {
         if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBCorpse(corpse);
@@ -6880,12 +6874,12 @@ namespace djack.RogueSurvivor.Engine
       if (obj.FireState == MapObject.Fire.ONFIRE) stringBuilder.Append("On fire! ");
       else if (obj.FireState == MapObject.Fire.ASHES) stringBuilder.Append("Burnt to ashes! ");
       stringList.Add(stringBuilder.ToString());
-      if (obj is PowerGenerator) {
-        stringList.Add((obj as PowerGenerator).IsOn ? "Currently ON." : "Currently OFF.");
+      if (obj is PowerGenerator power) {
+        stringList.Add(power.IsOn ? "Currently ON." : "Currently OFF.");
         stringList.Add(string.Format("The power gauge reads {0}%.", (int)(100.0 * obj.Location.Map.PowerRatio)));
-      } else if (obj is Board) {
+      } else if (obj is Board bb) {
         stringList.Add("The text reads : ");
-        stringList.AddRange((obj as Board).Text);
+        stringList.AddRange(bb.Text);
       }
       if (obj.MaxHitPoints > 0) {
         stringList.Add(obj.HitPoints < obj.MaxHitPoints
@@ -7010,35 +7004,35 @@ namespace djack.RogueSurvivor.Engine
         lines.Add(DescribeItemShort(it));
       if (it.Model.IsUnbreakable) lines.Add("Unbreakable.");
       string inInvAdditionalDesc = null;
-      if (it is ItemWeapon) {
-        lines.AddRange(DescribeItemWeapon(it as ItemWeapon));
+      if (it is ItemWeapon w) {
+        lines.AddRange(DescribeItemWeapon(w));
         if (it is ItemRangedWeapon) inInvAdditionalDesc = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
-      else if (it is ItemFood) lines.AddRange(DescribeItemFood(it as ItemFood));
-      else if (it is ItemMedicine) lines.AddRange(DescribeItemMedicine(it as ItemMedicine));
-      else if (it is ItemBarricadeMaterial) {
-        lines.AddRange(DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
+      else if (it is ItemFood food) lines.AddRange(DescribeItemFood(food));
+      else if (it is ItemMedicine med) lines.AddRange(DescribeItemMedicine(med));
+      else if (it is ItemBarricadeMaterial bar) {
+        lines.AddRange(DescribeItemBarricadeMaterial(bar));
         inInvAdditionalDesc = string.Format("to build : <{0}>/<{1}>/<{2}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
-      } else if (it is ItemBodyArmor) lines.AddRange(DescribeItemBodyArmor(it as ItemBodyArmor));
-      else if (it is ItemSprayPaint) {
-        lines.AddRange(DescribeItemSprayPaint(it as ItemSprayPaint));
+      } else if (it is ItemBodyArmor armor) lines.AddRange(DescribeItemBodyArmor(armor));
+      else if (it is ItemSprayPaint spray) {
+        lines.AddRange(DescribeItemSprayPaint(spray));
         inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
-      } else if (it is ItemSprayScent) {
-        lines.AddRange(DescribeItemSprayScent(it as ItemSprayScent));
+      } else if (it is ItemSprayScent sscent) {
+        lines.AddRange(DescribeItemSprayScent(sscent));
         inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
-      } else if (it is ItemLight) lines.AddRange(DescribeItemLight(it as ItemLight));
-      else if (it is ItemTracker) lines.AddRange(DescribeItemTracker(it as ItemTracker));
-      else if (it is ItemAmmo) {
-        lines.AddRange(DescribeItemAmmo(it as ItemAmmo));
+      } else if (it is ItemLight light) lines.AddRange(DescribeItemLight(light));
+      else if (it is ItemTracker track) lines.AddRange(DescribeItemTracker(track));
+      else if (it is ItemAmmo ammo) {
+        lines.AddRange(DescribeItemAmmo(ammo));
         inInvAdditionalDesc = "to reload : left-click.";
-      } else if (it is ItemExplosive) {
-        lines.AddRange(DescribeItemExplosive(it as ItemExplosive));
+      } else if (it is ItemExplosive ex) {
+        lines.AddRange(DescribeItemExplosive(ex));
         inInvAdditionalDesc = string.Format("to throw : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
       else if (it is ItemTrap trap) {
         lines.AddRange(DescribeItemTrap(trap));
         inInvAdditionalDesc = (trap.Model.ActivatesWhenDropped ? "to activate trap : drop it" : "to activate trap : use it");   // alpha10
-      } else if (it is ItemEntertainment) lines.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
+      } else if (it is ItemEntertainment ent) lines.AddRange(DescribeItemEntertainment(ent));
       lines.Add(" ");
       lines.Add(it.Model.FlavorDescription);
       if (isPlayerInventory) {
@@ -9162,11 +9156,11 @@ namespace djack.RogueSurvivor.Engine
       // alpha10 defrag ai inventories
       bool defragInventory = !actor.IsPlayer && it.Model.IsStackable;
 
-      if (it is ItemFood) DoUseFoodItem(actor, it as ItemFood);
-      else if (it is ItemMedicine) DoUseMedicineItem(actor, it as ItemMedicine);
-      else if (it is ItemAmmo) DoUseAmmoItem(actor, it as ItemAmmo);
-      else if (it is ItemTrap) DoUseTrapItem(actor, it as ItemTrap);
-      else if (it is ItemEntertainment) DoUseEntertainmentItem(actor, it as ItemEntertainment);
+      if (it is ItemFood food) DoUseFoodItem(actor, food);
+      else if (it is ItemMedicine med) DoUseMedicineItem(actor, med);
+      else if (it is ItemAmmo am) DoUseAmmoItem(actor, am);
+      else if (it is ItemTrap trap) DoUseTrapItem(actor, trap);
+      else if (it is ItemEntertainment ent) DoUseEntertainmentItem(actor, ent);
 
       // alpha10 defrag ai inventories
       if (defragInventory) actor.Inventory.Defrag();
@@ -11405,11 +11399,6 @@ namespace djack.RogueSurvivor.Engine
         DrawItem(it, screen.X, screen.Y, tint);
     }
 
-    public void DrawMapIcon(Point position, string imageID)
-    {
-      m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
-    }
-
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
     {
       DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
@@ -11759,11 +11748,10 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, gx2, gy2);
           else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, gx2, gy2);
-        } else if (it is ItemTrap) {
-          string trap_status = TrapStatusIcon(it as ItemTrap);
+        } else if (it is ItemTrap trap) {
+          string trap_status = TrapStatusIcon(trap);
           if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx2, gy2);
-        }
-        else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
+        } else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
         DrawItem(it, gx2, gy2);
         if (++num2 >= slotsPerLine) {

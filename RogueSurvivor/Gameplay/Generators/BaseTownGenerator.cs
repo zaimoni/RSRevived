@@ -486,7 +486,7 @@ restart:
     }
 
     // N-S and E-W rails use this as their reference point.
-    private Point SubwayRail(District d) {
+    static private Point SubwayRail(District d) {
       // original version was reading the incoming dimensions off of the incoming entryMap
       // but this was simply the district size
       int deviate_at = Session.Get.World.CitySize-1;

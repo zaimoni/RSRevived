@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Data
       if (0 >= --it.Quantity) m_Items.Remove(it);
     }
 
-    private int AddToStack(Item from, int addThis, Item to)
+    static private int AddToStack(Item from, int addThis, Item to)
     {
       int num = 0;
       for (; addThis > 0 && to.Quantity < to.Model.StackingLimit; --addThis) {

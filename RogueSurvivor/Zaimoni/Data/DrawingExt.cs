@@ -472,8 +472,6 @@ namespace Zaimoni.Data
     {
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
-      var l = lhs;  // local copies needed to get true lambda calculus
-      var r = rhs;
       V ret(T src) {
         return lhs(rhs(src));
       }

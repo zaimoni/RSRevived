@@ -3005,8 +3005,8 @@ namespace djack.RogueSurvivor.Data
       } else if (it is ItemSprayScent) {
         if (it.IsUseless) return "no spray left.";
 #endif
-      } else if (it is ItemTrap) {
-        if (!(it as ItemTrap).Model.UseToActivate) return "does not activate manually";
+      } else if (it is ItemTrap trap) {
+        if (!trap.Model.UseToActivate) return "does not activate manually";
       } else if (it is ItemEntertainment ent) {
         if (!Model.Abilities.IsIntelligent) return "not intelligent";
         if (ent.IsBoringFor(this)) return "bored by this";
@@ -3076,7 +3076,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || Inventory == null) return "no inventory";
       if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
-      if (it is ItemTrap && (it as ItemTrap).IsTriggered) return "triggered trap";
+      if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
       return "";
     }
 
@@ -3400,8 +3400,8 @@ namespace djack.RogueSurvivor.Data
         m_CurrentDefence += (it.Model as ItemBodyArmorModel).ToDefence();
         return;
       }
-      if (it is BatteryPowered) {
-        --(it as BatteryPowered).Batteries;
+      if (it is BatteryPowered powered) {
+        --powered.Batteries;
         if (it is ItemLight) Controller.UpdateSensors();
         return;
       }

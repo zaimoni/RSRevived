@@ -39,9 +39,6 @@ namespace djack.RogueSurvivor.Data
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
-    [NonSerialized]
-    private Dictionary<Map, HashSet<Point>> m_BlankPositionDict;
-
     public int Size { get { return m_Size; } }
     public int CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 

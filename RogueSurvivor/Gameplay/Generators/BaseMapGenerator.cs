@@ -265,11 +265,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         DressCivilian(roller, actor, FEMALE_EYES, FEMALE_SKINS, FEMALE_HEADS, FEMALE_TORSOS, FEMALE_LEGS, FEMALE_SHOES);
     }
 
-    public void DressCivilian(Actor actor)
-    {
-      DressCivilian(m_DiceRoller,actor);
-    }
-
     static protected void SkinNakedHuman(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)

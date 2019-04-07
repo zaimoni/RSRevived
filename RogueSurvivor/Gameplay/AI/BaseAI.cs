@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
             float cost = 0;
 
-            if (action is ActionBump) action = (action as ActionBump).ConcreteAction;
+            if (action is ActionBump bump) action = bump.ConcreteAction;
 
             // Consuming additional sta
             if (m_Actor.Model.Abilities.CanTire) {
@@ -1083,8 +1083,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.Controller as ObjectiveAI)?.IsInterestingItem(it) ?? true;
       }
       if (!(this is OrderableAI downcast)) return false;
-      if (a is ActionChat) {
-        return downcast.Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;
+      if (a is ActionChat chat) {
+        return downcast.Directives.CanTrade || chat.Target == m_Actor.Leader;
       }
       return false;
     }
