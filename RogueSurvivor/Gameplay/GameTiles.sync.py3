@@ -90,7 +90,7 @@ with fileinput.input('Gametiles.cs') as f:
 					dest.write('    private static readonly TileModel[] m_Models = new TileModel[]{\n')	# start function target
 					dest.write('      TileModel.UNDEF,\n')
 					for x in nontrivial_tiles:
-						dest.write('      new TileModel(GameImages.TILE_'+(tile_overrides[x] if x in tile_overrides else x)+', '+nontrivial_tile_constructor_params[x]+') { ID = (int)IDs.'+x+' },\n')
+						dest.write('      new TileModel(IDs.'+x+', GameImages.TILE_'+(tile_overrides[x] if x in tile_overrides else x)+', '+nontrivial_tile_constructor_params[x]+'),\n')
 					dest.write('    };\n')	# end function target
 					continue
 				buffering = 1
@@ -103,7 +103,7 @@ with fileinput.input('Gametiles.cs') as f:
 				dest.write('    private static readonly TileModel[] m_Models = new TileModel[]{\n')
 				dest.write('      TileModel.UNDEF,\n')
 				for x in nontrivial_tiles:
-					dest.write('      new TileModel(GameImages.TILE_'+(tile_overrides[x] if x in tile_overrides else x)+', '+nontrivial_tile_constructor_params[x]+') { ID = (int)IDs.'+x+' },\n')
+					dest.write('      new TileModel(IDs.'+x+', GameImages.TILE_'+(tile_overrides[x] if x in tile_overrides else x)+', '+nontrivial_tile_constructor_params[x]+'),\n')
 				dest.write('    };\n')
 				continue
 		if 2==buffering:
