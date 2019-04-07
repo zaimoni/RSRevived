@@ -6,7 +6,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
-using System.Security.Permissions;
+using System.Security;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 using EnumerableString = System.Collections.Generic.IEnumerable<string>;
 
@@ -57,8 +57,7 @@ namespace djack.RogueSurvivor.Engine
 #region Minimap painting
     void UI_ClearMinimap(Color color);
     void UI_SetMinimapColor(int x, int y, Color color);
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    void UI_DrawMinimap(int gx, int gy);
+    [SecurityCritical] void UI_DrawMinimap(int gx, int gy);
 #endregion
 #endregion
 

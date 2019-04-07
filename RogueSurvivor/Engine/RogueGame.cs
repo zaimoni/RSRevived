@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Permissions;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -460,8 +460,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // XXX just about everything that rates this is probable cause for police investigation
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void AddMessageIfAudibleForPlayer(Location loc, string text)
+    [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
       if (null != Player && !Player.IsSleeping && Rules.StdDistance(Player.Location, loc) <= Player.AudioRange) {
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
@@ -586,8 +585,7 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void AddMessagePressEnter()
+    [SecurityCritical] public void AddMessagePressEnter()
     {
       AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -698,8 +696,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DoQuit();
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void GameLoop()
+    [SecurityCritical] private void GameLoop()
     {
       HandleMainMenu();
       while (m_IsGameRunning && 0 < Session.Get.World.PlayerCount) {
@@ -853,8 +850,7 @@ namespace djack.RogueSurvivor.Engine
       } while(true);
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void HandleMainMenu()
+    [SecurityCritical] private void HandleMainMenu()
     {
       bool flag2 = File.Exists(GetUserSave());
       string[] entries = new string[9] {
@@ -1424,8 +1420,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void StartNewGame()
+    [SecurityCritical] private void StartNewGame()
     {
       bool isUndead = m_CharGen.IsUndead;
       GenerateWorld(true);
@@ -1849,8 +1844,7 @@ namespace djack.RogueSurvivor.Engine
        }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void AdvancePlay(District district, RogueGame.SimFlags sim)
+    [SecurityCritical] private void AdvancePlay(District district, RogueGame.SimFlags sim)
     {
       DayPhase phase1 = Session.Get.WorldTime.Phase;
 #if DATAFLOW_TRACE
@@ -1926,8 +1920,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void AdvancePlay(Map map, RogueGame.SimFlags sim)
+    [SecurityCritical] private void AdvancePlay(Map map, RogueGame.SimFlags sim)
     {
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
@@ -7769,8 +7762,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DoFollowersEnterMap(Actor leader, Location to, Location from)
+    [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, Location from)
     {
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
@@ -8420,8 +8412,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DoBlast(Location location, BlastAttack blastAttack)
+    [SecurityCritical] private void DoBlast(Location location, BlastAttack blastAttack)
     {
       OnLoudNoise(location, "A loud EXPLOSION");
       bool isVisible = ForceVisibleToPlayer(location);
@@ -8940,8 +8931,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    static public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
+    [SecurityCritical] static public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
       speaker.Say(target,text,flags);
     }
@@ -9318,8 +9308,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
+    [SecurityCritical] public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
       if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -9398,8 +9387,7 @@ namespace djack.RogueSurvivor.Engine
       OnLoudNoise(mapObj.Location, "A loud *CRASH*");
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DoBreak(Actor actor, MapObject mapObj)
+    [SecurityCritical] public void DoBreak(Actor actor, MapObject mapObj)
     {
       // NPCs know to use their best melee weapon
       if (!actor.IsPlayer) {
@@ -10725,8 +10713,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void RedrawPlayScreen()
+    [SecurityCritical] public void RedrawPlayScreen()
     {
             if (IsSimulating) return;   // deadlocks otherwise
             lock (m_UI) {
@@ -11472,8 +11459,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DrawMiniMap(Rectangle view)
+    [SecurityCritical] private void DrawMiniMap(Rectangle view)
     {
       if (null == Player) return;   // fail-safe.
       Map map = CurrentMap;
@@ -12163,8 +12149,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private bool LoadGame(string saveName)
+    [SecurityCritical] private bool LoadGame(string saveName)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
@@ -12852,8 +12837,7 @@ namespace djack.RogueSurvivor.Engine
 //    Session.Get.CurrentMap.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void BeforePlayerEnterDistrict(District district)
+    [SecurityCritical] private void BeforePlayerEnterDistrict(District district)
     {
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
         m_MusicManager.Stop();
@@ -13078,8 +13062,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Stop();
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void CheckSpecialPlayerEventsAfterAction(Actor player)
+    [SecurityCritical] private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
       // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
       if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))

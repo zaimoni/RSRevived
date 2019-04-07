@@ -10,10 +10,10 @@ namespace djack.RogueSurvivor.Gameplay
   {
     private const string PATH = "Resources\\Sfx\\";
     public const string UNDEAD_EAT = "undead eat";
-    public static readonly string UNDEAD_EAT_FILE = GameSounds.PATH + "sfx - undead eat";
+    public const string UNDEAD_EAT_FILE = GameSounds.PATH + "sfx - undead eat";
     public const string UNDEAD_RISE = "undead rise";
-    public static readonly string UNDEAD_RISE_FILE = GameSounds.PATH + "sfx - undead rise";
+    public const string UNDEAD_RISE_FILE = GameSounds.PATH + "sfx - undead rise";
     public const string NIGHTMARE = "nightmare";
-    public static readonly string NIGHTMARE_FILE = GameSounds.PATH + "sfx - nightmare";
+    public const string NIGHTMARE_FILE = GameSounds.PATH + "sfx - nightmare";
   }
 }

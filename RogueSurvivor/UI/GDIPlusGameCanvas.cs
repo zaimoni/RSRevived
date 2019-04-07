@@ -15,7 +15,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Security.Permissions;
+using System.Security;
 
 namespace djack.RogueSurvivor.UI
 {
@@ -61,8 +61,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public GDIPlusGameCanvas()
+    [SecurityCritical] public GDIPlusGameCanvas()
     {
       NeedRedraw = true;
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::InitializeComponent");
@@ -318,8 +317,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DrawMinimap(int gx, int gy)
+    [SecurityCritical] public void DrawMinimap(int gx, int gy)
     {
       BitmapData bitmapdata = m_MinimapBitmap.LockBits(new Rectangle(0, 0, m_MinimapBitmap.Width, m_MinimapBitmap.Height), ImageLockMode.ReadWrite, m_MinimapBitmap.PixelFormat);
       Marshal.Copy(m_MinimapBytes, 0, bitmapdata.Scan0, m_MinimapBytes.Length);

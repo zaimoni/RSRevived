@@ -14,7 +14,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using System.Security.Permissions;
+using System.Security;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
@@ -501,8 +501,7 @@ namespace djack.RogueSurvivor
       m_GameCanvas.SetMinimapColor(x, y, color);
     }
 
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void UI_DrawMinimap(int gx, int gy)
+    [SecurityCritical] public void UI_DrawMinimap(int gx, int gy)
     {
       m_GameCanvas.DrawMinimap(gx, gy);
     }
