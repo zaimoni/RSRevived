@@ -25,6 +25,7 @@ using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionGiveTo = djack.RogueSurvivor.Engine.Actions.ActionGiveTo;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
+using ActionOpenDoor = djack.RogueSurvivor.Engine.Actions.ActionOpenDoor;
 using ActionPush = djack.RogueSurvivor.Engine.Actions.ActionPush;
 using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
 using ActionRechargeItemBattery = djack.RogueSurvivor.Engine.Actions.ActionRechargeItemBattery;
@@ -858,19 +859,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActionMoveStep _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
     {
-      // filter down intermediate destinations
-      IEnumerable<Point> tmp3 = src.Where(pt => tmp2.Any(pt2 => Rules.IsAdjacent(pt,pt2)));
-      if (!tmp3.Any()) return null;
-      var tmp = tmp3.ToList();
-
-      while (0<tmp.Count) {
-		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)));
-        if (ret is ActionMoveStep step && step.IsLegal()) {
+      var range = new Dictionary<Point,IEnumerable<Point>>();
+      foreach (var pt in src) {
+        var test = tmp2.Where(pt2 => Rules.IsAdjacent(pt,pt2));
+        if (!test.Any()) continue;
+        range[pt] = test;
+      }
+      if (0 >= range.Count) return null;
+      var next = range.Keys.ToList();
+      while(0 < next.Count) {
+        var x = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(next);
+        var act = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, x));
+        if (act is ActionMoveStep step && step.IsLegal()) {
           m_Actor.Run();
-          // \todo set up Goal_NextCombatAction or Goal_NextAction to complete the run
+          if (!range.TryGetValue(x,out var final_dests)) throw new InvalidProgramException("tried to move where no safe location is nearby");
+          var final_act = new Dictionary<Point,ActorAction>();
+          foreach(var pt2 in final_dests) {
+            var act2 = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt2));   // \todo may need to be a pathability check to enable push/shove
+            if (null == act2) continue;
+            if (   act2 is ActionMoveStep
+                || act2 is ActionOpenDoor) {    // \todo may need to whitelist other actions.  Opening doors needs to be scheduled slightly earlier; this is historical behavior
+              final_act[pt2] = act2;
+            }
+          }
+          if (0 >= final_act.Count) continue;
+          // \todo: something that decides which escape destination to use, (i.e. actually can react to newly visible threat, etc.)
+          var schedule = RogueForm.Game.Rules.DiceRoller.Choose(final_act);
+          Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, schedule.Value, schedule.Value));
           return step;
         }
-	  }
+      }
 	  return null;
     }
 

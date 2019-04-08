@@ -2265,7 +2265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
       }
-	  ActorAction actorAction = BehaviorPathTo(other.Location);
+	  ActorAction actorAction = BehaviorPathTo(other.Location); // \todo crash bug...really want all compass-direction locations adjacent to
       if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
