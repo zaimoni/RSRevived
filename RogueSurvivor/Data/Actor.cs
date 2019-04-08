@@ -2309,9 +2309,9 @@ namespace djack.RogueSurvivor.Data
 
     public int RunningStaminaCost(Point dest)
     {
-      MapObject mapObjectAt = Location.Map.GetMapObjectAt(dest);
+      MapObject mapObjectAt = Location.Map.GetMapObjectAtExt(dest);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
-      return Rules.STAMINA_COST_RUNNING;
+      return Rules.STAMINA_COST_RUNNING + NightSTApenalty;
     }
 
 #if DEAD_FUNC

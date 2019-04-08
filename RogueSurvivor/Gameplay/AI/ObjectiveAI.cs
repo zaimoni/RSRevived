@@ -382,7 +382,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (cornered.Count< _run_retreat.Count) _run_retreat.RemoveAll(pt => cornered.Contains(pt));
     }
 
-    protected bool RunIfAdvisable(Point dest)
+    public bool RunIfAdvisable(Point dest)
     {
       if (!m_Actor.CanRun()) return false;
       // we don't want preparing to push a car to block running at full stamina
