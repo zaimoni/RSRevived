@@ -1645,7 +1645,9 @@ restart_single_exit:
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
         // XXX doesn't handle non-optimal ranged attacks
-        if (0 >= a.CurrentRangedAttack.Range) {
+        Dictionary<int,Attack> ranged_attacks = (a.Controller as ObjectiveAI)?.GetBestRangedAttacks(m_Actor);
+
+        if (null == ranged_attacks) {
           foreach(var pt_dam in melee_damage_field) {
             if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
             else ret[pt_dam.Key] = pt_dam.Value;
@@ -1662,8 +1664,8 @@ restart_single_exit:
         foreach(Point pt in aFOV) {
           if (pt == a.Location.Position) continue;
           int dist = Rules.GridDistance(pt, a.Location.Position);
-          a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
-          if (dist <= a.CurrentRangedAttack.Range) {
+          if (ranged_attacks.TryGetValue(dist,out var att)) {
+            a_max_dam = ranged_attacks[dist].DamageValue;
             ranged_damage_field[pt] = a_turns*a_max_dam;
           }
         }
@@ -1679,8 +1681,8 @@ restart_single_exit:
               aFOV.ExceptWith(ranged_damage_field.Keys);
               foreach(Point pt in aFOV) {
                 int dist = Rules.GridDistance(pt, a.Location.Position);
-                a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
-                if (dist <= a.CurrentRangedAttack.Range) {
+                if (ranged_attacks.TryGetValue(dist,out var att)) {
+                  a_max_dam = ranged_attacks[dist].DamageValue;
                   ranged_damage_field[pt] = a_turns*a_max_dam;
                 }
               }
@@ -3566,6 +3568,28 @@ restart_single_exit:
         }
       }
       return obj1;
+    }
+
+    public Dictionary<int,Attack> GetBestRangedAttacks(Actor target)
+    {
+      if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory
+      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
+        if (0 < rw.Ammo) return true;
+        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
+        return null != ammo;
+      });
+      if (null == rws) return null;
+      var ret = new Dictionary<int, Attack>();
+      foreach(var w in rws) {
+        int r = w.Model.Attack.Range;
+        do {
+           var r_attack = m_Actor.HypotheticalRangedAttack(w.Model.Attack, r, target);
+           // \todo proper comparison of attacks
+           if (!ret.TryGetValue(r,out var att) || att.DamageValue<r_attack.DamageValue) ret[r] = r_attack;
+           }
+        while(0 < --r);
+      }
+      return ret;
     }
 
     public void DeBarricade(Engine.MapObjects.DoorWindow doorWindow)
