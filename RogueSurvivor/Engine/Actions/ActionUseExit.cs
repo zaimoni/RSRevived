@@ -6,22 +6,16 @@
 
 using djack.RogueSurvivor.Data;
 
-#if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-#else
-using Point = System.Drawing.Point;
-#endif
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionUseExit : ActorAction
   {
-    private readonly Point m_ExitPoint;
+    private readonly Location m_ExitPoint;
 
-    public Exit Exit { get { return m_Actor.Location.Map.GetExitAt(m_ExitPoint); } }
+    public Exit Exit { get { return m_ExitPoint.Exit; } }
     public bool IsBlocked { get { return !string.IsNullOrEmpty(Exit.ReasonIsBlocked(m_Actor)); } }
 
-    public ActionUseExit(Actor actor, Point exitPoint)
+    public ActionUseExit(Actor actor, Location exitPoint)
       : base(actor)
     {
       m_ExitPoint = exitPoint;
@@ -30,12 +24,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanUseExit(m_ExitPoint, out m_FailReason);
+      return m_Actor.Location.Map==m_ExitPoint.Map && m_Actor.CanUseExit(m_ExitPoint.Position, out m_FailReason);
     }
 
     public override void Perform()
     {
-      RogueForm.Game.DoUseExit(m_Actor, m_ExitPoint);
+      RogueForm.Game.DoUseExit(m_Actor, m_ExitPoint.Position);
     }
   }
 }

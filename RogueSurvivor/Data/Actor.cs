@@ -1665,7 +1665,7 @@ namespace djack.RogueSurvivor.Data
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ActionUseExit tmp = new ActionUseExit(this, loc.Position);
+        ActionUseExit tmp = new ActionUseExit(this, loc);
         if (loc == Location) {
           if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location);
         } else {
@@ -1709,7 +1709,7 @@ namespace djack.RogueSurvivor.Data
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ActionUseExit tmp = new ActionUseExit(this, loc.Position);
+        ActionUseExit tmp = new ActionUseExit(this, loc);
         if (loc == Location) {
           if (tmp.IsLegal() && !tmp.IsBlocked) ret[exit.Location] = tmp;
         } else {
@@ -1757,7 +1757,7 @@ namespace djack.RogueSurvivor.Data
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ret[exit.Location] = new ActionUseExit(this, loc.Position);
+        ret[exit.Location] = new ActionUseExit(this, loc);
         // simulate Exit::ReasonIsBlocked
         switch(exit.Location.IsBlockedForPathing) {
         case 0: break;
