@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
-      m_Actor.IsRunning = false;    // alpha 10: don't run by default
+      m_Actor.Walk();    // alpha 10: don't run by default
 
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());

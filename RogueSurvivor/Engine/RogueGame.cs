@@ -2147,7 +2147,7 @@ namespace djack.RogueSurvivor.Engine
 #region 3. Stop tired actors from running.
         foreach (Actor actor in map.Actors) {
           if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
-            actor.IsRunning = false;
+            actor.Walk();
             if (Player == actor) {
               AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", Conjugate(actor, VERB_BE))));
               RedrawPlayScreen();
@@ -7713,7 +7713,7 @@ namespace djack.RogueSurvivor.Engine
           // XXX \todo but if the free move denies an attack from a known attacker in the destination we'd want it anyway; it just won't do so for the source district.
           // Consider delegating to ObjectiveAI.
           if (actor.IsRunning && actor.RunIsFreeMove) {
-            actor.IsRunning = false;    // cancel wasted running
+            actor.Walk();    // cancel wasted running
             if (isPlayer) AddMessage(new Data.Message("It doesn't feel worth running right now.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
 //        } else if (!actor.IsRunning && !actor.RunIsFreeMove && actor.CanRun() && false) { // Objective::RunIfAdvisable will get this right, so don't need to redo its stamina cutoff that is the proper fourth test here.
           }

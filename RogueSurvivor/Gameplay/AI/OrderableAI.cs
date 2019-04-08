@@ -423,7 +423,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;    // cancel: buggy
           return true;
         }
-        if (walking) m_Actor.IsRunning = false;
+        if (walking) m_Actor.Walk();
         return true;
       }
     }

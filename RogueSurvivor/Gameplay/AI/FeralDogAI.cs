@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (actorAction != null) {
-          m_Actor.IsRunning = false;
+          m_Actor.Walk();
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
           return actorAction;
@@ -130,7 +130,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Rules.GridDistance(m_Actor.Location, loc) <= closeDistance) {
         RunIfPossible();
       } else {
-        m_Actor.IsRunning = false;
+        m_Actor.Walk();
       }
     }
   }

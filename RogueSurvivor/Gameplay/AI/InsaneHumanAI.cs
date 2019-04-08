@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game)
     {
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
-      m_Actor.IsRunning = false;    // alpha 10: don't run by default
+      m_Actor.Walk();    // alpha 10: don't run by default
       ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) return tmpAction;
       /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
