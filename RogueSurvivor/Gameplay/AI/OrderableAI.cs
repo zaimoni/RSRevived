@@ -1803,42 +1803,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDontLeaveFollowersBehind(int distance, out Actor target)
     {
       target = null;
-
       // Scan the group:
       // - Find farthest member of the group.
       // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
       int halfGroup = m_Actor.CountFollowers / 2;
 	  if (0 >= halfGroup) return null;	// automatic do nothing(!)
       int worstDist = Int32.MinValue;
-      Map map = m_Actor.Location.Map;
-      Point myPos = m_Actor.Location.Position;
       int closeCount = 0;
 
       foreach (Actor follower in m_Actor.Followers) {
-        if (follower.Location.Map == map) {
-          if (Rules.GridDistance(follower.Location.Position, myPos) <= distance && ++closeCount >= halfGroup) return null;
-          int dist = Rules.GridDistance(follower.Location.Position, myPos);
-          if (target == null || dist > worstDist) {
-            target = follower;
-            worstDist = dist;
-          }
-        } else {	// not even on map
-          if (target == null || int.MaxValue > worstDist) {
-            target = follower;
-            worstDist = int.MaxValue;
-          }
-		}
+        int dist = Rules.InteractionDistance(follower.Location,m_Actor.Location);
+        if (dist <= distance && ++closeCount >= halfGroup) return null;
+        if (dist > worstDist) {
+          target = follower;
+          worstDist = dist;
+        }
       }
       if (target == null) return null;
-      return BehaviorPathTo(target.Location);
+      return BehaviorPathToAdjacent(target.Location);
     }
 
     protected ActorAction BehaviorLeadActor(Percept target)
     {
       Actor target1 = target.Percepted as Actor;
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
-      if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
-        return new ActionTakeLead(m_Actor, target1);
+      if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
       // need an after-action "hint" to the target on where/who to go to
       if (!m_Actor.WillActAgainBefore(target1) && null == (target1.Controller as OrderableAI)?.Goal<Goal_HintPathToActor>()) {
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
@@ -2214,7 +2203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
 
-	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
+	protected ActorAction BehaviorPathTo(Location dest)
 	{
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
@@ -2224,6 +2213,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       return BehaviorNavigate(new HashSet<Point> { dest.Position });
+	}
+
+	protected ActorAction BehaviorPathToAdjacent(Location dest)
+	{
+      var tmp = BehaviorUseAdjacentStack();
+      if (null != tmp) return tmp;
+
+      var range = m_Actor.OnePathRange(dest);
+      if (null == range) return null;
+      range.OnlyIf((Predicate<ActorAction>)(action => (action is ActionMoveStep || action is ActionPush || action is ActionOpenDoor || action is ActionUseExit) && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly and politely
+      if (0 >= range.Count) return null;
+      // start function target
+      var adjacent = m_Actor.OnePathRange(m_Actor.Location);
+      if (null == adjacent) return null;
+      adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActionMoveStep || action is ActionPush || action is ActionOpenDoor || action is ActionUseExit) && action.IsLegal() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
+      if (0 >= adjacent.Count) return null;
+      foreach(var x in range) {
+        if (adjacent.TryGetValue(x.Key,out var act)) return act;
+      }
+      // end function target
+
+      var targets = new Dictionary<Map,HashSet<Point>>(4);
+      foreach(var x in range) {
+        if (!targets.TryGetValue(x.Key.Map,out var cache)) {
+          targets[x.Key.Map] = cache = new HashSet<Point>();
+        }
+        cache.Add(x.Key.Position);
+      }
+
+      if (1==targets.Count) {
+        var dests = targets.First();
+        if (dests.Key!=m_Actor.Location.Map) return BehaviorPathTo(m => (m == dests.Key ? new HashSet<Point>(dests.Value) : new HashSet<Point>()));
+        return BehaviorNavigate(dests.Value);
+      }
+
+      return BehaviorPathTo(m => {
+        if (targets.TryGetValue(m, out var cache)) return new HashSet<Point>(cache);
+        return new HashSet<Point>();
+      });
 	}
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
@@ -2265,7 +2293,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
       }
-	  ActorAction actorAction = BehaviorPathTo(other.Location); // \todo crash bug...really want all compass-direction locations adjacent to
+	  ActorAction actorAction = BehaviorPathToAdjacent(other.Location);
       if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
