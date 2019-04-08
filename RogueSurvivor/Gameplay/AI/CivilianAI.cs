@@ -287,7 +287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == enemies) AdviseFriendsOfSafety();
 
-      // \todo change target for using Goal_CombatNextAction to short-circuit unhealthy cowardice
+      // \todo change target for using Goal_NextCombatAction to short-circuit unhealthy cowardice (or not, main objective processing is above)
       // this action tests whether enemies are in sight and chooses which action to take based on this
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
 
