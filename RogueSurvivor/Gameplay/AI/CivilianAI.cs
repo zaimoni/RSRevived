@@ -278,7 +278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
 #endif
-          if (tmpAction is ActionMoveStep) RunIfPossible();
+          if (tmpAction is ActionMoveStep) m_Actor.Run();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
           return tmpAction;
         }

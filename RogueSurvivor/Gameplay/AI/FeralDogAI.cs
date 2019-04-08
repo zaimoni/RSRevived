@@ -81,16 +81,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
         if (actorAction != null) {
           // run to (or away if fleeing) if close.
-          if (m_Actor.TargetActor != null)
-            RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
-          m_Actor.IsRunning = true;
+          if (m_Actor.TargetActor != null) RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
           return actorAction;
         }
       }
       if (m_Actor.IsAlmostHungry) {
         ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts_all.FilterT<Inventory>());
         if (actorAction != null) {
-          RunIfPossible();
+          m_Actor.Run();
           m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
@@ -98,7 +96,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsHungry) {
         ActorAction actorAction = BehaviorGoEatCorpse(percepts_all);
         if (actorAction != null) {
-          RunIfPossible();
+          m_Actor.Run();
           m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
@@ -128,7 +126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RunToIfCloseTo(Location loc, int closeDistance)
     {
       if (Rules.GridDistance(m_Actor.Location, loc) <= closeDistance) {
-        RunIfPossible();
+        m_Actor.Run();
       } else {
         m_Actor.Walk();
       }

@@ -644,7 +644,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
       if (actorAction == null || !actorAction.IsLegal()) return null;
-      if (other.IsRunning) RunIfPossible();
+      if (other.IsRunning) m_Actor.Run();
       return actorAction;
     }
 
@@ -696,7 +696,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionWait(m_Actor);
         tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);
         if (null == tmpAction) return null;
-        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
+        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
         return tmpAction;
       } catch(System.Exception) {
         throw;
@@ -751,7 +751,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX we should run for the exit here
         tmpAction = BehaviorWalkAwayFrom(enemies.Select(p => p.Location.Position));
         if (null != tmpAction) {
-          if (doRun) RunIfPossible();
+          if (doRun) m_Actor.Run();
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }
@@ -867,11 +867,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
 	  }
       return BehaviorHeadFor(percept.Location,true,true);
-    }
-
-    protected void RunIfPossible()
-    {
-      m_Actor.IsRunning = m_Actor.CanRun();  // alpha10 fix
     }
 
     /// <summary>

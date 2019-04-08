@@ -852,7 +852,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while (0<tmp.Count) {
 		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)));
         if (ret is ActionMoveStep step && step.IsLegal()) {
-          RunIfPossible();
+          m_Actor.Run();
           // \todo set up Goal_NextCombatAction or Goal_NextAction to complete the run
           return step;
         }

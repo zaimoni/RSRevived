@@ -271,6 +271,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
     public void Walk() { Clear(Flags.IS_RUNNING); }
+    public void Run() { if (CanRun()) Set(Flags.IS_RUNNING); }
 
     public Inventory Inventory { get { return m_Inventory; } }
 
@@ -3263,6 +3264,7 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
     private void Clear(Flags f) { m_Flags &= ~f; }
+    private void Set(Flags f) { m_Flags |= f; }
 
     // vision
     public int DarknessFOV {

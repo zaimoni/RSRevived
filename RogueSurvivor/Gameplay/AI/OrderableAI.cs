@@ -869,7 +869,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = BehaviorIntelligentBumpToward(location, false, false);
       if (null == tmpAction) return null;
-      RunIfPossible();
+      m_Actor.Run();
       return tmpAction;
     }
 
@@ -886,7 +886,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = BehaviorIntelligentBumpToward(location, false, false);
       if (null == tmpAction) return null;
-      RunIfPossible();
+      m_Actor.Run();
       return tmpAction;
     }
 
@@ -1238,7 +1238,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
 #endif
             }
-            if (_safe_run_retreat) RunIfPossible();
+            if (_safe_run_retreat) m_Actor.Run();
             else m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
           }
           m_Actor.Activity = Activity.FLEEING;
@@ -1919,7 +1919,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         tmpAction = BehaviorBumpToward(target.Location, canCheckBreak, canCheckPush, close_in); // end inlining modifications to intelligent bumping toward
         if (null == tmpAction) return null;
-        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
+        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
         return tmpAction;
       } finally {
         if (null != tmpAction) {
@@ -2065,7 +2065,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX or run for the exit here
         tmpAction = (null!= m_Actor.Controller.enemies_in_FOV ? BehaviorWalkAwayFrom(m_Actor.Controller.enemies_in_FOV.Keys, LoF_reserve) : null);
         if (null != tmpAction) {
-          if (doRun) RunIfPossible();
+          if (doRun) m_Actor.Run();
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }
