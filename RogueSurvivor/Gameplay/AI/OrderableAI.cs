@@ -135,6 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             } else {
                 if (null != Intent_engaged && Intent_engaged.IsLegal()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead
             }
+            if (ret is ActionMoveStep step && m_Actor.Controller is ObjectiveAI ai) m_Actor.IsRunning = ai.RunIfAdvisable(step.dest);
             return true;
         }
     }
@@ -1086,7 +1087,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  ActorAction tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
@@ -1228,7 +1229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tmpAction is ActionMoveStep test) {
             // all setup should have been done in the run-retreat case
             if (!_safe_run_retreat) {
-              m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+              m_Actor.IsRunning = RunIfAdvisable(test.dest);
 #if PROTOTYPE
               if (m_Actor.IsRunning) {
                 // \todo set up Goal_NextAction or Goal_NextCombatAction
@@ -1239,7 +1240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
             }
             if (_safe_run_retreat) m_Actor.Run();
-            else m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+            else m_Actor.IsRunning = RunIfAdvisable(test.dest);
           }
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -1426,7 +1427,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FIGHTING;
               if (tmpAction is ActionMoveStep test) {
-                m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+                m_Actor.IsRunning = RunIfAdvisable(test.dest);
 #if PROTOTYPE
                 if (m_Actor.IsRunning) {
                    // \todo set up Goal_NextAction or Goal_NextCombatAction
@@ -2246,7 +2247,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)
-           m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position);
+           m_Actor.IsRunning = RunIfAdvisable(tmp.dest);
 	  }
       return actorAction;
     }
@@ -2269,7 +2270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)
-           m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position);
+           m_Actor.IsRunning = RunIfAdvisable(tmp.dest);
 	  }
       return actorAction;
     }
@@ -2999,7 +3000,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction tmpAction = DecideMove(vis_costs.Keys);
       if (null != tmpAction) {
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
@@ -3007,7 +3008,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = DecideMove(costs.Keys);
       if (null != tmpAction) {
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
@@ -3311,7 +3312,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == ret) return null; // can happen due to postprocessing
       if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
-        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
         ReserveSTA(0,0,0,0);
       }
       return ret;
@@ -3327,7 +3328,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       ActorAction ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
-      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       return ret;
     }
 

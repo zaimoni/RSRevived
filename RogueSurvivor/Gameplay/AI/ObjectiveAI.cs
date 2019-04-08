@@ -396,6 +396,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
+    public bool RunIfAdvisable(Location dest)
+    {
+      if (!m_Actor.CanRun()) return false;
+      // we don't want preparing to push a car to block running at full stamina
+      if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
+        if (m_Actor.RunIsFreeMove) {
+          if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
+        } else {
+          if (m_Actor.WillTireAfter(STA_reserve + 2*m_Actor.RunningStaminaCost(dest)- m_Actor.NightSTApenalty)) return false;
+        }
+      }
+      return true;
+    }
+
     protected void ReserveSTA(int jump, int melee, int push, int push_weight)   // currently jump and break have the same cost
     {
       int tmp = push_weight;
@@ -1266,7 +1280,7 @@ restart:
       }
       ActorAction ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
-      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       return ret;
     }
 
@@ -1310,7 +1324,7 @@ restart:
           if (null == act) throw new InvalidOperationException("unpathable square not blacklisted: "+path.to_s());
 #endif
           if (act?.IsLegal() ?? false) {
-            if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position); // XXX should be more tactically aware
+            if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
             return act;
           }
           return null;
@@ -1325,7 +1339,7 @@ restart:
 
       ActorAction ret = DecideMove(costs);
       if (null == ret) return null;
-      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       return ret;
     }
 
@@ -1424,7 +1438,7 @@ restart:
 #endif
       if (tmp is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
-        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
         ReserveSTA(0,0,0,0);
       }
       return tmp;
