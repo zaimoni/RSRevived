@@ -1698,7 +1698,11 @@ namespace djack.RogueSurvivor.Data
         if (null == tmp) continue;
         if (!test.Map.IsInBounds(test.Position)) {
           Location? test2 = test.Map.Normalize(test.Position);
-          if (null == test2) throw new ArgumentNullException(nameof(test2));
+#if MAPGEN_OK
+          if (null == test2) throw new ArgumentNullException(nameof(test2));    // problem is in map generation: RogueGame::GenerateWorld
+#else
+          if (null == test2) continue;
+#endif
           test = test2.Value;
         }
         ret[test] = tmp;
