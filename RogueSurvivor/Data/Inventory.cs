@@ -302,6 +302,23 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
+    public void IncrementalDefrag(Item mergeWith) {
+      if (0>=mergeWith.Quantity) return;    // arguably can just remove it but plausible callers were already doing so
+      int i = m_Items.Count;
+      while(0 < i-- && mergeWith.CanStackMore) {
+        Item src = m_Items[i];
+        if (0 >= src.Quantity) {    // failsafe for bugs elsewhere
+          m_Items.RemoveAt(i);
+          continue;
+        }
+        if (src == mergeWith) continue;
+        if (src.Model != mergeWith.Model) continue;
+        int realloc = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, src.Quantity);
+        mergeWith.Quantity += realloc;
+        if (0 >= (src.Quantity -= realloc)) m_Items.RemoveAt(i);
+      }
+    }
+
     public bool HasModel(ItemModel model)
     {
       foreach (Item mItem in m_Items) {

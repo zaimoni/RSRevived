@@ -1896,6 +1896,23 @@ namespace djack.RogueSurvivor.Engine
         Direction_ext.Now();
       }
 
+      // It looks strange to look across the district boundary and see a z-invasion
+      // but if the map were large enough for timezones to be significant, trying to do the whole world at once would cause non-midnight invasions
+      // vertical slicing doesn't quite work either (midnight is fine but dawn/dusk are latitude-sensitive)
+
+      // with the current scheduler, we could fire the events to the NW on completing ourselves.
+      // * south border: events to W as well
+      // * east border: events to N as well
+      // * Last (SE corner): self-events
+
+      // Z invasions can remain anchored to the ley lines (district boundaries) indefinitely.
+      // VAPORWARE Other events should be logistically sensitive
+      // * National Guard, Army Supplies, Black Ops: helicopters.  Do not get along well with trees or power lines, but the CHAR HQ city has no power lines.
+      // * Refugees (Civilians (any but likely to favor cars and SUVs, pickup trucks, mopeds, and motorbikes are theoretically possible but rare),
+     //    Bikers (motorbikes), Gangstas (cars), Survivors (vans, pickup trucks, or SUVs): 
+      //   arrive by road (i.e. arrive on the outer edge of the outer districts)
+
+      // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
       if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
       if (CheckForEvent_RefugeesWave(district.EntryMap)) FireEvent_RefugeesWave(district);
       if (CheckForEvent_NationalGuard(district.EntryMap)) FireEvent_NationalGuard(district.EntryMap);
@@ -9237,6 +9254,7 @@ namespace djack.RogueSurvivor.Engine
       itemRangedWeapon.Ammo += num;
       ammoItem.Quantity -= num;
       if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
+      else actor.Inventory.IncrementalDefrag(ammoItem);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
     }
