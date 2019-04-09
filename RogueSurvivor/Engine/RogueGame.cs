@@ -9361,6 +9361,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
       OnMapPowerGeneratorSwitch(actor.Location, actor);
+      RedrawPlayScreen();
     }
 
     private void DoDestroyObject(MapObject mapObj)
