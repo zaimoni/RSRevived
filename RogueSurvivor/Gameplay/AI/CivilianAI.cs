@@ -574,25 +574,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
 
           Percept percept = FilterNearest(interestingStacks);
-          m_LastItemsSaw = percept;
-          tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
-          if (tmpAction?.IsLegal() ?? false) {
+          while(null != percept) {
+            m_LastItemsSaw = percept;
+            tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
+            if (tmpAction?.IsLegal() ?? false) {
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
 #endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
+              m_Actor.Activity = Activity.IDLE;
+              return tmpAction;
+            }
+            // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
+            // could happen in normal play in the sewers
+            // under is handled within the Behavior functions
+#if TRACE_SELECTACTION
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
+#endif
+            interestingStacks.Remove(percept);
+            percept = FilterNearest(interestingStacks);
           }
-          // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
-          // could happen in normal play in the sewers
-          // under is handled within the Behavior functions
-#if TRACE_SELECTACTION
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
-#endif
-#if DEBUG
-          ActorAction failed = BehaviorWouldGrabFromStack(percept.Location, percept.Percepted as Inventory);
-          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed.ToString()+" "+failed.IsLegal().ToString());
-#endif
         }
         {   // leadership or trading requests
         Goal_HintPathToActor remote = Goal<Goal_HintPathToActor>();
