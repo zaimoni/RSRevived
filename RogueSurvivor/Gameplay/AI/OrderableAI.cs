@@ -2233,25 +2233,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (adjacent.TryGetValue(x.Key,out var act)) return act;
       }
       // end function target
+      var init_costs = new Dictionary<Location,int>();
+      foreach(var x in range) init_costs[x.Key] = 0;
 
-      var targets = new Dictionary<Map,HashSet<Point>>(4);
-      foreach(var x in range) {
-        if (!targets.TryGetValue(x.Key.Map,out var cache)) {
-          targets[x.Key.Map] = cache = new HashSet<Point>();
-        }
-        cache.Add(x.Key.Position);
-      }
-
-      if (1==targets.Count) {
-        var dests = targets.First();
-        if (dests.Key!=m_Actor.Location.Map) return BehaviorPathTo(m => (m == dests.Key ? new HashSet<Point>(dests.Value) : new HashSet<Point>()));
-        return BehaviorNavigate(dests.Value);
-      }
-
-      return BehaviorPathTo(m => {
-        if (targets.TryGetValue(m, out var cache)) return new HashSet<Point>(cache);
-        return new HashSet<Point>();
-      });
+      return BehaviorPathTo(PathfinderFor(init_costs,new HashSet<Map>()));
 	}
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
