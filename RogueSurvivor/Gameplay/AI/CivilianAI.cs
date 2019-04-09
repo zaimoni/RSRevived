@@ -249,7 +249,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
 #endif
       // civilians track how long since they've seen trouble
-      if (null != enemies) m_SafeTurns = 0;
+      if (null != enemies) m_SafeTurns = 0; // blocker: next save game \todo not safe if in combat; for police this includes threat "close by"
       else ++m_SafeTurns;
 
       if (null != enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(enemies);

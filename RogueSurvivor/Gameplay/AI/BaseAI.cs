@@ -608,7 +608,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
+      var dir = RogueForm.Game.Rules.RollDirection();
+      var pushable = RogueForm.Game.Rules.DiceRoller.Choose(objs);
+      var dest = pushable.Key+dir;
+      if (map.IsInBounds(dest) && map.HasExitAt(dest)) return null; // constructor crash; don't want to do this even when tactical pushing implemented
+      ActionPush tmp = new ActionPush(m_Actor, pushable.Value, dir);
       return (tmp.IsLegal() ? tmp : null);
     }
 
