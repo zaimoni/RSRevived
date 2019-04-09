@@ -8256,6 +8256,7 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
+        bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
 
         bool player_knows(Actor a) {
           if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
@@ -8283,7 +8284,7 @@ namespace djack.RogueSurvivor.Engine
         PropagateSound(attacker.Location, "You hear firing",react,player_knows);
         if (see_attacker) {
           AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
-          AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
+          if (display_defender) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
           AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
         if (hitRoll > defRoll) {
@@ -8298,7 +8299,7 @@ namespace djack.RogueSurvivor.Engine
                 AnimDelay(DELAY_LONG);
               } else if (see_attacker) {
                 AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
-                DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+                if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
                 RedrawPlayScreen();
                 AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
               }
@@ -8310,7 +8311,7 @@ namespace djack.RogueSurvivor.Engine
               AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
             } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
               AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
-              DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
               RedrawPlayScreen();
               AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
@@ -8321,7 +8322,7 @@ namespace djack.RogueSurvivor.Engine
             AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else if (see_attacker) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
-            DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+            if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             RedrawPlayScreen();
             AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
@@ -8333,12 +8334,12 @@ namespace djack.RogueSurvivor.Engine
         } else if (see_attacker) {
           if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
             AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             RedrawPlayScreen();
             AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else {  // otherwise, not visible
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
-            DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+            if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             RedrawPlayScreen();
             AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
