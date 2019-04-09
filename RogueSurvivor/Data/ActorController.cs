@@ -137,6 +137,8 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
       if (null == map) throw new ArgumentNullException(nameof(map));
 #endif
+      var e = map.GetExitAt(position);
+      if (null != e && e.Location==m_Actor.Location) return true;
 #if NO_PEACE_WALLS
       if (map != m_Actor.Location.Map)
         {

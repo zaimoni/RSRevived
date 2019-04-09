@@ -85,6 +85,13 @@ namespace djack.RogueSurvivor.Data
       return null!=test && Rect.Contains(test.Value.Position);
     }
 
+    public Location Center { get {
+      var pos = Rect.Location;
+      pos.X += Rect.Width/2;
+      pos.Y += Rect.Height/2;
+      return new Location(m,pos);
+    } }
+
     public Rectangle DistrictSpan { get {
       var ret = new Rectangle(m.District.WorldPosition,new Size(1,1));
       if (0 < District.UsesCrossDistrictView(m)) {

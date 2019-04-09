@@ -1456,6 +1456,11 @@ namespace djack.RogueSurvivor.Data
           actorList.Add(actorAt);
         }
       }
+      var e = Location.Exit;
+      if (null!=e) {
+        var a = e.Location.Actor;
+        if (null!=a) actorList.Add(a);
+      }
       if (2 <= actorList.Count) {
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {

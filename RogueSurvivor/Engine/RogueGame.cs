@@ -8062,7 +8062,7 @@ namespace djack.RogueSurvivor.Engine
       bool isDefVisible = ForceVisibleToPlayer(defender);
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
-      bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
+      bool display_defender = isDefVisible || (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
 
       bool player_knows(Actor a) {
         if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
@@ -8256,7 +8256,7 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
-        bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
+        bool display_defender = see_defender || (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
 
         bool player_knows(Actor a) {
           if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
@@ -11847,6 +11847,13 @@ namespace djack.RogueSurvivor.Engine
     public static GDI_Point MapToScreen(Location loc)
     {
       if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
+      var e = m_MapView.Center.Exit;
+      if (null!=e && e.Location==loc) {
+        // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
+        int slot = e.Location.Map == e.Location.Map.District.EntryMap ? ENTRYMAP_EXIT_SLOT : ENTRYMAP_EXIT_SLOT+1;  // XXX \todo not correct for hospital or police station (function of both map and exit destination)
+        return new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE*slot);
+      }
+
       Location? tmp = CurrentMap.Denormalize(loc);
 #if DEBUG
       if (null == tmp) throw new ArgumentNullException(nameof(tmp));
@@ -12013,19 +12020,23 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsValid(position)) return false;
       Rectangle survey = new Rectangle(position.X-Actor.MAX_VISION, position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
       var players = new List<Actor>();
-      survey.DoForEach(pt => {
-        Actor player = map.GetActorAtExt(pt);
+
+      void id_player(Actor player) {
         if (!player?.IsPlayer ?? true) return;
 #if DEBUG
         // having problems with killed PCs showing up as viewpoints
-        if (player?.IsDead ?? false) throw new InvalidOperationException("dead player on map");
-        if (!player?.Location.Map.HasActor(player) ?? false) throw new InvalidOperationException("misplaced player on map");
+        if (player.IsDead) throw new InvalidOperationException("dead player on map");
+        if (!player.Location.Map.HasActor(player)) throw new InvalidOperationException("misplaced player on map");
 #else
-        if (player?.IsDead ?? true) return;
+        if (player.IsDead) return;
 #endif
-        if (!player.Controller.CanSee(new Location(map, position))) return;
-        players.Add(player);
-      });
+        if (player.Controller.CanSee(new Location(map, position))) players.Add(player);
+      }
+
+      survey.DoForEach(pt => id_player(map.GetActorAtExt(pt)));
+      var e = map.GetExitAt(position);
+      if (null != e) id_player(e.Location.Actor);
+
       if (0 >= players.Count) return false;
       if (players.Contains(Player)) return true;
       if (1==players.Count) {
