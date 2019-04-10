@@ -337,10 +337,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (x.Value.Contains(x.Key.Location)) continue;
           if (x.Key.Controller is ObjectiveAI) {
             var candidates = x.Key.OnePathRange(x.Key.Location);  // XXX fails for Z
-            x.Value.IntersectWith(candidates.Keys);
+            if (null == candidates) x.Value.Clear();
+            else x.Value.IntersectWith(candidates.Keys);
           } else {
             var candidates = x.Key.OneStepRange(x.Key.Location);
-            x.Value.IntersectWith(candidates);
+            if (null == candidates) x.Value.Clear();
+            else x.Value.IntersectWith(candidates);
           }
           // XXX \todo would like a little more fuzz in the results, but need CPU down first (start-game less than 1 second?)
           x.Value.Add(x.Key.Location);
