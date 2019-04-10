@@ -1900,7 +1900,7 @@ namespace djack.RogueSurvivor.Engine
       // but if the map were large enough for timezones to be significant, trying to do the whole world at once would cause non-midnight invasions
       // vertical slicing doesn't quite work either (midnight is fine but dawn/dusk are latitude-sensitive)
 
-      // with the current scheduler, we could fire the events to the NW on completing ourselves.
+      // with the current scheduler, we could fire the events NW on completing ourselves.
       // * south border: events to W as well
       // * east border: events to N as well
       // * Last (SE corner): self-events
@@ -1913,21 +1913,31 @@ namespace djack.RogueSurvivor.Engine
       //   arrive by road (i.e. arrive on the outer edge of the outer districts)
 
       // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
-      if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
-      if (CheckForEvent_RefugeesWave(district.EntryMap)) FireEvent_RefugeesWave(district);
-      if (CheckForEvent_NationalGuard(district.EntryMap)) FireEvent_NationalGuard(district.EntryMap);
-      if (CheckForEvent_ArmySupplies(district.EntryMap)) FireEvent_ArmySupplies(district.EntryMap);
-      if (CheckForEvent_BikersRaid(district.EntryMap)) FireEvent_BikersRaid(district.EntryMap);
-      if (CheckForEvent_GangstasRaid(district.EntryMap)) FireEvent_GangstasRaid(district.EntryMap);
-      if (CheckForEvent_BlackOpsRaid(district.EntryMap)) FireEvent_BlackOpsRaid(district.EntryMap);
-      if (CheckForEvent_BandOfSurvivors(district.EntryMap)) FireEvent_BandOfSurvivors(district.EntryMap);
-      if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
+      if (!Session.Get.World.Edge_N_or_E(district)) {
+        EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition+Direction.NW));
+        if (Session.Get.World.Edge_S(district)) EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition + Direction.W));
+        if (Session.Get.World.Edge_E(district)) EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition + Direction.N));
+        if (Session.Get.World.Last == district) EndTurnDistrictEvents(district);
+      }
       district.EndTurn();
       } // end lock (district)
 
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
 #endif
+    }
+
+    private void EndTurnDistrictEvents(District d)
+    { // historically, all districts were within city limits so they all could use the same event specifications.
+      if (CheckForEvent_ZombieInvasion(d.EntryMap)) FireEvent_ZombieInvasion(d.EntryMap);
+      if (CheckForEvent_RefugeesWave(d.EntryMap)) FireEvent_RefugeesWave(d);
+      if (CheckForEvent_NationalGuard(d.EntryMap)) FireEvent_NationalGuard(d.EntryMap);
+      if (CheckForEvent_ArmySupplies(d.EntryMap)) FireEvent_ArmySupplies(d.EntryMap);
+      if (CheckForEvent_BikersRaid(d.EntryMap)) FireEvent_BikersRaid(d.EntryMap);
+      if (CheckForEvent_GangstasRaid(d.EntryMap)) FireEvent_GangstasRaid(d.EntryMap);
+      if (CheckForEvent_BlackOpsRaid(d.EntryMap)) FireEvent_BlackOpsRaid(d.EntryMap);
+      if (CheckForEvent_BandOfSurvivors(d.EntryMap)) FireEvent_BandOfSurvivors(d.EntryMap);
+      if (CheckForEvent_SewersInvasion(d.SewersMap)) FireEvent_SewersInvasion(d.SewersMap);
     }
 
     static private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
