@@ -2524,15 +2524,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (scan_this.Width > z.Bounds.Width || scan_this.Height > z.Bounds.Height) scan_this = z.Bounds;
         }
 
-        bool has_free_bed = false;
-        scan_this.DoForEach(pt => {   // XXX \todo define Any for a Rectangle
+        if (!scan_this.Any(pt => {
             Location loc = new Location(m_Actor.Location.Map, pt);
-            if (!loc.Map.IsInsideAt(loc.Position)) return;
+            if (!loc.Map.IsInsideAt(loc.Position)) return false;
             // be as buggy as the display, which shows objects in their current positions
-            if (!(loc.MapObject?.IsCouch ?? false)) return;
-            if (!(loc.Actor?.IsSleeping ?? false)) has_free_bed = true;   // cheat: bed should not have someone already sleeping in it
-        });
-        if (!has_free_bed) return BehaviorNavigateToSleep(item_memory);
+            if (!(loc.MapObject?.IsCouch ?? false)) return false;
+            return !(loc.Actor?.IsSleeping ?? false);   // cheat: bed should not have someone already sleeping in it
+        })) return BehaviorNavigateToSleep(item_memory);
       }
 
       ActorAction tmpAction = null;
