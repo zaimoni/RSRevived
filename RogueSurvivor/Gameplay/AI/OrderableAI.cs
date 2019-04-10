@@ -2865,6 +2865,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return WouldGrabFromAccessibleStack(loc,stack)?.IsLegal() ?? false;
     }
 
+    private ActorAction _takeThis(Location loc, Item obj, ActorAction recover, bool is_real)
+    {
+        // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
+        if (obj is ItemBodyArmor armor) {
+          var best_armor = GetEquippedBodyArmor();
+          if (null != best_armor && armor.Rating > best_armor.Rating) {
+            // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
+            return new ActionTradeWithContainer(m_Actor,best_armor,obj,loc.Position);
+          }
+        }
+        ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
+        if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
+          if (null == recover) return null;
+          if (!recover.IsLegal()) return null;
+          if (recover is ActionDropItem drop) {
+            if (obj.Model.ID == drop.Item.Model.ID) return null;
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
+          }
+          if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+          return recover;
+        }
+        if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
+        return tmp;
+    }
+
     public ActorAction WouldGrabFromAccessibleStack(Location loc, Inventory stack, bool is_real=false)
     {
 #if DEBUG
@@ -2895,21 +2920,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
-
-      if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
-        if (null == recover) return null;
-        if (!recover.IsLegal()) return null;
-        if (recover is ActionDropItem drop) {
-          if (obj.Model.ID == drop.Item.Model.ID) return null;
-          if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
-        }
-        if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
-        if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-        return recover;
-      }
-      if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
+      ActorAction tmp = _takeThis(loc, obj, recover, is_real);
+      if (null == tmp) return null;
       if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
       return tmp;
@@ -2958,22 +2970,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool may_take = is_real ? m_Actor.MayTakeFromStackAt(loc) : true;
 
       if (may_take) {
-        tmp = new ActionTakeItem(m_Actor, loc, obj);
-        if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
-          if (null == recover) return null;
-          if (!recover.IsLegal()) return null;
-          if (recover is ActionDropItem drop) {
-            if (obj.Model.ID == drop.Item.Model.ID) return null;
-            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
-          }
-          if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
-          if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-            RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-          return recover;
-        }
-        if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
+        tmp = _takeThis(loc, obj, recover, is_real);
+        if (null == tmp) return null;
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
       }
       { // scoping brace
