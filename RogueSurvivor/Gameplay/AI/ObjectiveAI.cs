@@ -360,6 +360,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return "BASTARD! TRAITOR!";
     }
 
+    protected ActorAction BehaviorFleeExplosives()
+    {
+      if (!(_blast_field?.Contains(m_Actor.Location.Position) ?? false)) return null;
+      ActorAction ret = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
+      if (null != ret) {
+        if (ret is ActionMoveStep) m_Actor.Run();
+        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+      }
+      return ret;
+    }
+
     private void AvoidBeingCornered()
     {
 #if DEBUG

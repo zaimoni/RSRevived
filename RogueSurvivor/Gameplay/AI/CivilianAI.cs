@@ -218,6 +218,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ExpireTaboos();
       InitAICache(percepts1, percepts_all);
 
+      // get out of the range of explosions if feasible
+      ActorAction tmpAction = BehaviorFleeExplosives();
+      if (null != tmpAction) return tmpAction;
+
       // New objectives system
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
@@ -257,12 +261,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
 
-      ActorAction tmpAction = null;
-
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      bool in_blast_field = _blast_field?.Contains(m_Actor.Location.Position) ?? false;
 
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
@@ -270,19 +271,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
-
-      // get out of the range of explosions if feasible
-      if (in_blast_field) {
-        tmpAction = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
-#endif
-          if (tmpAction is ActionMoveStep) m_Actor.Run();
-          m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-          return tmpAction;
-        }
-      }
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == enemies) AdviseFriendsOfSafety();
