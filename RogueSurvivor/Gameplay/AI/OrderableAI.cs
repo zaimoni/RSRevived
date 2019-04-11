@@ -2517,8 +2517,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != item_memory) {
         // reject if the smallest zone containing this location does not have a bed
         Rectangle scan_this = m_Actor.Location.Map.Rect;
-        var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);
-        if (null != z_list) foreach(var z in z_list) {
+        var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);    // non-null check in map generation
+        foreach(var z in z_list) {
           if (scan_this.Width < z.Bounds.Width) continue;
           if (scan_this.Height < z.Bounds.Height) continue;
           if (scan_this.Width > z.Bounds.Width || scan_this.Height > z.Bounds.Height) scan_this = z.Bounds;

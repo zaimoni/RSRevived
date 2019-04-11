@@ -2753,6 +2753,10 @@ restart:
         }
         underground.AddZone(MakeUniqueZone(basename, rectangle));
       }
+      underground.AddZone(MakeUniqueZone("entrance foyer", new Rectangle(point2.X-1, point2.Y - 1,3,3)));
+      underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(point2.X - 1,0,3,underground.Height)));
+      underground.AddZone(MakeUniqueZone("east-west hallway", new Rectangle(0,point2.Y-1,underground.Width,3)));
+
       for (int x = 0; x < underground.Width; ++x) {
         for (int y = 0; y < underground.Height; ++y) {
           if (m_DiceRoller.RollChance(25)) {
@@ -2993,6 +2997,7 @@ restart:
           PowerGenerator power = MakeObjPowerGenerator();
           power.TogglePower();
           map.PlaceAt(power, new Point(6,1)); // close, but not so close that using it keeps the door from auto-locking
+          map.AddZone(MakeUniqueZone("office", rect3));
           continue;
         }
         // Try to leave a non-jumping path to the doors
@@ -3012,6 +3017,7 @@ restart:
         if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) return;
         map.PlaceAt(MakeObjIronBench(), pt);
       });
+      map.AddZone(MakeUniqueZone("west corridor", new Rectangle(0,0,3,map.Height)));
 
 #if OBSOLETE
       for (int index = 0; index < 5; ++index) {
@@ -3449,6 +3455,7 @@ restart:
         left2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       map.SetTileModelAt(1, rectangle2.Top, GameTiles.FLOOR_TILES);
+      map.AddZone(MakeUniqueZone("west corridor", new Rectangle(0,0,3,map.Height)));
       return map;
     }
 

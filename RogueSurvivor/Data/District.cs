@@ -103,6 +103,15 @@ namespace djack.RogueSurvivor.Data
       if (m_Maps.Contains(map)) return;
 //    map.District = this;
       m_Maps.Add(map);
+#if DEBUG
+      // some algorithms assume everything is in at least one zone
+      map.Rect.DoForEach(pt => {
+        if (!map.IsWalkable(pt)) return;    // no problem if not-walkable point is unzoned
+        if (!map.IsInsideAt(pt)) return;    // currently we only care if inside points are zoned (could change)
+        var zones = map.GetZonesAt(pt);
+        if (null == zones) throw new InvalidOperationException(map.Name+": unzoned "+pt.to_s());
+      });
+#endif
     }
 
     public void AddUniqueMap(Map map)
