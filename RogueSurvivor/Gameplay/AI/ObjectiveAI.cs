@@ -1,5 +1,6 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
+#define TRACE_GOALS
 
 using System;
 using System.Collections.Generic;
@@ -999,7 +1000,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var min_dist = new Dictionary<Location,int>();
       int lb = int.MaxValue;
       int ub = int.MaxValue;
-      // following was a significant de-optimization
       var waypoint_dist = new Dictionary<Location,Point>(); // X lower bound, Y upper bound
       waypoint_dist[m_Actor.Location] = new Point(0,0);
       bool last_waypoint_ok = false;
@@ -1045,6 +1045,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
               if (lb > dist.X) lb = dist.X;
               if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
+              goals.Add(loc);
             } else goals.Add(loc);
           }
         }
@@ -1550,11 +1551,17 @@ restart:
       }
       }
       }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past GreedyStep check");
+#endif
 
        // remove a degenerate case from consideration
        if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past single map pathfinder reduction");
+#endif
 
 #if PROTOTYPE
       if (   1==m_Actor.Location.Map.destination_maps.Get.Count
@@ -1572,6 +1579,9 @@ restart:
       var excluded = new HashSet<Map>();
 
 restart_single_exit:
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: iterating restart_single_exit");
+#endif
       foreach(var x in map_goals) {
         if (m_Actor.Location.Map == x.Key) continue;    // do not try to goal-rewrite the map we are in
         var tmp = x.Key.destination_maps.Get;

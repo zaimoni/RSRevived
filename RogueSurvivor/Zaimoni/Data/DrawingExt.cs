@@ -442,8 +442,8 @@ namespace Zaimoni.Data
       if (null == lhs) return r;
       if (null == rhs) return l;
       HashSet<U> ret(T src) {
-        var x = lhs(src);
-        var y = rhs(src);
+        var x = l(src);
+        var y = r(src);
         if (null == x) return y;
         if (null != y) x.UnionWith(y);
         return x;
@@ -459,9 +459,9 @@ namespace Zaimoni.Data
       if (null == lhs) return r;
       if (null == rhs) return l;
       HashSet<U> ret(T src) {
-        var x = lhs(src);
+        var x = l(src);
         if (null!=x && 0<x.Count) return x;
-        return rhs(src);
+        return r(src);
       }
       return ret;
     }
@@ -472,8 +472,10 @@ namespace Zaimoni.Data
     {
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
       V ret(T src) {
-        return lhs(rhs(src));
+        return l(r(src));
       }
       return ret;
     }
@@ -486,7 +488,7 @@ namespace Zaimoni.Data
       if (null == rhs) return l;
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       U ret(T src) {
-        return lhs(rhs(src));
+        return l(r(src));
       }
       return ret;
     }
@@ -498,7 +500,7 @@ namespace Zaimoni.Data
       if (null == lhs) return r;
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
       U ret(T src) {
-        return lhs(rhs(src));
+        return l(r(src));
       }
       return ret;
     }

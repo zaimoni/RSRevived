@@ -859,6 +859,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism for: "+m.ToString());
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, sights_to_see.In(m).to_s());
+#endif
           return sights_to_see.In(m);
         }
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
@@ -880,16 +884,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing targets: "+(null==pathing_targets ? "null" : "non-null"));
+#endif
         if (null != pathing_targets) {
           var view = m_Actor.Location.View;
           var d_span = view.DistrictSpan;
           int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
 
+          // The prefilter functions are going into HashSet<>.RemoveWhere so they have to return false to accept, true to reject
           bool prefilter_view(Map m) {
-            if (m==m_Actor.Location.Map) return true;
-            if (0 >= map_code) return false;
-            if (map_code != District.UsesCrossDistrictView(m)) return false;
-            return d_span.Contains(m.District.WorldPosition);
+            if (m==m_Actor.Location.Map) return false;
+            if (0 >= map_code) return true;
+            if (map_code != District.UsesCrossDistrictView(m)) return true;
+            return !d_span.Contains(m.District.WorldPosition);
           }
 
           // these two may need to be new parameters for BehaviorPathTo
@@ -897,6 +905,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // 1) view pathing
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
+#endif
           if (null!=tmpAction) return tmpAction;
           // 2) minimap range pathing, if distinct from view
           if (0!= map_code) {
@@ -904,20 +915,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
             d_span = view.DistrictSpan;
 
             bool prefilter_minimap(Map m) {
-              if (m==m_Actor.Location.Map) return true;
-              if (0 >= map_code) return false;  // large maps like the CHAR undergound base
-              if (!d_span.Contains(m.District.WorldPosition)) return false;
+              if (m==m_Actor.Location.Map) return false;
+              if (0 >= map_code) return true;  // large maps like the CHAR undergound base
+              if (!d_span.Contains(m.District.WorldPosition)) return true;
               // entry map is code 1, and is promiscuous (want to respond to basements, etc.)
               int other_map_code = District.UsesCrossDistrictView(m);
-              if (map_code == other_map_code) return true;
-              if (1< map_code) return 1==other_map_code;    // only consider entry map from subway/sewer for minimap pathfinding
+              if (map_code == other_map_code) return false;
+              if (1< map_code) return 1!=other_map_code;    // only consider entry map from subway/sewer for minimap pathfinding
               // entry map cares "where" the other map's entrance is
-              if (1 < other_map_code) return true;  // subway and sewer always ok
+              if (1 < other_map_code) return false;  // subway and sewer always ok
               // hospital and police station go fully into scope if the entrance is there; basements can just check directly
-              if (m.destination_maps.Get.Contains(m.District.EntryMap)) return m.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
-              if (null!=Session.Get.UniqueMaps.NavigatePoliceStation(m)) return Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
-              else if (null != Session.Get.UniqueMaps.NavigateHospital(m)) return Session.Get.UniqueMaps.Hospital_Admissions.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
-              return false;
+              if (m.destination_maps.Get.Contains(m.District.EntryMap)) return !m.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              if (null!=Session.Get.UniqueMaps.NavigatePoliceStation(m)) return !Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              else if (null != Session.Get.UniqueMaps.NavigateHospital(m)) return !Session.Get.UniqueMaps.Hospital_Admissions.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              return true;
             }
 
 #if PROTOTYPE
@@ -928,12 +939,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
 #endif
             tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap /*,postfilter_minimap*/);
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
+#endif
             if (null!=tmpAction) return tmpAction;
           }
           // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
           if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
           tmpAction = BehaviorPathTo(pathing_targets);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within world: "+(tmpAction?.ToString() ?? "null"));
+#endif
           if (null!=tmpAction) return tmpAction;
         }
       }
