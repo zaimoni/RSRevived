@@ -1325,7 +1325,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)
+    private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)   // XXX does not handle firing through exits
     {
       var ret = new HashSet<Point>();
       var danger = new HashSet<Point>();
@@ -1334,7 +1334,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var pt in en.Location.Position.Adjacent()) danger.Add(pt);
       }
       int range = m_Actor.CurrentRangedAttack.Range;
-      System.Collections.ObjectModel.ReadOnlyCollection<Point> optimal_FOV = LOS.OptimalFOV(range);
+      var optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
         foreach(Point pt in optimal_FOV.Select(p => new Point(p.X+en.Location.Position.X,p.Y+en.Location.Position.Y))) {
           if (ret.Contains(pt)) continue;
@@ -3364,22 +3364,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == threats) return false;
       if (m_Actor.Location.Map == m_Actor.Location.Map.District.SewersMap && Session.Get.HasZombiesInSewers) return false;
       return 0< threats.ThreatWhere(m_Actor.Location.Map).Count;   // XXX could be more efficient?
-    }
-
-    private HashSet<Point> PartialInvertLOS(HashSet<Point> tainted, Map m, int radius)
-    {
-      var ret = new HashSet<Point>(tainted);
-      var ideal = LOS.OptimalFOV(radius);
-      foreach(var pt in tainted) {
-        if (!m.WouldBlacklistFor(pt,m_Actor)) continue;
-        foreach(var offset in ideal) {
-          Point test = new Point(pt.X+offset.X,pt.Y+offset.Y);
-          if (!m.IsInBounds(pt)) continue;  // have commited to point-based pathfinding when calling this
-          if (ret.Contains(test)) continue;
-          if (LOS.CanTraceViewLine(new Location(m,test),pt)) ret.Add(test);
-        }
-      }
-      return ret;
     }
 
     protected bool HaveTourismInCurrentMap()
