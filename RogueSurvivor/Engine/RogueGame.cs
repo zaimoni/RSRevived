@@ -480,6 +480,32 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
+    // more sophisticated variants would handle player-varying messages
+    public void PropagateSight(Location loc, Data.Message msg, Action<Actor> doFn, Predicate<Actor> player_knows)
+    {
+      void process_sight(Actor a) {
+        if (a?.IsDead ?? true) return;
+        if (!a.Controller.CanSee(loc)) return;
+        if (a.Controller is PlayerController player) {
+          if (player_knows(a)) return;
+          if (null != Player && Player == a) {
+            AddMessage(msg);
+            RedrawPlayScreen();
+            return;
+          }
+          player.DeferMessage(msg);
+          return;
+        }
+        // NPC ai hooks go here
+        doFn(a);
+      }
+
+      Rectangle survey = new Rectangle(loc.Position.X-Actor.MAX_VISION, loc.Position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
+      survey.DoForEach(pt => process_sight(loc.Map.GetActorAtExt(pt)));
+      var e = loc.Exit;
+      if (null != e) process_sight(e.Location.Actor);
+    }
+
     private static Data.Message MakeErrorMessage(string text)
     {
       return new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.Red);
@@ -9945,16 +9971,13 @@ namespace djack.RogueSurvivor.Engine
         killer.HasMurdered(deadGuy);
         if (IsVisibleToPlayer(killer))
           AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
-        // XXX \todo: convert this to a proper scan for "all who can see"
-        Map map = killer.Location.Map;
-        Point position = killer.Location.Position;
-        foreach (Actor actor in map.Actors) {
-          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= actor.FOVrange(map.LocalTime, Session.Get.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
-          {
-            DoSay(actor, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
-            DoMakeAggression(actor, killer);
+
+        PropagateSight(killer.Location, null, a => {
+          if (a.Model.Abilities.IsLawEnforcer && a != killer && a.Leader != killer && killer.Leader != a) {
+            DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+            DoMakeAggression(a, killer);
           }
-        }
+        }, TRUE);   // Action<Actor> doFn
       }
 
       if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
