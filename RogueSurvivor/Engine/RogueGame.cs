@@ -12095,6 +12095,10 @@ namespace djack.RogueSurvivor.Engine
         PanViewportTo(players[0]);
         return true;
       }
+#if DEBUG
+      if (0 < players.Count) throw new InvalidProgramException("need to handle multiple non-active PCs who can see location");
+#endif
+      // \todo following code may be no-op
       if (CurrentMap != map) {
         Location? tmp = CurrentMap.Denormalize(new Location(map,position));
         if (null == tmp) return false;
