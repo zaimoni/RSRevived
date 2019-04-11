@@ -515,8 +515,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != equippedWeapon) game.DoUnequipItem(m_Actor, equippedWeapon);    // unusable ranged weapon
         return null;
       }
-      if (equippedWeapon == bestMeleeWeapon) return null;
-      game.DoEquipItem(m_Actor, bestMeleeWeapon);
+      if (equippedWeapon != bestMeleeWeapon) game.DoEquipItem(m_Actor, bestMeleeWeapon);
       return null;
     }
 

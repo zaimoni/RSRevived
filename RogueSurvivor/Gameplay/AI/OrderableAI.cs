@@ -1364,7 +1364,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
             foreach(Percept p in enemies) {
-              if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
+              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
               Actor en = p.Percepted as Actor;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
@@ -1374,7 +1374,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           } else { // also check for no-weapon one-shotting
             foreach(Percept p in enemies) {
-              if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
+              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
               Actor en = p.Percepted as Actor;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
@@ -1402,8 +1402,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == am) continue;
           if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) {
             tmpAction = Equip(rw);
-            if (null != tmpAction) return tmpAction;
-            return new ActionUseItem(m_Actor,am);
+            return null != tmpAction ? tmpAction : new ActionUseItem(m_Actor, am);
           }
         }
         return Equip(GetBestRangedWeaponWithAmmo());
