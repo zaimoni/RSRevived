@@ -322,7 +322,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 // push in a valid direction at random
                 List<Direction> validPushes = new List<Direction>(8);
                 foreach (Direction pushDir in Direction.COMPASS) {
-                  if (obj.CanPushTo(obj.Location.Position + pushDir)) validPushes.Add(pushDir);
+                  var dest = obj.Location.Position + pushDir;
+                  if (obj.Location.Map.IsInBounds(dest) && obj.Location.Map.HasExitAt(dest)) continue;  // constructor crash
+                  if (obj.CanPushTo(dest)) validPushes.Add(pushDir);
                 }
                 if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, RogueForm.Game.Rules.DiceRoller.Choose(validPushes));
             }

@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_To = pushObj.Location.Position + pushDir;
 #if DEBUG
       // will be ok when tactical pushing is implemented
-      if (m_Object.Location.Map.HasExitAt(m_To) && m_Object.Location.Map.IsInBounds(m_To) && !m_Object.IsJumpable) throw new InvalidOperationException("Blocking exit with push");
+      if (actor.Controller is Gameplay.AI.OrderableAI && m_Object.Location.Map.HasExitAt(m_To) && m_Object.Location.Map.IsInBounds(m_To) && !m_Object.IsJumpable) throw new InvalidOperationException("Blocking exit with push");
 #endif
     }
 
