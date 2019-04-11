@@ -235,12 +235,10 @@ namespace djack.RogueSurvivor.Data
                   if (0 >= pos.X) continue;
                   x_delta = -1;
                   if (0 > pt.Y) {
-                    if (3 == crossdistrict_ok) continue;
                     if (0 >= pos.Y) continue;
                     y_delta = -1;
                     invalid_xy.Add(new Point(pt.X+m.Width,pt.Y+m.Height));
                   } else if (m.Height <= pt.Y) {
-                    if (3 == crossdistrict_ok) continue;
                     if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
                     y_delta = 1;
                     invalid_xy.Add(new Point(pt.X+m.Width,pt.Y-m.Height));
@@ -251,20 +249,17 @@ namespace djack.RogueSurvivor.Data
                   if (Engine.Session.Get.World.Size <= pos.X+1) continue;
                   x_delta = 1;
                   if (0 > pt.Y) {
-                    if (3 == crossdistrict_ok) continue;
                     if (0 >= pos.Y) continue;
                     y_delta = -1;
                     invalid_xy.Add(new Point(pt.X-m.Width,pt.Y+m.Height));
                   } else if (m.Height <= pt.Y) {
-                    if (3 == crossdistrict_ok) continue;
                     if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
                     y_delta = 1;
                     invalid_xy.Add(new Point(pt.X-m.Width,pt.Y-m.Height));
                   } else {
                     invalid_x.Add(new Point(pt.X-m.Width,pt.Y));
                   }
-                } else if (3 == crossdistrict_ok) continue;
-                else if (0 > pt.Y) {
+                } else if (0 > pt.Y) {
                   if (0 >= pos.Y) continue;
                   y_delta = -1;
                   invalid_y.Add(new Point(pt.X,pt.Y+m.Height));
