@@ -94,6 +94,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE; // backstop
 
+      InitAICache(percepts_all);
+
       // New objectives system
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -120,7 +122,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      InitAICache(percepts_all);
 
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it

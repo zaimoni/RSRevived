@@ -101,6 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Activity = Activity.IDLE; // backstop
 
       if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
+      InitAICache(percepts_all, percepts_all);
 
       // New objectives system
 #if TRACE_SELECTACTION
@@ -134,7 +135,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      InitAICache(percepts_all, percepts_all);
       bool in_blast_field = _blast_field?.Contains(m_Actor.Location.Position) ?? false;
 
       // XXX the proper weapon should be calculated like a player....

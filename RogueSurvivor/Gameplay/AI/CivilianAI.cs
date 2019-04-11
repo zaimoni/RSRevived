@@ -216,6 +216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       ExpireTaboos();
+      InitAICache(percepts1, percepts_all);
 
       // New objectives system
 #if TRACE_SELECTACTION
@@ -249,7 +250,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
 #endif
       // civilians track how long since they've seen trouble
-      if (null != enemies || InCombat) m_SafeTurns = 0; // blocker: next save game \todo not safe if in combat; for police this includes threat "close by"
+      if (null != enemies || InCombat) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
       if (null != enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(enemies);
@@ -261,7 +262,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      InitAICache(percepts1, percepts_all);
       bool in_blast_field = _blast_field?.Contains(m_Actor.Location.Position) ?? false;
 
       // XXX the proper weapon should be calculated like a player....

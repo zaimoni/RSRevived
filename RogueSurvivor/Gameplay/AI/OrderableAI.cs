@@ -1233,7 +1233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!_safe_run_retreat) {
               m_Actor.IsRunning = RunIfAdvisable(test.dest);
 #if PROTOTYPE
-              if (m_Actor.IsRunning) {
+              if (m_Actor.IsRunning && m_Actor.RunIsFreeMove) {
                 // \todo set up Goal_NextAction or Goal_NextCombatAction
                 // * if attackable enemies, attack
                 // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
@@ -1431,7 +1431,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (tmpAction is ActionMoveStep test) {
                 m_Actor.IsRunning = RunIfAdvisable(test.dest);
 #if PROTOTYPE
-                if (m_Actor.IsRunning) {
+                if (m_Actor.IsRunning && m_Actor.RunIsFreeMove) {
                    // \todo set up Goal_NextAction or Goal_NextCombatAction
                    // * if attackable enemies, attack
                    // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
