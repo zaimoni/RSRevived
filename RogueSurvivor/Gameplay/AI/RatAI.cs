@@ -45,16 +45,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
+      _all = FilterSameMap(UpdateSensors());
       ActorAction tmpAction;
-      if (enemies != null) {
-        tmpAction = TargetGridMelee(FilterCurrent(enemies));
-        if (null != tmpAction) return tmpAction;
-        tmpAction = TargetGridMelee(FilterOld(enemies));
+      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all)))) {
+        tmpAction = TargetGridMelee(_enemies);
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorGoEatCorpse(percepts_all);
+      tmpAction = BehaviorGoEatCorpse(_all);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
