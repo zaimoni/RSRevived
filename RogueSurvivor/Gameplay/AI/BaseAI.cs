@@ -1186,19 +1186,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // XXX these two break down cross-map
     protected bool CanReachSimple(Location dest, RouteFinder.SpecialActions allowedActions)
     {
-       if (m_RouteFinder == null) m_RouteFinder = new RouteFinder(this);
-       m_RouteFinder.AllowedActions = allowedActions;
-       int maxDist = Rules.GridDistance(m_Actor.Location, dest);
-       return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, maxDist, Rules.GridDistance);
+       (m_RouteFinder ?? (m_RouteFinder = new RouteFinder(this))).AllowedActions = allowedActions;
+       return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, Rules.GridDistance(m_Actor.Location, dest), Rules.GridDistance);
     }
 
     protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)
     {
       if (null == percepts) return;
-      int i = 0;
-      while (i < percepts.Count) {
-        if (CanReachSimple(percepts[i].Location, allowedActions)) i++;
-        else percepts.RemoveAt(i);
+      int i = percepts.Count;
+      while(0 < i--) {
+        if (!CanReachSimple(percepts[i].Location, allowedActions))  percepts.RemoveAt(i);
       }
     }
 
