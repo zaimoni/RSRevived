@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
       m_Actor.Walk();    // alpha 10: don't run by default
-      ActorAction tmpAction = BehaviorEquipWeapon(game);
+      ActorAction tmpAction = BehaviorEquipWeapon();
       if (null != tmpAction) return tmpAction;
       /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
         List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));

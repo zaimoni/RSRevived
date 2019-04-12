@@ -1350,11 +1350,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
+    protected ActorAction BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
 #endif
+
+      var game = RogueForm.Game;
 
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
@@ -1391,7 +1393,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // if no ranged weapons, use BaseAI
       // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
-      if (null == available_ranged_weapons) return base.BehaviorEquipWeapon(game);
+      if (null == available_ranged_weapons) return base.BehaviorEquipWeapon();
 
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this

@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, available_ranged_weapons, current_enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, current_enemies);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif

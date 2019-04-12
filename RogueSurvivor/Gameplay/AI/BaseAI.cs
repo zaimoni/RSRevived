@@ -502,20 +502,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>null, or a non-free action</returns>
-    protected ActorAction BehaviorEquipWeapon(RogueGame game)
+    protected ActorAction BehaviorEquipWeapon()
     {
       // One of our callers is InsaneHumanAI::SelectAction.  As this AI is always insane, it does not trigger
       // random insane actions which could pick up ranged weapons.
       // Thus, no AI that calls this function has a usable firearm in inventory.
 
-      Item equippedWeapon = m_Actor.GetEquippedWeapon();
-      ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
+      var tmp_a = m_Actor;
+      Item equippedWeapon = tmp_a.GetEquippedWeapon();
+      ItemMeleeWeapon bestMeleeWeapon = tmp_a.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
 
       if (bestMeleeWeapon == null) {
-        if (null != equippedWeapon) game.DoUnequipItem(m_Actor, equippedWeapon);    // unusable ranged weapon
+        if (null != equippedWeapon) RogueForm.Game.DoUnequipItem(tmp_a, equippedWeapon);    // unusable ranged weapon
         return null;
       }
-      if (equippedWeapon != bestMeleeWeapon) game.DoEquipItem(m_Actor, bestMeleeWeapon);
+      if (equippedWeapon != bestMeleeWeapon) RogueForm.Game.DoEquipItem(tmp_a, bestMeleeWeapon);
       return null;
     }
 
