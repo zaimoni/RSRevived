@@ -40,6 +40,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private Location m_prevLocation;
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
+    [NonSerialized] protected List<Percept> _all;           // cache variables of use to all AI subclasses
+    [NonSerialized] protected List<Percept> _enemies;
 
     protected BaseAI()
     {
@@ -47,6 +49,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Location PrevLocation { get { return m_prevLocation; } }
     public void UpdatePrevLocation() { m_prevLocation = m_Actor.Location; } // for PlayerController
+
+    protected virtual void ResetAICache()
+    {
+      _all = null;
+      _enemies = null;
+    }
 
     public override ActorAction GetAction(RogueGame game)
     {
@@ -62,8 +70,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction alt = ai.RewriteAction(actorAction);
         if (alt?.IsLegal() ?? false) actorAction = alt;
 #endif
-        ai.ResetAICache();
       }
+      ResetAICache();
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
       return actorAction ?? new ActionWait(m_Actor);    // likely redundant
     }

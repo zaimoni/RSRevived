@@ -236,8 +236,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     } }
 
 
-    public void ResetAICache()
+    protected override void ResetAICache()
     {
+      base.ResetAICache();
       _legal_steps = null;
       _damage_field = null;
       _slow_melee_threat = null;
