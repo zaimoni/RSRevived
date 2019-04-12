@@ -51,10 +51,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(_all);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
+
       tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.TRACKING;

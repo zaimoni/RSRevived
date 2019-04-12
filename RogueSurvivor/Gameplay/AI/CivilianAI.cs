@@ -357,13 +357,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
           tmpAction = BehaviorGoEatCorpse(percepts1);
-          if (null != tmpAction) {
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "cannibalism");
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "cannibalism");
 #endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
+          if (null != tmpAction) return tmpAction;
         }
       }
 

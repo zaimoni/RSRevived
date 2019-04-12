@@ -97,7 +97,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction = BehaviorGoEatCorpse(percepts_all);
         if (actorAction != null) {
           m_Actor.Run();
-          m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
       }
