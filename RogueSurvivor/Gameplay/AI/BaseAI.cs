@@ -269,6 +269,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         return (float) score;
       }, (a, b) => a > b);
+      m_Actor.Activity = Activity.IDLE;
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 

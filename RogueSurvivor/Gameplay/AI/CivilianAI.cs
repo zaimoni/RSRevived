@@ -1011,7 +1011,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "wandering");
 #endif
-      m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(m_Exploration);
     }
   }

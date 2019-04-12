@@ -233,11 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // tourism would go here
 
       tmpAction = BehaviorWander(null, loc => RogueGame.IsInCHAROffice(loc));
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
-      m_Actor.Activity = Activity.IDLE;
+      if (null != tmpAction) return tmpAction;
       return BehaviorWander();
     }
 

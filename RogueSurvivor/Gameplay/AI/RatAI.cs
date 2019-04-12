@@ -45,9 +45,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      _all = FilterSameMap(UpdateSensors());
       ActorAction tmpAction;
-      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all)))) {
+      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
         tmpAction = TargetGridMelee(_enemies);
         if (null != tmpAction) return tmpAction;
       }
@@ -61,7 +60,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.TRACKING;
         return tmpAction;
       }
-      m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
     }
   }
