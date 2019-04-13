@@ -21,7 +21,6 @@ using System.Diagnostics;
 #endif
 using System.Linq;
 using Zaimoni.Data;
-using static Zaimoni.Data.Functor;
 
 #if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_int;
@@ -163,12 +162,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       timer.Restart();
 #endif
       // end item juggling check
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      _all = FilterSameMap(UpdateSensors());
 #if TIME_TURNS
       timer.Stop();
       if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts_all " + timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
-      List<Percept> percepts1 = FilterCurrent(percepts_all);    // this tests fast
+      List<Percept> current = FilterCurrent(_all);    // this tests fast
 #if TIME_TURNS
       timer.Restart();
 #endif
@@ -188,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "under orders");
 #endif
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        ActorAction actorAction = ExecuteOrder(game, Order, current);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
 #if TRACE_SELECTACTION
@@ -216,7 +215,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       ExpireTaboos();
-      InitAICache(percepts1, percepts_all);
+      InitAICache(current, _all);
 
       // get out of the range of explosions if feasible
       ActorAction tmpAction = BehaviorFleeExplosives();
@@ -249,15 +248,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1)); // this tests fast
+      _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 #endif
       // civilians track how long since they've seen trouble
-      if (null != enemies || InCombat) m_SafeTurns = 0;
+      if (null != _enemies || InCombat) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
-      if (null != enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(enemies);
+      if (null != _enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(_enemies);
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
 
@@ -273,7 +272,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == enemies) AdviseFriendsOfSafety();
+      if (null == _enemies) AdviseFriendsOfSafety();
 
       // \todo change target for using Goal_NextCombatAction to short-circuit unhealthy cowardice (or not, main objective processing is above)
       // this action tests whether enemies are in sight and chooses which action to take based on this
@@ -284,7 +283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         timer.Restart();
 #endif
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
@@ -294,31 +293,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != tmpAction) return tmpAction;
 
-      if (null != enemies && Directives.CanThrowGrenades) {
-        tmpAction = BehaviorThrowGrenade(game, enemies);
+      if (null != _enemies && Directives.CanThrowGrenades) {
+        tmpAction = BehaviorThrowGrenade(game, _enemies);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
 #endif
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
       if (null != tmpAction) return tmpAction;
 
-	  List<Percept> friends = FilterNonEnemies(percepts1);
-      if (null != enemies) {
+	  List<Percept> friends = FilterNonEnemies(current);
+      if (null != _enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
-          tmpAction = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+          tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
 #endif
           if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, enemies, Directives.Courage, m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(game, _enemies, Directives.Courage, m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
@@ -356,7 +355,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
-          tmpAction = BehaviorGoEatCorpse(percepts1);
+          tmpAction = BehaviorGoEatCorpse(current);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "cannibalism");
 #endif
@@ -415,11 +414,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       // XXX this should lose to same-map threat hunting at close ETA
-      if (null == enemies && Directives.CanTakeItems) {
+      if (null == _enemies && Directives.CanTakeItems) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
-        var interestingStacks = GetInterestingInventoryStacks(percepts1);
+        var interestingStacks = GetInterestingInventoryStacks(current);
         if (interestingStacks != null) {
           {
           var get_item = new Dictionary<Location, ActorAction>();
@@ -613,12 +612,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (   RogueGame.Options.IsAggressiveHungryCiviliansOn
-          && percepts1 != null
+          && current != null
           && !m_Actor.HasLeader
           && !m_Actor.Model.Abilities.IsLawEnforcer
           && (m_Actor.IsHungry
           && !m_Actor.Has<ItemFood>())) {
-        Percept target = FilterNearest(percepts1.FilterT<Actor>(a =>
+        Percept target = FilterNearest(current.FilterT<Actor>(a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
@@ -771,7 +770,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      tmpAction = BehaviorGoReviveCorpse(percepts1);  // not logically CivilianAI only
+      tmpAction = BehaviorGoReviveCorpse(current);  // not logically CivilianAI only
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
 #if TRACE_SELECTACTION
@@ -789,7 +788,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      Percept percept1 = percepts1.FilterFirst(p =>
+      Percept percept1 = current.FilterFirst(p =>
       {
         Actor actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;

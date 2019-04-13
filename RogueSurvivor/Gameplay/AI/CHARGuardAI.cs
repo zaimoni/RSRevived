@@ -78,13 +78,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      _all = FilterSameMap(UpdateSensors());
 
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
+        ActorAction actorAction = ExecuteOrder(game, Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.Activity = Activity.IDLE; // backstop
 
-      InitAICache(percepts_all);
+      InitAICache(_all);
 
       // New objectives system
       if (0<Objectives.Count) {
@@ -114,8 +114,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
-      List<Percept> old_enemies = FilterEnemies(percepts_all);
-      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       ActorAction tmpAction = null;
 
@@ -130,22 +130,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-      if (null == current_enemies) AdviseFriendsOfSafety();
+      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, current_enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
       if (null != tmpAction) return tmpAction;
 
-      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, current_enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);
       if (null != tmpAction) return tmpAction;
 
-      if (null != current_enemies) {
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+      if (null != _enemies) {
+        tmpAction = BehaviorFightOrFlee(game, _enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
         if (null != tmpAction) return tmpAction;
       }
 
-	  List<Percept> friends = FilterNonEnemies(percepts_all);
+	  List<Percept> friends = FilterNonEnemies(_all);
       if (null != friends) {
         List<Percept> percepts3 = friends.Filter(p =>
         {
@@ -173,8 +173,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
         }
       }
-      if (null != current_enemies && null != friends) {
-        tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+      if (null != _enemies && null != friends) {
+        tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
         if (null != tmpAction) return tmpAction;
       }
 

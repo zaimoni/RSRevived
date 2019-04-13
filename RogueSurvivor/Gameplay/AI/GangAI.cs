@@ -83,13 +83,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      List<Percept> _all = FilterSameMap(UpdateSensors());
 
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
+        ActorAction actorAction = ExecuteOrder(game, Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Activity = Activity.IDLE; // backstop
 
       if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
-      InitAICache(percepts_all);
+      InitAICache(_all);
 
       // New objectives systems
       if (0<Objectives.Count) {
@@ -119,8 +119,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> old_enemies = FilterEnemies(percepts_all);
-      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       ActorAction tmpAction = null;
 
@@ -135,23 +135,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-      if (null == current_enemies) AdviseFriendsOfSafety();
+      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, current_enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
       if (null != tmpAction) return tmpAction;
 
-      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, current_enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);
       if (null != tmpAction) return tmpAction;
 
-	  List<Percept> friends = FilterNonEnemies(percepts_all);
-      if (null != current_enemies) {
+	  List<Percept> friends = FilterNonEnemies(_all);
+      if (null != _enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
-          tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+          tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
+        tmpAction = BehaviorFightOrFlee(game, _enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorEat();
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
-          tmpAction = BehaviorGoEatCorpse(percepts_all);
+          tmpAction = BehaviorGoEatCorpse(_all);
           if (null != tmpAction) return tmpAction;
         }
       }
@@ -185,9 +185,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
-      if (null == current_enemies) {
+      if (null == _enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> interestingStacks = percepts_all.FilterT<Inventory>().FilterOut(p =>
+        List<Percept> interestingStacks = _all.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(p.Location)) return true; // blocked
@@ -202,9 +202,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (null == current_enemies) {
+      if (null == _enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        var mayStealFrom = FilterCurrent(percepts_all).FilterT<Actor>(a =>
+        var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
         {
           if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);

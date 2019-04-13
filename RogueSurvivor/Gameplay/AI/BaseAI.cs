@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Location m_prevLocation;
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
     [NonSerialized] protected List<Percept> _all;           // cache variables of use to all AI subclasses
-    [NonSerialized] protected List<Percept> _enemies;
+    [NonSerialized] protected List<Percept> _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
 
     protected BaseAI()
     {

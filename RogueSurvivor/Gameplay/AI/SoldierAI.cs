@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      _all = FilterSameMap(UpdateSensors());
 
       m_Actor.Walk();    // alpha 10: don't run by default
 
@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
+        ActorAction actorAction = ExecuteOrder(game, Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Activity = Activity.IDLE; // backstop
 
       if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
-      InitAICache(percepts_all, percepts_all);
+      InitAICache(_all, _all);
 
       // get out of the range of explosions if feasible
       ActorAction tmpAction = BehaviorFleeExplosives();
@@ -127,8 +127,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> old_enemies = FilterEnemies(percepts_all);
-      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == old_enemies ? "null == current_enemies" : old_enemies.Count.ToString()+" enemies"));
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == current_enemies ? "null == current_enemies" : current_enemies.Count.ToString()+" enemies"));
@@ -146,25 +146,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == current_enemies) AdviseFriendsOfSafety();
+      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, current_enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
       if (null != tmpAction) return tmpAction;
 
-      if (null != current_enemies) {
-        tmpAction = BehaviorThrowGrenade(game, current_enemies);
+      if (null != _enemies) {
+        tmpAction = BehaviorThrowGrenade(game, _enemies);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
 #endif
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, current_enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
@@ -172,16 +172,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // all free actions have to be before targeting enemies
 
-	  List<Percept> friends = FilterNonEnemies(percepts_all);
-      if (null != current_enemies) {
+	  List<Percept> friends = FilterNonEnemies(_all);
+      if (null != _enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
-          tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+          tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
 #endif
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(game, _enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
