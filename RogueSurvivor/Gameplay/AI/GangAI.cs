@@ -102,6 +102,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
       InitAICache(_all);
 
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
+      if (null == _enemies) AdviseFriendsOfSafety();
+
       // New objectives systems
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -119,9 +123,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> old_enemies = FilterEnemies(_all);
-      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
-
       ActorAction tmpAction = null;
 
       // melee risk management check
@@ -134,8 +135,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
-
-      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 

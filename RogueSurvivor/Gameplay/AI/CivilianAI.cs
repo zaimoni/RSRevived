@@ -221,6 +221,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
+      _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast
+
+      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
+      if (null == _enemies) AdviseFriendsOfSafety();
+
       // New objectives system
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
@@ -248,7 +253,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 #endif
@@ -270,9 +274,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
-
-      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == _enemies) AdviseFriendsOfSafety();
 
       // \todo change target for using Goal_NextCombatAction to short-circuit unhealthy cowardice (or not, main objective processing is above)
       // this action tests whether enemies are in sight and chooses which action to take based on this

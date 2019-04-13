@@ -96,6 +96,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       InitAICache(_all);
 
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
+      if (null == _enemies) AdviseFriendsOfSafety();
+
       // New objectives system
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -114,8 +118,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
-      List<Percept> old_enemies = FilterEnemies(_all);
-      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       ActorAction tmpAction = null;
 
@@ -129,8 +131,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
-
-      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 

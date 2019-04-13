@@ -107,6 +107,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
+      List<Percept> old_enemies = FilterEnemies(_all);
+      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
+
+      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
+      if (null == _enemies) AdviseFriendsOfSafety();
+
       // New objectives system
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
@@ -127,8 +133,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> old_enemies = FilterEnemies(_all);
-      _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == old_enemies ? "null == current_enemies" : old_enemies.Count.ToString()+" enemies"));
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == current_enemies ? "null == current_enemies" : current_enemies.Count.ToString()+" enemies"));
@@ -144,9 +148,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
-
-      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == _enemies) AdviseFriendsOfSafety();
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
