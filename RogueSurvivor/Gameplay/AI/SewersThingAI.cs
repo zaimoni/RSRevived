@@ -55,19 +55,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       ActorAction tmpAction;
-      if (enemies != null) {
-        tmpAction = TargetGridMelee(FilterCurrent(enemies));
+      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+        tmpAction = TargetGridMelee(FilterCurrent(_enemies));
         if (null != tmpAction) return tmpAction;
-        tmpAction = TargetGridMelee(FilterOld(enemies));
+        tmpAction = TargetGridMelee(FilterOld(_enemies));
         if (null != tmpAction) return tmpAction;
       }
-      ActorAction actorAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
-      if (actorAction != null) {
+      tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.TRACKING;
-        return actorAction;
+        return tmpAction;
       }
       return BehaviorWander();
     }

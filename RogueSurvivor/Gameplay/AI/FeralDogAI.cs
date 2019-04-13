@@ -58,64 +58,56 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      ActorAction tmpAction;
 
       // dogs target their leader's enemy before the usual check for enemies
       if (m_Actor.HasLeader) {
         Actor targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
-          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
-          if (actorAction != null) {
+          tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
+          if (null != tmpAction) {
             RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = targetActor;
-            return actorAction;
+            return tmpAction;
           }
         }
       }
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       // dogs cannot order their followers to stay behind
-      if (enemies != null) {
-        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
-        if (actorAction != null) {
+      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+        tmpAction = BehaviorFightOrFlee(game, _enemies, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
+        if (null != tmpAction) {
           // run to (or away if fleeing) if close.
           if (m_Actor.TargetActor != null) RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
-          return actorAction;
+          return tmpAction;
         }
       }
       if (m_Actor.IsAlmostHungry) {
-        ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts_all.FilterT<Inventory>());
-        if (actorAction != null) {
+        tmpAction = BehaviorGoEatFoodOnGround(_all.FilterT<Inventory>());
+        if (null != tmpAction) {
           m_Actor.Run();
           m_Actor.Activity = Activity.IDLE;
-          return actorAction;
+          return tmpAction;
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction = BehaviorGoEatCorpse(percepts_all);
-        if (actorAction != null) {
+        tmpAction = BehaviorGoEatCorpse(_all);
+        if (null != tmpAction) {
           m_Actor.Run();
-          return actorAction;
+          return tmpAction;
         }
       }
-      if (m_Actor.IsTired) {
-        m_Actor.Activity = Activity.IDLE;
-        return new ActionWait(m_Actor);
-      }
-      if (m_Actor.IsSleepy) {
-        m_Actor.Activity = Activity.SLEEPING;
-        return new ActionSleep(m_Actor);
-      }
+      if (m_Actor.IsTired) return new ActionWait(m_Actor);
+      if (m_Actor.IsSleepy) return new ActionSleep(m_Actor);
       if (m_Actor.HasLeader) {
-        int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
-        if (actorAction != null) {
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST);
+        if (null != tmpAction) {
           m_Actor.Walk();
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
-          return actorAction;
+          return tmpAction;
         }
       }
       return BehaviorWander();

@@ -70,30 +70,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      var tmp_abilities = m_Actor.Model.Abilities;
+      if (tmp_abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
 
-      if (m_Actor.Model.Abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
-
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       ActorAction tmpAction;
-      if (enemies != null) {
-        tmpAction = TargetGridMelee(FilterCurrent(enemies));
+      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+        tmpAction = TargetGridMelee(FilterCurrent(_enemies));
         if (null != tmpAction) return tmpAction;
-        tmpAction = TargetGridMelee(FilterOld(enemies));
+        tmpAction = TargetGridMelee(FilterOld(_enemies));
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorGoEatCorpse(percepts_all);
+      tmpAction = BehaviorGoEatCorpse(_all);
       if (null != tmpAction) return tmpAction;
 
-      if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
+      if (tmp_abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         if (null != tmpAction) {
           m_MemLOSSensor.Clear();
           return tmpAction;
         }
       }
-      if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        Percept percept = FilterNearest(percepts_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
+      if (!tmp_abilities.IsUndeadMaster) {
+        Percept percept = FilterNearest(_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept != null) {
           tmpAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3), true, true);
           if (null != tmpAction) {
@@ -103,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (!m_Actor.Model.Abilities.IsUndeadMaster) {
+      if (!tmp_abilities.IsUndeadMaster) {
         tmpAction = BehaviorTrackScent(m_MasterSmellSensor.Scents);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.TRACKING;
@@ -122,7 +120,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (m_Actor.Model.Abilities.ZombieAI_Explore) {
+      if (tmp_abilities.ZombieAI_Explore) {
         tmpAction = BehaviorExplore(m_Exploration);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
