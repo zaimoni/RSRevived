@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         timer.Restart();
 #endif
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TIME_TURNS
         timer.Stop();
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");

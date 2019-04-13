@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons);
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);

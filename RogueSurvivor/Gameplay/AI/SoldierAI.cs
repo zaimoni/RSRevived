@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(available_ranged_weapons, _enemies);
+      tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
