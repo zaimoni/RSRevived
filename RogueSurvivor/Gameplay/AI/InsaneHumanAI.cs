@@ -106,16 +106,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
       m_Actor.Walk();    // alpha 10: don't run by default
       ActorAction tmpAction = BehaviorEquipWeapon();
       if (null != tmpAction) return tmpAction;
+
       /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
-        List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
-        if (enemies != null) {
-          tmpAction = TargetGridMelee(FilterCurrent(enemies));
-          if (null != tmpAction) return tmpAction;
-          tmpAction = TargetGridMelee(FilterOld(enemies));
+        if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+          tmpAction = TargetGridMelee(_enemies);
           if (null != tmpAction) return tmpAction;
         }
       }
@@ -124,8 +121,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoEmote(m_Actor, game.Rules.DiceRoller.Choose(INSANITIES),true);
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        ActorAction actorAction2 = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-        if (actorAction2 != null) return actorAction2;
+        tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        if (null != tmpAction) return tmpAction;
       }
       return BehaviorWander();
     }
