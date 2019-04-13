@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Engine.AI
       IEnumerable<Percept_<object>> tmp = percepts.Where(p=>p.Percepted is _T_);
 	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
 	  if (!tmp.Any()) return null;
-	  List<Percept_<_T_>> ret = new List<Percept_<_T_>>();
+	  List<Percept_<_T_>> ret = new List<Percept_<_T_>>();  // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
 	  foreach(Percept_<object> p in tmp) {
 	    ret.Add(new Percept_<_T_>(p.Percepted as _T_, p.Turn, p.Location));
 	  }
