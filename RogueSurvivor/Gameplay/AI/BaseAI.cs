@@ -1240,12 +1240,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
-    {
-      int x = goal.X + rules.Roll(-range, range);
-      int y = goal.Y + rules.Roll(-range, range);
-      map.TrimToBounds(ref x, ref y);
-      return new Point(x, y);
+    protected static Location RandomPositionNear(Rules rules, Location goal, int range)
+    { // XXX \todo see if it's practical to be more efficient
+      Location ret = new Location(goal.Map,new Point(goal.Position.X+ rules.Roll(-range, range),goal.Position.Y + rules.Roll(-range, range)));
+      while(!ret.Map.IsValid(ret.Position)) ret = new Location(goal.Map, new Point(goal.Position.X + rules.Roll(-range, range), goal.Position.Y + rules.Roll(-range, range)));
+      return ret;
     }
 
     protected class ChoiceEval<_T_>
