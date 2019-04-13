@@ -1638,36 +1638,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>null, or a legal ActionThrowGrenade</returns>
-    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
+    protected ActorAction BehaviorThrowGrenade(RogueGame game)
     {
-      if (3 > (enemies?.Count ?? 0)) return null;
+#if DEBUG
+      if (null == _enemies) throw new ArgumentNullException(nameof(_enemies));
+#endif
+      if (3 > _enemies.Count) return null;
       ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
+      int blast_radius = itemGrenadeModel.BlastAttack.Radius;
+      var a_map = m_Actor.Location.Map;
+      int my_dist;
       Point? bestSpot = null;
       int bestSpotScore = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
-        int my_dist = Rules.GridDistance(m_Actor.Location.Position, point);
-        if (itemGrenadeModel.BlastAttack.Radius >= my_dist) continue;
+        if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, point))) continue;
         if (maxRange < my_dist) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
         if (_blast_field?.Contains(point) ?? false) continue;
         int score = 0;
-        Rectangle blast_zone = new Rectangle(point.X-itemGrenadeModel.BlastAttack.Radius, point.Y-itemGrenadeModel.BlastAttack.Radius, 2*itemGrenadeModel.BlastAttack.Radius+1, 2*itemGrenadeModel.BlastAttack.Radius+1);
+        Rectangle blast_zone = new Rectangle(point.X- blast_radius, point.Y- blast_radius, 2* blast_radius + 1, 2* blast_radius + 1);
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
         if (   !blast_zone.Any(pt => {
-                  if (!m_Actor.Location.Map.IsValid(pt)) return false;
-                  Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt);
+                  Actor actorAt = a_map.GetActorAtExt(pt);
                   if (null == actorAt) return false;
-                  if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
-                  int distance = Rules.GridDistance(new Location(m_Actor.Location.Map,point), actorAt.Location);
-//                  if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
+#if DEBUG
+                  if (actorAt == m_Actor) throw new InvalidProgramException("actorAt == m_Actor"); // integrity issue w/map
+#endif
                   if (m_Actor.IsEnemyOf(actorAt)) {
-                    score += (itemGrenadeModel.BlastAttack.DamageAt(distance) * actorAt.MaxHPs);
+                    score += (itemGrenadeModel.BlastAttack.DamageAt(Rules.GridDistance(new Location(a_map, point), actorAt.Location)) * actorAt.MaxHPs);
                     return false;
                   }
-//                  num2 = -1;
                   return true;
                })
             &&  score>bestSpotScore) {
@@ -1675,10 +1678,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             bestSpotScore = score;
           }
       }
-      if (null == bestSpot /* || !nullable.HasValue */) return null;  // 2nd test probably redundant
-      if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);
+      if (null == bestSpot) return null;
+      if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);    // XXX required by the legality check
       ActorAction actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value);
-      if (!actorAction.IsLegal()) throw new ArgumentOutOfRangeException("created illegal ActionThrowGrenade");  // invariant failure
+#if DEBUG
+      if (!actorAction.IsLegal()) throw new InvalidProgramException("created illegal ActionThrowGrenade");  // invariant failure
+#endif
       return actorAction;
     }
 
