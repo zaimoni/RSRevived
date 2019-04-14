@@ -1271,56 +1271,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
-    {
-      Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
-	  int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
-      if (0 >= a_dam) return;   // do not update ineffective weapons
-      int a_kill_b_in = ((8*en.HitPoints)/(5*a_dam))+2;	// assume bad luck when attacking.
-      // Also, assume one fluky miss and compensate for overkill returning 0 rather than 1 attacks.
-      if (a_kill_b_in > rw.Ammo) {  // account for reloading weapon
-        int turns = a_kill_b_in-rw.Ammo;
-        a_kill_b_in++;
-        a_kill_b_in += turns/rw.Model.MaxAmmo;
-      }
-      if (null == best_weapons) {
-        best_weapon_ETAs[en] = a_kill_b_in;
-        return;
-      } else if (!best_weapons.ContainsKey(en) || best_weapon_ETAs[en] > a_kill_b_in) {
-        best_weapons[en] = rw;
-        best_weapon_ETAs[en] = a_kill_b_in;
-        return;
-      } else if (2 == best_weapon_ETAs[en]) {
-        Attack tmp2 = m_Actor.HypotheticalRangedAttack(best_weapons[en].Model.Attack, dist, en);
-        if (tmp.DamageValue < tmp2.DamageValue) {   // lower damage for overkill is usually better
-          best_weapons[en] = rw;
-          best_weapon_ETAs[en] = a_kill_b_in;
-        }
-        return;
-      }
-    }
-
     private ActorAction Equip(ItemRangedWeapon rw) {
       if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) RogueForm.Game.DoEquipItem(m_Actor, rw);
       if (0 >= rw.Ammo) {
         ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (null != ammo) return new ActionUseItem(m_Actor, ammo);
-      }
-      return null;
-    }
-
-    private ActorAction BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
-    {
-      if (en.HitPoints>tmp_attack.DamageValue/2) return null;
-      ActorAction tmpAction = null;
-      // can one-shot
-      if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
-        tmpAction = BehaviorMeleeAttack(en);
-        if (null != tmpAction) return tmpAction;
-      }
-      if (one_on_one && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-        tmpAction = BehaviorMeleeAttack(en);
-        if (null != tmpAction) return tmpAction;
       }
       return null;
     }
@@ -1454,9 +1409,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if PROTOTYPE
                 if (m_Actor.IsRunning && m_Actor.RunIsFreeMove) {
                    // \todo set up Goal_NextAction or Goal_NextCombatAction
+                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, ActorAction engaged, new ActionWait(m_Actor)));
                    // * if attackable enemies, attack
                    // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
                    // * else do not contrain processing (null out)
+                   // alternatively...sequence a series of zero-parameter handlers (int codes to be interpreted by the controller)?
                 }
 #endif
               }

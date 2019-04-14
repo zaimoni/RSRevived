@@ -257,7 +257,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 #endif
       // civilians track how long since they've seen trouble
-      if (null != _enemies || InCombat) m_SafeTurns = 0;
+      if (InCombat) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
       if (null != _enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(_enemies);

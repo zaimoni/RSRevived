@@ -225,6 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override bool InCombat { get {
       if (base.InCombat) return true;
+      if (null != _enemies) return true;
 
       var threats = m_Actor.Threats;
       if (null != threats) {
@@ -370,6 +371,167 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
       }
       return ret;
+    }
+
+    protected ActorAction BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
+    {
+      if (en.HitPoints>tmp_attack.DamageValue/2) return null;
+      ActorAction tmpAction = null;
+      // can one-shot
+      if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
+        tmpAction = BehaviorMeleeAttack(en);
+        if (null != tmpAction) return tmpAction;
+      }
+      if (one_on_one && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
+        tmpAction = BehaviorMeleeAttack(en);
+        if (null != tmpAction) return tmpAction;
+      }
+      return null;
+    }
+
+    protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
+    {
+      Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
+	  int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
+      if (0 >= a_dam) return;   // do not update ineffective weapons
+      int a_kill_b_in = ((8*en.HitPoints)/(5*a_dam))+2;	// assume bad luck when attacking.
+      // Also, assume one fluky miss and compensate for overkill returning 0 rather than 1 attacks.
+      if (a_kill_b_in > rw.Ammo) {  // account for reloading weapon
+        int turns = a_kill_b_in-rw.Ammo;
+        a_kill_b_in++;
+        a_kill_b_in += turns/rw.Model.MaxAmmo;
+      }
+      if (null == best_weapons) {
+        best_weapon_ETAs[en] = a_kill_b_in;
+        return;
+      } else if (!best_weapons.ContainsKey(en) || best_weapon_ETAs[en] > a_kill_b_in) {
+        best_weapons[en] = rw;
+        best_weapon_ETAs[en] = a_kill_b_in;
+        return;
+      } else if (2 == best_weapon_ETAs[en]) {
+        Attack tmp2 = m_Actor.HypotheticalRangedAttack(best_weapons[en].Model.Attack, dist, en);
+        if (tmp.DamageValue < tmp2.DamageValue) {   // lower damage for overkill is usually better
+          best_weapons[en] = rw;
+          best_weapon_ETAs[en] = a_kill_b_in;
+        }
+        return;
+      }
+    }
+
+    // forked from OrderableAI::BehaviorEquipWeapon
+    public ActorAction AttackWithoutMoving()
+    {
+      if (null == _enemies) return null;    // XXX likely error condition
+
+      var game = RogueForm.Game;
+
+      // migrated from CivilianAI::SelectAction
+      ActorAction tmpAction = null;
+
+        if (1==Rules.InteractionDistance(_enemies[0].Location,m_Actor.Location)) {
+          // something adjacent...check for one-shotting
+          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
+          if (null!=tmp_melee) {
+            foreach(Percept p in _enemies) {
+              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
+              Actor en = p.Percepted as Actor;
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
+              if (null != tmpAction) {
+                if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
+                return tmpAction;
+              }
+            }
+          } else { // also check for no-weapon one-shotting
+            foreach(Percept p in _enemies) {
+              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
+              Actor en = p.Percepted as Actor;
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
+              if (null != tmpAction) {
+                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
+                  Item tmp_w = m_Actor.GetEquippedWeapon();
+                  if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
+                }
+                return tmpAction;
+              }
+            }
+          }
+        }
+
+      var rw = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
+      if (null == rw) return null;  // XXX likely error condition
+      if (0 >= rw.Ammo) return null;    // XXX likely error condition
+
+      // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
+      // also, damage field should be non-null because enemies is non-null
+
+      List<Percept> en_in_range = FilterFireTargets(_enemies,rw.Model.Attack.Range);
+      if (null == en_in_range) return null; // XXX likely error condition
+      if (1 == en_in_range.Count) return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
+
+      // filter immediate threat by being in range
+      var immediate_threat_in_range = (null!=_immediate_threat ? new HashSet<Actor>(_immediate_threat) : new HashSet<Actor>());
+      if (null != _immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
+
+      if (1 == immediate_threat_in_range.Count) return BehaviorRangedAttack(immediate_threat_in_range.First());
+
+      // Get ETA stats
+      var best_weapon_ETAs = new Dictionary<Actor,int>();
+      foreach(Percept p in en_in_range) {
+        Actor a = p.Percepted as Actor;
+        ETAToKill(a,Rules.InteractionDistance(m_Actor.Location,p.Location), rw, best_weapon_ETAs);
+      }
+
+      // at this point: there definitely is more than one enemy in range
+      // if there are any immediate threat, there are at least two immediate threat
+      if (2 <= immediate_threat_in_range.Count) {
+        int ETA_min = immediate_threat_in_range.Select(a => best_weapon_ETAs[a]).Min();
+        immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => best_weapon_ETAs[a] == ETA_min));
+        if (2 <= immediate_threat_in_range.Count) {
+          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
+          immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
+          if (2 <= immediate_threat_in_range.Count) {
+           int dist_min = immediate_threat_in_range.Select(a => Rules.InteractionDistance(m_Actor.Location,a.Location)).Min();
+           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min));
+          }
+        }
+        Actor actor = immediate_threat_in_range.First();
+        return BehaviorRangedAttack(actor);
+      }
+      // at this point, no immediate threat in range
+      {
+        int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
+        if (2==ETA_min) {
+          // snipe something
+          en_in_range = new List<Percept>(en_in_range.Where(p => ETA_min == best_weapon_ETAs[p.Percepted as Actor]));
+          if (2<=en_in_range.Count) {
+            int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
+            en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
+            if (2<=en_in_range.Count) {
+             int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+            }
+          }
+          Actor actor = en_in_range.First().Percepted as Actor;
+          return BehaviorRangedAttack(actor);
+        }
+      }
+
+      // just deal with something close
+      {
+        int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+        if (2<=en_in_range.Count) {
+          int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
+          en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
+        }
+        Actor actor = en_in_range.First().Percepted as Actor;
+        return BehaviorRangedAttack(actor);
+      }
+    }
+
+    public ActorAction WaitIfSafe()
+    {
+      return _damage_field.ContainsKey(m_Actor.Location.Position) ? null : new ActionWait(m_Actor);
     }
 
     private void AvoidBeingCornered()
