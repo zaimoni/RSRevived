@@ -1249,6 +1249,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    private void NavigateFilter(HashSet<Location> tainted)
+    {
+#if DEBUG
+      if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
+      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
+#endif
+      int min_dist = int.MaxValue;
+      int max_dist = int.MinValue;
+      var dist = new Dictionary<Location,int>();
+      foreach(var loc in tainted) {
+        int tmp = Rules.GridDistance(loc, m_Actor.Location);
+        dist[loc] = tmp;
+        if (tmp > max_dist) max_dist = tmp;
+        if (tmp < min_dist) min_dist = tmp;
+      }
+      if (min_dist >= max_dist-min_dist) return;
+      int min_2x = 2*min_dist;
+      foreach(var x in dist) {
+        if (x.Value > min_2x) tainted.Remove(x.Key);
+      }
+    }
+
     private void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
       Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
@@ -3195,32 +3217,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActionShove) return true;
       return false;
     }
-#endif
-
-    protected void NavigateFilter(HashSet<Location> tainted)
-    {
-#if DEBUG
-      if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
-      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
-#endif
-      int min_dist = int.MaxValue;
-      int max_dist = int.MinValue;
-      var dist = new Dictionary<Location,int>();
-      foreach(var loc in tainted) {
-        int tmp = Rules.GridDistance(loc, m_Actor.Location);
-        dist[loc] = tmp;
-        if (tmp > max_dist) max_dist = tmp;
-        if (tmp < min_dist) min_dist = tmp;
-      }
-      if (min_dist >= max_dist-min_dist) return;
-      int min_2x = 2*min_dist;
-      foreach(var x in dist) {
-        if (x.Value > min_2x) tainted.Remove(x.Key);
-      }
-    }
-
-#if DEAD_FUNC
-    // April 7 2017: This is called directly only by the same-map threat and tourism behaviors
+     // April 7 2017: This is called directly only by the same-map threat and tourism behaviors
     // These two behaviors both like a "spread out" where each non-follower ally heads for the targets nearer to them than
     // to the other non-follower allies
     protected ActorAction BehaviorNavigate(HashSet<Point> tainted)
@@ -3281,7 +3278,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ret;
     }
-#endif
 
     protected ActorAction BehaviorHastyNavigate(IEnumerable<Point> tainted)
     {
@@ -3308,6 +3304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return BehaviorHastyNavigate(valid_exits.Keys);
     }
+#endif
 
     protected bool HaveThreatsInCurrentMap()
     {
