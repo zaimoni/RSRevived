@@ -16,6 +16,7 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  [Serializable]
   internal class ActionRangedAttack : ActorAction
   {
     private readonly List<Point> m_LoF = new List<Point>();

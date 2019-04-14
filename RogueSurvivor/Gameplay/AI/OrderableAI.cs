@@ -1220,14 +1220,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // all setup should have been done in the run-retreat case
             if (!_safe_run_retreat) {
               m_Actor.IsRunning = RunIfAdvisable(test.dest);
-#if PROTOTYPE
               if (m_Actor.IsRunning && m_Actor.RunIsFreeMove) {
-                // \todo set up Goal_NextAction or Goal_NextCombatAction
-                // * if attackable enemies, attack
-                // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
-                // * else do not contrain processing (null out)
+                   // * if attackable enemies, attack
+                   // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
+                   // * else do not contrain processing (null out)
+                   // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
+                   var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
+                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
               }
-#endif
             } else m_Actor.Run();
           }
           m_Actor.Activity = Activity.FLEEING;
@@ -1406,16 +1406,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
               m_Actor.Activity = Activity.FIGHTING;
               if (tmpAction is ActionMoveStep test) {
                 m_Actor.IsRunning = RunIfAdvisable(test.dest);
-#if PROTOTYPE
                 if (m_Actor.IsRunning && m_Actor.RunIsFreeMove) {
-                   // \todo set up Goal_NextAction or Goal_NextCombatAction
-                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, ActorAction engaged, new ActionWait(m_Actor)));
                    // * if attackable enemies, attack
                    // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
                    // * else do not contrain processing (null out)
-                   // alternatively...sequence a series of zero-parameter handlers (int codes to be interpreted by the controller)?
+                   // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
+                   var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
+                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
                 }
-#endif
               }
               return tmpAction;
             }

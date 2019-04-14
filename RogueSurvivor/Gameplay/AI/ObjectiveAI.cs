@@ -182,6 +182,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       CloseToActor
     };
 
+    public enum ZeroAryBehaviors {
+      AttackWithoutMoving_ObjAI = 0,
+      WaitIfSafe_ObjAI
+    };
+
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
     readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
@@ -235,6 +240,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       return null!=Goal<Goal_Terminate>();
     } }
+
+    public override ActorAction ExecAryZeroBehavior(int code)
+    {
+      switch(code) {
+        case (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI: return AttackWithoutMoving();
+        case (int)ZeroAryBehaviors.WaitIfSafe_ObjAI: return WaitIfSafe();
+        default: return base.ExecAryZeroBehavior(code);
+      }
+    }
 
 
     protected override void ResetAICache()
