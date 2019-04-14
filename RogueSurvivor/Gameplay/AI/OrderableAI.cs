@@ -1370,7 +1370,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies)
+    protected ActorAction BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -1380,12 +1380,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
-      if (null != enemies) {
-        if (1==Rules.InteractionDistance(enemies[0].Location,m_Actor.Location)) {
+      if (null != _enemies) {
+        if (1==Rules.InteractionDistance(_enemies[0].Location,m_Actor.Location)) {
           // something adjacent...check for one-shotting
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
-            foreach(Percept p in enemies) {
+            foreach(Percept p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
               Actor en = p.Percepted as Actor;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
@@ -1395,7 +1395,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
             }
           } else { // also check for no-weapon one-shotting
-            foreach(Percept p in enemies) {
+            foreach(Percept p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
               Actor en = p.Percepted as Actor;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
@@ -1417,7 +1417,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this
-      if (null == enemies) {
+      if (null == _enemies) {
         foreach(ItemRangedWeapon rw in available_ranged_weapons) {
           if (rw.Model.MaxAmmo <= rw.Ammo) continue;
           ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
@@ -1433,7 +1433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // also, damage field should be non-null because enemies is non-null
 
       int best_range = available_ranged_weapons.Select(rw => rw.Model.Attack.Range).Max();
-      List<Percept> en_in_range = FilterFireTargets(enemies,best_range);
+      List<Percept> en_in_range = FilterFireTargets(_enemies,best_range);
 
       // if no enemies in range, or just one available ranged weapon, use the best one
       if (null == en_in_range || 1==available_ranged_weapons.Count) {
@@ -1442,7 +1442,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (null == en_in_range && null != _legal_steps) {
-        List<Percept> percepts2 = FilterPossibleFireTargets(enemies);
+        List<Percept> percepts2 = FilterPossibleFireTargets(_enemies);
 		if (null != percepts2) {
 		  IEnumerable<Point> tmp = _legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
 		  if (tmp.Any()) {
@@ -1466,7 +1466,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         // XXX need to use floodfill pathfinder
-        var fire_from_here = GetRangedAttackFromZone(enemies);
+        var fire_from_here = GetRangedAttackFromZone(_enemies);
         if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
         tmpAction = BehaviorPathTo(fire_from_here);
         if (null != tmpAction) return tmpAction;

@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
       if (null != tmpAction) return tmpAction;
 
-      tmpAction = BehaviorEquipWeapon(available_ranged_weapons, _enemies);
+      tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
       if (null != tmpAction) return tmpAction;
 
 	  List<Percept> friends = FilterNonEnemies(_all);
