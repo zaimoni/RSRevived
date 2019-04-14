@@ -25,12 +25,14 @@ namespace djack.RogueSurvivor.Engine
     // 0.9.9 unstable 2017-02-17 had a measured load time of over 3 minutes 30 seconds at turn 0, and one minute 45 seconds at turn 90.
     // at that version, the game seems to run perfectly fast once loaded (on the development machine) so trading speed of the game for speed of loading
     // makes sense.
+    // 2019-04-14: while we would like to lock access to FOVcache (there is a multi-threading crash issue manifesting as an "impossible" null cache value,
+    // this deadlocks on PC district change
     private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
 
     public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
     public static void Now(Map map) {
-      if (!FOVcache.ContainsKey(map)) FOVcache[map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
-      FOVcache[map].Now(map.LocalTime.TurnCounter);
+      if (!FOVcache.TryGetValue(map,out var cache)) FOVcache[map] = cache = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
+      cache.Now(map.LocalTime.TurnCounter);
     }
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
@@ -362,12 +364,12 @@ namespace djack.RogueSurvivor.Engine
     // the return of a cached value is assumed to be by value
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-      if (!FOVcache.ContainsKey(a_loc.Map)) {
+      if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
         var tmp = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
         tmp.Now(Session.Get.WorldTime.TurnCounter);
-        FOVcache[a_loc.Map] = tmp;
+        FOVcache[a_loc.Map] = cache = tmp;
       }
-      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
+      if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
       Map map = a_loc.Map;
