@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    public static bool CanTraceViewLine(Location from, Location to, int maxRange, List<Point> line = null)
+    public static bool CanTraceViewLine(Location from, Location to, int maxRange = int.MaxValue, List<Point> line = null)
     {
       if (from.Map == to.Map) return CanTraceViewLine(from, to.Position, maxRange);
       Location? test = from.Map.Denormalize(to);

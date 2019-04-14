@@ -54,9 +54,7 @@ namespace djack.RogueSurvivor.Data
       turn = 0;
       var memory = ItemMemory;
       if (null == memory) return false;
-      if (memory.HaveEverSeen(x, out turn)) return true;
-      Location? test = x.Map.Normalize(x.Position);
-      return null!=test && memory.HaveEverSeen(test.Value, out turn);
+      return x.ForceCanonical() && memory.HaveEverSeen(x, out turn);
     }
 
     public bool IsKnown(Location x) {

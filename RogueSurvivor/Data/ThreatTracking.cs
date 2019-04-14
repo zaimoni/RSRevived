@@ -468,14 +468,10 @@ namespace djack.RogueSurvivor.Data
 
       public void Seen(Location loc)
       {
-        if (!loc.Map.IsInBounds(loc.Position)) {
-          Location? test = loc.Map.Normalize(loc.Position);
-          if (null != test) Seen(test.Value);
-          return;
-        }
-		lock(_locs) {
-		  if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
-		}
+        if (loc.ForceCanonical()) 
+  		  lock(_locs) {
+		    if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
+		  }
       }
 
       public void Seen(Map m, IEnumerable<Point> pts)

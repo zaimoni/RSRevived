@@ -445,11 +445,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (!(who.Controller is OrderableAI)) throw new InvalidOperationException("need an ai with inventory");
 #endif
-        if (!loc.Map.IsInBounds(loc.Position)) {
-          Location? test = loc.Map.Normalize(loc.Position);
-          if (null == test) return;
-          loc = test.Value;
-        }
+        if (!loc.ForceCanonical()) return;
         newStack(loc);
       }
 
@@ -2615,11 +2611,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
-        if (!loc.Map.IsInBounds(loc.Position)) {
-          Location? test = loc.Map.Normalize(loc.Position);
-          if (null == test) return float.NaN;
-          loc = test.Value;
-        }
+        if (!loc.ForceCanonical()) return float.NaN;
+
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;
         const int EXPLORE_BARRICADES = 100;

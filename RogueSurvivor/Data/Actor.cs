@@ -1661,11 +1661,11 @@ namespace djack.RogueSurvivor.Data
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
         if (!test.Map.IsWalkableFor(test.Position, this)) continue;
-        if (!test.Map.IsInBounds(test.Position)) {
-          Location? test2 = test.Map.Normalize(test.Position);
-          if (null == test2) throw new ArgumentNullException(nameof(test2));
-          test = test2.Value;
-        }
+#if MAPGEN_OK
+        if (!test.ForceCanonical()) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
+#else
+        if (!test.ForceCanonical()) continue;
+#endif
         ret.Add(test);
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
@@ -1701,15 +1701,11 @@ namespace djack.RogueSurvivor.Data
         Location test = loc+dir;
         ActorAction tmp = Rules.IsPathableFor(this,test);
         if (null == tmp) continue;
-        if (!test.Map.IsInBounds(test.Position)) {
-          Location? test2 = test.Map.Normalize(test.Position);
 #if MAPGEN_OK
-          if (null == test2) throw new ArgumentNullException(nameof(test2));    // problem is in map generation: RogueGame::GenerateWorld
+        if (!test.ForceCanonical()) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
 #else
-          if (null == test2) continue;
+        if (!test.ForceCanonical()) continue;
 #endif
-          test = test2.Value;
-        }
         ret[test] = tmp;
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
@@ -1743,11 +1739,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
-        if (!dest.Map.IsInBounds(dest.Position)) {
-          Location? test = dest.Map.Normalize(dest.Position);
-          if (null == test) continue;
-          dest = test.Value;
-        }
+        if (!dest.ForceCanonical()) continue;
         if (already.TryGetValue(dest, out var relay)) {
           ret[dest] = relay;
           continue;

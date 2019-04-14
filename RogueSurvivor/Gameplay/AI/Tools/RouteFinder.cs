@@ -248,10 +248,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         // location adapter for above
         bool CanMoveIn(RogueGame game, Actor a, Location loc)
         {
-            if (loc.Map.IsInBounds(loc.Position)) return CanMoveIn(game, a, loc.Map, loc.Position);
-            Location? test = loc.Map.Normalize(loc.Position);
-            if (null == test) return false;
-            return CanMoveIn(game, a, test.Value.Map, test.Value.Position);
+            return loc.ForceCanonical() && CanMoveIn(game, a, loc.Map, loc.Position);
         }
         #endregion
     }

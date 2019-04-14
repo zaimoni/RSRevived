@@ -1440,12 +1440,11 @@ restart:
       foreach(var loc in tainted.ToList()) {
         if (!loc.Map.WouldBlacklistFor(loc.Position,m_Actor)) continue;
         foreach(var offset in ideal) {
-          var test = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
-          var legal = loc.Map.IsInBounds(loc.Position) ? test : loc.Map.Normalize(loc.Position);
-          if (null == legal) continue;
-          if (tainted.Contains(legal.Value)) continue;
-          if (legal.Value.Map.WouldBlacklistFor(legal.Value.Position,m_Actor)) continue;
-          if (LOS.CanTraceViewLine(test,loc.Position)) tainted.Add(legal.Value);
+          var legal = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
+          if (!legal.ForceCanonical()) continue;
+          if (tainted.Contains(legal)) continue;
+          if (legal.Map.WouldBlacklistFor(legal.Position,m_Actor)) continue;
+          if (LOS.CanTraceViewLine(legal,loc)) tainted.Add(legal);
         }
         tainted.Remove(loc);
       }
