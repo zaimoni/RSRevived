@@ -260,6 +260,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // morally a constructor-type function
     protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
     {
+      _initAICache();
+
       // sparse data reset is here (start of select action) so it persists during other actors' turns
       SparseReset();
 

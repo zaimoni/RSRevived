@@ -42,6 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
     [NonSerialized] protected List<Percept> _all;           // cache variables of use to all AI subclasses
     [NonSerialized] protected List<Percept> _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
+    [NonSerialized] private bool _processing;
 
     protected BaseAI()
     {
@@ -50,11 +51,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public Location PrevLocation { get { return m_prevLocation; } }
     public void UpdatePrevLocation() { m_prevLocation = m_Actor.Location; } // for PlayerController
 
+    protected void _initAICache()
+    {
+      _processing = true;
+    }
+
     protected virtual void ResetAICache()
     {
       _all = null;
       _enemies = null;
+      _processing = false;
     }
+
+    public override bool IsMyTurn() { return _processing; }
 
     public override ActorAction GetAction(RogueGame game)
     {

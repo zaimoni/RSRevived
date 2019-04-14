@@ -114,6 +114,9 @@ namespace djack.RogueSurvivor.Data
       return null!=enemies_in_FOV;
     } }
 
+    public abstract bool IsMyTurn();
+    public virtual ActorAction ExecAryZeroBehavior(int code) { return null; }
+
     public bool CanSee(Location x)  // correctness requires Location being value-copied
     {
       if (null == m_Actor) return false;
