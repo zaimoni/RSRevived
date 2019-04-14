@@ -529,7 +529,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public ActorAction Pathing()
       {
-        var _locs = _stacks.Select(p => p.Location);
+        var _locs = _stacks.Select(p => p.Location).Where(loc => null==loc.Actor);
+        if (!_locs.Any()) return null;
 
         var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
         return (ret?.IsLegal() ?? false) ? ret : null;
