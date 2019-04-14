@@ -150,7 +150,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, _enemies, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
+        tmpAction = BehaviorFightOrFlee(game, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
         if (null != tmpAction) return tmpAction;
       }
 

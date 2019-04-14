@@ -2052,7 +2052,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
 #if DEBUG
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
@@ -2067,7 +2067,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
-      Percept target = FilterNearest(enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
+      Percept target = FilterNearest(_enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
       Actor enemy = target.Percepted as Actor;
 
       bool doRun = false;	// only matters when fleeing
@@ -2125,12 +2125,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      List<Percept> approachable_enemies = enemies.Where(p => Rules.IsAdjacent(m_Actor.Location, p.Location)).ToList();
+      List<Percept> approachable_enemies = _enemies.Where(p => Rules.IsAdjacent(m_Actor.Location, p.Location)).ToList();
 
       if (0 >= approachable_enemies.Count) {
         if (null != legal_steps) {
           // nearest enemy is not adjacent.  Filter by whether it's legal to approach.
-          approachable_enemies = enemies.Where(p => {
+          approachable_enemies = _enemies.Where(p => {
             int dist = Rules.GridDistance(m_Actor.Location,p.Location);
             return legal_steps.Any(pt => dist>Rules.GridDistance(new Location(m_Actor.Location.Map,pt),p.Location));
           }).ToList();

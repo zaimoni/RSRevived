@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // dogs cannot order their followers to stay behind
       if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
-        tmpAction = BehaviorFightOrFlee(game, _enemies, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
+        tmpAction = BehaviorFightOrFlee(game, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
         if (null != tmpAction) {
           // run to (or away if fleeing) if close.
           if (m_Actor.TargetActor != null) RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);

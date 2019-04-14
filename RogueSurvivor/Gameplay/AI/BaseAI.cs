@@ -730,10 +730,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
-      Percept target = FilterNearest(enemies);
+      Percept target = FilterNearest(_enemies);
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;
       bool decideToFlee;
@@ -770,7 +770,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(enemies.Select(p => p.Location.Position));
+        tmpAction = BehaviorWalkAwayFrom(_enemies.Select(p => p.Location.Position));
         if (null != tmpAction) {
           if (doRun) m_Actor.Run();
           m_Actor.Activity = Activity.FLEEING;
