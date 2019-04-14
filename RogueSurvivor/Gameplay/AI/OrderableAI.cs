@@ -4,7 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_NAVIGATE
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TIME_TURNS
@@ -2215,11 +2214,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
 
-      if (dest.Map!=m_Actor.Location.Map) {
-        return BehaviorPathTo(m => (m==dest.Map ? new HashSet<Point> { dest.Position } : new HashSet<Point>()));
-      }
-
-      return BehaviorNavigate(new HashSet<Point> { dest.Position });
+      return BehaviorPathTo(new HashSet<Location> { dest });
 	}
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
@@ -3187,6 +3182,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+#if DEAD_FUNC
     // XXX arguably should be member function; doing this for code locality
     protected static bool IsLegalPathingAction(ActorAction act)
     {
@@ -3199,6 +3195,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActionShove) return true;
       return false;
     }
+#endif
 
     protected void NavigateFilter(HashSet<Location> tainted)
     {
@@ -3222,6 +3219,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#if DEAD_FUNC
     // April 7 2017: This is called directly only by the same-map threat and tourism behaviors
     // These two behaviors both like a "spread out" where each non-follower ally heads for the targets nearer to them than
     // to the other non-follower allies
@@ -3234,28 +3232,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
-#if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget && !navigate.Domain.Contains(m_Actor.Location.Position)) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": navigate destination unreachable from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
-        List<string> msg = new List<string>();
-        foreach(Point pt in navigate.Domain) {
-          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt));
-        }
-        msg.Sort();
-        foreach(string x in msg) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
-        }
-        msg.Clear();
-        foreach(Point pt in navigate.black_list) {
-          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt));
-        }
-        msg.Sort();
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "black list");
-        foreach(string x in msg) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
-        }
-      }
-#endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 
       Dictionary<Point, int> dest = PlanApproach(navigate);
@@ -3282,34 +3258,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var exposed = new Dictionary<Point,int>();
 
       foreach(Point pt in dest.Keys) {
-#if TRACE_NAVIGATE
-        ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out string err);
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": ("+pt.X.ToString()+","+pt.Y.ToString()+") "+(null==tmp ? "null ("+err+")" : tmp.ToString()));
-#else
         ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
-#endif
         if (null == tmp || !tmp.IsLegal() || !IsLegalPathingAction(tmp)) continue;
         HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
         los.IntersectWith(tainted);
         exposed[pt] = los.Count;
       }
-#if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget && 0 >= dest.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no possible moves for navigation");
-      if (m_Actor.IsDebuggingTarget && 0 >= exposed.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no acceptable moves for navigation");
-      if (m_Actor.IsDebuggingTarget && 0 < exposed.Count) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": considering navigation from "+m_Actor.Location.Position.to_s());
-        List<string> msg = new List<string>();
-        msg.Add("src:" + m_Actor.Location.Position.to_s() + ": " + navigate.Cost(m_Actor.Location.Position).ToString());
-        foreach(Point pt in exposed.Keys) {
-          msg.Add(pt.to_s() + ": " + navigate.Cost(pt).ToString() + "," + exposed[pt].ToString());
-        }
-        msg.Sort();
-        foreach(string x in msg) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
-        }
-        msg.Clear();
-      }
-#endif
       if (0 >= exposed.Count) return null;
 
       int most_exposed = exposed.Values.Max();
@@ -3318,13 +3272,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Point pt in exposed.Keys) {
         costs[pt] = navigate.Cost(pt);
       }
-#if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling DecideMove");
-#endif
       ActorAction ret = DecideMove(costs);
-#if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final: "+(ret?.ToString() ?? "null"));
-#endif
       if (null == ret) return null; // can happen due to postprocessing
       if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
@@ -3333,6 +3281,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ret;
     }
+#endif
 
     protected ActorAction BehaviorHastyNavigate(IEnumerable<Point> tainted)
     {
