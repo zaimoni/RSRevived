@@ -1304,27 +1304,47 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)   // XXX does not handle firing through exits
+    private HashSet<Location> GetRangedAttackFromZone(List<Percept> enemies)   // XXX does not handle firing through exits
     {
-      var ret = new HashSet<Point>();
-      var danger = new HashSet<Point>();
+      var ret = new HashSet<Location>();
+      var danger = new HashSet<Location>();
       foreach(Percept en in enemies) {
         if (null!=((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) continue;
-        foreach(var pt in en.Location.Position.Adjacent()) danger.Add(pt);
+        foreach(var pt in en.Location.Position.Adjacent()) {
+          var test = new Location(en.Location.Map,pt);
+          if (test.ForceCanonical()) danger.Add(test);
+        }
       }
       int range = m_Actor.CurrentRangedAttack.Range;
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
-        foreach(Point pt in optimal_FOV.Select(p => new Point(p.X+en.Location.Position.X,p.Y+en.Location.Position.Y))) {
-          if (ret.Contains(pt)) continue;
-          if (danger.Contains(pt)) continue;
-          if (!m_Actor.Location.Map.IsValid(pt)) continue;
+        foreach(var p in optimal_FOV) {
+          var pt = new Point(p.X + en.Location.Position.X, p.Y + en.Location.Position.Y);
+          var test = new Location(en.Location.Map,pt);
+          if (!test.ForceCanonical()) continue;
+          if (ret.Contains(test)) continue;
+          if (danger.Contains(test)) continue;
           var LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
-          if (LOS.CanTraceHypotheticalFireLine(new Location(en.Location.Map,pt), en.Location.Position, range, m_Actor, LoF)) ret.UnionWith(LoF);
+          if (LOS.CanTraceHypotheticalFireLine(test, en.Location, range, m_Actor, LoF)) {
+            ret.Add(test);
+            if (4 >= LoF.Count || 0 == p.X || 0 == p.Y || p.X == p.Y || p.X == -p.Y) {  // some conditions where adding the whole line of fire is safe
+              int n = LoF.Count-1;
+              while(1 < n--) {
+                var transit = new Location(test.Map,LoF[n]);
+                if (!transit.ForceCanonical()) throw new InvalidProgramException("line of fire contains impossible locations");
+                if (danger.Contains(transit)) continue;
+                ret.Add(transit);
+              }
+            }
+          }
           // if "safe" attack possible init danger in different/earlier loop
         }
       }
-      ret.Remove(m_Actor.Location.Position);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
+#if DEBUG
+      if (ret.Contains(m_Actor.Location)) throw new InvalidProgramException("trying to fire from a location without line of fire");
+#else
+      ret.Remove(m_Actor.Location);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
+#endif
       return ret;
     }
 
@@ -1427,7 +1447,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX need to use floodfill pathfinder
         var fire_from_here = GetRangedAttackFromZone(enemies);
         if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
-        tmpAction = BehaviorNavigate(fire_from_here);
+        tmpAction = BehaviorPathTo(fire_from_here);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -3180,18 +3200,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected void NavigateFilter(HashSet<Point> tainted)
+    protected void NavigateFilter(HashSet<Location> tainted)
     {
 #if DEBUG
       if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
-      if (tainted.Contains(m_Actor.Location.Position)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
+      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
 #endif
       int min_dist = int.MaxValue;
       int max_dist = int.MinValue;
-      var dist = new Dictionary<Point,int>();
-      foreach(var pt in tainted) {
-        int tmp = Rules.GridDistance(pt, m_Actor.Location.Position);
-        dist[pt] = tmp;
+      var dist = new Dictionary<Location,int>();
+      foreach(var loc in tainted) {
+        int tmp = Rules.GridDistance(loc, m_Actor.Location);
+        dist[loc] = tmp;
         if (tmp > max_dist) max_dist = tmp;
         if (tmp < min_dist) min_dist = tmp;
       }

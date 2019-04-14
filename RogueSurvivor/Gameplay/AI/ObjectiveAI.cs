@@ -1517,8 +1517,13 @@ restart:
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
-      // \todo apply postfilter
-      if (0 >= goals.Count) return null;
+
+      return BehaviorPathTo(goals);
+    }
+
+    public ActorAction BehaviorPathTo(HashSet<Location> goals)
+    {
+      if (0 >= (goals?.Count ?? 0)) return null;
 
       {
       Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
@@ -1630,11 +1635,11 @@ restart_single_exit:
       return BehaviorPathTo(PathfinderFor(goal_costs,excluded));
     }
 
-     public void GoalHeadFor(Map m, HashSet<Point> dest)
-     {
-       var locs = new HashSet<Location>(dest.Select(pt => new Location(m,pt)));
-       Objectives.Insert(0,new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,locs));
-     }
+    public void GoalHeadFor(Map m, HashSet<Point> dest)
+    {
+      var locs = new HashSet<Location>(dest.Select(pt => new Location(m,pt)));
+      Objectives.Insert(0,new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,locs));
+    }
 
 #region damage field
     private void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
