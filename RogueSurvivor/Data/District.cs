@@ -68,8 +68,7 @@ namespace djack.RogueSurvivor.Data
       set { // used from BaseTownGenerator::GenerateSewersMap
         if (m_SewersMap != null) RemoveMap(m_SewersMap);
         m_SewersMap = value;
-        if (value == null) return;
-        AddMap(value);
+        if (null != value) AddMap(value);
       }
     }
 
@@ -80,8 +79,7 @@ namespace djack.RogueSurvivor.Data
       set { // used from BaseTownGenerator::GenerateSubwayMap
         if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
         m_SubwayMap = value;
-        if (value == null) return;
-        AddMap(value);
+        if (null != value) AddMap(value);
       }
     }
 
@@ -101,7 +99,6 @@ namespace djack.RogueSurvivor.Data
       if (map.District != this) throw new InvalidOperationException("map.District != this");
 #endif
       if (m_Maps.Contains(map)) return;
-//    map.District = this;
       m_Maps.Add(map);
 #if DEBUG
       // some algorithms assume everything is in at least one zone
@@ -119,10 +116,12 @@ namespace djack.RogueSurvivor.Data
       AddMap(map);
     }
 
+#if DEAD_FUNC
     public Map GetMap(int index)
     {
       return m_Maps[index];
     }
+#endif
 
     protected void RemoveMap(Map map)
     {
@@ -130,7 +129,6 @@ namespace djack.RogueSurvivor.Data
       if (null == map) throw new ArgumentNullException(nameof(map));
 #endif
       m_Maps.Remove(map);
-//    map.District = null;
     }
 
 

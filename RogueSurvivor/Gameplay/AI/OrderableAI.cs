@@ -1928,33 +1928,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (0 < ret.Count ? ret : null);
     }
 
-#if DEAD_FUNC
-    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals, HashSet<Point> LoF_reserve)
-    {
-      Actor leader = m_Actor.LiveLeader;
-      var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
-      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
-      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;    // XXX \todo cross-map conversion
-      List<Point> leaderLoF = null;
-      if (checkLeaderLoF) {
-        leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
-      }
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
-        Location location = m_Actor.Location + dir;
-        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
-        float num = SafetyFrom(location.Position, goals);
-        if (LoF_reserve?.Contains(location.Position) ?? false) --num;
-        if (null != leader) {
-          num -= (float)Rules.StdDistance(location, leader.Location);
-          if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
-        }
-        return num;
-      }, (a, b) => a > b);
-      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
-    }
-#endif
-
     public ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
     {
       Actor leader = m_Actor.LiveLeader;
