@@ -9491,13 +9491,6 @@ namespace djack.RogueSurvivor.Engine
         if (mapObj.HitPoints <= 0) {
           DoDestroyObject(mapObj);
           flag = true;
-#if PROTOTYPE
-        } else {
-          // \todo VAPORWARE an ObjectiveAI actor will implicity request his mates help with the breaking
-          // this is handled with OrderableAI by a specific objective
-          // players are given a message
-          // players may both self-order breaking a barricade, etc. and give an order to followers to that effect.
-#endif
         }
         OnLoudNoise(mapObj.Location, "A loud *CRASH*");
         bool player1 = ForceVisibleToPlayer(actor);

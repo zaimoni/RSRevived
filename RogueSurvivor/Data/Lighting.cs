@@ -13,7 +13,6 @@ namespace djack.RogueSurvivor.Data
   {
     DARKNESS = 0,
     OUTSIDE = 1,
-    LIT = 2,
-    _LAST = 3,
+    LIT = 2
   }
 }

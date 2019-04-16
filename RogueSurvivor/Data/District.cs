@@ -98,8 +98,7 @@ namespace djack.RogueSurvivor.Data
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (map.District != this) throw new InvalidOperationException("map.District != this");
 #endif
-      if (m_Maps.Contains(map)) return;
-      m_Maps.Add(map);
+      if (!m_Maps.Contains(map)) m_Maps.Add(map);
 #if DEBUG
       // some algorithms assume everything is in at least one zone
       map.Rect.DoForEach(pt => {
