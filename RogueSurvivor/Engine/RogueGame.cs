@@ -9399,11 +9399,11 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoRepairFortification(Actor actor, Fortification fort)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(barricadeMaterial);
-      fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));
+      fort.Repair(Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(fort)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
     }

@@ -152,6 +152,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool Repair(int hp)
+    {
+      if (m_HitPoints >= MaxHitPoints) return false;
+      if (MaxHitPoints- m_HitPoints > hp) m_HitPoints += hp;
+      else m_HitPoints = MaxHitPoints;
+      return true;
+    }
+
 #if PROTOTYPE
     public bool IsLivingPathable {
       get { 
