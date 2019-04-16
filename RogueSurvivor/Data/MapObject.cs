@@ -6,6 +6,7 @@
 
 using System;
 using Zaimoni.Data;
+using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
 
 #if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_int;
@@ -157,6 +158,19 @@ namespace djack.RogueSurvivor.Data
       if (m_HitPoints >= MaxHitPoints) return false;
       if (MaxHitPoints- m_HitPoints > hp) m_HitPoints += hp;
       else m_HitPoints = MaxHitPoints;
+      return true;
+    }
+
+    /// <returns>true if and only if destroyed</returns>
+    public bool Damage(int hp)
+    {
+      if (0 >= hp) return false;    // insignificant damage
+      if (0 >= MaxHitPoints) return false;  // object is made of indestructible unobtainium
+      if (hp < m_HitPoints) {
+        m_HitPoints -= hp;
+        return false;
+      }
+      Destroy();
       return true;
     }
 
@@ -464,6 +478,31 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == Location.Map) return;
       Location.Map.RemoveMapObjectAt(Location.Position);
+    }
+
+    protected virtual void _destroy()   // subtypes that do not simply vanish must override
+    {
+      Remove();
+    }
+
+    public void Destroy()
+    {
+      m_HitPoints = 0;
+      if (GivesWood) {
+        int val2 = 1 + MaxHitPoints / 40;
+        while (val2 > 0) {
+          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(Gameplay.GameItems.WOODENPLANK) {
+            Quantity = (sbyte)Math.Min(Gameplay.GameItems.WOODENPLANK.StackingLimit, val2)
+          };
+          val2 -= barricadeMaterial.Quantity;
+          Location.Map.DropItemAt(barricadeMaterial, Location.Position);
+        }
+        if (RogueForm.Game.Rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
+          Location.Map.DropItemAt((RogueForm.Game.Rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate(), Location.Position);
+        }
+      }
+      _destroy();
+      RogueForm.Game.OnLoudNoise(Location, "A loud *CRASH*");
     }
 
     // flag handling

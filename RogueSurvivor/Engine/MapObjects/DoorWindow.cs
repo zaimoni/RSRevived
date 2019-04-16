@@ -123,5 +123,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public override void SetState(int newState) {
       _SetState(newState);
     }
+
+    protected override void _destroy()
+    {
+      if (IsWindow) SetState(STATE_BROKEN);
+      else base._destroy();
+    }
   }
 }

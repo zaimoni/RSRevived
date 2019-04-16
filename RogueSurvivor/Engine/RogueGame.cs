@@ -8417,7 +8417,7 @@ namespace djack.RogueSurvivor.Engine
               AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(point), SIZE_OF_TILE)));
             AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-          DoDestroyObject(mapObjectAt);
+          mapObjectAt.Destroy();
           return true;
         }
       }
@@ -8555,11 +8555,7 @@ namespace djack.RogueSurvivor.Engine
               doorWindow.Barricade(-num2);
               val2 -= num2;
             }
-            if (val2 > 0) {
-              mapObjectAt.HitPoints -= val2;
-              if (mapObjectAt.HitPoints <= 0)
-                DoDestroyObject(mapObjectAt);
-            }
+            mapObjectAt.Damage(val2);
           }
         }
       }
@@ -9418,31 +9414,6 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    private void DoDestroyObject(MapObject mapObj)
-    {
-      mapObj.HitPoints = 0;
-      if (mapObj.GivesWood) {
-        int val2 = 1 + mapObj.MaxHitPoints / 40;
-        while (val2 > 0) {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(GameItems.WOODENPLANK) {
-            Quantity = (sbyte)Math.Min(GameItems.WOODENPLANK.StackingLimit, val2)
-          };
-          val2 -= barricadeMaterial.Quantity;
-          mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);
-        }
-        if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          mapObj.Location.Map.DropItemAt((m_Rules.RollChance(50) ? GameItems.IMPROVISED_CLUB : GameItems.IMPROVISED_SPEAR).instantiate(), mapObj.Location.Position);
-        }
-      }
-
-      DoorWindow doorWindow = mapObj as DoorWindow;
-      if (doorWindow?.IsWindow ?? false)
-        doorWindow.SetState(DoorWindow.STATE_BROKEN);
-      else
-        mapObj.Remove();
-      OnLoudNoise(mapObj.Location, "A loud *CRASH*");
-    }
-
     [SecurityCritical] public void DoBreak(Actor actor, MapObject mapObj)
     {
       // NPCs know to use their best melee weapon
@@ -9484,15 +9455,10 @@ namespace djack.RogueSurvivor.Engine
         }
         return;
       } else {
-        mapObj.HitPoints -= attack.DamageValue;
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
-        bool flag = false;
-        if (mapObj.HitPoints <= 0) {
-          DoDestroyObject(mapObj);
-          flag = true;
-        }
-        OnLoudNoise(mapObj.Location, "A loud *CRASH*");
+        bool flag = mapObj.Damage(attack.DamageValue);
+        if (!flag) OnLoudNoise(mapObj.Location, "A loud *CRASH*");
         bool player1 = ForceVisibleToPlayer(actor);
         bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
