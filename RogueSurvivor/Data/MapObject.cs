@@ -89,6 +89,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    protected void _break()
+    {
+      BreakState = Break.BROKEN;    // use accessor to trigger LOS invalidation
+      m_HitPoints = 0;
+    }
+
     public bool GivesWood {
       get {
         return GetFlag(Flags.GIVES_WOOD) && Break.BROKEN != m_BreakState;
@@ -144,14 +150,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int HitPoints {
-      get {
-        return m_HitPoints;
-      }
-      set {
-        m_HitPoints = value;
-      }
-    }
+    public int HitPoints { get { return m_HitPoints; } }
 
     public bool Repair(int hp)
     {

@@ -114,8 +114,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
       base.SetState(newState);
       if (STATE_BROKEN == State) {
-          BreakState = Break.BROKEN;
-          HitPoints = 0;
+          _break();
           m_BarricadePoints = 0;
       }
     }
