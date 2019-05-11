@@ -179,7 +179,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     public enum SparseData {
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
-      CloseToActor
+      CloseToActor,
+      ClearingZone
     };
 
     public enum ZeroAryBehaviors {
@@ -268,6 +269,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       _sparse.Unset(SparseData.LoF);
       _sparse.Unset(SparseData.CloseToActor);
+      _sparse.Unset(SparseData.ClearingZone);
     }
 
     // morally a constructor-type function
@@ -320,6 +322,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public List<Point> GetLoF() { return _sparse.Get<List<Point>>(SparseData.LoF); }   // XXX reference-copy return 
     protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
     public KeyValuePair<Actor, int> GetCloseToActor() { return _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor); }
+
+    public ZoneLoc ClearingThisZone() {
+      var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
+      if (null != ret) return ret;
+      if (m_Actor.Location.Map.IsInsideAt(m_Actor.Location.Position)) {
+        Rectangle scan_this = m_Actor.Location.Map.Rect;
+        var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);    // non-null check in map generation
+        foreach(var z in z_list) {
+          if (scan_this.Width < z.Bounds.Width) continue;
+          if (scan_this.Height < z.Bounds.Height) continue;
+          if (scan_this.Width > z.Bounds.Width || scan_this.Height > z.Bounds.Height) scan_this = z.Bounds;
+        }
+        ret = new ZoneLoc(m_Actor.Location.Map,scan_this);
+        _sparse.Set(SparseData.ClearingZone,ret);
+        return ret;
+      };
+      return null;
+    }
 #endregion
 
     [System.Flags]

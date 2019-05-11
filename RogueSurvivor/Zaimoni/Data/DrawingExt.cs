@@ -466,6 +466,20 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static Func<T, HashSet<U>> Postfilter<T,U>(this Func<T, HashSet<U>> lhs, Action<T, HashSet<U>> rhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return null;
+      if (null == rhs) return l;
+      HashSet<U> ret(T src) {
+        var x = l(src);
+        if (null != x && 0 < x.Count) r(src,x);
+        return x;
+      }
+      return ret;
+    }
+
     // function composition is right-associative in higher math
     // reverse parameter order here to make function call chaining clean
     public static Func<T,V> Compose<T,U,V>(this Func<T,U> rhs, Func<U, V> lhs)

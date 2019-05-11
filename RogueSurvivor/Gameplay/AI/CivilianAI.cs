@@ -852,6 +852,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
 
+        // police want to exclude threat/tourism in indoor zones already covered by leader-types (other handling will cover engaged threat)
+        var allies = m_Actor.Allies;
+        void already_handled(Map m, HashSet<Point> target) {
+          foreach(var a in allies) {
+            if (a.HasLeader && 0 >= a.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
+            if (a.IsSleeping) continue; // not expected to do anything useful
+            var handled = (a.Controller as ObjectiveAI)?.ClearingThisZone();
+            if (null == handled) continue;
+            if (handled.m != m) continue;
+            target.RemoveWhere(pt => handled.Rect.Contains(pt));
+          }
+        }
+        if (null != allies) pathing_targets.Postfilter(already_handled);
+
         HashSet<Point> generators(Map m) {
           var gens = Generators(m);
           if (null == gens) return new HashSet<Point>();
