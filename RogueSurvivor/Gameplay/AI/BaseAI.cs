@@ -950,7 +950,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 2 Prefer going outside/inside if majority of dangers are inside/outside.
       // 3 If can tire, prefer not jumping.
 #region Primary: Get away from dangers.
-      float avgDistance = (float) (dangers.Sum(pt => (Rules.IsAdjacent(from,pt) ? 1 : Rules.GridDistance(from, pt))) / (1 + dangers.Count()));  // other side of exit is int.MaxValue distance but should be 1 here
+      float avgDistance = (float) (dangers.Sum(pt => (double)Rules.InteractionDistance(from, pt)) / (1 + dangers.Count()));  // other side of exit is int.MaxValue distance but should be 1 here
 #endregion
 #region 1 Avoid getting in corners.
       int countFreeSquares = map.CountAdjacentTo(from.Position,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));

@@ -1301,6 +1301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!test.ForceCanonical()) continue;
           if (ret.Contains(test)) continue;
           if (danger.Contains(test)) continue;
+          if (!test.Map.IsWalkableFor(test.Position,m_Actor)) continue;
           var LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
           if (LOS.CanTraceHypotheticalFireLine(test, en.Location, range, m_Actor, LoF)) {
             ret.Add(test);
