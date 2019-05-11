@@ -92,41 +92,45 @@ namespace djack.RogueSurvivor.Data
           var ret = new HashSet<Point>();
           if (null == map) return ret;
           var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,District.UsesCrossDistrictView);
-          Point pos = map.District.WorldPosition;   // only used in denormalized cases
-          // subway may be null
-          if (0> view.Left) {
-            if (0<pos.X && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X-1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
-              foreach(Point pt in tmp) ret.Add(new Point(pt.X-map.Width,pt.Y));
-            }
-            view.Width += view.Left;
-            view.X = 0;
-          };
-          if (map.Width < view.Right) {
-            int new_width = map.Width-view.Left;
-            if (Engine.Session.Get.World.Size>pos.X+1 && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X+1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
-              foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
-            }
-            view.Width = new_width;
-          };
-          if (0 > view.Top) {
-            if (0<pos.Y && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
-              foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
-            }
-            view.Height += view.Top;
-            view.Y = 0;
-          };
-          if (map.Height < view.Bottom) {
-            int new_height = map.Height-view.Top;
-            if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y+1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
-              foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
-            }
-            view.Height = new_height;
-          };
-		  lock(_threats) {
+          if (0 < crossdistrict_ok.Get) {
+            Point pos = map.District.WorldPosition;   // only used in denormalized cases
+            var world = Engine.Session.Get.World;
+            District test = null;
+            // subway may be null
+            if (0 > view.Left) {
+              if (null != (test = world.At(pos + Direction.W))) {
+                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
+                foreach(Point pt in tmp) ret.Add(new Point(pt.X-map.Width,pt.Y));
+              }
+              view.Width += view.Left;
+              view.X = 0;
+            };
+            if (map.Width < view.Right) {
+              int new_width = map.Width-view.Left;
+              if (null != (test = world.At(pos + Direction.E))) {
+                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
+                foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
+              }
+              view.Width = new_width;
+            };
+            if (0 > view.Top) {
+              if (null != (test = world.At(pos + Direction.N))) {
+                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
+                foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
+              }
+              view.Height += view.Top;
+              view.Y = 0;
+            };
+            if (map.Height < view.Bottom) {
+              int new_height = map.Height-view.Top;
+              if (null != (test = world.At(pos + Direction.S))) {
+                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
+                foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
+              }
+              view.Height = new_height;
+            };
+	      }
+    	  lock(_threats) {
             var tmp = new HashSet<Point>();
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
