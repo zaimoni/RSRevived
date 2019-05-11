@@ -11446,7 +11446,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Point point = new Point(MINIMAP_X + (loc.Position.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (loc.Position.Y - view.Top) * MINITILE_SIZE);
       m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
-      if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
+      if (IsInViewRect(loc) && !IsVisibleToPlayer(actor)) {
         var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
