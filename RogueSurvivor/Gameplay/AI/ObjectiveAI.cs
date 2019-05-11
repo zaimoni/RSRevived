@@ -1280,6 +1280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
           foreach(var pos_exit in exits) {
             Location loc = new Location(dest, pos_exit.Key);
+            if (!loc.ForceCanonical()) continue;
             goals.Add(loc==m_Actor.Location ? pos_exit.Value.Location : loc);
           }
 #if TRACE_GOALS
