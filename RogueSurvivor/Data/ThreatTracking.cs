@@ -143,6 +143,56 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
 		}
 
+		public bool AnyThreatIn(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
+		{
+          var ret = new HashSet<Point>();
+          if (null == map) return false;
+          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,District.UsesCrossDistrictView);
+          if (0 < crossdistrict_ok.Get) {
+            Point pos = map.District.WorldPosition;   // only used in denormalized cases
+            var world = Engine.Session.Get.World;
+            District test = null;
+            // subway may be null
+            if (0 > view.Left) {
+              if (null != (test = world.At(pos + Direction.W))) {
+                if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok.Get), new Rectangle(map.Width + view.Left, view.Top, -view.Left, view.Height))) return true;
+              }
+              view.Width += view.Left;
+              view.X = 0;
+            };
+            if (map.Width < view.Right) {
+              int new_width = map.Width-view.Left;
+              if (null != (test = world.At(pos + Direction.E))) {
+                if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok.Get), new Rectangle(0, view.Top, view.Width - new_width, view.Height))) return true;
+              }
+              view.Width = new_width;
+            };
+            if (0 > view.Top) {
+              if (null != (test = world.At(pos + Direction.N))) {
+                if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok.Get), new Rectangle(view.Left, map.Height + view.Top, view.Width, -view.Top))) return true;
+              }
+              view.Height += view.Top;
+              view.Y = 0;
+            };
+            if (map.Height < view.Bottom) {
+              int new_height = map.Height-view.Top;
+              if (null != (test = world.At(pos + Direction.S))) {
+                if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok.Get), new Rectangle(view.Left, 0, view.Width, view.Height - new_height))) return true;
+              }
+              view.Height = new_height;
+            };
+	      }
+    	  lock(_threats) {
+            var tmp = new HashSet<Point>();
+            foreach (var x in _threats) {
+              if (!x.Value.TryGetValue(map, out var src)) continue;
+              tmp.UnionWith(src);
+            }
+            if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
+            return 0<=tmp.Count;
+		  }
+		}
+
         public List<Actor> ThreatIn(Map map)
 		{
 		  lock(_threats) {

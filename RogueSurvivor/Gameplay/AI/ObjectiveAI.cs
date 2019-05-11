@@ -234,8 +234,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var threats = m_Actor.Threats;
       if (null != threats) {
-        var test = threats.ThreatWhere(m_Actor.Location.Map,m_Actor.Location.LocalView);
-        if (0 < test.Count) return true;  // \todo any-style test
+        if (threats.AnyThreatIn(m_Actor.Location.Map,m_Actor.Location.LocalView)) return true;
       }
 
       return null!=Goal<Goal_Terminate>();
