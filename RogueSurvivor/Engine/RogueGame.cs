@@ -11002,8 +11002,7 @@ namespace djack.RogueSurvivor.Engine
       var e = Player.Location.Exit; // XXX does not change w/remote viewing
       if (null != e) {
         // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
-        int slot = e.Location.Map == e.Location.Map.District.EntryMap ? ENTRYMAP_EXIT_SLOT : ENTRYMAP_EXIT_SLOT+1;  // XXX \todo not correct for hospital or police station (function of both map and exit destination)
-        GDI_Point screen = new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE*slot);
+        GDI_Point screen = MapToScreen(e.Location);
         Tile tile = e.Location.Map.GetTileAt(e.Location.Position);   // non-null for valid coordinates by construction
         tile.IsInView = !Player.IsSleeping; // these two forced-true by adjacency, when awake
         tile.IsVisited = true;
@@ -11858,11 +11857,18 @@ namespace djack.RogueSurvivor.Engine
     public static GDI_Point MapToScreen(Location loc)
     {
       if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
-      var e = m_MapView.Center.Exit;
-      if (null!=e && e.Location==loc) {
+      var e = loc.Exit;
+      if (null!=e && e.Location == Player.Location) {
         // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
-        int slot = e.Location.Map == e.Location.Map.District.EntryMap ? ENTRYMAP_EXIT_SLOT : ENTRYMAP_EXIT_SLOT+1;  // XXX \todo not correct for hospital or police station (function of both map and exit destination)
-        return new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE*slot);
+        int exit_slot() {
+          if (loc.Map == loc.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT;
+          if (e.Location.Map == e.Location.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT+1;
+          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
+          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
+          return ENTRYMAP_EXIT_SLOT + 1;    // default
+        }
+
+        return new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE* exit_slot());
       }
 
       Location? tmp = CurrentMap.Denormalize(loc);
