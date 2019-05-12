@@ -11863,8 +11863,8 @@ namespace djack.RogueSurvivor.Engine
         int exit_slot() {
           if (loc.Map == loc.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT;
           if (e.Location.Map == e.Location.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT+1;
-          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
-          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
+          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
+          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
           return ENTRYMAP_EXIT_SLOT + 1;    // default
         }
 
