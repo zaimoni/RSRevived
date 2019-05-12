@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction WaitIfSafe()
     {
-      return _damage_field.ContainsKey(m_Actor.Location.Position) ? null : new ActionWait(m_Actor);
+      return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? true) ? null : new ActionWait(m_Actor);
     }
 
     private void AvoidBeingCornered()
