@@ -24,7 +24,6 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
-using ActionGiveTo = djack.RogueSurvivor.Engine.Actions.ActionGiveTo;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
 using ActionOpenDoor = djack.RogueSurvivor.Engine.Actions.ActionOpenDoor;
 using ActionPush = djack.RogueSurvivor.Engine.Actions.ActionPush;
@@ -332,6 +331,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var z in z_list) {
           if (scan_this.Width < z.Bounds.Width) continue;
           if (scan_this.Height < z.Bounds.Height) continue;
+          if (RogueGame.HALF_VIEW_WIDTH <= m_Actor.Location.Position.X-z.Bounds.Left) continue;
+          if (RogueGame.HALF_VIEW_WIDTH < z.Bounds.Right - m_Actor.Location.Position.X) continue;
+          if (RogueGame.HALF_VIEW_HEIGHT <= m_Actor.Location.Position.Y-z.Bounds.Top) continue;
+          if (RogueGame.HALF_VIEW_HEIGHT < z.Bounds.Bottom - m_Actor.Location.Position.Y) continue;
           if (scan_this.Width > z.Bounds.Width || scan_this.Height > z.Bounds.Height) scan_this = z.Bounds;
         }
         ret = new ZoneLoc(m_Actor.Location.Map,scan_this);
