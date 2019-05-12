@@ -34,6 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override void Perform()
         {
             (_result ?? (_result = _resolve()))?.Perform();
+            _result = null;
         }
 
         private ActorAction _resolve()

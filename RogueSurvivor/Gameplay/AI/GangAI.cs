@@ -181,6 +181,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorNavigateToSleep();
         if (null != tmpAction) return tmpAction;
       }
+
+      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
+
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 

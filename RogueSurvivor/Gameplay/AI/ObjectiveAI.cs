@@ -184,7 +184,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public enum ZeroAryBehaviors {
       AttackWithoutMoving_ObjAI = 0,
-      WaitIfSafe_ObjAI
+      WaitIfSafe_ObjAI,
+      TurnOnAdjacentGenerators_ObjAI
     };
 
     readonly protected List<Objective> Objectives = new List<Objective>();
@@ -245,6 +246,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       switch(code) {
         case (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI: return AttackWithoutMoving();
         case (int)ZeroAryBehaviors.WaitIfSafe_ObjAI: return WaitIfSafe();
+        case (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI: return TurnOnAdjacentGenerators();
         default: return base.ExecAryZeroBehavior(code);
       }
     }
@@ -457,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from OrderableAI::BehaviorEquipWeapon
-    public ActorAction AttackWithoutMoving()
+    private ActorAction AttackWithoutMoving()
     {
       if (null == _enemies) return null;    // XXX likely error condition
 
@@ -567,9 +569,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public ActorAction WaitIfSafe()
+    private ActorAction WaitIfSafe()
     {
       return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? true) ? null : new ActionWait(m_Actor);
+    }
+
+    public ActionSwitchPowerGenerator TurnOnAdjacentGenerators()
+    {
+      var generators_off = GeneratorsToTurnOn(m_Actor.Location.Map);
+      if (null != generators_off) {
+        foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {   // these are never on map edges
+          // \todo release block: do not allow flashlights to fully discharge; recharge at batteries 8- instead if at least one generator is on
+          if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
+            return new ActionSwitchPowerGenerator(m_Actor, gen);    // VAPORWARE non-CHAR generators might have material legality checks e.g. needing fuel
+          }
+        }
+      }
+      return null;
     }
 
     private void AvoidBeingCornered()

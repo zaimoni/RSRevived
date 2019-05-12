@@ -958,6 +958,8 @@ They *will* use in-inventory green stimulants when that doesn't cause a missed t
 
 Recharges everything rechargable to full.  Must be next to a generator or else.
 
+> Turn on all adjacent generators
+
 > Rest rather than lose turn when tired
 
 Effect is occassionally pre-empting a turn but otherwise allowing normal action.  This is a stamina recovery micro-optimmization.
@@ -1000,7 +1002,7 @@ Unless lead by a hero they are easily scared and try to avoid danger.
 They have different names and different looks. And a brain.
 
 > CHAR EMPLOYEES
-They appear to be very agressive and don't hesistate to shoot anyone near their offices.
+They appear to be very aggressive and don't hesitate to shoot anyone near their offices.
 You shouldn't get near them unless prepared.
 
 > NATIONAL GUARDS

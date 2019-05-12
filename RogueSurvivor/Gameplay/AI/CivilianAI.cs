@@ -364,21 +364,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn(m_Actor.Location.Map);    // formerly reused much later
+      tmpAction = TurnOnAdjacentGenerators();
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == generators_off ? "no generators to turn on" : generators_off.Count().ToString()+" genberators to turn on"));
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "turning on adjacent generator");
 #endif
-      if (null != generators_off) {
-        foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {   // these are never on map edges
-          if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
-            return new ActionSwitchPowerGenerator(m_Actor, gen);
-          }
-        }
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "not adjacent to a generator");
-#endif
+      if (null!=tmpAction) {
+        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        return tmpAction;
       }
-
 
       tmpAction = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
 #if TRACE_SELECTACTION

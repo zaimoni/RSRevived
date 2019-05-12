@@ -12,10 +12,8 @@ using System.Linq;
 
 #if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
 #else
 using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
 #endif
 
 using Color = System.Drawing.Color;
@@ -23,6 +21,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;
 using ItemMedicine = djack.RogueSurvivor.Engine.Items.ItemMedicine;
 using ItemTracker = djack.RogueSurvivor.Engine.Items.ItemTracker;
+using ActionSequence = djack.RogueSurvivor.Engine.Actions.ActionSequence;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -206,6 +205,7 @@ namespace djack.RogueSurvivor.Data
         var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.Model.ID && it.MaxBatteries - 1 > it.Batteries);
         if (0 < (lights?.Count ?? 0) || 0 < (trackers?.Count ?? 0)) ret.Add("Recharge everything to full");
       }
+      if (null != (m_Actor.Controller as ObjectiveAI)?.TurnOnAdjacentGenerators()) ret.Add("Turn on all adjacent generators");
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
 
@@ -264,6 +264,9 @@ namespace djack.RogueSurvivor.Data
         return true;
       case "Rest rather than lose turn when tired":
         Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(Session.Get.WorldTime.TurnCounter, m_Actor));
+        return true;
+      case "Turn on all adjacent generators":
+        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return true;
       case "Medicate sleep":
         Objectives.Insert(0,new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor));

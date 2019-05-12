@@ -102,7 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX need some sense of what a combat action is
         if (null != m_Actor.Controller.enemies_in_FOV) return false;
        _isExpired = true;
-        if (Intent.IsLegal()) ret = Intent;
+        ret = Intent;
         return true;
       }
     }
@@ -137,6 +137,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (ret is ActionMoveStep step && m_Actor.Controller is ObjectiveAI ai) m_Actor.IsRunning = ai.RunIfAdvisable(step.dest);
             return true;
         }
+    }
+
+    [Serializable]
+    internal class Goal_NonCombatComplete : Objective
+    {
+      public readonly ActorAction Intent;
+
+      public Goal_NonCombatComplete(int t0, Actor who, ActorAction intent)
+      : base(t0,who)
+      {
+#if DEBUG
+        if (null == intent) throw new ArgumentNullException(nameof(intent));
+#endif
+        Intent = intent;
+      }
+
+      // always execute.  Expire on inability to continue
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        if (!Intent.IsLegal()) {
+          _isExpired = true;
+          return true;
+        }
+        // XXX need some sense of what a combat action is
+        if (null != m_Actor.Controller.enemies_in_FOV) return false;
+        ret = Intent;
+        return true;
+      }
     }
 
     [Serializable]

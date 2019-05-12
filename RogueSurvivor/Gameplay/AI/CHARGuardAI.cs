@@ -199,6 +199,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorNavigateToSleep();
         if (null != tmpAction) return tmpAction;
       }
+
+      tmpAction = TurnOnAdjacentGenerators();
+      if (null!=tmpAction) {
+        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        return tmpAction;
+      }
+
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
