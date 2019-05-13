@@ -2751,7 +2751,7 @@ restart:
               throw new ArgumentOutOfRangeException("unhandled role");
           }
         }
-        underground.AddZone(MakeUniqueZone(basename, rectangle));
+        underground.AddZone(MakeUniqueZone(basename, wallsRect));   // 2019-05-13 adjusted to de-crash sleeping; used to be rectangle
       }
       underground.AddZone(MakeUniqueZone("entrance foyer", new Rectangle(point2.X-1, point2.Y - 1,3,3)));
       underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(point2.X - 1,0,3,underground.Height)));
