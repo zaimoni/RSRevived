@@ -721,8 +721,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Location? test = x.Key.Map.Denormalize(x.Key);
           if (null == test) continue;
           var test2 = navigate.Approach(x.Key);
-          approach = DowngradeApproach(test2);
-          if (0<approach.Count) PlannedMoves[test.Value.Position] = approach;
+          if (null != test2) {
+            approach = DowngradeApproach(test2);
+            if (0<approach.Count) PlannedMoves[test.Value.Position] = approach;
+          }
         }
       }
       return dest;
@@ -1651,6 +1653,7 @@ restart:
       ActorAction ret = DecideMove(costs);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
+      PlanApproach(navigate);
       return ret;
     }
 
@@ -1732,7 +1735,13 @@ restart:
       var ret = new Dictionary<Location, int>();
       int max_seen = int.MinValue;
       int tmp2;
+
+      var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // mirror DecideMove so we don't error out
+      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      if (0 >= legal_steps.Count) return null;
+
       foreach(var x in move_scores) {
+        if (!legal_steps.ContainsKey(x.Key)) continue;
         if (max_seen == (tmp2 = x.Value)) {
           ret[x.Key] = tmp2;
           continue;
@@ -1741,6 +1750,7 @@ restart:
         ret.Clear();
         ret[x.Key] = (max_seen = tmp2);
       }
+      if (0 >= ret.Count) return null;
 
       ActorAction tmp = DecideMove(ret);
 #if DEBUG
@@ -1797,6 +1807,9 @@ restart:
     public ActorAction BehaviorPathTo(HashSet<Location> goals)
     {
       if (0 >= (goals?.Count ?? 0)) return null;
+#if DEBUG
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException("self-pathing?");
+#endif
 
       {
       Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
