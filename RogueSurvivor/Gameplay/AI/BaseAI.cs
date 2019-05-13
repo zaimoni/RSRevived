@@ -960,7 +960,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isFromInside = from.Map.IsInsideAtExt(from.Position);
       int majorityDangersInside = 0;
       foreach (var danger in dangers) {
-        if (danger.Map.IsInsideAt(danger.Position))
+        if (danger.Map.IsInsideAtExt(danger.Position))
           ++majorityDangersInside;
         else
           --majorityDangersInside;

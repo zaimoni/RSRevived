@@ -1219,7 +1219,7 @@ namespace djack.RogueSurvivor.Data
       var radio_location = Rules.PoliceRadioLocation(origin.Value);
       var radio_range = radio_location.RadioDistricts;
       Engine.Session.Get.World.DoForAllMaps(map => {
-        foreach (Actor actor in map.Actors) {
+        foreach (Actor actor in map.Actors.ToList()) {   // subject to multi-threading race
           if (this == actor) continue;
           // XXX defer implementing dual radios
           if (police_radio) {

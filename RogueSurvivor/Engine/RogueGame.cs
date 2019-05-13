@@ -10902,7 +10902,7 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
           if (!map.IsValid(x, y)) continue;
 #endif
-          MapViewRect.convert(point,ref working);
+          MapViewRect.convert(point,ref working);   // likely a VM issue if this throws
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
