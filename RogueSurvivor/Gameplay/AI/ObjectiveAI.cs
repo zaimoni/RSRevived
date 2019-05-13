@@ -1720,6 +1720,7 @@ restart:
           var legal = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
           if (!legal.ForceCanonical()) continue;
           if (tainted.Contains(legal)) continue;
+          if (m_Actor.Location == legal) continue;
           if (legal.Map.WouldBlacklistFor(legal.Position,m_Actor)) continue;
           if (LOS.CanTraceViewLine(legal,loc)) tainted.Add(legal);
         }
@@ -1808,7 +1809,7 @@ restart:
     {
       if (0 >= (goals?.Count ?? 0)) return null;
 #if DEBUG
-      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException("self-pathing?");
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
 
       {
