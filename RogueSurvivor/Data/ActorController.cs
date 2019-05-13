@@ -96,6 +96,27 @@ namespace djack.RogueSurvivor.Data
             if (0 >= tmp.Count) continue;
           }
         }
+        // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
+        if (m_Actor.Inventory.IsFull) {
+          if (Models.Items[(int)it] is Engine.Items.ItemLightModel || Models.Items[(int)it] is Engine.Items.ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
+            tmp.OnlyIf(loc => {
+                // Cf. LOSSensor::_seeItems
+                var itemsAt = loc.Map.GetItemsAt(loc.Position);
+                if (null == itemsAt) {
+                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
+                  return false;
+                }
+                var test = itemsAt.GetFirstByModel(Models.Items[(int)it]);
+                if (null == test) {
+                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                  return false;
+                }
+                if (!test.IsUseless) return true;   // actualy want this one
+                return null!= itemsAt.GetFirstByModel<Item>(Models.Items[(int)it],obj => !obj.IsUseless);
+            });
+            if (0 >= tmp.Count) continue;
+          }
+        }
         ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
       }
       // XXX need to ask allies where hey are headed for (or are), to avoid traffic jams
