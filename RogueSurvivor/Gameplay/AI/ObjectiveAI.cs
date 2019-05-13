@@ -3591,6 +3591,23 @@ restart_single_exit:
       _InterpretRangedWeapons(rws, viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
 
       if (reload_rw.ContainsKey(viewpoint_inventory)) {
+        { // historically, we preferred handling this reload-get combination elsewhere
+          int i = (int)AmmoType._COUNT;
+          while(0 <= --i) {
+            var local_rw = reload_rw[viewpoint_inventory][i];
+            if (null == local_rw) continue;
+            var local_ammo = m_Actor.Inventory.GetCompatibleAmmoItem(local_rw);
+            if (null == local_ammo) continue;
+            foreach(var x in ground_inv) {
+             var remote_ammo = x.Value.GetCompatibleAmmoItem(local_rw);
+             if (null == remote_ammo) continue;
+             Objectives.Insert(0, new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
+             RogueForm.Game.DoEquipItem(m_Actor,local_rw);  // \todo evaluate sinking this into the ammo use handler
+             return new ActionUseItem(m_Actor, local_ammo);
+            }
+          }
+        }
+
         // prepare to analyze ranged weapon swaps.
         foreach(var x in ground_inv) {
           var ground_rws = x.Value.GetItemsByType<ItemRangedWeapon>();
@@ -3626,7 +3643,7 @@ restart_single_exit:
           if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
         }
 
-        // optimization
+        // optimization: swap for most-loaded ranged weapon taking same ammo
         {
           Point? dest = null;
           ItemRangedWeapon test = null;
