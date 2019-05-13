@@ -10872,6 +10872,7 @@ namespace djack.RogueSurvivor.Engine
             if (pt==actorAt.Location.Position) continue;
             delta.X = pt.X- actorAt.Location.Position.X+point.X;
             delta.Y = pt.Y- actorAt.Location.Position.Y+point.Y;
+            if (!MapViewRect.Contains(delta)) continue;
             MapViewRect.convert(delta,ref working);
             if (0 > working || view_squares <= working) continue;
             if (   i > working // not yet visibility-checked
