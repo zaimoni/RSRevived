@@ -2604,7 +2604,7 @@ restart_single_exit:
 
     private int ItemRatingCode(ItemGrenade grenade)
     {
-      if (m_Actor.Inventory.Contains(grenade)) return 2;
+      if (m_Actor.Inventory.Contains(grenade)) return m_Actor.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;
       if (m_Actor.Inventory.IsFull) return 1;
       if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
       return 2;
