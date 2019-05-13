@@ -1241,13 +1241,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (int.MaxValue <= dist || int.MaxValue - dist <= x.Value.X) continue;
           last_waypoint_ok = true;
           int lb_dist = dist + x.Value.X;
-          if (ub < lb_dist) continue;
+//        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) continue;
           if (ret.X > dist) ret.X = dist;
           int ub_dist = int.MaxValue;
           if (int.MaxValue/2 >= dist && int.MaxValue-2*dist > x.Value.Y) ub_dist = 2*dist + x.Value.Y;
           if (ret.Y > ub_dist) ret.Y = ub_dist;
+#if DEBUG
+          if (ret.X > ret.Y) throw new InvalidOperationException("generated inverted bounds: "+ret.to_s());
+#endif
         }
+#if DELEGATED_TO_CALLER
+        if (int.MaxValue <= ret.X) throw new InvalidOperationException("no-data bounds: "+ret.to_s()+" for "+loc+"; "+waypoint_dist.to_s()+" "+ last_waypoint_ok.ToString());
+#endif
         return ret;
       }
 
@@ -1264,7 +1270,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 ub = dist.Y;
                 List<Location> remove = null;
                 foreach(var x in min_dist) {
-                  if (ub < x.Value) (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+                  if (ub < x.Value) {
+                    (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+#if TRACE_GOALS
+                    if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
+#endif
+                  }
                 }
                 if (null != remove) foreach(var x in remove) {
                   goals.Remove(x);
@@ -1282,6 +1293,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var where_to_go = obtain_goals(dest);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+#endif
 
       // upper/lower bounds; using X as lower, Y as upper bound
         
@@ -1294,6 +1308,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (1<m.destination_maps.Get.Count) continue;
             if (0 >= obtain_goals(m).Count) maps.Remove(m);
           }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+#endif
         }
         if (1==maps.Count && 0==goals.Count) {
           Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
@@ -1317,11 +1334,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
           Point dist = waypoint_bounds(new Location(m2, pt));
+#if DEBUG
+          if (int.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
+#else
+          if (int.MaxValue == dist.X) return; // something haywire, discard
+#endif
           bool in_bounds = m2.IsInBounds(pt);
           if (in_bounds) {
             dist.X += 1;
             dist.Y += 1;
           }
+#if DEBUG
+          if (0 > dist.X || 0 > dist.Y) throw new InvalidOperationException("negative distance bounds: "+dist.to_s());
+#endif
           if (ub < dist.X) return;
           if (in_bounds) waypoint_dist[e.Location] = dist;
           ok_maps.Add(e.ToMap);
@@ -1335,6 +1360,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var m = scheduled[0];
 
         obtain_goals(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+#endif
         schedule_maps(m);
 
         scheduled.RemoveAt(0);
@@ -1734,7 +1762,6 @@ restart:
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
-
       return BehaviorPathTo(goals);
     }
 
@@ -1849,6 +1876,9 @@ restart_single_exit:
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
       }
 
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s());
+#endif
       return BehaviorPathTo(PathfinderFor(goal_costs,excluded));
     }
 
