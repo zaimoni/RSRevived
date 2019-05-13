@@ -3063,12 +3063,19 @@ restart_single_exit:
       if (1<it_rating) {
         // generally, find a less-critical item to drop
         // this is expected to correctly handle the food glut case (item rating 1)
+        bool rating_kludge = false;
+        // entertainment is problematic.
+        if (it is ItemEntertainment && 2==it_rating) rating_kludge = true;
+
+        if (rating_kludge) ++it_rating;
+
         int i = 0;
         while(++i < it_rating) {
           Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (null == worst) continue;
           return _BehaviorDropOrExchange(worst, it, position);
         }
+        if (rating_kludge) --it_rating;
       }
 
       if (it is ItemAmmo am) {
