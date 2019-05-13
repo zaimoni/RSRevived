@@ -312,6 +312,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    public int RiskAt(Location loc) {
+      if (null != _damage_field) {
+        var denorm = m_Actor.Location.Map.Denormalize(loc);
+        if (null != denorm) {
+          _damage_field.TryGetValue(loc.Position,out var damage);
+          return damage;
+        }
+      }
+      int risk = 0;
+      if (null != _enemies) {
+        foreach(var en in _enemies) {
+          var rw = ((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
+          int range = null!=rw ? rw.Model.Attack.Range : 1; // Father Time's scythe is range 2
+          if (range < Rules.InteractionDistance(loc,en.Location)) continue;
+          risk += null!=rw ? rw.Model.Attack.DamageValue : (en.Percepted as Actor).CurrentMeleeAttack.DamageValue;
+        }
+      }
+      if (0 < risk) return risk;
+      var en_FOV = enemies_in_FOV;
+      if (null != en_FOV) {
+        foreach(var en in en_FOV) {
+          var rw = (en.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
+          int range = null!=rw ? rw.Model.Attack.Range : 1; // Father Time's scythe is range 2
+          if (range < Rules.InteractionDistance(loc,en.Key)) continue;
+          risk += null!=rw ? rw.Model.Attack.DamageValue : en.Value.CurrentMeleeAttack.DamageValue;
+        }
+      }
+      return risk;
+    }
+
 #region sparse data accessors
     // protected setters could be eliminated by downgrading _sparse to protected, but types have to be manually aligned between set/get anyway
     public void RecordLoF(List<Point> LoF)  // XXX access control weakness required by RogueGame
@@ -973,11 +1003,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
 
         if (shove.Target.Controller is ObjectiveAI ai) {
-          Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
             // non-moving shove...would rather not spend the stamina if there is a better option
-            if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) return false; // shove is to a wanted destination
-            return true;
+            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+            if (null != ok_dests) return !ok_dests.ContainsKey(shove.To); // shove is to a wanted destination
           }
           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
           // target should not be sleeping; check for that anyway

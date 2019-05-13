@@ -1455,6 +1455,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var fire_from_here = GetRangedAttackFromZone(_enemies);
         if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
         tmpAction = BehaviorPathTo(fire_from_here);
+        if (tmpAction is ActionShove shove) {
+          if (null != _enemies) {
+//          Dictionary<Point,int> risk = null;  // optimized out
+            List<Location> norisk = null;
+            // this might endanger the shove target...be more careful
+            foreach(Direction d in Direction.COMPASS) {
+              var dest = shove.Target.Location+d;
+              if (!shove.Target.CanBeShovedTo(dest.Position)) continue;
+              // _damage_field expected to be non-null as we have at least one enemy in sight
+              int incoming = RiskAt(dest);
+              if (0 >= incoming) (norisk ?? (norisk = new List<Location>())).Add(dest);
+            }
+            if (null != norisk) {
+              var target_rw = (shove.Target.Controller as ObjectiveAI).GetBestRangedWeaponWithAmmo();
+              if (null != target_rw) {
+                Dictionary<Point,int> targets = null;
+                var my_loc = shove.Target.Location.Map.Denormalize(m_Actor.Location);   // expected to be non-null since we could shove
+                foreach(var en in _enemies) {
+                  var loc = shove.Target.Location.Map.Denormalize(en.Location);
+                  if (null == loc) continue;
+                  foreach(var dest in norisk) {
+                    var line = new List<Point>();
+                    if (!LOS.CanTraceHypotheticalFireLine(dest, loc.Value.Position, target_rw.Model.Attack.Range, shove.Target, line)) continue;
+                    if (!Rules.IsAdjacent(m_Actor.Location,dest) && line.Contains(shove.Target.Location.Position)) continue;
+                    if (null == targets) targets = new Dictionary<Point, int> { [dest.Position] = 1 };
+                    else if (!targets.ContainsKey(dest.Position)) targets[dest.Position] = 1;
+                    else ++targets[dest.Position];
+                  }
+                }
+                if (null == targets) tmpAction = null;  // shove is tactically contra-indicated
+                else {
+                  var choice = RogueForm.Game.Rules.DiceRoller.Choose(targets);
+                  return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key.X-shove.Target.Location.Position.X, choice.Key.Y - shove.Target.Location.Position.Y));
+                }
+              } else tmpAction = null;  // shove is tactically contra-indicated
+            } else tmpAction = null;  // shove is tactically contra-indicated
+          } else {
+            // HMM....
+          }
+        }
         if (null != tmpAction) return tmpAction;
       }
 
