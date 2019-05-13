@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Data
               tmp.UnionWith(src);
             }
             if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
-            return 0<=tmp.Count;
+            return 0<tmp.Count;
 		  }
 		}
 
