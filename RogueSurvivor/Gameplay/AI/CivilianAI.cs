@@ -390,14 +390,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (m_Actor.Model.Abilities.HasSanity) {  // not logically civilian-specific, but needs a rework anyway
-        if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
-          tmpAction = BehaviorUseEntertainment();
+      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
+        tmpAction = BehaviorUseEntertainment();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
 #endif
-          if (null != tmpAction)  return tmpAction;
-        }
+        if (null != tmpAction)  return tmpAction;
       }
 
       // XXX this should lose to same-map threat hunting at close ETA

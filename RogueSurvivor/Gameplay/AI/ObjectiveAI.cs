@@ -2488,13 +2488,18 @@ restart_single_exit:
       return (ok_trackers.Contains(it.Model.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
     }
 
-    private int ItemRatingCode(ItemEntertainment it)
-    {
+    /// <returns>the item rating code for a generic sanity-restoring item</returns>
+    public int WantRestoreSAN { get {   // arguably should be over at Actor
       if (!m_Actor.Model.Abilities.HasSanity) return 0;
-      if (!m_Actor.Inventory.Contains(it) && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
       if (m_Actor.IsDisturbed) return 3;
       if (m_Actor.Sanity < 3 * m_Actor.MaxSanity / 4) return 2;   // gateway expression for using entertainment
       return 1;
+    } }
+
+    private int ItemRatingCode(ItemEntertainment it)
+    {
+      if (!m_Actor.Inventory.Contains(it) && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+      return WantRestoreSAN;
     }
 
     private int ItemRatingCode(ItemLight it)
@@ -2508,6 +2513,11 @@ restart_single_exit:
     // XXX sanity pills should be treated like entertainment
     private int ItemRatingCode(ItemMedicine it)
     {
+      if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
+        var rating = WantRestoreSAN;
+        if (1!=rating) return rating;
+      }
+      // simulate historical usage (alpha 9)
       if (m_Actor.Inventory.Contains(it)) return 1;
       if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
       return 1;
@@ -3064,8 +3074,11 @@ restart_single_exit:
         // generally, find a less-critical item to drop
         // this is expected to correctly handle the food glut case (item rating 1)
         bool rating_kludge = false;
-        // entertainment is problematic.
-        if (it is ItemEntertainment && 2==it_rating) rating_kludge = true;
+        // entertainment is problematic.  Its rating-2 (want) is still immediate-use (i.e. it acts like 3 (need))
+        if (2 == it_rating) {
+          if (it is ItemEntertainment) rating_kludge = true;
+          else if (it is ItemMedicine med && 0<med.SanityCure) rating_kludge = true;
+        }
 
         if (rating_kludge) ++it_rating;
 

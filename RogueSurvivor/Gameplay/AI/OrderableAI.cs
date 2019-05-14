@@ -1894,12 +1894,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory?.IsEmpty ?? true) return null;
+
+      // OrderableAI::BehaviorUseEntertainment has been upgraded to know about sanity medications.
+
       // \todo should be less finicky about SLP/Inf/SAN when enemies in sight
       bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
       bool needSTA = m_Actor.IsTired;
       bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = m_Actor.Infection > 0;
-      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
+//    bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;   // Historical; retained in ObjectiveAI::WantRestoreSAN
+      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < m_Actor.MaxSanity/4;   // in immediate danger of losing control
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
       // XXX \todo following does not handle bandaids vs. medikit properly at low hp deficits
       ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it =>
@@ -2706,9 +2710,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory.IsEmpty) return null;
-      ItemEntertainment itemEntertainment = inventory.GetFirst<ItemEntertainment>();
-      if (itemEntertainment == null) return null;
-      return (m_Actor.CanUse(itemEntertainment) ? new ActionUseItem(m_Actor, itemEntertainment) : null);
+      {
+      var it = inventory.GetFirst<ItemEntertainment>(en => m_Actor.CanUse(en));
+      if (null != it) return new ActionUseItem(m_Actor, it);
+      }
+      {
+      var it = inventory.GetFirst<ItemMedicine>(med => 0<med.SanityCure);   // VAPORWARE side-effecting medicines
+      if (null != it) return new ActionUseItem(m_Actor, it);
+      }
+      // pathing to chat would be CPU-intensive so don't do that here.
+      // VAPORWARE chat with other needy souls in sight
+      return null;
     }
 
 #region stench killer

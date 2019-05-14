@@ -2759,7 +2759,7 @@ restart:
 
       for (int x = 0; x < underground.Width; ++x) {
         for (int y = 0; y < underground.Height; ++y) {
-          if (m_DiceRoller.RollChance(25)) {
+          if (m_DiceRoller.RollChance(25)) {    // \todo map generation break: optimize RNG usage
             Tile tileAt = underground.GetTileAt(x, y);
             if (tileAt.Model.IsWalkable) continue;
             tileAt.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS));

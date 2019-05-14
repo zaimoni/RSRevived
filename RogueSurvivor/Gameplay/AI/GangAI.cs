@@ -177,15 +177,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
+
       if (null == old_enemies && WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();
         if (null != tmpAction) return tmpAction;
       }
 
-      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
+      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
+        tmpAction = BehaviorUseEntertainment();
+        if (null != tmpAction)  return tmpAction;
+      }
 
-      tmpAction = BehaviorDropUselessItem();
-      if (null != tmpAction) return tmpAction;
+      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
 
       if (null == _enemies) {
         Map map = m_Actor.Location.Map;

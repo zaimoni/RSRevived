@@ -195,9 +195,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
+
       if (null == old_enemies && WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();
         if (null != tmpAction) return tmpAction;
+      }
+
+      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
+        tmpAction = BehaviorUseEntertainment();
+        if (null != tmpAction)  return tmpAction;
       }
 
       tmpAction = TurnOnAdjacentGenerators();
@@ -205,9 +213,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return tmpAction;
       }
-
-      tmpAction = BehaviorDropUselessItem();
-      if (null != tmpAction) return tmpAction;
 
       // stack grabbing/trade goes here
 

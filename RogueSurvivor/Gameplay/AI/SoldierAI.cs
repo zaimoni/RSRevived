@@ -210,6 +210,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
+
       if (null == old_enemies && WantToSleepNow) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
@@ -221,10 +224,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
+      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
+        tmpAction = BehaviorUseEntertainment();
+        if (null != tmpAction)  return tmpAction;
+      }
 
-      tmpAction = BehaviorDropUselessItem();
-      if (null != tmpAction) return tmpAction;
+      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
 
       // stack grabbing/trade goes here
 
