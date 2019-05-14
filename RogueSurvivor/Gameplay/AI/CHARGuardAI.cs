@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define TRACE_SELECTACTION
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -80,6 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       _all = FilterSameMap(UpdateSensors());
 
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
+#endif
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
@@ -100,6 +105,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
+#endif
       // New objectives system
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -112,7 +120,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
             else if (!goal_action.IsLegal()) Objectives.Remove(o);
 #endif
+#if TRACE_SELECTACTION
+            else {
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
+              return goal_action;
+            }
+#else
             else return goal_action;
+#endif
           }
         }
       }
@@ -120,6 +135,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
 
       ActorAction tmpAction = null;
+
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
+#endif
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -135,13 +154,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
+#endif
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading: " + tmpAction);
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (null != _enemies) {
         tmpAction = BehaviorFightOrFlee(game, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons: " + tmpAction);
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
@@ -179,8 +207,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorUseMedecine ok"); // TRACER
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "medicating");
+#endif
       if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorRestIfTired ok"); // TRACER
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (old_enemies != null) {

@@ -602,7 +602,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction WaitIfSafe()
     {
-      return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? true) ? null : new ActionWait(m_Actor);
+      return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? false) ? null : new ActionWait(m_Actor);
     }
 
     public ActionSwitchPowerGenerator TurnOnAdjacentGenerators()
