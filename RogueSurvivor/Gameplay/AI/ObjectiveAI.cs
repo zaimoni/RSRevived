@@ -3308,7 +3308,7 @@ restart_single_exit:
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
-        return _BehaviorDropOrExchange(test, it, position);
+        if (null != test) return _BehaviorDropOrExchange(test, it, position);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
