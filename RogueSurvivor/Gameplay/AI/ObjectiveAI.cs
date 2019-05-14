@@ -1824,6 +1824,8 @@ restart:
       }
       if (null_return) return null;
       }
+      moves.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      if (0 >= moves.Count) return null;    // possibly ActionWait instead
 
       // if we couldn't path to an adjacent goal, wait
       if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, loc))) {
@@ -1844,7 +1846,6 @@ restart:
         if (edge_of_maxrange > Rules.StdDistance(loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
       }
       if (0<near_tainted.Count) {
-        moves.OnlyIf(action => action.IsLegal() && !VetoAction(action));    // might want to do this unconditionally, after the null return has happened
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
