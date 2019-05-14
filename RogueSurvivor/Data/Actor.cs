@@ -1136,6 +1136,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool NeedActiveCellPhone {
       get {
+        if (!WantCellPhone) return false;
         Actor leader = LiveLeader;
         if (null != leader) return leader.HasActiveCellPhone;
         if (0 < CountFollowers) {
