@@ -3077,6 +3077,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var have = (a.Controller as ObjectiveAI).NonCriticalInInventory();
             if (null != have.Key) {
                 foreach (var x in have.Key) {
+                    if (GameItems.ammo.Contains(x)) {
+                      var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
+                      if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;  // not needed
+                      var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
+                      if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
+                    }
                     if (critical.Contains(x)) {
                         insurance[a] = x;
                         break;
@@ -3086,6 +3092,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             if (null != have.Value) {
                 foreach (var x in have.Value) {
+                    if (GameItems.ammo.Contains(x)) {
+                      var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
+                      if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
+                      var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
+                      if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
+                    }
                     if (critical.Contains(x)) {
                         want[a] = x;
                         break;
@@ -3150,6 +3162,55 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
                 return null;
             }
+        }
+        return null;
+    }
+
+    protected ActorAction BehaviorDefendFromRequestCriticalFromGroup()
+    {
+        var clan = m_Actor.ChainOfCommand;
+        if (null == clan) return null;
+        var have = NonCriticalInInventory();
+        if (null == have.Key && null == have.Value) return null;
+        List<GameItems.IDs> precious = null;
+        foreach(var a in clan) {
+          var critical = (a.Controller as ObjectiveAI)?.WhatDoINeedNow();   // yes, we also defend vs player leader
+          if (null == critical || 0 >= critical.Count) continue;
+          if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
+          if (!InCommunicationWith(a)) continue;
+          if (null != have.Key) {
+            foreach (var x in have.Key) {
+                if (GameItems.ammo.Contains(x)) {
+                  var rw = a.Inventory.GetCompatibleRangedWeapon(x);
+                  if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
+                }
+                if (critical.Contains(x)) (precious ?? (precious = new List<GameItems.IDs>())).Add(x);
+            }
+          }
+          if (null != have.Value) {
+            foreach (var x in have.Value) {
+                if (GameItems.ammo.Contains(x)) {
+                  var rw = a.Inventory.GetCompatibleRangedWeapon(x);
+                  if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
+                }
+                if (critical.Contains(x)) (precious ?? (precious = new List<GameItems.IDs>())).Add(x);
+            }
+          }
+          if (null != precious) foreach(var it in precious) {
+            if (GameItems.ranged.Contains(it)) continue;    // handled at NonCriticalInInventory stage
+            if (GameItems.ammo.Contains(it)) {  // reload ASAP
+              var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
+              if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
+                var ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+                RogueForm.Game.DoEquipItem(m_Actor,rw);
+                return new ActionUseItem(m_Actor,ammo);
+              };
+              continue;
+            }
+#if DEBUG
+            throw new InvalidOperationException("unhandled precious item: "+it+"; "+m_Actor.Name+" defending from "+a.Name);
+#endif
+          }
         }
         return null;
     }

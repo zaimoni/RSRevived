@@ -580,6 +580,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
         }
+        tmpAction = BehaviorDefendFromRequestCriticalFromGroup();
+        if (null != tmpAction) return tmpAction;
         tmpAction = BehaviorRequestCriticalFromGroup();
         if (null != tmpAction) return tmpAction;
         if (Directives.CanTrade) {

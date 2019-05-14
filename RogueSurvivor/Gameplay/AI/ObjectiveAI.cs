@@ -21,6 +21,7 @@ using Rectangle = System.Drawing.Rectangle;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using ActionBreak = djack.RogueSurvivor.Engine.Actions.ActionBreak;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
@@ -1829,10 +1830,17 @@ restart:
 
       // if we couldn't path to an adjacent goal, wait
       if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, loc))) {
-#if DEBUG
         var e = m_Actor.Location.Exit;
-        if (null!=e && goals.Contains(e.Location)) throw new InvalidProgramException("need to handle adjacent to blocked exit");
+        if (null!=e && goals.Contains(e.Location)) {
+          // copied from BaseAI::BehaviorUseExit
+          var mapObjectAt = e.Location.MapObject;
+          if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
+            return new ActionBreak(m_Actor, mapObjectAt);
+#if DEBUG
+          // needs implementation
+          throw new InvalidProgramException("need to handle adjacent to blocked exit");
 #endif
+        }
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
       }
 
@@ -2527,7 +2535,7 @@ restart_single_exit:
     private int ItemRatingCode(ItemBodyArmor armor)
     {
       ItemBodyArmor best = m_Actor.GetBestBodyArmor();
-      if (null == best) return 2; // want 3, but RHSMoreInteresting  says 2
+      if (null == best) return 3; // want 3, but historically RHSMoreInteresting  says 2
       if (best == armor) return 3;
       return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
     }
@@ -3818,8 +3826,15 @@ restart_single_exit:
       var want = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);
       GameItems.IDs i = GameItems.IDs._COUNT;
       while(0 < i--) {
+        if (null == m_Actor.Inventory.GetBestDestackable(Models.Items[(int)i])) continue;   // not really in inventory
         var code = ItemRatingCode(i);
         if (3<=code) continue;
+        // ranged weapons are problematic
+        if (GameItems.ranged.Contains(i)) {
+          int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
+          if (1 >= rws_w_ammo) continue;    // really critical
+          if (null != m_Actor.Inventory.GetCompatibleAmmoItem(Models.Items[(int)i] as ItemRangedWeaponModel)) continue;
+        }
         if (2==ItemRatingCode(i)) want.Add(i);
         else insurance.Add(i);
       }
