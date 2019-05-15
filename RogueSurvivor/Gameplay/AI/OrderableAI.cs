@@ -3198,6 +3198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (null != precious) foreach(var it in precious) {
             if (GameItems.ranged.Contains(it)) continue;    // handled at NonCriticalInInventory stage
+            if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
             if (GameItems.ammo.Contains(it)) {  // reload ASAP
               var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
               if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
