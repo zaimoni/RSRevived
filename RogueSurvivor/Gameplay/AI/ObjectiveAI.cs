@@ -2522,13 +2522,13 @@ restart_single_exit:
     // XXX sanity pills should be treated like entertainment
     private int ItemRatingCode(ItemMedicine it)
     {
+      // simulate historical usage (alpha 9)
+      if (m_Actor.Inventory.Contains(it)) return 1;
+      if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
       if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
         var rating = WantRestoreSAN;
         if (1!=rating) return rating;
       }
-      // simulate historical usage (alpha 9)
-      if (m_Actor.Inventory.Contains(it)) return 1;
-      if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
       return 1;
     }
 
