@@ -3207,6 +3207,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
               };
               continue;
             }
+            // different medicines need different handling.  The immediate-use ones can be ceded immediately.
+            if (GameItems.IDs.MEDICINE_MEDIKIT==it || GameItems.IDs.MEDICINE_BANDAGES==it || GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
 #if DEBUG
             throw new InvalidOperationException("unhandled precious item: "+it+"; "+m_Actor.Name+" defending from "+a.Name);
 #endif

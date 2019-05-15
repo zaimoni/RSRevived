@@ -1755,7 +1755,7 @@ restart:
       if (0 >= ret.Count) return null;
 
       ActorAction tmp = DecideMove(ret);
-#if DEBUG
+#if FALSE_POSITIVE
       if (null == tmp) throw new ArgumentNullException(nameof(tmp));
 #endif
       if (tmp is ActionMoveStep test) {
@@ -3416,11 +3416,6 @@ restart_single_exit:
       return _InterestingItemPostprocess(am);
     }
 
-    public bool IsInterestingItem(ItemFood food)
-    {
-      return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food);
-    }
-
     // so we can do post-condition testing cleanly
     private bool _IsInterestingItem(Item it)
     {
@@ -3440,7 +3435,17 @@ restart_single_exit:
       }
       if (it is ItemAmmo am) {
 //      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;    // redundant; for documentation
-        return IsInterestingItem(am);
+        bool ret = IsInterestingItem(am);
+        if (ret) return true;
+        // this post-condition is difficult to fully get, above
+        int item_rating = ItemRatingCode(it);   // may need to be no-recursion form here?
+        if (1 >= item_rating) return false;
+        // check inventory for less-interesting item.  Force high visibility in debugger.
+        foreach(Item obj in m_Actor.Inventory.Items) {
+          int test_rating = ItemRatingCode(obj);   // may need to be no-recursion form here?
+          if (test_rating < item_rating) return true;
+        }
+        return false;
       }
       if (it is ItemMeleeWeapon melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
