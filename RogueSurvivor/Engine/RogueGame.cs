@@ -9831,28 +9831,19 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
-      Actor deadGuy_leader = deadGuy.LiveLeader;
-      if (null != deadGuy_leader) {
-        if (deadGuy_leader.HasBondWith(deadGuy)) {
-          deadGuy_leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (ForceVisibleToPlayer(deadGuy_leader)) {
-            if (deadGuy_leader.IsPlayer) ClearMessages();
-            AddMessage(MakeMessage(deadGuy_leader, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(deadGuy_leader, VERB_BE), deadGuy.Name)));
-            if (deadGuy_leader.IsPlayer) AddMessagePressEnter();
-          }
-        }
-      } else if (deadGuy.CountFollowers > 0) {
-        foreach (Actor follower in deadGuy.Followers) {
-          if (follower.HasBondWith(deadGuy)) {
-            follower.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-            if (ForceVisibleToPlayer(follower)) {
-              if (follower.IsPlayer) ClearMessages();
-              AddMessage(MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(follower, VERB_BE), deadGuy.Name)));
-              if (follower.IsPlayer) AddMessagePressEnter();
-            }
+
+      var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
+      if (null != clan) foreach(var a in clan) {
+        if (a.HasBondWith(deadGuy)) {
+          a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
+          if (ForceVisibleToPlayer(a)) {
+            if (a.IsPlayer) ClearMessages();
+            AddMessage(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(a, VERB_BE), deadGuy.Name)));
+            if (a.IsPlayer) AddMessagePressEnter();
           }
         }
       }
+
       if (deadGuy.IsUnique) {
         // XXX \todo global event
         m_Player_bak.ActorScoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
@@ -9872,6 +9863,24 @@ namespace djack.RogueSurvivor.Engine
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.RemoveFromMap();
+
+      // note that if police went after a follower for murder, the police threat tracking historically would target the leader indefinitely.
+      // We don't have the CPU or savefile size for that (we *should* be tracking something, but we'd need a more detailed
+      // crime blotter representation).
+      bool police_wanted(Actor a) {
+        if (a.Faction.IsEnemyOf(GameFactions.ThePolice)) return true;
+        foreach(var who in a.Aggressors) {
+          if (GameFactions.ThePolice == who.Faction) return true;
+        }
+        foreach(var who in a.Aggressing) {
+          if (GameFactions.ThePolice == who.Faction) return true;
+          else if (GameFactions.ThePolice == who.LiveLeader?.Faction) return true;
+        }
+        return false;
+      }
+
+      Session.Get.PoliceThreatTracking.Audit(police_wanted);
+
       if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
         if (GameFactions.ThePolice == deadGuy.Faction) {
@@ -9965,9 +9974,9 @@ namespace djack.RogueSurvivor.Engine
       // XXX \todo this achievement is newsworthy.
       if (null != killer && deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
         ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
-        var clan = killer.ChainOfCommand;
-        if (null != clan && killer.Controller is ObjectiveAI ai) {
-          foreach(Actor a in clan) {
+        var hero_team = killer.ChainOfCommand;
+        if (null != hero_team && killer.Controller is ObjectiveAI ai) {
+          foreach(Actor a in hero_team) {
             if (!ai.InCommunicationWith(a) && killer.LiveLeader!=a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
             ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
           }

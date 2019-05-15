@@ -339,6 +339,17 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
+        public void Audit(Predicate<Actor> ok) {
+            List<Actor> discard = null;
+            lock (_threats) {
+                foreach (var x in _threats) {
+                    if (ok(x.Key)) continue;
+                    (discard ?? (discard = new List<Actor>(_threats.Count))).Add(x.Key);
+                }
+            }
+            if (null != discard) foreach (var a in discard) Cleared(a);
+        }
+
         // huge cheat ... requires any tainted location to be assigned to its "nearest threat on-map"
         // mainly of use at game start
         public void Rebuild(Map m)
