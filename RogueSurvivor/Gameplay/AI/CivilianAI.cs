@@ -411,6 +411,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
         var interestingStacks = GetInterestingInventoryStacks(current);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, interestingStacks?.to_s() ?? "null");
+#endif
         if (interestingStacks != null) {
           {
           var get_item = new Dictionary<Location, ActorAction>();

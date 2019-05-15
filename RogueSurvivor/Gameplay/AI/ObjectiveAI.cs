@@ -2797,27 +2797,7 @@ restart_single_exit:
       }
       }
       { // similar to IsInterestingItem(rw)
-      if (it is ItemRangedWeaponModel rw) {
-        int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
-        if (0 < rws_w_ammo) {
-          if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw, obj => 0 < obj.Ammo)) return 0;    // XXX
-          if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
-        }
-        ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-        if (0 >= rws_w_ammo && null != am) return 3;
-        if (!AmmoAtLimit && null != am) return 3;
-        // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
-        // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-        if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return 0;
-        if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
-#if OBSOLETE
-        if (/* 0 >= rw.Ammo && */ null == am) return 0;  // XXX assume no ammo because information not available at this level
-#else
-        /* if (0 >= rw.Ammo && null == am) return 0; */  // XXX assume ammo; information not available at this level but we have a cheating post-processing that will remove zero-ammo ranged weapons
-#endif
-        if (0< rws_w_ammo) return 2;
-        return 3;
-      }
+      if (it is ItemRangedWeaponModel rw) return ItemRatingCode(rw.Example);
       }
       {
       if (it is ItemGrenadeModel grenade) {
