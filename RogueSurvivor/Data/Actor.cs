@@ -1934,7 +1934,7 @@ namespace djack.RogueSurvivor.Data
       MapObject other = Location.MapObject;
       if (null != Location.MapObject) return string.Format("{0} is blocking", other.TheName);
 
-      Location.IsWalkableFor(this, out ret);
+      Location.Map.IsWalkableFor(moveToPos, this, out ret);
       return ret;
     }
 
