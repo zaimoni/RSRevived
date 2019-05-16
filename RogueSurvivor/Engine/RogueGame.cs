@@ -331,6 +331,7 @@ namespace djack.RogueSurvivor.Engine
 
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor m_Player;
+    private static Actor m_PlayerInTurn;
 #if PROTOTYPE
     private static Map m_CurrentMap;    // Formerly Session.Get.CurrentMap
     private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
@@ -3007,6 +3008,7 @@ namespace djack.RogueSurvivor.Engine
       (player.Controller as ObjectiveAI).SparseReset();
       player.Controller.UpdateSensors();
       m_Player = player;
+      m_PlayerInTurn = player;
       SetCurrentMap(player.Location);  // multi-PC support
 
       GC.Collect(); // force garbage collection when things should be slow anyway
@@ -3065,6 +3067,7 @@ namespace djack.RogueSurvivor.Engine
           SetCurrentMap(player.Location);
           (player.Controller as PlayerController).UpdatePrevLocation();
           Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
+          m_PlayerInTurn = null;
           return;
         }
 
@@ -3074,6 +3077,7 @@ namespace djack.RogueSurvivor.Engine
             switch (command) {  // start indentation failure
               case PlayerCommand.QUIT_GAME:
                 if (HandleQuitGame()) {
+                  m_PlayerInTurn = null;
                   StopTheWorld();
                   RedrawPlayScreen();
                   return;
@@ -3290,6 +3294,7 @@ namespace djack.RogueSurvivor.Engine
       SetCurrentMap(player.Location);
       (player.Controller as PlayerController)?.UpdatePrevLocation();    // abandon PC results in null here
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
+      m_PlayerInTurn = null;
       play_timer.Restart();
     }
 
@@ -11635,6 +11640,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", actor.HitPoints), gx, gy, new Color?());
       DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue1), gx + 84 + 100, gy, new Color?());
+      if (actor != m_PlayerInTurn) m_UI.UI_DrawStringBold(Color.Orange, "SIMULATING", gx + 126 + 100, gy, new Color?());
       gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.CanTire) {
         int maxValue2 = actor.MaxSTA;
