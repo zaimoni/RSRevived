@@ -1,4 +1,5 @@
 ﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: djack.RogueSurvivor.Data.Map
 // Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
@@ -119,14 +120,16 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
 
-    private static ReadOnlyCollection<Actor> _findPlayers(IEnumerable<Actor> src)
+    // there is a very rare multi-threading related crash due to m_ActorsList (the parameter for these) being adjusted
+    // mid-enumeration
+    private static ReadOnlyCollection<Actor> _findPlayers(List<Actor> src)
     {
-      return new ReadOnlyCollection<Actor>(src.Where(a => a.IsPlayer && !a.IsDead).ToList());
+      return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsPlayer && !a.IsDead));
     }
 
-    private static ReadOnlyCollection<Actor> _findPolice(IEnumerable<Actor> src)
+    private static ReadOnlyCollection<Actor> _findPolice(List<Actor> src)
     {
-      return new ReadOnlyCollection<Actor>(src.Where(a => (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead).ToList());
+      return new ReadOnlyCollection<Actor>(src.FindAll(a => (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead));
     }
 
     private static int _countUndead(IEnumerable<Actor> src)
@@ -2460,7 +2463,7 @@ retry:
         foreach(var x in m_aux_CorpsesByPosition) {
           if (0>= x.Value.Count) continue;
           if (!x.Value.Any(is_problem_corpse)) continue;
-          tmp[x.Key] = x.Value.Where(is_problem_corpse).ToList();
+          tmp[x.Key] = x.Value.FindAll(is_problem_corpse);
         }
         if (0 < tmp.Count) dest.WriteLine("<pre>Problematic corpses:\n"+tmp.to_s()+"</pre>");
       }

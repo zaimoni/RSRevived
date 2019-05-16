@@ -2172,7 +2172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      List<Percept> approachable_enemies = _enemies.Where(p => Rules.IsAdjacent(m_Actor.Location, p.Location)).ToList();
+      List<Percept> approachable_enemies = _enemies.FindAll(p => Rules.IsAdjacent(m_Actor.Location, p.Location));
 
       if (0 >= approachable_enemies.Count) {
         if (null != legal_steps) {

@@ -1607,7 +1607,7 @@ restart:
       if (null != path) {
         void purge_non_adjacent(int i) {    // \todo non-local function target?
           while(0 < i) {
-            var tmp = path[i - 1].Where(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc))).ToList();
+            var tmp = path[i - 1].FindAll(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc)));
             if (tmp.Count >= path[i - 1].Count || 0>=tmp.Count) return;
             path[--i] = tmp;
           }
@@ -2245,7 +2245,7 @@ restart_single_exit:
             // check for iron gates, etc in way
             List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
             if (null == path) return true;
-            List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
+            List<Point> test = path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt)));
             if (0 >= test.Count) return true;
             path[0] = test;
             if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAtFor(pt,m_Actor) >= m_Actor.HitPoints)) return true;
@@ -3888,7 +3888,7 @@ restart_single_exit:
       if (obj.MaxBatteries-1 <= obj.Batteries) return null;
       var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
       if (0 >= generators.Count) return null;
-      var generators_on = generators.Where(power => power.IsOn).ToList();
+      var generators_on = generators.FindAll(power => power.IsOn);
       if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
       if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
