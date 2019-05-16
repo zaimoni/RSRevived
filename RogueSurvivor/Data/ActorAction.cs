@@ -25,6 +25,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     public abstract bool IsLegal();
+    // RS Alpha 10- do not distinguish between IsLegal() and IsPerformable().
+    // We have to because we schedule actions for later turns; a legal action is schedulable, but a performable action actually can be done now.
+    // Historical code in RogueGame that morally does the work of IsPerformable() should be lifted.
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
   }

@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game);
 #if DEBUG
-      if (!(actorAction?.IsLegal() ?? true)) throw new InvalidOperationException("illegal action returned from SelectAction");
+      if (!(actorAction?.IsPerformable() ?? true)) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
@@ -85,6 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction ?? new ActionWait(m_Actor);    // likely redundant
     }
 
+    /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
     protected abstract ActorAction SelectAction(RogueGame game);
 
 /*

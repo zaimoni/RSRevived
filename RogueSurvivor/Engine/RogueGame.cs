@@ -3302,7 +3302,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
       ActorAction insaneAction = GenerateInsaneAction(Player);
-      if (!insaneAction?.IsLegal() ?? true) return false;
+      if (!insaneAction?.IsPerformable() ?? true) return false;
       ClearMessages();
       AddMessage(new Data.Message("(your insanity takes over)", Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
       AddMessagePressEnter();
@@ -5857,7 +5857,7 @@ namespace djack.RogueSurvivor.Engine
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
-        if (insaneAction?.IsLegal() ?? false) actorAction = insaneAction;
+        if (insaneAction?.IsPerformable() ?? false) actorAction = insaneAction;
       }
       // we need to know if this got past internal testing.
 #if DEBUG

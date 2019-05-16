@@ -27,6 +27,11 @@ namespace djack.RogueSurvivor.Engine.Actions
             return m_Actions[0].IsLegal();
         }
 
+        public override bool IsPerformable()
+        {
+            return m_Actions[0].IsPerformable();
+        }
+
         public override void Perform()
         {
             (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);

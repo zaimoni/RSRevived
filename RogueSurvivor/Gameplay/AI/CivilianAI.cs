@@ -237,9 +237,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           else if (o.UrgentAction(out goal_action)) {
             if (null==goal_action) Objectives.Remove(o);
 #if DEBUG
-            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+            else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
 #else
-            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+            else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
 #if TRACE_SELECTACTION
             else {
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var get_item = new Dictionary<Location, ActorAction>();
           foreach(var at_target in interestingStacks.Where(p => m_Actor.MayTakeFromStackAt(p.Location))) {
             tmpAction = BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
-            if (tmpAction?.IsLegal() ?? false) get_item[at_target.Location] = tmpAction;
+            if (tmpAction?.IsPerformable() ?? false) get_item[at_target.Location] = tmpAction;
           }
           if (1<get_item.Count) {
             var considering = new List<Location>(get_item.Count);
@@ -556,7 +556,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           while(null != percept) {
             m_LastItemsSaw = percept;
             tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
-            if (tmpAction?.IsLegal() ?? false) {
+            if (tmpAction?.IsPerformable() ?? false) {
 #if TRACE_SELECTACTION
               if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
 #endif

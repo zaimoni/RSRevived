@@ -136,6 +136,7 @@ namespace djack.RogueSurvivor.Data
     } }
 
     public abstract bool IsMyTurn();
+    /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
     public virtual ActorAction ExecAryZeroBehavior(int code) { return null; }
 
     public bool CanSee(Location x)  // correctness requires Location being value-copied

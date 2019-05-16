@@ -70,7 +70,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
          m_Actor = who;
       }
 
-      // convention: return true to take action; ret null if self-cancellation indicated.
+      /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
+      /// <returns>true to take action</returns>
       public abstract bool UrgentAction(out ActorAction ret);
 
       public virtual List<Objective> Subobjectives() { return null; }
@@ -130,9 +131,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             _isExpired = true;
             var test = m_Actor.Controller.enemies_in_FOV;
             if (null == test) {
-                if (null != Intent_disengaged && Intent_disengaged.IsLegal()) ret = Intent_disengaged;  // \todo may need to call auxilliary function instead
+                if (null != Intent_disengaged && Intent_disengaged.IsPerformable()) ret = Intent_disengaged;  // \todo may need to call auxilliary function instead
             } else {
-                if (null != Intent_engaged && Intent_engaged.IsLegal()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead
+                if (null != Intent_engaged && Intent_engaged.IsPerformable()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead
             }
             if (ret is ActionMoveStep step && m_Actor.Controller is ObjectiveAI ai) m_Actor.IsRunning = ai.RunIfAdvisable(step.dest);
             return true;
@@ -157,12 +158,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        if (!Intent.IsLegal()) {
+        // XXX need some sense of what a combat action is
+        if (null != m_Actor.Controller.enemies_in_FOV) {    // VAPORWARE: respond to enemies "known but not in FOV"
+          if (!Intent.IsLegal()) {
+            _isExpired = true;
+            return true;
+          }
+          return false;
+        }
+        if (!Intent.IsPerformable()) {
           _isExpired = true;
           return true;
         }
-        // XXX need some sense of what a combat action is
-        if (null != m_Actor.Controller.enemies_in_FOV) return false;
         ret = Intent;
         return true;
       }
@@ -449,7 +456,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
-        if (!(ret?.IsLegal() ?? false)) {
+        if (!(ret?.IsPerformable() ?? false)) {
           ret = null;
           _isExpired = true;    // cancel: buggy
           return true;
@@ -516,7 +523,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
         if (null != at_target) {
           ActorAction tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted);
-          if (tmpAction?.IsLegal() ?? false) {
+          if (tmpAction?.IsPerformable() ?? false) {
             ret = tmpAction;
             m_Actor.Activity = Activity.IDLE;
             _isExpired = true;  // we don't play well with action chains
