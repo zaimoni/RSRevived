@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine
     private const int RIGHTPANEL_TEXT_X = RIGHTPANEL_X+4;
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
-    private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142
+    private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
@@ -747,18 +747,18 @@ namespace djack.RogueSurvivor.Engine
       int gy1 = 0;
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
       if (!(  CheckDirectory(GetUserBasePath(), "base user", ref gy1) | CheckDirectory(GetUserConfigPath(), "config", ref gy1)
             | CheckDirectory(GetUserDocsPath(), "docs", ref gy1) | CheckDirectory(GetUserGraveyardPath(), "graveyard", ref gy1)
             | CheckDirectory(GetUserSavesPath(), "saves", ref gy1) | CheckDirectory(GetUserScreenshotsPath(), "screenshots", ref gy1) | CheckCopyOfManual()))
         return;
       m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawString(Color.LightGreen, GetUserBasePath(), 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy1, new Color?());
       DrawFootnote(Color.White, "press ENTER");
       m_UI.UI_Repaint();
@@ -939,7 +939,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           case 1:
             if (flag2) {
-              gy1 += 28;
+              gy1 += 2*BOLD_LINE_SPACING;
               m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
               m_UI.UI_Repaint();
               LoadGame(GetUserSave());
@@ -1340,13 +1340,13 @@ namespace djack.RogueSurvivor.Engine
     {
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
-      int gy1 = 14;
+      int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
       m_Manual = new TextFile();
       m_ManualLine = 0;
       if (!m_Manual.Load(GetUserManualFilePath())) {
         m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy1, new Color?());
         m_UI.UI_Repaint();
         DrawFootnote(Color.White, "press ENTER");
@@ -1354,7 +1354,7 @@ namespace djack.RogueSurvivor.Engine
         m_Manual = null;
       } else {
         m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_Repaint();
         m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
         m_UI.UI_Clear(Color.Black);
@@ -3443,9 +3443,9 @@ namespace djack.RogueSurvivor.Engine
     {
       m_UI.UI_Clear(Color.Black);
       DrawHeader();
-      int gy1 = 14;
+      int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "preparing...", 0, gy1, new Color?());
       m_UI.UI_Repaint();
       var stringList = new List<string>();
@@ -3514,14 +3514,14 @@ namespace djack.RogueSurvivor.Engine
     {
       m_UI.UI_Clear(Color.Black);
       DrawHeader();
-      int gy1 = 14;
+      int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       foreach (Data.Message message in m_MessageManager.History) {
         m_UI.UI_DrawString(message.Color, message.Text, 0, gy1, new Color?());
-        gy1 += 12;
+        gy1 += LINE_SPACING;
       }
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
@@ -11633,13 +11633,13 @@ namespace djack.RogueSurvivor.Engine
       gy += BOLD_LINE_SPACING;
       int maxValue1 = actor.MaxHPs;
       m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", actor.HitPoints), gx, gy, new Color?());
-      DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
+      DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue1), gx + 84 + 100, gy, new Color?());
       gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.CanTire) {
         int maxValue2 = actor.MaxSTA;
         m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", actor.StaminaPoints), gx, gy, new Color?());
-        DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
+        DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorRunningStatus(actor), gx + 126 + 100, gy);
       }
@@ -11647,13 +11647,13 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasToEat) {
         int maxValue2 = actor.MaxFood;
         m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", actor.FoodPoints), gx, gy, new Color?());
-        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorHungerStatus(actor), gx + 126 + 100, gy);
       } else if (actor.Model.Abilities.IsRotting) {
         int maxValue2 = actor.MaxRot;
         m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", actor.FoodPoints), gx, gy, new Color?());
-        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorRotHungerStatus(actor), gx + 126 + 100, gy);
       }
@@ -11661,7 +11661,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasToSleep) {
         int maxValue2 = actor.MaxSleep;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", actor.SleepPoints), gx, gy, new Color?());
-        DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
+        DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorSleepStatus(actor), gx + 126 + 100, gy);
       }
@@ -11669,7 +11669,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasSanity) {
         int maxValue2 = actor.MaxSanity;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", actor.Sanity), gx, gy, new Color?());
-        DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
+        DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, Rules.ActorDisturbedLevel(actor), 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorSanityStatus(actor), gx + 126 + 100, gy);
       }
@@ -11678,7 +11678,7 @@ namespace djack.RogueSurvivor.Engine
         int refValue = Rules.INFECTION_LEVEL_1_WEAK * maxValue2 / 100;
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", actor.Infection), gx, gy, new Color?());
-        DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, 14, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
+        DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", actor.InfectionPercent), gx + 84 + 100, gy, new Color?());
       }
       gy += BOLD_LINE_SPACING;
@@ -11740,16 +11740,16 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, gx2, gy2);
         if (it is ItemRangedWeapon rw) {
           if (0 >= rw.Ammo) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, gx2, gy2);
-          DrawBar(rw.Ammo, rw.Ammo, rw.Model.MaxAmmo, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
+          DrawBar(rw.Ammo, rw.Ammo, rw.Model.MaxAmmo, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
         } else if (it is ItemSprayPaint sprayPaint) {
-          DrawBar(sprayPaint.PaintQuantity, sprayPaint.PaintQuantity, sprayPaint.Model.MaxPaintQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
+          DrawBar(sprayPaint.PaintQuantity, sprayPaint.PaintQuantity, sprayPaint.Model.MaxPaintQuantity, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
         } else if (it is ItemSprayScent sprayScent) {
-          DrawBar(sprayScent.SprayQuantity, sprayScent.SprayQuantity, sprayScent.Model.MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
+          DrawBar(sprayScent.SprayQuantity, sprayScent.SprayQuantity, sprayScent.Model.MaxSprayQuantity, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
         }
         else if (it is BatteryPowered electric) {
           Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
           if (0 >= electric.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
-          DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, bar_color, bar_color, bar_color, Color.DarkGray);
+          DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, TILE_SIZE-4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), bar_color, bar_color, bar_color, Color.DarkGray);
         } else if (it is ItemFood food) {
           if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, gx2, gy2);
@@ -12410,11 +12410,11 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
       m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", description, path), 0, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
       bool directory = CreateDirectory(path);
       m_UI.UI_DrawString(Color.White, "ok.", 0, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
       return directory;
     }
@@ -13300,16 +13300,16 @@ namespace djack.RogueSurvivor.Engine
         int gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy1);
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", new WorldTime(Session.Get.WorldTime.TurnCounter).ToString()), gx, gy1, new Color?());
-        int gy4 = gy1 + 28;
+        int gy4 = gy1 + 2*BOLD_LINE_SPACING;
         for (int index = 0; index < strArray.Length; ++index) {
           m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
-          gy4 += 14;
+          gy4 += BOLD_LINE_SPACING;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
         return null;
