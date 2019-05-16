@@ -1453,7 +1453,7 @@ retry:
 #if DEBUG
         if (null == test) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
 #endif
-        test.Value.Map.PlaceAt(mapObj,test.Value.Position);
+        test.Value.Map.PlaceAt(mapObj,test.Value.Position); // intentionally not using thin wrapper
         return;
       }
 #if DEBUG

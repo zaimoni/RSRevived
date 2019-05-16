@@ -9621,8 +9621,8 @@ namespace djack.RogueSurvivor.Engine
       objDest.Map.Remove(actor);
       objDest.Map.PlaceAt(actor, moveActorToPos);  // assumed to be walkable, checked by rules
       // ...object
-      map.RemoveMapObjectAt(mapObj.Location.Position);
-      objDest.Map.PlaceAt(mapObj, objDest.Position);
+      mapObj.Remove();
+      objDest.Place(mapObj);
 
       // noise/message.
       if (isVisible) {
