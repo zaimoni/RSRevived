@@ -2909,6 +2909,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionTradeWithContainer(m_Actor,best_armor,obj,loc.Position);
           }
         }
+#if DEBUG
+        if (is_real && !m_Actor.MayTakeFromStackAt(loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
+#endif
         ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
@@ -2956,6 +2959,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = _takeThis(loc, obj, recover, is_real);
       if (null == tmp) return null;
+#if DEBUG
+      if (is_real) {
+         if (1 < Rules.GridDistance(loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
+      }
+#endif
       if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
       return tmp;
@@ -3006,6 +3014,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (may_take) {
         tmp = _takeThis(loc, obj, recover, is_real);
         if (null == tmp) return null;
+#if DEBUG
+      if (is_real) {
+         if (1 < Rules.GridDistance(loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
+      }
+#endif
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
