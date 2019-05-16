@@ -5008,9 +5008,9 @@ namespace djack.RogueSurvivor.Engine
         if (dir == null) break;
         else if (dir != Direction.NEUTRAL) {
           Point pos = player.Location.Position + dir;
-          if (player.Location.Map.IsInBounds(pos)) {
-            MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
-            Actor other = player.Location.Map.GetActorAt(pos);
+          if (player.Location.Map.IsValid(pos)) {
+            MapObject mapObj = player.Location.Map.GetMapObjectAtExt(pos);
+            Actor other = player.Location.Map.GetActorAtExt(pos);
             string reason;
             if (other != null) {
               // pull-shove.
@@ -9614,14 +9614,15 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendStaminaPoints(staCost);
 
       // do it : move actor then move object
+      Location objDest = actor.Location;
+
       Map map = mapObj.Location.Map;
-            // actor...
-      Point pullObjectTo = actor.Location.Position;
-      map.Remove(actor);
-      map.PlaceAt(actor, moveActorToPos);  // assumed to be walkable, checked by rules
+      // actor...
+      objDest.Map.Remove(actor);
+      objDest.Map.PlaceAt(actor, moveActorToPos);  // assumed to be walkable, checked by rules
       // ...object
       map.RemoveMapObjectAt(mapObj.Location.Position);
-      map.PlaceAt(mapObj, pullObjectTo);
+      objDest.Map.PlaceAt(mapObj, objDest.Position);
 
       // noise/message.
       if (isVisible) {
