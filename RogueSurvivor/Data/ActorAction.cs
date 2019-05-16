@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public abstract bool IsLegal();
+    public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
   }
 }

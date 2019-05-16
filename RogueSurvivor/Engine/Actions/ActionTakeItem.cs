@@ -50,6 +50,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
 
+    public override bool IsPerformable()
+    {
+      if (!base.IsPerformable()) return false;
+      return m_Actor.MayTakeFromStackAt(m_Location);
+    }
+
     public override void Perform()
     {
 #if DEBUG

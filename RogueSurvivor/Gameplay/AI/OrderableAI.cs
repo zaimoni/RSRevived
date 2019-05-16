@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        if (!Intent.IsLegal()) {
+        if (!Intent.IsPerformable()) {
           _isExpired = true;
           return true;
         }
