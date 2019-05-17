@@ -4319,7 +4319,7 @@ namespace djack.RogueSurvivor.Engine
         if (Direction.NEUTRAL == direction) continue;
         Point point = player.Location.Position + direction;
         if (!player.Location.Map.IsValid(point)) continue;
-        Actor actorAt = player.Location.Map.GetActorAt(point);
+        Actor actorAt = player.Location.Map.GetActorAtExt(point);
         if (actorAt != null) {
           if (player.CanGiveTo(actorAt, inventoryItem, out string reason)) {
             flag2 = true;
