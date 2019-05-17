@@ -2097,9 +2097,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // sunk from BaseAI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
-#if DEBUG
-      if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) throw new InvalidOperationException("should not reach BehaviorFightFlee when in blast field");
-#endif
+      if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) {
+        // oops.  Panic.  Wasn't able to flee explosives and will likely die, either immediately or by sudden vulnerability.
+        return new ActionWait(m_Actor);
+      }
+
       // it is possible to reach here with a ranged weapon.  (Char Office assault, for instance)  In this case, we don't have Line of Fire.
       if (null != GetBestRangedWeaponWithAmmo()) return null;
 
@@ -3087,34 +3089,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
             if (!InCommunicationWith(a)) continue;
             if (a.IsPlayer) continue; // \todo self-order for this
-            var have = (a.Controller as ObjectiveAI).NonCriticalInInventory();
+            var ai = a.Controller as OrderableAI;
+            var have = ai.NonCriticalInInventory();
             if (null != have.Key) {
                 foreach (var x in have.Key) {
+                    if (!critical.Contains(x)) continue;
                     if (GameItems.ammo.Contains(x)) {
                       var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
                       if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;  // not needed
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
-                    if (critical.Contains(x)) {
-                        insurance[a] = x;
-                        break;
+                    if (GameItems.restoreSAN.Contains(x)) {
+                      if (3 <= ai.WantRestoreSAN && null!=ai.BehaviorUseEntertainment()) continue;  // allow defensive behavior
                     }
+                    insurance[a] = x;
+                    break;
                 }
                 if (insurance.ContainsKey(a)) continue; // possible MSIL compaction here (local bool vs. member function call); may not be a real micro-optimization
             }
             if (null != have.Value) {
                 foreach (var x in have.Value) {
+                    if (!critical.Contains(x)) continue;
                     if (GameItems.ammo.Contains(x)) {
                       var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
                       if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
-                    if (critical.Contains(x)) {
-                        want[a] = x;
-                        break;
+                    if (GameItems.restoreSAN.Contains(x)) {
+                      if (3 <= ai.WantRestoreSAN && null!=ai.BehaviorUseEntertainment()) continue;  // allow defensive behavior
                     }
+                    want[a] = x;
+                    break;
                 }
             }
         }
@@ -3223,6 +3230,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.
             if (GameItems.IDs.MEDICINE_MEDIKIT==it || GameItems.IDs.MEDICINE_BANDAGES==it || GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
+            if (GameItems.restoreSAN.Contains(it)) {    // only have to defend if we ourselves are critical
+              if (3 > WantRestoreSAN) continue; // only have to consider action loops
+              var act = BehaviorUseEntertainment();
+              if (null != act) return act;
+              continue;
+            }
 #if DEBUG
             throw new InvalidOperationException("unhandled precious item: "+it+"; "+m_Actor.Name+" defending from "+a.Name);
 #endif

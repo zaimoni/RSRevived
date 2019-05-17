@@ -96,6 +96,12 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.MEDICINE_PILLS_SAN,
         IDs.MEDICINE_PILLS_ANTIVIRAL});
 
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> restoreSAN
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MEDICINE_PILLS_SAN,
+        IDs.ENT_BOOK,
+        IDs.ENT_MAGAZINE,
+        IDs.ENT_CHAR_GUARD_MANUAL});
+
     private MedecineData DATA_MEDICINE_BANDAGE;
     private MedecineData DATA_MEDICINE_MEDIKIT;
     private MedecineData DATA_MEDICINE_PILLS_STA;
