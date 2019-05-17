@@ -1954,7 +1954,7 @@ namespace djack.RogueSurvivor.Data
       string ret = ReasonCantShove(other);
       if (!string.IsNullOrEmpty(ret)) return ret;
 
-      Location.IsWalkableFor(other, out ret);
+      Location.Map.IsWalkableFor(moveToPos, this, out ret);
       return ret;
     }
 

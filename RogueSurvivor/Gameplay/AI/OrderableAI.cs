@@ -3100,9 +3100,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
+#if REDUNDANT
                     if (GameItems.restoreSAN.Contains(x)) {
                       if (3 <= ai.WantRestoreSAN && null!=ai.BehaviorUseEntertainment()) continue;  // allow defensive behavior
                     }
+#endif
                     insurance[a] = x;
                     break;
                 }
@@ -3117,9 +3119,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
+#if REDUNDANT
                     if (GameItems.restoreSAN.Contains(x)) {
                       if (3 <= ai.WantRestoreSAN && null!=ai.BehaviorUseEntertainment()) continue;  // allow defensive behavior
                     }
+#endif
                     want[a] = x;
                     break;
                 }
@@ -3231,9 +3235,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.
             if (GameItems.IDs.MEDICINE_MEDIKIT==it || GameItems.IDs.MEDICINE_BANDAGES==it || GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
             if (GameItems.restoreSAN.Contains(it)) {    // only have to defend if we ourselves are critical
+#if REDUNDANT
               if (3 > WantRestoreSAN) continue; // only have to consider action loops
               var act = BehaviorUseEntertainment();
               if (null != act) return act;
+#endif
               continue;
             }
 #if DEBUG
@@ -3350,7 +3356,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= dest.Count) throw new InvalidOperationException("should be able to close in");
 #else
         if (0 >= dest.Count) return null;
-#endif      
+#endif
       }
 
       var exposed = new Dictionary<Point,int>();
