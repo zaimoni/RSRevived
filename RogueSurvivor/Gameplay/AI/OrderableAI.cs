@@ -1191,34 +1191,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
     }
 
-    // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
-    public void OnRaid(RaidType raid, Location location, int turn)
+    public void OnRaid(RaidType raid, Location location)
     {
       if (m_Actor.IsSleeping) return;
-      string str;
-      switch (raid) {
-        case RaidType.BIKERS:
-          str = "motorcycles coming";
-          break;
-        case RaidType.GANGSTA:
-          str = "cars coming";
-          break;
-        case RaidType.BLACKOPS:
-          str = "a chopper hovering";
-          break;
-        case RaidType.SURVIVORS:
-          str = "honking coming";
-          break;
-        case RaidType.NATGUARD:
-          str = "the army coming";
-          break;
-        case RaidType.ARMY_SUPLLIES:
-          str = "a chopper hovering";
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(string.Format("unhandled raidtype {0}", (object) raid.ToString()));
-      }
-      m_LastRaidHeard = new Percept((object) str, turn, location);
+
+      string text() {
+        switch (raid) {
+          case RaidType.BIKERS: return "motorcycles coming";
+          case RaidType.GANGSTA: return "cars coming";
+          case RaidType.BLACKOPS: return "a chopper hovering";
+          case RaidType.SURVIVORS: return "honking coming";
+          case RaidType.NATGUARD: return "the army coming";
+          case RaidType.ARMY_SUPLLIES: return "a chopper hovering";
+          default: throw new InvalidProgramException(string.Format("unhandled raidtype {0}", raid.ToString()));
+        }
+      };
+
+      m_LastRaidHeard = new Percept(text(), location.Map.LocalTime.TurnCounter, location);
     }
 
     // Behaviors and support functions

@@ -1967,10 +1967,10 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_SewersInvasion(d.SewersMap)) FireEvent_SewersInvasion(d.SewersMap);
     }
 
-    static private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
+    static private void NotifyOrderablesAI(RaidType raid, Location loc)
     {
-      foreach (Actor actor in map.Actors) {
-        (actor.Controller as OrderableAI)?.OnRaid(raid, new Location(map, position), map.LocalTime.TurnCounter);
+      foreach (Actor actor in loc.Map.Actors) {
+        (actor.Controller as OrderableAI)?.OnRaid(raid, loc);
       }
     }
 
@@ -2610,7 +2610,7 @@ namespace djack.RogueSurvivor.Engine
         if (other != null) actor.AddFollower(other);
       }
 
-      NotifyOrderablesAI(map, RaidType.NATGUARD, actor.Location.Position);
+      NotifyOrderablesAI(RaidType.NATGUARD, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
@@ -2657,7 +2657,7 @@ namespace djack.RogueSurvivor.Engine
         },
         pt => IsSuitableDropSuppliesPoint(map, pt));
 
-      NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
+      NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map,dropPoint));
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
@@ -2711,7 +2711,7 @@ namespace djack.RogueSurvivor.Engine
         Actor other = SpawnNewBiker(actor);
         if (other != null) actor.AddFollower(other);
       }
-      NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
+      NotifyOrderablesAI(RaidType.BIKERS, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
@@ -2740,7 +2740,7 @@ namespace djack.RogueSurvivor.Engine
         Actor other = SpawnNewGangsta(actor);
         if (other != null) actor.AddFollower(other);
       }
-      NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
+      NotifyOrderablesAI(RaidType.GANGSTA, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
@@ -2769,7 +2769,7 @@ namespace djack.RogueSurvivor.Engine
         Actor other = SpawnNewBlackOpsTrooper(actor);
         if (other != null) actor.AddFollower(other);
       }
-      NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
+      NotifyOrderablesAI(RaidType.BLACKOPS, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
@@ -2796,7 +2796,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == null) return;
       for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
         SpawnNewSurvivor(map, actor.Location.Position);
-      NotifyOrderablesAI(map, RaidType.SURVIVORS, actor.Location.Position);
+      NotifyOrderablesAI(RaidType.SURVIVORS, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
