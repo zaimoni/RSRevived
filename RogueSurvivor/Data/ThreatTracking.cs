@@ -71,6 +71,16 @@ namespace djack.RogueSurvivor.Data
 			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(loc.Map) && _threats[a][loc.Map].Contains(loc.Position)).ToList();
 		  }
 		}
+
+		public bool AnyThreatAt(Location loc)
+		{
+		  lock(_threats) {
+            for(var x in _threats) {
+              if (x.Value.TryGetValue(loc.Map,out var cache) && cache.Contains(loc.Position)) return true;
+            }
+            return false;
+		  }
+		}
 #endif
 
         [NonSerialized] Dictionary<Map, HashSet<Point>> _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
@@ -232,21 +242,25 @@ namespace djack.RogueSurvivor.Data
         public void RecordTaint(Actor a, Map m, IEnumerable<Point> pts)
         {
           var local = new List<Point>(pts.Count());
-          var other = new List<Point>(pts.Count());
+          List<Point> other = null;
           foreach(Point pt in pts) {
-            (m.IsInBounds(pt) ? local : other).Add(pt);
+            (m.IsInBounds(pt) ? local : (other ?? (other = new List<Point>(pts.Count())))).Add(pt);
           }
 		  lock(_threats) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
-            _threats[a][m].UnionWith(local);
+            if (!_threats.TryGetValue(a,out var map_cache)) _threats.Add(a,map_cache = new Dictionary<Map, HashSet<Point>>());
+            if (!map_cache.TryGetValue(m,out var cache)) map_cache.Add(m,cache = new HashSet<Point>());
+            cache.UnionWith(local);
 		  }
+          if (null == other) return;
+          var remap = new Dictionary<Map,List<Point>>();
           foreach(Point pt in other) {
             Location? test = m.Normalize(pt);
             if (null == test) continue;
-            RecordTaint(a,test.Value.Map,test.Value.Position);
+            if (!remap.TryGetValue(test.Value.Map,out var cache)) remap.Add(test.Value.Map, cache = new List<Point>(other.Count));
+            cache.Add(test.Value.Position);
           }
+          foreach(var x in remap) RecordTaint(a,x.Key,x.Value);
         }
 
 
@@ -411,9 +425,19 @@ namespace djack.RogueSurvivor.Data
             Actor moving = (sender as Actor);
             lock(_threats) {
               if (!_threats.ContainsKey(moving)) return;
+              // we don't have the CPU to do this right (that is, expand out legal steps from all current candidate locations)
               List<Point> tmp = moving.LegalSteps;
               if (null == tmp) return;
 			  tmp.Add(moving.Location.Position);
+
+#if PROTOTYPE
+              // logic puzzle here...automate it
+              var pre_existing = ThreatWhere(moving.Location.Map, new Rectangle(moving.Location.Position.X-1,moving.Location.Position.Y-1,3,3));
+              pre_existing.ExceptWith(tmp);
+              if (0<pre_existing.Count) {
+              }
+#endif
+
               RecordTaint(moving,moving.Location.Map, tmp);
             }
           }
