@@ -4361,8 +4361,7 @@ namespace djack.RogueSurvivor.Engine
               flag2 = true;
               ClearOverlays();
               RedrawPlayScreen();
-              DoTrade(player, inventoryItem, actorAt, true);
-              player.SpendActionPoints(Rules.BASE_ACTION_COST);
+              if (DoTrade(player, inventoryItem, actorAt, true)) player.SpendActionPoints(Rules.BASE_ACTION_COST);
               break;
             } else {
               AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
@@ -8624,7 +8623,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
+    private bool DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
 #if OBSOLETE
       if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer"); // valid for RS 9 Alpha; will go away
@@ -8645,13 +8644,13 @@ namespace djack.RogueSurvivor.Engine
       if (!wantedItem)
       { // offered item is not of perceived use
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", itSpeaker.TheName)));
-        return;
+        return false;
       };
 
       Item trade = PickItemToTrade(target, speaker, itSpeaker); // XX rewrite target
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
-        return;
+        return false;
       };
 
       bool isPlayer = speaker.IsPlayer;
@@ -8670,10 +8669,10 @@ namespace djack.RogueSurvivor.Engine
         acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
 
       if (!acceptDeal) {
-        if (!flag1) return;
+        if (!flag1) return false;
         AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
         if (isPlayer) RedrawPlayScreen();
-        return;
+        return false;
       }
 
       if (flag1) {
@@ -8688,6 +8687,7 @@ namespace djack.RogueSurvivor.Engine
       target.Inventory.RemoveAllQuantity(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
+      return true;
     }
 
     private void DoTrade(Actor speaker, Item itSpeaker, Inventory target)
