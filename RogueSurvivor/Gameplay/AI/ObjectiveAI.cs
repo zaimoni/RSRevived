@@ -213,7 +213,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}
     public T Goal<T>() where T:Objective { return Objectives.FirstOrDefault(o => o is T) as T;}
 
-#if DEAD_FUNC
     // thin wrapper for when the key logic is elsewhere; we still prefer central-logic specializations)
     public void SetObjective(Objective src) {
 #if DEBUG
@@ -229,7 +228,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // for now, treat this as "early"
       Objectives.Insert(0,src);
     }
-#endif
 
     public override bool InCombat { get {
       if (base.InCombat) return true;

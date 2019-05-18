@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         private int _AP;
         private int _turn;
         private List<int> _handler_codes;
-        private ActorAction _result;
+        private ActorAction _result;    // \todo savefile break: make this non-serialized
 
         public ActionSequence(Actor actor, IEnumerable<int> codes)
         : base(actor)

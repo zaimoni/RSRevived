@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -106,6 +107,28 @@ namespace djack.RogueSurvivor.Data
       Actor actor = Create(faction, spawnTime, properName);
       actor.IsProperName = true;
       return actor;
+    }
+
+    private string ReasonCantBreak(MapObject mapObj)
+    {
+#if DEBUG
+      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
+#endif
+      if (!Abilities.CanBreakObjects) return "cannot break objects";
+      bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
+      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
+      return "";
+    }
+
+    public bool CanBreak(MapObject mapObj, out string reason)
+    {
+      reason = ReasonCantBreak(mapObj);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBreak(MapObject mapObj)
+    {
+      return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
     }
   }
 }
