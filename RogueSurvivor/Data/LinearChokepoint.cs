@@ -8,6 +8,7 @@ namespace djack.RogueSurvivor.Data
     // a non-PC ObjectiveAI that wishes to use a chokepoint must declare an ideal route no later than on entry.
     // this allows allied/friendly ais to read plans and de-conflict pathing by using acceptable pushes or pulls
 
+    [Serializable]
     class LinearChokepoint  // must be a class due to wanting to reuse object instances in data structures
     {
         public readonly Location[] Entrance;    // adjacent to Chokepoint[0]
@@ -30,6 +31,14 @@ namespace djack.RogueSurvivor.Data
             Chokepoint = choke;
             Exit = exit;
         }
+
+      public int Contains(Location loc)
+      {
+        if (0<=Array.IndexOf(Entrance,loc)) return 1;
+        if (0<=Array.IndexOf(Chokepoint,loc)) return 2;
+        if (0<=Array.IndexOf(Exit,loc)) return 3;
+        return 0;
+      }
 
       public override string ToString()
       {

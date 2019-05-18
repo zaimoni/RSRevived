@@ -180,7 +180,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public enum SparseData {
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
       CloseToActor,
-      ClearingZone
+      ClearingZone,
+      UsingChokepoint
     };
 
     public enum ZeroAryBehaviors {
@@ -272,6 +273,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Unset(SparseData.LoF);
       _sparse.Unset(SparseData.CloseToActor);
       _sparse.Unset(SparseData.ClearingZone);
+      var choke = GetChokepoint();
+      if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
     }
 
     // morally a constructor-type function
@@ -354,6 +357,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public List<Point> GetLoF() { return _sparse.Get<List<Point>>(SparseData.LoF); }   // XXX reference-copy return 
     protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
     public KeyValuePair<Actor, int> GetCloseToActor() { return _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor); }
+
+    protected void RecordChokepoint(LinearChokepoint src) {
+      if (null == src || 0 >= src.Contains(m_Actor.Location)) return;
+      _sparse.Set(SparseData.UsingChokepoint, src);
+    }
+    public LinearChokepoint GetChokepoint() { return _sparse.Get<LinearChokepoint>(SparseData.UsingChokepoint); }
 
     public ZoneLoc ClearingThisZone() {
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
