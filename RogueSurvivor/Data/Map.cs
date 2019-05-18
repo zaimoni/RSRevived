@@ -2636,6 +2636,15 @@ retry:
       m_Chokepoints.AddRange(working);
     }
 
+    public LinearChokepoint EnteringChokepoint(Location origin, Location dest) {
+      var candidates = m_Chokepoints.FindAll(choke => choke.Chokepoint.Contains(dest));
+      if (0 >= candidates.Count) return null;
+      candidates = candidates.FindAll(choke => choke.Entrance.Contains(origin) || choke.Exit.Contains(origin));
+      if (0 >= candidates.Count) return null;
+      return candidates[0];
+    }
+
+
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
