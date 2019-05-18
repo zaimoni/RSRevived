@@ -1040,6 +1040,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+    protected void DecideMove_WaryOfTraps(Dictionary<Location, int> src)
+    {
+	  var trap_damage_field = new Dictionary<Location,int>();
+	  foreach (var x in src) {
+		trap_damage_field[x.Key] = x.Key.Map.TrapsMaxDamageAtFor(x.Key.Position,m_Actor);
+	  }
+	  var safe = src.Keys.Where(x => 0>=trap_damage_field[x]);
+	  int new_dest = safe.Count();
+      if (0 == new_dest) {
+		safe = src.Keys.Where(x => m_Actor.HitPoints>trap_damage_field[x]);
+		new_dest = safe.Count();
+      }
+      if (0 >= new_dest || new_dest >= src.Count) return;
+      src.OnlyIf(x => safe.Contains(x));
+    }
+
     protected ActorAction DecideMove(Dictionary<Location,int> src)
 	{
       if (null == src) return null; // does happen
@@ -1051,8 +1067,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int min_cost = src.Values.Min();
       src.OnlyIf(val => min_cost>=val);
 
+      DecideMove_WaryOfTraps(src);
+
       // XXX \todo if there are maps we do not want to path to, screen those here
-	  List<Location> tmp = src.Keys.ToList();
+      List<Location> tmp = src.Keys.ToList();
       if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
 
 	  // do not get in the way of allies' line of fire
