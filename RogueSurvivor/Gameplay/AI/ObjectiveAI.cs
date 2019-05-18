@@ -3117,14 +3117,14 @@ restart_single_exit:
 
       int it_rating = ItemRatingCode_no_recursion(it);
       if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
+      bool is_SAN_restore_item = (it is ItemEntertainment || (it is ItemMedicine med && 0 < med.SanityCure));
       if (1<it_rating) {
         // generally, find a less-critical item to drop
         // this is expected to correctly handle the food glut case (item rating 1)
         bool rating_kludge = false;
         // entertainment is problematic.  Its rating-2 (want) is still immediate-use (i.e. it acts like 3 (need))
         if (2 == it_rating) {
-          if (it is ItemEntertainment) rating_kludge = true;
-          else if (it is ItemMedicine med && 0<med.SanityCure) rating_kludge = true;
+          if (is_SAN_restore_item) rating_kludge = true;
         }
 
         if (rating_kludge) ++it_rating;
@@ -3512,15 +3512,17 @@ restart_single_exit:
         if (1<=m_Actor.Inventory.Count(it.Model)) return false;
       } else if (it is ItemLight) {
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
-      } else if (it is ItemMedicine) {
+      } else if (it is ItemMedicine med) {
         // XXX easy to action-loop if inventory full
         if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return false;
+        if (0<med.SanityCure && 2<=WantRestoreSAN) return true;
       } else if (it is ItemTrap trap) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
         if (trap.IsActivated) return false;
 #if DEBUG
       } else if (it is ItemEntertainment) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (2<=WantRestoreSAN) return true;
       } else if (it is ItemBarricadeMaterial) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemSprayScent) {

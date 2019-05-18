@@ -96,6 +96,21 @@ namespace djack.RogueSurvivor.Data
             if (0 >= tmp.Count) continue;
           }
         }
+        // cheating post-filter: reject boring entertainment
+        if (Models.Items[(int)it] is Engine.Items.ItemEntertainmentModel ent) {
+            tmp.OnlyIf(loc => {
+                // Cf. LOSSensor::_seeItems
+                var itemsAt = loc.Map.GetItemsAt(loc.Position);
+                if (null == itemsAt) {
+                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
+                  return false;
+                }
+                if (null != itemsAt.GetFirstByModel<Engine.Items.ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
+                if (null == itemsAt.GetFirstByModel(ent))
+                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                return false;
+            });
+        }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
         if (m_Actor.Inventory.IsFull) {
           if (Models.Items[(int)it] is Engine.Items.ItemLightModel || Models.Items[(int)it] is Engine.Items.ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
