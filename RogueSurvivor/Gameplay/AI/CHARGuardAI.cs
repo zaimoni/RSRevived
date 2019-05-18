@@ -250,6 +250,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
+      tmpAction = RechargeWithAdjacentGenerator();
+      if (null!=tmpAction) return tmpAction;
+
       // stack grabbing/trade goes here
 
       if (m_Actor.HasLeader && !DontFollowLeader) {

@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_SELECTACTION
+#define TRACE_SELECTACTION
 // #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
@@ -372,6 +372,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return tmpAction;
       }
+      tmpAction = RechargeWithAdjacentGenerator();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "recharging");
+#endif
+      if (null!=tmpAction) return tmpAction;
 
       tmpAction = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
 #if TRACE_SELECTACTION

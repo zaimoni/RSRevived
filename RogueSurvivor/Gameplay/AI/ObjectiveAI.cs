@@ -626,6 +626,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    protected bool WantToRecharge(ItemLight it)
+    {
+      int burn_time = 0;
+      switch(it.Model.ID)
+      {
+      case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration+2*WorldTime.TURNS_PER_HOUR;
+        break;
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration+WorldTime.TURNS_PER_HOUR;
+        break;
+#if DEBUG
+      default: throw new InvalidOperationException("Unhandled light type " + it.Model.ID.ToString());
+#else
+      default: return false;
+#endif
+      }
+      return it.Batteries<burn_time;
+    }
+
+    protected bool WantToRecharge() {
+      return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
+    }
+
+    public ActionRechargeItemBattery RechargeWithAdjacentGenerator()
+    {
+      var recharge_these = m_Actor.Inventory.GetItemsByType<ItemLight>(it => WantToRecharge(it));
+      if (null == recharge_these) return null;
+      if (0 >= m_Actor.Location.Map.PowerGenerators.Get.Count) return null;
+      var generator = m_Actor.Location.Map.PowerGenerators.Get.Where(obj => obj.IsOn && Rules.IsAdjacent(m_Actor.Location,obj.Location)).FirstOrDefault();
+      if (null == generator) return null;
+      RogueForm.Game.DoEquipItem(m_Actor,recharge_these[0]);
+      return new ActionRechargeItemBattery(m_Actor, recharge_these[0]);
+    }
+
     private void AvoidBeingCornered()
     {
 #if DEBUG
