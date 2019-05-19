@@ -1308,7 +1308,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ObjectiveAI::Goals (depth 1) @ "+m_Actor.Location);
 #endif
       var goals = new HashSet<Location>();
       var already_seen = new List<Map>();
@@ -1662,6 +1662,9 @@ restart:
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
       Dictionary<Location,int> costs = null;
       var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "path: "+path.to_s());
+#endif
       if (null != path) {
         void purge_non_adjacent(int i) {    // \todo non-local function target?
           while(0 < i) {
@@ -1694,6 +1697,9 @@ restart:
           ActorAction act = Rules.IsPathableFor(m_Actor,path[0][0]);
 #if DEBUG
           if (null == act) throw new InvalidOperationException("unpathable square not blacklisted: "+path.to_s());
+#endif
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+(act?.ToString() ?? null)+"; "+ (act?.IsLegal() ?? false));
 #endif
           if (act?.IsLegal() ?? false) {
             if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware

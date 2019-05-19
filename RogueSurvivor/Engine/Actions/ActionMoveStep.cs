@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
+using Zaimoni.Data;
 
 #if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_int;
@@ -154,7 +155,41 @@ namespace djack.RogueSurvivor.Engine.Actions
              }
            }
            // \todo: handle pushable objects
+        // pushing is very bad for bumping, but ok for pathing
+        if (m_Actor.AbleToPush && m_Actor.CanPush(obj)) {
+           // at least 2 destinations: ok (1 ok if adjacent)
+           // better to push to non-adjacent when pathing
+           Dictionary<Point,Direction> push_dest = obj.Location.Map.ValidDirections(obj.Location.Position, (m, pt) => {
+               // short-circuit language requirement on operator && failed here
+               if (!obj.CanPushTo(pt)) return false;
+               if (m.HasExitAt(pt) && m.IsInBounds(pt)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
+               return !m.PushCreatesSokobanPuzzle(pt, m_Actor);
+           });   // does not trivially create a Sokoban puzzle (can happen in police station)
+
+           bool push_legal = 1  <= push_dest.Count; // always adjacent
+           if (push_legal) {
+               Dictionary<Point, int> self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.MovePlanIf(obj.Location.Position);
+               if (null != self_block) push_dest.OnlyIf((Predicate<Point>)(pt => !self_block.ContainsKey(pt)));
+
+               // function target
+               List<KeyValuePair<Point, Direction>> candidates = null;
+               IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
+               IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
+               if (candidates_2.Any()) candidates = candidates_2.ToList();
+               if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
+               // end function target
+
+               if (null != candidates) return new ActionPush(m_Actor,obj,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+           }
+           // proceed with pull if we can't push safely
+           var possible = obj.Location.Position.Adjacent();
+           var pull_dests = possible.Where(pt => 1==Rules.GridDistance(m_Actor.Location,new Location(obj.Location.Map,pt)));
+           if (pull_dests.Any()) {
+             return new ActionPull(m_Actor,obj,RogueForm.Game.Rules.DiceRoller.Choose(pull_dests));
+           }
          }
+         return null;
+        }
       }
       // \todo: handle pulling allies instead of just move-stepping, or pulling pushable objects
       return working;

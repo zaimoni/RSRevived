@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define TRACE_SELECTACTION
+// #define TRACE_SELECTACTION
 // #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
@@ -675,8 +675,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           tmpAction = BehaviorResupply(critical);
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying: "+tmpAction.ToString());
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok; "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null != tmpAction) return tmpAction;
         }

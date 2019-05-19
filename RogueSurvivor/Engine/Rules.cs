@@ -535,28 +535,28 @@ namespace djack.RogueSurvivor.Engine
 
            bool is_adjacent = Rules.IsAdjacent(actor.Location, mapObjectAt.Location);
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
-           if (push_legal) {
-             if (is_adjacent) {
+           if (is_adjacent) {
+             if (push_legal) {
                Dictionary<Point, int> self_block = ai.MovePlanIf(mapObjectAt.Location.Position);
+               if (null != self_block) push_dest.OnlyIf(pt => !self_block.ContainsKey(pt));
 
                // function target
                List<KeyValuePair<Point, Direction>> candidates = null;
                IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position, pt.Key));
                IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(actor.Location.Position, pt.Key));
-               IEnumerable< KeyValuePair < Point, Direction >> test = (null != self_block ? candidates_2.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_2);
-               if (test.Any()) candidates = test.ToList();
-               else if (2<=candidates_2.Count()) candidates = candidates_2.ToList();
-               if (null == candidates && candidates_1.Any()) {
-                 test = (null != self_block ? candidates_1.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_1);
-                 candidates = test.Any() ? test.ToList() : candidates_1.ToList();
-               } else candidates = candidates_2.ToList();
+               if (candidates_2.Any()) candidates = candidates_2.ToList();
+               if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
                // end function target
 
-               return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+               if (null != candidates) return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+             } else {
+               // proceed with pull if we can't push safely
+               var possible = mapObjectAt.Location.Position.Adjacent();
+               var pull_dests = possible.Where(pt => 1==Rules.GridDistance(actor.Location,new Location(mapObjectAt.Location.Map,pt)));
+               if (pull_dests.Any()) {
+                 return new ActionPull(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(pull_dests));
+               }
              }
-             // placeholder
-             List<Direction> candidate_dirs = push_dest.Values.ToList();
-             return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidate_dirs));
            }
         }
 
