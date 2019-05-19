@@ -617,6 +617,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionPush BehaviorPushNonWalkableObjectForFood()
     {
       if (!m_Actor.AbleToPush) return null;
+#if PROTOTYPE
+      // Total re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
+      var food_blockers = new Dictionary<Point,MapObject>();
+      var fov = FOV;
+      Map map = m_Actor.Location.Map;
+      // do not worry about inside vs. outside here
+      foreach(var pt in FOV) {
+        var o = map.GetMapObjectAtExt(pt);
+        if (null == o) continue;
+        if (o.IsWalkable) continue;
+        if (o.IsJumpable) continue;
+        if (!m_Actor.CanPush(o)) continue;
+        food_blockers[pt] = o;
+      }
+      if (0 >= food_blockers.Count) return null;
+      var food_unblockers = new Dictionary<Point,ActorAction>();
+
+      // 1) object on exit is bad (blocks access to basement stash).
+      // 2) ### map geometry
+      //    #..
+      //    #..
+      // 3) ### map geometry
+      //    ...
+      //    ...
+
+      return null;
+#else
       Map map = m_Actor.Location.Map;
       Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
         MapObject o = m.GetMapObjectAtExt(pt);
@@ -632,6 +659,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (map.IsInBounds(dest) && map.HasExitAt(dest)) return null; // constructor crash; don't want to do this even when tactical pushing implemented
       ActionPush tmp = new ActionPush(m_Actor, pushable.Value, dir);
       return (tmp.IsLegal() ? tmp : null);
+#endif
     }
 
 	protected HashSet<Point> FriendsLoF()

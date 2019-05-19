@@ -12737,6 +12737,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       Session.Get.World.DoForAllMaps(m=>m.RegenerateChokepoints());
+      Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
       Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
       m_UI.UI_Clear(Color.Black);
