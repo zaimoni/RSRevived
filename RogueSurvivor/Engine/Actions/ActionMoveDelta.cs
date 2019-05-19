@@ -41,13 +41,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Origin = from;
 #if DEBUG
       if (1!=Rules.InteractionDistance(m_NewLocation,m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
-      if (!m_Origin.Map.GetTileModelAtExt(m_Origin.Position).IsWalkable) throw new InvalidOperationException("origin must be a walkable tile");
-      if (!m_NewLocation.Map.GetTileModelAtExt(m_Origin.Position).IsWalkable) throw new InvalidOperationException("destination must be a walkable tile");
+      if (!m_Actor.CanEnter(m_Origin)) throw new InvalidOperationException("must be able to exist at the origin");
+      if (!m_Actor.CanEnter(m_NewLocation)) throw new InvalidOperationException("must be able to exist at the destination");
 #endif
     }
 
     public override bool IsLegal()
     {
+      if (1!=Rules.InteractionDistance(m_Actor.Location,m_NewLocation)) return true;
       return (_result ?? (_result = _resolve()))?.IsLegal() ?? false;
     }
 
