@@ -22,6 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
 	public Location dest { get { return m_NewLocation; } }
 	public Location origin { get { return m_Origin; } }
+    public ActorAction ConcreteAction { get { return _result ?? (_result = _resolve()); } }
 
     public ActionMoveDelta(Actor actor, Location to)
       : base(actor)
@@ -40,6 +41,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Origin = from;
 #if DEBUG
       if (1!=Rules.InteractionDistance(m_NewLocation,m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
+      if (!m_Origin.Map.GetTileModelAtExt(m_Origin.Position).IsWalkable) throw new InvalidOperationException("origin must be a walkable tile");
+      if (!m_NewLocation.Map.GetTileModelAtExt(m_Origin.Position).IsWalkable) throw new InvalidOperationException("destination must be a walkable tile");
 #endif
     }
 
@@ -69,6 +72,20 @@ namespace djack.RogueSurvivor.Engine.Actions
     private ActorAction _resolve()
     {
       ActorAction working = null;
+
+      { // deal with exits first; cf BaseAI::BehaviorUseExit
+      var exit = m_Origin.Exit;
+      if (null != exit && exit.Location == m_NewLocation) {
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
+        if (string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, m_Origin);
+        var actorAt = m_NewLocation.Actor;
+        if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
+        var obj = m_NewLocation.MapObject;
+        if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);        
+        return null;    // probably an error in map object properties
+      }
+      }
+
       if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = new ActionMoveStep(m_Actor, m_NewLocation);
       else {
          var obj = m_NewLocation.MapObject;

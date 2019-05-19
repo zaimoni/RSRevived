@@ -129,6 +129,7 @@
     <Compile Include="Engine\Actions\ActionTradeWithContainer.cs" />
     <Compile Include="Engine\Actions\ActionButcher.cs" />
     <Compile Include="Engine\Actions\ActionSequence.cs" />
+    <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />
