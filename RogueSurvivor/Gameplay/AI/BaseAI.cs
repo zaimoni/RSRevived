@@ -617,8 +617,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionPush BehaviorPushNonWalkableObjectForFood()
     {
       if (!m_Actor.AbleToPush) return null;
-#if PROTOTYPE
-      // Total re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
+      // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
+      // Some of these reality checks can be weakened for mentally disturbed livings
       var food_blockers = new Dictionary<Point,MapObject>();
       var fov = FOV;
       Map map = m_Actor.Location.Map;
@@ -632,7 +632,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         food_blockers[pt] = o;
       }
       if (0 >= food_blockers.Count) return null;
-      var food_unblockers = new Dictionary<Point,ActorAction>();
 
       // 1) object on exit is bad (blocks access to basement stash).
       // 2) ### map geometry
@@ -642,24 +641,76 @@ namespace djack.RogueSurvivor.Gameplay.AI
       //    ...
       //    ...
 
+      var verified = new Dictionary<Point,MapObject>();
+      var unclear = new Dictionary<Point,MapObject>();
+      foreach(var x in food_blockers) {
+        var loc = new Location(map,x.Key);
+        loc.ForceCanonical();
+        if (null != loc.Exit) { // on same-district exit is clearly bad
+          verified.Add(x.Key,x.Value);
+          continue;
+        }
+        // flush against a wall, or in a corner, is fine
+        if (loc.Map.IsFlushNWall(loc.Position)) continue;
+        if (loc.Map.IsFlushSWall(loc.Position)) continue;
+        if (loc.Map.IsFlushWWall(loc.Position)) continue;
+        if (loc.Map.IsFlushEWall(loc.Position)) continue;
+        if (loc.Map.IsNWCorner(loc.Position)) continue;
+        if (loc.Map.IsNECorner(loc.Position)) continue;
+        if (loc.Map.IsSWCorner(loc.Position)) continue;
+        if (loc.Map.IsSECorner(loc.Position)) continue;
+        unclear.Add(x.Key, x.Value);
+      }
+      if (0 >= verified.Count && 0 >=unclear.Count) return null;
+
+      bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, pt); }
+
+      bool safe_push(ActionPush act) {
+        var loc = new Location(act.Target.Location.Map,act.To);
+        loc.ForceCanonical();
+        if (loc.Map.IsFlushNWall(loc.Position)) return true;
+        if (loc.Map.IsFlushSWall(loc.Position)) return true;
+        if (loc.Map.IsFlushWWall(loc.Position)) return true;
+        if (loc.Map.IsFlushEWall(loc.Position)) return true;
+        if (loc.Map.IsNWCorner(loc.Position)) return true;
+        if (loc.Map.IsNECorner(loc.Position)) return true;
+        if (loc.Map.IsSWCorner(loc.Position)) return true;
+        if (loc.Map.IsSECorner(loc.Position)) return true;
+        return false;
+      }
+      bool unsafe_push(ActionPush act) { return !safe_push(act); }
+
+
+      // fail over to legacy code here
+      // \todo also evaluate pulls (return type weakening)
+      unclear.OnlyIf(adjacent);
+      verified.OnlyIf(adjacent);
+      if (0 >= verified.Count && 0 >=unclear.Count) return null;
+
+      var pushes = new List<ActionPush>();
+      foreach(var x in verified) {
+        foreach(var dir in Direction.COMPASS) {
+          var dest = x.Key+dir;
+          if (map.IsInBounds(dest) && map.HasExitAt(dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          var act = new ActionPush(m_Actor, x.Value, dir);
+          if (act.IsPerformable()) pushes.Add(act);
+        }
+      }
+      if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
+      if (0 < pushes.Count) return RogueForm.Game.Rules.DiceRoller.Choose(pushes);
+
+      foreach(var x in unclear) {
+        foreach(var dir in Direction.COMPASS) {
+          var dest = x.Key+dir;
+          if (map.IsInBounds(dest) && map.HasExitAt(dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          var act = new ActionPush(m_Actor, x.Value, dir);
+          if (act.IsPerformable()) pushes.Add(act);
+        }
+      }
+      if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
+      if (0 < pushes.Count) return RogueForm.Game.Rules.DiceRoller.Choose(pushes);
+
       return null;
-#else
-      Map map = m_Actor.Location.Map;
-      Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        MapObject o = m.GetMapObjectAtExt(pt);
-        if (null == o) return null;
-        if (o.IsWalkable) return null;
-        if (o.IsJumpable) return null;
-        return (m_Actor.CanPush(o) ? o : null);
-      });
-      if (0 >= objs.Count) return null;
-      var dir = RogueForm.Game.Rules.RollDirection();
-      var pushable = RogueForm.Game.Rules.DiceRoller.Choose(objs);
-      var dest = pushable.Key+dir;
-      if (map.IsInBounds(dest) && map.HasExitAt(dest)) return null; // constructor crash; don't want to do this even when tactical pushing implemented
-      ActionPush tmp = new ActionPush(m_Actor, pushable.Value, dir);
-      return (tmp.IsLegal() ? tmp : null);
-#endif
     }
 
 	protected HashSet<Point> FriendsLoF()

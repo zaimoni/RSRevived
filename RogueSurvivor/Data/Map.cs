@@ -2759,14 +2759,14 @@ retry:
 
     // accessors for map geometry
     // XXX linear...may want to do something about that
-    bool IsNWCorner(Point pt) { return m_FullCorner_nw.Contains(pt); }
-    bool IsNECorner(Point pt) { return m_FullCorner_ne.Contains(pt); }
-    bool IsSWCorner(Point pt) { return m_FullCorner_sw.Contains(pt); }
-    bool IsSECorner(Point pt) { return m_FullCorner_se.Contains(pt); }
-    bool IsFlushNWall(Point pt) { return m_FlushWall_n.Contains(pt); }
-    bool IsFlushSWall(Point pt) { return m_FlushWall_s.Contains(pt); }
-    bool IsFlushWWall(Point pt) { return m_FlushWall_w.Contains(pt); }
-    bool IsFlushEWall(Point pt) { return m_FlushWall_e.Contains(pt); }
+    public bool IsNWCorner(Point pt) { return m_FullCorner_nw.Contains(pt); }
+    public bool IsNECorner(Point pt) { return m_FullCorner_ne.Contains(pt); }
+    public bool IsSWCorner(Point pt) { return m_FullCorner_sw.Contains(pt); }
+    public bool IsSECorner(Point pt) { return m_FullCorner_se.Contains(pt); }
+    public bool IsFlushNWall(Point pt) { return m_FlushWall_n.Contains(pt); }
+    public bool IsFlushSWall(Point pt) { return m_FlushWall_s.Contains(pt); }
+    public bool IsFlushWWall(Point pt) { return m_FlushWall_w.Contains(pt); }
+    public bool IsFlushEWall(Point pt) { return m_FlushWall_e.Contains(pt); }
 
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
