@@ -3234,7 +3234,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
-      if (it.IsEquipped) return "unequip first";
+      if (it.IsEquipped && Controller is PlayerController) return "unequip first";  // AI doesn't need that UI safety
       if (!Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }

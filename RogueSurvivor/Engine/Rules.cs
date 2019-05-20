@@ -240,8 +240,9 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorPutItemIntoContainer(Actor actor, Point position, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
+#if DEBUG
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#endif
       MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
       if (mapObjectAt == null || !mapObjectAt.IsContainer)
       {

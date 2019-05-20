@@ -9109,6 +9109,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPutItemInContainer(Actor actor, Point dest, Item gift)
     {
+      if (actor.CanUnequip(gift)) DoUnequipItem(actor,gift,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (gift is ItemTrap trap) trap.Desactivate();    // alpha10
       actor.Location.Map.DropItemAt(gift, dest);
@@ -9139,6 +9140,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
     {
+#if DEBUG
+      if (actor.IsDebuggingTarget && it is ItemTracker tr && tr.CanTrackFollowersOrLeader) throw new InvalidOperationException("tracing");
+#endif
       it.Unequip();
       actor.OnUnequipItem(it);
       if (!canMessage) return;
@@ -9148,6 +9152,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoDropItem(Actor actor, Item it)
     {
+      if (actor.CanUnequip(it)) DoUnequipItem(actor,it,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
       if (it is ItemTrap trap) {

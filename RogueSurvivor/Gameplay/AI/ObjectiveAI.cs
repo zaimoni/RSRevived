@@ -2514,8 +2514,6 @@ restart_single_exit:
       ActorAction tmp = _PrefilterDrop(it);
       if (null != tmp) return tmp;
 
-      if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
-
       List<Point> has_container = new List<Point>();
       foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
         MapObject container = m_Actor.Location.Map.GetMapObjectAtExt(pos);
