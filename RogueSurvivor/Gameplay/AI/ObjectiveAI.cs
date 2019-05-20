@@ -1392,7 +1392,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // upper/lower bounds; using X as lower, Y as upper bound
         
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
-      if (0==where_to_go.Count) {
+      if (0==where_to_go.Count && 0>=District.UsesCrossDistrictView(dest)) {
         var maps = new HashSet<Map>(dest.destination_maps.Get);
         if (null != preblacklist) maps.RemoveWhere(preblacklist);
         if (1<maps.Count) {
