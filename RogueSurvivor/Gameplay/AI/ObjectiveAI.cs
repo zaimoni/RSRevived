@@ -1868,6 +1868,46 @@ restart:
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+
+      bool rude_goal(Location loc) {
+        if (!CanSee(loc)) return false;
+        var actor = loc.Actor;
+        if (null == actor) return false;
+        return !m_Actor.IsEnemyOf(actor);
+      }
+
+      void force_polite(HashSet<Location> x) {
+        var rude = new HashSet<Location>(x.Where(rude_goal));
+        var ever_rude = new HashSet<Location>(rude);
+        var next_rude = new HashSet<Location>();
+restart:
+        foreach(var fail in rude) {
+          var working = fail;
+          var exit = m_Actor.Location.Exit;
+          if (null != exit && exit.Location == working) working = m_Actor.Location;
+          foreach(var pt in working.Position.Adjacent()) {
+            var loc = new Location(working.Map,pt);
+            if (!loc.ForceCanonical()) continue;
+            if (null!=preblacklist && preblacklist(loc.Map)) continue;
+            if (!m_Actor.CanEnter(loc)) continue;
+            if (ever_rude.Contains(loc)) continue;
+            if (rude_goal(loc)) {
+              next_rude.Add(loc);
+              continue;
+            }
+            // we should be ignoring non-pathable adjacent locations later
+            x.Add(loc);
+          }
+          x.Remove(fail);
+        }
+        if (0<next_rude.Count) {
+          ever_rude.UnionWith(next_rude);
+          rude = next_rude;
+          next_rude = new HashSet<Location>();
+          goto restart;
+        }
+      }
+      force_polite(goals);
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
       return BehaviorPathTo(goals);
     }
