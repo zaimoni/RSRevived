@@ -3416,8 +3416,8 @@ restart_single_exit:
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
       if (null != tmpGrenade) return _BehaviorDropOrExchange(tmpGrenade, it, position);
 
-      // important trackers go for ammo
-      if (it is ItemAmmo) {
+      // important trackers go for ammo or food
+      if (it is ItemAmmo || it is ItemFood) {
         ItemTracker discardTracker = inv.GetFirstMatching<ItemTracker>();
         if (null != discardTracker) return _BehaviorDropOrExchange(discardTracker, it, position);
       }
