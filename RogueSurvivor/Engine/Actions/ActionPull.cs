@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         #endregion
 
         #region Properties
-        public Direction MoveActorDirection { get { return m_MoveActorDir; } }
+        public Direction MoveActorDirection { get { return m_MoveActorDir; } }  // \todo savefile break: convert this to a calculated field
         public Point MoveActorTo { get { return m_MoveActorTo; } }
         #endregion
 
@@ -41,8 +41,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
             m_Object = pullObj;
             m_MoveActorDir = Direction.FromVector(moveActorTo.X-actor.Location.Position.X, moveActorTo.Y - actor.Location.Position.Y);
-#if DEBUG
-            if (null == m_MoveActorDir) throw new ArgumentNullException(nameof(m_MoveActorDir));
+#if FALSE_POSITIVE
+            if (null == m_MoveActorDir) throw new ArgumentNullException(nameof(m_MoveActorDir));    // pathfinder can trigger this
 #endif
             m_MoveActorTo = moveActorTo;
         }
@@ -52,6 +52,13 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsLegal()
         {
             return m_Actor.CanPull(m_Object, m_MoveActorTo, out m_FailReason);
+        }
+
+        public override bool IsPerformable()
+        {
+            if (!base.IsPerformable()) return false;
+            return  1==Rules.GridDistance(m_Actor.Location, m_Object.Location)   // no pull/push through vertical exits
+                 && 1==Rules.GridDistance(m_Actor.Location, new Location(m_Object.Location.Map, m_MoveActorTo));
         }
 
         public override void Perform()
