@@ -810,6 +810,13 @@ namespace djack.RogueSurvivor.Data
     public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
     {
       if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+      if (   1 == Engine.Rules.InteractionDistance(new Location(this,pt),actor.Location)
+          && null == Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return true;
+      if (actor.CanEnter(new Location(this,pt))) return false;
+      // generators may not be entered, but are still (unreliably) pathable
+      if (GetMapObjectAtExt(pt) is Engine.MapObjects.PowerGenerator) return false;
+#if OBSOLETE
+      // most of the following is likely obsolete, if not all
       if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
       var mapobj = GetMapObjectAtExt(pt);
       if (null!=mapobj) {
@@ -825,6 +832,7 @@ namespace djack.RogueSurvivor.Data
         if (mapobj is Engine.MapObjects.PowerGenerator) return false;
         if (mapobj is DoorWindow) return false;
       }
+#endif
       return true;
     }
 

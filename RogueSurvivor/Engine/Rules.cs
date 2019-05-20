@@ -560,6 +560,7 @@ namespace djack.RogueSurvivor.Engine
            }
         }
 
+        // \todo consider eliminating power generators as a pathable target (rely on behaviors instead and path to adjacent squares)
         if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
