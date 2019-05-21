@@ -3422,6 +3422,14 @@ restart_single_exit:
         if (null != discardTracker) return _BehaviorDropOrExchange(discardTracker, it, position);
       }
 
+      // ok to drop second food item for ammo
+      if (it is ItemAmmo) {
+        if (2<=m_Actor.Inventory.CountType<ItemFood>()) {
+          var discard = inv.GetFirstMatching<ItemFood>();
+          if (null != discard) return _BehaviorDropOrExchange(discard, it, position);
+        }
+      }
+
 #if DEBUG
       // do not pick up trackers if it means dropping body armor or higher priority
       if (it is ItemTracker) return null;
