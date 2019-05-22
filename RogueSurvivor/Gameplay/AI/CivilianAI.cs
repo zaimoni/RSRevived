@@ -661,6 +661,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
+      bool? combat_unready = false;  // currently only matters for law enforcement
+      if (m_Actor.Model.Abilities.IsLawEnforcer && !(combat_unready = CombatUnready()).Value) {
+        tmpAction = BehaviorEnforceLaw();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law (combat ready)");
+#endif
+        if (null != tmpAction) return tmpAction;
+      }
+
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
       // XXX leaders should try to check what their followers use as well.
       List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
@@ -797,10 +806,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (percept1 != null) m_LastSoldierSaw = percept1;
 
-      if (m_Actor.Model.Abilities.IsLawEnforcer) {
-        tmpAction = BehaviorEnforceLaw();  // \todo Cf. Staying Alive: this needs to be much higher priority for combat-ready police
+      if (m_Actor.Model.Abilities.IsLawEnforcer && combat_unready.Value) {
+        tmpAction = BehaviorEnforceLaw();
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law (combat unready)");
 #endif
         if (null != tmpAction) return tmpAction;
       }
@@ -819,7 +828,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
 #endif
-        bool combat_unready = CombatUnready();
+        if (null == combat_unready) combat_unready = CombatUnready();
         HashSet<Gameplay.GameItems.IDs> want = (null != items ? WhatDoIWantNow() : new HashSet<Gameplay.GameItems.IDs>());    // non-emergency things
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         if (null != items) want.IntersectWith(items);
@@ -840,7 +849,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) ? new HashSet<Point>() : threats.ThreatWhere(m);
         }
 
-        if (!combat_unready && null != threats && threats.Any()) pathing_targets = hunt_threat;
+        if (!combat_unready.Value && null != threats && threats.Any()) pathing_targets = hunt_threat;
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
@@ -944,7 +953,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null!=tmpAction) return tmpAction;
           }
           // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
-          if (combat_unready && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+          if (combat_unready.Value && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
           tmpAction = BehaviorPathTo(pathing_targets);
 #if TRACE_SELECTACTION
