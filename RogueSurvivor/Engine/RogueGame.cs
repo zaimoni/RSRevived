@@ -11988,7 +11988,7 @@ namespace djack.RogueSurvivor.Engine
             PanViewportTo(Player);
             return null;
           case Keys.R:  // run to ...
-            if (viewpoint.IsWalkableFor(Player)) { 
+            if (Player.CanEnter(viewpoint)) {
               (Player.Controller as PlayerController).RunTo(viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
@@ -11996,7 +11996,7 @@ namespace djack.RogueSurvivor.Engine
             }
             break;  // XXX \todo be somewhat more informative
           case Keys.W:  // walk to ...
-            if (viewpoint.IsWalkableFor(Player)) { 
+            if (Player.CanEnter(viewpoint)) {
               (Player.Controller as PlayerController).WalkTo(viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
