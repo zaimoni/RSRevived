@@ -2523,6 +2523,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         Rectangle scan_this = m_Actor.Location.Map.Rect;
         var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);    // non-null check in map generation
+        // no zone? must not be acceptable
+        if (null == z_list) return BehaviorNavigateToSleep(item_memory);
         foreach(var z in z_list) {
           if (scan_this.Width < z.Bounds.Width) continue;
           if (scan_this.Height < z.Bounds.Height) continue;

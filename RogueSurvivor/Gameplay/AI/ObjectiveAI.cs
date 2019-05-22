@@ -3458,6 +3458,8 @@ restart_single_exit:
       // body armor
       if (it is ItemBodyArmor) return null;
 
+      if (it is ItemMeleeWeapon) return null;
+
       throw new InvalidOperationException("coverage hole of types in BehaviorMakeRoomFor");
 #else
       // give up
