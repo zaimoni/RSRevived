@@ -915,8 +915,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
     {
 	  var secondary = new List<ActorAction>();
+      bool prefer_cardinal(Point pt) {
+        if (m_Actor.Location.Position.X == pt.X) return true;
+        if (m_Actor.Location.Position.Y == pt.Y) return true;
+        return false;
+      }
+
+      // since we are pathfinding to n destinations at once, we don't have the usual heuristics for the 1-destination case.
+      // however, since the most natural-looking paths stay within the rhombus rather than the full min-step pathing rectangle,
+      // we can prefer cardinal directions to diagonal directions safely at this point (all tactical considerations were supposed to have
+      // been applied first)
 	  while(0<tmp.Count) {
-		ActorAction ret = legal_steps[RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)];
+		ActorAction ret = legal_steps[RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
            if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
@@ -1006,8 +1016,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
     {
 	  var secondary = new List<ActorAction>();
+      bool prefer_cardinal(Location loc) {
+        if (m_Actor.Location.Position.X == loc.Position.X) return true;
+        if (m_Actor.Location.Position.Y == loc.Position.Y) return true;
+        return false;
+      }
 	  while(0<tmp.Count) {
-        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp);
+        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
         if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
           continue;
@@ -1193,9 +1208,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         range[pt] = test;
       }
       if (0 >= range.Count) return null;
+      bool prefer_cardinal(Point pt) {
+        if (m_Actor.Location.Position.X == pt.X) return true;
+        if (m_Actor.Location.Position.Y == pt.Y) return true;
+        return false;
+      }
+
       var next = range.Keys.ToList();
       while(0 < next.Count) {
-        var x = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(next);
+        var x = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(next, prefer_cardinal);
         var act = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, x));
         if (act is ActionMoveStep step && step.IsLegal()) {
           m_Actor.Run();
