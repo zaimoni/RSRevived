@@ -798,7 +798,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (percept1 != null) m_LastSoldierSaw = percept1;
 
       if (m_Actor.Model.Abilities.IsLawEnforcer) {
-        tmpAction = BehaviorEnforceLaw();
+        tmpAction = BehaviorEnforceLaw();  // \todo Cf. Staying Alive: this needs to be much higher priority for combat-ready police
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
 #endif
