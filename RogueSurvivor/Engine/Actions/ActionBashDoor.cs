@@ -13,6 +13,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionBashDoor : ActorAction
   {
     private readonly DoorWindow m_Door;
+    public DoorWindow Target { get { return m_Door; } }
 
     public ActionBashDoor(Actor actor, DoorWindow door)
       : base(actor)

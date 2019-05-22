@@ -746,64 +746,39 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret.ToList() : null);
 	}
 
-    static Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
+    private static int PathfinderMoveCosts(ActorAction act)
+    {
+        int teardown_turns(MapObject obj) {
+		    int cost = 1;
+            if (obj is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
+            else cost += (obj.HitPoints+7)/8;	// time cost to break, as per barricade
+            return cost;
+        }
+
+        if (act is Engine.Actions.ActionMoveDelta delta) return PathfinderMoveCosts(delta.ConcreteAction);
+        if (act is Engine.Actions.ActionShove) return 4;    // impolite so penalize just more than walking around
+        if (   act is Engine.Actions.ActionOpenDoor  // extra turn
+            || act is Engine.Actions.ActionPush  // assume non-moving i.e. extra turn; also costs stamina
+            || act is Engine.Actions.ActionPull)  // extra turn; also costs stamina
+            return 2;
+        if (act is Engine.Actions.ActionBashDoor bash) return teardown_turns(bash.Target);
+        if (act is Engine.Actions.ActionBreak act_break) return teardown_turns(act_break.Target);
+        return 1;  // normal case
+    }
+
+    private static Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
 	{
 	  var ret = new Dictionary<Location, int>();
       Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
-      foreach(var move in moves) {
-        if (move.Value is Engine.Actions.ActionShove) {    // impolite so penalize just more than walking around
-            ret[move.Key] = 4;
-            continue;
-        }
-        if (   move.Value is Engine.Actions.ActionOpenDoor  // extra turn
-            || move.Value is Engine.Actions.ActionPush)  // assume non-optimal
-            {
-            ret[move.Key] = 2;
-            continue;
-            }
-        if (   move.Value is Engine.Actions.ActionBashDoor
-            || move.Value is Engine.Actions.ActionBreak)
-            {
-    	    MapObject tmp = move.Key.Map.GetMapObjectAtExt(move.Key.Position);
-		    int cost = 1;
-            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
-            else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
-            ret[move.Key] = cost;
-		    continue;
-            }
-        ret[move.Key] = 1;  // normal case
-      }
+      foreach(var move in moves) ret[move.Key] = PathfinderMoveCosts(move.Value);
 	  return ret;
 	}
 
-    Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
+    private Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
 	{
 	  var ret = new Dictionary<Point, int>();
       Dictionary<Point,ActorAction> moves = a.OnePath(this, pt, already);
-      foreach(var move in moves) {
-        if (move.Value is Engine.Actions.ActionLeaveMap) continue; // not really in bounds
-        if (move.Value is Engine.Actions.ActionShove) {    // impolite so penalize just more than walking around
-            ret[move.Key] = 4;
-            continue;
-        }
-        if (   move.Value is Engine.Actions.ActionOpenDoor  // extra turn
-            || move.Value is Engine.Actions.ActionPush)  // assume non-optimal
-            {
-            ret[move.Key] = 2;
-            continue;
-            }
-        if (   move.Value is Engine.Actions.ActionBashDoor
-            || move.Value is Engine.Actions.ActionBreak)
-            {
-    	    MapObject tmp = GetMapObjectAtExt(move.Key);
-		    int cost = 1;
-            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
-            else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
-            ret[move.Key] = cost;
-		    continue;
-            }
-        ret[move.Key] = 1;  // normal case
-      }
+      foreach(var move in moves) ret[move.Key] = PathfinderMoveCosts(move.Value);
 	  return ret;
 	}
 
