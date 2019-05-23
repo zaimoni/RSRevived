@@ -73,36 +73,34 @@ namespace djack.RogueSurvivor.Engine.Actions
     private ActorAction _resolve()
     {
       ActorAction working = null;
+      bool see_dest = m_Actor.Controller.CanSee(m_NewLocation);
+      var obj = see_dest ? m_NewLocation.MapObject : null;
+      var actorAt = see_dest ? m_NewLocation.Actor : null;
 
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
       if (null != exit && exit.Location == m_NewLocation) {
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null; // \todo savefile break: this test goes under IsLegal (pre-empts interaction distance whitelist)
-        if (string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, m_Origin);
-        var actorAt = m_NewLocation.Actor;
+        if (!see_dest || string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, m_Origin);  // all failures of this test require sight information
         if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
-        var obj = m_NewLocation.MapObject;
-        if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);        
+        if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
         return null;    // probably an error in map object properties
       }
       }
 
       if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = new ActionMoveStep(m_Actor, m_NewLocation);
-      else {
-         var obj = m_NewLocation.MapObject;
-         var actorAt = m_NewLocation.Actor;
-         if (null != actorAt) {
-           if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
-  		   // player as leader should be able to switch with player as follower
-		   // NPCs shouldn't be leading players anyway
-           if (m_Actor.IsPlayer || !actorAt.IsPlayer) {
-             if (m_Actor.CanSwitchPlaceWith(actorAt, out m_FailReason)) return new ActionSwitchPlace(m_Actor, actorAt);
-           }
 
-          // check for mutual-advantage switching place between ais
-          if (   ((m_Actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
-              && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(m_Actor.Location) ?? true))
-            return new ActionSwitchPlaceEmergency(m_Actor, actorAt);
+      if (null != actorAt) {
+        if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
+		// player as leader should be able to switch with player as follower
+		// NPCs shouldn't be leading players anyway
+        if (m_Actor.IsPlayer || !actorAt.IsPlayer) {
+          if (m_Actor.CanSwitchPlaceWith(actorAt, out m_FailReason)) return new ActionSwitchPlace(m_Actor, actorAt);
+        }
+        // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
+        if (!((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(m_Actor.Location) ?? true))
+          return new ActionSwitchPlaceEmergency(m_Actor, actorAt);
+
           if (m_Actor.AbleToPush && m_Actor.CanShove(actorAt)) {
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
@@ -126,8 +124,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
              if (null != candidates) return new ActionShove(m_Actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
            }
-        }
-         } else if (null != obj) {
+      } else if (null != obj) {
            if (obj is DoorWindow door) {
              if (door.BarricadePoints > 0) {
                // pathfinding livings will break barricaded doors (they'll prefer to go around it)
