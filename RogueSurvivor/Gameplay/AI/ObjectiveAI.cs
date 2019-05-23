@@ -1,6 +1,6 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
-#define TRACE_GOALS
+// #define TRACE_GOALS
 
 using System;
 using System.Collections.Generic;
@@ -704,10 +704,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
         int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
+          if (0 >= m_Actor.EnergyDrain) return false;
           if (!m_Actor.RunIsFreeMove) return false;
-          if (0 >= m_Actor.EnergyDrain) return true;
+          if (m_Actor.MoveLostWithoutRunOrWait(0, 1, 1)) return false;
           int turns = 0;
-          while(!m_Actor.MoveLostWithoutRunOrWait(turns,turns,1)) ++turns;
+          while(!m_Actor.MoveLostWithoutRunOrWait(turns,turns+1,1)) ++turns;
           return !m_Actor.WillTireAfter(STA_reserve + double_run_STA-Actor.STAMINA_REGEN_WAIT*turns);
         }
       }
@@ -1812,7 +1813,7 @@ restart:
       }
     }
 
-    protected ActorAction GreedyStep(Dictionary<Location, int> move_scores)
+    protected ActorAction GreedyStep(Dictionary<Location, int> move_scores, Func<Location, double> minimize)
     {
 #if DEBUG
       if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
@@ -1822,7 +1823,7 @@ restart:
       int tmp2;
 
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // mirror DecideMove so we don't error out
-      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       if (0 >= legal_steps.Count) return null;
 
       foreach(var x in move_scores) {
@@ -1836,6 +1837,21 @@ restart:
         ret[x.Key] = (max_seen = tmp2);
       }
       if (0 >= ret.Count) return null;
+
+      if (2 <= ret.Count) {
+        var tiebreak = new Dictionary<Location,double>();
+        double min_seen = double.MaxValue;
+        foreach(var x in ret) {
+          var working = minimize(x.Key);
+          if (min_seen < working) continue;
+          if (min_seen > working) {
+            min_seen = working;
+            tiebreak.Clear();
+          }
+          tiebreak.Add(x.Key,working);
+        }
+        ret.OnlyIf(loc => tiebreak.ContainsKey(loc));
+      }
 
       ActorAction tmp = DecideMove(ret);
 #if FALSE_POSITIVE
@@ -1976,13 +1992,24 @@ restart:
         if (fov + 1 < Rules.GridDistance(loc, m_Actor.Location)) continue;
         if (edge_of_maxrange > Rules.StdDistance(loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
       }
+
+      double dist_to_all_goals(Location test) {
+        double ret = 0;
+        foreach(var loc in goals) {
+          int working = Rules.InteractionDistance(loc,test);
+          if (int.MaxValue==working) continue;
+          ret += working;
+        }
+        return ret;
+      }
+
       if (0<near_tainted.Count) {
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
         if (goals_in_sight.Value.ContainsKey(m_Actor.Location)) {   // already had goal in sight; not an error condition
-        } else if (0<goals_in_sight.Key.Count) return GreedyStep(goals_in_sight.Key);   // expose goals safely
-        else if (0<goals_in_sight.Value.Count) return GreedyStep(goals_in_sight.Value);   // expose goals unsafely
+        } else if (0<goals_in_sight.Key.Count) return GreedyStep(goals_in_sight.Key, dist_to_all_goals);   // expose goals safely
+        else if (0<goals_in_sight.Value.Count) return GreedyStep(goals_in_sight.Value, dist_to_all_goals);   // expose goals unsafely
       }
       }
       }

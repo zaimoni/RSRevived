@@ -9068,7 +9068,7 @@ namespace djack.RogueSurvivor.Engine
       // \todo trade with player path (blocked by aligning trade UI with RS Alpha 10.1)
 
       // If cannot trade, outright give
-      if (target.Inventory.IsFull) {
+      if (target.Inventory.IsFull && !target.CanGet(gift)) {
         if (null != received) {
           // but if it's the *target's* turn, bundle that in to prevent a hard crash
           if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
