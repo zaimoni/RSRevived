@@ -330,6 +330,18 @@ namespace djack.RogueSurvivor
       Point location = new Point(gx, gy);
       Size size = new Size(num1 + 4, num2 + 4);
       Rectangle rect = new Rectangle(location, size);
+      const int x_margin = 10;
+      if (RogueGame.CANVAS_WIDTH- x_margin <= rect.Right) {
+        int delta = (rect.Right - RogueGame.CANVAS_WIDTH+ x_margin);
+        rect.X -= delta;
+        location.X -= delta;
+      }
+      if (RogueGame.MESSAGES_Y <= rect.Bottom) {
+        int delta = (rect.Bottom - RogueGame.MESSAGES_Y);
+        rect.Y -= delta;
+        location.Y -= delta;
+      }
+
       m_GameCanvas.AddFilledRect(boxFillColor, rect);
       m_GameCanvas.AddRect(boxBorderColor, rect);
       int gx1 = location.X + 2;

@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Engine
     private const int LOCATIONPANEL_TEXT_X_COL2 = LOCATIONPANEL_TEXT_X+(CANVAS_WIDTH - LOCATIONPANEL_TEXT_X)/3;
     private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
     private const int MESSAGES_X = 4;
-    private const int MESSAGES_Y = LOCATIONPANEL_Y;
+    public const int MESSAGES_Y = LOCATIONPANEL_Y;
     private const int MESSAGES_SPACING = 12;
     private const int MESSAGES_FADEOUT = 25;
     private const int MAX_MESSAGES = 7;
@@ -4009,7 +4009,8 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
       if (inventoryItem != null) {
         string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
-        AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
+        GDI_Point top_left = new GDI_Point(itemPos.X, itemPos.Y+TILE_SIZE);
+        AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, top_left));
         if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
           else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
