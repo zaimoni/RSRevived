@@ -746,7 +746,7 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret.ToList() : null);
 	}
 
-    private static int PathfinderMoveCosts(ActorAction act)
+    public static int PathfinderMoveCosts(ActorAction act)
     {
         int teardown_turns(MapObject obj) {
 		    int cost = 1;

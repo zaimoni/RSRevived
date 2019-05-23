@@ -138,6 +138,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     private Actor m_Target;
+    [NonSerialized] Item gift;
+    [NonSerialized] Item received;
 
     public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it)
       : base(actor)
@@ -151,19 +153,33 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      var gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]);
+      gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]);
       if (null==gift) { m_FailReason = "not in inventory"; return false; }
+      return true;
+    }
+
+    public override bool IsPerformable()
+    {
+      if (!base.IsPerformable()) return false;
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
+        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position); // unsure if this works cross-map
+        if (null == recover) return false;
+        if (recover is ActionTradeWithContainer trade) {
+          received = trade.Give;
+          return true;
+        }
         m_FailReason = "target does not have room in inventory";
+#if DEBUG
+        throw new InvalidOperationException("tracing");
+#endif
         return false;
       }
-
       return true;
     }
 
     public override void Perform()
     {
-      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, m_ID);
+      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift, received);
     }
 
     public override string ToString()

@@ -455,13 +455,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
+        var ai = m_Actor.Controller as ObjectiveAI;
+        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
         if (!(ret?.IsPerformable() ?? false)) {
           ret = null;
           _isExpired = true;    // cancel: buggy
           return true;
         }
         if (walking) m_Actor.Walk();
+        else if (ret is ActionMoveStep step) ai.RunIfAdvisable(step.dest);
+        else if (ret is ActionMoveDelta delta) {
+          if (delta.ConcreteAction is ActionMoveStep step2) ai.RunIfAdvisable(step2.dest);
+        }
         return true;
       }
     }

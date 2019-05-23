@@ -9051,9 +9051,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    public void DoGiveItemTo(Actor actor, Actor target, GameItems.IDs donate)
+    public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
-      var gift = actor.Inventory.GetBestDestackable(Models.Items[(int)donate]);
       if (null==gift) throw new ArgumentNullException(nameof(gift));    // invariant failure
 
       // try to trade with NPC first
@@ -9069,7 +9068,15 @@ namespace djack.RogueSurvivor.Engine
       // \todo trade with player path (blocked by aligning trade UI with RS Alpha 10.1)
 
       // If cannot trade, outright give
-      if (target.Inventory.IsFull) throw new InvalidOperationException(target.Name+"'s inventory full, cannot give "+gift.ToString());   // invariant failure
+      if (target.Inventory.IsFull) {
+        if (null != received) {
+          // but if it's the *target's* turn, bundle that in to prevent a hard crash
+          if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
+          DoTrade(actor, new KeyValuePair<Item,Item>(gift,received), target, false);
+          return;
+        }
+        throw new InvalidOperationException(target.Name+"'s inventory full, cannot give "+gift.ToString());   // invariant failure
+      }
       // but if it's the *target's* turn, bundle that in to prevent a hard crash
       if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       DoGiveItemTo(actor,target,gift);

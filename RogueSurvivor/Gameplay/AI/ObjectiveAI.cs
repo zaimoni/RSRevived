@@ -702,7 +702,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
         if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
         if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
-        int double_run_STA = STA_reserve + 2 * m_Actor.RunningStaminaCost(dest);
+        int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
           if (!m_Actor.RunIsFreeMove) return false;
           if (0 >= m_Actor.EnergyDrain) return true;
@@ -1942,13 +1942,13 @@ restart:
       bool null_return = false;
       foreach(Location loc in goals) {  // \todo should only null-return if no legal adjacent goals at all
         if (moves.TryGetValue(loc,out var tmp)) {
-          if (tmp.IsLegal() && !VetoAction(tmp)) return tmp;
+          if (tmp.IsPerformable() && !VetoAction(tmp)) return tmp;
           null_return = true;
         }
       }
       if (null_return) return null;
       }
-      moves.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      moves.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       if (0 >= moves.Count) return null;    // possibly ActionWait instead
 
       // if we couldn't path to an adjacent goal, wait
@@ -3113,7 +3113,7 @@ restart_single_exit:
       return worst;
     }
 
-    protected ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
+    public ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
