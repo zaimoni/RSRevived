@@ -621,6 +621,16 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
+    [SecurityCritical] public void AddMessagePressEnter(Action<KeyEventArgs> filter)
+    {
+      AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      RedrawPlayScreen();
+      if (null==filter) WaitEnter(); else WaitEnter(filter);
+      RemoveLastMessage();
+      RedrawPlayScreen();
+    }
+
+
     private string Conjugate(Actor actor, string verb)
     {
       if (!actor.IsProperName || actor.IsPluralName) return verb;
@@ -3738,11 +3748,41 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) {
         Gameplay.GameItems.IDs item_type = item_classes[index];
         Dictionary<Location, int> catalog = Player.Controller.WhereIs(item_type);
+
+        HashSet<Location> retrofit() {
+           var ret = new HashSet<Location>();
+           foreach(var x in catalog) {
+             var obj = x.Key.MapObject;
+             if (null==obj || !obj.IsContainer) {
+               if (Player.CanEnter(x.Key)) ret.Add(x.Key);
+             } else {
+               foreach(var d in Direction.COMPASS) {
+                 var test = x.Key+d;
+                 if (Player.CanEnter(test)) ret.Add(test);
+               }
+             }
+           }
+           return ret;
+        }
+
+        void navigate(KeyEventArgs key) {
+          var dests = new HashSet<Location>();
+          switch (key.KeyCode)
+          {
+          case Keys.R:
+            (Player.Controller as PlayerController).RunTo(retrofit());
+            break;  // XXX \todo be somewhat more informative
+          case Keys.W:  // walk to ...
+            (Player.Controller as PlayerController).WalkTo(retrofit());
+            break;
+          }
+        }
+
         var tmp = new List<string>();
         // for the same map, try to be useful by putting the "nearest" items first
         var distances = new Dictionary<string, int>();
         foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 <= tmp.Count) break;
           if (loc_qty.Key.Map != CurrentMap) continue;
           string msg = loc_qty.Key.ToString() + ": " + loc_qty.Value.ToString();
           tmp.Add(msg);
@@ -3750,17 +3790,18 @@ namespace djack.RogueSurvivor.Engine
         }
         tmp.Sort((lhs,rhs) => distances[lhs].CompareTo(distances[rhs]));
         foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 <= tmp.Count) break;
           if (loc_qty.Key.Map.District != CurrentMap.District) continue;
           if (loc_qty.Key.Map == CurrentMap) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-1 <= tmp.Count) break;
           if (loc_qty.Key.Map.District == CurrentMap.District) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
-        ShowSpecialDialogue(Player,tmp.ToArray());
+        tmp.Insert(0, "W)alk or R)un to the item class");
+        ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         return false;
       };
 
@@ -6628,6 +6669,16 @@ namespace djack.RogueSurvivor.Engine
       while (m_UI.UI_WaitKey().KeyCode != Keys.Return);
     }
 
+    private void WaitEnter(Action<KeyEventArgs> filter)
+    {
+      if (IsSimulating) return;
+      var test = m_UI.UI_WaitKey(); // yes, no mouse processing
+      while(test.KeyCode != Keys.Return) {
+        filter(test);
+        test = m_UI.UI_WaitKey();
+      }
+    }
+
     private void WaitEscape()
     {
       if (IsSimulating) return;
@@ -9076,7 +9127,6 @@ namespace djack.RogueSurvivor.Engine
           DoTrade(actor, new KeyValuePair<Item,Item>(gift,received), target, false);
           return;
         }
-        throw new InvalidOperationException(target.Name+"'s inventory full, cannot give "+gift.ToString());   // invariant failure
       }
       // but if it's the *target's* turn, bundle that in to prevent a hard crash
       if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
@@ -9101,6 +9151,9 @@ namespace djack.RogueSurvivor.Engine
       if (gift is ItemTrap trap) trap.Desactivate();
       int quantity = gift.Quantity;
       int quantityAdded = target.Inventory.AddAsMuchAsPossible(gift);
+#if DEBUG
+      if (0 >= quantityAdded) throw new InvalidOperationException(actor.Name+" made a no-op gift to "+target.Name);
+#endif
       if (quantityAdded==quantity)
         actor.Inventory.RemoveAllQuantity(gift);
 
@@ -13117,14 +13170,14 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
-    private void ShowSpecialDialogue(Actor speaker, string[] text)
+    private void ShowSpecialDialogue(Actor speaker, string[] text, Action<KeyEventArgs> filter=null)
     {
       m_MusicManager.Stop();
       m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
       AddOverlay(new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
       ClearMessages();
-      AddMessagePressEnter();
+      if (null == filter) AddMessagePressEnter(); else AddMessagePressEnter(filter);
       ClearOverlays();  // alpha10 fix
       m_MusicManager.Stop();
     }

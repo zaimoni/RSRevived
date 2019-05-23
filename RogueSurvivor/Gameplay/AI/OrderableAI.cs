@@ -436,10 +436,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         walking = walk;
       }
 
-      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs)
+      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs, bool walk = false)
       : base(t0,who)
       {
         _locs = new HashSet<Location>(locs);
+        walking = walk;
       }
 
       public override bool UrgentAction(out ActorAction ret)

@@ -162,9 +162,19 @@ namespace djack.RogueSurvivor.Data
       Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc, true));
     }
 
+    public void WalkTo(IEnumerable<Location> locs)
+    {
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,locs, true));
+    }
+
     public void RunTo(Location loc)
     {   // triggered from far look mode
       Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc));
+    }
+
+    public void RunTo(IEnumerable<Location> locs)
+    {
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,locs));
     }
 
     public List<string> GetValidSelfOrders()
