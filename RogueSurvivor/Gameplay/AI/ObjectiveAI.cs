@@ -692,16 +692,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool RunIfAdvisable(Point dest)
     {
-      if (!m_Actor.CanRun()) return false;
-      // we don't want preparing to push a car to block running at full stamina
-      if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
-        if (m_Actor.RunIsFreeMove) {
-          if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
-        } else {
-          if (m_Actor.WillTireAfter(STA_reserve + 2*m_Actor.RunningStaminaCost(dest)- m_Actor.NightSTApenalty)) return false;
-        }
-      }
-      return true;
+      return RunIfAdvisable(new Location(m_Actor.Location.Map,dest));
     }
 
     public bool RunIfAdvisable(Location dest)
@@ -709,10 +700,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanRun()) return false;
       // we don't want preparing to push a car to block running at full stamina
       if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
-        if (m_Actor.RunIsFreeMove) {
-          if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
-        } else {
-          if (m_Actor.WillTireAfter(STA_reserve + 2*m_Actor.RunningStaminaCost(dest)- m_Actor.NightSTApenalty)) return false;
+        if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
+        if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
+        int double_run_STA = STA_reserve + 2 * m_Actor.RunningStaminaCost(dest);
+        if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
+          if (!m_Actor.RunIsFreeMove) return false;
+          if (0 >= m_Actor.EnergyDrain) return true;
+          int turns = 0;
+          while(!m_Actor.MoveLostWithoutRunOrWait(turns,turns,1)) ++turns;
+          return !m_Actor.WillTireAfter(STA_reserve + double_run_STA-Actor.STAMINA_REGEN_WAIT*turns);
         }
       }
       return true;

@@ -2307,13 +2307,6 @@ namespace djack.RogueSurvivor.Data
       return STAMINA_MIN_FOR_ACTIVITY > m_StaminaPoints-staminaCost;
     }
 
-    public int RunningStaminaCost(Point dest)
-    {
-      MapObject mapObjectAt = Location.Map.GetMapObjectAtExt(dest);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
-      return Rules.STAMINA_COST_RUNNING + NightSTApenalty;
-    }
-
     public int RunningStaminaCost(Location dest)
     {
       MapObject mapObjectAt = dest.Map.GetMapObjectAtExt(dest.Position);
@@ -2362,6 +2355,16 @@ namespace djack.RogueSurvivor.Data
 
 	public bool RunIsFreeMove { get { return Rules.BASE_ACTION_COST/2 < m_ActionPoints; } }
 	public bool WalkIsFreeMove { get { return Rules.BASE_ACTION_COST < m_ActionPoints; } }
+    public int EnergyDrain { get { return Rules.BASE_ACTION_COST - Model.DollBody.Speed; } }
+	public bool NextMoveLostWithoutRunOrWait { get { return EnergyDrain >= m_ActionPoints; } }
+    public bool MoveLostWithoutRunOrWait(int turns, int walk, int run) {
+      int working = m_ActionPoints;
+      working += turns*Model.DollBody.Speed;
+      working -= Rules.BASE_ACTION_COST*walk;
+      working -= (Rules.BASE_ACTION_COST/2)*run;
+      if (0 >= working) return false;   // no move anyway
+      return EnergyDrain >= working;
+    }
 
     public bool CanJump {
       get {
