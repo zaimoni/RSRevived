@@ -242,6 +242,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null!=Goal<Goal_Terminate>();
     } }
 
+    public bool IsFocused { get {
+      if (null!=Goal<Goal_NextAction>()) return true;
+      if (null!=Goal<Goal_NextCombatAction>()) return true;
+      if (null!=Goal<Goal_NonCombatComplete>()) return true;
+      if (null!=Goal<Goal_BreakLineOfSight>()) return true;
+      if (null!=Goal<Goal_HintPathToActor>()) return true;
+      return false;
+    } }
+
     public override ActorAction ExecAryZeroBehavior(int code)
     {
       switch(code) {
