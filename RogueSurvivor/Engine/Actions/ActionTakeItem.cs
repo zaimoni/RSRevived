@@ -163,23 +163,18 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!base.IsPerformable()) return false;
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
-        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position); // unsure if this works cross-map
+        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
         if (null == recover) return false;
-        if (!recover.IsLegal() && recover is ActionUseItem) {
-          // ammo can get confused, evidently
-          recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift);
-          if (null == recover) return false;
-        }
-        if (recover is ActionTradeWithContainer trade) {
-          received = trade.Give;
-          return true;
-        }
-        if (recover is ActionChain chain) {
-           if (chain.First is ActionDropItem drop) {
-             received = drop.Item;
-             return true;
-           }
-        }
+
+        Item parse_recovery(ActorAction act) {
+          if (act is ActionChain chain) return parse_recovery(chain.First);
+          if (act is ActionTradeWithContainer trade) return trade.Give;
+          if (act is ActionDropItem drop) return drop.Item;
+          return null;
+        } 
+
+        if (null!=(received = parse_recovery(recover))) return true;
+
         m_FailReason = "target does not have room in inventory";
 #if DEBUG
         throw new InvalidOperationException("tracing");

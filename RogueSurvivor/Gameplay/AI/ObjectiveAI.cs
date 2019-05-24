@@ -1878,6 +1878,21 @@ restart:
       if (0 >= ret.Count) return null;
 
       if (2 <= ret.Count) {
+        var tiebreak = new Dictionary<Location,int>();
+        int min_seen = int.MaxValue;
+        foreach(var x in ret) {
+          var working = Map.PathfinderMoveCosts(legal_steps[x.Key]);
+          if (min_seen < working) continue;
+          if (min_seen > working) {
+            min_seen = working;
+            tiebreak.Clear();
+          }
+          tiebreak.Add(x.Key,working);
+        }
+        ret.OnlyIf(loc => tiebreak.ContainsKey(loc));
+      }
+
+      if (2 <= ret.Count) {
         var tiebreak = new Dictionary<Location,double>();
         double min_seen = double.MaxValue;
         foreach(var x in ret) {
@@ -2583,8 +2598,9 @@ restart_single_exit:
         return false;
     }
 
-    private ActorAction _PrefilterDrop(Item it)
+    private ActorAction _PrefilterDrop(Item it, bool use_ok=true)
     {
+      if (use_ok) {
       // use stimulants before dropping them
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
         if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
@@ -2607,6 +2623,7 @@ restart_single_exit:
         }
       }
       } // end scoping brace
+      } // if (use_ok)
       return null;
     }
 
@@ -2676,7 +2693,7 @@ restart_single_exit:
       if (it is ItemTrap trap && trap.IsActivated) return true;
       if (it.IsUseless || it is ItemPrimedExplosive) return true;
       if (it is ItemEntertainment ent && ent.IsBoringFor(m_Actor)) return true;
-
+      if (it is ItemRangedWeapon rw && 0==rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw) && m_Actor.Inventory.IsFull) return true;
       return false;
     }
 
@@ -3067,10 +3084,10 @@ restart_single_exit:
       return null;
     }
 
-    private ActorAction _BehaviorDropOrExchange(Item give, Item take, Point? position)
+    private ActorAction _BehaviorDropOrExchange(Item give, Item take, Point? position, bool use_ok=true)
     {
       if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
-      ActorAction tmp = _PrefilterDrop(give);
+      ActorAction tmp = _PrefilterDrop(give, use_ok);
       if (null != tmp) return tmp;
       if (null != position) return new ActionTradeWithContainer(m_Actor,give,take,position.Value);
       return BehaviorDropItem(give);
@@ -3198,7 +3215,7 @@ restart_single_exit:
       return worst;
     }
 
-    public ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
+    public ActorAction BehaviorMakeRoomFor(Item it, Point? position=null, bool use_ok=true)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -3210,13 +3227,13 @@ restart_single_exit:
       Inventory inv = m_Actor.Inventory;
       { // drop useless item doesn't always happen in a timely fashion
       var useless = inv.Items.Where(obj => ItemIsUseless(obj)).ToList();
-      if (0<useless.Count) return _BehaviorDropOrExchange(useless[0], it, position);
+      if (0<useless.Count) return _BehaviorDropOrExchange(useless[0], it, position, use_ok);
       }
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
         ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-        if (null != armor) return _BehaviorDropOrExchange(armor,it,position);
+        if (null != armor) return _BehaviorDropOrExchange(armor,it,position, use_ok);
       }
 
       { // not-best melee weapon can be dropped
@@ -3224,12 +3241,22 @@ restart_single_exit:
         if (null != melee) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
-          if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, position);
+          if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, position, use_ok);
         }
       }
+      {
+      if (it is ItemRangedWeapon rw) {
+        var rws = inv.GetItemsByType<ItemRangedWeapon>(obj => 0==obj.Ammo && obj.AmmoType==rw.AmmoType);
+        if (null != rws) return _BehaviorDropOrExchange(rws[0], it, position);
+        rws = inv.GetItemsByType<ItemRangedWeapon>(obj => 0==obj.Ammo && null==inv.GetCompatibleAmmoItem(obj));
+        if (null != rws) return _BehaviorDropOrExchange(rws[0], it, position, use_ok);
+      }
+      }
+
 
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
+      if (use_ok) {
       {
       if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && inv.GetBestDestackable(it) is ItemFood food) {
         // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
@@ -3262,7 +3289,7 @@ restart_single_exit:
         if (num4*stim.Quantity <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
       }
-
+      } // if (use_ok)
       int it_rating = ItemRatingCode_no_recursion(it);
       if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
       bool is_SAN_restore_item = (it is ItemEntertainment || (it is ItemMedicine med && 0 < med.SanityCure));
@@ -3281,7 +3308,7 @@ restart_single_exit:
         while(++i < it_rating) {
           Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (null == worst) continue;
-          return _BehaviorDropOrExchange(worst, it, position);
+          return _BehaviorDropOrExchange(worst, it, position, use_ok);
         }
         if (rating_kludge) --it_rating;
       }
@@ -3290,7 +3317,7 @@ restart_single_exit:
         ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
         if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
-          if (null!=position) { // only do this when right on top of the inventory containing the ammo
+          if (null!=position && use_ok) { // only do this when right on top of the inventory containing the ammo
             var already = inv.GetBestDestackable(am) as ItemAmmo;
             if (null!=already) return new ActionUseItem(m_Actor, already);
           }
@@ -3313,7 +3340,7 @@ restart_single_exit:
             if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (null != position) {
-              ActorAction tmp = _PrefilterDrop(drop);
+              ActorAction tmp = _PrefilterDrop(drop, use_ok);
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
@@ -3351,7 +3378,7 @@ restart_single_exit:
             if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (null != position) {
-              ActorAction tmp = _PrefilterDrop(drop);
+              ActorAction tmp = _PrefilterDrop(drop, use_ok);
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
@@ -3412,7 +3439,7 @@ restart_single_exit:
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
-          return _BehaviorDropOrExchange(armor, it, position);
+          return _BehaviorDropOrExchange(armor, it, position, use_ok);
         }
       }
 
@@ -3422,7 +3449,7 @@ restart_single_exit:
         ItemModel model = Models.Items[(int)x];
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
-        if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position);
+        if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
       }
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
@@ -3435,37 +3462,37 @@ restart_single_exit:
       }
       // ditch an unwanted tracker if possible
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
-      if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position);
+      if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position, use_ok);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
       ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
-      if (null != tmpSprayScent) return _BehaviorDropOrExchange(tmpSprayScent, it, position);
+      if (null != tmpSprayScent) return _BehaviorDropOrExchange(tmpSprayScent, it, position, use_ok);
 
       if (it is ItemBarricadeMaterial) return null;
       ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>();
-      if (null != tmpBarricade) return _BehaviorDropOrExchange(tmpBarricade, it, position);
+      if (null != tmpBarricade) return _BehaviorDropOrExchange(tmpBarricade, it, position, use_ok);
 
       if (it is ItemEntertainment) return null;
       ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>();
-      if (null != tmpEntertainment) return _BehaviorDropOrExchange(tmpEntertainment, it, position);
+      if (null != tmpEntertainment) return _BehaviorDropOrExchange(tmpEntertainment, it, position, use_ok);
 
       if (it is ItemTrap) return null;
       ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
-      if (null != tmpTrap) return _BehaviorDropOrExchange(tmpTrap, it, position);
+      if (null != tmpTrap) return _BehaviorDropOrExchange(tmpTrap, it, position, use_ok);
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
         Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => 1 >= ItemRatingCode(obj)));
         if (null == worst) return null;
-        return _BehaviorDropOrExchange(worst, it, position);
+        return _BehaviorDropOrExchange(worst, it, position, use_ok);
       }
 
       if (it is ItemMedicine) return null;
 
       // ditch unimportant items
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>();
-      if (null != tmpMedicine) return _BehaviorDropOrExchange(tmpMedicine, it, position);
+      if (null != tmpMedicine) return _BehaviorDropOrExchange(tmpMedicine, it, position, use_ok);
 
       // least charged flashlight goes
       List<ItemLight> lights = inv.GetItemsByType<ItemLight>();
@@ -3476,15 +3503,50 @@ restart_single_exit:
       }
 
       // uninteresting ammo
-      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.Inventory.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
-//    ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
-      if (null != tmpAmmo) return _BehaviorDropOrExchange(tmpAmmo, it, position);
+      {
+      ItemAmmo tmpAmmo;
+      if (it is ItemRangedWeapon rw && rw.Ammo<rw.Model.MaxAmmo) {
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) && ammo.AmmoType!=rw.AmmoType);  // not quite the full check here.  Problematic if no ranged weapons at all.
+        if (null != tmpAmmo) return _BehaviorDropOrExchange(tmpAmmo, it, position, use_ok);
+        if (use_ok) {
+          tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) && ammo.AmmoType==rw.AmmoType);
+          if (null != tmpAmmo) {
+            Item drop = inv.GetFirst<ItemFood>();
+            if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
+            if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.MEDIKIT);
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.BANDAGE);
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SLP);
+            if (null == drop) drop = inv.GetFirst<ItemGrenade>();
+            if (null == drop) drop = inv.GetFirst<ItemAmmo>(ammo => ammo.AmmoType != rw.AmmoType);
+            if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
+            if (null != drop) {
+              if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+              if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
+              List<ActorAction> recover = new List<ActorAction>(2);
+              // 3a) drop target without triggering the no-pickup schema
+              recover.Add(new ActionDropItem(m_Actor,drop));
+              // 3b) pick up food
+              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              return new ActionChain(m_Actor,recover);
+            }
+          }
+        }
+      } else {
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.Inventory.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
+//      tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
+        if (null != tmpAmmo) return _BehaviorDropOrExchange(tmpAmmo, it, position, use_ok);
+      }
+      }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
       ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
       if (null != tmpRw2) {
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
-         if (!reloadable) return _BehaviorDropOrExchange(tmpRw2, it, position);
+         if (!reloadable) return _BehaviorDropOrExchange(tmpRw2, it, position, use_ok);
       }
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
@@ -3493,7 +3555,7 @@ restart_single_exit:
           ItemModel model = Models.Items[(int)x];
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
-            return _BehaviorDropOrExchange(ammo, it, position);
+            return _BehaviorDropOrExchange(ammo, it, position, use_ok);
           }
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
@@ -3503,7 +3565,7 @@ restart_single_exit:
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
-        if (null != test) return _BehaviorDropOrExchange(test, it, position);
+        if (null != test) return _BehaviorDropOrExchange(test, it, position, use_ok);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
@@ -3516,19 +3578,19 @@ restart_single_exit:
       // grenades next
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
-      if (null != tmpGrenade) return _BehaviorDropOrExchange(tmpGrenade, it, position);
+      if (null != tmpGrenade) return _BehaviorDropOrExchange(tmpGrenade, it, position, use_ok);
 
       // important trackers go for ammo or food
       if (it is ItemAmmo || it is ItemFood) {
         ItemTracker discardTracker = inv.GetFirstMatching<ItemTracker>();
-        if (null != discardTracker) return _BehaviorDropOrExchange(discardTracker, it, position);
+        if (null != discardTracker) return _BehaviorDropOrExchange(discardTracker, it, position, use_ok);
       }
 
       // ok to drop second food item for ammo
       if (it is ItemAmmo) {
         if (2<=m_Actor.Inventory.CountType<ItemFood>()) {
           var discard = inv.GetFirstMatching<ItemFood>();
-          if (null != discard) return _BehaviorDropOrExchange(discard, it, position);
+          if (null != discard) return _BehaviorDropOrExchange(discard, it, position, use_ok);
         }
       }
 

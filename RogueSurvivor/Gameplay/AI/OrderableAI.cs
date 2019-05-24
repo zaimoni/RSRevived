@@ -615,6 +615,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (m_Actor.Controller.InCombat) return false;
         if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
+          if (null != _when_at_target && !_when_at_target.IsPerformable()) {    // no longer viable
+            _isExpired = true;
+            return true;
+          }
           ret = _when_at_target ?? new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;
         }
