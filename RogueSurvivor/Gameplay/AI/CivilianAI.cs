@@ -652,14 +652,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorCloseDoorBehindMe(PrevLocation);    // civilian-specific
-      if (null != tmpAction) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "closing door");
-#endif
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
 
       bool? combat_unready = false;  // currently only matters for law enforcement
       if (m_Actor.Model.Abilities.IsLawEnforcer && !(combat_unready = CombatUnready()).Value) {

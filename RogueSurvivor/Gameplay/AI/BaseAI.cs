@@ -79,6 +79,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction alt = ai.RewriteAction(actorAction);
         if (alt?.IsLegal() ?? false) actorAction = alt;
 #endif
+        ai.ScheduleFollowup(actorAction);
       }
       ResetAICache();
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;

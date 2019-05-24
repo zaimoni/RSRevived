@@ -9121,6 +9121,18 @@ namespace djack.RogueSurvivor.Engine
 
       // If cannot trade, outright give
       if (target.Inventory.IsFull && !target.CanGet(gift)) {
+        if (null == received) { // \todo refactor this -- repeat block from ActionGiveItem
+          var recover = (target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,actor.Location.Position); // unsure if this works cross-map
+          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) {
+            // ammo can get confused, evidently
+            recover = (target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift);
+          }
+          if (recover is ActionTradeWithContainer trade) received = trade.Give;
+          else if (recover is ActionChain chain) {
+           if (chain.First is ActionDropItem drop) received = drop.Item;
+          }
+        }
+
         if (null != received) {
           // but if it's the *target's* turn, bundle that in to prevent a hard crash
           if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway

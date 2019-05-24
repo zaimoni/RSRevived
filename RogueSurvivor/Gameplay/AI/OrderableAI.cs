@@ -102,6 +102,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // XXX need some sense of what a combat action is
         if (null != m_Actor.Controller.enemies_in_FOV) return false;
+        if ((m_Actor.Controller as ObjectiveAI).VetoAction(Intent)) {
+          _isExpired = true;
+          return true;
+        }
+
        _isExpired = true;
         ret = Intent;
         return true;
@@ -1769,21 +1774,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         text = string.Format("I heard {0} {1} {2}!", str3, str1, str2);
       } else throw new InvalidOperationException("unhandled percept.Percepted type");
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
-    }
-
-    protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
-    {
-      if (!(previousLocation.MapObject is DoorWindow door)) return null;
-      if (!Rules.IsAdjacent(previousLocation,m_Actor.Location) || !m_Actor.CanClose(door)) return null;
-      foreach(var pt in previousLocation.Position.Adjacent()) {
-        Actor actor = previousLocation.Map.GetActorAtExt(pt);
-        if (null == actor) continue;
-        if (actor.Controller is ObjectiveAI ai) {
-          Dictionary<Point, int> tmp = ai.MovePlanIf(actor.Location.Position);
-          if (tmp?.ContainsKey(previousLocation.Position) ?? false) return null;
-        }
-      }
-      return new ActionCloseDoor(m_Actor, door, true);
     }
 
     private ActorAction BehaviorSecurePerimeter()

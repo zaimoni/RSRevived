@@ -22,8 +22,10 @@ using Rectangle = System.Drawing.Rectangle;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ActionBreak = djack.RogueSurvivor.Engine.Actions.ActionBreak;
+using ActionBump = djack.RogueSurvivor.Engine.Actions.ActionBump;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
+using ActionCloseDoor = djack.RogueSurvivor.Engine.Actions.ActionCloseDoor;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
@@ -1059,7 +1061,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool VetoAction(ActorAction x)
     {
       if (x is ActionMoveDelta delta) return VetoAction(delta.ConcreteAction);
-      if (x is ActionMoveStep step) {   // XXX telepathy
+      if (x is ActionCloseDoor close) {
+        foreach(var pt in close.Door.Location.Position.Adjacent()) {
+          Actor actor = close.Door.Location.Map.GetActorAtExt(pt);
+          if (null == actor || m_Actor.IsEnemyOf(actor)) continue;
+          if (actor.Controller is ObjectiveAI ai) {
+            Dictionary<Point, int> tmp = ai.MovePlanIf(actor.Location.Position);
+            if (tmp?.ContainsKey(close.Door.Location.Position) ?? false) return true;
+          }
+        }
+      }
+
+      if (x is ActionMoveStep step) {   // XXX telepathy; exemplar of chokepoint handling
         Exit exitAt = m_Actor.Location.Map.GetExitAt(step.dest.Position);
         Actor actorAt = exitAt?.Location.Actor;
         if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return true;
@@ -1102,6 +1115,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 #endif
+
+    public void ScheduleFollowup(ActorAction x)
+    {
+      if (x is ActionMoveDelta delta) { ScheduleFollowup(delta.ConcreteAction); return; }   // \todo savefile break: interface requiring ConcreteAction getter
+      if (x is ActionBump bump) { ScheduleFollowup(bump.ConcreteAction); return; }
+      if (x is ActionMoveStep step) {
+        // Historically, CivilianAI has the behavior of closing doors behind them.  The other three OrderableAI classes don't do this
+        // refine the historical behavior to not happen in-combat (bad for CHAR base assault, good for most other combat situations)
+        if (m_Actor.Model.DefaultController==typeof(CivilianAI)) {
+          if (m_Actor.Location.MapObject is DoorWindow door && door.IsOpen && !InCombat) {
+            Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionCloseDoor(m_Actor, door, true)));
+            return;
+          }
+        }
+        return;
+      }
+    }
 
     protected void DecideMove_WaryOfTraps(Dictionary<Location, int> src)
     {

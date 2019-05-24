@@ -151,7 +151,10 @@ namespace djack.RogueSurvivor.Data
 #else
           else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
-          else return goal_action;
+          else {
+            ScheduleFollowup(goal_action);  // OrderableAI subclasses have this handled by BaseAI::GetAction so don't need it "here"
+            return goal_action;
+          }
         }
       }
       return null;
