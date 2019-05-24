@@ -456,12 +456,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        if (ObjectiveAI.ReactionCode.NONE != (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
+        var ai = m_Actor.Controller as ObjectiveAI;
+        if (ObjectiveAI.ReactionCode.NONE != ai.InterruptLongActivity() || ai.InCombat) {
           _isExpired = true;    // cancel: something urgent
           return true;
         }
 
-        var ai = m_Actor.Controller as ObjectiveAI;
         ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
         if (!(ret?.IsPerformable() ?? false)) {
           ret = null;
