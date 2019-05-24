@@ -2914,7 +2914,7 @@ namespace djack.RogueSurvivor.Data
 #endif
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
-      List<Item> objList = Inventory.Items.Where(it=> (buyer.Controller as Gameplay.AI.ObjectiveAI).IsInterestingTradeItem(this, it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it)).ToList();
+      List<Item> objList = Inventory.Items.Where(it=> (buyer.Controller as Gameplay.AI.ObjectiveAI).IsInterestingTradeItem(this, it) && (Controller as Gameplay.AI.ObjectiveAI).IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
       return 0<objList.Count ? objList : null;
     }
 

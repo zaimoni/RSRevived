@@ -290,6 +290,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
+      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.Faction==Gameplay.GameFactions.ThePolice) return false; // very selective extraction from ItIsUseleess
       return true;
     }
 

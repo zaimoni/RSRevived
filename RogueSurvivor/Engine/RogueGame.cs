@@ -6917,6 +6917,64 @@ namespace djack.RogueSurvivor.Engine
         lines.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, actor.MaxInv));
         lines.AddRange(DescribeInventory(actor.Inventory));
       }
+
+#if DEBUG
+      // 10. Trading options; cf. ObjectiveAI::HaveTradingTargets()
+      var TradeableItems = (Player.Controller as ObjectiveAI)?.GetTradeableItems();
+      var order_ai = actor.Controller as OrderableAI;
+      bool trade_ok = null!=order_ai && null != TradeableItems && 0 < TradeableItems.Count && !actor.IsPlayer && Player.CanTradeWith(actor) && null != Player.MinStepPathTo(Player.Location, actor.Location);
+      if (trade_ok && 1== TradeableItems.Count) {
+        var other_TradeableItems = order_ai.GetTradeableItems();
+        if (null == other_TradeableItems) trade_ok = false;
+        else if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID == other_TradeableItems[0].Model.ID) trade_ok = false;
+      }
+      if (trade_ok && order_ai.HasAnyInterestingItem(TradeableItems)) {
+        // Cf. RogueGame::PickItemsToTrade
+        var negotiate = order_ai.TradeOptions(Player);
+        if (null != negotiate) {
+              lines.Add("would trade with you:");
+              while(0 < negotiate.Count) {
+                var test = negotiate[0];
+                var viewpoint_offer = negotiate.FindAll(it => it.Value==test.Value);
+                var viewpoint_ask = negotiate.FindAll(it => it.Key==test.Key);
+                if (viewpoint_ask.Count<=viewpoint_offer.Count) {
+                  string msg = " asks " + test.Value + " for ";
+                  if (1==viewpoint_offer.Count) msg += test.Key;
+                  else {
+                    while(1<viewpoint_offer.Count) {
+                      msg += viewpoint_offer[viewpoint_offer.Count-1].Key +", ";
+                      viewpoint_offer.RemoveAt(viewpoint_offer.Count - 1);
+                      if (80<msg.Length) {
+                        lines.Add(msg);
+                        msg = "  ";
+                      }
+                    }
+                    msg += "or "+viewpoint_offer[0].Key;
+                  }
+                  lines.Add(msg);
+                  negotiate = negotiate.FindAll(it => it.Value != test.Value);
+                } else {
+                  string msg = " offers " + test.Key + " for ";
+                  if (1==viewpoint_ask.Count) msg += test.Value;  // dead code
+                  else {
+                    while(1< viewpoint_ask.Count) {
+                      msg += viewpoint_ask[viewpoint_ask.Count-1].Value +", ";
+                      viewpoint_ask.RemoveAt(viewpoint_ask.Count - 1);
+                      if (80<msg.Length) {
+                        lines.Add(msg);
+                        msg = "  ";
+                      }
+                    }
+                    msg += "or "+ viewpoint_ask[0].Value;
+                  }
+                  lines.Add(msg);
+                  negotiate = negotiate.FindAll(it => it.Key != test.Key);
+                }
+              }
+            }
+      }
+#endif
+
       return lines.ToArray();
     }
 
@@ -8887,20 +8945,8 @@ namespace djack.RogueSurvivor.Engine
 
     private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
     {
-      List<Item> speaker_offers = speaker.GetInterestingTradeableItems(buyer);  // charisma check involved for these
-      if (0>=(speaker_offers?.Count ?? 0)) return null;
-      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);
-      if (0>=(buyer_offers?.Count ?? 0)) return null;
-      var negotiate = new List<KeyValuePair<Item,Item>>(speaker_offers.Count*buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
-      foreach(var s_item in speaker_offers) {
-        foreach(var b_item in buyer_offers) {
-          if (ObjectiveAI.TradeVeto(s_item,b_item)) continue;
-          if (ObjectiveAI.TradeVeto(b_item,s_item)) continue;
-          // charisma can't do everything
-          negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
-        }
-      }
-      if (0 >= negotiate.Count) return null;
+      var negotiate = (speaker.Controller as ObjectiveAI).TradeOptions(buyer);
+      if (null == negotiate) return null;
       return Rules.DiceRoller.Choose(negotiate);
     }
 

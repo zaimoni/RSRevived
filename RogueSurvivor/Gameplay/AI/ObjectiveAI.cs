@@ -2541,6 +2541,24 @@ restart_single_exit:
         });
     }
 
+    public List<KeyValuePair<Item, Item>> TradeOptions(Actor target)
+    {
+      var wants = m_Actor.GetInterestingTradeableItems(target);  // charisma check involved for these
+      if (null!=wants && 0 < wants.Count) return null;
+      var offers = target.GetInterestingTradeableItems(m_Actor);
+      if (null != offers && 0 < offers.Count) return null;
+      var negotiate = new List<KeyValuePair<Item,Item>>(wants.Count*offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
+      foreach(var s_item in wants) {
+        foreach(var b_item in offers) {
+          if (TradeVeto(s_item,b_item)) continue;
+          if (TradeVeto(b_item,s_item)) continue;
+            // charisma can't do everything
+            negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
+          }
+      }
+      return 0<negotiate.Count ? negotiate : null;
+    }
+
     protected bool HaveTradingTargets()
     {
         if (!m_Actor.Model.Abilities.CanTrade) return false; // arguably an invariant but not all PCs are overriding appropriate base AIs
@@ -2559,7 +2577,8 @@ restart_single_exit:
             if (null == other_TradeableItems) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
           }
-          if ((x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return true;    // other half of m_Actor.GetInterestingTradeableItems(...)
+          if (!(x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
+          return null!=TradeOptions(x.Value);
         }
         return false;
     }
