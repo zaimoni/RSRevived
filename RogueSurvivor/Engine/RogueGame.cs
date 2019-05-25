@@ -7931,11 +7931,16 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, Location from)
     {
+#if NO_PEACE_WALLS
+#else
       List<Actor> actorList = null;
+#endif
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
         if (fo.Location.Map==to.Map) continue;  // already in destination, ok
+#if NO_PEACE_WALLS
         if (fo.Location.Map.District != to.Map.District) continue;  // cross-district change
+#endif
         List<Point> pointList = null;
         if (Rules.IsAdjacent(from, fo.Location)) {
           pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo) && !to.Map.HasActorAt(pt));
@@ -7943,7 +7948,10 @@ namespace djack.RogueSurvivor.Engine
         }
 
         if (!flag3) {
+#if NO_PEACE_WALLS
+#else
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
+#endif
         } else if (TryActorLeaveTile(fo)) {
           Point position = m_Rules.DiceRoller.Choose(pointList);
           to.Map.PlaceAt(fo, position);
@@ -7951,6 +7959,8 @@ namespace djack.RogueSurvivor.Engine
           OnActorEnterTile(fo);
         }
       }
+#if NO_PEACE_WALLS
+#else
       if (actorList == null) return;
 
       bool flag2 = Player == leader;
@@ -7979,6 +7989,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+#endif
     }
 
     public bool DoUseExit(Actor actor, Point exitPoint)
