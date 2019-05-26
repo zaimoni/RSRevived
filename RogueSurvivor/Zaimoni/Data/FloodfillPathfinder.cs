@@ -302,7 +302,7 @@ namespace Zaimoni.Data
 
             var found = new HashSet<T>();
 
-            while (0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
+            while (0<_now.Count) {
               int cost = _now.Keys.Min();
               int max_delta_cost = max_cost - cost;
               foreach(T tmp in _now[cost]) {
