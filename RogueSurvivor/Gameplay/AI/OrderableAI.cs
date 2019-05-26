@@ -2242,25 +2242,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathTo(PathfinderFor(init_costs,new HashSet<Map>()));
 	}
 
-    protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
+    protected ActorAction BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
+      var rules = RogueForm.Game.Rules;
+      int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
+
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
       do {
-        Point p = otherPosition;
-        p.X += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
-        p.Y += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
-        loc = new Location(other.Location.Map,p);
         if (100 < ++num) return null;
+        Point p = otherPosition;
+        p.X += spread();
+        p.Y += spread();
+        loc = new Location(other.Location.Map,p);
+        if (!loc.ForceCanonical()) continue;
         if (loc == m_Actor.Location) return new ActionWait(m_Actor);    // XXX check what BehaviorIntelligentBumpToward does
-        if (!loc.IsWalkableFor(m_Actor)) continue;
       }
-      while(Rules.GridDistance(loc,other.Location) < minDist);
+      while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
 
 	  ActorAction actorAction = BehaviorPathTo(loc);
-      if (!actorAction?.IsLegal() ?? true) return null;
+      if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
       if (actorAction is ActionMoveStep tmp) {
         if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest);

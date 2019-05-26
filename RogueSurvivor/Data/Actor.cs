@@ -1750,8 +1750,8 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         ActorAction tmp = Rules.IsPathableFor(this, dest);
+        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this,dest,loc);
         if (null != tmp) ret[dest] = tmp;
-        else if (dest.MapObject?.IsContainer ?? false) ret[dest] = new Engine.Actions.ActionMoveStep(this, dest.Position); // XXX wrong no matter what
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
@@ -1782,14 +1782,14 @@ namespace djack.RogueSurvivor.Data
           ret[pt] = relay;
           continue;
         }
-        if (Location==(new Location(m,pt))) {
+        Location dest = new Location(m,pt);
+        if (!dest.ForceCanonical()) continue;
+        if (Location==dest) {
           ret[pt] = new Engine.Actions.ActionMoveStep(this, pt);
           continue;
         }
-        ActorAction tmp = Rules.IsPathableFor(this, new Location(m, pt));
-        if (null == tmp) {
-          if (m.GetMapObjectAt(pt)?.IsContainer ?? false) tmp = new Engine.Actions.ActionMoveStep(this, pt); // XXX wrong no matter what
-        }
+        ActorAction tmp = Rules.IsPathableFor(this, dest);
+        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this,dest,new Location(m,p));
         if (null != tmp) ret[pt] = tmp;
       }
       return ret;
