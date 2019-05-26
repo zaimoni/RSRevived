@@ -715,12 +715,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
         int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
-          if (0 >= m_Actor.EnergyDrain) return false;
-          if (!m_Actor.RunIsFreeMove) return false;
-          if (m_Actor.MoveLostWithoutRunOrWait(0, 1, 1)) return false;
-          int turns = 0;
-          while(!m_Actor.MoveLostWithoutRunOrWait(turns,turns+1,1)) ++turns;
-          return !m_Actor.WillTireAfter(STA_reserve + double_run_STA-Actor.STAMINA_REGEN_WAIT*turns);
+          if (0 >= m_Actor.EnergyDrain) return true;
+          if (m_Actor.RunIsFreeMove) {
+            if (m_Actor.MoveLostWithoutRunOrWait(0, 0, 1)) return false;
+            if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT) && m_Actor.MoveLostWithoutRunOrWait(1, 1, 1)) return false;
+          } else {
+            if (m_Actor.MoveLostWithoutRunOrWait(1, 1, 1)) return false;
+            if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT) && m_Actor.MoveLostWithoutRunOrWait(2, 2, 1)) return false;
+          }
         }
       }
       return true;
