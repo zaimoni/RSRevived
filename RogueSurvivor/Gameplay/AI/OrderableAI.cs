@@ -2248,6 +2248,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var rules = RogueForm.Game.Rules;
       int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
 
+      var clan = m_Actor.ChainOfCommand;
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
@@ -2258,7 +2259,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         p.Y += spread();
         loc = new Location(other.Location.Map,p);
         if (!loc.ForceCanonical()) continue;
-        if (loc == m_Actor.Location) return new ActionWait(m_Actor);    // XXX check what BehaviorIntelligentBumpToward does
+        if (loc == m_Actor.Location) return new ActionWait(m_Actor);
+        if (clan.Any(a => loc == a.Location)) continue;
       }
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
 
