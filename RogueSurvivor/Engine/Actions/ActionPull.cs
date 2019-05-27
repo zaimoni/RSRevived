@@ -6,7 +6,7 @@ using djack.RogueSurvivor.Data;
 namespace djack.RogueSurvivor.Engine.Actions
 {
     [Serializable]
-    class ActionPull : ActorAction
+    class ActionPull : ActorAction, ActorDest
     {
         #region Fields
         readonly MapObject m_Object;
@@ -17,6 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         #region Properties
         public Direction MoveActorDirection { get { return m_MoveActorDir; } }  // \todo savefile break: convert this to a calculated field
         public Point MoveActorTo { get { return m_MoveActorTo; } }
+        public Location dest { get { return new Location(m_Object.Location.Map, m_MoveActorTo); } }
         #endregion
 
         #region Init

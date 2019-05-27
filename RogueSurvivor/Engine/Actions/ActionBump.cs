@@ -8,8 +8,8 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBump : ActorAction
-  {
+  internal class ActionBump : ActorAction, Resolvable
+    {
     private readonly Direction m_Direction;
     private readonly Location m_NewLocation;
     private readonly ActorAction m_ConcreteAction;

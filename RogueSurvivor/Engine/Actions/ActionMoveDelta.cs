@@ -13,14 +13,25 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  // relevant interfaces
+  internal interface ActorDest
+  {
+    Location dest { get; }  // of m_Actor
+  }
+
+  internal interface Resolvable
+  {
+    ActorAction ConcreteAction { get; }
+  }
+
   [Serializable]
-  internal class ActionMoveDelta : ActorAction
+  internal class ActionMoveDelta : ActorAction,ActorDest,Resolvable
   {
     private Location m_NewLocation; // \todo savefile break: readonly-convert these two and also readonly-calculate cache the relevant exit
     private Location m_Origin;
     [NonSerialized] private ActorAction _result;    // make this non-serialized if we need to serialize this
 
-	public Location dest { get { return m_NewLocation; } }
+	public Location dest { get { return m_NewLocation; } }  // of m_Actor
 	public Location origin { get { return m_Origin; } }
     public ActorAction ConcreteAction { get { return _result ?? _resolve(); } }
 

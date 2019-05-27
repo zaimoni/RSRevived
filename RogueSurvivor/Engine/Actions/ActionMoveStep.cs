@@ -19,8 +19,8 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionMoveStep : ActorAction
-  {
+  internal class ActionMoveStep : ActorAction, ActorDest
+    {
     private Location m_NewLocation;
 
 	public Location dest { get { return m_NewLocation; } }

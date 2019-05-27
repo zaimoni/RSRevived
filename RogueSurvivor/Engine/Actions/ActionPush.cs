@@ -15,7 +15,7 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionPush : ActorAction
+  internal class ActionPush : ActorAction, ActorDest
   {
     private readonly MapObject m_Object;
     private readonly Direction m_Direction;
@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public MapObject Target { get { return m_Object; } }
     public Point To { get { return m_To; } }
+    public Location dest { get { return m_Object.Location; } }
 
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
       : base(actor)

@@ -9,8 +9,8 @@ using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionShove : ActorAction
-  {
+  internal class ActionShove : ActorAction, ActorDest
+    {
     private readonly Actor m_Target;
     private readonly Direction m_Direction;
     private readonly Point m_To;
@@ -29,6 +29,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Actor Target { get { return m_Target; } }
     public Point To { get { return m_To; } }
     public Direction Dir { get { return m_Direction; } }
+    public Location dest { get { return m_Target.Location; } }
+    public Location a_dest { get { return new Location(m_Target.Location.Map,m_To); } }
 
     public override bool IsLegal()
     {

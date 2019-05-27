@@ -21,6 +21,7 @@ using Rectangle = System.Drawing.Rectangle;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using ActorDest = djack.RogueSurvivor.Engine.Actions.ActorDest;
 using ActionBreak = djack.RogueSurvivor.Engine.Actions.ActionBreak;
 using ActionBump = djack.RogueSurvivor.Engine.Actions.ActionBump;
 using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
@@ -41,6 +42,7 @@ using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
 using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
 using ActionTradeWithContainer = djack.RogueSurvivor.Engine.Actions.ActionTradeWithContainer;
 using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
+using Resolvable = djack.RogueSurvivor.Engine.Actions.Resolvable;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -1062,7 +1064,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool VetoAction(ActorAction x)
     {
-      if (x is ActionMoveDelta delta) return VetoAction(delta.ConcreteAction);
+      if (x is ActorDest a_dest && a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
+      if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
         foreach(var pt in close.Door.Location.Position.Adjacent()) {
           Actor actor = close.Door.Location.Map.GetActorAtExt(pt);
@@ -1074,12 +1077,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (x is ActionMoveStep step) {   // XXX telepathy; exemplar of chokepoint handling
-        if ((new Location(m_Actor.Location.Map, step.dest.Position)).ChokepointIsContested(m_Actor)) return true;
-      }
       if (x is ActionShove shove) {
         if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
+
+        if (shove.a_dest.ChokepointIsContested(m_Actor)) return true; // \todo change to interface-based if pulling actors is implemented
 
         if (shove.Target.Controller is ObjectiveAI ai) {
           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
