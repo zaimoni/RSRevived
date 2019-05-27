@@ -2306,6 +2306,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var friends = friends_in_FOV;
       if (null == friends) return null;
       Dictionary<Location,Actor> murderers = null;
+      // \todo release block; next savegame; if either ActorUnsuspicousChance exceeds 100%, or ActorSpotMurdererChance is 0% or less, report
+      // the murders counter value as zero.  (This should not immunize against actually witnessing the murder, or murder in progress.)
+      // this needs to affect the popup as well.  A murderer should not do an action that enables detection.
       foreach(var x in friends) {
         if (0 >= x.Value.MurdersCounter) continue;
         (murderers ?? (murderers = new Dictionary<Location, Actor>()))[x.Key] = x.Value;
