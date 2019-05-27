@@ -1075,9 +1075,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (x is ActionMoveStep step) {   // XXX telepathy; exemplar of chokepoint handling
-        Exit exitAt = m_Actor.Location.Map.GetExitAt(step.dest.Position);
-        Actor actorAt = exitAt?.Location.Actor;
-        if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return true;
+        if ((new Location(m_Actor.Location.Map, step.dest.Position)).ChokepointIsContested(m_Actor)) return true;
       }
       if (x is ActionShove shove) {
         if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion

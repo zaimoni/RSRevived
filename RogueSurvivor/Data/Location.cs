@@ -69,6 +69,17 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
+    public bool ChokepointIsContested(Actor viewpoint) {
+      // exit-based
+      var e = Exit;
+      if (null != e) {
+        Actor a = e.Location.Actor;
+        if (null != a && !a.IsEnemyOf(viewpoint)) return true;
+      }
+      // check map for topology-based
+      return false;
+    }
+
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
     public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
