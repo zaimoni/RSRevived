@@ -9714,9 +9714,19 @@ namespace djack.RogueSurvivor.Engine
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDragCorpse(target);
-        Location t_loc = target.Location;
-        t_loc.Map.PlaceAt(target, toPos);    // XXX cross-map shove change target
-        if (!Rules.IsAdjacent(target.Location, actor.Location) && t_loc.IsWalkableFor(actor)) {
+        var t_loc = target.Location;
+        var new_t_loc = new Location(t_loc.Map, toPos);
+        if (!new_t_loc.ForceCanonical()) throw new InvalidOperationException("shoved off map entirely");
+        bool non_adjacent = !Rules.IsAdjacent(new_t_loc, actor.Location);
+        var obj = t_loc.MapObject;
+        if (null != obj && obj.IsJumpable && non_adjacent) {
+#if DEBUG
+          if (!actor.CanJump) throw new InvalidOperationException("shoving off a jumpable object this way requires jumping onto the object");
+#endif
+          actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
+        }
+        new_t_loc.Place(target);
+        if (non_adjacent) {
           if (TryActorLeaveTile(actor)) {
             t_loc.Place(actor);
             OnActorEnterTile(actor);
