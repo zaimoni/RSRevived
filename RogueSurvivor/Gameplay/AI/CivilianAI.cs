@@ -813,9 +813,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
 #region floodfill pathfinder
       var pathing = m_Actor.OnePath(m_Actor.Location);
-      pathing.OnlyIf(action => action.IsLegal());
+      pathing.OnlyIf(action => action.IsPerformable());
       
-      if (null != _legal_steps || 0<pathing.Count) {
+      if (null != _legal_path) {
         // advanced pathing ultimately reduces to various flavors of calls to (specializations) of 
         // public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
 #if TRACE_SELECTACTION

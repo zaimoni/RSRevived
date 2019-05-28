@@ -204,6 +204,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // cache variables
     [NonSerialized] protected List<Point> _legal_steps = null;
+    [NonSerialized] protected Dictionary<Location,ActorAction> _legal_path = null;
     [NonSerialized] protected Dictionary<Point, int> _damage_field = null;
     [NonSerialized] protected List<Actor> _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
@@ -270,6 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       base.ResetAICache();
       _legal_steps = null;
+      _legal_path = null;
       _damage_field = null;
       _slow_melee_threat = null;
       _immediate_threat = null;
@@ -326,6 +328,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+      _legal_path = m_Actor.OnePath(m_Actor.Location);
+      _legal_path.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
+      if (0 >= _legal_path.Count) _legal_path = null;
     }
 
     public int RiskAt(Location loc) {
@@ -1727,6 +1733,12 @@ restart:
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "path: "+path.to_s());
 #endif
       if (null != path) {
+        var pathable = path[0].FindAll(loc => _legal_path.ContainsKey(loc));
+        if (0 >= pathable.Count) return null;
+        path[0] = pathable;
+      }
+
+      if (null != path) {
         void purge_non_adjacent(int i) {    // \todo non-local function target?
           while(0 < i) {
             var tmp = path[i - 1].FindAll(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc)));
@@ -1755,18 +1767,12 @@ restart:
 #if DEBUG
           if (navigate.IsBlacklisted(path[0][0])) throw new InvalidOperationException("blacklisted path: "+path.to_s());
 #endif
-          ActorAction act = Rules.IsPathableFor(m_Actor,path[0][0]);
-#if DEBUG
-          if (null == act) throw new InvalidOperationException("unpathable square not blacklisted: "+path.to_s());
-#endif
+          ActorAction act = _legal_path[path[0][0]];
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+(act?.ToString() ?? null)+"; "+ (act?.IsLegal() ?? false));
 #endif
-          if (act?.IsLegal() ?? false) {
-            if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
-            return act;
-          }
-          return null;
+          if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
+          return act;
         }
         if (0 < path[0].Count) {
           costs = new Dictionary<Location,int>();
@@ -2009,7 +2015,7 @@ restart:
 #endif
 
       {
-      Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location);
+      var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
       {
       bool null_return = false;
       foreach(Location loc in goals) {  // \todo should only null-return if no legal adjacent goals at all
