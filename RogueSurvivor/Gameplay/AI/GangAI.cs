@@ -84,6 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
 
       List<Percept> _all = FilterSameMap(UpdateSensors());
+      List<Percept> current = FilterCurrent(_all);    // this tests fast
 
       m_Actor.Walk();    // alpha 10: don't run by default
 
@@ -194,12 +195,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == _enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> interestingStacks = _all.FilterT<Inventory>().FilterOut(p =>
-        {
-          if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
-          if (IsOccupiedByOther(p.Location)) return true; // blocked
-          return null == BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory);
-        });
+        List<Percept> interestingStacks = GetInterestingInventoryStacks(current);
         if (interestingStacks != null) {
           Percept percept = FilterNearest(interestingStacks);
           tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
