@@ -1202,7 +1202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //    if (WillTireAfterAttack(actor)) return true;  // post-process this, handling this here is awful for rats
       if (actor.Speed > target.Speed) {
         if (actor.WillActAgainBefore(target)) return false; // caller must handle distance 2 correctly.
-        if (Rules.IsAdjacent(actor.Location,target.Location)) return true;  // back-and-smack indicated
+        if (Rules.IsAdjacent(actor.Location,target.Location) && Actor.STAMINA_MIN_FOR_ACTIVITY<=target.StaminaPoints) return true;  // back-and-smack indicated
 //      if (target.TargetActor == actor) return true;
         return false;
       }
@@ -1214,6 +1214,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  int a_dam = a.MeleeAttack(b).DamageValue - b.CurrentDefence.Protection_Hit;
 	  int b_dam = b.MeleeAttack(a).DamageValue - a.CurrentDefence.Protection_Hit;
+      if (Actor.STAMINA_MIN_FOR_ACTIVITY > a.StaminaPoints && Actor.STAMINA_MIN_FOR_ACTIVITY <= b.StaminaPoints) a_dam = 0;
+      if (Actor.STAMINA_MIN_FOR_ACTIVITY > b.StaminaPoints && Actor.STAMINA_MIN_FOR_ACTIVITY <= a.StaminaPoints) b_dam = 0;
 	  if (0 >= a_dam) return a;
 	  if (0 >= b_dam) return b;
       int speed_factor = a.HowManyTimesOtherActs(1, b);

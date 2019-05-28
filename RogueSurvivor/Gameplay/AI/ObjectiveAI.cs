@@ -200,7 +200,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
     readonly private UntypedCache<SparseData> _sparse = new UntypedCache<SparseData>();
     private int _STA_reserve;
-    int STA_reserve { get { return _STA_reserve; } }
+    protected int STA_reserve { get { return _STA_reserve; } }
 
     // cache variables
     [NonSerialized] protected List<Point> _legal_steps = null;
@@ -2169,21 +2169,22 @@ restart_single_exit:
         if (0==a.CurrentRangedAttack.Range && Rules.IsAdjacent(m_Actor.Location, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
-        int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-        foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable)) {
-          melee_damage_field[pt] = a_turns*a_max_dam;
-        }
-        while(1<a_turns) {
-          HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
-          a_turns--;
-          foreach(Point pt2 in sweep) {
-            foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable && !sweep.Contains(pt))) {
-              melee_damage_field[pt] = a_turns*a_max_dam;
+        int a_max_dam;
+        if (Actor.STAMINA_MIN_FOR_ACTIVITY <= a.StaminaPoints) {
+          a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
+          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable)) {
+            melee_damage_field[pt] = a_turns*a_max_dam;
+          }
+          while(1<a_turns) {
+            HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
+            a_turns--;
+            foreach(Point pt2 in sweep) {
+              foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable && !sweep.Contains(pt))) {
+                melee_damage_field[pt] = a_turns*a_max_dam;
+              }
             }
           }
-        }
-        if (melee_damage_field.ContainsKey(m_Actor.Location.Position)) {
-          immediate_threat.Add(a);
+          if (melee_damage_field.ContainsKey(m_Actor.Location.Position)) immediate_threat.Add(a);
         }
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack

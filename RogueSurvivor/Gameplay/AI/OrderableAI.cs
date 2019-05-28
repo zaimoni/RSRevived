@@ -2118,7 +2118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               throw new ArgumentOutOfRangeException("unhandled courage");
           }
         }
-        if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        if (!decideToFlee && WillTireAfterAttack(m_Actor) && null!=_damage_field && _damage_field.ContainsKey(m_Actor.Location.Position)) {
           decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
@@ -2162,21 +2162,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // if enemy is not approachable then following checks are invalid
-      if (!approachable_enemies?.Contains(target) ?? true) return new ActionWait(m_Actor);
+      if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
 
       // redo the pause check
-      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location)) {
-          if (   !m_Actor.WillActAgainBefore(enemy)
-              || !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
+      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location) && !enemy.CanRun()) {
+          if (!m_Actor.WillActAgainBefore(enemy) && !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
             return new ActionWait(m_Actor);
+
           if (null != legal_steps) {
             // cannot close at normal speed safely; run-hit may be ok
             var dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
             List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position)
               && !(LoF_reserve?.Contains(pt) ?? false)
-              && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
-              && RunIfAdvisable(pt)).ToList();
+              && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep step
+              && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest))).ToList();
             ReserveSTA(0,0,0,0);  // baseline
             if (!attack_possible.Any()) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
