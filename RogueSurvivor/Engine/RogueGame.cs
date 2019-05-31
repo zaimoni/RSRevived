@@ -2655,6 +2655,7 @@ namespace djack.RogueSurvivor.Engine
       if (!FindDropSuppliesPoint(map, out Point dropPoint)) return;
       Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
       map.TrimToBounds(ref survey);
+      // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
           map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), pt);
           Session.Get.PoliceInvestigate.Record(map, pt);
@@ -2664,9 +2665,9 @@ namespace djack.RogueSurvivor.Engine
           (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
           already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
-        },
-        pt => IsSuitableDropSuppliesPoint(map, pt));
+        });
 
+      // \todo this should alert the ais to potential food/medikits if they hear it
       NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map,dropPoint));
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
