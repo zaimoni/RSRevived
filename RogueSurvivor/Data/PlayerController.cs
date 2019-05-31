@@ -142,6 +142,8 @@ namespace djack.RogueSurvivor.Data
     {
       if (0 >= Objectives.Count) return null;
       ActorAction goal_action = null;
+      _all = FilterSameMap(UpdateSensors());
+      InitAICache(_all, _all);
       foreach(var o in Objectives.ToList()) {
         if (o.IsExpired) Objectives.Remove(o);
         else if (o.UrgentAction(out goal_action)) {
@@ -153,10 +155,12 @@ namespace djack.RogueSurvivor.Data
 #endif
           else {
             ScheduleFollowup(goal_action);  // OrderableAI subclasses have this handled by BaseAI::GetAction so don't need it "here"
+            ResetAICache();
             return goal_action;
           }
         }
       }
+      ResetAICache();
       return null;
     }
 
