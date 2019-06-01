@@ -79,7 +79,9 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
     // map geometry
+#if PRERELEASE_MOTHBALL
     [NonSerialized] private readonly List<LinearChokepoint> m_Chokepoints = new List<LinearChokepoint>();
+#endif
     [NonSerialized] private readonly List<Point> m_FullCorner_nw = new List<Point>();
     [NonSerialized] private readonly List<Point> m_FullCorner_ne = new List<Point>();
     [NonSerialized] private readonly List<Point> m_FullCorner_se = new List<Point>();
@@ -2338,6 +2340,7 @@ retry:
         }
     }
 
+#if PRERELEASE_MOTHBALL
     public void RegenerateChokepoints() {
       var working = new List<LinearChokepoint>();
 
@@ -2637,6 +2640,7 @@ retry:
       if (0 >= candidates.Count) return null;
       return candidates[0];
     }
+#endif
 
     public void RegenerateMapGeometry() {
       int crm_encode(Vector2D_int_stack pt) { return pt.X + Rect.Width*pt.Y; }    // chinese remainder theorem encoding

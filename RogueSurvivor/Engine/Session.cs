@@ -289,7 +289,9 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 #endif
+#if PRERELEASE_MOTHBALL
       s_TheSession.World.DoForAllMaps(m=>m.RegenerateChokepoints());
+#endif
 	  Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
