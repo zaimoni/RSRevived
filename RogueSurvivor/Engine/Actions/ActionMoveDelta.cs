@@ -27,8 +27,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionMoveDelta : ActorAction,ActorDest,Resolvable
   {
-    private Location m_NewLocation; // \todo savefile break: readonly-convert these two and also readonly-calculate cache the relevant exit
-    private Location m_Origin;
+    private readonly Location m_NewLocation;
+    private readonly Location m_Origin;
     [NonSerialized] private ActorAction _result;    // make this non-serialized if we need to serialize this
 
 	public Location dest { get { return m_NewLocation; } }  // of m_Actor
@@ -59,6 +59,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
+      var exit = m_Origin.Exit;
+      if (null != exit && exit.Location == m_NewLocation) { // may want to cache this: non-null if needed
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return false;
+      }
       if (1!=Rules.InteractionDistance(m_Actor.Location,m_NewLocation)) return true;
       return (_result ?? (_result = _resolve()))?.IsLegal() ?? false;
     }
@@ -91,7 +95,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
       if (null != exit && exit.Location == m_NewLocation) {
-        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null; // \todo savefile break: this test goes under IsLegal (pre-empts interaction distance whitelist)
         if (!see_dest || string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, m_Origin);  // all failures of this test require sight information
         if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
         if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);

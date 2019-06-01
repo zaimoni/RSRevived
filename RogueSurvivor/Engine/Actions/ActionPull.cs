@@ -10,12 +10,12 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
         #region Fields
         readonly MapObject m_Object;
-        readonly Direction m_MoveActorDir;
         readonly Point m_MoveActorTo;
         #endregion
 
         #region Properties
-        public Direction MoveActorDirection { get { return m_MoveActorDir; } }  // \todo savefile break: convert this to a calculated field
+        // this can be null during pathfinding
+        public Direction MoveActorDirection { get { return Direction.FromVector(m_MoveActorTo.X - m_Actor.Location.Position.X, m_MoveActorTo.Y - m_Actor.Location.Position.Y); } }
         public Point MoveActorTo { get { return m_MoveActorTo; } }
         public Location dest { get { return new Location(m_Object.Location.Map, m_MoveActorTo); } }
         #endregion
@@ -29,7 +29,6 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
 
             m_Object = pullObj;
-            m_MoveActorDir = moveActorDir;
             m_MoveActorTo = m_Actor.Location.Position + moveActorDir;
         }
 
@@ -41,10 +40,6 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
 
             m_Object = pullObj;
-            m_MoveActorDir = Direction.FromVector(moveActorTo.X-actor.Location.Position.X, moveActorTo.Y - actor.Location.Position.Y);
-#if FALSE_POSITIVE
-            if (null == m_MoveActorDir) throw new ArgumentNullException(nameof(m_MoveActorDir));    // pathfinder can trigger this
-#endif
             m_MoveActorTo = moveActorTo;
         }
         #endregion

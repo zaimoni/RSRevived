@@ -1126,7 +1126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void ScheduleFollowup(ActorAction x)
     {
-      if (x is ActionMoveDelta delta) { ScheduleFollowup(delta.ConcreteAction); return; }   // \todo savefile break: interface requiring ConcreteAction getter
+      if (x is Resolvable resolve) { ScheduleFollowup(resolve.ConcreteAction); return; }
       if (x is ActionBump bump) { ScheduleFollowup(bump.ConcreteAction); return; }
       if (x is ActionMoveStep step) {
         // Historically, CivilianAI has the behavior of closing doors behind them.  The other three OrderableAI classes don't do this
