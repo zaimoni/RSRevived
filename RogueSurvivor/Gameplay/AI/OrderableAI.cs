@@ -2345,6 +2345,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
+        var inv = map.GetItemsAt(point);
+        if (null != inv && !inv.IsEmpty && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
         int num1 = map.CountAdjacentTo(point, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
         int num2 = map.CountAdjacent<Fortification>(point, fortification => !fortification.IsTransparent);
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
