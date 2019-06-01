@@ -2665,7 +2665,7 @@ namespace djack.RogueSurvivor.Engine
           (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
           already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
-        });
+        },pt => AirdropWithoutIncident(map,pt));
 
       // \todo this should alert the ais to potential food/medikits if they hear it
       NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map,dropPoint));
@@ -2690,6 +2690,21 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Tile tileAt = map.GetTileAt(pt);
       return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,pt,SPAWN_DISTANCE_TO_PLAYER);
+    }
+
+    static private bool AirdropWithoutIncident(Map map, Point pt)  // XXX should be able to partially precalculate
+    {
+#if DEBUG
+      if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
+#endif
+      Tile tileAt = map.GetTileAt(pt);
+      if (   tileAt.IsInside || !tileAt.Model.IsWalkable        // VAPORWARE hit roof instead
+          || map.HasActorAt(pt))  // B-movies never hit anyone with an airdrop
+        return false;
+      var obj = map.GetMapObjectAt(pt);
+      if (null == obj) return true;
+      if (obj.IsWalkable || obj.IsJumpable) return true;    // RS Alpha rejected these.  They're not a harder landing than pavement.
+      return false; // tree, car on fire, or z-level issue (e.g., large fortifications)
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)

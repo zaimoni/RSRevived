@@ -1626,9 +1626,7 @@ retry:
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
-#if AUDIT_ITEM_INVARIANTS
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+      if (!GetTileModelAt(position).IsWalkable) throw new InvalidOperationException("tried to drop "+it+" on a wall at "+(new Location(this,position)));
 #endif
       Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null) {
