@@ -508,14 +508,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         while(0 < i--) {
           { // scope var p
           var p = _stacks[i];
-          if (m_Actor.Controller.CanSee(p.Location)) {
-            Inventory inv = p.Location.Items;
-            if (inv?.IsEmpty ?? true) {
+          Inventory inv = p.Location.Items;
+          if (    (inv?.IsEmpty ?? true)    // can crash otherwise in presence of bugs
+               || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
               _stacks.RemoveAt(i);
               continue;
             }
             _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
-          }
           } // end scope var p
           // XXX \todo some telepathic leakage since this isn't a value copy
           if (_stacks[i].Percepted.IsEmpty || !(m_Actor.Controller as OrderableAI).WouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {

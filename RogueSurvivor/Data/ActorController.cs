@@ -76,7 +76,9 @@ namespace djack.RogueSurvivor.Data
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
+        tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(loc));
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
+        if (0 >= tmp.Count) continue;
         if (Gameplay.GameItems.ranged.Contains(it)) {
           Engine.Items.ItemRangedWeaponModel model = Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel;
           var ammo = m_Actor.Inventory.GetItemsByType < Engine.Items.ItemAmmo >(am => am.AmmoType== model.AmmoType);
