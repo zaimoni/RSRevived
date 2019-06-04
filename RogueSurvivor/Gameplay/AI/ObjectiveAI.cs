@@ -291,6 +291,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Unset(SparseData.ClearingZone);
       var choke = GetChokepoint();
       if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
+      {
       var min_path_pt = GetMinStepPath<Point>();
       while(null != min_path_pt) {
         if (min_path_pt[0].Contains(m_Actor.Location.Position)) {
@@ -313,6 +314,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
           break;
         }
       }
+      }
+      {
+      var min_path_pt = GetMinStepPath<Location>();
+      while(null != min_path_pt) {
+        if (min_path_pt[0].Contains(m_Actor.Location)) {
+          min_path_pt.RemoveAt(0);
+          if (0 >= min_path_pt.Count) {
+            _sparse.Unset(SparseData.MinStepPath);
+            min_path_pt = null;
+            break;
+          }
+        }
+        var adjacent = min_path_pt[0].FindAll(pt => 1==Rules.InteractionDistance(pt,m_Actor.Location));
+        if (0<adjacent.Count) {
+          min_path_pt[0] = adjacent;
+          break;
+        }
+        min_path_pt.RemoveAt(0);
+        if (0 >= min_path_pt.Count) {
+          _sparse.Unset(SparseData.MinStepPath);
+          min_path_pt = null;
+          break;
+        }
+      }
+      }
+
     }
 
     // morally a constructor-type function
@@ -418,6 +445,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public LinearChokepoint GetChokepoint() { return _sparse.Get<LinearChokepoint>(SparseData.UsingChokepoint); }
 
     protected void RecordMinStepPath(List<List<Point>> src) {
+      if (null == src) return;
+      _sparse.Set(SparseData.MinStepPath,src);
+    }
+
+    protected void RecordMinStepPath(List<List<Location>> src) {
       if (null == src) return;
       _sparse.Set(SparseData.MinStepPath,src);
     }
@@ -1830,6 +1862,8 @@ restart:
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       PlanApproach(navigate);
+      var min_steps = navigate.MinStepPathTo(m_Actor.Location);
+      if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
       return ret;
     }
 
@@ -2144,7 +2178,6 @@ restart:
       }
       }
 
-
       { // Adaptation of prior "almost in view" heuristic for threat hunting
       int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
       double edge_of_maxrange = fov+1.5;
@@ -2238,6 +2271,50 @@ restart_single_exit:
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap, excluded))
          return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+      }
+
+      {
+      var path_pt = GetMinStepPath<Location>();
+      if (null != path_pt) {
+          int n = -1;
+          while(path_pt.Count > ++n) {
+            if (1<=n && path_pt[n].Any(pt => goals.Contains(pt))) {
+              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
+              var candidates = new List<List<ActionMoveDelta>>();
+              var stage2 = new List<ActionMoveDelta>();
+              { // scope brace for depth2
+              var depth2 = path_pt[1].FindAll(pt => goals.Contains(pt));
+              if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
+              if (0 >= depth2.Count) depth2 = path_pt[1];
+
+              foreach(var pt in path_pt[0]) {
+                if (!_legal_path.ContainsKey(pt)) continue;  // something wrong here
+                foreach(var pt2 in depth2) {
+                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  var act = new ActionMoveDelta(m_Actor, pt2, pt);
+                  if (!act.IsLegal()) continue;
+                  stage2.Add(act);
+                }
+              }
+              } // end scope brace for depth2
+              // check for min-cost two steps
+              var costs = new Dictionary<Location,int>();
+              var ok = new List<ActorAction>();
+              foreach(var loc in path_pt[0]) {
+                var considering = _legal_path[loc];
+                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                foreach(var act in stage2) {
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  costs[loc] = 1;
+                  ok.Add(considering);
+                  break;
+                }
+              }
+              if (1 == ok.Count) return ok[0];
+              if (0 < costs.Count) return DecideMove(costs);
+            }
+          }
+      }
       }
 
 #if TRACE_GOALS
@@ -2386,6 +2463,7 @@ restart_single_exit:
       if (null == goals) return;
       foreach(Percept p in goals) {
         if (p.Location==m_Actor.Location) continue; // trap has already triggered, or not: safe
+        if (p.Location.Map!=m_Actor.Location.Map) continue; // XXX will be misrecorded
         List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
         if (null == tmp) continue;
         int damage = tmp.Sum(trap => ((trap.IsActivated && !m_Actor.IsSafeFrom(trap)) ? trap.Model.Damage : 0));   // XXX wrong for barbed wire

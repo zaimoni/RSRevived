@@ -290,7 +290,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif
       if (null != tmpAction) return tmpAction;
 

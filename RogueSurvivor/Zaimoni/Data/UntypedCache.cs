@@ -14,11 +14,7 @@ namespace Zaimoni.Data
           if (null == _map) return default;
           if (!_map.TryGetValue(key, out var test)) return default;
           if (test is T ret) return ret;
-#if DEBUG
-          throw new InvalidOperationException("value is not of required type");
-#else
           return default;
-#endif
         }
 
         public void Unset(K key) {
