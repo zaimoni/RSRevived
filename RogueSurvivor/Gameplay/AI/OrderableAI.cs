@@ -504,6 +504,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var p = _stacks[i];
           Inventory inv = p.Location.Items;
           if (    (inv?.IsEmpty ?? true)    // can crash otherwise in presence of bugs
+               || !m_Actor.CanEnter(p.Location)
                || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
               _stacks.RemoveAt(i);
               continue;
@@ -559,6 +560,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Inventory inv = loc.Items;
         if (inv?.IsEmpty ?? true) return;
         if (!(m_Actor.Controller as OrderableAI).WouldGrabFromStack(loc, inv)) return;
+#if DEBUG
+        if (!m_Actor.CanEnter(loc)) throw new InvalidOperationException(m_Actor.Name+" wants inaccessible ground inventory at "+loc);
+#endif
 
         int i = _stacks.Count;
         // update if stack is present

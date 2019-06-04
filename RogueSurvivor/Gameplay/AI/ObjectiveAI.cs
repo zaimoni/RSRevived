@@ -2618,6 +2618,7 @@ restart_single_exit:
         if (!(p.Percepted is Inventory inv)) continue;
         if (p.Turn != t0) continue;    // not in sight
         if (m_Actor.StackIsBlocked(p.Location)) continue; // XXX ignore items under barricades or fortifications
+        if (!m_Actor.CanEnter(p.Location)) continue;    // XXX ignore buggy stack placement
         if (!BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true) {
           boringStacks.Add(p);
           continue;
