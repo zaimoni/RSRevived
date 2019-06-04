@@ -15,6 +15,7 @@ namespace djack.RogueSurvivor.Data
     protected string m_FailReason;
 
     public string FailReason { get { return m_FailReason; } }
+    public bool PerformedBy(Actor a) { return m_Actor == a; }
 
     protected ActorAction(Actor actor)
     {

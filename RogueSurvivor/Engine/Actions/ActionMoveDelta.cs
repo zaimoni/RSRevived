@@ -195,5 +195,10 @@ namespace djack.RogueSurvivor.Engine.Actions
       // \todo: handle pulling allies instead of just move-stepping, or pulling pushable objects
       return working;
     }
+
+    public override string ToString()
+    {
+       return "moving: " + m_Origin + " to " + m_NewLocation;
+    }
   }
 }

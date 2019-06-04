@@ -213,6 +213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected List<Point> _run_retreat = null;
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
+    [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -332,6 +333,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _legal_path = m_Actor.OnePath(m_Actor.Location);
       _legal_path.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
       if (0 >= _legal_path.Count) _legal_path = null;
+      if (null!=_last_move && _last_move.dest!=m_Actor.Location) _last_move = null;
+    }
+
+    protected override void RecordLastAction(ActorAction act) {
+      if (null != act && act.PerformedBy(m_Actor) && act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {
+        ActionMoveDelta record = act as ActionMoveDelta;
+        if (null == record) {    // the one type that actually knows the origin; the legacy actions don't. \todo savefile break: require ActorDest to provide origin as well and thus avoid this
+          record = new ActionMoveDelta(m_Actor,dest.dest);
+        }
+        _last_move = record;
+      }
     }
 
     public int RiskAt(Location loc) {
@@ -2004,7 +2016,13 @@ restart:
       }
       force_polite(goals);
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
+#if DEBUG
+      var act = BehaviorPathTo(goals);
+      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
+      return act;
+#else
       return BehaviorPathTo(goals);
+#endif
     }
 
     public ActorAction BehaviorPathTo(HashSet<Location> goals)

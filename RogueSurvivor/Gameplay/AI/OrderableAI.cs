@@ -2214,7 +2214,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
 
+#if DEBUG
+      var act = BehaviorPathTo(new HashSet<Location> { dest });
+      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
+      return act;
+#else
       return BehaviorPathTo(new HashSet<Location> { dest });
+#endif
+
 	}
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)

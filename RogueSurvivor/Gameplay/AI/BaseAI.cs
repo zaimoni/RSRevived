@@ -65,6 +65,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override bool IsMyTurn() { return _processing; }
 
+    protected virtual void RecordLastAction(ActorAction act) { }    // no-op at this level
+
     public override ActorAction GetAction(RogueGame game)
     {
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
@@ -82,6 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ai.ScheduleFollowup(actorAction);
       }
       ResetAICache();
+      RecordLastAction(actorAction);
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
       return actorAction ?? new ActionWait(m_Actor);    // likely redundant
     }
