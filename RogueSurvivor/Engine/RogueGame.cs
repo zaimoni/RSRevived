@@ -2703,8 +2703,9 @@ namespace djack.RogueSurvivor.Engine
         return false;
       var obj = map.GetMapObjectAt(pt);
       if (null == obj) return true;
+      if (obj.IsOnFire) return false;   // incinerated?
       if (obj.IsWalkable || obj.IsJumpable) return true;    // RS Alpha rejected these.  They're not a harder landing than pavement.
-      return false; // tree, car on fire, or z-level issue (e.g., large fortifications)
+      return false; // tree, or z-level issue (e.g., large fortifications)
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)

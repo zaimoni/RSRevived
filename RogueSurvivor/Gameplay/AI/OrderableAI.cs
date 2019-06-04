@@ -495,16 +495,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         newStack(loc);
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      /// <returns>true if and only if no stacks remain</returns>
+      private bool _removeInvalidStacks()
       {
-        ret = null;
         int i = _stacks.Count;
-        if (0 >= i) {
-          _isExpired = true;
-          return true;
-        }
-
-        // update if stack is actually in sight
         while(0 < i--) {
           { // scope var p
           var p = _stacks[i];
@@ -522,8 +516,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             continue;
           }
         }
-        // at this point, all stacks appear valid and interesting
-        if (0 >= _stacks.Count) {
+        return 0 >= _stacks.Count;
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+
+        if (_removeInvalidStacks()) {
           _isExpired = true;
           return true;
         }
@@ -575,11 +575,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public ActorAction Pathing()
       {
+        if (_removeInvalidStacks()) return null;
         var _locs = _stacks.Select(p => p.Location).Where(loc => null==loc.Actor);
         if (!_locs.Any()) return null;
 
-        var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
-        return (ret?.IsLegal() ?? false) ? ret : null;
+        var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(new HashSet<Location>(_locs));
+        return (ret?.IsPerformable() ?? false) ? ret : null;
       }
 
       public override string ToString()
@@ -2269,6 +2270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (clan.Any(a => loc == a.Location)) continue;
       }
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
+      _last_move = null;    // since we are very random in our destination, period-2 move loops are expected
 
 	  ActorAction actorAction = BehaviorPathTo(loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
