@@ -186,7 +186,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
       CloseToActor,
       ClearingZone,
-      UsingChokepoint
+      UsingChokepoint,
+      MinStepPath   // may be either List<List<Point>> or List<List<Location>>
     };
 
     public enum ZeroAryBehaviors {
@@ -290,6 +291,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Unset(SparseData.ClearingZone);
       var choke = GetChokepoint();
       if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
+      var min_path_pt = GetMinStepPath<Point>();
+      while(null != min_path_pt) {
+        if (min_path_pt[0].Contains(m_Actor.Location.Position)) {
+          min_path_pt.RemoveAt(0);
+          if (0 >= min_path_pt.Count) {
+            _sparse.Unset(SparseData.MinStepPath);
+            min_path_pt = null;
+            break;
+          }
+        }
+        var adjacent = min_path_pt[0].FindAll(pt => 1==Rules.GridDistance(pt,m_Actor.Location.Position));
+        if (0<adjacent.Count) {
+          min_path_pt[0] = adjacent;
+          break;
+        }
+        min_path_pt.RemoveAt(0);
+        if (0 >= min_path_pt.Count) {
+          _sparse.Unset(SparseData.MinStepPath);
+          min_path_pt = null;
+          break;
+        }
+      }
     }
 
     // morally a constructor-type function
@@ -393,6 +416,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Set(SparseData.UsingChokepoint, src);
     }
     public LinearChokepoint GetChokepoint() { return _sparse.Get<LinearChokepoint>(SparseData.UsingChokepoint); }
+
+    protected void RecordMinStepPath(List<List<Point>> src) {
+      if (null == src) return;
+      _sparse.Set(SparseData.MinStepPath,src);
+    }
+
+    public List<List<T>> GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
 
     public ZoneLoc ClearingThisZone() {
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
@@ -1732,6 +1762,8 @@ restart:
       ActorAction ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
+      var min_steps = navigate.MinStepPathTo(m_Actor.Location.Position);
+      if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
       return ret;
     }
 
@@ -2062,6 +2094,56 @@ restart:
         }
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
       }
+
+      // check for pre-existing relevant path
+      {
+      var path_pt = GetMinStepPath<Point>();
+      if (null != path_pt) {
+        var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(loc => loc.Position);
+        if (this_map_goals.Any()) {
+          int n = -1;
+          while(path_pt.Count > ++n) {
+            if (1<=n && path_pt[n].Any(pt => this_map_goals.Contains(pt))) {
+              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
+              var candidates = new List<List<ActionMoveDelta>>();
+              var stage2 = new List<ActionMoveDelta>();
+              { // scope brace for depth2
+              var depth2 = path_pt[1].FindAll(pt => this_map_goals.Contains(pt));
+              if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => this_map_goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
+              if (0 >= depth2.Count) depth2 = path_pt[1];
+
+              foreach(var pt in path_pt[0]) {
+                if (!_legal_path.ContainsKey(new Location(m_Actor.Location.Map,pt))) continue;  // something wrong here
+                foreach(var pt2 in depth2) {
+                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  var act = new ActionMoveDelta(m_Actor, new Location(m_Actor.Location.Map, pt2), new Location(m_Actor.Location.Map,pt));
+                  if (!act.IsLegal()) continue;
+                  stage2.Add(act);
+                }
+              }
+              } // end scope brace for depth2
+              // check for min-cost two steps
+              var costs = new Dictionary<Point,int>();
+              var ok = new List<ActorAction>();
+              foreach(var pt in path_pt[0]) {
+                var loc = new Location(m_Actor.Location.Map, pt);
+                var considering = _legal_path[loc];
+                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                foreach(var act in stage2) {
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  costs[pt] = 1;
+                  ok.Add(considering);
+                  break;
+                }
+              }
+              if (1 == ok.Count) return ok[0];
+              if (0 < costs.Count) return DecideMove(costs);
+            }
+          }
+        }
+      }
+      }
+
 
       { // Adaptation of prior "almost in view" heuristic for threat hunting
       int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);

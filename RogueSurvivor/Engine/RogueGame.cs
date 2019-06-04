@@ -9287,9 +9287,6 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
     {
-#if DEBUG
-      if (actor.IsDebuggingTarget && it is ItemTracker tr && tr.CanTrackFollowersOrLeader) throw new InvalidOperationException("tracing");
-#endif
       it.Unequip();
       actor.OnUnequipItem(it);
       if (!canMessage) return;
