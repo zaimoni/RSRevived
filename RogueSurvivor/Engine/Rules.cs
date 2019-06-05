@@ -296,12 +296,9 @@ namespace djack.RogueSurvivor.Engine
 
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.COURAGEOUS;  // need this to be inoperative for z
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous) {
-        int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,actor);
-        if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
-          reason = "deathtrapped";
-          return null;
-        }
+      if (!imStarvingOrCourageous && 1>=actor.Controller.FastestTrapKill(loc)) {
+        reason = "deathtrapped";
+        return null;
       }
 
       var actors_in_way = actor.GetMoveBlockingActors(point);
@@ -422,12 +419,9 @@ namespace djack.RogueSurvivor.Engine
 
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous) {
-        int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,actor);
-        if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
-          reason = "deathtrapped";
-          return null;
-        }
+      if (!imStarvingOrCourageous && 1 >= actor.Controller.FastestTrapKill(loc)) {
+        reason = "deathtrapped";
+        return null;
       }
 
       // unclear whether B_MOVIE_MARTIAL_ARTS requires pathfinding changes or not; changes would go here

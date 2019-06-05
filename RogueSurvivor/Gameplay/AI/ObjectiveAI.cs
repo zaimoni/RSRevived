@@ -1157,7 +1157,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool VetoAction(ActorAction x)
     {
-      if (x is ActorDest a_dest && a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
+      if (x is ActorDest a_dest) {
+        if (a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
+        if (1>=FastestTrapKill(a_dest.dest)) return true;   // death-trapped
+      }
       if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
         foreach(var pt in close.Door.Location.Position.Adjacent()) {
@@ -1175,6 +1178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
 
         if (shove.a_dest.ChokepointIsContested(m_Actor)) return true; // \todo change to interface-based if pulling actors is implemented
+        if (1>= shove.Target.Controller.FastestTrapKill(shove.a_dest)) return true;   // death-trapped
 
         if (shove.Target.Controller is ObjectiveAI ai) {
           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
@@ -2168,8 +2172,7 @@ restart:
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
                   var act = new ActionMoveDelta(m_Actor, new Location(m_Actor.Location.Map, pt2), new Location(m_Actor.Location.Map,pt));
-                  if (!act.IsLegal()) continue;
-                  stage2.Add(act);
+                  if (act.IsLegal()) stage2.Add(act);
                 }
               }
               } // end scope brace for depth2
@@ -2650,14 +2653,14 @@ restart_single_exit:
       return examineStacks.FilterT<Inventory>().FilterOut(p => {
           if (IsOccupiedByOther(p.Location)) return true; // blocked
           if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
-            if (!imStarvingOrCourageous && map.TrapsMaxDamageAtFor(p.Location.Position,m_Actor) >= m_Actor.HitPoints) return true;  // destination deathtrapped
+            if (!imStarvingOrCourageous && 1>=m_Actor.Controller.FastestTrapKill(p.Location)) return true;  // destination deathtrapped
             // check for iron gates, etc in way
             List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
             if (null == path) return true;
             List<Point> test = path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt)));
             if (0 >= test.Count) return true;
             path[0] = test;
-            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAtFor(pt,m_Actor) >= m_Actor.HitPoints)) return true;
+            if (!imStarvingOrCourageous && path[0].Any(pt=> 1>=m_Actor.Controller.FastestTrapKill(new Location(map,pt)))) return true;
           }
           return false;
         });

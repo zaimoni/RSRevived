@@ -404,10 +404,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
-          int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA,m_Actor);
-          if (trapsMaxDamage > 0) {
-            return (trapsMaxDamage >= m_Actor.HitPoints) ? float.NaN : dist+ MOVE_INTO_TRAPS_PENALTY;
-          }
+          var loc = new Location(m_Actor.Location.Map, ptA);
+          if (!loc.ForceCanonical()) return float.NaN;
+          var turns_to_fatality = m_Actor.Controller.FastestTrapKill(loc);
+          if (1 >= turns_to_fatality) return float.NaN;
+          if (int.MaxValue > turns_to_fatality) return dist + MOVE_INTO_TRAPS_PENALTY;
           return dist;
       });
        

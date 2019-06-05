@@ -872,6 +872,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.WouldLikeToSleep && m_Actor.CanSleep();
     } }
 
+    public override int FastestTrapKill(Location loc)
+    {
+      if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage) return int.MaxValue;
+      int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,m_Actor);
+      if (0 >= trapsMaxDamage) return int.MaxValue;
+      return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
+    }
+
     public void SetOrder(ActorOrder newOrder)
     {
       m_Order = newOrder;
