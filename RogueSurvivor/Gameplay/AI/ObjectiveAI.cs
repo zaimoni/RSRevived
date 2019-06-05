@@ -37,9 +37,11 @@ using ActionRechargeItemBattery = djack.RogueSurvivor.Engine.Actions.ActionRecha
 using ActionShove = djack.RogueSurvivor.Engine.Actions.ActionShove;
 using ActionSwitchPowerGenerator = djack.RogueSurvivor.Engine.Actions.ActionSwitchPowerGenerator;
 using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
+using ActionTakeItem = djack.RogueSurvivor.Engine.Actions.ActionTakeItem;
 using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
 using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
 using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
+using ActionTrade = djack.RogueSurvivor.Engine.Actions.ActionTrade;
 using ActionTradeWithContainer = djack.RogueSurvivor.Engine.Actions.ActionTradeWithContainer;
 using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
 using Resolvable = djack.RogueSurvivor.Engine.Actions.Resolvable;
@@ -387,12 +389,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected override void RecordLastAction(ActorAction act) {
-      if (null != act && act.PerformedBy(m_Actor) && act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {
+      if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
+      if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
         ActionMoveDelta record = act as ActionMoveDelta;
         if (null == record) {    // the one type that actually knows the origin; the legacy actions don't. \todo savefile break: require ActorDest to provide origin as well and thus avoid this
           record = new ActionMoveDelta(m_Actor,dest.dest);
         }
         _last_move = record;
+        return;
+      }
+      if (act is ActionTake || act is ActionTakeItem || act is ActionTradeWithContainer || act is ActionTrade) {
+        // these actions are inventory-altering and will invalidate inventory-based pathing
+        _last_move = null;
+        return;
       }
     }
 
