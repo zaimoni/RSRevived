@@ -504,20 +504,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
         // we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
         // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
-        var items = items_in_FOV;
-        if (null != items) {
-          foreach(var x in items) {
-           if (x.Value.IsEmpty) continue;
-           if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-           Inventory inv = x.Key.Items;
-           if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(x.Key, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
-             ret |= ReactionCode.ITEM;
-             break;
-           }
+        // note that due to critical ai issues, soldiers and CHAR guards do not trade or intentionally seek out ground inventories.
+        // Active research into removing this debilitating effect of the no-eating conversion serum was being conducted when the z-apocalypse hit.
+        if (m_Actor.Model.Abilities.CanTrade) {
+          var items = items_in_FOV;
+          if (null != items) {
+            foreach(var x in items) {
+             if (x.Value.IsEmpty) continue;
+             if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
+             Inventory inv = x.Key.Items;
+             if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(x.Key, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
+               ret |= ReactionCode.ITEM;
+               break;
+             }
+            }
           }
+          // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
+          if (HaveTradingTargets()) ret |= ReactionCode.TRADE;
         }
-        // \todo we should also interrupt if there is a valid trading apportunity in sight (this is suppressed by an enemy in sight)
-        if (HaveTradingTargets()) ret |= ReactionCode.TRADE;
         return ret;
     }
 
@@ -1857,6 +1861,8 @@ restart:
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+(act?.ToString() ?? null)+"; "+ (act?.IsLegal() ?? false));
 #endif
           if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
+          var min_steps = navigate.MinStepPathTo(m_Actor.Location);
+          if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
           return act;
         }
         if (0 < path[0].Count) {
@@ -1871,8 +1877,10 @@ restart:
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       PlanApproach(navigate);
+      {
       var min_steps = navigate.MinStepPathTo(m_Actor.Location);
       if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
+      }
       return ret;
     }
 
@@ -2327,7 +2335,7 @@ restart_single_exit:
       }
 
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s());
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s()+", "+excluded.to_s());
 #endif
       return BehaviorPathTo(PathfinderFor(goal_costs,excluded));
     }

@@ -424,7 +424,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public override string ToString()
       {
-        return "Securing area";
+        return "Securing area"+ _target_locs.to_s();
       }
     }
 
