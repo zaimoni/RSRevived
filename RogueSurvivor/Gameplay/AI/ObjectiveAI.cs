@@ -2178,7 +2178,7 @@ restart:
               var ok = new List<ActorAction>();
               foreach(var pt in path_pt[0]) {
                 var loc = new Location(m_Actor.Location.Map, pt);
-                var considering = _legal_path[loc];
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
                 if (1<Map.PathfinderMoveCosts(considering)) continue;
                 foreach(var act in stage2) {
                   if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
@@ -2318,7 +2318,7 @@ restart_single_exit:
               var costs = new Dictionary<Location,int>();
               var ok = new List<ActorAction>();
               foreach(var loc in path_pt[0]) {
-                var considering = _legal_path[loc];
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
                 if (1<Map.PathfinderMoveCosts(considering)) continue;
                 foreach(var act in stage2) {
                   if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
