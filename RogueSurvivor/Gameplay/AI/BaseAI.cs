@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
 #if PROTOTYPE
         ActorAction alt = ai.RewriteAction(actorAction);
-        if (alt?.IsLegal() ?? false) actorAction = alt;
+        if (alt?.IsPerformable() ?? false) actorAction = alt;
 #endif
         ai.ScheduleFollowup(actorAction);
       }

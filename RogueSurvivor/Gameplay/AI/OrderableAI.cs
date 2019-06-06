@@ -2226,15 +2226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
-
-#if DEBUG
-      var act = BehaviorPathTo(new HashSet<Location> { dest });
-      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
-      return act;
-#else
       return BehaviorPathTo(new HashSet<Location> { dest });
-#endif
-
 	}
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
@@ -2282,7 +2274,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (clan.Any(a => loc == a.Location)) continue;
       }
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
-      _last_move = null;    // since we are very random in our destination, period-2 move loops are expected
 
 	  ActorAction actorAction = BehaviorPathTo(loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only

@@ -189,7 +189,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       CloseToActor,
       ClearingZone,
       UsingChokepoint,
-      MinStepPath   // may be either List<List<Point>> or List<List<Location>>
+      MinStepPath,   // may be either List<List<Point>> or List<List<Location>>
+      PathingTo
     };
 
     public enum ZeroAryBehaviors {
@@ -217,6 +218,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
     [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest
+    [NonSerialized] protected bool _used_advanced_pathing = false;
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -284,6 +286,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _run_retreat = null;
       _safe_retreat = false;
       _safe_run_retreat = false;
+      _used_advanced_pathing = false;
     }
 
     public void SparseReset()
@@ -473,6 +476,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RecordMinStepPath(List<List<Location>> src) {
       if (null == src) return;
       _sparse.Set(SparseData.MinStepPath,src);
+    }
+
+    public HashSet<Location> GetPreviousGoals() { return _sparse.Get<HashSet<Location>>(SparseData.PathingTo); }
+
+    protected void RecordGoals(HashSet<Location> src) {
+      if (null == src) return;
+      _sparse.Set(SparseData.PathingTo,src);
+      _used_advanced_pathing = true;
     }
 
     public List<List<T>> GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
@@ -1229,8 +1240,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void ScheduleFollowup(ActorAction x)
     {
+      // recursions
       if (x is Resolvable resolve) { ScheduleFollowup(resolve.ConcreteAction); return; }
       if (x is ActionBump bump) { ScheduleFollowup(bump.ConcreteAction); return; }
+      // inline ClearGoals body here -- this is called at the right place
+      if (x is ActorDest && !_used_advanced_pathing) _sparse.Unset(SparseData.PathingTo);
+      // proper handling
       if (x is ActionMoveStep step) {
         // Historically, CivilianAI has the behavior of closing doors behind them.  The other three OrderableAI classes don't do this
         // refine the historical behavior to not happen in-combat (bad for CHAR base assault, good for most other combat situations)
@@ -1554,7 +1569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var where_to_go = obtain_goals(dest);
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s()+" for "+dest);
 #endif
 
       // upper/lower bounds; using X as lower, Y as upper bound
@@ -1569,7 +1584,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (0 >= obtain_goals(m).Count) maps.Remove(m);
           }
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for exit short-circuit  of " + dest);
 #endif
         }
         if (1==maps.Count && 0==goals.Count) {
@@ -1621,7 +1636,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         obtain_goals(m);
 #if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s());
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for " + m);
 #endif
         schedule_maps(m);
 
@@ -2070,6 +2085,25 @@ restart:
         return new KeyValuePair<Dictionary<Location, int>, Dictionary<Location, int>>(safe_exposed,exposed);
     }
 
+    private ActorAction _recordPathfinding(ActorAction act, HashSet<Location> goals)
+    {
+      if (null != act) {
+#if DEBUG
+        var old = GetPreviousGoals();
+        bool materially_changed = (null==old || old.Count!=goals.Count);    // function target: value equality of hashset
+        if (!materially_changed) {
+          foreach(var loc in old) if (!goals.Contains(loc)) {
+            materially_changed = true;
+            break;
+          }
+        }   // end function target
+        if (!materially_changed && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
+#endif
+        RecordGoals(goals);
+      }
+      return act;
+    }
+
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
@@ -2115,13 +2149,7 @@ restart:
       }
       force_polite(goals);
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
-#if DEBUG
-      var act = BehaviorPathTo(goals);
-      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
-      return act;
-#else
-      return BehaviorPathTo(goals);
-#endif
+      return _recordPathfinding(BehaviorPathTo(goals),goals);
     }
 
     public ActorAction BehaviorPathTo(HashSet<Location> goals)
@@ -2202,8 +2230,8 @@ restart:
                   break;
                 }
               }
-              if (1 == ok.Count) return ok[0];
-              if (0 < costs.Count) return DecideMove(costs);
+              if (1 == ok.Count) return _recordPathfinding(ok[0],goals);
+              if (0 < costs.Count) return _recordPathfinding(DecideMove(costs),goals);
             }
           }
         }
@@ -2235,8 +2263,8 @@ restart:
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
         if (goals_in_sight.Value.ContainsKey(m_Actor.Location)) {   // already had goal in sight; not an error condition
-        } else if (0<goals_in_sight.Key.Count) return GreedyStep(goals_in_sight.Key, dist_to_all_goals);   // expose goals safely
-        else if (0<goals_in_sight.Value.Count) return GreedyStep(goals_in_sight.Value, dist_to_all_goals);   // expose goals unsafely
+        } else if (0<goals_in_sight.Key.Count) return _recordPathfinding(GreedyStep(goals_in_sight.Key, dist_to_all_goals),goals);   // expose goals safely
+        else if (0<goals_in_sight.Value.Count) return _recordPathfinding(GreedyStep(goals_in_sight.Value, dist_to_all_goals),goals);   // expose goals unsafely
       }
       }
       }
@@ -2247,7 +2275,7 @@ restart:
        // remove a degenerate case from consideration
        if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
          && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past single map pathfinder reduction");
 #endif
@@ -2277,7 +2305,7 @@ restart_single_exit:
         // 2019-01-13: triggers on subways (diagonal connectors not generated properly)
         if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
           if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First(),excluded))
-            return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
+            return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
           goto restart_single_exit;
         }
       }
@@ -2288,7 +2316,7 @@ restart_single_exit:
         if (m_Actor.Location.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
 #endif
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap, excluded))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
       }
       var in_hospital = Session.Get.UniqueMaps.NavigateHospital(m_Actor.Location.Map);
       if (null==in_hospital) {
@@ -2296,13 +2324,13 @@ restart_single_exit:
         if (m_Actor.Location.Map != Session.Get.UniqueMaps.Hospital_Power.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
 #endif
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap, excluded))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Patients.TheMap, Session.Get.UniqueMaps.Hospital_Offices.TheMap, excluded))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Offices.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, excluded))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
         if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap, excluded))
-         return BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position)));;
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
       }
 
       {
@@ -2342,8 +2370,8 @@ restart_single_exit:
                   break;
                 }
               }
-              if (1 == ok.Count) return ok[0];
-              if (0 < costs.Count) return DecideMove(costs);
+              if (1 == ok.Count) return _recordPathfinding(ok[0],goals);
+              if (0 < costs.Count) return _recordPathfinding(DecideMove(costs),goals);
             }
           }
       }
@@ -2352,7 +2380,7 @@ restart_single_exit:
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s()+", "+excluded.to_s());
 #endif
-      return BehaviorPathTo(PathfinderFor(goal_costs,excluded));
+      return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs,excluded)),goals);
     }
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)
