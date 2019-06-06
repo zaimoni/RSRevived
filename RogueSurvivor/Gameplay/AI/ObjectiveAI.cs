@@ -293,55 +293,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Unset(SparseData.ClearingZone);
       var choke = GetChokepoint();
       if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
-      {
-      var min_path_pt = GetMinStepPath<Point>();
-      while(null != min_path_pt) {
-        if (min_path_pt[0].Contains(m_Actor.Location.Position)) {
-          min_path_pt.RemoveAt(0);
-          if (0 >= min_path_pt.Count) {
-            _sparse.Unset(SparseData.MinStepPath);
-            min_path_pt = null;
+
+      bool reject_path_pt(List<List<Point>> min_path) {
+        if (null == min_path) return false;
+        int i = min_path.Count;
+        bool known_adjacent = false;
+        while(0 < i--) {
+          if (min_path[i].Any(pt => 1>=FastestTrapKill(new Location(m_Actor.Location.Map,pt)))) {
+            var nonlethal = min_path[i].FindAll(pt => 1<FastestTrapKill(new Location(m_Actor.Location.Map,pt)));
+            if (0 >= nonlethal.Count) return true;
+            min_path[i] = nonlethal;
+          }
+          if (min_path[i].Any(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt))) {
+            known_adjacent = true;
+            var adjacent = min_path[i].FindAll(pt => 1 == Rules.GridDistance(m_Actor.Location.Position, pt));
+            if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
+            if (0 < i) min_path.RemoveRange(0,i);
+            break;
+          }
+          if (min_path[i].Contains(m_Actor.Location.Position)) {
+            min_path.RemoveRange(0,i+1);
             break;
           }
         }
-        var adjacent = min_path_pt[0].FindAll(pt => 1==Rules.GridDistance(pt,m_Actor.Location.Position));
-        if (0<adjacent.Count) {
-          min_path_pt[0] = adjacent;
-          break;
-        }
-        min_path_pt.RemoveAt(0);
-        if (0 >= min_path_pt.Count) {
-          _sparse.Unset(SparseData.MinStepPath);
-          min_path_pt = null;
-          break;
-        }
-      }
-      }
-      {
-      var min_path_pt = GetMinStepPath<Location>();
-      while(null != min_path_pt) {
-        if (min_path_pt[0].Contains(m_Actor.Location)) {
-          min_path_pt.RemoveAt(0);
-          if (0 >= min_path_pt.Count) {
-            _sparse.Unset(SparseData.MinStepPath);
-            min_path_pt = null;
-            break;
-          }
-        }
-        var adjacent = min_path_pt[0].FindAll(pt => 1==Rules.InteractionDistance(pt,m_Actor.Location));
-        if (0<adjacent.Count) {
-          min_path_pt[0] = adjacent;
-          break;
-        }
-        min_path_pt.RemoveAt(0);
-        if (0 >= min_path_pt.Count) {
-          _sparse.Unset(SparseData.MinStepPath);
-          min_path_pt = null;
-          break;
-        }
-      }
+        if (0 >= min_path.Count) return true;
+        if (known_adjacent) return false;
+        // \todo could try to reconnect
+        return true;
       }
 
+      bool reject_path_loc(List<List<Location>> min_path) {
+        if (null == min_path) return false;
+        int i = min_path.Count;
+        bool known_adjacent = false;
+        while(0 < i--) {
+          if (min_path[i].Any(pt => 1>=FastestTrapKill(pt))) {
+            var nonlethal = min_path[i].FindAll(pt => 1<FastestTrapKill(pt));
+            if (0 >= nonlethal.Count) return true;
+            min_path[i] = nonlethal;
+          }
+          if (min_path[i].Any(pt => 1==Rules.GridDistance(m_Actor.Location,pt))) {
+            known_adjacent = true;
+            var adjacent = min_path[i].FindAll(pt => 1 == Rules.GridDistance(m_Actor.Location, pt));
+            if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
+            if (0 < i) min_path.RemoveRange(0,i);
+            break;
+          }
+          if (min_path[i].Contains(m_Actor.Location)) {
+            min_path.RemoveRange(0,i+1);
+            break;
+          }
+        }
+        if (0 >= min_path.Count) return true;
+        if (known_adjacent) return false;
+        // \todo could try to reconnect
+        return true;
+      }
+
+      if (reject_path_pt(GetMinStepPath<Point>()) || reject_path_loc(GetMinStepPath<Location>())) {
+        _sparse.Unset(SparseData.MinStepPath);
+        _last_move = null;
+      }
     }
 
     // morally a constructor-type function
