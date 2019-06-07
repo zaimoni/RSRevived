@@ -2256,10 +2256,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
+
+      var clan = m_Actor.ChainOfCommand;
+
+      // Historically, this has been a repeated hot-spot for period-2 move loops, and also has had other unwanted behaviors.
+#region 1) if we're out of range, get within range
+      if (maxDist < Rules.GridDistance(m_Actor.Location,other.Location)) {
+        int span = 2 * maxDist + 1;
+        var rect = new Rectangle(other.Location.Position.X-maxDist,other.Location.Position.Y-maxDist, span, span);
+        var goals = new HashSet<Location>();
+        rect.DoForEach(pt => {
+            var loc2 = new Location(other.Location.Map, pt);
+            if (!loc2.ForceCanonical()) return;
+            if (clan.Any(a => loc2 == a.Location)) return;
+            if (minDist > Rules.GridDistance(loc2, other.Location)) return; // no-op if minDist is 1
+            if (!loc2.IsWalkableFor(m_Actor)) return;
+            goals.Add(loc2);
+        });
+        if (0 < goals.Count) {
+       	  var act = BehaviorPathTo(goals);
+          if (null == act || !act.IsPerformable()) return null; // direct-returned from SelectAction only
+          if (act is ActionMoveStep step) m_Actor.IsRunning = RunIfAdvisable(step.dest);
+          return act;
+        }
+      }
+#endregion
+
       var rules = RogueForm.Game.Rules;
       int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
 
-      var clan = m_Actor.ChainOfCommand;
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
@@ -2278,7 +2303,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  ActorAction actorAction = BehaviorPathTo(loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
       if (actorAction is ActionMoveStep tmp) {
-        if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)
+        if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)   // no-op by construction; retaining this as placeholder for run logic refinement
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest);
 	  }
       return actorAction;
