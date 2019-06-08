@@ -2421,15 +2421,15 @@ namespace djack.RogueSurvivor.Data
       // we don't check actors as this is a "is this valid, ever" test
       var mapObjectAt = loc.Map.GetMapObjectAtExt(loc.Position);
       if (mapObjectAt?.IsWalkable ?? true) return true;
-      if (mapObjectAt.IsJumpable && Model.Abilities.CanJump) return true;
-      // have to inline relevant parts of Actor::CanPush
-      if (mapObjectAt.IsMovable && !mapObjectAt.IsOnFire && AbleToPush) return true;
+      if (mapObjectAt.IsJumpable) return Model.Abilities.CanJump;
       if (mapObjectAt is DoorWindow door) {
         if (door.IsClosed && Model.Abilities.IsSmall) return false; // seems redundant, rats also cannot open or bash
         // pathfinding livings will break barricaded doors (they'll prefer to go around it)
         if (door.BarricadePoints > 0) return CanBash(door) || Model.CanBreak(door);
         if (door.IsClosed) return CanOpen(door) || CanBash(door);
-      }
+      } else if (Model.Abilities.IsSmall) return true;
+      // have to inline relevant parts of Actor::CanPush
+      if (mapObjectAt.IsMovable && !mapObjectAt.IsOnFire && AbleToPush) return true;
       return false;
     }
 

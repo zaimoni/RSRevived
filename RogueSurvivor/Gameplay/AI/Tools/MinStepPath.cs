@@ -78,8 +78,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
         public MinStepPath(Actor a, Location src, Location dest) {
 #if DEBUG
-           if (!m_Actor.CanEnter(src)) throw new InvalidOperationException("must be able to exist at the origin");
-           if (!m_Actor.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
+           if (!a.CanEnter(src)) throw new InvalidOperationException("must be able to exist at the origin");
+           if (!a.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
 #endif
             m_Actor = a;
             stats = new MinStepPathStats(src, dest);

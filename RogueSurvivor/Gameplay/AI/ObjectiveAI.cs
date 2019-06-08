@@ -2088,7 +2088,6 @@ restart:
     private ActorAction _recordPathfinding(ActorAction act, HashSet<Location> goals)
     {
       if (null != act) {
-#if DEBUG
         var old = GetPreviousGoals();
         bool materially_changed = (null==old || old.Count!=goals.Count);    // function target: value equality of hashset
         if (!materially_changed) {
@@ -2097,8 +2096,29 @@ restart:
             break;
           }
         }   // end function target
-        if (!materially_changed && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
+        if (!materially_changed && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+          bool altered = false;
+          foreach(var target in goals) {
+            var denorm = m_Actor.Location.Map.Denormalize(target);
+            if (null == denorm) continue;
+            var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, target);
+            foreach(var dir in stats.stats.advancing) {
+              var loc = m_Actor.Location+dir;
+              if (!loc.ForceCanonical()) continue;
+              if (loc == test.dest) continue;
+              if (!_legal_path.TryGetValue(loc,out var alt_act)) continue;
+              if (1 >= FastestTrapKill(loc)) continue;
+              act = alt_act;
+              test = alt_act as ActorDest;
+              altered = true;
+              break;
+            }
+            if (altered) break;
+          }
+#if DEBUG
+          if (null != test && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop: "+_last_move+", "+act);
 #endif
+        }
         RecordGoals(goals);
       }
       return act;
