@@ -37,7 +37,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public IEnumerable<Map> Maps { get { return m_Maps; } }
-    public int CountMaps { get { return m_Maps.Count; } }
 
     public Map EntryMap {
       get {
@@ -203,7 +202,7 @@ namespace djack.RogueSurvivor.Data
     public int PlayerCorpseCount {
       get {
         int ret = 0;
-        foreach(Map tmp in Maps) {
+        foreach(Map tmp in m_Maps) {
           ret += tmp.PlayerCorpseCount;
         }
         return ret;
@@ -214,7 +213,7 @@ namespace djack.RogueSurvivor.Data
     public int PlayerCount {
       get {
         int ret = 0;
-        foreach(Map tmp in Maps) {
+        foreach(Map tmp in m_Maps) {
           ret += tmp.PlayerCount;
         }
         return ret;
@@ -222,7 +221,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Actor FindPlayer(Map already_failed) {
-       foreach(Map tmp in Maps) {
+       foreach(Map tmp in m_Maps) {
          if (tmp == already_failed) continue;
          Actor tmp2 = tmp.FindPlayer;
          if (null != tmp2) return tmp2;
@@ -235,7 +234,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      foreach(Map map in Maps) {
+      foreach(Map map in m_Maps) {
         if (map == already_failed) continue;
         if (map.MessagePlayerOnce(fn,pred)) return true;
       }
@@ -245,7 +244,7 @@ namespace djack.RogueSurvivor.Data
     public bool ReadyForNextTurn
     {
       get {
-        foreach(Map tmp in Maps) {
+        foreach(Map tmp in m_Maps) {
           if (!tmp.IsSecret && null != tmp.NextActorToAct) return false;
         }
         return true;
@@ -254,7 +253,7 @@ namespace djack.RogueSurvivor.Data
 
     public void EndTurn()
     {
-        foreach(Map m in Maps) {
+        foreach(Map m in m_Maps) {
           m.EndTurn();
         }
     }
@@ -264,7 +263,7 @@ namespace djack.RogueSurvivor.Data
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       m_EntryMap.DaimonMap(dest);   // name of this is also the district name
       m_SewersMap.DaimonMap(dest);
-      if (null!= m_SubwayMap) m_SubwayMap.DaimonMap(dest);
+      m_SubwayMap?.DaimonMap(dest);
       foreach(Map map in m_Maps) {
         if (map == m_EntryMap) continue;
         if (map == m_SewersMap) continue;
