@@ -217,8 +217,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected List<Point> _run_retreat = null;
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
-    [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest
+    [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest and actually put in the savefile
     [NonSerialized] protected bool _used_advanced_pathing = false;
+    [NonSerialized] protected bool _rejected_backtrack = false;
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -287,6 +288,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _safe_retreat = false;
       _safe_run_retreat = false;
       _used_advanced_pathing = false;
+      _rejected_backtrack = false;
     }
 
     public void SparseReset()
@@ -354,6 +356,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (reject_path_pt(GetMinStepPath<Point>()) || reject_path_loc(GetMinStepPath<Location>())) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) {
+            var pt_path = GetMinStepPath<Point>();
+            var loc_path = GetMinStepPath<Location>();
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing invalidated path "+(pt_path?.to_s() ?? loc_path.to_s()));
+        }
+#endif
         _sparse.Unset(SparseData.MinStepPath);
         _last_move = null;
       }
@@ -411,6 +420,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           record = new ActionMoveDelta(m_Actor,dest.dest);
         }
         _last_move = record;
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget)  Logger.WriteLine(Logger.Stage.RUN_MAIN, "recording "+record+" for "+act);
+#endif
         return;
       }
       if (act is ActionTake || act is ActionTakeItem || act is ActionTradeWithContainer || act is ActionTrade) {
@@ -418,6 +430,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _last_move = null;
         return;
       }
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget)  Logger.WriteLine(Logger.Stage.RUN_MAIN, "non-move "+act+" not recorded, leaving "+(_last_move?.ToString() ?? "null")+" in place");
+#endif
     }
 
     public int RiskAt(Location loc) {
@@ -450,6 +465,102 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return risk;
     }
 
+    private ActorAction UsePreexistingPath(HashSet<Location> goals=null)
+    {
+          {
+          var path_pt = GetMinStepPath<Point>();
+          if (null != path_pt && 2<=path_pt.Count) {
+              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
+              var candidates = new List<List<ActionMoveDelta>>();
+              var stage2 = new List<ActionMoveDelta>();
+
+              { // scope brace for depth2
+              var depth2 = path_pt[1];
+              if (null != goals) {
+                depth2 = path_pt[1].FindAll(pt => goals.Contains(new Location(m_Actor.Location.Map,pt)));
+                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2.Position,pt)));
+                if (0 >= depth2.Count) depth2 = path_pt[1];
+              }
+
+              foreach(var pt in path_pt[0]) {
+                var loc = new Location(m_Actor.Location.Map, pt);
+                if (!_legal_path.ContainsKey(loc)) continue;  // something wrong here
+                if (1 >= FastestTrapKill(loc)) continue;
+                foreach(var pt2 in depth2) {
+                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  var loc2 = new Location(m_Actor.Location.Map, pt2);
+                  if (1 >= FastestTrapKill(loc2)) continue;
+                  var act = new ActionMoveDelta(m_Actor, loc2, loc);
+                  if (!act.IsLegal()) continue;
+                  stage2.Add(act);
+                }
+              }
+              } // end scope brace for depth2
+              // check for min-cost two steps
+              var costs = new Dictionary<Location,int>();
+              var ok = new List<ActorAction>();
+              foreach(var pt in path_pt[0]) {
+                var loc = new Location(m_Actor.Location.Map, pt);
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
+                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                foreach(var act in stage2) {
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  costs[loc] = 1;
+                  ok.Add(considering);
+                  break;
+                }
+              }
+              if (1 == ok.Count) return ok[0];
+              if (0 < costs.Count) return DecideMove(costs);
+          }
+          }
+          {
+          var path_pt = GetMinStepPath<Location>();
+          if (null != path_pt && 2 <= path_pt.Count) {
+              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
+              var candidates = new List<List<ActionMoveDelta>>();
+              var stage2 = new List<ActionMoveDelta>();
+
+              { // scope brace for depth2
+              var depth2 = path_pt[1];
+              if (null != goals) {
+                depth2 = path_pt[1].FindAll(pt => goals.Contains(pt));
+                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
+                if (0 >= depth2.Count) depth2 = path_pt[1];
+              }
+
+              foreach(var pt in path_pt[0]) {
+                if (!_legal_path.ContainsKey(pt)) continue;  // something wrong here
+                if (1 >= FastestTrapKill(pt)) continue;
+                foreach(var pt2 in depth2) {
+                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  if (1 >= FastestTrapKill(pt2)) continue;
+                  var act = new ActionMoveDelta(m_Actor, pt2, pt);
+                  if (!act.IsLegal()) continue;
+                  stage2.Add(act);
+                }
+              }
+              } // end scope brace for depth2
+              // check for min-cost two steps
+              var costs = new Dictionary<Location,int>();
+              var ok = new List<ActorAction>();
+              foreach(var loc in path_pt[0]) {
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
+                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                foreach(var act in stage2) {
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  costs[loc] = 1;
+                  ok.Add(considering);
+                  break;
+                }
+              }
+              if (1 == ok.Count) return ok[0];
+              if (0 < costs.Count) return DecideMove(costs);
+          }
+          }
+        return null;
+     }
+
 #region sparse data accessors
     // protected setters could be eliminated by downgrading _sparse to protected, but types have to be manually aligned between set/get anyway
     public void RecordLoF(List<Point> LoF)  // XXX access control weakness required by RogueGame
@@ -468,20 +579,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
     public LinearChokepoint GetChokepoint() { return _sparse.Get<LinearChokepoint>(SparseData.UsingChokepoint); }
 
-    protected void RecordMinStepPath(List<List<Point>> src) {
-      if (null == src) return;
+    // caller does not have the goal-set that mandated calculating this
+    // caller does have the action generated from the path
+    protected ActorAction RecordMinStepPath(List<List<Point>> src, ActorAction act) {
+      if (null == src) return act;
+      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+          // no good ... should not be overwriting
+          var alt_act = UsePreexistingPath();
+          if (null!=alt_act) {
+             _rejected_backtrack = true; // signal that the path isn't really for the current goals
+             return alt_act;
+          }
+      }
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: "+src.to_s());
+#endif
       _sparse.Set(SparseData.MinStepPath,src);
+      return act;
     }
 
-    protected void RecordMinStepPath(List<List<Location>> src) {
-      if (null == src) return;
+    protected ActorAction RecordMinStepPath(List<List<Location>> src, ActorAction act) {
+      if (null == src) return act;
+      if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+          // no good ... should not be overwriting
+          var alt_act = UsePreexistingPath();
+          if (null!=alt_act) {
+             _rejected_backtrack = true; // signal that the path isn't really for the current goals
+             return alt_act;
+          }
+      }
+#if TRACE_SELECTACTION
+       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: " + src.to_s());
+#endif
       _sparse.Set(SparseData.MinStepPath,src);
+      return act;
     }
 
     public HashSet<Location> GetPreviousGoals() { return _sparse.Get<HashSet<Location>>(SparseData.PathingTo); }
 
     protected void RecordGoals(HashSet<Location> src) {
       if (null == src) return;
+      if (_rejected_backtrack) return;
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent goals: "+src.to_s());
+#endif
       _sparse.Set(SparseData.PathingTo,src);
       _used_advanced_pathing = true;
     }
@@ -1839,7 +1980,7 @@ restart:
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       var min_steps = navigate.MinStepPathTo(m_Actor.Location.Position);
-      if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
+      if (null != min_steps && 1<min_steps.Count) return RecordMinStepPath(min_steps,ret);
       return ret;
     }
 
@@ -1892,8 +2033,9 @@ restart:
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+(act?.ToString() ?? null)+"; "+ (act?.IsLegal() ?? false));
 #endif
           if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
+
           var min_steps = navigate.MinStepPathTo(m_Actor.Location);
-          if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
+          if (null != min_steps && 1<min_steps.Count) return RecordMinStepPath(min_steps,act);
           return act;
         }
         if (0 < path[0].Count) {
@@ -1910,7 +2052,7 @@ restart:
       PlanApproach(navigate);
       {
       var min_steps = navigate.MinStepPathTo(m_Actor.Location);
-      if (null != min_steps && 1<min_steps.Count) RecordMinStepPath(min_steps);
+      if (null != min_steps && 1<min_steps.Count) return RecordMinStepPath(min_steps,ret);
       }
       return ret;
     }
@@ -2088,15 +2230,7 @@ restart:
     private ActorAction _recordPathfinding(ActorAction act, HashSet<Location> goals)
     {
       if (null != act) {
-        var old = GetPreviousGoals();
-        bool materially_changed = (null==old || old.Count!=goals.Count);    // function target: value equality of hashset
-        if (!materially_changed) {
-          foreach(var loc in old) if (!goals.Contains(loc)) {
-            materially_changed = true;
-            break;
-          }
-        }   // end function target
-        if (!materially_changed && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+        if (goals.ValueEqual(GetPreviousGoals()) && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
           bool altered = false;
           foreach(var target in goals) {
             var denorm = m_Actor.Location.Map.Denormalize(target);
@@ -2181,11 +2315,14 @@ restart:
 
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: checking for moves "+(moves?.to_s() ?? "null")+" to adjacent goals "+goals.to_s());
+#endif
       {
       bool null_return = false;
       foreach(Location loc in goals) {  // \todo should only null-return if no legal adjacent goals at all
         if (moves.TryGetValue(loc,out var tmp)) {
-          if (tmp.IsPerformable() && !VetoAction(tmp)) return tmp;
+          if (tmp.IsPerformable() && !VetoAction(tmp)) return _recordPathfinding(tmp, goals);
           null_return = true;
         }
       }
@@ -2213,47 +2350,22 @@ restart:
       // check for pre-existing relevant path
       {
       var path_pt = GetMinStepPath<Point>();
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing point path: "+(path_pt?.to_s() ?? "null") );
+#endif
       if (null != path_pt) {
         var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(loc => loc.Position);
-        if (this_map_goals.Any()) {
-          int n = -1;
-          while(path_pt.Count > ++n) {
-            if (1<=n && path_pt[n].Any(pt => this_map_goals.Contains(pt))) {
-              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
-              var candidates = new List<List<ActionMoveDelta>>();
-              var stage2 = new List<ActionMoveDelta>();
-              { // scope brace for depth2
-              var depth2 = path_pt[1].FindAll(pt => this_map_goals.Contains(pt));
-              if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => this_map_goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
-              if (0 >= depth2.Count) depth2 = path_pt[1];
-
-              foreach(var pt in path_pt[0]) {
-                if (!_legal_path.ContainsKey(new Location(m_Actor.Location.Map,pt))) continue;  // something wrong here
-                foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(pt,pt2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, new Location(m_Actor.Location.Map, pt2), new Location(m_Actor.Location.Map,pt));
-                  if (act.IsLegal()) stage2.Add(act);
-                }
-              }
-              } // end scope brace for depth2
-              // check for min-cost two steps
-              var costs = new Dictionary<Point,int>();
-              var ok = new List<ActorAction>();
-              foreach(var pt in path_pt[0]) {
-                var loc = new Location(m_Actor.Location.Map, pt);
-                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                if (1<Map.PathfinderMoveCosts(considering)) continue;
-                foreach(var act in stage2) {
-                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
-                  costs[pt] = 1;
-                  ok.Add(considering);
-                  break;
-                }
-              }
-              if (1 == ok.Count) return _recordPathfinding(ok[0],goals);
-              if (0 < costs.Count) return _recordPathfinding(DecideMove(costs),goals);
-            }
+        int path_contains_our_goals_pt(List<List<Point>> path) {
+          if (this_map_goals.Any()) {
+            int n = -1;
+            while(path.Count > ++n) if (1<=n && path[n].Any(pt => this_map_goals.Contains(pt))) return n;
           }
+          return 0;
+        }
+
+        if (GetPreviousGoals().ValueEqual(goals) || 0< path_contains_our_goals_pt(path_pt)) {
+              var alt_act = UsePreexistingPath(goals);
+              if (null != alt_act) _recordPathfinding(alt_act, goals);
         }
       }
       }
@@ -2279,6 +2391,9 @@ restart:
       }
 
       if (0<near_tainted.Count) {
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: near goals: "+near_tainted.to_s());
+#endif
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
@@ -2353,47 +2468,25 @@ restart_single_exit:
          return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
       }
 
+      int path_contains_our_goals_loc(List<List<Location>> path) {
+        int n = -1;
+        while(path.Count > ++n) if (1<=n && path[n].Any(loc => goals.Contains(loc))) return n;
+        return 0;
+      }
+
       {
       var path_pt = GetMinStepPath<Location>();
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing location path: "+(path_pt?.to_s() ?? "null") );
+#endif
       if (null != path_pt) {
-          int n = -1;
-          while(path_pt.Count > ++n) {
-            if (1<=n && path_pt[n].Any(pt => goals.Contains(pt))) {
-              // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
-              var candidates = new List<List<ActionMoveDelta>>();
-              var stage2 = new List<ActionMoveDelta>();
-              { // scope brace for depth2
-              var depth2 = path_pt[1].FindAll(pt => goals.Contains(pt));
-              if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
-              if (0 >= depth2.Count) depth2 = path_pt[1];
-
-              foreach(var pt in path_pt[0]) {
-                if (!_legal_path.ContainsKey(pt)) continue;  // something wrong here
-                foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(pt,pt2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, pt2, pt);
-                  if (!act.IsLegal()) continue;
-                  stage2.Add(act);
-                }
-              }
-              } // end scope brace for depth2
-              // check for min-cost two steps
-              var costs = new Dictionary<Location,int>();
-              var ok = new List<ActorAction>();
-              foreach(var loc in path_pt[0]) {
-                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                if (1<Map.PathfinderMoveCosts(considering)) continue;
-                foreach(var act in stage2) {
-                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
-                  costs[loc] = 1;
-                  ok.Add(considering);
-                  break;
-                }
-              }
-              if (1 == ok.Count) return _recordPathfinding(ok[0],goals);
-              if (0 < costs.Count) return _recordPathfinding(DecideMove(costs),goals);
-            }
-          }
+        if (GetPreviousGoals().ValueEqual(goals) || 0< path_contains_our_goals_loc(path_pt)) {
+              var alt_act = UsePreexistingPath(goals);
+              if (null != alt_act) _recordPathfinding(alt_act, goals);
+        }
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing location path did not contain any goals: "+goals.to_s());
+#endif
       }
       }
 

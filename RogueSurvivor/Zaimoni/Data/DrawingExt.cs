@@ -405,6 +405,15 @@ namespace Zaimoni.Data
       foreach (T x in src) fn(x);
     }
 
+    public static bool ValueEqual<T>(this HashSet<T> lhs, HashSet<T> rhs)
+    {
+      if (null == lhs) return null==rhs;
+      if (null == rhs) return false;
+      if (lhs.Count!=rhs.Count) return false;
+      foreach(var x in lhs) if (!rhs.Contains(x)) return false;
+      return true;
+    }
+
     // logic operations
     public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
