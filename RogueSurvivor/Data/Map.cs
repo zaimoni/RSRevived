@@ -1343,22 +1343,8 @@ retry:
       }
     }
 
-    public int PlayerCount {
-      get {
-        return Players.Get.Count;
-      }
-    }
-
-    public Actor FindPlayer {
-      get {
-        return Players.Get.FirstOrDefault();
-      }
-    }
-
-    public Actor FindPlayerWithFOV(Point pt)
-    {
-      return Players.Get.FirstOrDefault(a => a.Controller.FOV.Contains(pt));
-    }
+    public int PlayerCount { get { return Players.Get.Count; } }
+    public Actor FindPlayer { get { return Players.Get.FirstOrDefault(); } }
 
     public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
     {

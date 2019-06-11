@@ -12212,8 +12212,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ForceVisibleToPlayer(Map map, Point position)
     {
-      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
-      if (!map.IsValid(position)) return false;
+      if (   null == map   // convince Duckman to not superheroically crash many games on turn 0
+          || !map.IsValid(position))
+        return false;
       Rectangle survey = new Rectangle(position.X-Actor.MAX_VISION, position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
       var players = new List<Actor>();
 
@@ -12240,21 +12241,11 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 #if DEBUG
-      if (0 < players.Count) throw new InvalidProgramException("need to handle multiple non-active PCs who can see location");
-#endif
-      // \todo following code may be no-op
-      if (CurrentMap != map) {
-        Location? tmp = CurrentMap.Denormalize(new Location(map,position));
-        if (null == tmp) return false;
-        return ForceVisibleToPlayer(tmp.Value);
-      }
-
-      if (null != Player && map == Player.Location.Map && Player.Controller.FOV.Contains(position)) return true;
-
-      Actor who = map.FindPlayerWithFOV(position);
-      if (null == who) return false;
-      PanViewportTo(who);
+      throw new InvalidProgramException("need to handle multiple non-active PCs who can see location");
+#else
+      PanViewportTo(players[0]);
       return true;
+#endif
     }
 
     private bool ForceVisibleToPlayer(Actor actor)
