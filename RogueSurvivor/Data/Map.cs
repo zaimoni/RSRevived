@@ -564,7 +564,7 @@ namespace djack.RogueSurvivor.Data
     public TileModel GetTileModelAtExt(int x, int y)
     {
 #if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return GetTileModelAt(x,y);
+      if (IsInBounds(x,y)) return Models.Tiles[m_TileIDs[x, y]];   //      return GetTileModelAt(x,y);
       Location? loc = Normalize(new Point(x,y));
 //    if (null == loc) throw ...;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
