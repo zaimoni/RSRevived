@@ -220,6 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest and actually put in the savefile
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
+    [NonSerialized] protected HashSet<Location> _current_goals = null;
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -289,6 +290,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _safe_run_retreat = false;
       _used_advanced_pathing = false;
       _rejected_backtrack = false;
+      _current_goals = null;
     }
 
     public void SparseReset()
@@ -590,8 +592,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
           }
+          if (null != _current_goals && !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
 #if DEBUG
-          throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+          else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
       }
 #if TRACE_SELECTACTION
@@ -610,8 +613,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
           }
+          if (null != _current_goals && !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
 #if DEBUG
-          throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+          else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
       }
 #if TRACE_SELECTACTION
@@ -2114,7 +2118,9 @@ restart:
         map_goals.Remove(src);
         excluded.Add(src);
 
-        return m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map!= m_Actor.Location.Map);
+        bool ret = m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map != m_Actor.Location.Map);
+        if (ret) _current_goals = goals;
+        return ret;
     }
 
     private void PartialInvertLOS(HashSet<Location> tainted, int radius)
@@ -2415,8 +2421,10 @@ restart:
 
        // remove a degenerate case from consideration
        if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
-         && !goals.Any(loc => loc.Map!= m_Actor.Location.Map))
+         && !goals.Any(loc => loc.Map!= m_Actor.Location.Map)) {
+         _current_goals = goals;
          return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+       }
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past single map pathfinder reduction");
 #endif
@@ -2499,6 +2507,7 @@ restart_single_exit:
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s()+", "+excluded.to_s());
 #endif
+      _current_goals = goals;
       return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs,excluded)),goals);
     }
 
