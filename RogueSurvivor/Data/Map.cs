@@ -774,7 +774,10 @@ namespace djack.RogueSurvivor.Data
 	{
 	  var ret = new Dictionary<Location, int>();
       Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
-      foreach(var move in moves) ret[move.Key] = PathfinderMoveCosts(move.Value);
+      foreach(var move in moves) {
+        if (1>= a.Controller.FastestTrapKill(move.Key)) continue;
+        ret[move.Key] = PathfinderMoveCosts(move.Value);
+      }
 	  return ret;
 	}
 
@@ -782,7 +785,10 @@ namespace djack.RogueSurvivor.Data
 	{
 	  var ret = new Dictionary<Point, int>();
       Dictionary<Point,ActorAction> moves = a.OnePath(this, pt, already);
-      foreach(var move in moves) ret[move.Key] = PathfinderMoveCosts(move.Value);
+      foreach(var move in moves) {
+        if (1>= a.Controller.FastestTrapKill(new Location(a.Location.Map, move.Key))) continue;
+        ret[move.Key] = PathfinderMoveCosts(move.Value);
+      }
 	  return ret;
 	}
 
