@@ -590,6 +590,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
           }
+#if DEBUG
+          throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+#endif
       }
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: "+src.to_s());
@@ -607,6 +610,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
           }
+#if DEBUG
+          throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+#endif
       }
 #if TRACE_SELECTACTION
        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: " + src.to_s());

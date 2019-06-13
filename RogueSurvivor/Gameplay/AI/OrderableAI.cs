@@ -2282,6 +2282,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endregion
 
+      // \todo replace this with some form of formation management
       var rules = RogueForm.Game.Rules;
       int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
 
@@ -2299,6 +2300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (clan.Any(a => loc == a.Location)) continue;
       }
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
+      _last_move = null;    // very random if we reach this point, expected to false-positive
 
 	  ActorAction actorAction = BehaviorPathTo(loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
