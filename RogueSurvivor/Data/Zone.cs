@@ -10,9 +10,11 @@ using System;
 using System.Collections.Generic;
 
 #if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_int;
 using Rectangle = Zaimoni.Data.Box2D_int;
 using Size = Zaimoni.Data.Vector2D_int;
 #else
+using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
 #endif
@@ -83,6 +85,18 @@ namespace djack.RogueSurvivor.Data
       if (m == loc.Map) return Rect.Contains(loc.Position);
       var test = m.Denormalize(loc);
       return null!=test && Rect.Contains(test.Value.Position);
+    }
+
+    public void DoForEach(Action<Location> doFn) {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+#endif
+      Point point = new Point();
+      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
+        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
+          doFn(new Location(m,point));
+        }
+      }
     }
 
     public Location Center { get {
