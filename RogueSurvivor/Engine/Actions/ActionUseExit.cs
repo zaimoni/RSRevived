@@ -8,12 +8,13 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionUseExit : ActorAction
+  internal class ActionUseExit : ActorAction,ActorDest
   {
     private readonly Location m_ExitPoint;
 
     public Exit Exit { get { return m_ExitPoint.Exit; } }
     public bool IsBlocked { get { return !string.IsNullOrEmpty(Exit.ReasonIsBlocked(m_Actor)); } }
+    public Location dest { get { return m_ExitPoint.Exit.Location; } }
 
     public ActionUseExit(Actor actor, Location exitPoint)
       : base(actor)
