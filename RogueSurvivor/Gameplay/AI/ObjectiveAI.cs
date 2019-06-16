@@ -828,7 +828,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
           }
-          if (null != _current_goals && !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
+          if (null == _current_goals || !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
 #if DEBUG
           else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
