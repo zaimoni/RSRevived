@@ -1593,11 +1593,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBefore(Actor other)
     {
+      if (Location.Map != other.Location.Map) return District.IsBefore(Location.Map, other.Location.Map);
       foreach (Actor actor1 in Location.Map.Actors) {
         if (actor1 == this) return true;
         if (actor1 == other) return false;
       }
-      return true;
+      return true;  // probable error condition
     }
 
     public bool IsOnCouch {

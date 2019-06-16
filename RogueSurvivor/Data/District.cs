@@ -176,6 +176,21 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // references no-skew scheduler; E, SW are immediately after us (and have no specific ordering with respect to each other)
+    // only has to work for adjacent districts
+    public bool IsBefore(District rhs)
+    {
+      if (WorldPosition.Y == rhs.WorldPosition.Y) return WorldPosition.X < rhs.WorldPosition.X;
+      return WorldPosition.Y < rhs.WorldPosition.Y;
+    }
+
+    public static bool IsBefore(Map lhs, Map rhs)
+    {
+      if (lhs.District!=rhs.District) return lhs.District.IsBefore(rhs.District);
+      var maps = lhs.District.m_Maps;
+      return maps.IndexOf(lhs)<maps.IndexOf(rhs);
+    }
+
     // before cross district viewing, this was simply a PlayerCount check
     public bool RequiresUI {
       get {
