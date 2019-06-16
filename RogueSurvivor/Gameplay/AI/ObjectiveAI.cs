@@ -752,6 +752,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
      }
 
+     private ActorAction _pathNear(Location loc)
+     {
+        if (null != _legal_path) {
+            var candidates = new List<ActorAction>(_legal_path.Count);
+            foreach (var x in _legal_path) {
+                if (x.Key == loc) continue;
+                if (1 != Rules.InteractionDistance(x.Key, loc)) continue;
+                candidates.Add(x.Value);
+            }
+            if (0 < candidates.Count) return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
+        }
+        return null;
+     }
+
 #region sparse data accessors
     // protected setters could be eliminated by downgrading _sparse to protected, but types have to be manually aligned between set/get anyway
     public void RecordLoF(List<Point> LoF)  // XXX access control weakness required by RogueGame
@@ -775,8 +789,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction RecordMinStepPath(List<List<Point>> src, ActorAction act) {
       if (null == src) return act;
       if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+          var alt_act = _pathNear(test.dest);
+          if (null != alt_act) {
+            _sparse.Set(SparseData.MinStepPath,src);
+            return alt_act;
+          }
+
           // no good ... should not be overwriting
-          var alt_act = UsePreexistingPath();
+          alt_act = UsePreexistingPath();
           if (null!=alt_act) {
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
@@ -796,8 +816,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction RecordMinStepPath(List<List<Location>> src, ActorAction act) {
       if (null == src) return act;
       if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
+          var alt_act = _pathNear(test.dest);
+          if (null != alt_act) {
+            _sparse.Set(SparseData.MinStepPath,src);
+            return alt_act;
+          }
+
           // no good ... should not be overwriting
-          var alt_act = UsePreexistingPath();
+          alt_act = UsePreexistingPath();
           if (null!=alt_act) {
              _rejected_backtrack = true; // signal that the path isn't really for the current goals
              return alt_act;
@@ -2458,16 +2484,10 @@ restart:
             }
             if (altered) break;
           }
-          if (!altered && null != _legal_path) {
-            // pre-existing path isn't necessarily what we want.  Check for legal pathing adjacent to the target first
-            var candidates = new List<ActorAction>(_legal_path.Count);
-            foreach(var x in _legal_path) {
-              if (x.Key == test.dest) continue;
-              if (1 != Rules.InteractionDistance(x.Key,test.dest)) continue;
-              candidates.Add(x.Value);
-            }
-            if (0 < candidates.Count) {
-              act = RogueForm.Game.Rules.DiceRoller.Choose(candidates);
+          if (!altered) {
+            var alt_act = _pathNear(test.dest);
+            if (null != alt_act) {
+              act = alt_act;
               test = act as ActorDest;
               altered = true;
             }
