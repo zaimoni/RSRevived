@@ -428,11 +428,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (0 >= escape_actions.Count) return;    // might want to record this fact to trigger sheer panic messaging
       // \todo identify which escape actions are actually needed, based on where enemies are predicted to be
+      var compromised = new Dictionary<Location,int>();
+      foreach(var x in escape_actions) compromised[x.Key] = 0;
+      compromised[m_Actor.Location] = 0;
+      var double_compromised = new Dictionary<Location,int>(compromised); 
+
       foreach(var x in enemies) {
-        var dist = Rules.InteractionDistance(x.Key,m_Actor.Location);
-        if (1==dist) {
+        var rws = m_Actor?.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw));
+        if (null != rws) continue;  // bail for now on ranged weapons
+        int e_moves = m_Actor.HowManyTimesOtherActs(1,x.Value);
+        if (0 < e_moves) {
+          var danger = new ZoneLoc(x.Key.Map,new Rectangle(x.Key.Position.X-e_moves,x.Key.Position.Y-e_moves,2*e_moves+1,2*e_moves+1));
+          foreach(var y in escape_actions) {
+            if (danger.ContainsExt(y.Key)) {
+              compromised[y.Key]++;
+              double_compromised[y.Key]++;
+            }
+          }
+          if (danger.ContainsExt(m_Actor.Location)) {
+            compromised[m_Actor.Location]++;
+            double_compromised[m_Actor.Location]++;
+          }
+        }
+        e_moves = m_Actor.HowManyTimesOtherActs(2,x.Value);
+        if (0 < e_moves) {
+          var danger = new ZoneLoc(x.Key.Map,new Rectangle(x.Key.Position.X-e_moves,x.Key.Position.Y-e_moves,2*e_moves+1,2*e_moves+1));
+          foreach(var y in escape_actions) {
+            if (danger.ContainsExt(y.Key)) double_compromised[y.Key]++;
+          }
+          if (danger.ContainsExt(m_Actor.Location)) double_compromised[m_Actor.Location]++;
         }
       }
+
+      if (0 >= double_compromised[m_Actor.Location]) return;    // may need to do a strategic retreat but not our immediate issue
 #endif
     }
 
