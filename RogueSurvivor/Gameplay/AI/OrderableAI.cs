@@ -1277,6 +1277,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       // end melee risk management check
+#if USING_ESCAPE_MOVES
+      if (null != _escape_moves) throw new InvalidOperationException("need to use escape moves");
+#endif
       return null;
     }
 

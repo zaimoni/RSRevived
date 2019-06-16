@@ -222,7 +222,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
     [NonSerialized] protected HashSet<Location> _current_goals = null;
+#if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
+#endif
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
@@ -293,7 +295,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _used_advanced_pathing = false;
       _rejected_backtrack = false;
       _current_goals = null;
+#if USING_ESCAPE_MOVES
       _escape_moves = null;
+#endif
     }
 
     public void SparseReset()
@@ -391,7 +395,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-
+#if USING_ESCAPE_MOVES
       var enemies = enemies_in_FOV;
       if (null == enemies) return;
 
@@ -468,6 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var now = new HashSet<Location> { x.Key };
           var ever = new HashSet<Location>();
           var next = new HashSet<Location>();
+          int n = e_moves;
           do {
             foreach(var src in now) {
               var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
@@ -485,9 +490,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
             next = now;
             swap.Clear();
             next = swap;
-          } while (0 < --e_moves);
-          e_moves = m_Actor.HowManyTimesOtherActs(2,x.Value);
-          if (0 < e_moves) {
+          } while (0 < --n);
+          int e_moves2 = m_Actor.HowManyTimesOtherActs(2,x.Value);
+          if (e_moves < e_moves2) {
+            n = e_moves2 - e_moves;
+            e_moves = e_moves2;
             do {
               foreach(var src in now) {
                var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
@@ -504,7 +511,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
               next = now;
               swap.Clear();
               next = swap;
-            } while (0 < --e_moves);
+            } while (0 < --n);
+          }
+          e_moves2 = (0==double_compromised[m_Actor.Location] ? m_Actor.HowManyTimesOtherActs(3,x.Value) : 0);
+          if (e_moves < e_moves2) {
+            n = e_moves2 - e_moves;
+            e_moves = e_moves2;
+            do {
+              foreach(var src in now) {
+               var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
+                 danger.DoForEach(loc => {
+                  if (ever.Contains(loc)) return;
+                  ever.Add(loc);
+                  if (!loc.Map.IsWalkableFor(loc.Position,x.Value)) return;
+                  double_compromised.TryGetValue(loc, out var targeted);
+                  double_compromised[loc] = targeted + 1;
+                  next.Add(loc);
+                });
+              }
+              var swap = now;
+              next = now;
+              swap.Clear();
+              next = swap;
+            } while (0 < --n);
           }
         }
       }
@@ -539,6 +568,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (escape_actions.Any(x => 1==Rules.InteractionDistance(x.Key,m_Actor.Location))) escape_actions.OnlyIf(loc => 1==Rules.InteractionDistance(loc,m_Actor.Location));
       RecordWantToEscapeTo(escape_actions.Keys.ToList());   // \todo declare ambush points as well
       if (!have_fast_escape || 0< compromised[m_Actor.Location]) _escape_moves = escape_actions;
+#endif
     }
 
     // morally a constructor-type function
@@ -798,9 +828,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public List<List<T>> GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
 
+#if USING_ESCAPE_MOVES
     protected void RecordWantToEscapeTo(List<Location> src) { _sparse.Set(SparseData.EscapingTo, src); }
     public List<Location> WantToEscapeTo() { return _sparse.Get<List<Location>>(SparseData.EscapingTo); }
-
+#endif
 
     public ZoneLoc ClearingThisZone() {
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
@@ -1491,6 +1522,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorDest a_dest) {
         if (a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
         if (1>=FastestTrapKill(a_dest.dest)) return true;   // death-trapped
+#if USING_ESCAPE_MOVES
+        var friends = friends_in_FOV;
+        if (null != friends_in_FOV) {
+          foreach(var fr in friends_in_FOV) {
+            var escaping_to = (fr.Value.Controller as ObjectiveAI)?.WantToEscapeTo();   // seems hard to trigger
+            if (escaping_to?.Contains(a_dest.dest) ?? false) return true;
+          }
+        }
+#endif
       }
       if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
@@ -2418,6 +2458,20 @@ restart:
             }
             if (altered) break;
           }
+          if (!altered && null != _legal_path) {
+            // pre-existing path isn't necessarily what we want.  Check for legal pathing adjacent to the target first
+            var candidates = new List<ActorAction>(_legal_path.Count);
+            foreach(var x in _legal_path) {
+              if (x.Key == test.dest) continue;
+              if (1 != Rules.InteractionDistance(x.Key,test.dest)) continue;
+              candidates.Add(x.Value);
+            }
+            if (0 < candidates.Count) {
+              act = RogueForm.Game.Rules.DiceRoller.Choose(candidates);
+              test = act as ActorDest;
+              altered = true;
+            }
+          }
 #if DEBUG
           if (null != test && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
@@ -2821,7 +2875,7 @@ restart_single_exit:
 
     public void Terminate(Actor a)
     {
-#if DEBUG            
+#if DEBUG
       if (CombatUnready()) throw new InvalidOperationException("cannot consider terminate order when combat unready");
       if (m_Actor.Inventory.IsEmpty) throw new ArgumentNullException(nameof(m_Actor));
 #endif
