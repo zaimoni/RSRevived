@@ -2425,7 +2425,7 @@ namespace djack.RogueSurvivor.Data
       // we don't check actors as this is a "is this valid, ever" test
       var mapObjectAt = loc.Map.GetMapObjectAtExt(loc.Position);
       if (mapObjectAt?.IsWalkable ?? true) return true;
-      if (mapObjectAt.IsJumpable) return Model.Abilities.CanJump;
+      if (mapObjectAt.IsJumpable) return CanJump;
       if (mapObjectAt is DoorWindow door) {
         if (door.IsClosed && Model.Abilities.IsSmall) return false; // seems redundant, rats also cannot open or bash
         // pathfinding livings will break barricaded doors (they'll prefer to go around it)
