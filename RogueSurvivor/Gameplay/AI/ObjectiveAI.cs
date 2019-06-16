@@ -370,28 +370,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    // morally a constructor-type function
-    protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
+    private void UpdateRetreatDestinations()
     {
-      _initAICache();
-
-      // sparse data reset is here (start of select action) so it persists during other actors' turns
-      SparseReset();
-
-      // AI cache fields
-      _legal_steps = m_Actor.LegalSteps;
-      _damage_field = new Dictionary<Point, int>();
-      _slow_melee_threat = new List<Actor>();
-      _immediate_threat = new HashSet<Actor>();
-      _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
-      if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
-      AddTrapsToDamageField(_damage_field, now);
-      if (UsesExplosives) AddExplosivesToDamageField(all_time);  // only civilians and soldiers respect explosives; CHAR and gang don't
-      if (0>= _damage_field.Count) _damage_field = null;
-      if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
-      if (0>= _immediate_threat.Count) _immediate_threat = null;
-      if (0>= _blast_field.Count) _blast_field = null;
-
       // calculate retreat destinations if possibly needed
       if (null != _damage_field && null != _legal_steps && _damage_field.ContainsKey(m_Actor.Location.Position)) {
         _retreat = FindRetreat();
@@ -407,6 +387,80 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+#if PROTOTYPE
+      var enemies = enemies_in_FOV;
+      if (null == enemies) return;
+      if (null != _retreat || null != _run_retreat) return;
+
+      // \todo augment above.  We actually want to:
+      // * respond to all slow threat, not just immediate slow melee threat
+      // * declare retreat destinations so allies/friends don't zugzwang us
+      // * declare "good ambush positions" for melee/ranged combat based on predicted enemy positions
+      // * internally record escape action sequences (door opening is 2-moves and if we lose a move after step/jump that needs accounting for as well
+      int escape_cost(ActorAction escape) {
+        if (escape is ActionOpenDoor) return 2;
+        if (escape is ActionMoveStep && m_Actor.RunIsFreeMove && m_Actor.CanRun()) return 0;
+        if (escape is ActorDest) return 1;  // backstop, need to account for fatigue and/or running
+        return int.MaxValue;    // doesn't work in time
+      }
+
+      var escape_actions = m_Actor.OnePath(m_Actor.Location);
+      var escape_costs = new Dictionary<Location,int>();
+      var escape_damage = new Dictionary<Location,int>();
+      escape_actions.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
+      {
+      var backup = new Dictionary<Location,ActorAction>(escape_actions);
+      var ok = new Dictionary<Location, ActorAction>(escape_actions);
+      _damage_field.TryGetValue(m_Actor.Location.Position, out var damage_relay);
+      foreach(var x in escape_actions) {
+        int cost = escape_cost(x.Value);
+        if (2 < cost) continue;    // not fast enough
+        escape_costs[x.Key] = cost;
+        if (x.Key.Map==m_Actor.Location.Map && _damage_field.TryGetValue(x.Key.Position,out var damage)) {
+          if (2 <= cost) damage += damage_relay;    // <= in case of specification change
+          escape_damage[x.Key] = damage;
+        } else if (2 <= cost && 0 < damage_relay) escape_damage[x.Key] = damage_relay;
+        backup[x.Key] = x.Value;    // works but may harm others
+        if (VetoAction(x.Value)) continue;  // does harm others
+        ok[x.Key] = x.Value;
+      }
+      escape_actions = (0 < ok.Count) ? ok : backup;
+      }
+      if (0 >= escape_actions.Count) return;    // might want to record this fact to trigger sheer panic messaging
+      // \todo identify which escape actions are actually needed, based on where enemies are predicted to be
+      foreach(var x in enemies) {
+        var dist = Rules.InteractionDistance(x.Key,m_Actor.Location);
+        if (1==dist) {
+        }
+      }
+#endif
+    }
+
+    // morally a constructor-type function
+    protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
+    {
+      _initAICache();
+
+      // sparse data reset is here (start of select action) so it persists during other actors' turns
+      SparseReset();
+
+      // AI cache fields
+      _legal_steps = m_Actor.LegalSteps;
+      _damage_field = new Dictionary<Point, int>();
+      _slow_melee_threat = new List<Actor>();
+      _immediate_threat = new HashSet<Actor>();
+      if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
+      AddTrapsToDamageField(_damage_field, now);
+      if (UsesExplosives) {   // only civilians and soldiers respect explosives; CHAR and gang don't
+        _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
+        AddExplosivesToDamageField(all_time);
+        if (0>= _blast_field.Count) _blast_field = null;
+      }
+      if (0>= _damage_field.Count) _damage_field = null;
+      if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
+      if (0>= _immediate_threat.Count) _immediate_threat = null;
+
+      UpdateRetreatDestinations();
 
       _legal_path = m_Actor.OnePath(m_Actor.Location);
       _legal_path.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
@@ -984,14 +1038,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
         int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
-          if (0 >= m_Actor.EnergyDrain) return true;
-          if (m_Actor.RunIsFreeMove) {
-            if (m_Actor.MoveLostWithoutRunOrWait(0, 0, 1)) return false;
-            if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT) && m_Actor.MoveLostWithoutRunOrWait(1, 1, 1)) return false;
-          } else {
-            if (m_Actor.MoveLostWithoutRunOrWait(1, 1, 1)) return false;
-            if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT) && m_Actor.MoveLostWithoutRunOrWait(2, 2, 1)) return false;
-          }
+          if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT)) return false;
+          return 0 == m_Actor.MoveLost(1, 1, 1);
         }
       }
       return true;

@@ -2357,13 +2357,16 @@ namespace djack.RogueSurvivor.Data
 	public bool WalkIsFreeMove { get { return Rules.BASE_ACTION_COST < m_ActionPoints; } }
     public int EnergyDrain { get { return Rules.BASE_ACTION_COST - Model.DollBody.Speed; } }
 	public bool NextMoveLostWithoutRunOrWait { get { return EnergyDrain >= m_ActionPoints; } }
-    public bool MoveLostWithoutRunOrWait(int turns, int walk, int run) {
+
+    /// <returns>0 have move, 1 would have move with one walk replaced by run, 2 no move</returns>
+    public int MoveLost(int turns, int walk, int run) {
       int working = m_ActionPoints;
-      working += turns*Model.DollBody.Speed;
-      working -= Rules.BASE_ACTION_COST*walk;
+      working += turns* Model.DollBody.Speed;
+      working -= Rules.BASE_ACTION_COST* walk;
       working -= (Rules.BASE_ACTION_COST/2)*run;
-      if (0 >= working) return false;   // no move anyway
-      return EnergyDrain >= working;
+      if (-(Rules.BASE_ACTION_COST / 2) >= working) return 2;   // positively lost
+      if (0 >= working) return 1;   // need to run to get a move
+      return 0; // have move
     }
 
     public bool CanJump {
