@@ -680,6 +680,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
                   var loc2 = new Location(m_Actor.Location.Map, pt2);
+                  if (!m_Actor.CanEnter(loc2)) continue;
                   if (1 >= FastestTrapKill(loc2)) continue;
                   var act = new ActionMoveDelta(m_Actor, loc2, loc);
                   if (!act.IsLegal()) continue;
@@ -725,6 +726,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (1 >= FastestTrapKill(pt)) continue;
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  if (!m_Actor.CanEnter(pt2)) continue;
                   if (1 >= FastestTrapKill(pt2)) continue;
                   var act = new ActionMoveDelta(m_Actor, pt2, pt);
                   if (!act.IsLegal()) continue;
