@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
       var e = Exit;
       if (null != e) {
         Actor a = e.Location.Actor;
-        if (null != a && !a.IsEnemyOf(viewpoint)) return true;
+        if (null != a && a!=viewpoint && !a.IsEnemyOf(viewpoint)) return true;
       }
       // check map for topology-based
       return false;

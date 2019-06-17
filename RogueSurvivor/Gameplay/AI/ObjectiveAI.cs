@@ -347,9 +347,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (0 >= nonlethal.Count) return true;
             min_path[i] = nonlethal;
           }
-          if (min_path[i].Any(pt => 1==Rules.GridDistance(m_Actor.Location,pt))) {
+          if (min_path[i].Any(pt => 1==Rules.InteractionDistance(m_Actor.Location,pt))) {
             known_adjacent = true;
-            var adjacent = min_path[i].FindAll(pt => 1 == Rules.GridDistance(m_Actor.Location, pt));
+            var adjacent = min_path[i].FindAll(pt => 1 == Rules.InteractionDistance(m_Actor.Location, pt));
             if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
             if (0 < i) min_path.RemoveRange(0,i);
             break;
