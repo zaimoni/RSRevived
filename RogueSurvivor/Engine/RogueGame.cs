@@ -332,12 +332,7 @@ namespace djack.RogueSurvivor.Engine
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor m_Player;
     private static Actor m_PlayerInTurn;
-#if PROTOTYPE
-    private static Map m_CurrentMap;    // Formerly Session.Get.CurrentMap
-    private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
-#else
     private static ZoneLoc m_MapView;
-#endif
 
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
@@ -12035,20 +12030,24 @@ namespace djack.RogueSurvivor.Engine
 
     public static GDI_Point MapToScreen(Location loc)
     {
-      if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
-      var e = loc.Exit;
-      if (null!=e && e.Location == Player.Location) {
-        // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
-        int exit_slot() {
-          if (loc.Map == loc.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT;
-          if (e.Location.Map == e.Location.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT+1;
-          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
-          if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
-          return ENTRYMAP_EXIT_SLOT + 1;    // default
-        }
+      if (!m_MapView.ContainsExt(loc)) {
+          var e = loc.Exit;
+          if (null!=e && e.Location == m_MapView.Center) {
+            // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
+            int exit_slot() {
+                if (loc.Map == loc.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT;
+                if (e.Location.Map == e.Location.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT+1;
+                if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
+                if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
+                return ENTRYMAP_EXIT_SLOT + 1;    // default
+            }
 
-        return new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE* exit_slot());
+            return new GDI_Point(EXIT_SLOT_X, EXIT_SLOT_Y0+TILE_SIZE* exit_slot());
+          }
+          return new GDI_Point(-TILE_SIZE,-TILE_SIZE);   // off-screen, expected "safe" since we get correct behavior below
       }
+
+      if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
 
       Location? tmp = CurrentMap.Denormalize(loc);
 #if DEBUG
