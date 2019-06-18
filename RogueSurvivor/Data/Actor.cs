@@ -2427,7 +2427,8 @@ namespace djack.RogueSurvivor.Data
       if (mapObjectAt?.IsWalkable ?? true) return true;
       if (mapObjectAt.IsJumpable) return CanJump;
       if (mapObjectAt is DoorWindow door) {
-        if (door.IsClosed && Model.Abilities.IsSmall) return false; // seems redundant, rats also cannot open or bash
+        // Cf. Actor::ReasonNotWalkableFor.  Yes, rats *can* go through barricaded windows/doors
+        if (Model.Abilities.IsSmall) return !door.IsClosed;
         // pathfinding livings will break barricaded doors (they'll prefer to go around it)
         if (door.BarricadePoints > 0) return CanBash(door) || Model.CanBreak(door);
         if (door.IsClosed) return CanOpen(door) || CanBash(door);
