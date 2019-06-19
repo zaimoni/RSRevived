@@ -2495,7 +2495,14 @@ restart:
             }
           }
 #if DEBUG
-          if (null != test && test.dest == _last_move.origin) throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+          if (null != test && test.dest == _last_move.origin) {
+            bool backtrack_ok = false;
+            if (act is ActionUseExit) {
+              // inverse of ActionUseExit is ActionUseExit.  If the origin map has no goals, it's ok
+              backtrack_ok = (m_Actor.Location.Map == m_Actor.Location.Map.District.SewersMap || !goals.Any(loc => loc.Map == m_Actor.Location.Map));
+            }
+            if (!backtrack_ok) throw new InvalidOperationException(m_Actor.Name + " committed a period-2 move loop on turn " + m_Actor.Location.Map.LocalTime.TurnCounter + ": " + _last_move + ", " + act);
+          }
 #endif
         }
         RecordGoals(goals);
