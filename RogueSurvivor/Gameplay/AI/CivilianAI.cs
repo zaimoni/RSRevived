@@ -305,6 +305,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
+      // \todo doesn't handle properly interactions w/inventory management when enemies out of melee range; e.g. if have shotgun ammo, should take empty shotgun if not in immediate danger
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");

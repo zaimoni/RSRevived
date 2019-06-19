@@ -9199,7 +9199,9 @@ namespace djack.RogueSurvivor.Engine
           }
           if (recover is ActionTradeWithContainer trade) received = trade.Give;
           else if (recover is ActionChain chain) {
-           if (chain.First is ActionDropItem drop) received = drop.Item;
+            if (chain.First is ActionDropItem drop) received = drop.Item;
+          } else if (recover is ActionUseItem use) {
+            received = use.Item;
           }
         }
 
