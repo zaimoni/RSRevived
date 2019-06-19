@@ -1458,6 +1458,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX need to use floodfill pathfinder
         var fire_from_here = GetRangedAttackFromZone(_enemies);
         if (2<=fire_from_here.Count) NavigateFilter(fire_from_here);
+        _last_move = null;  // could backtrack legitimately
         tmpAction = BehaviorPathTo(fire_from_here);
         if (tmpAction is ActionShove shove) {
           if (null != _enemies) {
