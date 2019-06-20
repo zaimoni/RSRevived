@@ -10994,18 +10994,6 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMap(Map map)    // XXX not at all clear why this and the functions it controls are public
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
-#if NO_PEACE_WALLS
-      int num1 = MapViewRect.Left;
-      int num2 = MapViewRect.Right;
-      int num3 = MapViewRect.Top;
-      int num4 = MapViewRect.Bottom;
-      Point view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
-#else
-      int num1 = Math.Max(-1, m_MapViewRect.Left);
-      int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
-      int num3 = Math.Max(-1, m_MapViewRect.Top);
-      int num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
-#endif
       string imageID;
       switch (Session.Get.World.Weather) {
         case Weather.RAIN:
@@ -11022,18 +11010,37 @@ namespace djack.RogueSurvivor.Engine
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
 
+      int num1;
+      int num2;
+      int num3;
+      int num4;
+      Point view_center = new Point();
+      Point point = new Point();
+      const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
+      Span<bool> is_visible = stackalloc bool[view_squares];
+      string[] overlays = new string[view_squares];
+      int working = 0;
+
+      lock(m_MapView) {
+#if NO_PEACE_WALLS
+      num1 = MapViewRect.Left;
+      num2 = MapViewRect.Right;
+      num3 = MapViewRect.Top;
+      num4 = MapViewRect.Bottom;
+      view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
+#else
+      num1 = Math.Max(-1, m_MapViewRect.Left);
+      num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
+      num3 = Math.Max(-1, m_MapViewRect.Top);
+      num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
+#endif
+
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
       HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
       HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
 
-      Point point = new Point();
-
       // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
-      const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
-      Span<bool> is_visible = stackalloc bool[view_squares];
-      string[] overlays = new string[view_squares];
       Point delta = new Point();
-      int working = 0;
       int i = view_squares;
       while(0 < i--) {
         MapViewRect.convert(i,ref point);
@@ -11067,6 +11074,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+      } // lock(m_MapView)
 
       bool isUndead = Player.Model.Abilities.IsUndead;
       bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
@@ -12125,7 +12133,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void PanViewportTo(Location loc)
     {
-      m_MapView = loc.View;
+      lock(m_MapView) { m_MapView = loc.View; }
       RedrawPlayScreen();
     }
 
@@ -13039,7 +13047,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SetCurrentMap(Location loc)
     {
-      m_MapView = loc.View;
+      lock(m_MapView) { m_MapView = loc.View; }
 
       // alpha10 update background music
       UpdateBgMusic();
