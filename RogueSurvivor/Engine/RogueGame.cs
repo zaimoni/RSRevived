@@ -332,6 +332,7 @@ namespace djack.RogueSurvivor.Engine
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor m_Player;
     private static Actor m_PlayerInTurn;
+    private static string m_Status = null; // suppressed by m_PlayerInTurn mismatch
     private static ZoneLoc m_MapView;
 
     private static GameOptions s_Options = new GameOptions();
@@ -11792,6 +11793,11 @@ namespace djack.RogueSurvivor.Engine
             : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
+    private string _gameStatus(Actor a) {
+      if (a != m_PlayerInTurn) return "SIMULATING";
+      return m_Status;
+    }
+
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy, new Color?());
@@ -11800,7 +11806,10 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", actor.HitPoints), gx, gy, new Color?());
       DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue1), gx + 84 + 100, gy, new Color?());
-      if (actor != m_PlayerInTurn) m_UI.UI_DrawStringBold(Color.Orange, "SIMULATING", gx + 126 + 100, gy, new Color?());
+      {
+      var msg = _gameStatus(actor);
+      if (!string.IsNullOrEmpty(msg)) m_UI.UI_DrawStringBold(Color.Orange, msg, gx + 126 + 100, gy, new Color?());
+      }
       gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.CanTire) {
         int maxValue2 = actor.MaxSTA;
@@ -12312,15 +12321,14 @@ namespace djack.RogueSurvivor.Engine
 #endif
       StopSimThread(false); // alpha10.1
 
-      ClearMessages();
-      AddMessage(new Data.Message("SAVING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      m_Status = "SAVING";
       RedrawPlayScreen();
       m_UI.UI_Repaint();
       Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
 #if DEBUG
       File.Copy(saveName, RogueGame.GetUserSaveBackup(),true);
 #endif
-      AddMessage(new Data.Message("SAVING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      m_Status = null;
       RedrawPlayScreen();
       m_UI.UI_Repaint();
 
