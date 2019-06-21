@@ -2234,7 +2234,8 @@ namespace djack.RogueSurvivor.Data
         my_actions++;
       }
       if (my_actions>n) return 0;
-      int other_ap = other.m_ActionPoints+(IsBefore(other) ? 0 : other.Speed);
+      // if in another district, AP is current and does not need prediction
+      int other_ap = other.m_ActionPoints+((Location.Map.District!=other.Location.Map.District || IsBefore(other)) ? 0 : other.Speed);
       int other_actions = 0;
       while(0 < other_ap) { // assuming this never gets very large
         other_ap -= Rules.BASE_ACTION_COST;
