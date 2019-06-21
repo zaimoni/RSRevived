@@ -11074,7 +11074,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      } // lock(m_MapView)
 
       bool isUndead = Player.Model.Abilities.IsUndead;
       bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
@@ -11182,6 +11181,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
       }
+      } // lock(m_MapView)
       // exit display
       var e = Player.Location.Exit; // XXX does not change w/remote viewing
       if (null != e) {
@@ -11996,7 +11996,11 @@ namespace djack.RogueSurvivor.Engine
         // alpha10 highlight if active skills are active or not
         switch (skill.Key) {
           case Skills.IDs.MARTIAL_ARTS:
-            skColor = (actor.GetEquippedWeapon() == null ? Color.LightGreen : Color.Red);
+            {
+            var w = actor.GetEquippedWeapon();
+            skColor = (null == w) ? Color.LightGreen : Color.Red;
+            if (w is ItemMeleeWeapon melee && melee.Model.IsMartialArts) skColor = Color.LightGreen;
+            }
             break;
           case Skills.IDs.HARDY:
             if (actor.IsSleeping) skColor = Color.LightGreen;
