@@ -981,6 +981,7 @@ retry:
       return exit_maps;
     }
 
+#region zones: map generation support
     public void AddZone(Zone zone)
     {
       m_Zones.Add(zone);
@@ -998,6 +999,7 @@ retry:
       foreach (Zone zone in zonesAt)
         RemoveZone(zone);
     }
+#endregion
 
     /// <remark>shallow copy needed to be safe for foreach loops</remark>
     /// <returns>null, or a non-empty list of zones</returns>
@@ -1514,7 +1516,7 @@ retry:
 
     public void OpenAllGates()
     {
-      foreach(MapObject obj in MapObjects) {
+      foreach(MapObject obj in m_MapObjectsList) {
         if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_OPEN;
         RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
@@ -2025,7 +2027,7 @@ retry:
     public void PreTurnStart()
     {
       m_iCheckNextActorIndex = 0;
-      foreach (var actor in Actors) actor.PreTurnStart();
+      foreach (var actor in m_ActorsList) actor.PreTurnStart();
     }
 
     public bool IsTransparent(int x, int y)
@@ -2752,7 +2754,7 @@ retry:
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       dest.WriteLine(Name+"<br>");
       // XXX since the lock at the district level causes deadlocking, we may be inconsistent for simulation districtions
-      List<Actor> tmp_Actors = (0<CountActors ? new List<Actor>(Actors) : null);
+      List<Actor> tmp_Actors = (0< m_ActorsList.Count ? new List<Actor>(m_ActorsList) : null);
       List<Point> inv_locs = (0<m_GroundItemsByPosition.Count ? new List<Point>(m_GroundItemsByPosition.Keys) : null);
       if (null==tmp_Actors && null==inv_locs) return;
       // we have one of actors or items here...full map has motivation
