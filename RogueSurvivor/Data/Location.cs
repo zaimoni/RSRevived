@@ -77,6 +77,16 @@ namespace djack.RogueSurvivor.Data
         if (null != a && a!=viewpoint && !a.IsEnemyOf(viewpoint)) return true;
       }
       // check map for topology-based
+      foreach (var dir in Direction.COMPASS) {
+        var loc = this+dir;
+        if (2> Engine.Rules.GridDistance(loc,viewpoint.Location)) continue;
+        Actor a = loc.Actor;
+        if (null == a || a.IsEnemyOf(viewpoint)) continue;
+        var steps = a.LegalSteps;
+        if (null == steps || 1>=steps.Count) return true;
+        // \todo: educated guess based on last known move
+      }
+
       return false;
     }
 
