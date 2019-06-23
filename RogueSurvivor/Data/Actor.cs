@@ -1127,7 +1127,7 @@ namespace djack.RogueSurvivor.Data
         Actor leader = LiveLeader;
         if (null != leader) return leader.HasActivePoliceRadio;
         if (0 >= CountFollowers) return false;
-        foreach(Actor fo in Followers) {
+        foreach(Actor fo in m_Followers) {
           if (fo.HasPoliceRadio) return true;
         }
         return false;
@@ -1140,7 +1140,7 @@ namespace djack.RogueSurvivor.Data
         Actor leader = LiveLeader;
         if (null != leader) return leader.HasActiveCellPhone;
         if (0 < CountFollowers) {
-          foreach(Actor fo in Followers) {
+          foreach(Actor fo in m_Followers) {
             if (fo.HasCellPhone) return true;
           }
         }
@@ -1161,7 +1161,7 @@ namespace djack.RogueSurvivor.Data
           return true;
         }
         if (0 < CountFollowers) {
-          foreach(Actor fo in Followers) {
+          foreach(Actor fo in m_Followers) {
             if (have_cellphone && fo.HasCellPhone) continue;
             if (have_army && fo.HasArmyRadio) continue;
             return true;
@@ -1183,7 +1183,7 @@ namespace djack.RogueSurvivor.Data
           return true;
         }
         if (0 < CountFollowers) {
-          foreach(Actor fo in Followers) {
+          foreach(Actor fo in m_Followers) {
             if (have_police && fo.HasPoliceRadio) continue;
             if (have_army && fo.HasArmyRadio) continue;
             return true;
@@ -1417,7 +1417,7 @@ namespace djack.RogueSurvivor.Data
       bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
       {
         if (groupActor.Leader.IsEnemyOf(target, false)) return true;
-        foreach (Actor mate in groupActor.Leader.Followers)
+        foreach (Actor mate in groupActor.Leader.m_Followers)
           if (mate != groupActor && mate.IsEnemyOf(target, false)) return true;
         return false;
       }
@@ -1425,7 +1425,7 @@ namespace djack.RogueSurvivor.Data
       // my followers enemies are my enemies
       bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
-        foreach (Actor follower in groupActor.Followers)
+        foreach (Actor follower in groupActor.m_Followers)
           if (follower.IsEnemyOf(target, false)) return true;
         return false;
       }
@@ -1506,7 +1506,7 @@ namespace djack.RogueSurvivor.Data
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
         else if (HasLeader) {
           ret.Add(Leader);
-          ret.UnionWith(Leader.Followers);
+          ret.UnionWith(Leader.m_Followers);
           ret.Remove(this);
         }
         return (0<ret.Count ? ret : null);
@@ -1520,7 +1520,7 @@ namespace djack.RogueSurvivor.Data
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
         else if (HasLeader) {
           ret.Add(Leader);
-          ret.UnionWith(Leader.Followers);
+          ret.UnionWith(Leader.m_Followers);
           ret.Remove(this);
         }
         return (0<ret.Count ? ret : null);
