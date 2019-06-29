@@ -1192,11 +1192,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (cornered.Count< _run_retreat.Count) _run_retreat.RemoveAll(pt => cornered.Contains(pt));
     }
 
-    public bool RunIfAdvisable(Point dest)
-    {
-      return RunIfAdvisable(new Location(m_Actor.Location.Map,dest));
-    }
-
     public bool RunIfAdvisable(Location dest)
     {
       if (!m_Actor.CanRun()) return false;
@@ -1207,7 +1202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
           if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT)) return false;
-          return 0 == m_Actor.MoveLost(1, 1, 1);
+          return 1 >= m_Actor.MoveLost(1, 1, 1);
         }
       }
       return true;
