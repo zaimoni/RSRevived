@@ -164,24 +164,24 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public void WalkTo(Location loc)
+    public void WalkTo(Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc, true));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, loc, true, n));
     }
 
-    public void WalkTo(IEnumerable<Location> locs)
+    public void WalkTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,locs, true));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, true, n));
     }
 
-    public void RunTo(Location loc)
+    public void RunTo(Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,loc));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, loc, false, n));
     }
 
-    public void RunTo(IEnumerable<Location> locs)
+    public void RunTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor,locs));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, false, n));
     }
 
     public List<string> GetValidSelfOrders()

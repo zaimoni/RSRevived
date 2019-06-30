@@ -3788,6 +3788,17 @@ namespace djack.RogueSurvivor.Engine
           case Keys.W:  // walk to ...
             (Player.Controller as PlayerController).WalkTo(retrofit());
             break;
+          case Keys.D1: // walk 1-9 steps to ....
+          case Keys.D2:
+          case Keys.D3:
+          case Keys.D4:
+          case Keys.D5:
+          case Keys.D6:
+          case Keys.D7:
+          case Keys.D8:
+          case Keys.D9:
+            (Player.Controller as PlayerController).WalkTo(retrofit(), (int)key.KeyCode - (int)Keys.D0);
+            break;
           }
         }
 
@@ -3813,7 +3824,7 @@ namespace djack.RogueSurvivor.Engine
           if (loc_qty.Key.Map.District == CurrentMap.District) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
-        tmp.Insert(0, "W)alk or R)un to the item class");
+        tmp.Insert(0, "W)alk or R)un to the item class, or walk 1) to 9) steps.");
         ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         return false;
       };
@@ -12153,7 +12164,7 @@ namespace djack.RogueSurvivor.Engine
       Location origin = Player.Location;
       Location viewpoint = origin;
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint.  RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps.  RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
 
       do {
@@ -12175,6 +12186,22 @@ namespace djack.RogueSurvivor.Engine
           case Keys.W:  // walk to ...
             if (Player.CanEnter(viewpoint)) {
               (Player.Controller as PlayerController).WalkTo(viewpoint);
+              ClearOverlays();
+              PanViewportTo(Player);
+              return null;
+            }
+            break;  // XXX \todo be somewhat more informative
+          case Keys.D1:
+          case Keys.D2:
+          case Keys.D3:
+          case Keys.D4:
+          case Keys.D5:
+          case Keys.D6:
+          case Keys.D7:
+          case Keys.D8:
+          case Keys.D9:
+            if (Player.CanEnter(viewpoint)) {
+              (Player.Controller as PlayerController).WalkTo(viewpoint, (int)key.KeyCode - (int)Keys.D0);
               ClearOverlays();
               PanViewportTo(Player);
               return null;

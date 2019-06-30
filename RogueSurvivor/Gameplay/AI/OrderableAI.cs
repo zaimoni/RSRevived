@@ -433,25 +433,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       private readonly HashSet<Location> _locs;
       private readonly bool walking;
+      private int turns;
 
-      public Goal_PathTo(int t0, Actor who, Location loc, bool walk=false)
+      public Goal_PathTo(int t0, Actor who, Location loc, bool walk=false,int n=int.MaxValue)
       : base(t0,who)
       {
         _locs = new HashSet<Location>{loc};
         walking = walk;
+        turns = n;
       }
 
-      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs, bool walk = false)
+      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs, bool walk = false, int n = int.MaxValue)
       : base(t0,who)
       {
         _locs = new HashSet<Location>(locs);
         walking = walk;
+        turns = n;
       }
 
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        if (_locs.Contains(m_Actor.Location)) {
+        if (_locs.Contains(m_Actor.Location) || 0 >= --turns) {
           _isExpired = true;
           return true;
         }
