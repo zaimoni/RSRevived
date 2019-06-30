@@ -3031,9 +3031,15 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (it is ItemWeapon) return "to use a weapon, equip it";
+      if (it is ItemBodyArmor) return "to use armor, wear it";
+      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
+#if DEBUG
+      if (!Engine.RogueGame.IsUsable(it.Model)) throw new InvalidOperationException(it.Model.ToString()+" is not a usable item type");
+#else
+      if (!Engine.RogueGame.IsUsable(it.Model)) return "not a usable item type";
+#endif
       if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
-      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
       if (it is ItemAmmo itemAmmo) {
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";

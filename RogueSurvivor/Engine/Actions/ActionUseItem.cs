@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (null == it) throw new ArgumentNullException(nameof(it));  // insane action items need not be usable
 #endif
       m_Item = it;
       actor.Activity = Activity.IDLE;
@@ -45,6 +45,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionUse(Actor actor, Gameplay.GameItems.IDs it)
       : base(actor)
     {
+#if DEBUG
+      if (!RogueGame.IsUsable(Models.Items[(int)it])) throw new ArgumentNullException(nameof(it));
+#endif
       m_ID = it;
     }
 
