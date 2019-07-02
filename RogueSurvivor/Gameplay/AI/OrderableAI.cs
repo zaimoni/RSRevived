@@ -454,7 +454,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        if (_locs.Contains(m_Actor.Location) || 0 >= --turns) {
+        if (_locs.Contains(m_Actor.Location) || 0 >= turns--) {
           _isExpired = true;
           return true;
         }

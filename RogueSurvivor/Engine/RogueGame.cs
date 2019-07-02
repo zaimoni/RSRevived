@@ -13685,7 +13685,10 @@ namespace djack.RogueSurvivor.Engine
           Item it = m_Rules.DiceRoller.Choose(inventory.Items);
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsLegal()) return actionUseItem;
-          if (it.IsEquipped) return new ActionUnequipItem(actor, it);
+          if (it.IsEquipped) {
+            DoUnequipItem(actor,it);
+            return new ActionWait(actor);   // historically, it took 2 insane actions to drop an equipped body armor
+          }
           return new ActionDropItem(actor, it);
         case 4:
           if (null == actor.Controller.friends_in_FOV) return null;
