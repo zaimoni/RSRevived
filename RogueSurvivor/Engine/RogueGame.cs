@@ -772,22 +772,6 @@ namespace djack.RogueSurvivor.Engine
       WaitEnter();
     }
 
-    static private void LogSaveScumStats() {
-      DiceRoller tmp = new DiceRoller(Session.Get.Seed);
-      string msg = "first seven RNG d100 values:";
-      var tmp2 = new List<int>(7);
-      int i = 7;
-      do tmp2.Add(tmp.Roll(0, 100));
-      while(0 < --i);
-      msg += String.Join<int>(" ",tmp2);
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, msg);
-      // report on particularly noxious consequences
-      if (Rules.FIREARM_JAM_CHANCE_RAIN > tmp2[0]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "firearms jam in rain on save-load");
-      else if (Rules.FIREARM_JAM_CHANCE_NO_RAIN > tmp2[0]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "firearms jam on save-load");
-      if (Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fragile melee weapons break on save-load");
-      else if (Rules.MELEE_WEAPON_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "melee weapons break on save-load");
-    }
-
 #if FAIL
 // minimum demo code fragment
       Func<int,bool?> setup_handler = (currentChoice => {
@@ -940,7 +924,6 @@ namespace djack.RogueSurvivor.Engine
           case 0:
             if (HandleNewCharacter()) {
               StartNewGame();
-              LogSaveScumStats();
               return true;
             }
             break;
@@ -950,7 +933,6 @@ namespace djack.RogueSurvivor.Engine
               m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
               m_UI.UI_Repaint();
               LoadGame(GetUserSave());
-              LogSaveScumStats();
               StartSimThread();
               return true;
             }
