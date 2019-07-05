@@ -3,6 +3,9 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* new text label SIMULATING when it is not your turn.  Not 100% reliable; if things look weird try the R)un command to force a screen redraw.
+** same screen space also has the SAVING label when saving a game.  This replaces wiping the displayed messages.
+* Counted walk command now available; 1) through 9) steps.
 * police radio range has been respecified as the minimap radius.  Reduction from being underground is not in (yet).
 * Many RS Alpha 10 changes merged in
 ** This does include the park shed and residential outdoor rooms changes, and corresponding map objects.

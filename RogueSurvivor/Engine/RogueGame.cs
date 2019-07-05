@@ -13089,7 +13089,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void SetCurrentMap(Location loc)
     {
-      lock(m_MapView) { m_MapView = loc.View; }
+      if (null!=m_MapView) lock(m_MapView) { m_MapView = loc.View; }
+      else m_MapView = loc.View;
 
       // alpha10 update background music
       UpdateBgMusic();
