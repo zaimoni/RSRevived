@@ -398,6 +398,7 @@ namespace djack.RogueSurvivor.Engine
         case GameMode.GM_STANDARD: return "STD - Standard Game";
         case GameMode.GM_CORPSES_INFECTION: return "C&I - Corpses & Infection";
         case GameMode.GM_VINTAGE: return "VTG - Vintage Zombies";
+        case GameMode.GM_WORLD_WAR_Z: return "WWZ - World War Z";
         default: throw new ArgumentOutOfRangeException(nameof(mode),(int)mode,"unhandled game mode");
       }
     }
@@ -408,16 +409,17 @@ namespace djack.RogueSurvivor.Engine
         case GameMode.GM_STANDARD: return "STD";
         case GameMode.GM_CORPSES_INFECTION: return "C&I";
         case GameMode.GM_VINTAGE: return "VTG";
+        case GameMode.GM_WORLD_WAR_Z: return "WWZ";
         default: throw new ArgumentOutOfRangeException(nameof(mode),(int)mode,"unhandled game mode");
       }
     }
 
     public bool HasImmediateZombification {
-      get { return GameMode.GM_STANDARD == GameMode; }
+      get { return GameMode.GM_STANDARD == GameMode || GameMode.GM_WORLD_WAR_Z == GameMode; }
     }
 
     public bool HasInfection {
-      get { return GameMode.GM_STANDARD != GameMode; }
+      get { return GameMode.GM_STANDARD != GameMode && GameMode.GM_WORLD_WAR_Z != GameMode; }
     }
 
     public bool HasCorpses {

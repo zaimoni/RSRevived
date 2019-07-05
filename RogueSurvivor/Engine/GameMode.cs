@@ -14,10 +14,11 @@ namespace djack.RogueSurvivor.Engine
     GM_STANDARD,
     GM_CORPSES_INFECTION,
     GM_VINTAGE,
+    GM_WORLD_WAR_Z,
   }
 
   internal enum GameMode_Bounds
   {
-    _COUNT = (int)GameMode.GM_VINTAGE+1
+    _COUNT = (int)GameMode.GM_WORLD_WAR_Z + 1
   }
 }

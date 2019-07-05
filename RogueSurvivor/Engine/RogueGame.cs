@@ -1003,15 +1003,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewGameMode()
     {
-      string[] entries = new string[(int)GameMode_Bounds._COUNT] {
-        Session.DescGameMode(GameMode.GM_STANDARD),
-        Session.DescGameMode(GameMode.GM_CORPSES_INFECTION),
-        Session.DescGameMode(GameMode.GM_VINTAGE)
-      };
+      string[] entries = Enumerable.Range(0,(int)GameMode_Bounds._COUNT).Select(i => Session.DescGameMode((GameMode)(i))).ToArray();
       string[] values = new string[(int)GameMode_Bounds._COUNT] {
         SetupConfig.GAME_NAME+" standard game.",
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
-        "The classic zombies next door."
+        "The classic zombies next door.",
+        "Almost standard game, disregarding the 1960's Hayes code."
       };
       // XXX \todo should refactor text to react to game mode (proofreading)
       List<string>[] summaries = new List<string>[(int)GameMode_Bounds._COUNT] {
@@ -1053,6 +1050,17 @@ namespace djack.RogueSurvivor.Engine
           "  - corpses may rise as zombies.",
           "  - undeads can eat corpses.",
           "  - livings can eat corpses if desperate.",
+        },
+        new List<string>(){
+          "This is the standard game setting, plus corpses",
+          "- All the kinds of undeads.",
+          "- Undeads can evolve to stronger forms.",
+          "- Livings can zombify instantly when dead.",
+          "- No infection.",
+          "- Corpses:",
+          "  - livings that die drop corpses that will rot away.",
+          "  - undeads can eat corpses.",
+          "  - livings can eat corpses if desperate.",
         }
       };
 
@@ -1071,8 +1079,9 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.GameMode = GameMode.GM_VINTAGE;
           ApplyOptions(false);
           return true;
-//      case "Z":   // World War Z, Resident Evil, etc: instant zombification w/corpses
-//        break;
+        case "Z":   // World War Z, Resident Evil, etc: instant zombification w/corpses
+          Session.Get.GameMode = GameMode.GM_WORLD_WAR_Z;
+          return true;
         default: return false;
         }
         // character 0 is the game mode.  Choice values are 0..2 currently
@@ -1108,6 +1117,9 @@ namespace djack.RogueSurvivor.Engine
           case 2:
             Session.Get.GameMode = GameMode.GM_VINTAGE;
             ApplyOptions(false);
+            return true;
+          case 3:
+            Session.Get.GameMode = GameMode.GM_WORLD_WAR_Z;
             return true;
         }
         return null;
