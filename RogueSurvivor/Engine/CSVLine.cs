@@ -31,12 +31,13 @@ namespace djack.RogueSurvivor.Engine
 
     public int FieldsCount { get { return m_Fields.Length; } }
 
-    public CSVLine(int nbFields)
-    {
+    public CSVLine(string[] src) {
 #if DEBUG
-      if (1 > nbFields) throw new InvalidOperationException("1 > nbFields");
+        if (null == src || 1 > src.Length) throw new ArgumentNullException(nameof(src));
 #endif
-      m_Fields = new CSVField[nbFields];
+        m_Fields = new CSVField[src.Length];
+        int i = src.Length;
+        while(0 <= --i) m_Fields[i] = new CSVField(src[i]);
     }
   }
 }

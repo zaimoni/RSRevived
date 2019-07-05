@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (line == null) return new string[0];
       line = line.TrimEnd();
-      List<string> stringList = new List<string>((IEnumerable<string>) line.Split(m_Delimiter));
+      List<string> stringList = new List<string>(line.Split(m_Delimiter));
       int index1 = 0;
       do {
         string str1 = stringList[index1];
@@ -47,8 +47,9 @@ namespace djack.RogueSurvivor.Engine
 
     public List<string[]> Parse(string[] lines)
     {
-      List<string[]> strArrayList = new List<string[]>(1);
-      if (lines == null) return strArrayList;
+      int ub = (null == lines) ? 0 : lines.Length;
+      if (0 >= ub) return new List<string[]>();
+      List<string[]> strArrayList = new List<string[]>(ub);
       foreach (string line in lines)
         strArrayList.Add(Parse(line));
       return strArrayList;
@@ -58,10 +59,7 @@ namespace djack.RogueSurvivor.Engine
     {
       CSVTable csvTable = new CSVTable(nbFields);
       foreach (string[] strArray in Parse(lines)) {
-        CSVLine line = new CSVLine(strArray.Length);
-        for (int index = 0; index < line.FieldsCount; ++index)
-          line[index] = new CSVField(strArray[index]);
-        csvTable.AddLine(line);
+        csvTable.AddLine(new CSVLine(strArray));
       }
       return csvTable;
     }

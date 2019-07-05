@@ -9437,7 +9437,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Drowse(WorldTime.TURNS_PER_HOUR);
       actor.Appetite(WorldTime.TURNS_PER_HOUR);
       Location location = actor.Location;
-      location.Map.AddDecorationAt("Tiles\\Decoration\\vomit", location.Position);
+      location.Map.AddDecorationAt(GameImages.DECO_VOMIT, location.Position);
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)
