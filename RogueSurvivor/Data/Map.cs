@@ -1005,16 +1005,16 @@ retry:
     /// <returns>null, or a non-empty list of zones</returns>
     public List<Zone> GetZonesAt(int x, int y)
     {
-      IEnumerable<Zone> zoneList = m_Zones.Where(z => z.Bounds.Contains(x, y));
-      return zoneList.Any() ? zoneList.ToList() : null;
+      var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(x, y));
+      return (0<zoneList.Count) ? zoneList : null;
     }
 
     /// <remark>shallow copy needed to be safe for foreach loops</remark>
     /// <returns>null, or a non-empty list of zones</returns>
     public List<Zone> GetZonesAt(Point pt)
     {
-      IEnumerable<Zone> zoneList = m_Zones.Where(z => z.Bounds.Contains(pt));
-      return zoneList.Any() ? zoneList.ToList() : null;
+      var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(pt));
+      return (0<zoneList.Count) ? zoneList : null;
     }
 
 #if DEAD_FUNC
@@ -2006,7 +2006,7 @@ retry:
       if (this == District.SewersMap) mapOdorDecayRate += 2;
 
       var discard = new List<OdorScent>();
-      var discard2 = new List<Point>();
+      List<Point> discard2 = null;
       foreach(var tmp in m_ScentsByPosition) {
         int odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
         foreach(OdorScent scent in tmp.Value) {
@@ -2016,10 +2016,10 @@ retry:
         if (0 < discard.Count) {
           foreach(var x in discard) tmp.Value.Remove(x);
           discard.Clear();
-          if (0 >= tmp.Value.Count) discard2.Add(tmp.Key);
+          if (0 >= tmp.Value.Count) (discard2 ?? (discard2 = new List<Point>())).Add(tmp.Key);
         }
       }
-      if (0 < discard2.Count) {
+      if (null != discard2) {
         foreach(var x in discard2) m_ScentsByPosition.Remove(x);
       }
     }
@@ -2999,8 +2999,7 @@ retry:
       // Check the actors.  If any have null controllers, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
       foreach(Actor tmp in m_ActorsList) {
-        if (null != tmp.Controller) continue;
-        tmp.Controller = tmp.Model.InstanciateController();
+        if (null == tmp.Controller) tmp.Controller = tmp.Model.InstanciateController();
       }
     }
 
@@ -3008,15 +3007,15 @@ retry:
     {
       int i = m_ActorsList.Count;
       while (0 < i--) {
-        if (m_ActorsList[i].IsDead) m_ActorsList.RemoveAt(i);
+        var a = m_ActorsList[i];
+        if (a.IsDead) m_ActorsList.RemoveAt(i);
+        else a.OptimizeBeforeSaving();
       }
 
       // alpha10 items stacks
       foreach (Inventory stack in m_GroundItemsByPosition.Values)
         stack.OptimizeBeforeSaving();
 
-      foreach (Actor mActors in m_ActorsList)
-        mActors.OptimizeBeforeSaving();
       m_ActorsList.TrimExcess();
       m_MapObjectsList.TrimExcess();
       m_Zones.TrimExcess();

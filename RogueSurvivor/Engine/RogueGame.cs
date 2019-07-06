@@ -2177,7 +2177,7 @@ namespace djack.RogueSurvivor.Engine
               if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} of infection!", Conjugate(actor, VERB_DIE))));
               KillActor(null, actor, "infection");
-              if (actor.IsPlayer) {
+              if (actor.IsPlayer) { // XXX \todo make player not specially vulnerable to infection
                 map.TryRemoveCorpseOf(actor);
                 Zombify(null, actor, false);
                 AddMessage(MakeMessage(actor, Conjugate(actor, "turn") + " into a Zombie!"));
@@ -2361,25 +2361,23 @@ namespace djack.RogueSurvivor.Engine
           bool hasExplodedSomething;
           do {
             hasExplodedSomething = false;
-            if (!hasExplodedSomething) {
-              foreach (Inventory groundInventory in map.GroundInventories) {
-                List<ItemPrimedExplosive> tmp = groundInventory.GetItemsByType<ItemPrimedExplosive>();
-                if (null == tmp) continue;
+            foreach (Inventory groundInventory in map.GroundInventories) {
+              List<ItemPrimedExplosive> tmp = groundInventory.GetItemsByType<ItemPrimedExplosive>();
+              if (null == tmp) continue;
 
-                // leave in for formal correctness.
-                Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
-                if (null == inventoryPosition) throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
+              // leave in for formal correctness.
+              Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
+              if (null == inventoryPosition) throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
 
-                foreach (ItemPrimedExplosive exp in tmp) {
-                  if (0 >= exp.FuseTimeLeft) {
-                    map.RemoveItemAt(exp, inventoryPosition.Value);
-                    DoBlast(new Location(map, inventoryPosition.Value), exp.Model.BlastAttack);
-                    hasExplodedSomething = true;
-                    break;
-                  }
+              foreach (ItemPrimedExplosive exp in tmp) {
+                if (0 >= exp.FuseTimeLeft) {
+                  map.RemoveItemAt(exp, inventoryPosition.Value);
+                  DoBlast(new Location(map, inventoryPosition.Value), exp.Model.BlastAttack);
+                  hasExplodedSomething = true;
+                  break;
                 }
-                if (hasExplodedSomething) break;
               }
+              if (hasExplodedSomething) break;
             }
             if (!hasExplodedSomething) {
               foreach (Actor actor in map.Actors) {
@@ -2395,8 +2393,7 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             }
-          }
-          while (hasExplodedSomething);
+          } while (hasExplodedSomething);
 #endregion
         }
 #endregion
