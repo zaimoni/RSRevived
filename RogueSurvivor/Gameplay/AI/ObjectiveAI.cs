@@ -1540,6 +1540,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
+    // \todo timing test: handle Resolvable before or after ActorDest?
     public bool VetoAction(ActorAction x)
     {
       if (x is ActorDest a_dest) {
@@ -1570,9 +1571,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionShove shove) {
         if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
-
-        if (shove.a_dest.ChokepointIsContested(m_Actor)) return true; // \todo change to interface-based if pulling actors is implemented
-        if (1>= shove.Target.Controller.FastestTrapKill(shove.a_dest)) return true;   // death-trapped
 
         if (shove.Target.Controller is ObjectiveAI ai) {
           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
@@ -1613,7 +1611,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       // recursions
       if (x is Resolvable resolve) { ScheduleFollowup(resolve.ConcreteAction); return; }
-      if (x is ActionBump bump) { ScheduleFollowup(bump.ConcreteAction); return; }
       // inline ClearGoals body here -- this is called at the right place
       if (x is ActorDest && !_used_advanced_pathing) _sparse.Unset(SparseData.PathingTo);
       // proper handling

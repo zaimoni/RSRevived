@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction ?? new ActionWait(m_Actor);    // likely redundant
     }
 
-    /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
+    /// <returns>non-null, action x for which x.IsPerformable() is true</returns>
     protected abstract ActorAction SelectAction(RogueGame game);
 
 /*
