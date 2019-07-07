@@ -24,5 +24,11 @@ namespace djack.RogueSurvivor.Data
       : this(youForm, youForm + "s")
     {
     }
+
+    public string Conjugate(int person, int qty = 1)
+    {
+      if (3 == person && 1 == qty) return HeForm;
+      return YouForm;
+    }
   }
 }

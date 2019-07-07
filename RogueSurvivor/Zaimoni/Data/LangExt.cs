@@ -108,7 +108,14 @@ namespace Zaimoni.Data
             return Noun.Feminine(name);
         }
 
+        public static string Conjugate(this string verb, int person, int qty=1)
+        {
+            if (3 == person && 1 == qty) return verb + "s";
+            return verb;
+        }
+
         // XXX incomplete implementation; have a grammar text available but past a certain point you need a Noun or Verb class.
+        // some languages also have the notion of dual # so this isn't even a correct API
         public static string Plural(this string name, bool plural)
         {
           if (!plural) return name;

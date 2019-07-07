@@ -629,14 +629,12 @@ namespace djack.RogueSurvivor.Engine
 
     private string Conjugate(Actor actor, string verb)
     {
-      if (!actor.IsProperName || actor.IsPluralName) return verb;
-      return verb + "s";
+      return verb.Conjugate(Player==actor ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     private string Conjugate(Actor actor, Verb verb)
     {
-      if (!actor.IsProperName || actor.IsPluralName) return verb.YouForm;
-      return verb.HeForm;
+      return verb.Conjugate(Player==actor ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     private static string HisOrHer(Actor actor)
