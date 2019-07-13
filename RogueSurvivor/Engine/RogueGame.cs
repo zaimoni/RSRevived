@@ -626,15 +626,15 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-
+    // These two are assumed to be working w/actor.VisibleIdentity
     private string Conjugate(Actor actor, string verb)
     {
-      return verb.Conjugate(Player==actor ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((Player == actor && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     private string Conjugate(Actor actor, Verb verb)
     {
-      return verb.Conjugate(Player==actor ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((Player == actor && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     private static string HisOrHer(Actor actor)
