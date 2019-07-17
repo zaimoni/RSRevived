@@ -2803,7 +2803,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountItemsOfSameType(Type tt)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      if (m_Inventory?.IsEmpty ?? true) return 0;
       int num = 0;
       foreach (Item obj in m_Inventory.Items) {
         if (obj.IsUseless) continue;
@@ -2814,7 +2814,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountItems<_T_>() where _T_ : Item
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      if (m_Inventory?.IsEmpty ?? true) return 0;
       return m_Inventory.Items.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
@@ -2825,14 +2825,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (m_Inventory?.IsEmpty ?? true) return false;
       if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
     public bool HasAtLeastFullStackOf(ItemModel it, int n)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (m_Inventory?.IsEmpty ?? true) return false;
       if (it.IsStackable) return m_Inventory.CountQuantityOf(it) >= n * it.StackingLimit;
       return m_Inventory.Count(it) >= n;
     }

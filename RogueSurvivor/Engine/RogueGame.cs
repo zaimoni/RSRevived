@@ -8857,10 +8857,10 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
+      speaker.Inventory.RemoveAllQuantity(itSpeaker);
 #if OBSOLETE
       if (trade.IsEquipped) DoUnequipItem(target, trade);
 #endif
-      speaker.Inventory.RemoveAllQuantity(itSpeaker);
       target.RemoveAllQuantity(trade);
       target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
