@@ -8858,11 +8858,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
       speaker.Inventory.RemoveAllQuantity(itSpeaker);
-#if OBSOLETE
-      if (trade.IsEquipped) DoUnequipItem(target, trade);
-#endif
       target.RemoveAllQuantity(trade);
-      target.AddAsMuchAsPossible(itSpeaker);
+      if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
     }
@@ -8875,10 +8872,10 @@ namespace djack.RogueSurvivor.Engine
       if (flag1) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (give.IsEquipped) DoUnequipItem(actor, give);
+      if (give.IsEquipped) DoUnequipItem(actor, give, false);
       actor.Inventory.RemoveAllQuantity(give);
       dest.RemoveAllQuantity(take);
-      dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
+      if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       actor.Inventory.AddAsMuchAsPossible(take);
     }
 
