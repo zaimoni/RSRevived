@@ -9288,9 +9288,7 @@ namespace djack.RogueSurvivor.Engine
     {
       it.Unequip();
       actor.OnUnequipItem(it);
-      if (!canMessage) return;
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
+      if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
 
     public void DoDropItem(Actor actor, Item it)

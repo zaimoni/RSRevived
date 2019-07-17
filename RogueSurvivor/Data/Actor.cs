@@ -3464,8 +3464,8 @@ namespace djack.RogueSurvivor.Data
         m_CurrentRangedAttack = Attack.BLANK;
         return;
       }
-      if (it.Model is ItemBodyArmorModel) {
-        m_CurrentDefence -= (it.Model as ItemBodyArmorModel).ToDefence();
+      if (it.Model is ItemBodyArmorModel armor) {
+        m_CurrentDefence -= armor.ToDefence();
         return;
       }
     }
