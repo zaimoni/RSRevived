@@ -511,6 +511,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                || !m_Actor.CanEnter(p.Location)
                || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
               _stacks.RemoveAt(i);
+              (m_Actor.Controller as ObjectiveAI).ClearLastMove();
               continue;
             }
             _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
