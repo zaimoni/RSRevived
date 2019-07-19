@@ -9469,7 +9469,8 @@ namespace djack.RogueSurvivor.Engine
         if (Player==actor) {  // this manual is highly informative
           var display = new List<string>();
           display.Add("It appears CHAR management had done some contingency planning for what is currently happening.");
-          display.Add("The absence of an exemption for police when clearing CHAR offices in event of losing communications with HQ, seems imprudent.  Even if there had been a law enforcement raid on the HQ.");
+          display.Add("The absence of an exemption for police when clearing CHAR offices in event of losing communications with HQ,");
+          display.Add("seems imprudent.  Even if there had been a law enforcement raid on the HQ.");
           display.Add("Projected looting:");
           display.Add("  Bikers: arrive day "+BIKERS_RAID_DAY.ToString()+", need "+BIKERS_RAID_DAYS_GAP.ToString()+" days to reorganize; bases overrun by zombies day "+BIKERS_END_DAY.ToString());
           display.Add("  Gangsters: arrive day "+GANGSTAS_RAID_DAY.ToString()+", need "+GANGSTAS_RAID_DAYS_GAP.ToString()+" days to reorganize; bases overrun by zombies day "+GANGSTAS_END_DAY.ToString());
