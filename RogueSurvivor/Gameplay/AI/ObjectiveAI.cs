@@ -226,6 +226,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
 
+    public void ClearLastMove() { _last_move = null; }
+
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}

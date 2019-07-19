@@ -418,6 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (ai is PlayerController) return false;   // do not hijack player (use case is threat detection)
         if (0 < ai.InterruptLongActivity()) return false;
         // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
+        ai.ClearLastMove();
         ret = ai.BehaviorPathTo(m => WhereIn(m));
         return true;
       }
