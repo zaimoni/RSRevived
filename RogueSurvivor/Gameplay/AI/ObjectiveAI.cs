@@ -2495,7 +2495,8 @@ restart:
               // inverse of ActionUseExit is ActionUseExit.  If the origin map has no goals, it's ok
               backtrack_ok = (m_Actor.Location.Map == m_Actor.Location.Map.District.SewersMap || !goals.Any(loc => loc.Map == m_Actor.Location.Map));
             }
-            if (!backtrack_ok) {
+            // \todo second test should be its own function
+            if (!backtrack_ok && !goals.Any(loc => Rules.InteractionDistance(loc, _last_move.dest) > Rules.InteractionDistance(loc, _last_move.origin))) {
               Session.Get.World.DaimonMap();
               throw new InvalidOperationException(m_Actor.Name + " committed a period-2 move loop on turn " + m_Actor.Location.Map.LocalTime.TurnCounter + ": " + _last_move + ", " + act);
             }
