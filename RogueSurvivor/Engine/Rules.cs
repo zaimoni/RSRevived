@@ -935,7 +935,7 @@ retry:
       if (lhs.X >= rhs.X && lhs.Y >= rhs.Y) return true;    // this quadrant comes before us.  Would include equality except that already happened.
 
       // strictly speaking, only need to be accurate for adjacent points
-      Point abs_delta = (lhs.Y < rhs.Y) ? new Point(lhs.X-rhs.X,rhs.Y-lhs.Y) : new Point(rhs.X-lhs.Y,lhs.Y-rhs.Y);
+      Point abs_delta = (lhs.Y < rhs.Y) ? new Point(lhs.X-rhs.X,rhs.Y-lhs.Y) : new Point(rhs.X-lhs.X,lhs.Y-rhs.Y);
 #if REFERENCE
       if (abs_delta.X  == 2*abs_delta.Y) return false;   // the ambiguity line; overflow-vulnerable
 #endif
