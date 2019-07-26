@@ -16,9 +16,9 @@ using System.Linq;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
-using Size = Zaimoni.Data.Vector2D_int;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
+using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
 #else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileFill(map, GameTiles.FLOOR_GRASS);
 restart:
       List<Block> list = new List<Block>();
-      Rectangle rect = new Rectangle(0, 0, map.Width, map.Height);
+      Rectangle rect = map.Rect;
       MakeBlocks(map, true, ref list, rect);
       List<Block> blockList1 = new List<Block>(list);
       m_SurfaceBlocks = new List<Block>(list.Count);
@@ -3552,9 +3552,13 @@ restart:
       TileFill(map, GameTiles.FLOOR_PLANKS, room);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
-      Point doorAt = room.Anchor(isFacingEast ? Compass.XCOMlike.E : Compass.XCOMlike.W);
+      var doorAt = room.Anchor(isFacingEast ? Compass.XCOMlike.E : Compass.XCOMlike.W);
       PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+#if Z_VECTOR
+      var midpoint = room.Location + room.Size/2;
+#else
       Point midpoint = new Point(room.Left + room.Width / 2, room.Top + room.Height / 2);
+#endif
       map.PlaceAt(MakeObjTable(GameImages.OBJ_TABLE), midpoint);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.W);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.E);
@@ -3846,10 +3850,20 @@ restart:
     static private void MakeWalkwayZones(Map map, Block b)
     {
       Rectangle rectangle = b.Rectangle;
+#if Z_VECTOR
+      var s = rectangle.Size + Direction.NW;
+      var o = rectangle.Location + Direction.SE;
+      var br = rectangle.Location + rectangle.Size + Direction.NW;
+      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top, s.X, 1)));
+      map.AddZone(MakeUniqueZone("walkway", new Rectangle(o.X, br.Y, s.X, 1)));
+      map.AddZone(MakeUniqueZone("walkway", new Rectangle(br.X, rectangle.Top, 1, s.Y)));
+      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, o.Y, 1, s.Y)));
+#else
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top, rectangle.Width - 1, 1)));
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left + 1, rectangle.Bottom - 1, rectangle.Width - 1, 1)));
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Right - 1, rectangle.Top, 1, rectangle.Height - 1)));
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top + 1, 1, rectangle.Height - 1)));
+#endif
     }
 
     public struct Parameters
@@ -4001,8 +4015,17 @@ restart:
       public Block(Rectangle rect)
       {
         Rectangle = rect;
+#if Z_VECTOR
+        BuildingRect = rect;
+        BuildingRect.Location += Direction.SE;
+        BuildingRect.Size += 2*Direction.NW;
+        InsideRect = BuildingRect;
+        InsideRect.Location += Direction.SE;
+        InsideRect.Size += 2*Direction.NW;
+#else
         BuildingRect = new Rectangle(rect.Left + 1, rect.Top + 1, rect.Width - 2, rect.Height - 2);
         InsideRect = new Rectangle(BuildingRect.Left + 1, BuildingRect.Top + 1, BuildingRect.Width - 2, BuildingRect.Height - 2);
+#endif
       }
 
       public Block(Block copyFrom)

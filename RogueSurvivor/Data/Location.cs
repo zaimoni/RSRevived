@@ -11,9 +11,9 @@ using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
-using Size = Zaimoni.Data.Vector2D_int;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
+using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
 #else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;

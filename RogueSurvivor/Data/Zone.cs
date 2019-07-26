@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
-using Size = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
+using Size = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
@@ -103,8 +103,13 @@ namespace djack.RogueSurvivor.Data
 
     public Location Center { get {
       var pos = Rect.Location;
+#if Z_VECTOR
+      pos.X += (short)(Rect.Width/2);
+      pos.Y += (short)(Rect.Height/2);
+#else
       pos.X += Rect.Width/2;
       pos.Y += Rect.Height/2;
+#endif
       return new Location(m,pos);
     } }
 

@@ -699,6 +699,12 @@ namespace Zaimoni.Data
             _dim = new Vector2D_short(sizex, sizey);
         }
 
+        public Box2D_short(Vector2D_short origin, short sizex, short sizey)
+        {
+            _anchor = origin;
+            _dim = new Vector2D_short(sizex, sizey);
+        }
+
         static public Box2D_short FromLTRB(short left, short top, short right, short bottom) { return new Box2D_short(left,top,(short)(right-left), (short)(bottom -top)); }
 
         static readonly public Box2D_short Empty = new Box2D_short(0, 0, 0, 0);

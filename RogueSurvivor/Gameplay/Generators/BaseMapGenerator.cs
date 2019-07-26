@@ -11,7 +11,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
 #if Z_VECTOR
-using Rectangle = Zaimoni.Data.Box2D_int;
+using Rectangle = Zaimoni.Data.Box2D_short;
 #else
 using Rectangle = System.Drawing.Rectangle;
 #endif

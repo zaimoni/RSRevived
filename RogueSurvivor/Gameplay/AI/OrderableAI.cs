@@ -24,8 +24,8 @@ using System.Linq;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
 #else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
@@ -254,7 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         var denorm = m_Actor.Location.Map.Denormalize(_locs);
         if (null == denorm) return true;
-        IEnumerable<Point> tmp =  denorm.Select(loc => loc.Position).Intersect(m_Actor.Controller.FOV);
+        var tmp =  denorm.Select(loc => loc.Position).Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
         if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(denorm,null);

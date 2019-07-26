@@ -1,6 +1,4 @@
 ﻿using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +6,8 @@ using Zaimoni.Data;
 using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Size = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
+using Size = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;

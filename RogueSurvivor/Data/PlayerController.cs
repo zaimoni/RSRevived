@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 #endif
@@ -309,7 +309,11 @@ namespace djack.RogueSurvivor.Data
     {
       Location? test = m_Actor.Location.Map.Denormalize(loc);
       if (null == test) throw new ArgumentNullException(nameof(test));
-      Point v = new Point(test.Value.Position.X - m_Actor.Location.Position.X, test.Value.Position.Y - m_Actor.Location.Position.Y);
+#if Z_VECTOR
+      var v = test.Value.Position - m_Actor.Location.Position;
+#else
+      var v = new Point(test.Value.Position.X - m_Actor.Location.Position.X, test.Value.Position.Y - m_Actor.Location.Position.Y);
+#endif
       string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v));
       if (null != color) return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
       return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter);

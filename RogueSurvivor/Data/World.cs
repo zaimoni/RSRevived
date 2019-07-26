@@ -11,8 +11,8 @@ using System.Threading;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
 #else
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
@@ -530,7 +530,11 @@ restart:
       }
 
       test = src.Right;
+#if Z_VECTOR
+      if (Size < test) src.Width -= (short)(test-Size);
+#else
       if (Size < test) src.Width -= (test-Size);
+#endif
 
       test = src.Top;
       if (0>test) {
@@ -539,10 +543,14 @@ restart:
       }
 
       test = src.Bottom;
+#if Z_VECTOR
+      if (Size < test) src.Width -= (short)(test-Size);
+#else
       if (Size < test) src.Width -= (test-Size);
-    }
+#endif
+        }
 
-    public static string CoordToString(int x, int y)
+        public static string CoordToString(int x, int y)
     {
       return string.Format("{0}{1}", (object) (char) (65 + x), (object) y);
     }

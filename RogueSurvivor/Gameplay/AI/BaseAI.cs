@@ -18,7 +18,7 @@ using System.Linq;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 #endif
@@ -761,7 +761,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Location != percept.Location) {
         ActorAction tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
         if (null!=tmpAction) return tmpAction;
+#if Z_VECTOR
+        var dir = Direction.FromVector(percept.Location.Position-m_Actor.Location.Position);
+#else
         var dir = Direction.FromVector(new Point(percept.Location.Position.X-m_Actor.Location.Position.X,percept.Location.Position.Y- m_Actor.Location.Position.Y));
+#endif
         // Cf. Angband.
         if (null!=dir) {
           if (RogueForm.Game.Rules.DiceRoller.RollChance(50)) { // anti-clockwise bias
@@ -1332,8 +1336,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected static Location RandomPositionNear(Rules rules, Location goal, int range)
     { // XXX \todo see if it's practical to be more efficient
+#if Z_VECTOR
+      Location ret = new Location(goal.Map,new Point((short)(goal.Position.X+ rules.Roll(-range, range)), (short)(goal.Position.Y + rules.Roll(-range, range))));
+      while(!ret.Map.IsValid(ret.Position)) ret = new Location(goal.Map, new Point((short)(goal.Position.X + rules.Roll(-range, range)), (short)(goal.Position.Y + rules.Roll(-range, range))));
+#else
       Location ret = new Location(goal.Map,new Point(goal.Position.X+ rules.Roll(-range, range),goal.Position.Y + rules.Roll(-range, range)));
       while(!ret.Map.IsValid(ret.Position)) ret = new Location(goal.Map, new Point(goal.Position.X + rules.Roll(-range, range), goal.Position.Y + rules.Roll(-range, range)));
+#endif
       return ret;
     }
 

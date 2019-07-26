@@ -7,7 +7,7 @@
 using System;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 #endif

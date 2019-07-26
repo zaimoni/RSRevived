@@ -4,15 +4,10 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.MapObjects;
-using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
+using Point = Zaimoni.Data.Vector2D_short;
 #else
 using Point = System.Drawing.Point;
 #endif

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Rectangle = Zaimoni.Data.Box2D_int;
+using Rectangle = Zaimoni.Data.Box2D_short;
 #else
 using Rectangle = System.Drawing.Rectangle;
 #endif
@@ -50,7 +50,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 #endif
       m_List.Clear();
       int num = actor.SmellThreshold;  // floors at 1
+#if Z_VECTOR
+      Rectangle survey = new Rectangle(actor.Location.Position+Direction.NW, 3, 3);
+#else
       Rectangle survey = new Rectangle(actor.Location.Position.X - 1, actor.Location.Position.Y - 1, 3, 3);
+#endif
       Map map = actor.Location.Map;
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
       int scentByOdorAt = 0;

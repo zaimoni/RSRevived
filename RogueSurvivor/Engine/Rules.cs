@@ -19,12 +19,10 @@ using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 #if Z_VECTOR
-using Point = Zaimoni.Data.Vector2D_int;
-using Rectangle = Zaimoni.Data.Box2D_int;
-using Size = Zaimoni.Data.Vector2D_int;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D_short;
+using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
 #else
 using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
 #endif
 
