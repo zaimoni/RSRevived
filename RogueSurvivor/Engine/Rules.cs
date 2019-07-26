@@ -877,8 +877,12 @@ retry:
       var exits = loc.Map.ExitsFor(loc.Map.District.EntryMap);
       if (0 < exits.Count) {
         foreach(var x in exits) {
+#if Z_VECTOR
+          return new Location(x.Value.Location.Map, x.Value.Location.Position + (loc.Position - x.Key));
+#else
           Size delta = new Size(loc.Position.X-x.Key.X, loc.Position.Y - x.Key.Y);
           return new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
+#endif
         }
       }
       // end rewrite to not churn GC
@@ -893,8 +897,12 @@ retry:
         // \todo patients->storeroom should be 90 degrees counter-clockwise
         // \todo storeroom -> power should be 90 degrees clockwise
         foreach(var x in exits) {
+#if Z_VECTOR
+          loc = new Location(x.Value.Location.Map,x.Value.Location.Position-(loc.Position - x.Key));
+#else
           Size delta = new Size(-(loc.Position.X - x.Key.X), -(loc.Position.Y - x.Key.Y));
           loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
+#endif
           goto retry;
         }
       }
