@@ -351,7 +351,7 @@ restart:
 
       // 1. Make blocks.
       List<Block> list = new List<Block>(m_SurfaceBlocks.Count);
-      MakeBlocks(sewers, false, ref list, new Rectangle(0, 0, sewers.Width, sewers.Height));
+      MakeBlocks(sewers, false, ref list, sewers.Rect);
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #1 ok");
 #endif
@@ -466,7 +466,7 @@ restart:
 #endif
 
 #region 7. Objects.
-      MapObjectFill(sewers, new Rectangle(0, 0, sewers.Width, sewers.Height), (Func<Point, MapObject>) (pt =>
+      MapObjectFill(sewers, sewers.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
         if (!sewers.IsWalkable(pt.X, pt.Y)) return null;
@@ -2563,7 +2563,7 @@ restart:
       Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
-      TileRectangle(basement, GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
+      TileRectangle(basement, GameTiles.WALL_BRICK, basement.Rect);
       var candidates = new List<Point>();
       buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt));
       Point point = m_DiceRoller.Choose(candidates);
@@ -2683,7 +2683,7 @@ restart:
 
       Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceExit.X, surfaceExit.Y), surfaceMap.District, 100, 100, Lighting.DARKNESS, true);
       TileFill(underground, GameTiles.FLOOR_OFFICE, true);
-      TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
+      TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, underground.Rect);
 
       DoForEachTile(zone1.Bounds, pt => {
         if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
