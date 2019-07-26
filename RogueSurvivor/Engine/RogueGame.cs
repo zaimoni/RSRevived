@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Engine
     public const float SEWERS_UNDEADS_FACTOR = 0.5f;
     private const float REFUGEES_WAVE_SIZE = 0.2f;
     public const int REFUGEES_WAVE_ITEMS = 3;
-    private const int REFUGEE_SURFACE_SPAWN_CHANCE = 80;
+    private const int REFUGEE_SURFACE_SPAWN_CHANCE = 80;    // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
     private const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
     public const int NATGUARD_DAY = 3;
     private const int NATGUARD_END_DAY = 10;
