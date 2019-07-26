@@ -44,6 +44,8 @@ namespace Zaimoni.Data
         static public Vector2D_int operator *(Vector2D_int lhs, int rhs) { return new Vector2D_int(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_int operator /(Vector2D_int lhs, int rhs) { return new Vector2D_int(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_int other)
         {
@@ -98,6 +100,8 @@ namespace Zaimoni.Data
         static public Vector2D_int_r operator *(int lhs, in Vector2D_int_r rhs) { return new Vector2D_int_r(lhs * rhs.X, lhs * rhs.Y); }
         static public Vector2D_int_r operator *(in Vector2D_int_r lhs, int rhs) { return new Vector2D_int_r(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_int_r operator /(in Vector2D_int_r lhs, int rhs) { return new Vector2D_int_r(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
+
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_int_r other)
@@ -165,6 +169,8 @@ namespace Zaimoni.Data
         static public Vector2D_int_stack operator *(Vector2D_int_stack lhs, int rhs) { return new Vector2D_int_stack(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_int_stack operator /(Vector2D_int_stack lhs, int rhs) { return new Vector2D_int_stack(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_int_stack other)
         {
@@ -213,6 +219,8 @@ namespace Zaimoni.Data
         static public Vector2D_int_stack_r operator *(in Vector2D_int_stack_r lhs, int rhs) { return new Vector2D_int_stack_r(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_int_stack_r operator /(in Vector2D_int_stack_r lhs, int rhs) { return new Vector2D_int_stack_r(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(in Vector2D_int_stack_r other)
         {
@@ -247,6 +255,12 @@ namespace Zaimoni.Data
         public Box2D_int(int originx, int originy, int sizex, int sizey)
         {
             _anchor = new Vector2D_int(originx, originy);
+            _dim = new Vector2D_int(sizex, sizey);
+        }
+
+        public Box2D_int(Vector2D_int origin, short sizex, short sizey)
+        {
+            _anchor = origin;
             _dim = new Vector2D_int(sizex, sizey);
         }
 
@@ -493,6 +507,8 @@ namespace Zaimoni.Data
         static public Vector2D_short operator *(Vector2D_short lhs, short rhs) { return new Vector2D_short((short)(lhs.X * rhs), (short)(lhs.Y * rhs)); }
         static public Vector2D_short operator /(Vector2D_short lhs, short rhs) { return new Vector2D_short((short)(lhs.X / rhs), (short)(lhs.Y / rhs)); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_short other)
         {
@@ -547,6 +563,8 @@ namespace Zaimoni.Data
         static public Vector2D_short_r operator *(short lhs, in Vector2D_short_r rhs) { return new Vector2D_short_r((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
         static public Vector2D_short_r operator *(in Vector2D_short_r lhs, short rhs) { return new Vector2D_short_r((short)(lhs.X * rhs), (short)(lhs.Y * rhs)); }
         static public Vector2D_short_r operator /(in Vector2D_short_r lhs, short rhs) { return new Vector2D_short_r((short)(lhs.X / rhs), (short)(lhs.Y / rhs)); } // arguable whether this is useful
+
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_short_r other)
@@ -614,6 +632,8 @@ namespace Zaimoni.Data
         static public Vector2D_short_stack operator *(Vector2D_short_stack lhs, short rhs) { return new Vector2D_short_stack((short)(lhs.X * rhs), (short)(lhs.Y * rhs)); }
         static public Vector2D_short_stack operator /(Vector2D_short_stack lhs, short rhs) { return new Vector2D_short_stack((short)(lhs.X / rhs), (short)(lhs.Y / rhs)); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_short_stack other)
         {
@@ -661,6 +681,8 @@ namespace Zaimoni.Data
         static public Vector2D_short_stack_r operator *(short lhs, in Vector2D_short_stack_r rhs) { return new Vector2D_short_stack_r((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
         static public Vector2D_short_stack_r operator *(in Vector2D_short_stack_r lhs, short rhs) { return new Vector2D_short_stack_r((short)(lhs.X * rhs), (short)(lhs.Y * rhs)); }
         static public Vector2D_short_stack_r operator /(in Vector2D_short_stack_r lhs, short rhs) { return new Vector2D_short_stack_r((short)(lhs.X / rhs), (short)(lhs.Y / rhs)); } // arguable whether this is useful
+
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
 
         // lexicographic sort; IComparable<>
         public int CompareTo(in Vector2D_short_stack_r other)
@@ -717,7 +739,7 @@ namespace Zaimoni.Data
         static public bool operator <=(Box2D_short lhs, Box2D_short rhs) { return 0 >= lhs.CompareTo(rhs); }
         static public bool operator >=(Box2D_short lhs, Box2D_short rhs) { return 0 <= lhs.CompareTo(rhs); }
 
-        #region pure getters
+#region pure getters
         public short Bottom { get { return (short)(_anchor.Y + _dim.Y); } }
         public short Left { get { return _anchor.X; } }
         public short Right { get { return (short)(_anchor.X + _dim.X); } }
@@ -945,6 +967,8 @@ namespace Zaimoni.Data
         static public Vector2D_long operator *(Vector2D_long lhs, long rhs) { return new Vector2D_long(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_long operator /(Vector2D_long lhs, long rhs) { return new Vector2D_long(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_long other)
         {
@@ -999,6 +1023,8 @@ namespace Zaimoni.Data
         static public Vector2D_long_r operator *(long lhs, in Vector2D_long_r rhs) { return new Vector2D_long_r(lhs * rhs.X, lhs * rhs.Y); }
         static public Vector2D_long_r operator *(in Vector2D_long_r lhs, long rhs) { return new Vector2D_long_r(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_long_r operator /(in Vector2D_long_r lhs, long rhs) { return new Vector2D_long_r(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
+
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Vector2D_long_r other)
@@ -1066,6 +1092,8 @@ namespace Zaimoni.Data
         static public Vector2D_long_stack operator *(Vector2D_long_stack lhs, long rhs) { return new Vector2D_long_stack(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_long_stack operator /(Vector2D_long_stack lhs, long rhs) { return new Vector2D_long_stack(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public long CompareTo(Vector2D_long_stack other)
         {
@@ -1114,6 +1142,8 @@ namespace Zaimoni.Data
         static public Vector2D_long_stack_r operator *(in Vector2D_long_stack_r lhs, long rhs) { return new Vector2D_long_stack_r(lhs.X * rhs, lhs.Y * rhs); }
         static public Vector2D_long_stack_r operator /(in Vector2D_long_stack_r lhs, long rhs) { return new Vector2D_long_stack_r(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
 
+        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
+
         // lexicographic sort; IComparable<>
         public long CompareTo(in Vector2D_long_stack_r other)
         {
@@ -1148,6 +1178,12 @@ namespace Zaimoni.Data
         public Box2D_long(long originx, long originy, long sizex, long sizey)
         {
             _anchor = new Vector2D_long(originx, originy);
+            _dim = new Vector2D_long(sizex, sizey);
+        }
+
+        public Box2D_long(Vector2D_long origin, short sizex, short sizey)
+        {
+            _anchor = origin;
             _dim = new Vector2D_long(sizex, sizey);
         }
 

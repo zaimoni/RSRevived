@@ -279,13 +279,14 @@ namespace djack.RogueSurvivor.Engine
 
     protected static void ClearRectangle(Map map, Rectangle rect, bool clearZones = true)
     {
-      for (int left = rect.Left; left < rect.Right; ++left) {
-        for (int top = rect.Top; top < rect.Bottom; ++top) {
-          map.RemoveMapObjectAt(left, top);
-          map.RemoveAllItemsAt(new Point(left,top));
-          map.RemoveAllDecorationsAt(left, top);
+      for (var left = rect.Left; left < rect.Right; ++left) {
+        for (var top = rect.Top; top < rect.Bottom; ++top) {
+          var pt = new Point(left, top);
+          map.RemoveMapObjectAt(pt);
+          map.RemoveAllItemsAt(pt);
+          map.RemoveAllDecorationsAt(pt);
           if (clearZones) map.RemoveAllZonesAt(left, top);
-          map.GetActorAt(left, top)?.RemoveFromMap();
+          map.GetActorAt(pt)?.RemoveFromMap();
         }
       }
     }

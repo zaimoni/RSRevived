@@ -47,7 +47,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
             m_Origin = denorm.Value.Position;
 
+#if Z_VECTOR
+            m_Delta = target - m_Origin;
+#else
             m_Delta = new Point(target.X - m_Origin.X, target.Y - m_Origin.Y);
+#endif
             Point absDelta = new Point(0 <= m_Delta.X ? m_Delta.X : -m_Delta.X, 0 <= m_Delta.Y ? m_Delta.Y : -m_Delta.Y);
             bool x_dominant = absDelta.X > absDelta.Y;
             span_spread = x_dominant ? new KeyValuePair<int, int>(absDelta.X, absDelta.X - absDelta.Y) : new KeyValuePair<int, int>(absDelta.Y, absDelta.Y - absDelta.X);
