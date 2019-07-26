@@ -201,6 +201,33 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       HospitalWorldPos = dr.ChooseWithoutReplacement(pointList);
     }
 
+    protected void AddWreckedCarsOutside(Map map)
+    {
+      MapObjectFill(map, map.Rect, (Func<Point, MapObject>) (pt =>
+      {
+        // \todo next mapgen break: conserve RNG
+        if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
+          Tile tileAt = map.GetTileAt(pt);
+          if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != GameTiles.FLOOR_GRASS) {
+            MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
+            if (m_DiceRoller.RollChance(50)) mapObj.Ignite();
+            return mapObj;
+          }
+        }
+        return null;
+      }));
+    }
+
+    protected void DecorateOutsideWallsWithPosters(Map map, int chancePerWall)
+    {
+      DecorateOutsideWalls(map, map.Rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(POSTERS) : null));
+    }
+
+    protected void DecorateOutsideWallsWithTags(Map map, int chancePerWall)
+    {
+      DecorateOutsideWalls(map, map.Rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
+    }
+
     public override Map Generate(int seed, string name)
     {
       m_DiceRoller = new DiceRoller(seed);
@@ -209,8 +236,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileFill(map, GameTiles.FLOOR_GRASS);
 restart:
       List<Block> list = new List<Block>();
-      Rectangle rect = map.Rect;
-      MakeBlocks(map, true, ref list, rect);
+      MakeBlocks(map, true, ref list, map.Rect);
       List<Block> blockList1 = new List<Block>(list);
       m_SurfaceBlocks = new List<Block>(list.Count);
       foreach (Block copyFrom in list)
@@ -280,9 +306,9 @@ restart:
       }
       foreach (Block block in blockList2)
         blockList1.Remove(block);
-      AddWreckedCarsOutside(map, rect);
-      DecorateOutsideWallsWithPosters(map, rect, m_Params.PostersChance);
-      DecorateOutsideWallsWithTags(map, rect, m_Params.TagsChance);
+      AddWreckedCarsOutside(map);
+      DecorateOutsideWallsWithPosters(map, m_Params.PostersChance);
+      DecorateOutsideWallsWithTags(map, m_Params.TagsChance);
       map.BgMusic = GameMusics.SURFACE; // alpha10: music
       return map;
     }
@@ -914,22 +940,6 @@ restart:
         map.SetTileModelAt(x, y, prevmodel);
       }));
       map.AddZone(MakeUniqueZone("road", rect));
-    }
-
-    protected virtual void AddWreckedCarsOutside(Map map, Rectangle rect)
-    {
-      MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
-      {
-        if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
-          Tile tileAt = map.GetTileAt(pt);
-          if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != GameTiles.FLOOR_GRASS) {
-            MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
-            if (m_DiceRoller.RollChance(50)) mapObj.Ignite();
-            return mapObj;
-          }
-        }
-        return null;
-      }));
     }
 
     static private bool IsThereASpecialBuilding(Map map, Rectangle rect)
@@ -2397,16 +2407,6 @@ restart:
     public Item MakeRandomParkItem()
     {
       return PostprocessQuantity(Models.Items[(int)park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))].create());
-    }
-
-    protected virtual void DecorateOutsideWallsWithPosters(Map map, Rectangle rect, int chancePerWall)
-    {
-      DecorateOutsideWalls(map, rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(POSTERS) : null));
-    }
-
-    protected virtual void DecorateOutsideWallsWithTags(Map map, Rectangle rect, int chancePerWall)
-    {
-      DecorateOutsideWalls(map, rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
     }
 
     // CHAR building codes have accounted for the possibility of a Z apocalypse.
