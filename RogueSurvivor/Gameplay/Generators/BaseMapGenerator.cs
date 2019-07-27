@@ -520,23 +520,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new Board(imageID, text);
     }
 
-    static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)
-    {
-#if DEBUG
-      if (null == decoFn) throw new ArgumentNullException(nameof(decoFn));
-#endif
-      for (int left = rect.Left; left < rect.Right; ++left) {
-        for (int top = rect.Top; top < rect.Bottom; ++top) {
-          Tile tileAt = map.GetTileAt(left, top);
-          if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
-            string imageID = decoFn(left, top);
-            if (imageID != null)
-              tileAt.AddDecoration(imageID);
-          }
-        }
-      }
-    }
-
     static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<Point, string> decoFn)
     {
 #if DEBUG

@@ -220,12 +220,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected void DecorateOutsideWallsWithPosters(Map map, int chancePerWall)
     {
-      DecorateOutsideWalls(map, map.Rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(POSTERS) : null));
+      DecorateOutsideWalls(map, map.Rect, pt => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(POSTERS) : null));
     }
 
     protected void DecorateOutsideWallsWithTags(Map map, int chancePerWall)
     {
-      DecorateOutsideWalls(map, map.Rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
+      DecorateOutsideWalls(map, map.Rect, pt => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
     }
 
     public override Map Generate(int seed, string name)
@@ -1030,11 +1030,10 @@ restart:
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
 
       KeyValuePair<string,string> shop_name_image = shop_name_images[(int)shopType];
-      DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
+      DecorateOutsideWalls(map, b.BuildingRect, pt => {
+        if (map.HasMapObjectAt(pt) || !map.AnyAdjacent<DoorWindow>(pt)) return null;
         return shop_name_image.Value;
-      }));
+      });
 
       if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE)) {
         Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
@@ -1137,23 +1136,21 @@ restart:
         tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO);
       }));
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
-      DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
+      DecorateOutsideWalls(map, b.BuildingRect, pt => {
+        if (map.HasMapObjectAt(pt) || !map.AnyAdjacent<DoorWindow>(pt)) return null;
         return GameImages.DECO_CHAR_OFFICE;
-      }));
+      });
       MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
       TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
-      DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (map.AnyAdjacent<DoorWindow>(new Point(x,y))) return null;
+      DecorateOutsideWalls(map, b.BuildingRect, pt => {
+        if (map.AnyAdjacent<DoorWindow>(pt)) return null;
         if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
         return null;
-      }));
+      });
       map.AddZone(MakeUniqueZone("CHAR Agency", b.BuildingRect));
       MakeWalkwayZones(map, b);
       return true;
