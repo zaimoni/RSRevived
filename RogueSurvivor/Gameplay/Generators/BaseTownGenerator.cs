@@ -1457,46 +1457,12 @@ restart:
             #region
             int midX = b.Rectangle.Left + b.Rectangle.Width / 2;
             int midY = b.Rectangle.Top + b.Rectangle.Height / 2;
-            Direction doorSide;
 
-            if (horizontalCorridor)
-            {
-                bool west = m_DiceRoller.RollChance(50);
+            Direction doorSide = (horizontalCorridor) ? (m_DiceRoller.RollChance(50) ? Direction.W : Direction.E)
+                                                      : (m_DiceRoller.RollChance(50) ? Direction.N : Direction.S);
 
-                if (west)
-                {
-                    doorSide = Direction.W;
-                    // west
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-                else
-                {
-                    doorSide = Direction.E;
-                    // east
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-            }
-            else
-            {
-                bool north = m_DiceRoller.RollChance(50);
-
-                if (north)
-                {
-                    doorSide = Direction.N;
-                    // north
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-                else
-                {
-                    doorSide = Direction.S;
-                    // south
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-            }
+            PlaceDoor(map, b.BuildingRect.Anchor((Compass.XCOMlike)(doorSide.Index)), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+            PlaceDoor(map, b.BuildingRect.Anchor((Compass.XCOMlike)((-doorSide).Index)), GameTiles.FLOOR_PLANKS, MakeObjWindow());
             #endregion
 
             //////////////////////////////////////////////
