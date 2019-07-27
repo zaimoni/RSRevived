@@ -12,10 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemLightModel : ItemModel
   {
     public readonly int MaxBatteries;
-    public readonly int FovBonus;
+    public readonly short FovBonus;
     public readonly string OutOfBatteriesImageID;
 
-    public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
+    public ItemLightModel(string aName, string theNames, string imageID, short fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
       : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
 #if DEBUG

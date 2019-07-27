@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
     private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
 
     // most/all of these FOV modifiers should space-time scale
-    private const int MINIMAL_FOV = 2;
+    private const short MINIMAL_FOV = 2;
     private const int FOV_PENALTY_SUNSET = 1;
     private const int FOV_PENALTY_EVENING = 2;
     private const int FOV_PENALTY_MIDNIGHT = 3;
@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Data
     private const int FOV_PENALTY_HEAVY_RAIN = 2;
     private const int FOV_BONUS_STANDING_ON_OBJECT = 1;
     private const int MAX_LIGHT_FOV_BONUS = 2;   // XXX should be read from configuration files (lights)
-    private const int MAX_BASE_VISION = 8;       // XXX should be read from configuration files (actors)
+    private const int MAX_BASE_VISION = 8;       // XXX should be read from configuration files (actors); same as rifle range
     public const int  MAX_VISION = MAX_BASE_VISION + FOV_BONUS_STANDING_ON_OBJECT - FOV_PENALTY_SUNSET + MAX_LIGHT_FOV_BONUS;   // should be calculated after configuration files read
 
     public static double SKILL_AWAKE_SLEEP_BONUS = 0.1;
@@ -3357,7 +3357,7 @@ namespace djack.RogueSurvivor.Data
       return (Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather));
     }
 
-    public int FOVrangeNoFlashlight(WorldTime time, Weather weather)
+    public short FOVrangeNoFlashlight(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0;
       int FOV = Sheet.BaseViewRange;
@@ -3372,10 +3372,10 @@ namespace djack.RogueSurvivor.Data
       if (IsExhausted) FOV -= 2;
       else if (IsSleepy) --FOV;
       if (Location.Map.GetMapObjectAt(Location.Position)?.StandOnFovBonus ?? false) FOV += FOV_BONUS_STANDING_ON_OBJECT;
-      return Math.Max(MINIMAL_FOV, FOV);
+      return (short)Math.Max(MINIMAL_FOV, FOV);
     }
 
-    private int LightBonus {
+    private short LightBonus {
       get {
         if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
         return 0;
@@ -3383,13 +3383,13 @@ namespace djack.RogueSurvivor.Data
     }
     private static bool UsingLight(Actor a) { return 0 < a.LightBonus; }
 
-    public int FOVrange(WorldTime time, Weather weather)
+    public short FOVrange(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0; // repeat this short-circuit here for correctness
-      int FOV = FOVrangeNoFlashlight(time, weather);
+      var FOV = FOVrangeNoFlashlight(time, weather);
       Lighting light = Location.Map.Lighting;
       if (light == Lighting.DARKNESS || (light == Lighting.OUTSIDE && time.IsNight)) {
-        int lightBonus = LightBonus;
+        var lightBonus = LightBonus;
         if (0 == lightBonus && Location.Map.HasAnyAdjacent(Location.Position, UsingLight)) lightBonus = 1;
         FOV += lightBonus;
       }

@@ -1379,7 +1379,7 @@ namespace djack.RogueSurvivor.Gameplay
 
       public string NAME;
       public string PLURAL;
-      public int FOV;
+      public short FOV;
       public int BATTERIES;
       public string FLAVOR;
 
@@ -1388,7 +1388,7 @@ namespace djack.RogueSurvivor.Gameplay
         return new LightData {
           NAME = line[1].ParseText(),
           PLURAL = line[2].ParseText(),
-          FOV = line[3].ParseInt(),
+          FOV = (short)line[3].ParseInt(),
           BATTERIES = line[4].ParseInt(),
           FLAVOR = line[5].ParseText()
         };
