@@ -1330,7 +1330,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (test.ForceCanonical()) danger.Add(test);
         }
       }
-      int range = m_Actor.CurrentRangedAttack.Range;
+      var range = m_Actor.CurrentRangedAttack.Range;
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
         foreach(var p in optimal_FOV) {

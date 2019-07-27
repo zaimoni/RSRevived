@@ -2354,7 +2354,7 @@ restart:
         return ret;
     }
 
-    private void PartialInvertLOS(HashSet<Location> tainted, int radius)
+    private void PartialInvertLOS(HashSet<Location> tainted, short radius)
     {
       var ideal = LOS.OptimalFOV(radius);
       foreach(var loc in tainted.ToList()) {

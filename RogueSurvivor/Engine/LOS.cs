@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Engine
     // Optimal FOV offset subsystem to deal with some ugly inverse problems
     // this is symmetric, unlike actual FOV calculations at range 5+ (range 4- is symmetric by construction)
     private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>>();
-    public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(int range)
+    public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(short range)
     {
       if (OptimalFOVOffsets.TryGetValue(range,out var ret)) return ret;    // TryGetValue indicated
       List<Point> tmp = new List<Point>();
@@ -170,7 +170,11 @@ namespace djack.RogueSurvivor.Engine
             while (++i < actualRange);
             return start.X == xTo && start.Y == yTo;
             }
+#if Z_VECTOR
+        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
+#else
         Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
+#endif
         var err = new Point(xTo - end.X, yTo - end.Y);
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
@@ -362,7 +366,7 @@ namespace djack.RogueSurvivor.Engine
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     // the return of a cached value is assumed to be by value
-    public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
+    public static HashSet<Point> ComputeFOVFor(Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
         var tmp = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
@@ -375,7 +379,11 @@ namespace djack.RogueSurvivor.Engine
       Map map = a_loc.Map;
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
+#if Z_VECTOR
+      foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
+#else
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>new Point(pt.X+a_loc.Position.X,pt.Y+a_loc.Position.Y))) {
+#endif
         if (!a_loc.Map.IsValid(point1)) continue;
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
@@ -414,6 +422,11 @@ namespace djack.RogueSurvivor.Engine
       visibleSet.UnionWith(pointList2);
       FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
       return visibleSet;
+    }
+
+    public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
+    {
+      return ComputeFOVFor(a_loc, (short)maxRange);
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)

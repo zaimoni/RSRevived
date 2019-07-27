@@ -22,11 +22,11 @@ namespace djack.RogueSurvivor.Data
     public readonly int Hit3Value;  // alpha10: tertiary to-hit e.g. rapid fire 2nd shot
     public readonly int DamageValue;
     public readonly int StaminaPenalty;
-    public readonly int Range;
+    public readonly short Range;
 
     public int EfficientRange { get { return Range / 2; } }
 
-    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty = 0, int range = 0, int rapid1 = 0, int rapid2 = 0)
+    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty = 0, short range = 0, int rapid1 = 0, int rapid2 = 0)
     {
 #if DEBUG
       if (null == verb) throw new ArgumentNullException(nameof(verb));

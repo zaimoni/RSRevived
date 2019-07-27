@@ -1230,7 +1230,7 @@ namespace djack.RogueSurvivor.Gameplay
       public int RAPID1;   // alpha 10
       public int RAPID2;   // alpha 10
       public int DMG;
-      public int RANGE;
+      public short RANGE;
       public int MAXAMMO;
       public string FLAVOR;
 
@@ -1243,7 +1243,7 @@ namespace djack.RogueSurvivor.Gameplay
           RAPID1 = line[4].ParseInt(),
           RAPID2 = line[5].ParseInt(),
           DMG = line[6].ParseInt(),
-          RANGE = line[7].ParseInt(),
+          RANGE = (short)line[7].ParseInt(),
           MAXAMMO = line[8].ParseInt(),
           FLAVOR = line[9].ParseText()
         };
