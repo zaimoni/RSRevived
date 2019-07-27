@@ -4080,16 +4080,16 @@ namespace djack.RogueSurvivor.Engine
       if (Player == null) return null;
       Inventory inventory = Player.Inventory;
       if (null == inventory) return null;
-      Point inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
+      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
         inv = inventory;
-        itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
+        itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1);
         return inventory[index1];
       }
       Inventory itemsAt = Player.Location.Items;
-      Point inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
-      itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2.X, inventorySlot2.Y);
+      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
+      itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2);
       if (itemsAt == null) return null;
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
@@ -4163,8 +4163,8 @@ namespace djack.RogueSurvivor.Engine
       if (Player == null) return null;
       List<Corpse> corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
       if (corpsesAt == null) return null;
-      Point inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
-      corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot.X, inventorySlot.Y);
+      var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
+      corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
       int index = inventorySlot.X + inventorySlot.Y * 10;
       if (index >= 0 && index < corpsesAt.Count) return corpsesAt[index];
       return null;
@@ -12096,40 +12096,32 @@ namespace djack.RogueSurvivor.Engine
       return MapToScreen(tmp.Value.Position);
     }
 
-#if DEAD_FUNC
-    private static Point ScreenToMap(Point screenPosition)
-    {
-      return ScreenToMap(screenPosition.X, screenPosition.Y);
-    }
-#endif
-
-    private static Point ScreenToMap(int gx, int gy)
-    {
-      return new Point(MapViewRect.Left + gx / TILE_SIZE, MapViewRect.Top + gy / TILE_SIZE);
-    }
-
     private Point MouseToMap(GDI_Point mousePosition)
     {
       return MouseToMap(mousePosition.X, mousePosition.Y);
     }
 
+    private Vector2D_int_stack LogicalPixel(int mouseX, int mouseY)   // does not belong in IRogueUI -- return type incompatible
+    {
+      return new Vector2D_int_stack((int)(mouseX / (double)m_UI.UI_GetCanvasScaleX()), (int)(mouseY / (double)m_UI.UI_GetCanvasScaleY()));
+    }
+
     private Point MouseToMap(int mouseX, int mouseY)
     {
-      mouseX = (int)(mouseX / (double)m_UI.UI_GetCanvasScaleX());
-      mouseY = (int)(mouseY / (double)m_UI.UI_GetCanvasScaleY());
-      return ScreenToMap(mouseX, mouseY);
+      var logical = LogicalPixel(mouseX, mouseY) / TILE_SIZE;
+      return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
     }
 
-    private Point MouseToInventorySlot(int invX, int invY, int mouseX, int mouseY)
+    private Vector2D_int_stack MouseToInventorySlot(int invX, int invY, int mouseX, int mouseY)
     {
-      mouseX = (int)(mouseX / (double)m_UI.UI_GetCanvasScaleX());
-      mouseY = (int)(mouseY / (double)m_UI.UI_GetCanvasScaleY());
-      return new Point((mouseX - invX) / TILE_SIZE, (mouseY - invY) / TILE_SIZE);
+      var logical = LogicalPixel(mouseX, mouseY);
+      logical -= new Vector2D_int_stack(invX,invY);
+      return logical/ TILE_SIZE;
     }
 
-    static private GDI_Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
+    static private GDI_Point InventorySlotToScreen(int invX, int invY, Vector2D_int_stack slot)
     {
-      return new GDI_Point(invX + slotX * TILE_SIZE, invY + slotY * TILE_SIZE);
+      return new GDI_Point(invX + slot.X * TILE_SIZE, invY + slot.Y * TILE_SIZE);
     }
 
     private static bool IsVisibleToPlayer(Location location)
