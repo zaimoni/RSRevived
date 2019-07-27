@@ -1005,10 +1005,10 @@ restart:
       TileRectangle(map, GameTiles.WALL_STONE, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_TILES, b.InsideRect, true);
       ShopType shopType = (ShopType)m_DiceRoller.Roll(0, (int)ShopType._COUNT);
-      int left1 = b.InsideRect.Left;
-      int top1 = b.InsideRect.Top;
-      int right = b.InsideRect.Right;
-      int bottom = b.InsideRect.Bottom;
+      var left1 = b.InsideRect.Left;
+      var top1 = b.InsideRect.Top;
+      var right = b.InsideRect.Right;
+      var bottom = b.InsideRect.Bottom;
       bool horizontalAlleys = b.Rectangle.Width >= b.Rectangle.Height;
       int centralAlley;
       if (horizontalAlleys) {
