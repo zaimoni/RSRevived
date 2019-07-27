@@ -1178,11 +1178,10 @@ restart:
       bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;  // must agree with copy in PlaceShoplikeEntrance
       Direction direction = PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       Direction orthogonal = direction.Left.Left;
-      DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
+      DecorateOutsideWalls(map, b.BuildingRect, pt => {
+        if (map.HasMapObjectAt(pt) || !map.AnyAdjacent<DoorWindow>(pt)) return null;
         return GameImages.DECO_CHAR_OFFICE;
-      }));
+      });
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
 
       Point[] CHAR_guard_locs = new Point[MAX_CHAR_GUARDS_PER_OFFICE];
@@ -1242,15 +1241,15 @@ restart:
       Rectangle rect2;
       Rectangle rect3;
       if (orientation_ew) {
-        int left = restricted_zone.Left;
-        int top = b.BuildingRect.Top;
-        int width = restricted_zone.Width;
+        var left = restricted_zone.Left;
+        var top = b.BuildingRect.Top;
+        var width = restricted_zone.Width;
         rect2 = new Rectangle(left, top, width, midpoint.Y - top);
         rect3 = new Rectangle(left, midpoint.Y + 1, width, b.BuildingRect.Bottom - midpoint.Y -1);
       } else {
-        int left = b.BuildingRect.Left;
-        int top = restricted_zone.Top;
-        int height = restricted_zone.Height;
+        var left = b.BuildingRect.Left;
+        var top = restricted_zone.Top;
+        var height = restricted_zone.Height;
         rect2 = new Rectangle(left, top, midpoint.X - left, height);
         rect3 = new Rectangle(midpoint.X + 1, top, b.BuildingRect.Right - midpoint.X -1, height);
       }

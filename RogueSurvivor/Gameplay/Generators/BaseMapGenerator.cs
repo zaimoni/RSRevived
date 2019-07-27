@@ -11,8 +11,10 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
 #if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 #else
+using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 #endif
 
@@ -528,6 +530,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           Tile tileAt = map.GetTileAt(left, top);
           if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
             string imageID = decoFn(left, top);
+            if (imageID != null)
+              tileAt.AddDecoration(imageID);
+          }
+        }
+      }
+    }
+
+    static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<Point, string> decoFn)
+    {
+#if DEBUG
+      if (null == decoFn) throw new ArgumentNullException(nameof(decoFn));
+#endif
+      for (var left = rect.Left; left < rect.Right; ++left) {
+        for (var top = rect.Top; top < rect.Bottom; ++top) {
+          Point pt = new Point(left,top);
+          Tile tileAt = map.GetTileAt(pt);
+          if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
+            string imageID = decoFn(pt);
             if (imageID != null)
               tileAt.AddDecoration(imageID);
           }
