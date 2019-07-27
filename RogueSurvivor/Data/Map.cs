@@ -1462,14 +1462,6 @@ retry:
       mapObj.Location = new Location(this, position);
     }
 
-    public void RemoveMapObjectAt(int x, int y)
-    {
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
-      if (mapObjectAt == null) return;
-      m_MapObjectsList.Remove(mapObjectAt);
-      m_aux_MapObjectsByPosition.Remove(new Point(x, y));
-    }
-
     public void RemoveMapObjectAt(Point pt)
     {
       MapObject mapObjectAt = GetMapObjectAt(pt);
@@ -1530,11 +1522,6 @@ retry:
       if (!IsInBounds(position)) return false;
 #endif
       return m_GroundItemsByPosition.ContainsKey(position);
-    }
-
-    public bool HasItemsAt(int x, int y)
-    {
-      return HasItemsAt(new Point(x, y));
     }
 
     public Inventory GetItemsAt(Point position)

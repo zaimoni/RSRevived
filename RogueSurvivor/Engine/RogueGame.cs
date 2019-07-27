@@ -12943,10 +12943,14 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+      { // scoping brace
       Map sewersMap = world[0, 0].SewersMap;
-      sewersMap.RemoveMapObjectAt(1, 1);
-      sewersMap.GetTileAt(1, 1).RemoveAllDecorations();
-      sewersMap.GetTileAt(1, 1).AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
+      Point graffiti = new Point(1,1);
+      sewersMap.RemoveMapObjectAt(graffiti);
+      var graffiti_tile = sewersMap.GetTileAt(graffiti);
+      graffiti_tile.RemoveAllDecorations();
+      graffiti_tile.AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
+      } // end scoping brace
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());

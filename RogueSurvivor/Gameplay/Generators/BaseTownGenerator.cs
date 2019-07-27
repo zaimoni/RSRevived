@@ -1535,26 +1535,26 @@ restart:
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
                 else
                 {
-                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
             }
             foreach (Rectangle apartRect in apartementsWingTwo)
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
                 else
                 {
-                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
             }
 
