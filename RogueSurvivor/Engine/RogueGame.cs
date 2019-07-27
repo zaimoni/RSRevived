@@ -10928,7 +10928,8 @@ namespace djack.RogueSurvivor.Engine
                 if (0 >= District.UsesCrossDistrictView(CurrentMap)) {
                     DrawMiniMap(CurrentMap.Rect);
                 } else {
-                    Rectangle view = new Rectangle(Player.Location.Position.X-MINIMAP_RADIUS, Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
+                    var viewpoint = m_MapView.Center;
+                    Rectangle view = new Rectangle(viewpoint.Position.X-MINIMAP_RADIUS, viewpoint.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
                     DrawMiniMap(view);
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
@@ -11639,13 +11640,15 @@ namespace djack.RogueSurvivor.Engine
     private void DrawDetected(Actor actor, string minimap_img, string map_img, Rectangle view)
     {
       Location loc = actor.Location;
-      if (loc.Map != Player.Location.Map) {
-        Location? test = Player.Location.Map.Denormalize(loc);
+      if (loc.Map != CurrentMap) {
+        Location? test = CurrentMap.Denormalize(loc);
         if (null == test) return;   // XXX invariant failure
         loc = test.Value;
       }
-      Point point = new Point(MINIMAP_X + (loc.Position.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (loc.Position.Y - view.Top) * MINITILE_SIZE);
-      m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
+      if (view.Contains(loc.Position)) {
+        Point point = new Point(MINIMAP_X + (loc.Position.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (loc.Position.Y - view.Top) * MINITILE_SIZE);
+        m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
+      }
       if (IsInViewRect(loc) && !IsVisibleToPlayer(actor)) {
         var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
