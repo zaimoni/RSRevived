@@ -2875,7 +2875,7 @@ restart:
         for (var top = roomRect.Top; top < roomRect.Bottom; ++top) {
           Point pt = new Point(left,top);
           if (CountAdjWalls(map, pt) <= 0 && !map.HasMapObjectAt(pt))
-            map.DropItemAt(MakeShopConstructionItem(), left, top);
+            map.DropItemAt(MakeShopConstructionItem(), pt);
         }
       }
     }

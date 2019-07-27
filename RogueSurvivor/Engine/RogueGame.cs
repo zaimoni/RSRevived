@@ -11204,7 +11204,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (player) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-            Inventory itemsAt = map.GetItemsAtExt(x, y);
+            Inventory itemsAt = map.GetItemsAtExt(point);
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;

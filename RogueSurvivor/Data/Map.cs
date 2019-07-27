@@ -1066,11 +1066,6 @@ retry:
       return actor;
     }
 
-    public Actor GetActorAt(int x, int y)
-    {
-      return GetActorAt(new Point(x, y));
-    }
-
     public Actor GetActorAtExt(int x, int y)
     {
 #if NO_PEACE_WALLS
@@ -1554,26 +1549,16 @@ retry:
       return null;
     }
 
-    public Inventory GetItemsAt(int x, int y)
-    {
-      return GetItemsAt(new Point(x, y));
-    }
-
-    public Inventory GetItemsAtExt(int x, int y)
+    public Inventory GetItemsAtExt(Point pt)
     {
 #if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return GetItemsAt(new Point(x, y));
-      Location? test = Normalize(new Point(x,y));
+      if (IsInBounds(pt)) return GetItemsAt(pt);
+      Location? test = Normalize(pt);
       if (null==test) return null;
       return test.Value.Map.GetItemsAt(test.Value.Position);
 #else
-      return GetItemsAt(new Point(x, y));
+      return GetItemsAt(pt);
 #endif
-    }
-
-    public Inventory GetItemsAtExt(Point pt)
-    {
-      return GetItemsAtExt(pt.X,pt.Y);
     }
 
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
@@ -1668,11 +1653,6 @@ retry:
 #else
       DropItemAt(it,position);
 #endif
-    }
-
-    public void DropItemAt(Item it, int x, int y)
-    {
-      DropItemAt(it, new Point(x, y));
     }
 
     public void RemoveItemAt(Item it, Point position)
@@ -2757,12 +2737,13 @@ retry:
       string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
       List<string> actor_data = new List<string>();
       string[][] ascii_map = new string[Height][];
-      foreach(int y in Enumerable.Range(0, Height)) {
+      foreach(short y in Enumerable.Range(0, Height)) {
         ascii_map[y] = new string[Width];
-        foreach(int x in Enumerable.Range(0, Width)) {
+        foreach(short x in Enumerable.Range(0, Width)) {
           // XXX does not handle transparent walls or opaque non-walls
+          Point pt = new Point(x,y);
           ascii_map[y][x] = (GetTileModelAt(x,y).IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
-          if (HasExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
+          if (HasExitAt(pt)) ascii_map[y][x] = ">";                  // downwards exit
 #region map objects
           const string tree_symbol = "&#x2663;"; // unicode: card suit club looks enough like a tree
           const string car_symbol = "<span class='car'>&#x1F698;</span>";   // unicode: oncoming car
@@ -2774,7 +2755,7 @@ retry:
           const string iron_fence = "<span class='lfort'>&#x2632;</span>";    // unicode: misc symbols (I Ching fire)
           const string open_gate = "<span class='lfort'>&#x2637;</span>";    // unicode: misc symbols (I Ching earth)
           const string chair = "<span class='chair'>&#x2441;</span>";    // unicode: OCR chair
-          MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
+          MapObject tmp_obj = GetMapObjectAt(pt);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
@@ -2826,7 +2807,7 @@ retry:
 		  }
 #endregion
 #region map inventory
-          Inventory inv = GetItemsAt(x,y);
+          Inventory inv = GetItemsAt(pt);
           if (!inv?.IsEmpty ?? false) {
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             foreach (Item it in inv.Items) {
@@ -2836,7 +2817,7 @@ retry:
           }
 #endregion
 #region actors
-          Actor a = GetActorAt(x,y);
+          Actor a = GetActorAt(pt);
           if (null!=a && !a.IsDead) {
             string p_txt = '('+a.Location.Position.X.ToString()+','+ a.Location.Position.Y.ToString()+')';
             string a_str = a.Faction.ID.ToString(); // default to the faction numeral
