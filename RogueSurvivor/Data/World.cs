@@ -32,14 +32,14 @@ namespace djack.RogueSurvivor.Data
     // static public readonly Point CHAR_CIty_Origin = new Point(0,0);  // VAPORWARE (may need to be a proper Rectangle
 
     private readonly District[,] m_DistrictsGrid;
-    private readonly int m_Size;    // save file break \todo convert this to public readonly int
+    private readonly int m_Size;    // save file break \todo next savefile break: convert this to public readonly short
     private District m_PlayerDistrict = null; 
     private District m_SimDistrict = null; 
     private readonly Queue<District> m_Ready;
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
-    public int Size { get { return m_Size; } }
+    public short Size { get { return (short)m_Size; } }
     public int CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
     public bool InBounds(int x,int y) {

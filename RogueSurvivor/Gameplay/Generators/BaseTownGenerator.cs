@@ -1467,15 +1467,15 @@ restart:
                 {
                     doorSide = Direction.W;
                     // west
-                    PlaceDoor(map, b.BuildingRect.Left, midY, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
                 else
                 {
                     doorSide = Direction.E;
                     // east
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Left, midY, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
             }
             else
@@ -1486,15 +1486,15 @@ restart:
                 {
                     doorSide = Direction.N;
                     // north
-                    PlaceDoor(map, midX, b.BuildingRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
                 else
                 {
                     doorSide = Direction.S;
                     // south
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, midX, b.BuildingRect.Top, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWindow());
                 }
             }
             #endregion
@@ -1885,7 +1885,11 @@ restart:
           map.SetTileModelAt(p - orthogonal, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p - x2orthogonal, GameTiles.WALL_STONE);
           map.SetTileModelAt(p + x2orthogonal, GameTiles.WALL_STONE);
+#if Z_VECTOR
+          DoForEachTile(new Rectangle(p+2*Direction.N, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+#else
           DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+#endif
           p += direction;
         }
         Point centralGateAt = p - 4*direction;
@@ -2014,16 +2018,18 @@ restart:
         });
         DoForEachTile(rect2, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       }
-      for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
+      for (var left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
-          if (CountAdjWalls(map, left, y) >= 2 && !map.AnyAdjacent<DoorWindow>(new Point(left, y)) && !Rules.IsAdjacent(new Point(left, y), doorAt))
-            map.PlaceAt(MakeObjIronBench(), new Point(left, y));
+          var pt = new Point(left, y);
+          if (CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && !Rules.IsAdjacent(pt, doorAt))
+            map.PlaceAt(MakeObjIronBench(), pt);
         }
       }
       if (isSurface) {
         Actor newPoliceman = CreateNewPoliceman(0);
         if (Session.Get.CMDoptionExists("subway-cop")) {
-          int home_district_xy = Session.Get.World.Size/2;
+          var home_district_xy = Session.Get.World.Size;
+          home_district_xy /= 2;
           if (map.District.WorldPosition == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController();
         }
         ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect);
@@ -2158,7 +2164,11 @@ restart:
                 map.DropItemAt(MakeRandomKitchenItem(), pt);
               }
               Session.Get.PoliceInvestigate.Record(map, pt);
+#if Z_VECTOR
+              Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
+#else
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
+#endif
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
@@ -2184,7 +2194,11 @@ restart:
               map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
             Session.Get.PoliceInvestigate.Record(map, pt);
+#if Z_VECTOR
+            MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
+#else
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
+#endif
             {
               return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
@@ -3243,16 +3257,16 @@ restart:
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       List<Rectangle> rectangleList = new List<Rectangle>();
-      int x = 0;
+      short x = 0;
       while (x + 2 < JAILS_WIDTH) {
         Rectangle rect = new Rectangle(x, 3, 3, 3);
         rectangleList.Add(rect);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect);
-        map.PlaceAt(MakeObjIronBench(), new Point(x + 1, 4));
-        Point position2 = new Point(x + 1, 3);
-        map.SetTileModelAt(position2, GameTiles.FLOOR_CONCRETE);
-        map.PlaceAt(MakeObjIronGate(), position2);
+        Point gate = rect.Anchor(Compass.XCOMlike.N);
+        map.PlaceAt(MakeObjIronBench(), gate + Direction.S);
+        map.SetTileModelAt(gate, GameTiles.FLOOR_CONCRETE);
+        map.PlaceAt(MakeObjIronGate(), gate);
         map.AddZone(MakeUniqueZone("jail", rect));
         x += 2;
       }
