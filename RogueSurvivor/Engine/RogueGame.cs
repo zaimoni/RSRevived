@@ -11060,11 +11060,6 @@ namespace djack.RogueSurvivor.Engine
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
 
-      int num1;
-      int num2;
-      int num3;
-      int num4;
-      Point view_center = new Point();
       Point point = new Point();
       const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
       Span<bool> is_visible = stackalloc bool[view_squares];
@@ -11073,20 +11068,20 @@ namespace djack.RogueSurvivor.Engine
 
       lock(m_MapView) {
 #if NO_PEACE_WALLS
-      num1 = MapViewRect.Left;
-      num2 = MapViewRect.Right;
-      num3 = MapViewRect.Top;
-      num4 = MapViewRect.Bottom;
+      var num1 = MapViewRect.Left;
+      var num2 = MapViewRect.Right;
+      var num3 = MapViewRect.Top;
+      var num4 = MapViewRect.Bottom;
 #if Z_VECTOR
-      view_center = MapViewRect.Location + (Point)HALF_VIEW_WIDTH;
+      var view_center = MapViewRect.Location + (Point)HALF_VIEW_WIDTH;
 #else
-      view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
+      var view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
 #endif
 #else
-      num1 = Math.Max(-1, m_MapViewRect.Left);
-      num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
-      num3 = Math.Max(-1, m_MapViewRect.Top);
-      num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
+      var num1 = Math.Max(-1, m_MapViewRect.Left);
+      var num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
+      var num3 = Math.Max(-1, m_MapViewRect.Top);
+      var num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
 #endif
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
@@ -11135,9 +11130,9 @@ namespace djack.RogueSurvivor.Engine
 
       bool isUndead = Player.Model.Abilities.IsUndead;
       bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
-      for (int x = num1; x < num2; ++x) {
+      for (var x = num1; x < num2; ++x) {
         point.X = x;
-        for (int y = num3; y < num4; ++y) {
+        for (var y = num3; y < num4; ++y) {
           point.Y = y;
 #if NO_PEACE_WALLS
           if (!map.IsValid(x, y)) continue;
@@ -11167,7 +11162,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
-            List<Corpse> corpsesAt = map.GetCorpsesAtExt(x, y);
+            List<Corpse> corpsesAt = map.GetCorpsesAtExt(point);
             if (corpsesAt != null) {
               foreach (Corpse c in corpsesAt)
                 DrawCorpse(c, screen.X, screen.Y, tint);

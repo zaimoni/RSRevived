@@ -1791,15 +1791,15 @@ retry:
       return null;
     }
 
-    public List<Corpse> GetCorpsesAtExt(int x, int y)
+    public List<Corpse> GetCorpsesAtExt(Point p)
     {
 #if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return GetCorpsesAt(new Point(x, y));
-      Location? test = Normalize(new Point(x,y));
+      if (IsInBounds(p)) return GetCorpsesAt(p);
+      Location? test = Normalize(p);
       if (null==test) return null;
       return test.Value.Map.GetCorpsesAt(test.Value.Position);
 #else
-      return GetCorpsesAt(new Point(x, y));
+      return GetCorpsesAt(p);
 #endif
     }
 
