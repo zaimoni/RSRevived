@@ -282,13 +282,12 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private static ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
+    private static ActorAction IsBumpableFor(Actor actor, Map map, Point point, out string reason)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-      Point point = new Point(x, y);
       reason = "";
       Location loc = new Location(map,point);
 
@@ -334,7 +333,7 @@ namespace djack.RogueSurvivor.Engine
         return (null!=target ? new ActionMeleeAttack(actor, target) : null);
 #endif
       }
-      if (!map.IsInBounds(x, y)) {
+      if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
@@ -395,7 +394,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
     {
-      return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
+      return IsBumpableFor(actor, location.Map, location.Position, out reason);
     }
 
     // Pathfindability is not quite the same as bumpability
@@ -403,7 +402,7 @@ namespace djack.RogueSurvivor.Engine
     // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
     // * ok to push objects aside
     // * not ok to chat as a time-cost action (could be re-implemented)
-    private static ActorAction IsPathableFor(Actor actor, Map map, int x, int y, out string reason)
+    private static ActorAction IsPathableFor(Actor actor, Map map, Point point, out string reason)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -411,7 +410,6 @@ namespace djack.RogueSurvivor.Engine
       if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
       Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
-      Point point = new Point(x, y);
       Location loc = new Location(map,point);
       reason = "";
 
@@ -423,7 +421,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // unclear whether B_MOVIE_MARTIAL_ARTS requires pathfinding changes or not; changes would go here
-      if (!map.IsInBounds(x, y)) {
+      if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, loc);
@@ -582,7 +580,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsPathableFor(Actor actor, Location location, out string reason)
     {
-      return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
+      return IsPathableFor(actor, location.Map, location.Position, out reason);
     }
 
     public int ActorDamageVsCorpses(Actor a)

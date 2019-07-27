@@ -1482,7 +1482,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+#if Z_VECTOR
+      Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+#else
       Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+#endif
 
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -1694,7 +1698,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+#if Z_VECTOR
+      Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+#else
       Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+#endif
 
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -1811,7 +1819,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 2;
+#if Z_VECTOR
+      Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+#else
       Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+#endif
 
 	  if (null != threats) {
         tmp2 = DecideMove_maximize_visibility(tmp2, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -2348,7 +2360,11 @@ restart:
       foreach(var loc in tainted.ToList()) {
         if (!loc.Map.WouldBlacklistFor(loc.Position,m_Actor)) continue;
         foreach(var offset in ideal) {
+#if Z_VECTOR
+          var legal = new Location(loc.Map, loc.Position + offset); // may be denormalized
+#else
           var legal = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
+#endif
           if (!legal.ForceCanonical()) continue;
           if (tainted.Contains(legal)) continue;
           if (m_Actor.Location == legal) continue;

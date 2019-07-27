@@ -4008,7 +4008,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleMouseInventory(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
-      Item inventoryItem = MouseToInventoryItem(mousePos, out Inventory inv, out Point itemPos);
+      Item inventoryItem = MouseToInventoryItem(mousePos, out Inventory inv, out var itemPos);
       if (null == inv) return false;
       bool isPlayerInventory = inv == Player.Inventory;
 
@@ -4073,10 +4073,10 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private Item MouseToInventoryItem(GDI_Point screen, out Inventory inv, out Point itemPos)
+    private Item MouseToInventoryItem(GDI_Point screen, out Inventory inv, out GDI_Point itemPos)
     {
       inv = null;
-      itemPos = Point.Empty;
+      itemPos = GDI_Point.Empty;
       if (Player == null) return null;
       Inventory inventory = Player.Inventory;
       if (null == inventory) return null;
@@ -4097,10 +4097,15 @@ namespace djack.RogueSurvivor.Engine
       return itemsAt[index2];
     }
 
+    private Item MouseToInventoryItem(GDI_Point screen, out Inventory inv)
+    {
+      return MouseToInventoryItem(screen, out inv, out var itemPos);
+    }
+
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
-      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out var corpsePos);
       if (null == corpse)  return false;
 
       bool OnRMBCorpse(Corpse c)
@@ -4152,9 +4157,9 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private Corpse MouseToCorpse(GDI_Point screen, out Point corpsePos)
+    private Corpse MouseToCorpse(GDI_Point screen, out GDI_Point corpsePos)
     {
-      corpsePos = Point.Empty;
+      corpsePos = GDI_Point.Empty;
       if (Player == null) return null;
       List<Corpse> corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
       if (corpsesAt == null) return null;
@@ -4165,9 +4170,14 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
+    private Corpse MouseToCorpse(GDI_Point screen)
+    {
+      return MouseToCorpse(screen, out var corpsePos);
+    }
+
     private bool HandlePlayerEatCorpse(Actor player, GDI_Point mousePos)
     {
-      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanEatCorpse(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
@@ -4179,7 +4189,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerReviveCorpse(Actor player, GDI_Point mousePos)
     {
-      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanRevive(corpse, out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
@@ -4361,7 +4371,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
-      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag2 = false;
       ClearOverlays();
@@ -4397,7 +4407,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerInitiateTrade(Actor player, GDI_Point screen)
     {
-      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag2 = false;
       ClearOverlays();
@@ -12117,9 +12127,9 @@ namespace djack.RogueSurvivor.Engine
       return new Point((mouseX - invX) / TILE_SIZE, (mouseY - invY) / TILE_SIZE);
     }
 
-    static private Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
+    static private GDI_Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
     {
-      return new Point(invX + slotX * TILE_SIZE, invY + slotY * TILE_SIZE);
+      return new GDI_Point(invX + slotX * TILE_SIZE, invY + slotY * TILE_SIZE);
     }
 
     private static bool IsVisibleToPlayer(Location location)
@@ -12260,7 +12270,11 @@ namespace djack.RogueSurvivor.Engine
       if (   null == map   // convince Duckman to not superheroically crash many games on turn 0
           || !map.IsValid(position))
         return false;
+#if Z_VECTOR
+      Rectangle survey = new Rectangle(position-(Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
+#else
       Rectangle survey = new Rectangle(position.X-Actor.MAX_VISION, position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
+#endif
       var players = new List<Actor>();
 
       void id_player(Actor player) {
@@ -13696,7 +13710,11 @@ namespace djack.RogueSurvivor.Engine
     {
       Location loc = whoDoesTheAction.Location;
       int maxLivingFOV = Actor.MaxLivingFOV(whoDoesTheAction.Location.Map);
+#if Z_VECTOR
+      Rectangle rect = new Rectangle(loc.Position-(Point)maxLivingFOV,(Point)(2*maxLivingFOV+1));
+#else
       Rectangle rect = new Rectangle(loc.Position.X-maxLivingFOV,loc.Position.Y-maxLivingFOV,2*maxLivingFOV+1,2*maxLivingFOV+1);
+#endif
       Actor actor = null;
       rect.DoForEach(pt=>{
         actor.SpendSanity(sanCost);

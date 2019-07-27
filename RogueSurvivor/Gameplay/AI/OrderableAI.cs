@@ -1334,7 +1334,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
         foreach(var p in optimal_FOV) {
+#if Z_VECTOR
+          var pt = p + en.Location.Position;
+#else
           var pt = new Point(p.X + en.Location.Position.X, p.Y + en.Location.Position.Y);
+#endif
           var test = new Location(en.Location.Map,pt);
           if (!test.ForceCanonical()) continue;
           if (ret.Contains(test)) continue;
@@ -1732,7 +1736,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
         if (_blast_field?.Contains(point) ?? false) continue;
         int score = 0;
+#if Z_VECTOR
+        Rectangle blast_zone = new Rectangle(point - (Point)blast_radius, (Point)(2 * blast_radius + 1));
+#else
         Rectangle blast_zone = new Rectangle(point.X- blast_radius, point.Y- blast_radius, 2* blast_radius + 1, 2* blast_radius + 1);
+#endif
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
         if (   !blast_zone.Any(pt => {
                   Actor actorAt = a_map.GetActorAtExt(pt);
@@ -1763,9 +1771,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private static string MakeCentricLocationDirection(Location from, Location to)
     {
       if (from.Map != to.Map) return string.Format("in {0}", (object) to.Map.Name);
+#if Z_VECTOR
+      Point v = to.Position - from.Position;
+#else
       Point position1 = from.Position;
       Point position2 = to.Position;
       Point v = new Point(position2.X - position1.X, position2.Y - position1.Y);
+#endif
       return string.Format("{0} tiles to the {1}", (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v));
     }
 
@@ -2272,7 +2284,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 1) if we're out of range, get within range
       if (maxDist < Rules.GridDistance(m_Actor.Location,other.Location)) {
         int span = 2 * maxDist + 1;
+#if Z_VECTOR
+        var rect = new Rectangle(other.Location.Position - (Point)maxDist, (Point)span);
+#else
         var rect = new Rectangle(other.Location.Position.X-maxDist,other.Location.Position.Y-maxDist, span, span);
+#endif
         var goals = new HashSet<Location>();
         rect.DoForEach(pt => {
             var loc2 = new Location(other.Location.Map, pt);
@@ -3427,8 +3443,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range+3);
             danger_point_FOV.ExceptWith(no_light_FOV);
 
-            int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+            var tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)+1;
+#if Z_VECTOR
+            Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+#else
             Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+#endif
 
             if (null!=threats) {
               HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map, view);
