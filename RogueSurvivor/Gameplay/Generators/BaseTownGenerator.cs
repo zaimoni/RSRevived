@@ -493,11 +493,12 @@ restart:
 #endif
 
 #region 9. Tags.
-      for (int x = 0; x < sewers.Width; ++x) {
-        for (int y = 0; y < sewers.Height; ++y) {
-          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
-            Tile tileAt = sewers.GetTileAt(x, y);
-            if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, x, y) >= 2)
+      for (short x = 0; x < sewers.Width; ++x) {
+        for (short y = 0; y < sewers.Height; ++y) {
+          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) { // \todo next mapgen break: conserve RNG
+            Point pt = new Point(x,y);
+            Tile tileAt = sewers.GetTileAt(pt);
+            if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, pt) >= 2)
               tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
           }
         }
@@ -819,7 +820,7 @@ restart:
         PlaceDoor(subway, door, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, pt => {
-          if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
+          if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
           subway.PlaceAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         });
@@ -827,11 +828,12 @@ restart:
       }
 #endregion
 #region 4. Tags & Posters almost everywhere.
-      for (int x2 = 0; x2 < subway.Width; ++x2) {
-        for (int y2 = 0; y2 < subway.Height; ++y2) {
-          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
-            Tile tileAt = subway.GetTileAt(x2, y2);
-            if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, x2, y2) >= 2) {
+      for (short x2 = 0; x2 < subway.Width; ++x2) {
+        for (short y2 = 0; y2 < subway.Height; ++y2) {
+          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {    // \todo next mapgen break: conserve RNG
+            Point pt = new Point(x2,y2);
+            Tile tileAt = subway.GetTileAt(pt);
+            if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, pt) >= 2) {
               if (m_DiceRoller.RollChance(50))
                 tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
               if (m_DiceRoller.RollChance(50))
@@ -1142,7 +1144,7 @@ restart:
       });
       MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (CountAdjWalls(map, pt) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
       TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
@@ -1399,7 +1401,7 @@ restart:
       {
         if (!map.IsWalkable(pt)) return;
         if (0 < map.CountAdjacent<DoorWindow>(pt)) return;
-        if (0 == CountAdjWalls(map, pt.X, pt.Y)) return;
+        if (0 == CountAdjWalls(map, pt)) return;
 
         // shelf.
         map.PlaceAt(MakeObjShelf(), pt);
@@ -1750,7 +1752,7 @@ restart:
       int num = m_DiceRoller.Roll(Math.Max(b.InsideRect.Width, b.InsideRect.Height), 2 * Math.Max(b.InsideRect.Width, b.InsideRect.Height));
       for (int index = 0; index < num; ++index)
         MapObjectPlaceInGoodPosition(map, b.InsideRect, pt => {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
+          return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => {
           map.DropItemAt(MakeShopConstructionItem(), pt);
           Session.Get.PoliceInvestigate.Record(map, pt);
@@ -1759,11 +1761,11 @@ restart:
       if (m_DiceRoller.RollChance(33)) {
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
+          return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjBed(GameImages.OBJ_BED)));
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
+          return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
@@ -2049,7 +2051,7 @@ restart:
         if (!map.HasMapObjectAt(x, y)) return;
         map.SetTileModelAt(x, y, floor);
       });
-      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt); };
+      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, pt) && !map.AnyAdjacent<DoorWindow>(pt); };
       MapObject make_door_window(Point pt) { return ((!map.GetTileAt(pt).IsInside && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
       foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);
@@ -2080,7 +2082,7 @@ restart:
           for (int index = 0; index < num1; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
 #if Z_VECTOR
@@ -2091,7 +2093,7 @@ restart:
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
+                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 map.DropItemAt(MakeRandomBedroomItem(), pt2);
@@ -2104,7 +2106,7 @@ restart:
           for (int index = 0; index < num2; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               map.DropItemAt(MakeRandomBedroomItem(), pt);
@@ -2119,7 +2121,7 @@ restart:
           for (int index1 = 0; index1 < num3; ++index1)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return CountAdjWalls(map, pt) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
@@ -2142,14 +2144,14 @@ restart:
           for (int index = 0; index < num4; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+            return CountAdjWalls(map, pt) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
@@ -2168,7 +2170,7 @@ restart:
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+            return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
@@ -2850,7 +2852,7 @@ restart:
     {
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(pt)) return null;
         int choice = m_DiceRoller.Roll(0, CHAR_armory_checksum / 4*5);   // historically 80% chance of an item
         if (CHAR_armory_checksum <= choice) return null;
@@ -2864,14 +2866,15 @@ restart:
       TileFill(map, GameTiles.FLOOR_CONCRETE, roomRect);
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
+        if (CountAdjWalls(map, pt) > 0) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(50)) return null;
         return (m_DiceRoller.RollChance(50) ? MakeObjJunk() : MakeObjBarrels());
       }));
-      for (int left = roomRect.Left; left < roomRect.Right; ++left) {
-        for (int top = roomRect.Top; top < roomRect.Bottom; ++top) {
-          if (CountAdjWalls(map, left, top) <= 0 && !map.HasMapObjectAt(left, top))
+      for (var left = roomRect.Left; left < roomRect.Right; ++left) {
+        for (var top = roomRect.Top; top < roomRect.Bottom; ++top) {
+          Point pt = new Point(left,top);
+          if (CountAdjWalls(map, pt) <= 0 && !map.HasMapObjectAt(pt))
             map.DropItemAt(MakeShopConstructionItem(), left, top);
         }
       }
@@ -2882,7 +2885,7 @@ restart:
       TileFill(map, GameTiles.FLOOR_PLANKS, roomRect, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (m_DiceRoller.RollChance(50)) return MakeObjBed(GameImages.OBJ_BED);
@@ -2890,7 +2893,7 @@ restart:
       }));
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
+        if (CountAdjWalls(map, pt) > 0) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
@@ -2903,7 +2906,7 @@ restart:
     {
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(MakeHospitalItem(), pt);
@@ -2927,7 +2930,7 @@ restart:
       }));
       DoForEachTile(roomRect, (Action<Point>) (pt =>
       {
-        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(pt) || CountAdjWalls(map, pt.X, pt.Y) < 3) return;
+        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(pt) || CountAdjWalls(map, pt) < 3) return;
         map.PlaceAt(MakeObjPowerGenerator(), pt);
       }));
     }
@@ -3023,7 +3026,7 @@ restart:
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
-            if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
+            if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             map.PlaceAt(MakeObjShelf(), pt);
             map.DropItemAt(stock_armory(), pt);
           });
@@ -3318,7 +3321,7 @@ restart:
       PlaceDoor(surfaceMap, point2, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, (Action<Point>) (pt =>
       {
-        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
+        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
           return;
         surfaceMap.PlaceAt(MakeObjIronBench(), pt);
       }));

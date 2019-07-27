@@ -292,19 +292,14 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #region Predicates and Actions
-    protected static int CountAdjWalls(Map map, int x, int y)
-    {
-      return map.CountAdjacentTo(x, y, pt => !map.GetTileModelAt(pt).IsWalkable);
-    }
-
     protected static int CountAdjWalls(Map map, Point p)
     {
-      return CountAdjWalls(map, p.X, p.Y);
+      return map.CountAdjacentTo(p, pt => !map.GetTileModelAt(pt).IsWalkable);
     }
 
-    protected static int CountAdjWalkables(Map map, int x, int y)
+    protected static int CountAdjWalkables(Map map, Point p)
     {
-      return map.CountAdjacentTo(x, y, pt => map.GetTileModelAt(pt).IsWalkable);
+      return map.CountAdjacentTo(p, pt => map.GetTileModelAt(pt).IsWalkable);
     }
 
 #if DEAD_FUNC
@@ -335,9 +330,9 @@ namespace djack.RogueSurvivor.Engine
       MapObjectPlace(map, pt, mapObj);
     }
 
-    protected static bool IsAccessible(Map map, int x, int y)
+    protected static bool IsAccessible(Map map, Point pos)
     {
-      return map.CountAdjacentTo(x, y, pt => map.IsWalkable(pt.X, pt.Y)) >= 6;
+      return map.CountAdjacentTo(pos, pt => map.IsWalkable(pt.X, pt.Y)) >= 6;
     }
 #endregion
   }

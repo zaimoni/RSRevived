@@ -2195,11 +2195,6 @@ retry:
       return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
     }
 
-    public int CountAdjacentTo(int x, int y, Predicate<Point> predicateFn)
-    {
-      return CountAdjacentTo(new Point(x,y), predicateFn);
-    }
-
     public int CountAdjacent<T>(Point pos) where T:MapObject
     {
       return CountAdjacentTo(pos, pt => GetMapObjectAt(pt) is T);
