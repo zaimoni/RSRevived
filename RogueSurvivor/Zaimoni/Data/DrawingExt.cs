@@ -48,6 +48,24 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Vector2D_int(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
+    public static Vector2D_short RadarSweep(this Vector2D_short origin,short radius,int i)
+    {
+#if DEBUG
+      if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
+      if (short.MaxValue - radius < origin.X || short.MinValue + radius > origin.X) throw new ArgumentOutOfRangeException(nameof(origin.X),origin.X.ToString(), "must be in "+(short.MinValue + radius).ToString()+".." +(short.MaxValue - radius).ToString());
+      if (short.MaxValue - radius < origin.Y || short.MinValue + radius > origin.Y) throw new ArgumentOutOfRangeException(nameof(origin.Y),origin.Y.ToString(), "must be in "+(short.MinValue + radius).ToString()+".." +(short.MaxValue - radius).ToString());
+#endif
+      // normalize i
+      i %= 8*radius;
+      if (0>i) i+=8*radius;
+
+      // parentheses are to deny compiler the option to reorder to overflow
+      if (2*radius>i) return new Vector2D_short((short)(i-radius),radius) + origin;
+      if (4*radius>i) return new Vector2D_short(radius, (short)(3*radius- i)) + origin;
+      if (6*radius>i) return new Vector2D_short((short)(5*radius-i), (short)(-radius)) + origin;
+      /* if (8*radius>i) */ return new Vector2D_short((short)(-radius), (short)(i-7* radius)) + origin;
+    }
+
     // null testFn is a different signature for efficiency reasons
     public static void DoForEach(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
     {
@@ -558,6 +576,21 @@ namespace Zaimoni.Data
       if (0 > i) throw new InvalidOperationException("index not in rectangle");
       pt.X = i%rect.Width + rect.Left;
       pt.Y = i/rect.Width + rect.Top;
+    }
+
+    public static void convert(this Box2D_short rect, Vector2D_short pt, ref int i)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
+      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
+    }
+
+    public static void convert(this Box2D_short rect, int i, ref Vector2D_short pt)
+    {
+      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
+      if (0 > i) throw new InvalidOperationException("index not in rectangle");
+      pt.X = (short)(i%rect.Width + rect.Left);
+      pt.Y = (short)(i/rect.Width + rect.Top);
     }
 
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
