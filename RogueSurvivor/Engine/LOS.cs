@@ -58,6 +58,23 @@ namespace djack.RogueSurvivor.Engine
           if (Rules.StdDistance(origin, pt) > edge_of_maxrange) continue;
           // initialize all octants at once
           tmp.Add(pt);
+#if Z_VECTOR
+          tmp.Add(-pt);
+          if (pt.X == pt.Y) { // diagonal
+            tmp.Add(new Point(pt.X,-pt.Y));
+            tmp.Add(new Point(-pt.X,pt.Y));
+          } else if (0 == pt.Y) {   // cardinal
+            tmp.Add(new Point(0,pt.X));
+            tmp.Add(new Point(0,-pt.X));
+          } else { // typical
+            tmp.Add(new Point(pt.X,-pt.Y));
+            tmp.Add(new Point(-pt.X,pt.Y));
+            tmp.Add(new Point(pt.Y,pt.X));
+            tmp.Add(new Point(pt.Y,-pt.X));
+            tmp.Add(new Point(-pt.Y,pt.X));
+            tmp.Add(new Point(-pt.Y,-pt.X));
+          }
+#else
           if (pt.X == pt.Y) { // diagonal
             tmp.Add(new Point(pt.X,-pt.Y));
             tmp.Add(new Point(-pt.X,pt.Y));
@@ -75,6 +92,7 @@ namespace djack.RogueSurvivor.Engine
             tmp.Add(new Point(-pt.Y,pt.X));
             tmp.Add(new Point(-pt.Y,-pt.X));
           }
+#endif
         }
       }
       System.Collections.ObjectModel.ReadOnlyCollection<Point> tmp2 = new System.Collections.ObjectModel.ReadOnlyCollection<Point>(tmp);

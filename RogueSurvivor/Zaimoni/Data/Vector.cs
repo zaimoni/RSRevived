@@ -37,6 +37,7 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_int operator +(Vector2D_int lhs, Vector2D_int rhs) { return new Vector2D_int(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_int operator -(Vector2D_int lhs, Vector2D_int rhs) { return new Vector2D_int(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_int operator -(Vector2D_int src) { return new Vector2D_int(-src.X, -src.Y); }
 
         // ignore dot product for integer vectors for now.
 
@@ -95,6 +96,7 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_int_r operator +(in Vector2D_int_r lhs, in Vector2D_int_r rhs) { return new Vector2D_int_r(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_int_r operator -(in Vector2D_int_r lhs, in Vector2D_int_r rhs) { return new Vector2D_int_r(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_int_r operator -(Vector2D_int_r src) { return new Vector2D_int_r(-src.X, -src.Y); }
 
         // ignore dot product for integer vectors for now.
 
@@ -164,6 +166,7 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_int_stack operator +(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return new Vector2D_int_stack(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_int_stack operator -(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return new Vector2D_int_stack(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_int_stack operator -(Vector2D_int_stack src) { return new Vector2D_int_stack(-src.X, -src.Y); }
 
         // ignore dot product for integer vectors for now.
 
@@ -215,6 +218,7 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_int_stack_r operator +(in Vector2D_int_stack_r lhs, in Vector2D_int_stack_r rhs) { return new Vector2D_int_stack_r(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_int_stack_r operator -(in Vector2D_int_stack_r lhs, in Vector2D_int_stack_r rhs) { return new Vector2D_int_stack_r(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_int_stack_r operator -(Vector2D_int_stack_r src) { return new Vector2D_int_stack_r(-src.X, -src.Y); }
 
         // ignore dot product for integer vectors for now.
 
@@ -504,8 +508,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_short operator +(Vector2D_short lhs, Vector2D_short rhs) { return new Vector2D_short((short)(lhs.X + rhs.X), (short)(lhs.Y + rhs.Y)); }
         static public Vector2D_short operator -(Vector2D_short lhs, Vector2D_short rhs) { return new Vector2D_short((short)(lhs.X - rhs.X), (short)(lhs.Y - rhs.Y)); }
+        static public Vector2D_short operator -(Vector2D_short src) { return new Vector2D_short((short)(-src.X), (short)(-src.Y)); }
 
-        // ignore dot product for shorteger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_short operator *(short lhs, Vector2D_short rhs) { return new Vector2D_short((short)(lhs *rhs.X), (short)(lhs *rhs.Y)); }
@@ -562,8 +567,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_short_r operator +(in Vector2D_short_r lhs, in Vector2D_short_r rhs) { return new Vector2D_short_r((short)(lhs.X + rhs.X), (short)(lhs.Y + rhs.Y)); }
         static public Vector2D_short_r operator -(in Vector2D_short_r lhs, in Vector2D_short_r rhs) { return new Vector2D_short_r((short)(lhs.X - rhs.X), (short)(lhs.Y - rhs.Y)); }
+        static public Vector2D_short_r operator -(Vector2D_short_r src) { return new Vector2D_short_r((short)(-src.X), (short)(-src.Y)); }
 
-        // ignore dot product for shorteger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_short_r operator *(short lhs, in Vector2D_short_r rhs) { return new Vector2D_short_r((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
@@ -631,8 +637,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_short_stack operator +(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs.X + rhs.X), (short)(lhs.Y + rhs.Y)); }
         static public Vector2D_short_stack operator -(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs.X - rhs.X), (short)(lhs.Y - rhs.Y)); }
+        static public Vector2D_short_stack operator -(Vector2D_short_stack src) { return new Vector2D_short_stack((short)(-src.X), (short)(-src.Y)); }
 
-        // ignore dot product for shorteger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_short_stack operator *(short lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
@@ -682,8 +689,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_short_stack_r operator +(in Vector2D_short_stack_r lhs, in Vector2D_short_stack_r rhs) { return new Vector2D_short_stack_r((short)(lhs.X + rhs.X), (short)(lhs.Y + rhs.Y)); }
         static public Vector2D_short_stack_r operator -(in Vector2D_short_stack_r lhs, in Vector2D_short_stack_r rhs) { return new Vector2D_short_stack_r((short)(lhs.X - rhs.X), (short)(lhs.Y - rhs.Y)); }
+        static public Vector2D_short_stack_r operator -(Vector2D_short_stack_r src) { return new Vector2D_short_stack_r((short)(-src.X), (short)(-src.Y)); }
 
-        // ignore dot product for shorteger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_short_stack_r operator *(short lhs, in Vector2D_short_stack_r rhs) { return new Vector2D_short_stack_r((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
@@ -821,7 +829,7 @@ namespace Zaimoni.Data
             return ret;
         }
 
-        // these are not the safest implementations for shorteger math
+        // these are not the safest implementations for integer math
         public bool Contains(short x, short y) { return _anchor.X <= x && x < Right && _anchor.Y <= y && y < Bottom; }
         public bool Contains(Vector2D_short src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_short src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
@@ -968,8 +976,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_long operator +(Vector2D_long lhs, Vector2D_long rhs) { return new Vector2D_long(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_long operator -(Vector2D_long lhs, Vector2D_long rhs) { return new Vector2D_long(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_long operator -(Vector2D_long src) { return new Vector2D_long(-src.X, -src.Y); }
 
-        // ignore dot product for longeger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_long operator *(long lhs, Vector2D_long rhs) { return new Vector2D_long(lhs*rhs.X, lhs*rhs.Y); }
@@ -1026,8 +1035,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_long_r operator +(in Vector2D_long_r lhs, in Vector2D_long_r rhs) { return new Vector2D_long_r(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_long_r operator -(in Vector2D_long_r lhs, in Vector2D_long_r rhs) { return new Vector2D_long_r(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_long_r operator -(Vector2D_long_r src) { return new Vector2D_long_r(-src.X, -src.Y); }
 
-        // ignore dot product for longeger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_long_r operator *(long lhs, in Vector2D_long_r rhs) { return new Vector2D_long_r(lhs * rhs.X, lhs * rhs.Y); }
@@ -1095,8 +1105,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_long_stack operator +(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_long_stack operator -(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_long_stack operator -(Vector2D_long_stack src) { return new Vector2D_long_stack(-src.X, -src.Y); }
 
-        // ignore dot product for longeger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_long_stack operator *(long lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs * rhs.X, lhs * rhs.Y); }
@@ -1146,8 +1157,9 @@ namespace Zaimoni.Data
         // vector arithmetic
         static public Vector2D_long_stack_r operator +(in Vector2D_long_stack_r lhs, in Vector2D_long_stack_r rhs) { return new Vector2D_long_stack_r(lhs.X + rhs.X, lhs.Y + rhs.Y); }
         static public Vector2D_long_stack_r operator -(in Vector2D_long_stack_r lhs, in Vector2D_long_stack_r rhs) { return new Vector2D_long_stack_r(lhs.X - rhs.X, lhs.Y - rhs.Y); }
+        static public Vector2D_long_stack_r operator -(Vector2D_long_stack_r src) { return new Vector2D_long_stack_r(-src.X, -src.Y); }
 
-        // ignore dot product for longeger vectors for now.
+        // ignore dot product for integer vectors for now.
 
         // scalar product/division
         static public Vector2D_long_stack_r operator *(long lhs, in Vector2D_long_stack_r rhs) { return new Vector2D_long_stack_r(lhs * rhs.X, lhs * rhs.Y); }
@@ -1285,7 +1297,7 @@ namespace Zaimoni.Data
             return ret;
         }
 
-        // these are not the safest implementations for longeger math
+        // these are not the safest implementations for integer math
         public bool Contains(long x, long y) { return _anchor.X <= x && x < Right && _anchor.Y <= y && y < Bottom; }
         public bool Contains(Vector2D_long src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_long src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
