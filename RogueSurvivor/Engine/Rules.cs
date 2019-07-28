@@ -172,6 +172,17 @@ namespace djack.RogueSurvivor.Engine
       return m_DiceRoller.Roll(min, max);
     }
 
+    public short Roll(int min, short max)
+    {
+      return m_DiceRoller.Roll((short)min, max);
+    }
+
+
+    public short Roll(short min, short max)
+    {
+      return m_DiceRoller.Roll(min, max);
+    }
+
     public bool RollChance(int chance)
     {
       return m_DiceRoller.RollChance(chance);

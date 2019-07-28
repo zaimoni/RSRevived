@@ -40,6 +40,13 @@ namespace djack.RogueSurvivor.Engine
       lock(m_Rng) { return m_Rng.Next(min, max); }
     }
 
+    public short Roll(short min, short max)
+    {
+      if (max <= min || 1 == max-min) return min;
+      // should not need to defend aganst bugs in the C# library
+      lock(m_Rng) { return (short)m_Rng.Next(min, max); }
+    }
+
 #if DEAD_FUNC
     public float RollFloat()
     {
