@@ -801,13 +801,13 @@ restart:
         Rectangle rect = m_DiceRoller.Choose(toolroom_superposition);
         var doors = new List<Point>();
         {
-        var pt = new Point(rect.Left+ toolsRoomWidth/ 2 , rect.Top);
+        var pt = rect.Anchor(Compass.XCOMlike.N);
         if (subway.GetTileModelAt(pt+Direction.N).IsWalkable) doors.Add(pt);
-        pt = new Point(rect.Left + toolsRoomWidth / 2, rect.Bottom - 1);
+        pt = rect.Anchor(Compass.XCOMlike.S);
         if (subway.GetTileModelAt(pt+Direction.S).IsWalkable) doors.Add(pt);
-        pt = new Point(rect.Left, rect.Top+toolsRoomHeight / 2);
+        pt = rect.Anchor(Compass.XCOMlike.W);
         if (subway.GetTileModelAt(pt+Direction.W).IsWalkable) doors.Add(pt);
-        pt = new Point(rect.Right - 1, rect.Top+toolsRoomHeight / 2);
+        pt = rect.Anchor(Compass.XCOMlike.E);
         if (subway.GetTileModelAt(pt+Direction.E).IsWalkable) doors.Add(pt);
         if (0 >= doors.Count) {
           toolroom_superposition.Remove(rect);
@@ -1083,7 +1083,11 @@ restart:
 
         Point basementCorner = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
+#if Z_VECTOR
+        Point shopCorner = basementCorner + rectangle.Location + Direction.NW;
+#else
         Point shopCorner = new Point(basementCorner.X - 1 + rectangle.Left, basementCorner.Y - 1 + rectangle.Top);
+#endif
         AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP);
         AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN);
 
@@ -1147,7 +1151,11 @@ restart:
         if (CountAdjWalls(map, pt) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
+#if Z_VECTOR
+      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Location + b.InsideRect.Size / 2 + Direction.NW, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
+#else
       TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
+#endif
       DecorateOutsideWalls(map, b.BuildingRect, pt => {
         if (map.AnyAdjacent<DoorWindow>(pt)) return null;
         if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
@@ -3340,18 +3348,16 @@ restart:
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
       Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      int y1 = 0;
-      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalPatientRoom(map, "patient room", room, true);
-        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      Rectangle patient_room = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalPatientRoom(map, "patient room", patient_room, true);
+        patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      int y2 = 0;
-      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalPatientRoom(map, "patient room", room, false);
-        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      patient_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalPatientRoom(map, "patient room", patient_room, false);
+        patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       for (int index = 0; index < 10; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
@@ -3380,18 +3386,17 @@ restart:
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
       Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      int y1 = 0;
-      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalOfficeRoom(map, "office", room, true);
-        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      Rectangle offices_room = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      while (offices_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalOfficeRoom(map, "office", offices_room, true);
+        offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
+      offices_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
       int y2 = 0;
-      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalOfficeRoom(map, "office", room, false);
-        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      while (offices_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalOfficeRoom(map, "office", offices_room, false);
+        offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       Predicate<Point> in_office = (pt => map.HasZonePartiallyNamedAt(pt, "office"));
       for (int index = 0; index < 5; ++index) {
@@ -3416,18 +3421,16 @@ restart:
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
       Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      int y1 = 0;
-      while (y1 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle1.Left, y1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalPatientRoom(map, "patient room", room, true);
-        y1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      Rectangle patient_room = new Rectangle(0,0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalPatientRoom(map, "patient room", patient_room, true);
+        patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      int y2 = 0;
-      while (y2 <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(rectangle2.Left, y2, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-        MakeHospitalPatientRoom(map, "patient room", room, false);
-        y2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      patient_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalPatientRoom(map, "patient room", patient_room, false);
+        patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       for (int index = 0; index < 20; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
@@ -3464,25 +3467,22 @@ restart:
       map.PlaceAt(MakeObjIronGate(), new Point(1, rect2.Top));
       map.AddZone(MakeUniqueZone("central corridor", rect2));
       Rectangle rectangle1 = new Rectangle(2, rect2.Bottom - 1, map.Width - 2, STORAGE_ROOM_DEPTH);
-      int left1 = rectangle1.Left;
-      while (left1 <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(left1, rectangle1.Top, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
-        MakeHospitalStorageRoom(map, "storage", room);
-        left1 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      Rectangle storage_room = new Rectangle(2, rect2.Bottom - 1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
+      while (storage_room.X <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalStorageRoom(map, "storage", storage_room);
+        storage_room.X += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      map.SetTileModelAt(1, rectangle1.Top, GameTiles.FLOOR_TILES);
+      map.SetTileModelAt(1, storage_room.Y, GameTiles.FLOOR_TILES);
       Rectangle rect3 = Rectangle.FromLTRB(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect3);
       map.SetTileModelAt(1, rect3.Top, GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("south corridor", rect3));
-      Rectangle rectangle2 = new Rectangle(2, rect3.Bottom - 1, map.Width - 2, STORAGE_ROOM_DEPTH);
-      int left2 = rectangle2.Left;
-      while (left2 <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
-        Rectangle room = new Rectangle(left2, rectangle2.Top, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
-        MakeHospitalStorageRoom(map, "storage", room);
-        left2 += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
+      storage_room = new Rectangle(2, rect3.Bottom - 1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
+      while (storage_room.X <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
+        MakeHospitalStorageRoom(map, "storage", storage_room);
+        storage_room.X += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      map.SetTileModelAt(1, rectangle2.Top, GameTiles.FLOOR_TILES);
+      map.SetTileModelAt(1, storage_room.Y, GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("west corridor", new Rectangle(0,0,3,map.Height)));
       return map;
     }

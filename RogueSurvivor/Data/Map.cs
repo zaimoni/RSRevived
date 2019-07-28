@@ -45,9 +45,17 @@ namespace djack.RogueSurvivor.Data
     private string m_BgMusic;  // alpha10
     private Lighting m_Lighting;
 	public readonly WorldTime LocalTime;
-	public readonly int Width;
+#if Z_VECTOR
+    public readonly Size Extent;
+	public short Width { get {return Extent.X;} }
+	public short Height { get {return Extent.Y;} }
+	[NonSerialized] public readonly Rectangle Rect; // \todo next savefile break: doesn't have to be in savefile, could rebuild this on load
+#else
+    public readonly int Width;
 	public readonly int Height;
 	public readonly Rectangle Rect; // \todo next savefile break: doesn't have to be in savefile, could rebuild this on load
+    public Size Extent { get { return Rect.Size; } }
+#endif
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
@@ -163,8 +171,12 @@ namespace djack.RogueSurvivor.Data
 #endif
       Seed = seed;
       Name = name;
+#if Z_VECTOR
+      Extent = new Size(width,height);
+#else
       Width = width;
       Height = height;
+#endif
 	  District = d;
       Rect = new Rectangle(0, 0, width, height);
       LocalTime = new WorldTime();
@@ -187,9 +199,14 @@ namespace djack.RogueSurvivor.Data
       District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
+#if Z_VECTOR
+      Extent = (Size) info.GetValue("m_Extent", typeof (Size));
+      Rect = new Rectangle(Point.Empty,Extent);
+#else
       Width = (int) info.GetValue("m_Width", typeof (int));
       Height = (int) info.GetValue("m_Height", typeof (int));
       Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
+#endif
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
       m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
@@ -219,9 +236,13 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_District", District);
       info.AddValue("m_Name", Name);
       info.AddValue("m_LocalTime", LocalTime);
+#if Z_VECTOR
+      info.AddValue("m_Extent", Extent);
+#else
       info.AddValue("m_Width", Width);
       info.AddValue("m_Height", Height);
       info.AddValue("m_Rectangle", Rect);
+#endif
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
       info.AddValue("m_ActorsList", m_ActorsList);
