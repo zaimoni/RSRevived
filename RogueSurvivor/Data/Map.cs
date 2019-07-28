@@ -660,8 +660,6 @@ namespace djack.RogueSurvivor.Data
       return exit;
      }
 
-     public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
-
      public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -693,13 +691,13 @@ namespace djack.RogueSurvivor.Data
         else explicit_edge = true;
       }
       if (explicit_edge) {
-        for(int x = 0; x<Width; x++) {
+        for(short x = 0; x<Width; x++) {
           Point test = new Point(x,0);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
           test.Y = Height-1;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
-        for(int y = 1; y<Height-1; y++) {
+        for(short y = 1; y<Height-1; y++) {
           Point test = new Point(0,y);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
           test.X = Width-1;
