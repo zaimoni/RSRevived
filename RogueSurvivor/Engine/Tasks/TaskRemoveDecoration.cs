@@ -7,12 +7,19 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_short;
+#else
+using Point = System.Drawing.Point;
+#endif
+
+
 namespace djack.RogueSurvivor.Engine.Tasks
 {
   [Serializable]
   internal class TaskRemoveDecoration : TimedTask
   {
-    private readonly int m_X;
+    private readonly int m_X;   // \todo savefile break: convert these two to Point
     private readonly int m_Y;
     private readonly string m_imageID;
 
@@ -26,7 +33,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
 
     public override void Trigger(Map m)
     {
-      m.RemoveDecorationAt(m_imageID, m_X, m_Y);
+      m.RemoveDecorationAt(m_imageID, new Point(m_X, m_Y));
     }
   }
 }

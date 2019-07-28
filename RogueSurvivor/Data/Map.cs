@@ -579,36 +579,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // thin wrappers based on Tile API
-    public bool HasDecorationsAt(int x, int y)
-    {
-      return HasDecorationsAt(new Point(x,y));
-    }
-
-    public IEnumerable<string> DecorationsAt(int x, int y)
-    {
-      return DecorationsAt(new Point(x,y));
-    }
-
-    public void AddDecorationAt(string imageID, int x, int y)
-    {
-      AddDecorationAt(imageID,new Point(x,y));
-    }
-
-    public bool HasDecorationAt(string imageID, int x, int y)
-    {
-      return HasDecorationAt(imageID,new Point(x,y));
-    }
-
-    public void RemoveAllDecorationsAt(int x, int y)
-    {
-      RemoveAllDecorationsAt(new Point(x,y));
-    }
-
-    public void RemoveDecorationAt(string imageID, int x, int y)
-    {
-      RemoveDecorationAt(imageID,new Point(x,y));
-    }
-
     public bool HasDecorationsAt(Point pt)
     {
       return m_Decorations.ContainsKey(pt);
