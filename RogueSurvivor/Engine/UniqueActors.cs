@@ -112,7 +112,7 @@ namespace djack.RogueSurvivor.Engine
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
       if (zoneByPartialName != null)
         MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
-           return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt) && !map.HasExitAt(pt);
+           return map.IsWalkable(pt) && !map.HasActorAt(pt) && !map.HasItemsAt(pt) && !map.HasExitAt(pt);
         }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[] {
           "TO SEWER WORKERS :",
           "- It lives here.",

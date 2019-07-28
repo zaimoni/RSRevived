@@ -470,7 +470,7 @@ restart:
       MapObjectFill(sewers, sewers.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
-        if (!sewers.IsWalkable(pt.X, pt.Y)) return null;
+        if (!sewers.IsWalkable(pt)) return null;
         return MakeObjJunk();
       }));
 #endregion
@@ -820,7 +820,7 @@ restart:
         PlaceDoor(subway, door, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, pt => {
-          if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
+          if (!subway.IsWalkable(pt) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
           subway.PlaceAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         });
@@ -1066,7 +1066,7 @@ restart:
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
           Session.Get.PoliceInvestigate.Record(shopBasement, pt);
-          if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.HasExitAt(pt)) return;
+          if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
@@ -2617,7 +2617,7 @@ restart:
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
         if (basement.HasExitAt(pt)) return null;
-        if (!basement.IsWalkable(pt.X, pt.Y)) return null;
+        if (!basement.IsWalkable(pt)) return null;
         switch (m_DiceRoller.Roll(0, 5)) {
           case 0:
             return MakeObjJunk();
@@ -2644,7 +2644,7 @@ restart:
       if (Session.Get.HasZombiesInBasements)
         DoForEachTile(basement.Rect, (Action<Point>) (pt =>
         {
-          if (!basement.IsWalkable(pt.X, pt.Y) || basement.HasExitAt(pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+          if (!basement.IsWalkable(pt) || basement.HasExitAt(pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           basement.PlaceAt(CreateNewBasementRatZombie(0), pt);
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
@@ -3034,7 +3034,7 @@ restart:
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
-            if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
+            if (!map.IsWalkable(pt) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             map.PlaceAt(MakeObjShelf(), pt);
             map.DropItemAt(stock_armory(), pt);
           });
@@ -3055,13 +3055,13 @@ restart:
         // Try to leave a non-jumping path to the doors
         // \todo this is optimizable, but level generation is only done once
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt);
+          return map.IsWalkable(pt) && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
+          return map.IsWalkable(pt) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
+          return map.IsWalkable(pt) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         map.AddZone(MakeUniqueZone("office", rect3));
       }
@@ -3329,7 +3329,7 @@ restart:
       PlaceDoor(surfaceMap, point2, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, (Action<Point>) (pt =>
       {
-        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
+        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt) || (CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
           return;
         surfaceMap.PlaceAt(MakeObjIronBench(), pt);
       }));

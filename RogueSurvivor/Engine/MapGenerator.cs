@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Engine
 
     protected static bool IsAccessible(Map map, Point pos)
     {
-      return map.CountAdjacentTo(pos, pt => map.IsWalkable(pt.X, pt.Y)) >= 6;
+      return map.CountAdjacentTo(pos, pt => map.IsWalkable(pt)) >= 6;
     }
 #endregion
   }

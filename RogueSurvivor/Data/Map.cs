@@ -1060,11 +1060,6 @@ retry:
 #endif
     }
 
-    public bool HasActorAt(int x, int y)
-    {
-      return HasActorAt(new Point(x, y));
-    }
-
     public void PlaceAt(Actor actor, Point position)
     {
 #if DEBUG
@@ -1946,10 +1941,10 @@ retry:
       foreach (var actor in m_ActorsList) actor.PreTurnStart();
     }
 
-    public bool IsTransparent(int x, int y)
+    public bool IsTransparent(Point pt)
     {
-      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent) return false;
-      return GetMapObjectAtExt(x, y)?.IsTransparent ?? true;
+      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent) return false;
+      return GetMapObjectAtExt(pt)?.IsTransparent ?? true;
     }
 
     public bool IsWalkable(int x, int y)
@@ -1963,16 +1958,16 @@ retry:
       return IsWalkable(p.X, p.Y);
     }
 
-    public bool IsBlockingFire(int x, int y)
+    public bool IsBlockingFire(Point pt)
     {
-      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent || HasActorAt(x, y)) return true;
-      return !GetMapObjectAtExt(x, y)?.IsTransparent ?? false;
+      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent || HasActorAt(pt)) return true;
+      return !GetMapObjectAtExt(pt)?.IsTransparent ?? false;
     }
 
-    public bool IsBlockingThrow(int x, int y)
+    public bool IsBlockingThrow(Point pt)
     {
-      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable) return true;
-      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
+      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsWalkable) return true;
+      MapObject mapObjectAt = GetMapObjectAtExt(pt);
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 

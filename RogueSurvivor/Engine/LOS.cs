@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #if ANGBAND
-    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<Point, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Engine
             {  // cardinal direction
             do  {
                 start += tmp;
-                if (!fn(start.X, start.Y)) return false;
+                if (!fn(start)) return false;
                 line?.Add(start);
                 }
             while (++i < actualRange);
@@ -209,21 +209,21 @@ namespace djack.RogueSurvivor.Engine
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
-                if (!fn(start.X, start.Y)) return false;
+                if (!fn(start)) return false;
                 line?.Add(start);
                 continue;
                 }
             else if (numerator < needRange)
                 {
                 start += tmp;
-                if (!fn(start.X, start.Y)) return false;
+                if (!fn(start)) return false;
                 line?.Add(start);
                 continue;
                 };
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
-                if (!fn(test.X, test.Y)) {
+                if (!fn(test)) {
                   knightmove_parity = -1;
                   foreach(int fix_me in knight_moves) {
                     // earlier steps must be revised
@@ -235,20 +235,20 @@ namespace djack.RogueSurvivor.Engine
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+alt_step;
-                if (!fn(test.X, test.Y)) knightmove_parity = 1;
+                if (!fn(test)) knightmove_parity = 1;
                 }
             if (0==knightmove_parity && null!=line) knight_moves.Add(line.Count);
             if (-1==knightmove_parity)
                 {
                 start += alt_step;
                 numerator -= 2 * needRange;
-                if (!fn(start.X, start.Y)) return false;
+                if (!fn(start)) return false;
                 line?.Add(start);
                 continue;
                 }
 //          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
             start += tmp;
-            if (!fn(start.X, start.Y)) return false;
+            if (!fn(start)) return false;
             line?.Add(start);
             }
         while (++i < actualRange);
@@ -261,7 +261,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point goal = toPosition;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y),line);
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt => map.IsTransparent(pt) || pt == goal,line);
 #else
       return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>)null, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
 #endif
@@ -280,13 +280,13 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       Point goal = toPosition;
-            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
             {
-				if (x == start.X && y == start.Y) return true;
-				if (x == goal.X && y == goal.Y) return true;
-				if (x == shooter.Location.Position.X && y == shooter.Location.Position.Y) return true;  // testing whether can fire from FromLocation, so not really here
-				return !map.IsBlockingFire(x, y);
-            }), line);
+				if (pt == start) return true;
+				if (pt == goal) return true;
+				if (pt == shooter.Location.Position) return true;  // testing whether can fire from FromLocation, so not really here
+				return !map.IsBlockingFire(pt);
+            }, line);
     }
 
     public static bool CanTraceHypotheticalFireLine(Location from, Location to, int maxRange, Actor shooter, List<Point> line=null)
@@ -302,12 +302,10 @@ namespace djack.RogueSurvivor.Engine
       Point start = fromLocation.Position;
       Point goal = toPosition;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
             {
-                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
-                    return true;
-                return false;
-            }), line);
+                return pt == start || pt == goal || !map.IsBlockingFire(pt);
+            }, line);
 #else
       bool fireLineClear = true;
             LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>)((x, y) =>
@@ -334,12 +332,10 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
             {
-                if (x == start.X && y == start.Y || !map.IsBlockingThrow(x, y))
-                    return true;
-                return false;
-            }), line);
+                return pt == start || !map.IsBlockingThrow(pt);
+            }, line);
 #else
       Point goal = toPosition;
       bool throwLineClear = true;
@@ -362,13 +358,12 @@ namespace djack.RogueSurvivor.Engine
       HashSet<Point> visibleSetRef = visibleSet;
       Point goal = toPosition;
 #if ANGBAND
-            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
             {
-                bool flag = x == goal.X && y == goal.Y || map.IsTransparent(x, y);
-                if (flag)
-                    visibleSetRef.Add(new Point(x, y));
+                bool flag = pt==goal || map.IsTransparent(pt);
+                if (flag) visibleSetRef.Add(pt);
                 return flag;
-            }));
+            });
 #else
                   return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>) null, (Func<int, int, bool>) ((x, y) =>
                   {
@@ -432,7 +427,7 @@ namespace djack.RogueSurvivor.Engine
           TileModel tileModel = map.GetTileModelAtExt(point3);
           if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
 #else
-          if (map.IsTransparent(point3.X,point3.Y)) ++num;  // RS alpha 9 does not have transparent walls.  Review at time of introduction.
+          if (map.IsTransparent(point3)) ++num;  // RS alpha 9 does not have transparent walls.  Review at time of introduction.
 #endif
         }
         if (num >= 3) pointList2.Add(point2);

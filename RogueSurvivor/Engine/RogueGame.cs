@@ -10244,7 +10244,7 @@ namespace djack.RogueSurvivor.Engine
        List<Point> dropTiles = new List<Point>(8);
        actor.Location.Map.ForEachAdjacent(actor.Location.Position, pt => {
          // checking if can drop there is eq to checking if can throw it there
-         if (!actor.Location.Map.IsBlockingThrow(pt.X, pt.Y)) dropTiles.Add(pt);
+         if (!actor.Location.Map.IsBlockingThrow(pt)) dropTiles.Add(pt);
        });
        Point dropOnTile;
        if (dropTiles.Count > 0) dropOnTile = m_Rules.DiceRoller.Choose(dropTiles);
