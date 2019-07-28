@@ -1452,7 +1452,7 @@ namespace djack.RogueSurvivor.Data
       if (1 >= fov.Count) return null;  // sleeping?
       var actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
       foreach (Point position in fov) {
-        Actor actorAt = Location.Map.GetActorAtExt(position.X,position.Y);
+        Actor actorAt = Location.Map.GetActorAtExt(position);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
           actorList.Add(actorAt);
         }

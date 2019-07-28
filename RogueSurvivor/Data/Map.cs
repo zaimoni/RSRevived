@@ -1065,17 +1065,6 @@ retry:
       return actor;
     }
 
-    public Actor GetActorAtExt(int x, int y)
-    {
-#if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return GetActorAt(new Point(x, y));
-      Location? test = Normalize(new Point(x,y));
-      return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
-#else
-      return GetActorAt(new Point(x, y));
-#endif
-    }
-
     public Actor GetActorAtExt(Point pt)
     {
 #if NO_PEACE_WALLS

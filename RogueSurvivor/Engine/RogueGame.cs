@@ -11209,7 +11209,7 @@ namespace djack.RogueSurvivor.Engine
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            Actor actorAt = map.GetActorAtExt(x, y);
+            Actor actorAt = map.GetActorAtExt(point);
             if (actorAt != null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
