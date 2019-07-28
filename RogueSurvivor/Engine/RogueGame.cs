@@ -216,8 +216,9 @@ namespace djack.RogueSurvivor.Engine
     public static readonly GDI_Size SIZE_OF_TILE = new GDI_Size(TILE_SIZE, TILE_SIZE);
     public static readonly GDI_Size SIZE_OF_ACTOR = new GDI_Size(ACTOR_SIZE, ACTOR_SIZE);
 
-    public const int HALF_VIEW_WIDTH = 10;
-    public const int HALF_VIEW_HEIGHT = 10;
+    public const int VIEW_RADIUS = 10;  // also maximum living sight range; severe UI issues if sight radius exceeds UI view radius, cf. Cataclysm family for what goes wrong
+    public const int HALF_VIEW_WIDTH = VIEW_RADIUS; // \todo eliminate these constants in favor of VIEW_RADIUS
+    public const int HALF_VIEW_HEIGHT = VIEW_RADIUS;
 #if DEAD_FUNC
     public const int TILE_VIEW_WIDTH = 2 * HALF_VIEW_WIDTH + 1;
     public const int TILE_VIEW_HEIGHT = 2 * HALF_VIEW_HEIGHT + 1;
@@ -11142,7 +11143,7 @@ namespace djack.RogueSurvivor.Engine
           bool player = is_visible[working];
           bool flag2 = false;
 #if NO_PEACE_WALLS
-          Tile tile = map.GetTileAtExt(x, y);   // non-null for valid coordinates by construction
+          Tile tile = map.GetTileAtExt(point);   // non-null for valid coordinates by construction
 #else
           Tile tile = map.IsValid(x, y) ? map.GetTileAtExt(x, y) : null;
           if (null != tile) {

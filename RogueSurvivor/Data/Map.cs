@@ -459,20 +459,6 @@ namespace djack.RogueSurvivor.Data
       return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
     }
 
-    // for when coordinates may be denormalized
-    public Tile GetTileAtExt(int x, int y)
-    {
-#if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return GetTileAt(x,y);
-      Location? loc = Normalize(new Point(x,y));
-//    if (null == loc) throw ...;
-      return loc.Value.Map.GetTileAt(loc.Value.Position);
-#else
-      int i = y*Width+x;
-      return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
-#endif
-    }
-
     /// <summary>
     /// GetTileAt does not bounds-check for efficiency reasons;
     /// the typical use case is known to be in bounds by construction.
@@ -1264,7 +1250,7 @@ retry:
         if (null == dir) throw new ArgumentNullException(nameof(dir));
 #endif
         no_go[dir.Index] = true;
-        if (IsValid(pt2) && GetTileModelAtExt(pt2.X, pt2.Y).IsWalkable) blocked[dir.Index] = true;
+        if (IsValid(pt2) && GetTileModelAtExt(pt2).IsWalkable) blocked[dir.Index] = true;
         else is_wall[dir.Index] = true;
       }
       // corners and walls are generally ok.  2019-01-04: preliminary tests suggest this is not a micro-optimization target

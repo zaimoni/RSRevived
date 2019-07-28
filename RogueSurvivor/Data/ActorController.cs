@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Data
 #else
       if (map != m_Actor.Location.Map) return false;
 #endif
-      if (!map.IsValid(position.X, position.Y)) return false;
+      if (!map.IsValid(position)) return false;
       return FOV?.Contains(position) ?? false;
     }
 

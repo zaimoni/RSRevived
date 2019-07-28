@@ -92,14 +92,23 @@ namespace djack.RogueSurvivor.Data
 
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
+#if Z_VECTOR
+    public Rectangle ViewRect { get { return new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS)); } }
+    public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS))); } }
+#else
     public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
     public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT)); } }
+#endif
 
     public ZoneLoc MiniMapView { get {
       if (0 >= District.UsesCrossDistrictView(Map)) {
         return new ZoneLoc(Map,Map.Rect);
       } else {
+#if Z_VECTOR
+        return new ZoneLoc(Map,new Rectangle(Position - (Point)Engine.RogueGame.MINIMAP_RADIUS, (Point)(1 + 2 * Engine.RogueGame.MINIMAP_RADIUS)));
+#else
         return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.MINIMAP_RADIUS, Position.Y - Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS));
+#endif
       }
     } }
 
