@@ -645,7 +645,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
-    public bool HasExitAt(int x, int y) { return m_Exits.ContainsKey(new Point(x,y)); }
 
     public bool HasExitAtExt(Point pos)
     {
@@ -1226,18 +1225,18 @@ retry:
     }
 
     // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
-    private string ReasonNotWalkableFor(int x, int y, ActorModel model)
+    private string ReasonNotWalkableFor(Point pt, ActorModel model)
     {
 #if DEBUG
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
 #if NO_PEACE_WALLS
-      if (!IsInBounds(x, y) && !HasExitAt(x,y)) return "out of map";
+      if (!IsInBounds(pt) && !HasExitAt(pt)) return "out of map";
 #else
-      if (!IsInBounds(x, y)) return "out of map";
+      if (!IsInBounds(pt)) return "out of map";
 #endif
-      if (!GetTileModelAtExt(x, y).IsWalkable) return "blocked";
-      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
+      if (!GetTileModelAtExt(pt).IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAtExt(pt);
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!model.Abilities.CanJump) return "cannot jump";
@@ -1245,57 +1244,57 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
+      if (HasActorAt(pt)) return "someone is there";  // XXX includes actor himself
       return "";
     }
 
     public bool IsWalkableFor(Point p, ActorModel model)
     {
-      return string.IsNullOrEmpty(ReasonNotWalkableFor(p.X, p.Y, model));
+      return string.IsNullOrEmpty(ReasonNotWalkableFor(p, model));
     }
 
     public bool IsWalkableFor(Point p, ActorModel model, out string reason)
     {
-      reason = ReasonNotWalkableFor(p.X, p.Y, model);
+      reason = ReasonNotWalkableFor(p, model);
       return string.IsNullOrEmpty(reason);
     }
 
-    private string ReasonNotWalkableFor(int x, int y, Actor actor)
+    private string ReasonNotWalkableFor(Point pt, Actor actor)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
 #if NO_PEACE_WALLS
-      if (!IsInBounds(x, y) && !HasExitAt(x,y)) return "out of map";
+      if (!IsInBounds(pt) && !HasExitAt(pt)) return "out of map";
 #else
-      if (!IsInBounds(x, y)) return "out of map";
+      if (!IsInBounds(pt)) return "out of map";
 #endif
-      if (!GetTileModelAtExt(x, y).IsWalkable) return "blocked";
-      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
+      if (!GetTileModelAtExt(pt).IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAtExt(pt);
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
           // We only have to be completely accurate when adjacent to a square.
-          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP && Engine.Rules.IsAdjacent(actor.Location,new Location(this,new Point(x,y)))) return "not enough stamina to jump";
+          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP && Engine.Rules.IsAdjacent(actor.Location,new Location(this,pt))) return "not enough stamina to jump";
         } else if (actor.Model.Abilities.IsSmall) {
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
       // 1) does not have to be accurate except when adjacent
       // 2) treat null map as "omni-adjacent" (happens during spawning)
-      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,new Location(this,new Point(x,y)))) && HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
+      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,new Location(this, pt))) && HasActorAt(pt)) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
 
     public bool IsWalkableFor(Point p, Actor actor)
     {
-      return string.IsNullOrEmpty(ReasonNotWalkableFor(p.X, p.Y, actor));
+      return string.IsNullOrEmpty(ReasonNotWalkableFor(p, actor));
     }
 
     public bool IsWalkableFor(Point p, Actor actor, out string reason)
     {
-      reason = ReasonNotWalkableFor(p.X, p.Y, actor);
+      reason = ReasonNotWalkableFor(p, actor);
       return string.IsNullOrEmpty(reason);
     }
 
@@ -1380,11 +1379,6 @@ retry:
         return mapObject;
       }
       return null;
-    }
-
-    public MapObject GetMapObjectAt(int x, int y)
-    {
-      return GetMapObjectAt(new Point(x, y));
     }
 
     public MapObject GetMapObjectAtExt(int x, int y)

@@ -11170,7 +11170,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (s_Options.ShowPlayerTargets && !Player.IsSleeping && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
-          MapObject mapObjectAt = map.GetMapObjectAtExt(x, y);
+          MapObject mapObjectAt = map.GetMapObjectAtExt(point);
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
