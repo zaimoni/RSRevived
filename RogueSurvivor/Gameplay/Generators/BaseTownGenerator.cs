@@ -947,10 +947,10 @@ restart:
 
     static private bool IsThereASpecialBuilding(Map map, Rectangle rect)
     {
-      if (map.GetZonesAt(rect.Left, rect.Top)?.Any(zone=> zone.Name.Contains("Sewers Maintenance")
-                                                       || zone.Name.Contains("Subway Station")
-                                                       || zone.Name.Contains("office")
-                                                       || zone.Name.Contains("shop")) ?? false)
+      if (map.GetZonesAt(rect.Location)?.Any(zone=> zone.Name.Contains("Sewers Maintenance")
+                                                 || zone.Name.Contains("Subway Station")
+                                                 || zone.Name.Contains("office")
+                                                 || zone.Name.Contains("shop")) ?? false)
         return true;
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }

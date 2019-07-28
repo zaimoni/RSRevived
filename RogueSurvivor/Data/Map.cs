@@ -991,9 +991,9 @@ retry:
       m_Zones.Remove(zone);
     }
 
-    public void RemoveAllZonesAt(int x, int y)
+    public void RemoveAllZonesAt(Point pt)
     {
-      List<Zone> zonesAt = GetZonesAt(x, y);
+      List<Zone> zonesAt = GetZonesAt(pt);
       if (zonesAt == null) return;
       foreach (Zone zone in zonesAt)
         RemoveZone(zone);

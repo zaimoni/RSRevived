@@ -285,7 +285,7 @@ namespace djack.RogueSurvivor.Engine
           map.RemoveMapObjectAt(pt);
           map.RemoveAllItemsAt(pt);
           map.RemoveAllDecorationsAt(pt);
-          if (clearZones) map.RemoveAllZonesAt(left, top);
+          if (clearZones) map.RemoveAllZonesAt(pt);
           map.GetActorAt(pt)?.RemoveFromMap();
         }
       }
