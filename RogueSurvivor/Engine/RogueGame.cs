@@ -12764,8 +12764,8 @@ namespace djack.RogueSurvivor.Engine
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;
-      for (int index1 = 0; index1 < world.Size; ++index1) {
-        for (int index2 = 0; index2 < world.Size; ++index2) {
+      for (short index1 = 0; index1 < world.Size; ++index1) {
+        for (short index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {
             m_UI.UI_Clear(Color.Black);
             m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());

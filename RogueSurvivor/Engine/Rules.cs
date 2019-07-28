@@ -949,7 +949,11 @@ retry:
       if (lhs.X >= rhs.X && lhs.Y >= rhs.Y) return true;    // this quadrant comes before us.  Would include equality except that already happened.
 
       // strictly speaking, only need to be accurate for adjacent points
+#if Z_VECTOR
+      Point abs_delta = (lhs-rhs).coord_xform(Math.Abs);
+#else
       Point abs_delta = (lhs.Y < rhs.Y) ? new Point(lhs.X-rhs.X,rhs.Y-lhs.Y) : new Point(rhs.X-lhs.X,lhs.Y-rhs.Y);
+#endif
 #if REFERENCE
       if (abs_delta.X  == 2*abs_delta.Y) return false;   // the ambiguity line; overflow-vulnerable
 #endif
