@@ -366,10 +366,10 @@ restart:
           bool orientation_ew = (2 == dir.Index%4);
           Point gate = block.Rectangle.Anchor((Compass.XCOMlike)dir.Index);
           if (sewers.IsOnMapBorder(gate)) continue; // \todo make this test always-false
-          if (orientation_ew) { 
-            gate.Y = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
+          if (orientation_ew) { // \todo mapgen break: should both bounds be from BuildingRect?
+            gate.Y = m_DiceRoller.Roll(block.Rectangle.Top, block.BuildingRect.Bottom);
           } else {
-            gate.X = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
+            gate.X = m_DiceRoller.Roll(block.Rectangle.Left, block.BuildingRect.Right);
           }
           if (sewers.IsOnMapBorder(gate)) continue;  // just in case \todo make this test always-false
           if (3 != CountAdjWalls(sewers, gate)) continue;
@@ -519,7 +519,11 @@ restart:
       // but this was simply the district size
       int deviate_at = Session.Get.World.CitySize-1;
       int half_dim = RogueGame.Options.DistrictSize/2;
+#if Z_VECTOR
+      Point mid_map = (Point)half_dim;
+#else
       Point mid_map = new Point(half_dim, half_dim);
+#endif
       // need diagonals at An and n0 flush
       if (deviate_at==d.WorldPosition.X) {
         mid_map += Direction.W;
