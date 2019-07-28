@@ -8153,7 +8153,11 @@ namespace djack.RogueSurvivor.Engine
     {
 #region 1) examine the underground base
       Map m = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
+#if Z_VECTOR
+      Point exit_to_surface = m.Extent/2;
+#else
       Point exit_to_surface = new Point(m.Width / 2, m.Height / 2);
+#endif
       // underground base is square
       bool in_underground_base_room(Point p) {
         if (0 >= p.X) return false;
@@ -12809,11 +12813,11 @@ namespace djack.RogueSurvivor.Engine
           Map entryMap1 = world[x1, y1].EntryMap;
           if (y1 > 0) {
             Map entryMap2 = world[x1, y1 - 1].EntryMap;
-            for (int x2 = 0; x2 < entryMap1.Width; ++x2) {
+            for (short x2 = 0; x2 < entryMap1.Width; ++x2) {
               if (x2 < entryMap2.Width) {
                 Point from1 = new Point(x2, -1);
-                Point to1 = new Point(x2, entryMap2.Height - 1);
                 Point from2 = new Point(x2, entryMap2.Height);
+                Point to1 = from2 + Direction.N;
                 Point to2 = new Point(x2, 0);
                 if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                   GenerateExit(entryMap1, from1, entryMap2, to1);
@@ -12824,11 +12828,11 @@ namespace djack.RogueSurvivor.Engine
           }
           if (x1 > 0) {
             Map entryMap2 = world[x1 - 1, y1].EntryMap;
-            for (int y2 = 0; y2 < entryMap1.Height; ++y2) {
+            for (short y2 = 0; y2 < entryMap1.Height; ++y2) {
               if (y2 < entryMap2.Height) {
                 Point from1 = new Point(-1, y2);
-                Point to1 = new Point(entryMap2.Width - 1, y2);
                 Point from2 = new Point(entryMap2.Width, y2);
+                Point to1 = from1 + Direction.W;
                 Point to2 = new Point(0, y2);
                 if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                   GenerateExit(entryMap1, from1, entryMap2, to1);
@@ -12839,8 +12843,8 @@ namespace djack.RogueSurvivor.Engine
             if (y1 > 0) {
               entryMap2 = world[x1 - 1, y1-1].EntryMap;
               Point from1 = new Point(-1, -1);
-              Point to1 = new Point(entryMap2.Width - 1, entryMap2.Height - 1);
               Point from2 = new Point(entryMap2.Width, entryMap2.Height);
+              Point to1 = from2 + Direction.NW;
               Point to2 = new Point(0, 0);
               if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                 GenerateExit(entryMap1, from1, entryMap2, to1);
@@ -12850,9 +12854,9 @@ namespace djack.RogueSurvivor.Engine
             if (y1 < world.Size-1) { 
               entryMap2 = world[x1 - 1, y1+1].EntryMap;
               Point from1 = new Point(-1, entryMap1.Height);
-              Point to1 = new Point(entryMap2.Width - 1, 0);
               Point from2 = new Point(entryMap2.Width, -1);
-              Point to2 = new Point(0, entryMap1.Height-1);
+              Point to1 = from2 + Direction.NE;
+              Point to2 = from1 + Direction.SW;
               if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                 GenerateExit(entryMap1, from1, entryMap2, to1);
                 GenerateExit(entryMap2, from2, entryMap1, to2);
@@ -12862,11 +12866,11 @@ namespace djack.RogueSurvivor.Engine
           Map sewersMap1 = world[x1, y1].SewersMap;
           if (y1 > 0) {
             Map sewersMap2 = world[x1, y1 - 1].SewersMap;
-            for (int x2 = 0; x2 < sewersMap1.Width; ++x2) {
+            for (short x2 = 0; x2 < sewersMap1.Width; ++x2) {
               if (x2 < sewersMap2.Width) {
                 Point from1 = new Point(x2, -1);
-                Point to1 = new Point(x2, sewersMap2.Height - 1);
                 Point from2 = new Point(x2, sewersMap2.Height);
+                Point to1 = from2 + Direction.N;
                 Point to2 = new Point(x2, 0);
                 GenerateExit(sewersMap1, from1, sewersMap2, to1);
                 GenerateExit(sewersMap2, from2, sewersMap1, to2);
@@ -12875,11 +12879,11 @@ namespace djack.RogueSurvivor.Engine
           }
           if (x1 > 0) {
             Map sewersMap2 = world[x1 - 1, y1].SewersMap;
-            for (int y2 = 0; y2 < sewersMap1.Height; ++y2) {
+            for (short y2 = 0; y2 < sewersMap1.Height; ++y2) {
               if (y2 < sewersMap2.Height) {
                 Point from1 = new Point(-1, y2);
-                Point to1 = new Point(sewersMap2.Width - 1, y2);
                 Point from2 = new Point(sewersMap2.Width, y2);
+                Point to1 = from2 + Direction.W;
                 Point to2 = new Point(0, y2);
                 GenerateExit(sewersMap1, from1, sewersMap2, to1);
                 GenerateExit(sewersMap2, from2, sewersMap1, to2);
@@ -12888,8 +12892,8 @@ namespace djack.RogueSurvivor.Engine
             if (y1 > 0) {
               sewersMap2 = world[x1 - 1, y1-1].SewersMap;
               Point from1 = new Point(-1, -1);
-              Point to1 = new Point(sewersMap2.Width - 1, sewersMap2.Height - 1);
               Point from2 = new Point(sewersMap2.Width, sewersMap2.Height);
+              Point to1 = from2 + Direction.NW;
               Point to2 = new Point(0, 0);
               if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
                 GenerateExit(sewersMap1, from1, sewersMap2, to1);
@@ -12899,9 +12903,9 @@ namespace djack.RogueSurvivor.Engine
             if (y1 < world.Size-1) { 
               sewersMap2 = world[x1 - 1, y1+1].SewersMap;
               Point from1 = new Point(-1, sewersMap1.Height);
-              Point to1 = new Point(sewersMap2.Width - 1, 0);
               Point from2 = new Point(sewersMap2.Width, -1);
-              Point to2 = new Point(0, sewersMap1.Height-1);
+              Point to1 = from2 + Direction.NE;
+              Point to2 = from1 + Direction.SW;
               if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
                 GenerateExit(sewersMap1, from1, sewersMap2, to1);
                 GenerateExit(sewersMap2, from2, sewersMap1, to2);
@@ -12913,11 +12917,11 @@ namespace djack.RogueSurvivor.Engine
           if (null != subwayMap1) {
             Map subway_W = (0 < x1) ? world[x1 - 1, y1].SubwayMap : null;
             if (null != subway_W) {
-              for (int y2 = 0; y2 < subwayMap1.Height; ++y2) {
+              for (short y2 = 0; y2 < subwayMap1.Height; ++y2) {
                 if (y2 < subway_W.Height) {
                   Point from1 = new Point(-1, y2);
-                  Point to1 = new Point(subway_W.Width - 1, y2);
                   Point from2 = new Point(subway_W.Width, y2);
+                  Point to1 = from2 + Direction.N;
                   Point to2 = new Point(0, y2);
                   if (CheckIfExitIsGood(subway_W, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
                     GenerateExit(subwayMap1, from1, subway_W, to1);
@@ -12928,11 +12932,11 @@ namespace djack.RogueSurvivor.Engine
             }
             Map subway_N = (0 < y1) ? world[x1, y1 - 1].SubwayMap : null;
             if (null != subway_N) {
-              for (int x2 = 0; x2 < subwayMap1.Width; ++x2) {
+              for (short x2 = 0; x2 < subwayMap1.Width; ++x2) {
                 if (x2 < subway_N.Width) {
                   Point from1 = new Point(x2, -1);
-                  Point to1 = new Point(x2, subway_N.Height - 1);
                   Point from2 = new Point(x2, subway_N.Height);
+                  Point to1 = from2+Direction.W;
                   Point to2 = new Point(x2, 0);
                   if (CheckIfExitIsGood(subway_N, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
                     GenerateExit(subwayMap1, from1, subway_N, to1);

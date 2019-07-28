@@ -2741,13 +2741,13 @@ restart:
         Point position2 = rectangle.Anchor(rectangle.Top < underground.Height / 2 ? Compass.XCOMlike.S : Compass.XCOMlike.N);
         if (!underground.HasMapObjectAt(position2)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position2, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
       }
-      for (int right = rect1.Right; right < rect4.Left; ++right) {
-        PlaceDoor(underground, right, rect1.Bottom - 1, GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
-        PlaceDoor(underground, right, rect3.Top, GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+      for (var right = rect1.Right; right < rect4.Left; ++right) {
+        PlaceDoor(underground, new Point(right, rect1.Bottom - 1), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+        PlaceDoor(underground, new Point(right, rect3.Top), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
       }
-      for (int bottom = rect1.Bottom; bottom < rect3.Top; ++bottom) {
-        PlaceDoor(underground, rect1.Right - 1, bottom, GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
-        PlaceDoor(underground, rect2.Left, bottom, GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+      for (var bottom = rect1.Bottom; bottom < rect3.Top; ++bottom) {
+        PlaceDoor(underground, new Point(rect1.Right - 1, bottom), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+        PlaceDoor(underground, new Point(rect2.Left, bottom), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
       }
       foreach (Rectangle wallsRect in list)
       {

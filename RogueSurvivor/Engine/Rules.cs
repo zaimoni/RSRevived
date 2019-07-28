@@ -926,7 +926,12 @@ retry:
         if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         foreach(var x in exits) {
+#if Z_VECTOR
+          Size raw_delta = loc.Position - x.Key;
+          Size delta = new Size(raw_delta.Y,(short)(-raw_delta.X));
+#else
           Size delta = new Size(loc.Position.Y - x.Key.Y, -(loc.Position.X - x.Key.X));
+#endif
           loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
           goto retry;
         }

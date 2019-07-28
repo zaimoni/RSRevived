@@ -197,20 +197,9 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 
 #region Map Objects
-    protected static void MapObjectPlace(Map map, int x, int y, MapObject mapObj)
-    {
-      if (!map.HasMapObjectAt(x, y)) map.PlaceAt(mapObj, new Point(x, y));
-    }
-
     protected static void MapObjectPlace(Map map, Point pt, MapObject mapObj)
     {
       if (!map.HasMapObjectAt(pt)) map.PlaceAt(mapObj, pt);
-    }
-
-    protected static void PlaceDoor(Map map, int x, int y, TileModel floor, DoorWindow door)
-    {
-      map.SetTileModelAt(x, y, floor);
-      MapObjectPlace(map, x, y, door);
     }
 
     protected static void PlaceDoor(Map map, Point pt, TileModel floor, DoorWindow door)
