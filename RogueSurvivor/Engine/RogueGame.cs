@@ -2880,13 +2880,20 @@ namespace djack.RogueSurvivor.Engine
     {
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
+#if Z_VECTOR
+      var range = new Rectangle((Point)1,(Point)maxDistToPoint);
+#endif
       Point p = new Point();
       do {
         ++num2;
+#if Z_VECTOR
+        p = nearPoint + m_Rules.DiceRoller.Choose(range) - m_Rules.DiceRoller.Choose(range);
+#else
         int num3 = nearPoint.X + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
         int num4 = nearPoint.Y + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
         p.X = num3;
         p.Y = num4;
+#endif
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceAt(actorToSpawn, p);

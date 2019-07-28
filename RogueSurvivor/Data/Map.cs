@@ -178,7 +178,11 @@ namespace djack.RogueSurvivor.Data
       Height = height;
 #endif
 	  District = d;
+#if Z_VECTOR
+      Rect = new Rectangle(Point.Empty, Extent);
+#else
       Rect = new Rectangle(0, 0, width, height);
+#endif
       LocalTime = new WorldTime();
       m_Lighting = light;
       IsSecret = secret;

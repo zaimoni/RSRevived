@@ -2309,16 +2309,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // \todo replace this with some form of formation management
       var rules = RogueForm.Game.Rules;
+#if Z_VECTOR
+      var range = new Rectangle((Point)minDist, (Point)(maxDist - minDist));
+#else
       int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
+#endif
 
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
       do {
         if (100 < ++num) return null;
+#if Z_VECTOR
+        Point p = otherPosition + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
+#else
         Point p = otherPosition;
         p.X += spread();
         p.Y += spread();
+#endif
         loc = new Location(other.Location.Map,p);
         if (!loc.ForceCanonical()) continue;
         if (loc == m_Actor.Location) return new ActionWait(m_Actor);
