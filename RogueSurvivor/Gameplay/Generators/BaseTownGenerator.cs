@@ -1365,6 +1365,7 @@ restart:
       if (b.InsideRect.Width > PARK_SHED_WIDTH+2 && b.InsideRect.Height > PARK_SHED_HEIGHT+2) {
         if (m_DiceRoller.RollChance(PARK_SHED_CHANCE)) {
            // roll shed pos - dont put next to park fences!
+           // \todo mapgen break, Z_VECTOR conversion: switch this to m_DiceRoller.Choose
            int shedX = m_DiceRoller.Roll(b.InsideRect.Left+1, b.InsideRect.Right - PARK_SHED_WIDTH);
            int shedY = m_DiceRoller.Roll(b.InsideRect.Top+1, b.InsideRect.Bottom - PARK_SHED_HEIGHT);
            Rectangle shedRect = new Rectangle(shedX, shedY, PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
@@ -2674,9 +2675,8 @@ restart:
       do {
         // We do not want to evaluate this for each point in the office
         do {
-          int x = m_DiceRoller.Roll(officeZone.Bounds.Left, officeZone.Bounds.Right);
-          int y = m_DiceRoller.Roll(officeZone.Bounds.Top, officeZone.Bounds.Bottom);
-          List<Zone> zonesAt = surfaceMap.GetZonesAt(x, y);
+          var pt = m_DiceRoller.Choose(officeZone.Bounds);
+          List<Zone> zonesAt = surfaceMap.GetZonesAt(pt);
           if (0 < (zonesAt?.Count ?? 0)) {
             foreach (Zone zone2 in zonesAt) {
               if (zone2.Name.Contains("room")) {

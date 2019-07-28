@@ -1002,14 +1002,6 @@ retry:
 
     /// <remark>shallow copy needed to be safe for foreach loops</remark>
     /// <returns>null, or a non-empty list of zones</returns>
-    public List<Zone> GetZonesAt(int x, int y)
-    {
-      var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(x, y));
-      return (0<zoneList.Count) ? zoneList : null;
-    }
-
-    /// <remark>shallow copy needed to be safe for foreach loops</remark>
-    /// <returns>null, or a non-empty list of zones</returns>
     public List<Zone> GetZonesAt(Point pt)
     {
       var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(pt));

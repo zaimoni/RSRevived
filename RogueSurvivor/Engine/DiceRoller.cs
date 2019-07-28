@@ -8,6 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#if Z_VECTOR
+using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
+#else
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+#endif
+
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
@@ -77,22 +85,32 @@ namespace djack.RogueSurvivor.Engine
 
     public T Choose<T>(List<T> src) {
       int n = (src?.Count ?? 0);
+#if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
+#endif
       return src[Roll(0, n)];
     }
 
     public T Choose<T>(T[] src) {
       int n = (src?.Length ?? 0);
+#if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
+#endif
       return src[Roll(0, n)];
     }
 
     public T Choose<T>(IEnumerable<T> src) {
       int n = (src?.Count() ?? 0);
+#if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
+#endif
       n = Roll(0, n);
       foreach(var x in src) if (0 >= n--) return x;
       throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
+    }
+
+    public Point Choose(Rectangle r) {
+      return new Point(Roll(r.Left, r.Right), Roll(r.Top, r.Bottom));
     }
   }
 }
