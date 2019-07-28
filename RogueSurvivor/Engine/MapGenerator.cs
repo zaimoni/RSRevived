@@ -86,29 +86,31 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    protected static void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, Point> decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
-      for (int x = left; x < left + width; ++x) {
-        TileModel model1 = map.GetTileModelAt(x, top);
-        map.SetTileModelAt(x, top, model);
-        decoratorFn?.Invoke(map.GetTileAt(x, top), model1, x, top);
+      for (short x = (short)left; x < left + width; ++x) {
+        Point pt = new Point(x, (short)top);
+        TileModel model1 = map.GetTileModelAt(pt);
+        map.SetTileModelAt(pt, model);
+        decoratorFn?.Invoke(map.GetTileAt(pt), model1, pt);
       }
     }
 
-    protected static void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, Point> decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
-      for (int y = top; y < top + height; ++y) {
-        TileModel model1 = map.GetTileModelAt(left, y);
-        map.SetTileModelAt(left, y, model);
-        decoratorFn?.Invoke(map.GetTileAt(left, y), model1, left, y);
+      for (short y = (short)top; y < top + height; ++y) {
+        Point pt = new Point((short)left, y);
+        TileModel model1 = map.GetTileModelAt(pt);
+        map.SetTileModelAt(pt, model);
+        decoratorFn?.Invoke(map.GetTileAt(pt), model1, pt);
       }
     }
 
@@ -117,7 +119,7 @@ namespace djack.RogueSurvivor.Engine
       TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
     }
 
-    protected static void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, Point> decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));

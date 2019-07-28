@@ -1366,11 +1366,6 @@ retry:
       return m_aux_MapObjectsByPosition.ContainsKey(position);
     }
 
-    public bool HasMapObjectAt(int x, int y)
-    {
-      return m_aux_MapObjectsByPosition.ContainsKey(new Point(x, y));
-    }
-
     public bool HasMapObjectAtExt(Point position)
     {
       if (m_aux_MapObjectsByPosition.ContainsKey(position)) return true;

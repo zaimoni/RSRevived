@@ -2055,10 +2055,10 @@ restart:
     protected virtual void MakeHousingRoom(Map map, Rectangle roomRect, TileModel floor, TileModel wall)
     {
       TileFill(map, floor, roomRect);
-      TileRectangle(map, wall, roomRect.Left, roomRect.Top, roomRect.Width, roomRect.Height, (tile, prevmodel, x, y) =>
+      TileRectangle(map, wall, roomRect.Left, roomRect.Top, roomRect.Width, roomRect.Height, (tile, prevmodel, pt) =>
       {
-        if (!map.HasMapObjectAt(x, y)) return;
-        map.SetTileModelAt(x, y, floor);
+        if (!map.HasMapObjectAt(pt)) return;
+        map.SetTileModelAt(pt, floor);
       });
       bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, pt) && !map.AnyAdjacent<DoorWindow>(pt); };
       MapObject make_door_window(Point pt) { return ((!map.GetTileAt(pt).IsInside && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
