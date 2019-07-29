@@ -157,26 +157,24 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #if ANGBAND
-    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<Point, bool> fn, List<Point> line = null)
+    private static bool AngbandlikeTrace(int maxSteps, Point from, Point to, Func<Point, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (null == fn) throw new ArgumentNullException(nameof(fn));
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
 #endif
-        Point start = new Point(xFrom, yFrom);
+        Point start = from;
         line?.Add(start);
         if (0 == maxSteps) return true;
 
-        int xDelta = xTo - xFrom;
-        int yDelta = yTo - yFrom;
-        int xAbsDelta = (0 <= xDelta ? xDelta : -xDelta);
-        int yAbsDelta = (0 <= yDelta ? yDelta : -yDelta);
-        int needRange = (xAbsDelta < yAbsDelta ? yAbsDelta : xAbsDelta);
+        Point delta = new Point(to.X - from.X, to.Y - from.Y);
+        Point absDelta = new Point(0 <= delta.X ? delta.X : -delta.X, 0 <= delta.Y ? delta.Y : -delta.Y);
+        int needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
-        Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out Direction knightmove);
+        Direction tmp = Direction.To(from.X, from.Y, to.X, to.Y, out Direction knightmove);
         Point end = start + needRange * tmp;
-        Direction offset = Direction.To(end.X, end.Y, xTo, yTo);
+        Direction offset = Direction.To(end.X, end.Y, to.X, to.Y);
         int i = 0;
         if (offset == Direction.NEUTRAL)
             {  // cardinal direction
@@ -186,14 +184,14 @@ namespace djack.RogueSurvivor.Engine
                 line?.Add(start);
                 }
             while (++i < actualRange);
-            return start.X == xTo && start.Y == yTo;
+            return start == to;
             }
 #if Z_VECTOR
         Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
 #else
         Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
 #endif
-        var err = new Point(xTo - end.X, yTo - end.Y);
+        var err = new Point(to.X - end.X, to.Y - end.Y);
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
 
@@ -252,7 +250,7 @@ namespace djack.RogueSurvivor.Engine
             line?.Add(start);
             }
         while (++i < actualRange);
-        return start.X == xTo && start.Y == yTo;
+        return start == to;
     }
 #endif
 
@@ -261,7 +259,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point goal = toPosition;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt => map.IsTransparent(pt) || pt == goal,line);
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => map.IsTransparent(pt) || pt == goal,line);
 #else
       return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>)null, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
 #endif
@@ -280,7 +278,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       Point goal = toPosition;
-            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
             {
 				if (pt == start) return true;
 				if (pt == goal) return true;
@@ -302,7 +300,7 @@ namespace djack.RogueSurvivor.Engine
       Point start = fromLocation.Position;
       Point goal = toPosition;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
             {
                 return pt == start || pt == goal || !map.IsBlockingFire(pt);
             }, line);
@@ -332,7 +330,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
             {
                 return pt == start || !map.IsBlockingThrow(pt);
             }, line);
@@ -358,7 +356,7 @@ namespace djack.RogueSurvivor.Engine
       HashSet<Point> visibleSetRef = visibleSet;
       Point goal = toPosition;
 #if ANGBAND
-            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, pt =>
+            return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
             {
                 bool flag = pt==goal || map.IsTransparent(pt);
                 if (flag) visibleSetRef.Add(pt);
