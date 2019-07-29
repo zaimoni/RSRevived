@@ -2137,7 +2137,7 @@ retry:
           }
         }
 
-        var inverse_dir = normal_dir.Right.Right.Right.Right;   // \todo concise wrapper for this
+        var inverse_dir = -normal_dir;
         int i = one_adjacent.Count;
         while (0 < i--) {
 #if DEBUG
