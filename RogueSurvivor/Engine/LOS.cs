@@ -167,9 +167,14 @@ namespace djack.RogueSurvivor.Engine
         line?.Add(start);
         if (0 == maxSteps) return true;
 
+#if Z_VECTOR
+        Point delta = to - from;
+        Point absDelta = delta.coord_xform(Math.Abs);
+#else
         Point delta = new Point(to.X - from.X, to.Y - from.Y);
         Point absDelta = new Point(0 <= delta.X ? delta.X : -delta.X, 0 <= delta.Y ? delta.Y : -delta.Y);
-        int needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
+#endif
+        var needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
         Direction tmp = Direction.To(from.X, from.Y, to.X, to.Y, out Direction knightmove);
@@ -188,10 +193,11 @@ namespace djack.RogueSurvivor.Engine
             }
 #if Z_VECTOR
         Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
+        var err = to - end;
 #else
         Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
-#endif
         var err = new Point(to.X - end.X, to.Y - end.Y);
+#endif
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
 
