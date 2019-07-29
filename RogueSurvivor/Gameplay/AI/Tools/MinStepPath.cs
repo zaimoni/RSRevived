@@ -1,17 +1,9 @@
 ﻿using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Zaimoni.Data;
-using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 
-#if Z_VECTOR
+using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 using Point = Zaimoni.Data.Vector2D_short;
-using Size = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
-#endif
 
 namespace djack.RogueSurvivor.Gameplay.AI.Tools
 {
@@ -47,13 +39,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
             m_Origin = denorm.Value.Position;
 
-#if Z_VECTOR
             m_Delta = target - m_Origin;
             Point absDelta = m_Delta.coord_xform(Math.Abs);
-#else
-            m_Delta = new Point(target.X - m_Origin.X, target.Y - m_Origin.Y);
-            Point absDelta = new Point(0 <= m_Delta.X ? m_Delta.X : -m_Delta.X, 0 <= m_Delta.Y ? m_Delta.Y : -m_Delta.Y);
-#endif
             bool x_dominant = absDelta.X > absDelta.Y;
             span_spread = x_dominant ? new KeyValuePair<int, int>(absDelta.X, absDelta.X - absDelta.Y) : new KeyValuePair<int, int>(absDelta.Y, absDelta.Y - absDelta.X);
 #if Z_COMPASS

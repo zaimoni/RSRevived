@@ -3,13 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
 
 namespace djack.RogueSurvivor.Data
 {
@@ -309,11 +304,7 @@ namespace djack.RogueSurvivor.Data
                   if (0 > pt.Y) {
                     if (0 >= pos.Y) continue;
                     y_delta = -1;
-#if Z_VECTOR
                     invalid_xy.Add(pt + m.Extent);
-#else
-                    invalid_xy.Add(new Point(pt.X+m.Width,pt.Y+m.Height));
-#endif
                   } else if (m.Height <= pt.Y) {
                     if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
                     y_delta = 1;
@@ -331,11 +322,7 @@ namespace djack.RogueSurvivor.Data
                   } else if (m.Height <= pt.Y) {
                     if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
                     y_delta = 1;
-#if Z_VECTOR
                     invalid_xy.Add(pt - m.Extent);
-#else
-                    invalid_xy.Add(new Point(pt.X-m.Width,pt.Y-m.Height));
-#endif
                   } else {
                     invalid_x.Add(new Point(pt.X-m.Width,pt.Y));
                   }

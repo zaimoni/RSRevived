@@ -11,13 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
 using PointF = System.Drawing.PointF;
 
 
@@ -54,42 +49,12 @@ namespace djack.RogueSurvivor.Data
       NormalizedVector = num != 0.0f ? new PointF((float)vector.X / num, (float)vector.Y / num) : PointF.Empty;
     }
 
-    public static Point operator +(Point lhs, Direction rhs)
-    {
-#if Z_VECTOR
-      return lhs + rhs.Vector;
-#else
-      return new Point(lhs.X + rhs.Vector.X, lhs.Y + rhs.Vector.Y);
-#endif
-    }
+    public static Point operator +(Point lhs, Direction rhs) { return lhs + rhs.Vector; }
+    public static Point operator -(Point lhs, Direction rhs) { return lhs - rhs.Vector; }
+    public static Direction operator -(Direction rhs) { return COMPASS[(rhs.Index + 4) % 8]; }
+    public static Size operator *(short lhs, Direction rhs) { return lhs * rhs.Vector; }
 
-    public static Point operator -(Point lhs, Direction rhs)
-    {
-#if Z_VECTOR
-      return lhs - rhs.Vector;
-#else
-      return new Point(lhs.X - rhs.Vector.X, lhs.Y - rhs.Vector.Y);
-#endif
-    }
-
-    public static Direction operator -(Direction rhs)
-    {
-      return COMPASS[(rhs.Index + 4) % 8];
-    }
-
-#if Z_VECTOR
-    public static Size operator *(short lhs, Direction rhs)
-    {
-      return lhs * rhs.Vector;
-    }
-#else
-    public static Size operator *(int lhs, Direction rhs)
-    {
-      return new Size(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
-    }
-#endif
-
-            public static Direction FromVector(Point v)
+    public static Direction FromVector(Point v)
     {
       foreach (Direction direction in COMPASS) {
         if (direction.Vector == v) return direction;

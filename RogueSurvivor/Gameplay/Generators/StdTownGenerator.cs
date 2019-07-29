@@ -10,11 +10,7 @@ using System;
 using System.Collections.Generic;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -58,11 +54,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 if (null != claimed_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
-#if Z_VECTOR
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
-#else
-                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
-#endif
                 if (pt == center) { // grab center slot
                   shed_claimed.Add(pt);
                   return true;
@@ -72,11 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               ok = ok.And(pt => {
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
-#if Z_VECTOR
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
-#else
-                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
-#endif
                 if (pt == center) { // grab center slot
                   shed_claimed.Add(pt);
                   return true;
@@ -89,11 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
-#if Z_VECTOR
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
-#else
-                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
-#endif
                 foreach(var dir in Direction.COMPASS_4) {
                   var pt2 = center+dir;
                   if (null != map.GetMapObjectAt(pt2)) continue;
@@ -108,11 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               ok = ok.And(pt => {
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
                 if (null == z2) return true;
-#if Z_VECTOR
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
-#else
-                Point center = new Point(z2.Bounds.X + z2.Bounds.Width / 2 , z2.Bounds.Y + z2.Bounds.Height / 2);
-#endif
                 foreach(var dir in Direction.COMPASS_4) {
                   var pt2 = center+dir;
                   if (null != map.GetMapObjectAt(pt2)) continue;

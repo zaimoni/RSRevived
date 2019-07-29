@@ -10,13 +10,8 @@ using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
 
 namespace djack.RogueSurvivor.Data
 {
@@ -513,14 +508,6 @@ restart:
       }
     }
 
-    public void TrimToBounds(ref int x, ref int y)
-    {
-      if (x < 0) x = 0;
-      else if (x >= m_Size) x = m_Size - 1;
-      if (y < 0) y = 0;
-      else if (y >= m_Size) y = m_Size - 1;
-    }
-
     public void TrimToBounds(ref Rectangle src)
     {
       var test = src.Left;
@@ -530,11 +517,7 @@ restart:
       }
 
       test = src.Right;
-#if Z_VECTOR
       if (Size < test) src.Width -= (short)(test-Size);
-#else
-      if (Size < test) src.Width -= (test-Size);
-#endif
 
       test = src.Top;
       if (0>test) {
@@ -543,14 +526,10 @@ restart:
       }
 
       test = src.Bottom;
-#if Z_VECTOR
       if (Size < test) src.Width -= (short)(test-Size);
-#else
-      if (Size < test) src.Width -= (test-Size);
-#endif
-        }
+    }
 
-        public static string CoordToString(int x, int y)
+    public static string CoordToString(int x, int y)
     {
       return string.Format("{0}{1}", (object) (char) (65 + x), (object) y);
     }
