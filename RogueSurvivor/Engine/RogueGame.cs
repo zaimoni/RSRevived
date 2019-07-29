@@ -12676,7 +12676,7 @@ namespace djack.RogueSurvivor.Engine
           Session.CommandLineOptions.Remove("city");
           return;
         }
-        s_Options.CitySize = city_size;
+        s_Options.CitySize = (short)city_size;
         s_Options.DistrictSize = district_size;
       }
 

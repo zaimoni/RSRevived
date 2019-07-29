@@ -27,15 +27,15 @@ namespace djack.RogueSurvivor.Data
     // static public readonly Point CHAR_CIty_Origin = new Point(0,0);  // VAPORWARE (may need to be a proper Rectangle
 
     private readonly District[,] m_DistrictsGrid;
-    private readonly int m_Size;    // save file break \todo next savefile break: convert this to public readonly short
+    private readonly short m_Size;
     private District m_PlayerDistrict = null; 
     private District m_SimDistrict = null; 
     private readonly Queue<District> m_Ready;
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
-    public short Size { get { return (short)m_Size; } }
-    public int CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
+    public short Size { get { return m_Size; } }
+    public short CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
     public bool InBounds(int x,int y) {
       return 0 <= x && m_Size > x && 0 <= y && m_Size > y;
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public World(int size)
+    public World(short size)
     {
 #if DEBUG
       if (0 >= size) throw new ArgumentOutOfRangeException(nameof(size),size, "0 >= size");

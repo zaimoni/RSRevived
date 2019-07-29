@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Engine
     private int m_SpawnSkeletonChance;
     private int m_SpawnZombieChance;
     private int m_SpawnZombieMasterChance;
-    private int m_CitySize;
+    private short m_CitySize;
     private bool m_NPCCanStarveToDeath;
     private int m_ZombificationChance;
     private bool m_RevealStartingDistrict;
@@ -170,7 +170,7 @@ namespace djack.RogueSurvivor.Engine
       return 3<=x && 7 >= x;
     }
 
-    public int CitySize {
+    public short CitySize {
       get {
         return m_CitySize;
       }
