@@ -38,15 +38,8 @@ using static Zaimoni.Data.Functor;
 
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 // game coordinate types
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
 // GDI+ types
 using Color = System.Drawing.Color;
 using GDI_Point = System.Drawing.Point;
@@ -436,11 +429,7 @@ namespace djack.RogueSurvivor.Engine
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
     public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
     {
-#if Z_VECTOR
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO, (Point)(2 * GameActors.HUMAN_AUDIO + 1));
-#else
-      Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
-#endif
       survey.DoForEach(pt => {
           Actor a = loc.Map.GetActorAtExt(pt);
           if (a?.IsSleeping ?? true) return;    // XXX \todo integrate loud noise wakeup here
@@ -471,11 +460,7 @@ namespace djack.RogueSurvivor.Engine
       if (1>=Session.Get.World.PlayerCount) return;
 
       Actor a = null;
-#if Z_VECTOR
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO,(Point)(2*GameActors.HUMAN_AUDIO+1));
-#else
-      Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
-#endif
       survey.DoForEach(pt=>{
         if (a.Controller is PlayerController player) {
           player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
@@ -506,11 +491,7 @@ namespace djack.RogueSurvivor.Engine
         doFn(a);
       }
 
-#if Z_VECTOR
       var survey = new Rectangle(loc.Position - (Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
-#else
-      Rectangle survey = new Rectangle(loc.Position.X-Actor.MAX_VISION, loc.Position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
-#endif
       survey.DoForEach(pt => process_sight(loc.Map.GetActorAtExt(pt)));
       var e = loc.Exit;
       if (null != e) process_sight(e.Location.Actor);
@@ -2651,11 +2632,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_ArmySupplies(Map map)
     {
       if (!FindDropSuppliesPoint(map, out Point dropPoint)) return;
-#if Z_VECTOR
       Rectangle survey = new Rectangle(dropPoint - (Point)ARMY_SUPPLIES_SCATTER, (Point)(2 * ARMY_SUPPLIES_SCATTER + 1));
-#else
-      Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
-#endif
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
@@ -2854,11 +2831,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool NoPlayersNearerThan(Map map, Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
     {
-#if Z_VECTOR
         var exclude = new Rectangle(pos - (Point)(min_distance-1), (Point)(-1+2* min_distance));
-#else
-        Rectangle exclude = new Rectangle(pos.X-min_distance+1, pos.Y-min_distance+1, -1+2* min_distance, -1+2* min_distance);
-#endif
         return !exclude.Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
     }
 
@@ -2880,20 +2853,11 @@ namespace djack.RogueSurvivor.Engine
     {
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
-#if Z_VECTOR
       var range = new Rectangle((Point)1,(Point)maxDistToPoint);
-#endif
       Point p = new Point();
       do {
         ++num2;
-#if Z_VECTOR
         p = nearPoint + m_Rules.DiceRoller.Choose(range) - m_Rules.DiceRoller.Choose(range);
-#else
-        int num3 = nearPoint.X + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
-        int num4 = nearPoint.Y + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
-        p.X = num3;
-        p.Y = num4;
-#endif
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceAt(actorToSpawn, p);
@@ -8160,11 +8124,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #region 1) examine the underground base
       Map m = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
-#if Z_VECTOR
       Point exit_to_surface = m.Extent/2;
-#else
-      Point exit_to_surface = new Point(m.Width / 2, m.Height / 2);
-#endif
       // underground base is square
       bool in_underground_base_room(Point p) {
         if (0 >= p.X) return false;
@@ -9976,11 +9936,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
     {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
-#if Z_VECTOR
       Rectangle survey = new Rectangle(noisePosition - (Point)Rules.LOUD_NOISE_RADIUS, (Point)(2* Rules.LOUD_NOISE_RADIUS + 1));
-#else
-      Rectangle survey = new Rectangle(noisePosition.X - Rules.LOUD_NOISE_RADIUS, noisePosition.Y - Rules.LOUD_NOISE_RADIUS, 2* Rules.LOUD_NOISE_RADIUS + 1, 2 * Rules.LOUD_NOISE_RADIUS + 1);
-#endif
 
       Actor actorAt = null;
       survey.DoForEach(pt => {
@@ -10964,12 +10920,7 @@ namespace djack.RogueSurvivor.Engine
                 if (0 >= District.UsesCrossDistrictView(CurrentMap)) {
                     DrawMiniMap(CurrentMap.Rect);
                 } else {
-                    var viewpoint = m_MapView.Center;
-#if Z_VECTOR
-                    Rectangle view = new Rectangle(viewpoint.Position - (Point)MINIMAP_RADIUS, (Point)(1+2*MINIMAP_RADIUS));
-#else
-                    Rectangle view = new Rectangle(viewpoint.Position.X-MINIMAP_RADIUS, viewpoint.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
-#endif
+                    Rectangle view = new Rectangle(m_MapView.Center.Position - (Point)MINIMAP_RADIUS, (Point)(1+2*MINIMAP_RADIUS));
                     DrawMiniMap(view);
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
@@ -11012,11 +10963,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static string LocationText()
     {
-#if Z_VECTOR
       Location loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
-#else
-      Location loc = new Location(CurrentMap,new Point(MapViewRect.Left+HALF_VIEW_WIDTH,MapViewRect.Top+HALF_VIEW_HEIGHT));
-#endif
       StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
       List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
       if (null == zonesAt) return stringBuilder.ToString();
@@ -11084,11 +11031,7 @@ namespace djack.RogueSurvivor.Engine
       var num2 = MapViewRect.Right;
       var num3 = MapViewRect.Top;
       var num4 = MapViewRect.Bottom;
-#if Z_VECTOR
       var view_center = MapViewRect.Location + (Point)HALF_VIEW_WIDTH;
-#else
-      var view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
-#endif
 #else
       var num1 = Math.Max(-1, m_MapViewRect.Left);
       var num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
@@ -11113,12 +11056,7 @@ namespace djack.RogueSurvivor.Engine
           if (null == LoF) continue;
           foreach(Point pt in LoF) {
             if (pt==actorAt.Location.Position) continue;
-#if Z_VECTOR
             delta = pt - actorAt.Location.Position + point;
-#else
-            delta.X = pt.X- actorAt.Location.Position.X+point.X;
-            delta.Y = pt.Y- actorAt.Location.Position.Y+point.Y;
-#endif
             if (!MapViewRect.Contains(delta)) continue;
             MapViewRect.convert(delta,ref working);
             if (0 > working || view_squares <= working) continue;
@@ -11693,12 +11631,8 @@ namespace djack.RogueSurvivor.Engine
         loc = test.Value;
       }
       if (view.Contains(loc.Position)) {
-#if Z_VECTOR
         Point point = new Point(MINIMAP_X, MINIMAP_Y);
         point += (loc.Position - view.Location)* MINITILE_SIZE;
-#else
-        Point point = new Point(MINIMAP_X + (loc.Position.X - view.Left) * MINITILE_SIZE, MINIMAP_Y + (loc.Position.Y - view.Top) * MINITILE_SIZE);
-#endif
         m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
       }
       if (IsInViewRect(loc) && !IsVisibleToPlayer(actor)) {
@@ -12317,11 +12251,7 @@ namespace djack.RogueSurvivor.Engine
       if (   null == map   // convince Duckman to not superheroically crash many games on turn 0
           || !map.IsValid(position))
         return false;
-#if Z_VECTOR
       Rectangle survey = new Rectangle(position-(Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
-#else
-      Rectangle survey = new Rectangle(position.X-Actor.MAX_VISION, position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
-#endif
       var players = new List<Actor>();
 
       void id_player(Actor player) {
@@ -13761,11 +13691,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Location loc = whoDoesTheAction.Location;
       int maxLivingFOV = Actor.MaxLivingFOV(whoDoesTheAction.Location.Map);
-#if Z_VECTOR
       Rectangle rect = new Rectangle(loc.Position-(Point)maxLivingFOV,(Point)(2*maxLivingFOV+1));
-#else
-      Rectangle rect = new Rectangle(loc.Position.X-maxLivingFOV,loc.Position.Y-maxLivingFOV,2*maxLivingFOV+1,2*maxLivingFOV+1);
-#endif
       Actor actor = null;
       rect.DoForEach(pt=>{
         actor.SpendSanity(sanCost);

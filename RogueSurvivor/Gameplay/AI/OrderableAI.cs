@@ -23,14 +23,8 @@ using System.Diagnostics;
 using System.Linq;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
-
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
@@ -1334,11 +1328,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(Percept en in enemies) {
         foreach(var p in optimal_FOV) {
-#if Z_VECTOR
           var pt = p + en.Location.Position;
-#else
-          var pt = new Point(p.X + en.Location.Position.X, p.Y + en.Location.Position.Y);
-#endif
           var test = new Location(en.Location.Map,pt);
           if (!test.ForceCanonical()) continue;
           if (ret.Contains(test)) continue;
@@ -1736,11 +1726,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
         if (_blast_field?.Contains(point) ?? false) continue;
         int score = 0;
-#if Z_VECTOR
         Rectangle blast_zone = new Rectangle(point - (Point)blast_radius, (Point)(2 * blast_radius + 1));
-#else
-        Rectangle blast_zone = new Rectangle(point.X- blast_radius, point.Y- blast_radius, 2* blast_radius + 1, 2* blast_radius + 1);
-#endif
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
         if (   !blast_zone.Any(pt => {
                   Actor actorAt = a_map.GetActorAtExt(pt);
@@ -1771,13 +1757,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private static string MakeCentricLocationDirection(Location from, Location to)
     {
       if (from.Map != to.Map) return string.Format("in {0}", (object) to.Map.Name);
-#if Z_VECTOR
       Point v = to.Position - from.Position;
-#else
-      Point position1 = from.Position;
-      Point position2 = to.Position;
-      Point v = new Point(position2.X - position1.X, position2.Y - position1.Y);
-#endif
       return string.Format("{0} tiles to the {1}", (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v));
     }
 
@@ -2284,11 +2264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 1) if we're out of range, get within range
       if (maxDist < Rules.GridDistance(m_Actor.Location,other.Location)) {
         int span = 2 * maxDist + 1;
-#if Z_VECTOR
         var rect = new Rectangle(other.Location.Position - (Point)maxDist, (Point)span);
-#else
-        var rect = new Rectangle(other.Location.Position.X-maxDist,other.Location.Position.Y-maxDist, span, span);
-#endif
         var goals = new HashSet<Location>();
         rect.DoForEach(pt => {
             var loc2 = new Location(other.Location.Map, pt);
@@ -2309,24 +2285,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // \todo replace this with some form of formation management
       var rules = RogueForm.Game.Rules;
-#if Z_VECTOR
       var range = new Rectangle((Point)minDist, (Point)(maxDist - minDist));
-#else
-      int spread() { return rules.Roll(minDist, maxDist + 1) - rules.Roll(minDist, maxDist + 1); }
-#endif
 
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
       do {
         if (100 < ++num) return null;
-#if Z_VECTOR
         Point p = otherPosition + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
-#else
-        Point p = otherPosition;
-        p.X += spread();
-        p.Y += spread();
-#endif
         loc = new Location(other.Location.Map,p);
         if (!loc.ForceCanonical()) continue;
         if (loc == m_Actor.Location) return new ActionWait(m_Actor);
@@ -3452,11 +3418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             danger_point_FOV.ExceptWith(no_light_FOV);
 
             var tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)+1;
-#if Z_VECTOR
             Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
-#else
-            Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
-#endif
 
             if (null!=threats) {
               HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map, view);

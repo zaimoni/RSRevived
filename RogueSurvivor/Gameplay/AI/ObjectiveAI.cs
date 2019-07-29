@@ -11,13 +11,8 @@ using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -1482,11 +1477,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
-#if Z_VECTOR
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
-#else
-      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
-#endif
 
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -1698,11 +1689,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
-#if Z_VECTOR
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
-#else
-      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
-#endif
 
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -1819,11 +1806,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 2;
-#if Z_VECTOR
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
-#else
-      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
-#endif
 
 	  if (null != threats) {
         tmp2 = DecideMove_maximize_visibility(tmp2, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
@@ -1890,30 +1873,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool last_waypoint_ok = false;
 
       Point waypoint_bounds(Location loc) {
-#if Z_VECTOR
         Point ret = Point.MaxValue;
-#else
-        Point ret = new Point(int.MaxValue,int.MaxValue);
-#endif
         last_waypoint_ok = false;
         foreach(var x in waypoint_dist) {
           if (x.Key==loc) return x.Value;
           int dist = Rules.InteractionDistance(x.Key,loc);
-#if Z_VECTOR
           if (short.MaxValue <= dist || short.MaxValue - dist <= x.Value.X) continue;
-#else
-          if (int.MaxValue <= dist || int.MaxValue - dist <= x.Value.X) continue;
-#endif
           last_waypoint_ok = true;
           int lb_dist = dist + x.Value.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) continue;
           if (ret.X > dist) ret.X = (short)dist;
-#if Z_VECTOR
           short ub_dist = short.MaxValue;
-#else
-          int ub_dist = int.MaxValue;
-#endif
           if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = (short)(2*dist + x.Value.Y);
           if (ret.Y > ub_dist) ret.Y = ub_dist;
 #if DEBUG
@@ -2372,11 +2343,7 @@ restart:
       foreach(var loc in tainted.ToList()) {
         if (!loc.Map.WouldBlacklistFor(loc.Position,m_Actor)) continue;
         foreach(var offset in ideal) {
-#if Z_VECTOR
           var legal = new Location(loc.Map, loc.Position + offset); // may be denormalized
-#else
-          var legal = new Location(loc.Map,new Point(loc.Position.X+offset.X, loc.Position.Y+offset.Y)); // may be denormalized
-#endif
           if (!legal.ForceCanonical()) continue;
           if (tainted.Contains(legal)) continue;
           if (m_Actor.Location == legal) continue;
@@ -4536,11 +4503,7 @@ restart_single_exit:
       if (0 >= ground_inv.Count) return null;
 
       // set up pattern-matching for ranged weapons
-#if Z_VECTOR
       Point viewpoint_inventory = Point.MaxValue; // intentionally chosen to be impossible, as a flag
-#else
-      Point viewpoint_inventory = new Point(int.MaxValue,int.MaxValue); // intentionally chosen to be impossible, as a flag
-#endif
       var best_rw = new Dictionary<Point, ItemRangedWeapon[]>();
       var reload_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
       var discard_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();

@@ -11,11 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -58,7 +54,6 @@ namespace djack.RogueSurvivor.Engine
           if (Rules.StdDistance(origin, pt) > edge_of_maxrange) continue;
           // initialize all octants at once
           tmp.Add(pt);
-#if Z_VECTOR
           tmp.Add(-pt);
           if (pt.X == pt.Y) { // diagonal
             tmp.Add(new Point(pt.X,-pt.Y));
@@ -74,25 +69,6 @@ namespace djack.RogueSurvivor.Engine
             tmp.Add(new Point(-pt.Y,pt.X));
             tmp.Add(new Point(-pt.Y,-pt.X));
           }
-#else
-          if (pt.X == pt.Y) { // diagonal
-            tmp.Add(new Point(pt.X,-pt.Y));
-            tmp.Add(new Point(-pt.X,pt.Y));
-            tmp.Add(new Point(-pt.X,-pt.Y));
-          } else if (0 == pt.Y) {   // cardinal
-            tmp.Add(new Point(-pt.X,0));
-            tmp.Add(new Point(0,pt.X));
-            tmp.Add(new Point(0,-pt.X));
-          } else { // typical
-            tmp.Add(new Point(pt.X,-pt.Y));
-            tmp.Add(new Point(-pt.X,pt.Y));
-            tmp.Add(new Point(-pt.X,-pt.Y));
-            tmp.Add(new Point(pt.Y,pt.X));
-            tmp.Add(new Point(pt.Y,-pt.X));
-            tmp.Add(new Point(-pt.Y,pt.X));
-            tmp.Add(new Point(-pt.Y,-pt.X));
-          }
-#endif
         }
       }
       System.Collections.ObjectModel.ReadOnlyCollection<Point> tmp2 = new System.Collections.ObjectModel.ReadOnlyCollection<Point>(tmp);
@@ -167,13 +143,8 @@ namespace djack.RogueSurvivor.Engine
         line?.Add(start);
         if (0 == maxSteps) return true;
 
-#if Z_VECTOR
         Point delta = to - from;
         Point absDelta = delta.coord_xform(Math.Abs);
-#else
-        Point delta = new Point(to.X - from.X, to.Y - from.Y);
-        Point absDelta = new Point(0 <= delta.X ? delta.X : -delta.X, 0 <= delta.Y ? delta.Y : -delta.Y);
-#endif
         var needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
@@ -191,13 +162,8 @@ namespace djack.RogueSurvivor.Engine
             while (++i < actualRange);
             return start == to;
             }
-#if Z_VECTOR
         Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
         var err = to - end;
-#else
-        Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
-        var err = new Point(to.X - end.X, to.Y - end.Y);
-#endif
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
 
@@ -396,11 +362,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = a_loc.Map;
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
-#if Z_VECTOR
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
-#else
-      foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>new Point(pt.X+a_loc.Position.X,pt.Y+a_loc.Position.Y))) {
-#endif
         if (!a_loc.Map.IsValid(point1)) continue;
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {

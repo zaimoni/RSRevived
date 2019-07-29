@@ -18,13 +18,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -885,13 +880,8 @@ namespace djack.RogueSurvivor.Engine
 retry:
       var exits = loc.Map.ExitsFor(loc.Map.District.EntryMap);
       if (0 < exits.Count) {
-        foreach(var x in exits) {
-#if Z_VECTOR
+        foreach(var x in exits) {   // \todo reimplement with GetFirst?
           return new Location(x.Value.Location.Map, x.Value.Location.Position + (loc.Position - x.Key));
-#else
-          Size delta = new Size(loc.Position.X-x.Key.X, loc.Position.Y - x.Key.Y);
-          return new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
-#endif
         }
       }
       // end rewrite to not churn GC
@@ -906,12 +896,7 @@ retry:
         // \todo patients->storeroom should be 90 degrees counter-clockwise
         // \todo storeroom -> power should be 90 degrees clockwise
         foreach(var x in exits) {
-#if Z_VECTOR
           loc = new Location(x.Value.Location.Map,x.Value.Location.Position-(loc.Position - x.Key));
-#else
-          Size delta = new Size(-(loc.Position.X - x.Key.X), -(loc.Position.Y - x.Key.Y));
-          loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
-#endif
           goto retry;
         }
       }
@@ -926,12 +911,8 @@ retry:
         if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         foreach(var x in exits) {
-#if Z_VECTOR
           Size raw_delta = loc.Position - x.Key;
-          Size delta = new Size(raw_delta.Y,(short)(-raw_delta.X));
-#else
-          Size delta = new Size(loc.Position.Y - x.Key.Y, -(loc.Position.X - x.Key.X));
-#endif
+          Size delta = new Size(raw_delta.Y,-raw_delta.X);
           loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
           goto retry;
         }
@@ -949,11 +930,7 @@ retry:
       if (lhs.X >= rhs.X && lhs.Y >= rhs.Y) return true;    // this quadrant comes before us.  Would include equality except that already happened.
 
       // strictly speaking, only need to be accurate for adjacent points
-#if Z_VECTOR
       Point abs_delta = (lhs-rhs).coord_xform(Math.Abs);
-#else
-      Point abs_delta = (lhs.Y < rhs.Y) ? new Point(lhs.X-rhs.X,rhs.Y-lhs.Y) : new Point(rhs.X-lhs.X,lhs.Y-rhs.Y);
-#endif
 #if REFERENCE
       if (abs_delta.X  == 2*abs_delta.Y) return false;   // the ambiguity line; overflow-vulnerable
 #endif

@@ -23,15 +23,9 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
 
 namespace djack.RogueSurvivor.Data
 {
@@ -45,17 +39,10 @@ namespace djack.RogueSurvivor.Data
     private string m_BgMusic;  // alpha10
     private Lighting m_Lighting;
 	public readonly WorldTime LocalTime;
-#if Z_VECTOR
     public readonly Size Extent;
 	public short Width { get {return Extent.X;} }
 	public short Height { get {return Extent.Y;} }
-	[NonSerialized] public readonly Rectangle Rect; // \todo next savefile break: doesn't have to be in savefile, could rebuild this on load
-#else
-    public readonly int Width;
-	public readonly int Height;
-	public readonly Rectangle Rect; // \todo next savefile break: doesn't have to be in savefile, could rebuild this on load
-    public Size Extent { get { return Rect.Size; } }
-#endif
+	[NonSerialized] public readonly Rectangle Rect;
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
@@ -171,18 +158,9 @@ namespace djack.RogueSurvivor.Data
 #endif
       Seed = seed;
       Name = name;
-#if Z_VECTOR
       Extent = new Size(width,height);
-#else
-      Width = width;
-      Height = height;
-#endif
 	  District = d;
-#if Z_VECTOR
       Rect = new Rectangle(Point.Empty, Extent);
-#else
-      Rect = new Rectangle(0, 0, width, height);
-#endif
       LocalTime = new WorldTime();
       m_Lighting = light;
       IsSecret = secret;
@@ -203,14 +181,8 @@ namespace djack.RogueSurvivor.Data
       District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
-#if Z_VECTOR
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
-#else
-      Width = (int) info.GetValue("m_Width", typeof (int));
-      Height = (int) info.GetValue("m_Height", typeof (int));
-      Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
-#endif
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
       m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
@@ -240,13 +212,7 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_District", District);
       info.AddValue("m_Name", Name);
       info.AddValue("m_LocalTime", LocalTime);
-#if Z_VECTOR
       info.AddValue("m_Extent", Extent);
-#else
-      info.AddValue("m_Width", Width);
-      info.AddValue("m_Height", Height);
-      info.AddValue("m_Rectangle", Rect);
-#endif
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
       info.AddValue("m_ActorsList", m_ActorsList);
@@ -299,31 +265,14 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public void TrimToBounds(ref int x, ref int y)
-    {
-      int nonstrict_ub;
-      if (x < 0) x = 0;
-      else if (x > (nonstrict_ub = Width - 1)) x = nonstrict_ub;
-      if (y < 0) y = 0;
-      else if (y > (nonstrict_ub = Height - 1)) y = nonstrict_ub;
-    }
-
     public void TrimToBounds(ref Point p)
     {
       int nonstrict_ub;
-#if Z_VECTOR
       short test;
       if ((test = p.X) < 0) p.X = 0;
       else if (test > (nonstrict_ub = Width - 1)) p.X = (short)nonstrict_ub;
       if ((test = p.Y) < 0) p.Y = 0;
       else if (test> (nonstrict_ub = Height - 1)) p.Y = (short)nonstrict_ub;
-#else
-      int test;
-      if ((test = p.X) < 0) p.X = 0;
-      else if (test > (nonstrict_ub = Width - 1)) p.X = nonstrict_ub;
-      if ((test = p.Y) < 0) p.Y = 0;
-      else if (test> (nonstrict_ub = Height - 1)) p.Y = nonstrict_ub;
-#endif
     }
 
     public void TrimToBounds(ref Rectangle r)
@@ -335,11 +284,7 @@ namespace djack.RogueSurvivor.Data
       if (0 > r.Bottom) throw new ArgumentOutOfRangeException(nameof(r.Bottom),r.Bottom, "0 > r.Bottom");
 #endif
       int nonstrict_ub;
-#if Z_VECTOR
       short test;
-#else
-      int test;
-#endif
       if ((test = r.X) < 0) {
         r.Width += test;
         r.X = 0;
@@ -350,13 +295,8 @@ namespace djack.RogueSurvivor.Data
         r.Y = 0;
       }
 
-#if Z_VECTOR
       if ((test = r.Right) > (nonstrict_ub = Width - 1))  r.Width -= (short)(test - nonstrict_ub);
       if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (short)(test - nonstrict_ub);
-#else
-      if ((test = r.Right) > (nonstrict_ub = Width - 1))  r.Width -= (test - nonstrict_ub);
-      if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (test - nonstrict_ub);
-#endif
     }
 
     // placeholder for define-controlled redefinitions
@@ -411,20 +351,12 @@ namespace djack.RogueSurvivor.Data
         // XXX: reject Y other than 0,1 in debug mode
         if (1==tmp.Y) {
           district_delta.Y = tmp.X;
-#if Z_VECTOR
-          new_district.Y += (short)tmp.X;
-#else
           new_district.Y += tmp.X;
-#endif
           if (0>new_district.Y) return null;
           if (Engine.Session.Get.World.Size<=new_district.Y) return null;
         } else if (0==tmp.Y) {
           district_delta.X = tmp.X;
-#if Z_VECTOR
-          new_district.X += (short)tmp.X;
-#else
           new_district.X += tmp.X;
-#endif
           if (0>new_district.X) return null;
           if (Engine.Session.Get.World.Size<=new_district.X) return null;
         }
@@ -449,17 +381,10 @@ namespace djack.RogueSurvivor.Data
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
-#if Z_VECTOR
       if (0 < district_delta.X) not_in_bounds.X += (short)(district_delta.X*Width);
       else if (0 > district_delta.X) not_in_bounds.X += (short)(district_delta.X * loc.Map.Width);
       if (0 < district_delta.Y) not_in_bounds.Y += (short)(district_delta.Y*Height);
       else if (0 > district_delta.Y) not_in_bounds.Y += (short)(district_delta.Y * loc.Map.Height);
-#else
-      if (0 < district_delta.X) not_in_bounds.X += district_delta.X*Width;
-      else if (0 > district_delta.X) not_in_bounds.X += district_delta.X * loc.Map.Width;
-      if (0 < district_delta.Y) not_in_bounds.Y += district_delta.Y*Height;
-      else if (0 > district_delta.Y) not_in_bounds.Y += district_delta.Y * loc.Map.Height;
-#endif
 
       return new Location(this,not_in_bounds);
 #else

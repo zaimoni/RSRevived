@@ -673,6 +673,21 @@ namespace Zaimoni.Data
             X = x;
             Y = y;
         }
+        public Vector2D_short_stack(short x, int y)
+        {
+            X = x;
+            Y = (short)y;
+        }
+        public Vector2D_short_stack(int x, short y)
+        {
+            X = (short)x;
+            Y = y;
+        }
+        public Vector2D_short_stack(int x, int y)
+        {
+            X = (short)x;
+            Y = (short)y;
+        }
         static public explicit operator Vector2D_short_stack(short x) => new Vector2D_short_stack(x, x);
 
         public bool IsEmpty { get { return 0 == X && 0 == Y; } }

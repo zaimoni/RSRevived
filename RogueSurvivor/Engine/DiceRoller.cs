@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Engine
       throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
     }
 
-    public Point Choose(Rectangle r) {
+    public Point Choose(Rectangle r) {  // \todo evaluate stack-based version
       return new Point(Roll(r.Left, r.Right), Roll(r.Top, r.Bottom));
     }
   }

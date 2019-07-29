@@ -15,16 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
-
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -436,13 +428,7 @@ restart:
         TileFill(surface, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         m_SurfaceBlocks.Remove(block);
         Rectangle buildingRect = block.BuildingRect;
-#if Z_VECTOR
         var exitPosition = buildingRect.Location + buildingRect.Size / 2;
-#else
-        int x = buildingRect.Left + buildingRect.Width / 2;
-        int y = buildingRect.Top + buildingRect.Height / 2;
-        Point exitPosition = new Point(x, y);
-#endif
         MakeSewersMaintenanceBuilding(surface, true, block, sewers, exitPosition);
         MakeSewersMaintenanceBuilding(sewers, false, block, surface, exitPosition);
       }
@@ -519,11 +505,7 @@ restart:
       // but this was simply the district size
       int deviate_at = Session.Get.World.CitySize-1;
       int half_dim = RogueGame.Options.DistrictSize/2;
-#if Z_VECTOR
       Point mid_map = (Point)half_dim;
-#else
-      Point mid_map = new Point(half_dim, half_dim);
-#endif
       // need diagonals at An and n0 flush
       if (deviate_at==d.WorldPosition.X) {
         mid_map += Direction.W;
@@ -920,14 +902,8 @@ restart:
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Left, rect.Top, 1, rect.Height));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Right - 1, rect.Top, 1, rect.Height));
-#if Z_VECTOR
           topLeft.Location += Direction.SE;
           topLeft.Size += 2*Direction.NW;
-#else
-          topLeft.Width -= 2;
-          topLeft.Height -= 2;
-          topLeft.Offset(1, 1);
-#endif
         }
         list.Add(new Block(topLeft));
       } else {
@@ -1087,11 +1063,7 @@ restart:
 
         Point basementCorner = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
-#if Z_VECTOR
         Point shopCorner = basementCorner + rectangle.Location + Direction.NW;
-#else
-        Point shopCorner = new Point(basementCorner.X - 1 + rectangle.Left, basementCorner.Y - 1 + rectangle.Top);
-#endif
         AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP);
         AddExit(map, shopCorner, shopBasement, basementCorner, GameImages.DECO_STAIRS_DOWN);
 
@@ -1155,11 +1127,7 @@ restart:
         if (CountAdjWalls(map, pt) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
-#if Z_VECTOR
       TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Location + b.InsideRect.Size / 2 + Direction.NW, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
-#else
-      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
-#endif
       DecorateOutsideWalls(map, b.BuildingRect, pt => {
         if (map.AnyAdjacent<DoorWindow>(pt)) return null;
         if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
@@ -1221,11 +1189,7 @@ restart:
       if (orientation_ew) TileVLine(map, GameTiles.WALL_CHAR_OFFICE, chokepoint_door_pos.X, b.InsideRect.Top, b.InsideRect.Height);
       else TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width);
 
-#if Z_VECTOR
       var midpoint = b.Rectangle.Location + b.Rectangle.Size/2;
-#else
-      Point midpoint = new Point(b.Rectangle.Left + b.Rectangle.Width / 2, b.Rectangle.Top + b.Rectangle.Height / 2);
-#endif
       Rectangle restricted_zone;
       if (direction == Direction.N) {
         restricted_zone = new Rectangle(midpoint.X - 1, chokepoint_door_pos.Y, 3, b.BuildingRect.Height - 1 - 3);
@@ -1295,24 +1259,12 @@ restart:
       var chair_pos = new List<Point>(8);
       var chairs_pos = new List<KeyValuePair<Point,Point>>(28);
       foreach (Rectangle rectangle2 in rectangleList) {
-#if Z_VECTOR
         Point tablePos = rectangle2.Location + rectangle2.Size/2;
-#else
-        Point tablePos = new Point(rectangle2.Left + rectangle2.Width / 2, rectangle2.Top + rectangle2.Height / 2);
-#endif
         map.PlaceAt(MakeObjTable(GameImages.OBJ_CHAR_TABLE), tablePos);
         table_pos.Add(tablePos);
-#if Z_VECTOR
         Rectangle rect4 = new Rectangle(rectangle2.Location + Direction.SE, rectangle2.Size + 2 * Direction.NW);
-#else
-        Rectangle rect4 = new Rectangle(rectangle2.Left + 1, rectangle2.Top + 1, rectangle2.Width - 2, rectangle2.Height - 2);
-#endif
         if (rect4.IsEmpty) continue;
-#if Z_VECTOR
         Rectangle rect5 = new Rectangle(tablePos + Direction.NW, 3, 3);
-#else
-        Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
-#endif
         rect5.Intersect(rect4);
         rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));    // table is already placed
         if (2 >= chair_pos.Count) {
@@ -1391,11 +1343,7 @@ restart:
 
     protected virtual void MakeParkShedBuilding(Map map, string baseZoneName, Rectangle shedBuildingRect)
     {
-#if Z_VECTOR
       Rectangle shedInsideRect = new Rectangle(shedBuildingRect.Location + Direction.SE, shedBuildingRect.Size + 2 * Direction.NW);
-#else
-      Rectangle shedInsideRect = new Rectangle(shedBuildingRect.X + 1, shedBuildingRect.Y + 1, shedBuildingRect.Width - 2, shedBuildingRect.Height - 2);
-#endif
 
       // build building & zone
       TileRectangle(map, GameTiles.WALL_BRICK, shedBuildingRect);
@@ -1862,11 +1810,7 @@ restart:
           map.SetTileModelAt(p - orthogonal, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p - x2orthogonal, GameTiles.WALL_STONE);
           map.SetTileModelAt(p + x2orthogonal, GameTiles.WALL_STONE);
-#if Z_VECTOR
           DoForEachTile(new Rectangle(p+2*Direction.N, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
-#else
-          DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
-#endif
           p += direction;
         }
         Point centralGateAt = p - 4*direction;
@@ -2024,34 +1968,18 @@ restart:
       } else {
         MakeRoomsPlan(map, ref list, topLeft, minRoomsXSize, minRoomsYSize);
         if (!topRight.IsEmpty) {
-#if Z_VECTOR
           topRight.Location += Direction.W;
           topRight.Size += Direction.E;
-#else
-          topRight.Offset(-1, 0);
-          ++topRight.Width;
-#endif
           MakeRoomsPlan(map, ref list, topRight, minRoomsXSize, minRoomsYSize);
         }
         if (!bottomLeft.IsEmpty) {
-#if Z_VECTOR
           bottomLeft.Location += Direction.N;
           bottomLeft.Size += Direction.S;
-#else
-          bottomLeft.Offset(0, -1);
-          ++bottomLeft.Height;
-#endif
           MakeRoomsPlan(map, ref list, bottomLeft, minRoomsXSize, minRoomsYSize);
         }
         if (bottomRight.IsEmpty) return;
-#if Z_VECTOR
         bottomRight.Location += Direction.NW;
         bottomRight.Size += Direction.SE;
-#else
-        bottomRight.Offset(-1, -1);
-        ++bottomRight.Width;
-        ++bottomRight.Height;
-#endif
         MakeRoomsPlan(map, ref list, bottomRight, minRoomsXSize, minRoomsYSize);
       }
     }
@@ -2075,11 +2003,7 @@ restart:
     /// <param name="role">-1 roll at random; 0-4 bedroom, 5-7 living room, 8-9 kitchen</param>
     protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect, int role = -1)
     {
-#if Z_VECTOR
       Rectangle insideRoom = new Rectangle(roomRect.Location + Direction.SE, roomRect.Size + 2 * Direction.NW);
-#else
-      Rectangle insideRoom = new Rectangle(roomRect.Left + 1, roomRect.Top + 1, roomRect.Width - 2, roomRect.Height - 2);
-#endif
 
       if (-1 == role) role = m_DiceRoller.Roll(0, 10);  // alpha10.1 roll room role if not set
 
@@ -2098,11 +2022,7 @@ restart:
               return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
-#if Z_VECTOR
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
-#else
-              Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
-#endif
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
@@ -2141,11 +2061,7 @@ restart:
                 map.DropItemAt(MakeRandomKitchenItem(), pt);
               }
               Session.Get.PoliceInvestigate.Record(map, pt);
-#if Z_VECTOR
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
-#else
-              Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
-#endif
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
@@ -2171,11 +2087,7 @@ restart:
               map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
             Session.Get.PoliceInvestigate.Record(map, pt);
-#if Z_VECTOR
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
-#else
-            MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
-#endif
             {
               return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
@@ -2461,11 +2373,7 @@ restart:
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, 1), new Point(basement.Rect.Right - 3, 2));
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, basement.Rect.Bottom - 2), new Point(basement.Rect.Right - 3, basement.Rect.Bottom - 3));
 
-#if Z_VECTOR
       var inner = new Rectangle(Direction.SE.Vector,basement.Rect.Size+2*Direction.NW);   // \todo ? could precalculate this in constructor
-#else
-      var inner = new Rectangle(1,1,basement.Rect.Width-2, basement.Rect.Height - 2);   // \todo ? could precalculate this in constructor
-#endif
 restart:
       // anchor point is the top-left walkable tile being cut off
       var candidates = new HashSet<Point>();    // for being the center of a canonical 1x1 disconnect
@@ -2591,11 +2499,7 @@ restart:
       var candidates = new List<Point>();
       buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt));
       Point point = m_DiceRoller.Choose(candidates);
-#if Z_VECTOR
       Point basementStairs = point - buildingRect.Location;
-#else
-      Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
-#endif
       AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN);
       AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
@@ -2721,11 +2625,7 @@ restart:
         doorWindow.Barricade(Rules.BARRICADING_MAX);
         surfaceMap.PlaceAt(doorWindow, pt);
       });
-#if Z_VECTOR
       Point point2 = underground.Rect.Size/2;
-#else
-      Point point2 = new Point(underground.Width / 2, underground.Height / 2);
-#endif
       AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP);
       AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN);
       underground.ForEachAdjacent(point2, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
@@ -2755,11 +2655,7 @@ restart:
       }
       foreach (Rectangle wallsRect in list)
       {
-#if Z_VECTOR
         Rectangle rectangle = new Rectangle(wallsRect.Location+Direction.SE, wallsRect.Size+2*Direction.NW);
-#else
-        Rectangle rectangle = new Rectangle(wallsRect.Left + 1, wallsRect.Top + 1, wallsRect.Width - 2, wallsRect.Height - 2);
-#endif
         string basename;
         if (wallsRect.Left == 0 && wallsRect.Top == 0 || wallsRect.Left == 0 && wallsRect.Bottom == underground.Height || wallsRect.Right == underground.Width && wallsRect.Top == 0 || wallsRect.Right == underground.Width && wallsRect.Bottom == underground.Height)
         {
@@ -2790,16 +2686,10 @@ restart:
         }
         underground.AddZone(MakeUniqueZone(basename, wallsRect));   // 2019-05-13 adjusted to de-crash sleeping; used to be rectangle
       }
-#if Z_VECTOR
       var entrance_foyer_anchor = point2 + Direction.NW;
       underground.AddZone(MakeUniqueZone("entrance foyer", new Rectangle(entrance_foyer_anchor, 3, 3)));
       underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(entrance_foyer_anchor.X, 0, 3, BASE_HEIGHT)));
       underground.AddZone(MakeUniqueZone("east-west hallway", new Rectangle(0, entrance_foyer_anchor.Y, BASE_WIDTH, 3)));
-#else
-      underground.AddZone(MakeUniqueZone("entrance foyer", new Rectangle(point2.X-1, point2.Y - 1,3,3)));
-      underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(point2.X - 1,0,3,underground.Height)));
-      underground.AddZone(MakeUniqueZone("east-west hallway", new Rectangle(0,point2.Y-1,underground.Width,3)));
-#endif
 
       for (int x = 0; x < underground.Width; ++x) {
         for (int y = 0; y < underground.Height; ++y) {
@@ -2975,11 +2865,7 @@ restart:
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.W);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.E);
       surfaceMap.AddZone(new Zone("NoCivSpawn", new Rectangle(policeBlock.BuildingRect.Left,policeBlock.BuildingRect.Top,policeBlock.BuildingRect.Width,3)));  // once the power locks go in civilians won't be able to path here
-#if Z_VECTOR
       Rectangle rect = new Rectangle(policeBlock.BuildingRect.Location+2*Direction.S, policeBlock.BuildingRect.Size + 2 * Direction.N);
-#else
-      Rectangle rect = Rectangle.FromLTRB(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
-#endif
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, rect);
       Point restrictedDoorAt = rect.Anchor(Compass.XCOMlike.N);
       PlaceDoor(surfaceMap, restrictedDoorAt, GameTiles.FLOOR_TILES, MakeObjIronDoor());
@@ -3029,11 +2915,7 @@ restart:
       };
 
       foreach (Rectangle rect2 in list) {
-#if Z_VECTOR
         Rectangle rect3 = new Rectangle(rect2.Location+Direction.SE, rect2.Size+2*Direction.NW);
-#else
-        Rectangle rect3 = Rectangle.FromLTRB(rect2.Left + 1, rect2.Top + 1, rect2.Right - 1, rect2.Bottom - 1);
-#endif
         if (rect2.Right == map.Width) {
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
@@ -3588,11 +3470,7 @@ restart:
       map.AddZone(MakeUniqueZone(baseZoneName, room));
       var doorAt = room.Anchor(isFacingEast ? Compass.XCOMlike.E : Compass.XCOMlike.W);
       PlaceDoor(map, doorAt, GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
-#if Z_VECTOR
       var midpoint = room.Location + room.Size/2;
-#else
-      Point midpoint = new Point(room.Left + room.Width / 2, room.Top + room.Height / 2);
-#endif
       map.PlaceAt(MakeObjTable(GameImages.OBJ_TABLE), midpoint);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.W);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_CHAIR), midpoint+Direction.E);
@@ -3884,7 +3762,6 @@ restart:
     static private void MakeWalkwayZones(Map map, Block b)
     {
       Rectangle rectangle = b.Rectangle;
-#if Z_VECTOR
       var s = rectangle.Size + Direction.NW;
       var o = rectangle.Location + Direction.SE;
       var br = rectangle.Location + rectangle.Size + Direction.NW;
@@ -3892,12 +3769,6 @@ restart:
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(o.X, br.Y, s.X, 1)));
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(br.X, rectangle.Top, 1, s.Y)));
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, o.Y, 1, s.Y)));
-#else
-      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top, rectangle.Width - 1, 1)));
-      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left + 1, rectangle.Bottom - 1, rectangle.Width - 1, 1)));
-      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Right - 1, rectangle.Top, 1, rectangle.Height - 1)));
-      map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top + 1, 1, rectangle.Height - 1)));
-#endif
     }
 
     public struct Parameters
@@ -4049,17 +3920,12 @@ restart:
       public Block(Rectangle rect)
       {
         Rectangle = rect;
-#if Z_VECTOR
         BuildingRect = rect;
         BuildingRect.Location += Direction.SE;
         BuildingRect.Size += 2*Direction.NW;
         InsideRect = BuildingRect;
         InsideRect.Location += Direction.SE;
         InsideRect.Size += 2*Direction.NW;
-#else
-        BuildingRect = new Rectangle(rect.Left + 1, rect.Top + 1, rect.Width - 2, rect.Height - 2);
-        InsideRect = new Rectangle(BuildingRect.Left + 1, BuildingRect.Top + 1, BuildingRect.Width - 2, BuildingRect.Height - 2);
-#endif
       }
 
       public Block(Block copyFrom)

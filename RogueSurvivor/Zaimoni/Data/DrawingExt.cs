@@ -188,9 +188,9 @@ namespace Zaimoni.Data
     }
 
     // unpacking delta codes for < = >
-    public static Point sgn_from_delta_code(ref int delta_code)
+    public static Vector2D_short_stack sgn_from_delta_code(ref int delta_code)
     {
-      if (0==delta_code) return new Point(0,0);
+      if (0==delta_code) return new Vector2D_short_stack(0,0);
       int scale = 3;
       int threshold = scale/2;
       int index = 0;
@@ -199,26 +199,26 @@ namespace Zaimoni.Data
         while(threshold < delta_code) {
           if (threshold+scale >= delta_code) {
             delta_code -= scale;
-            return new Point(1,index+1);
+            return new Vector2D_short_stack(1,index+1);
           }
           scale *= 3;
           threshold = scale/2;
           index++;
         }
         delta_code = 0;
-        return new Point(1,0);
+        return new Vector2D_short_stack(1,0);
       } else {
         while(-threshold > delta_code) {
           if (-threshold-scale <= delta_code) {
             delta_code += scale;
-            return new Point(-1,index+1);
+            return new Vector2D_short_stack(-1,index+1);
           }
           scale *= 3;
           threshold = scale/2;
           index++;
         }
         delta_code = 0;
-        return new Point(-1,0);
+        return new Vector2D_short_stack(-1,0);
       }
     }
 
