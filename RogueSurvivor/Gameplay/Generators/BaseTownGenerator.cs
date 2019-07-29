@@ -358,10 +358,10 @@ restart:
           bool orientation_ew = (2 == dir.Index%4);
           Point gate = block.Rectangle.Anchor((Compass.XCOMlike)dir.Index);
           if (sewers.IsOnMapBorder(gate)) continue; // \todo make this test always-false
-          if (orientation_ew) { // \todo mapgen break: should both bounds be from BuildingRect?
-            gate.Y = m_DiceRoller.Roll(block.Rectangle.Top, block.BuildingRect.Bottom);
+          if (orientation_ew) {
+            gate.Y = m_DiceRoller.Roll(block.BuildingRect.Top, block.BuildingRect.Bottom);
           } else {
-            gate.X = m_DiceRoller.Roll(block.Rectangle.Left, block.BuildingRect.Right);
+            gate.X = m_DiceRoller.Roll(block.BuildingRect.Left, block.BuildingRect.Right);
           }
           if (sewers.IsOnMapBorder(gate)) continue;  // just in case \todo make this test always-false
           if (3 != CountAdjWalls(sewers, gate)) continue;
@@ -479,13 +479,12 @@ restart:
 #endif
 
 #region 9. Tags.
-      for (short x = 0; x < sewers.Width; ++x) {
+      for (short x = 0; x < sewers.Width; ++x) {    // \todo convert this iteration to a stack point?
         for (short y = 0; y < sewers.Height; ++y) {
-          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) { // \todo next mapgen break: conserve RNG
-            Point pt = new Point(x,y);
-            Tile tileAt = sewers.GetTileAt(pt);
-            if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, pt) >= 2)
-              tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
+          Point pt = new Point(x,y);
+          Tile tileAt = sewers.GetTileAt(pt);
+          if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, pt) >= 2 && m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
+            tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
           }
         }
       }
@@ -814,17 +813,13 @@ restart:
       }
 #endregion
 #region 4. Tags & Posters almost everywhere.
-      for (short x2 = 0; x2 < subway.Width; ++x2) {
+      for (short x2 = 0; x2 < subway.Width; ++x2) {    // \todo convert this iteration to a stack point?
         for (short y2 = 0; y2 < subway.Height; ++y2) {
-          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {    // \todo next mapgen break: conserve RNG
-            Point pt = new Point(x2,y2);
-            Tile tileAt = subway.GetTileAt(pt);
-            if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, pt) >= 2) {
-              if (m_DiceRoller.RollChance(50))
-                tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
-              if (m_DiceRoller.RollChance(50))
-                tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
-            }
+          Point pt = new Point(x2,y2);
+          Tile tileAt = subway.GetTileAt(pt);
+          if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, pt) >= 2 && m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
+            if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
+            if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
           }
         }
       }
@@ -1329,10 +1324,8 @@ restart:
       if (b.InsideRect.Width > PARK_SHED_WIDTH+2 && b.InsideRect.Height > PARK_SHED_HEIGHT+2) {
         if (m_DiceRoller.RollChance(PARK_SHED_CHANCE)) {
            // roll shed pos - dont put next to park fences!
-           // \todo mapgen break, Z_VECTOR conversion: switch this to m_DiceRoller.Choose
-           int shedX = m_DiceRoller.Roll(b.InsideRect.Left+1, b.InsideRect.Right - PARK_SHED_WIDTH);
-           int shedY = m_DiceRoller.Roll(b.InsideRect.Top+1, b.InsideRect.Bottom - PARK_SHED_HEIGHT);
-           Rectangle shedRect = new Rectangle(shedX, shedY, PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
+           var range = new Rectangle(b.InsideRect.Location+Direction.SE, b.InsideRect.Size-new Point(PARK_SHED_WIDTH + 2, PARK_SHED_HEIGHT + 2));
+           Rectangle shedRect = new Rectangle(m_DiceRoller.Choose(range), PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
            ClearRectangle(map, shedRect, false);
            MakeParkShedBuilding(map, "Shed", shedRect);
         }
