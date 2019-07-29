@@ -876,29 +876,20 @@ namespace djack.RogueSurvivor.Engine
       if (loc.Map == loc.Map.District.EntryMap) return loc;
       // sewers and subway are 1-1 with entry map
       if (loc.Map == loc.Map.District.SewersMap || loc.Map==loc.Map.District.SubwayMap) return new Location(loc.Map.District.EntryMap,loc.Position);
-      // \todo rewrite to not churn GC
 retry:
-      var exits = loc.Map.ExitsFor(loc.Map.District.EntryMap);
-      if (0 < exits.Count) {
-        foreach(var x in exits) {   // \todo reimplement with GetFirst?
-          return new Location(x.Value.Location.Map, x.Value.Location.Position + (loc.Position - x.Key));
-        }
+      var entry_e = loc.Map.FirstExitFor(loc.Map.District.EntryMap);
+      if (null != entry_e) {
+        return new Location(entry_e.Value.Value.Location.Map, entry_e.Value.Value.Location.Position + (loc.Position - entry_e.Value.Key));
       }
-      // end rewrite to not churn GC
       // far from surface.  Currently one of hospital or police station
       var in_hospital = Session.Get.UniqueMaps.NavigateHospital(loc.Map);
       if (null != in_hospital) {
-        exits = loc.Map.ExitsFor(in_hospital.Value.Key);
+        var e = loc.Map.FirstExitFor(in_hospital.Value.Key);
 #if DEBUG
-        if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+        if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
-        // admissions->offices and offices->patients are both 180 degrees
-        // \todo patients->storeroom should be 90 degrees counter-clockwise
-        // \todo storeroom -> power should be 90 degrees clockwise
-        foreach(var x in exits) {
-          loc = new Location(x.Value.Location.Map,x.Value.Location.Position-(loc.Position - x.Key));
-          goto retry;
-        }
+        loc = new Location(e.Value.Value.Location.Map, e.Value.Value.Location.Position-(loc.Position - e.Value.Key));
+        goto retry;
       }
       var in_police_Station = Session.Get.UniqueMaps.NavigatePoliceStation(loc.Map);
       if (null != in_police_Station) {
@@ -906,16 +897,14 @@ retry:
 #if DEBUG
         if (loc.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) throw new InvalidProgramException("police station only has two levels");
 #endif
-        exits = loc.Map.ExitsFor(in_police_Station.Value.Key);
+        var e = loc.Map.FirstExitFor(in_police_Station.Value.Key);
 #if DEBUG
-        if (0 >= exits.Count) throw new InvalidProgramException("should be able to ascend to surface");
+        if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
-        foreach(var x in exits) {
-          Size raw_delta = loc.Position - x.Key;
-          Size delta = new Size(raw_delta.Y,-raw_delta.X);
-          loc = new Location(x.Value.Location.Map,x.Value.Location.Position+delta);
-          goto retry;
-        }
+        Size raw_delta = loc.Position - e.Value.Key;
+        Size delta = new Size(raw_delta.Y,-raw_delta.X);
+        loc = new Location(e.Value.Value.Location.Map,e.Value.Value.Location.Position+delta);
+        goto retry;
       }
       return loc;   // if not in the entry map, source map is not close to surface
     }

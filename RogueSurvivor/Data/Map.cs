@@ -620,6 +620,14 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public KeyValuePair<Point,Exit>? FirstExitFor(Map dest) {
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      foreach(var x in m_Exits) if (x.Value.ToMap == dest) return x;
+      return null;
+    }
+
     public List<Point> GetEdge()    // \todo refactor to a cache variable setter
     {
       var ret = new List<Point>();
