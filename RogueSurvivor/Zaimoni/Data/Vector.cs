@@ -26,6 +26,8 @@ namespace Zaimoni.Data
 
         static readonly public Vector2D_int Empty = new Vector2D_int(0, 0);
         public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_int MaxValue = new Vector2D_int(int.MaxValue, int.MaxValue);
+        static public readonly Vector2D_int MinValue = new Vector2D_int(int.MinValue, int.MinValue);
 
         static public bool operator ==(Vector2D_int lhs, Vector2D_int rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_int lhs, Vector2D_int rhs) { return !lhs.Equals(rhs); }
@@ -88,6 +90,11 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_int_r(int x) => new Vector2D_int_r(x, x);
+
+        static readonly public Vector2D_int_r Empty = new Vector2D_int_r(0, 0);
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_int_r MaxValue = new Vector2D_int_r(int.MaxValue, int.MaxValue);
+        static public readonly Vector2D_int_r MinValue = new Vector2D_int_r(int.MinValue, int.MinValue);
 
         static public bool operator ==(Vector2D_int_r lhs, Vector2D_int_r rhs) { return lhs.Equals(in rhs); }
         static public bool operator !=(Vector2D_int_r lhs, Vector2D_int_r rhs) { return !lhs.Equals(in rhs); }
@@ -162,6 +169,8 @@ namespace Zaimoni.Data
         }
         static public explicit operator Vector2D_int_stack(int x) => new Vector2D_int_stack(x, x);
 
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+
         static public bool operator ==(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return !lhs.Equals(rhs); }
         static public bool operator <(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return 0 > lhs.CompareTo(rhs); }
@@ -216,6 +225,8 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_int_stack_r(int x) => new Vector2D_int_stack_r(x, x);
+
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
 
         static public bool operator ==(in Vector2D_int_stack_r lhs, in Vector2D_int_stack_r rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(in Vector2D_int_stack_r lhs, in Vector2D_int_stack_r rhs) { return !lhs.Equals(rhs); }
@@ -509,6 +520,8 @@ namespace Zaimoni.Data
 
         static readonly public Vector2D_short Empty = new Vector2D_short(0, 0);
         public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_short MaxValue = new Vector2D_short(short.MaxValue, short.MaxValue);
+        static public readonly Vector2D_short MinValue = new Vector2D_short(short.MinValue, short.MinValue);
 
         static public bool operator ==(Vector2D_short lhs, Vector2D_short rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_short lhs, Vector2D_short rhs) { return !lhs.Equals(rhs); }
@@ -571,6 +584,11 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_short_r(short x) => new Vector2D_short_r(x, x);
+
+        static readonly public Vector2D_short_r Empty = new Vector2D_short_r(0, 0);
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_short_r MaxValue = new Vector2D_short_r(short.MaxValue, short.MaxValue);
+        static public readonly Vector2D_short_r MinValue = new Vector2D_short_r(short.MinValue, short.MinValue);
 
         static public bool operator ==(Vector2D_short_r lhs, Vector2D_short_r rhs) { return lhs.Equals(in rhs); }
         static public bool operator !=(Vector2D_short_r lhs, Vector2D_short_r rhs) { return !lhs.Equals(in rhs); }
@@ -645,6 +663,8 @@ namespace Zaimoni.Data
         }
         static public explicit operator Vector2D_short_stack(short x) => new Vector2D_short_stack(x, x);
 
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+
         static public bool operator ==(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return !lhs.Equals(rhs); }
         static public bool operator <(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return 0 > lhs.CompareTo(rhs); }
@@ -699,6 +719,8 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_short_stack_r(short x) => new Vector2D_short_stack_r(x, x);
+
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
 
         static public bool operator ==(in Vector2D_short_stack_r lhs, in Vector2D_short_stack_r rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(in Vector2D_short_stack_r lhs, in Vector2D_short_stack_r rhs) { return !lhs.Equals(rhs); }
@@ -989,6 +1011,8 @@ namespace Zaimoni.Data
 
         static readonly public Vector2D_long Empty = new Vector2D_long(0, 0);
         public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_long MaxValue = new Vector2D_long(long.MaxValue, long.MaxValue);
+        static public readonly Vector2D_long MinValue = new Vector2D_long(long.MinValue, long.MinValue);
 
         static public bool operator ==(Vector2D_long lhs, Vector2D_long rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_long lhs, Vector2D_long rhs) { return !lhs.Equals(rhs); }
@@ -1051,6 +1075,11 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_long_r(long x) => new Vector2D_long_r(x, x);
+
+        static readonly public Vector2D_long_r Empty = new Vector2D_long_r(0, 0);
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+        static public readonly Vector2D_long_r MaxValue = new Vector2D_long_r(long.MaxValue, long.MaxValue);
+        static public readonly Vector2D_long_r MinValue = new Vector2D_long_r(long.MinValue, long.MinValue);
 
         static public bool operator ==(Vector2D_long_r lhs, Vector2D_long_r rhs) { return lhs.Equals(in rhs); }
         static public bool operator !=(Vector2D_long_r lhs, Vector2D_long_r rhs) { return !lhs.Equals(in rhs); }
@@ -1125,6 +1154,8 @@ namespace Zaimoni.Data
         }
         static public explicit operator Vector2D_long_stack(long x) => new Vector2D_long_stack(x, x);
 
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
+
         static public bool operator ==(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return !lhs.Equals(rhs); }
         static public bool operator <(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return 0 > lhs.CompareTo(rhs); }
@@ -1179,6 +1210,8 @@ namespace Zaimoni.Data
             Y = y;
         }
         static public explicit operator Vector2D_long_stack_r(long x) => new Vector2D_long_stack_r(x, x);
+
+        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
 
         static public bool operator ==(in Vector2D_long_stack_r lhs, in Vector2D_long_stack_r rhs) { return lhs.Equals(rhs); }
         static public bool operator !=(in Vector2D_long_stack_r lhs, in Vector2D_long_stack_r rhs) { return !lhs.Equals(rhs); }

@@ -1890,19 +1890,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool last_waypoint_ok = false;
 
       Point waypoint_bounds(Location loc) {
+#if Z_VECTOR
+        Point ret = Point.MaxValue;
+#else
         Point ret = new Point(int.MaxValue,int.MaxValue);
+#endif
         last_waypoint_ok = false;
         foreach(var x in waypoint_dist) {
           if (x.Key==loc) return x.Value;
           int dist = Rules.InteractionDistance(x.Key,loc);
+#if Z_VECTOR
+          if (short.MaxValue <= dist || short.MaxValue - dist <= x.Value.X) continue;
+#else
           if (int.MaxValue <= dist || int.MaxValue - dist <= x.Value.X) continue;
+#endif
           last_waypoint_ok = true;
           int lb_dist = dist + x.Value.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) continue;
           if (ret.X > dist) ret.X = dist;
+#if Z_VECTOR
+          short ub_dist = short.MaxValue;
+#else
           int ub_dist = int.MaxValue;
-          if (int.MaxValue/2 >= dist && int.MaxValue-2*dist > x.Value.Y) ub_dist = 2*dist + x.Value.Y;
+#endif
+          if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = 2*dist + x.Value.Y;
           if (ret.Y > ub_dist) ret.Y = ub_dist;
 #if DEBUG
           if (ret.X > ret.Y) throw new InvalidOperationException("generated inverted bounds: "+ret.to_s());
@@ -2881,7 +2893,7 @@ restart_single_exit:
         else _damage_field[pt] = tmp_blast.Damage[0];
         _blast_field.Add(pt);
         // We would need a very different implementation for large blast radii.
-        int r = 0;
+        short r = 0;
         while (++r <= tmp_blast.Radius) {
           foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => exp.Location.Position.RadarSweep(r, i))) {
             if (!exp.Location.Map.IsValid(p)) continue;
@@ -4524,7 +4536,11 @@ restart_single_exit:
       if (0 >= ground_inv.Count) return null;
 
       // set up pattern-matching for ranged weapons
+#if Z_VECTOR
+      Point viewpoint_inventory = Point.MaxValue; // intentionally chosen to be impossible, as a flag
+#else
       Point viewpoint_inventory = new Point(int.MaxValue,int.MaxValue); // intentionally chosen to be impossible, as a flag
+#endif
       var best_rw = new Dictionary<Point, ItemRangedWeapon[]>();
       var reload_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
       var discard_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
