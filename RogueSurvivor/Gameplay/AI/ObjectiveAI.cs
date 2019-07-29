@@ -1908,13 +1908,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int lb_dist = dist + x.Value.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) continue;
-          if (ret.X > dist) ret.X = dist;
+          if (ret.X > dist) ret.X = (short)dist;
 #if Z_VECTOR
           short ub_dist = short.MaxValue;
 #else
           int ub_dist = int.MaxValue;
 #endif
-          if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = 2*dist + x.Value.Y;
+          if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = (short)(2*dist + x.Value.Y);
           if (ret.Y > ub_dist) ret.Y = ub_dist;
 #if DEBUG
           if (ret.X > ret.Y) throw new InvalidOperationException("generated inverted bounds: "+ret.to_s());

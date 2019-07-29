@@ -311,11 +311,19 @@ namespace djack.RogueSurvivor.Data
     public void TrimToBounds(ref Point p)
     {
       int nonstrict_ub;
+#if Z_VECTOR
+      short test;
+      if ((test = p.X) < 0) p.X = 0;
+      else if (test > (nonstrict_ub = Width - 1)) p.X = (short)nonstrict_ub;
+      if ((test = p.Y) < 0) p.Y = 0;
+      else if (test> (nonstrict_ub = Height - 1)) p.Y = (short)nonstrict_ub;
+#else
       int test;
       if ((test = p.X) < 0) p.X = 0;
       else if (test > (nonstrict_ub = Width - 1)) p.X = nonstrict_ub;
       if ((test = p.Y) < 0) p.Y = 0;
       else if (test> (nonstrict_ub = Height - 1)) p.Y = nonstrict_ub;
+#endif
     }
 
     public void TrimToBounds(ref Rectangle r)
@@ -327,7 +335,11 @@ namespace djack.RogueSurvivor.Data
       if (0 > r.Bottom) throw new ArgumentOutOfRangeException(nameof(r.Bottom),r.Bottom, "0 > r.Bottom");
 #endif
       int nonstrict_ub;
+#if Z_VECTOR
+      short test;
+#else
       int test;
+#endif
       if ((test = r.X) < 0) {
         r.Width += test;
         r.X = 0;
@@ -338,8 +350,13 @@ namespace djack.RogueSurvivor.Data
         r.Y = 0;
       }
 
+#if Z_VECTOR
+      if ((test = r.Right) > (nonstrict_ub = Width - 1))  r.Width -= (short)(test - nonstrict_ub);
+      if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (short)(test - nonstrict_ub);
+#else
       if ((test = r.Right) > (nonstrict_ub = Width - 1))  r.Width -= (test - nonstrict_ub);
       if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (test - nonstrict_ub);
+#endif
     }
 
     // placeholder for define-controlled redefinitions
@@ -394,12 +411,20 @@ namespace djack.RogueSurvivor.Data
         // XXX: reject Y other than 0,1 in debug mode
         if (1==tmp.Y) {
           district_delta.Y = tmp.X;
+#if Z_VECTOR
+          new_district.Y += (short)tmp.X;
+#else
           new_district.Y += tmp.X;
+#endif
           if (0>new_district.Y) return null;
           if (Engine.Session.Get.World.Size<=new_district.Y) return null;
         } else if (0==tmp.Y) {
           district_delta.X = tmp.X;
+#if Z_VECTOR
+          new_district.X += (short)tmp.X;
+#else
           new_district.X += tmp.X;
+#endif
           if (0>new_district.X) return null;
           if (Engine.Session.Get.World.Size<=new_district.X) return null;
         }
@@ -424,10 +449,17 @@ namespace djack.RogueSurvivor.Data
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
+#if Z_VECTOR
+      if (0 < district_delta.X) not_in_bounds.X += (short)(district_delta.X*Width);
+      else if (0 > district_delta.X) not_in_bounds.X += (short)(district_delta.X * loc.Map.Width);
+      if (0 < district_delta.Y) not_in_bounds.Y += (short)(district_delta.Y*Height);
+      else if (0 > district_delta.Y) not_in_bounds.Y += (short)(district_delta.Y * loc.Map.Height);
+#else
       if (0 < district_delta.X) not_in_bounds.X += district_delta.X*Width;
       else if (0 > district_delta.X) not_in_bounds.X += district_delta.X * loc.Map.Width;
       if (0 < district_delta.Y) not_in_bounds.Y += district_delta.Y*Height;
       else if (0 > district_delta.Y) not_in_bounds.Y += district_delta.Y * loc.Map.Height;
+#endif
 
       return new Location(this,not_in_bounds);
 #else
@@ -673,15 +705,15 @@ namespace djack.RogueSurvivor.Data
       }
       if (explicit_edge) {
         for(short x = 0; x<Width; x++) {
-          Point test = new Point(x,0);
+          Point test = new Point(x, Height - 1);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
-          test.Y = Height-1;
+          test.Y = 0;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
         for(short y = 1; y<Height-1; y++) {
-          Point test = new Point(0,y);
+          Point test = new Point(Width - 1, y);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
-          test.X = Width-1;
+          test.X = 0;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
       }

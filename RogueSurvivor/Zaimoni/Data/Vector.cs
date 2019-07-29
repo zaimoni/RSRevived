@@ -10,7 +10,6 @@ using System.Collections.Generic;
 namespace Zaimoni.Data
 {
     // C naming conventions
-//* start_copy vector
     [Serializable]
     public struct Vector2D_int : IComparable<Vector2D_int>,IEquatable<Vector2D_int>
     {
@@ -502,9 +501,7 @@ namespace Zaimoni.Data
         }
 
     }
-//* end_copy
-//* for F in short,long
-//* substitute $F for int in vector
+
     [Serializable]
     public struct Vector2D_short : IComparable<Vector2D_short>,IEquatable<Vector2D_short>
     {
@@ -515,6 +512,21 @@ namespace Zaimoni.Data
         {
             X = x;
             Y = y;
+        }
+        public Vector2D_short(short x, int y)
+        {
+            X = x;
+            Y = (short)y;
+        }
+        public Vector2D_short(int x, short y)
+        {
+            X = (short)x;
+            Y = y;
+        }
+        public Vector2D_short(int x, int y)
+        {
+            X = (short)x;
+            Y = (short)y;
         }
         static public explicit operator Vector2D_short(short x) => new Vector2D_short(x, x);
 
@@ -777,7 +789,7 @@ namespace Zaimoni.Data
             _dim = size;
         }
 
-        public Box2D_short(short originx, short originy, short sizex, short sizey)
+        public Box2D_short(int originx, int originy, int sizex, int sizey)
         {
             _anchor = new Vector2D_short(originx, originy);
             _dim = new Vector2D_short(sizex, sizey);
@@ -789,7 +801,7 @@ namespace Zaimoni.Data
             _dim = new Vector2D_short(sizex, sizey);
         }
 
-        static public Box2D_short FromLTRB(short left, short top, short right, short bottom) { return new Box2D_short(left,top,(short)(right-left), (short)(bottom -top)); }
+        static public Box2D_short FromLTRB(int left, int top, int right, int bottom) { return new Box2D_short(left, top, right - left, bottom - top); }
 
         static readonly public Box2D_short Empty = new Box2D_short(0, 0, 0, 0);
         public bool IsEmpty { get { return 0 == _anchor.X && 0 == _anchor.Y && 0 == _dim.X && 0 == _dim.Y; } }
@@ -1487,6 +1499,4 @@ namespace Zaimoni.Data
         }
 
     }
-//* end_substitute
-//* done
 }
