@@ -17,10 +17,10 @@ namespace djack.RogueSurvivor.Engine.Tasks
     private readonly Point m_pt;
     private readonly string m_imageID;
 
-    public TaskRemoveDecoration(int turns, int x, int y, string imageID)
+    public TaskRemoveDecoration(int turns, Point pt, string imageID)
       : base(turns)
     {
-      m_pt = new Point((short)x,(short)y);    // \todo Z_VECTOR : adjust constructor to take correct parameter
+      m_pt = pt;
       m_imageID = imageID;
     }
 

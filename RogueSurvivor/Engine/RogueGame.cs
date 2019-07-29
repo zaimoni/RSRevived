@@ -10299,14 +10299,14 @@ namespace djack.RogueSurvivor.Engine
       Tile tileAt1 = map.GetTileAt(position);
       if (tileAt1.Model.IsWalkable && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
         tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
-        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_BLOODIED_FLOOR));
+        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position, GameImages.DECO_BLOODIED_FLOOR));
       }
       map.ForEachAdjacent(position,(p => {
         if (!m_Rules.RollChance(20)) return;
         Tile tileAt2 = map.GetTileAt(p);
         if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL)) {
           tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
-          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, GameImages.DECO_BLOODIED_WALL));
+          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p, GameImages.DECO_BLOODIED_WALL));
         }
       }));
     }
@@ -10317,7 +10317,7 @@ namespace djack.RogueSurvivor.Engine
       Tile tileAt = map.GetTileAt(position);
 //    if (!map.IsWalkable(position.X, position.Y) || tileAt.HasDecoration(GameImages.DECO_ZOMBIE_REMAINS)) return;
       tileAt.AddDecoration(GameImages.DECO_ZOMBIE_REMAINS);
-      map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_ZOMBIE_REMAINS));
+      map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position, GameImages.DECO_ZOMBIE_REMAINS));
     }
 #endif
 
