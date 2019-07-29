@@ -13,11 +13,7 @@ using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;

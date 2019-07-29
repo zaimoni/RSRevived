@@ -5,11 +5,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
 
 namespace djack.RogueSurvivor.Engine.Actions
 {

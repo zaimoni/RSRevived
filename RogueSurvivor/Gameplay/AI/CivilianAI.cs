@@ -22,12 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using Zaimoni.Data;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
-
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI

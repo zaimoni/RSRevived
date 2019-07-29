@@ -10,13 +10,8 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {

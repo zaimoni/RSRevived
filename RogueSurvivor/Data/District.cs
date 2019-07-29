@@ -7,12 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Zaimoni.Data;
-using Point = System.Drawing.Point;
-#endif
 
 namespace djack.RogueSurvivor.Data
 {

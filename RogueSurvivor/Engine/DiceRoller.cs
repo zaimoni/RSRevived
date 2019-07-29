@@ -8,13 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-#endif
 
 namespace djack.RogueSurvivor.Engine
 {

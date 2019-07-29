@@ -6,13 +6,9 @@
 
 using System;
 using Zaimoni.Data;
-using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
 
-#if Z_VECTOR
+using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
 using Point = Zaimoni.Data.Vector2D_short;
-#else
-using Point = System.Drawing.Point;
-#endif
 
 namespace djack.RogueSurvivor.Data
 {

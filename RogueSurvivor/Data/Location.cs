@@ -4,21 +4,13 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define Z_VECTOR
-
 using System;
 using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
-#if Z_VECTOR
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-#else
-using Point = System.Drawing.Point;
-using Rectangle = System.Drawing.Rectangle;
-using Size = System.Drawing.Size;   // likely to go obsolete with transition to a true vector type
-#endif
 
 namespace djack.RogueSurvivor.Data
 {
@@ -92,23 +84,14 @@ namespace djack.RogueSurvivor.Data
 
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
-#if Z_VECTOR
     public Rectangle ViewRect { get { return new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS)); } }
     public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS))); } }
-#else
-    public Rectangle ViewRect { get { return new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT); } }
-    public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.HALF_VIEW_WIDTH, Position.Y - Engine.RogueGame.HALF_VIEW_HEIGHT, 1 + 2 * Engine.RogueGame.HALF_VIEW_WIDTH, 1 + 2 * Engine.RogueGame.HALF_VIEW_HEIGHT)); } }
-#endif
 
     public ZoneLoc MiniMapView { get {
       if (0 >= District.UsesCrossDistrictView(Map)) {
         return new ZoneLoc(Map,Map.Rect);
       } else {
-#if Z_VECTOR
         return new ZoneLoc(Map,new Rectangle(Position - (Point)Engine.RogueGame.MINIMAP_RADIUS, (Point)(1 + 2 * Engine.RogueGame.MINIMAP_RADIUS)));
-#else
-        return new ZoneLoc(Map,new Rectangle(Position.X - Engine.RogueGame.MINIMAP_RADIUS, Position.Y - Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS, 1 + 2 * Engine.RogueGame.MINIMAP_RADIUS));
-#endif
       }
     } }
 
