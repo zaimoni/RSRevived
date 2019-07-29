@@ -2756,7 +2756,7 @@ restart:
       foreach (Rectangle wallsRect in list)
       {
 #if Z_VECTOR
-        Rectangle rectangle = new Rectangle(wallsRect.Location+Direction.SE, wallsRect.Size-2*Direction.NW);
+        Rectangle rectangle = new Rectangle(wallsRect.Location+Direction.SE, wallsRect.Size+2*Direction.NW);
 #else
         Rectangle rectangle = new Rectangle(wallsRect.Left + 1, wallsRect.Top + 1, wallsRect.Width - 2, wallsRect.Height - 2);
 #endif
