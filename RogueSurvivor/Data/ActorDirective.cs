@@ -37,20 +37,5 @@ namespace djack.RogueSurvivor.Data
             CanTrade = true;
             Courage = ActorCourage.CAUTIOUS;
     }
-
-    public static string CourageString(ActorCourage c)
-    {
-      switch (c)
-      {
-        case ActorCourage.COWARD:
-          return "Coward";
-        case ActorCourage.CAUTIOUS:
-          return "Cautious";
-        case ActorCourage.COURAGEOUS:
-          return "Courageous";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled courage");
-      }
-    }
   }
 }

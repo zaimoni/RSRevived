@@ -15,4 +15,17 @@ namespace djack.RogueSurvivor.Data
     CAUTIOUS,
     COURAGEOUS,
   }
+
+  internal static class ActorCourage_ext
+  {
+    internal static string to_s(this ActorCourage c)
+    {
+      switch (c) {
+        case ActorCourage.COWARD: return "Coward";
+        case ActorCourage.CAUTIOUS: return "Cautious";
+        case ActorCourage.COURAGEOUS: return "Courageous";
+        default: throw new ArgumentOutOfRangeException("unhandled courage");
+      }
+    }
+  }
 }

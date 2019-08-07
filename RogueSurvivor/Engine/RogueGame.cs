@@ -5385,7 +5385,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("5. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("6. {0}.", ActorDirective.CourageString(directives.Courage)), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("6. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
