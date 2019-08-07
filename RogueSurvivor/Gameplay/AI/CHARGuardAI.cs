@@ -170,7 +170,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
       }
+      // at this point, even if enemies are in sight we have no useful direct combat action
 
+      // Secure CHAR property
 	  List<Percept> friends = FilterNonEnemies(_all);
       if (null != friends) {
         List<Percept> percepts3 = friends.Filter(p =>
@@ -237,6 +239,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       tmpAction = RechargeWithAdjacentGenerator();
       if (null!=tmpAction) return tmpAction;
+
+      // while groggy ai may not be up to ranged inventory management, items in reach should still be managed
+      tmpAction = InventoryStackTactics();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "inventory management failsafe triggered");
+#endif
+      if (null != tmpAction) return tmpAction;
+      tmpAction = BehaviorUseAdjacentStack();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "adjacent inventory management triggered");
+#endif
+      if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;

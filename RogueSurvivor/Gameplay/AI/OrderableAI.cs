@@ -2559,7 +2559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var med_slp = m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
       if (null != med_slp) return new ActionUseItem(m_Actor, med_slp);
 
-      // \todo: take SLP-relevant medicines from accessible stacks
+      // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
       // \todo: go to SLP-relevant medicines in inventory stacks that are in sight
 
       // try to resolve sleep-disruptive sanity without pathing
