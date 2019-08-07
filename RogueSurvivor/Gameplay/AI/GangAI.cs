@@ -179,6 +179,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
+
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
@@ -191,8 +193,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorUseEntertainment();
         if (null != tmpAction)  return tmpAction;
       }
-
-      // XXX TurnOnAdjacentGenerators() block would go here, but they're all underground (and inaccessible)
 
       if (null == _enemies) {
         Map map = m_Actor.Location.Map;
