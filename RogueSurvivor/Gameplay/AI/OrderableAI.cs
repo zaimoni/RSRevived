@@ -2537,7 +2537,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (null == item_memory) throw new ArgumentNullException(nameof(item_memory));
 #endif
+        var med_slp = item_memory.WhereIs(GameItems.IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
         bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
+            if (null!=med_slp && med_slp.ContainsKey(loc)) return true;
             if (!loc.Map.IsInsideAt(loc.Position)) return false;
             if (!item_memory.HaveEverSeen(loc, out int when)) return false;
             // be as buggy as the display, which shows objects in their current positions
@@ -2552,6 +2554,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorNavigateToSleep()
     {
+      // \todo precalculate sleep-relevant medicines at game start
+      // use SLP-relevant medicines from inventory (2019-07-29: caught by BehaviorUseMedecine, but we want to be more precise)
+      var med_slp = m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
+      if (null != med_slp) return new ActionUseItem(m_Actor, med_slp);
+
+      // \todo: take SLP-relevant medicines from accessible stacks
+      // \todo: go to SLP-relevant medicines in inventory stacks that are in sight
+
+      // try to resolve sleep-disruptive sanity without pathing
+      if (3<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is need or higher (possible CPU hit from double-checking for want later)
+        var restore = BehaviorUseEntertainment();
+        if (null != restore)  return restore;
+      }
+
       var item_memory = m_Actor.Controller.ItemMemory;
       if (!m_Actor.IsInside) {
         if (null != item_memory) return BehaviorNavigateToSleep(item_memory);
@@ -2747,7 +2763,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var it = inventory.GetFirst<ItemMedicine>(med => 0<med.SanityCure);   // VAPORWARE side-effecting medicines
       if (null != it) return new ActionUseItem(m_Actor, it);
       }
-      // pathing to chat would be CPU-intensive so don't do that here.
+      // pathing to chat would be CPU-intensive so don't do that here.  If policy is changed, we'd want to allow disabling it when pathing to sleep, etc.
       // VAPORWARE chat with other needy souls in sight
       return null;
     }
