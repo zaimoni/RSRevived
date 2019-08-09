@@ -3067,6 +3067,54 @@ restart_single_exit:
         });
     }
 
+    protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
+    {
+      var items = items_in_FOV;
+      if (null == items) return null;
+
+      // following needs to be more sophisticated.
+      // 1) identify all stacks, period.
+      // 2) categorize stacks by whether they are personally interesting or not.
+      // 3) in-communication followers will be consulted regarding the not-interesting stacks
+      Map map = m_Actor.Location.Map;
+      var examineStacks = new Dictionary<Location,Inventory>(items.Count);
+      { // scoping brace
+      var boringStacks = new List<Percept>(items.Count);
+      int t0 = map.LocalTime.TurnCounter;
+      foreach(var x in items) {
+        if (!want_now(x.Value)) continue;   // not immediately relevant
+        if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
+        if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement
+        if (!BehaviorWouldGrabFromStack(x.Key, x.Value)?.IsLegal() ?? true) {
+          boringStacks.Add(new Percept(x.Value, t0, x.Key));
+          continue;
+        }
+        examineStacks.Add(x.Key,x.Value);
+      }
+      if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);    // XXX \todo PC leader should do the same
+      } // end scoping brace
+      if (0 >= examineStacks.Count) return null;
+
+      bool imStarvingOrCourageous = m_Actor.IsStarving;
+      if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == ai.Directives.Courage) imStarvingOrCourageous = true;
+      var ret = new Dictionary<Location,Inventory>(examineStacks.Count);
+      foreach(var x in examineStacks) {
+        if (IsOccupiedByOther(x.Key)) continue; // blocked
+        if (!m_Actor.MayTakeFromStackAt(x.Key)) {
+            if (!imStarvingOrCourageous && 1>=m_Actor.Controller.FastestTrapKill(x.Key)) continue;  // destination deathtrapped
+            // check for iron gates, etc in way
+            List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
+            if (null == path) continue;
+            List<Point> test = path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt)));
+            if (0 >= test.Count) continue;
+            path[0] = test;
+            if (!imStarvingOrCourageous && path[0].Any(pt=> 1>=m_Actor.Controller.FastestTrapKill(new Location(map,pt)))) continue;
+        }
+        ret.Add(x.Key,x.Value);
+      }
+      return 0<ret.Count ? ret : null;
+    }
+
     // XXX to implement
     // core inventory should be (but is not)
     // armor: 1 slot (done)

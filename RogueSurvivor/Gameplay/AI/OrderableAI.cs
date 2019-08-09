@@ -2560,7 +2560,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != med_slp) return new ActionUseItem(m_Actor, med_slp);
 
       // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
+
+#if PROTOTYPE
       // \todo: go to SLP-relevant medicines in inventory stacks that are in sight
+      bool has_SLP_relevant(Inventory inv) {
+        return null!=inv.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
+      }
+
+      var stacks = GetInterestingInventoryStacks(has_SLP_relevant);
+      if (null != stacks) {
+      }
+#endif
 
       // try to resolve sleep-disruptive sanity without pathing
       if (3<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is need or higher (possible CPU hit from double-checking for want later)
