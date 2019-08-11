@@ -353,7 +353,7 @@ namespace djack.RogueSurvivor.Engine
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
     public GameActors GameActors { get { return m_GameActors; } }
 
-    public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
+    static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
 
 #if DEAD_FUNC
     public IRogueUI UI { get { return m_UI; } }
@@ -12028,16 +12028,25 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddOverlay(Overlay o)
     {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
+#endif
       lock (m_Overlays) { m_Overlays.Add(o); }
     }
 
     public void ClearOverlays()
     {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
+#endif
       lock (m_Overlays) { m_Overlays.Clear(); }
     }
 
     void RemoveOverlay(Overlay o)   // alpha10
     {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
+#endif
       lock (m_Overlays) { m_Overlays.Remove(o); }
     }
 

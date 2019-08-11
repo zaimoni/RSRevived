@@ -1204,7 +1204,7 @@ namespace djack.RogueSurvivor.Data
       if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
 #endif
       bool player_initiated = Engine.RogueGame.IsPlayer(this);
-      bool simulating = RogueForm.Game.IsSimulating;
+      bool simulating = Engine.RogueGame.IsSimulating;
       bool police_radio = HasActivePoliceRadio;
       bool army_radio = HasActiveArmyRadio;
       if (!police_radio && !army_radio) return;
