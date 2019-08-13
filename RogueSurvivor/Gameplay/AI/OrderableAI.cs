@@ -2569,6 +2569,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var stacks = GetInterestingInventoryStacks(has_SLP_relevant);
       if (null != stacks) {
+          var nav = BehaviorHeadForBestStack(interestingStacks);
+          if (null != nav) return nav;
       }
 #endif
 
@@ -3130,7 +3132,173 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorRequestCriticalFromGroup()
+    protected ActorAction BehaviorHeadForBestStack(List<Percept> interestingStacks)
+    {
+#if DEBUG
+        if (null == interestingStacks) throw new ArgumentNullException(nameof(interestingStacks));
+#endif
+        ActorAction tmpAction = null;
+          {
+          var get_item = new Dictionary<Location, ActorAction>();
+          foreach(var at_target in interestingStacks.Where(p => m_Actor.MayTakeFromStackAt(p.Location))) {
+            tmpAction = BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
+            if (tmpAction?.IsPerformable() ?? false) get_item[at_target.Location] = tmpAction;
+          }
+          if (1<get_item.Count) {
+            var considering = new List<Location>(get_item.Count);
+            var dominated = new List<Location>(get_item.Count);
+            foreach(var x in get_item) {
+              if (0 >= considering.Count) {
+                considering.Add(x.Key);
+                continue;
+              }
+              int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+              switch(x.Value) {
+              case ActionTakeItem new_take:
+                item_compare = 1;
+                foreach(var old_loc in considering) {
+                  switch(get_item[old_loc]) {
+                  case ActionTakeItem old_take:
+                     if (new_take.Item.Model.ID==old_take.Item.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(new_take.Item,old_take.Item)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionTradeWithContainer old_trade:
+                     if (RHSMoreInteresting(new_take.Item,old_trade.Take)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_trade.Take, new_take.Item)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionUseItem old_use:
+                    // generally better to take than use
+                    if (old_use.Item.Model.ID!=new_take.Item.Model.ID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                    break;
+                  }
+                  if (-1==item_compare) break;
+                }
+                break;
+              case ActionTradeWithContainer new_trade:
+                item_compare = 1;
+                foreach(var old_loc in considering) {
+                  switch(get_item[old_loc]) {
+                  case ActionTakeItem old_take:
+                     if (RHSMoreInteresting(new_trade.Take,old_take.Item)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_take.Item, new_trade.Take)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionTradeWithContainer old_trade:
+                     if (new_trade.Take.Model.ID == old_trade.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(new_trade.Take, old_trade.Take)) {
+                       item_compare = -1;
+                       break;
+                     }
+                     if (RHSMoreInteresting(old_trade.Take, new_trade.Take)) dominated.Add(old_loc);
+                     else item_compare = 0;
+                    break;
+                  case ActionUseItem old_use:
+                    // generally better to take than use
+                    if (old_use.Item.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                    break;
+                  }
+                  if (-1==item_compare) break;
+                }
+                break;
+              case ActionUseItem new_use:
+                item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                foreach(var old_loc in considering) {
+                  switch(get_item[old_loc]) {
+                    case ActionUseItem old_use:
+                      if (old_use.Item.Model.ID==new_use.Item.Model.ID) { // duplicate
+                        item_compare = -1;
+                        break;
+                      }
+                      break;
+                    case ActionTakeItem old_take:
+                      if (old_take.Item.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
+                        item_compare = -1;
+                        break;
+                      }
+                      break;
+                  }
+                  if (-1==item_compare) break;
+                }
+                break;
+              }
+              // respond to item comparison
+              if (1 == item_compare) {
+                considering.Clear();
+                dominated.Clear();
+              } else if (0 < dominated.Count) {
+                foreach(var reject in dominated) considering.Remove(reject);
+                dominated.Clear();
+              }
+              if (-1 == item_compare) continue;
+              considering.Add(x.Key);
+            }
+            get_item.OnlyIf(loc => considering.Contains(loc));
+          }
+#if FALSE_POSITIVE
+          if (/* m_Actor.IsDebuggingTarget && */ 1<get_item.Count && !m_Actor.Inventory.IsEmpty) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
+#endif
+          if (0<get_item.Count) {
+            var take = get_item.FirstOrDefault();
+            m_Actor.Activity = Activity.IDLE;
+            return take.Value;
+          }
+          }
+
+          // no accessible interesting stacks.  Memorize them just in case.
+          {
+          var track_inv = Goal<Goal_PathToStack>();
+          foreach(Percept p in interestingStacks) {
+            if (null == track_inv) {
+              track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,p.Location);
+              Objectives.Add(track_inv);
+            } else track_inv.newStack(p.Location);
+          }
+          }
+
+          Percept percept = FilterNearest(interestingStacks);
+          while(null != percept) {
+            m_LastItemsSaw = percept;
+            tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
+            if (tmpAction?.IsPerformable() ?? false) {
+#if TRACE_SELECTACTION
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
+#endif
+              m_Actor.Activity = Activity.IDLE;
+              return tmpAction;
+            }
+            // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
+            // could happen in normal play in the sewers
+            // under is handled within the Behavior functions
+#if TRACE_SELECTACTION
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
+#endif
+            interestingStacks.Remove(percept);
+            percept = FilterNearest(interestingStacks);
+          }
+        return null;
+    }
+
+    private ActorAction BehaviorRequestCriticalFromGroup()
     {
         var clan = m_Actor.ChainOfCommand;
         if (null == clan) return null;
@@ -3243,7 +3411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    protected ActorAction BehaviorDefendFromRequestCriticalFromGroup()
+    private ActorAction BehaviorDefendFromRequestCriticalFromGroup()
     {
         var clan = m_Actor.ChainOfCommand;
         if (null == clan) return null;
@@ -3303,10 +3471,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    protected ActorAction BehaviorFindTrade(List<Percept> friends)
+    private ActorAction BehaviorFindTrade(List<Percept> friends)
     {
 #if DEBUG
-        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
+        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");   // \todo technically redundant now
 #endif
         var percepts2 = GetTradingTargets(friends); // this should only return legal trading targets
         if (null == percepts2) return null;
@@ -3332,6 +3500,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
           (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor, new ActionTrade(actor,m_Actor)));    // AI disallowed from initiating trades with player so fine
         }
         return tmpAction;
+    }
+
+    protected ActorAction BehaviorTrading(List<Percept> friends)
+    {
+#if DEBUG
+        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
+#endif
+        var tmpAction = BehaviorDefendFromRequestCriticalFromGroup();
+        if (null != tmpAction) return tmpAction;
+        tmpAction = BehaviorRequestCriticalFromGroup();
+        if (null != tmpAction) return tmpAction;
+        if (Directives.CanTrade) {
+          tmpAction = BehaviorFindTrade(friends);
+          if (null != tmpAction) return tmpAction;
+        }
+        return null;
     }
 #endregion
 
