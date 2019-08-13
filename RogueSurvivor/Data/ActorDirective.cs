@@ -8,11 +8,10 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
+  // This is set *only* by the player; a total replacement with the objectives system is anticipated.
   [Serializable]
   internal class ActorDirective
   {
-    public bool CanTakeItems { get; set; }
-
     public bool CanFireWeapons { get; set; }
 
     public bool CanThrowGrenades { get; set; }
@@ -30,7 +29,6 @@ namespace djack.RogueSurvivor.Data
 
     public void Reset()
     {
-            CanTakeItems = true;
             CanFireWeapons = true;
             CanThrowGrenades = true;
             CanSleep = true;

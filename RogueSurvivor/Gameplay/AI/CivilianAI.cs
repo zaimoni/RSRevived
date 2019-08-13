@@ -417,7 +417,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // XXX this should lose to same-map threat hunting at close ETA
-      if (null == _enemies && Directives.CanTakeItems) {
+      if (null == _enemies) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif

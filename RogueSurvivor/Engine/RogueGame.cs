@@ -5380,12 +5380,11 @@ namespace djack.RogueSurvivor.Engine
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("{0} directives...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? "Take" : "Don't take"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("5. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("6. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("1. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("2. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("3. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
@@ -5393,21 +5392,18 @@ namespace djack.RogueSurvivor.Engine
         else {
           switch (choiceNumber) {
             case 1:
-              directives.CanTakeItems = !directives.CanTakeItems;
-              break;
-            case 2:
               directives.CanFireWeapons = !directives.CanFireWeapons;
               break;
-            case 3:
+            case 2:
               directives.CanThrowGrenades = !directives.CanThrowGrenades;
               break;
-            case 4:
+            case 3:
               directives.CanSleep = !directives.CanSleep;
               break;
-            case 5:
+            case 4:
               directives.CanTrade = !directives.CanTrade;
               break;
-            case 6:
+            case 5:
               switch (directives.Courage) {
                 case ActorCourage.COWARD:
                   directives.Courage = ActorCourage.CAUTIOUS;
