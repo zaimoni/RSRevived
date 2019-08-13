@@ -3452,36 +3452,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var percepts2 = GetTradingTargets(friends_in_FOV); // this should only return legal trading targets
         if (null == percepts2) return null;
 
-        int dist = int.MaxValue;
-        Actor actor = null;
-
-        foreach (var x in percepts2) {   // historically FilterNearest  \todo new wrapper (djack namespace: uses Location)
-          int test = Rules.InteractionDistance(m_Actor.Location,x.Key);
-          if (test < dist) {
-            dist = test;
-            actor = x.Value;
-          }
-        }
+        var near = FilterNearest(percepts2);
 
         // We are having CPU loading problems, so don't retest the legality of the trade
-        if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-          MarkActorAsRecentTrade(actor);
-          (actor.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
-          RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
-          return new ActionTrade(m_Actor, actor);
+        if (Rules.IsAdjacent(m_Actor.Location, near.Key)) {
+          MarkActorAsRecentTrade(near.Value);
+          (near.Value.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
+          RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
+          return new ActionTrade(m_Actor, near.Value);
         }
-        ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location, false, false);
+        ActorAction tmpAction = BehaviorIntelligentBumpToward(near.Key, false, false);
         if (null == tmpAction) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.
-        RogueGame.DoSay(m_Actor, actor, String.Format("Hey {0}, let's make a deal!", actor.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+        RogueGame.DoSay(m_Actor, near.Value, String.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);
 
         m_Actor.Activity = Activity.FOLLOWING;
-        m_Actor.TargetActor = actor;
+        m_Actor.TargetActor = near.Value;
         // need an after-action "hint" to the target on where/who to go to
-        if (!m_Actor.WillActAgainBefore(actor) && !((actor.Controller as OrderableAI)?.IsFocused ?? true)) {
-          int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
-          (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor, new ActionTrade(actor,m_Actor)));    // AI disallowed from initiating trades with player so fine
+        if (!m_Actor.WillActAgainBefore(near.Value) && !((near.Value.Controller as OrderableAI)?.IsFocused ?? true)) {
+          int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, near.Value) -(m_Actor.IsBefore(near.Value) ? 1 : 0);
+          (near.Value.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, near.Value, m_Actor, new ActionTrade(near.Value, m_Actor)));    // AI disallowed from initiating trades with player so fine
         }
         return tmpAction;
     }

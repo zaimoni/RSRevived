@@ -3162,9 +3162,7 @@ restart_single_exit:
 
     protected Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
-#if DEBUG
-        if (null == friends || 0 >= friends.Count) throw new ArgumentNullException(nameof(friends));
-#endif
+        if (null == friends || 0 >= friends.Count) return null;
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
         var TradeableItems = GetTradeableItems();
         if (0>=(TradeableItems?.Count ?? 0)) return null;
@@ -3185,7 +3183,7 @@ restart_single_exit:
           if (!HaveTradeOptions(x.Value)) continue;
           ret.Add(x.Key,x.Value);
         }
-        return ret;
+        return 0<ret.Count ? ret : null;
     }
 
     public List<KeyValuePair<Item, Item>> TradeOptions(Actor target)
