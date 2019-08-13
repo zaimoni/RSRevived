@@ -131,7 +131,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       const Abilities.Flags STD_ZM = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE;
       const Abilities.Flags STD_LIVING = Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN;
       const Abilities.Flags STD_HUMAN = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE;
-      const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT;
+      const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT | Abilities.Flags.CAN_TRADE;  // RS Alpha 10.1- did not allow soldiers or CHAR to trade
         
       ActorData parse_fn(CSVLine CSV) { return new ActorData(CSV); };
 
@@ -229,11 +229,11 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_SEWERS_THING, NO_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof (SewersThingAI)));
       _setModel(IDs.MALE_CIVILIAN, new ActorModel(null, DATA_MALE_CIVILIAN.NAME, DATA_MALE_CIVILIAN.PLURAL, DATA_MALE_CIVILIAN.SCORE, DATA_MALE_CIVILIAN.FLAVOR, new DollBody(true, DATA_MALE_CIVILIAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_MALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
       _setModel(IDs.FEMALE_CIVILIAN, new ActorModel(null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, DATA_FEMALE_CIVILIAN.FLAVOR, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_FEMALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
       _setModel(IDs.CHAR_GUARD, new ActorModel(null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, DATA_CHAR_GUARD.FLAVOR, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),
@@ -243,15 +243,15 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_NATGUARD, NO_FOOD, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (SoldierAI)));
       _setModel(IDs.BIKER_MAN, new ActorModel(null, DATA_BIKER_MAN.NAME, DATA_BIKER_MAN.PLURAL, DATA_BIKER_MAN.SCORE, DATA_BIKER_MAN.FLAVOR, new DollBody(true, DATA_BIKER_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS),
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS),
           new ActorSheet(DATA_BIKER_MAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (GangAI)));
       _setModel(IDs.GANGSTA_MAN, new ActorModel(null, DATA_GANGSTA_MAN.NAME, DATA_GANGSTA_MAN.PLURAL, DATA_GANGSTA_MAN.SCORE, DATA_GANGSTA_MAN.FLAVOR, new DollBody(true, DATA_GANGSTA_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT),
+          Abilities.Flags.HAS_TO_EAT),
           new ActorSheet(DATA_GANGSTA_MAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(GangAI)));
       _setModel(IDs.POLICEMAN, new ActorModel(null, DATA_POLICEMAN.NAME, DATA_POLICEMAN.PLURAL, DATA_POLICEMAN.SCORE, DATA_POLICEMAN.FLAVOR, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
           new ActorSheet(DATA_POLICEMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
       _setModel(IDs.BLACKOPS_MAN, new ActorModel(null, DATA_BLACKOPS_MAN.NAME, DATA_BLACKOPS_MAN.PLURAL, DATA_BLACKOPS_MAN.SCORE, DATA_BLACKOPS_MAN.FLAVOR, new DollBody(true, DATA_BLACKOPS_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),
@@ -266,7 +266,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_JASON_MYERS, NO_FOOD, NO_SLEEP, NO_SANITY, PUNCH, HUMAN_INVENTORY), typeof (InsaneHumanAI)));
       _setModel(IDs.POLICEWOMAN, new ActorModel(null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(false, DATA_POLICEWOMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
     }
 

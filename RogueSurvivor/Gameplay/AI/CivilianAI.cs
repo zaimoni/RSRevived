@@ -417,26 +417,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // XXX this should lose to same-map threat hunting at close ETA
-      if (null == _enemies) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
-#endif
-        var interestingStacks = GetInterestingInventoryStacks(current);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, interestingStacks?.to_s() ?? "null");
-#endif
-        if (null != interestingStacks) {
-          tmpAction = BehaviorHeadForBestStack(interestingStacks);
-          if (null != tmpAction) return tmpAction;
-        }
-
-        tmpAction = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
-        if (null != tmpAction) return tmpAction;
-        tmpAction = BehaviorTrading();
-        if (null != tmpAction) return tmpAction;
-        tmpAction = Pathing<Goal_PathToStack>();
-        if (null != tmpAction) return tmpAction;
-      } // null == enemies && Directives.CanTakeItems
+      tmpAction = BehaviorRangedInventory();
+      if (null != tmpAction) return tmpAction;
 
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)

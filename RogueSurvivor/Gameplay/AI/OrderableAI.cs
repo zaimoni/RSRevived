@@ -22,6 +22,7 @@ using System.Diagnostics;
 #endif
 using System.Linq;
 using Zaimoni.Data;
+using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
@@ -2534,18 +2535,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
 
-#if PROTOTYPE
-      // \todo: go to SLP-relevant medicines in inventory stacks that are in sight
+      // go to SLP-relevant medicines in inventory stacks that are in sight
       bool has_SLP_relevant(Inventory inv) {
         return null!=inv.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
       }
 
       var stacks = GetInterestingInventoryStacks(has_SLP_relevant);
       if (null != stacks) {
-          var nav = BehaviorHeadForBestStack(interestingStacks);
+          var nav = BehaviorHeadForBestStack(stacks);
           if (null != nav) return nav;
       }
-#endif
 
       // try to resolve sleep-disruptive sanity without pathing
       if (3<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is need or higher (possible CPU hit from double-checking for want later)
@@ -3105,17 +3104,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorHeadForBestStack(List<Percept> interestingStacks)
+    protected ActorAction BehaviorHeadForBestStack(Dictionary<Location,Inventory> stacks)
     {
 #if DEBUG
-        if (null == interestingStacks) throw new ArgumentNullException(nameof(interestingStacks));
+        if (null == stacks) throw new ArgumentNullException(nameof(stacks));
 #endif
         ActorAction tmpAction = null;
           {
           var get_item = new Dictionary<Location, ActorAction>();
-          foreach(var at_target in interestingStacks.Where(p => m_Actor.MayTakeFromStackAt(p.Location))) {
-            tmpAction = BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted as Inventory);
-            if (tmpAction?.IsPerformable() ?? false) get_item[at_target.Location] = tmpAction;
+          foreach(var x in stacks) {
+            if (!m_Actor.MayTakeFromStackAt(x.Key)) continue;
+            tmpAction = BehaviorGrabFromAccessibleStack(x.Key, x.Value);
+            if (tmpAction?.IsPerformable() ?? false) get_item[x.Key] = tmpAction;
           }
           if (1<get_item.Count) {
             var considering = new List<Location>(get_item.Count);
@@ -3240,18 +3240,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // no accessible interesting stacks.  Memorize them just in case.
           {
           var track_inv = Goal<Goal_PathToStack>();
-          foreach(Percept p in interestingStacks) {
+          foreach(var x in stacks) {
             if (null == track_inv) {
-              track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,p.Location);
+              track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,x.Key);
               Objectives.Add(track_inv);
-            } else track_inv.newStack(p.Location);
+            } else track_inv.newStack(x.Key);
           }
           }
 
-          Percept percept = FilterNearest(interestingStacks);
-          while(null != percept) {
-            m_LastItemsSaw = percept;
-            tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
+          var percept = FilterNearest(stacks);
+          while(null != percept.Value) {
+            m_LastItemsSaw = new Percept(percept.Value,m_Actor.Location.Map.LocalTime.TurnCounter,percept.Key);
+            tmpAction = BehaviorGrabFromStack(percept.Key, percept.Value);
             if (tmpAction?.IsPerformable() ?? false) {
 #if TRACE_SELECTACTION
               if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
@@ -3265,8 +3265,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
-            interestingStacks.Remove(percept);
-            percept = FilterNearest(interestingStacks);
+            stacks.Remove(percept.Key);
+            percept = FilterNearest(stacks);
           }
         return null;
     }
@@ -3500,6 +3500,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
         return null;
+    }
+
+    protected ActorAction BehaviorRangedInventory()
+    {
+      if (null != _enemies) return null;
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
+#endif
+      ActorAction tmp = null;
+      var interestingStacks = GetInterestingInventoryStacks(TRUE);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, interestingStacks?.to_s() ?? "null");
+#endif
+      if (null != interestingStacks) {
+        tmp = BehaviorHeadForBestStack(interestingStacks);
+      if (null != tmp) return tmp;
+      }
+
+      tmp = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
+      if (null != tmp) return tmp;
+      tmp = BehaviorTrading();
+      if (null != tmp) return tmp;
+      tmp = Pathing<Goal_PathToStack>();
+      if (null != tmp) return tmp;
+      return null;
     }
 #endregion
 

@@ -150,6 +150,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
     }
 
+    public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T> src)
+    {
+        if (null==src || 0 >= src.Count) return default;
+        int dist = int.MaxValue;
+        KeyValuePair<Location,T> ret = default;
+        foreach (var x in src) {
+          int test = Rules.InteractionDistance(m_Actor.Location,x.Key);
+          if (test < dist) {
+            dist = test;
+            ret = x;
+          }
+        }
+
+        return ret;
+    }
+
+
     static private Percept_<AIScent> FilterStrongestScent(List<Percept_<AIScent>> scents)
     {
 #if DEBUG

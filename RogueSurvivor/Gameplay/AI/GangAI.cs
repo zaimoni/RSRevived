@@ -211,18 +211,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction)  return tmpAction;
       }
 
-      if (null == _enemies) {
-        Map map = m_Actor.Location.Map;
-        List<Percept> interestingStacks = GetInterestingInventoryStacks(current);
-        if (interestingStacks != null) {
-          Percept percept = FilterNearest(interestingStacks);
-          tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        }
-      }
+      tmpAction = BehaviorRangedInventory();
+      if (null != tmpAction) return tmpAction;
+
       if (null == _enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
