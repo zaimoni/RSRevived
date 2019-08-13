@@ -3444,14 +3444,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    private ActorAction BehaviorFindTrade(List<Percept> friends)
+    private ActorAction BehaviorFindTrade()
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");   // \todo technically redundant now
 #endif
-        var percepts2 = GetTradingTargets(friends); // this should only return legal trading targets
+        var percepts2 = GetTradingTargets(friends_in_FOV); // this should only return legal trading targets
         if (null == percepts2) return null;
-        Actor actor = FilterNearest(percepts2).Percepted as Actor;
+
+        int dist = int.MaxValue;
+        Actor actor = null;
+
+        foreach (var x in percepts2) {   // historically FilterNearest  \todo new wrapper (djack namespace: uses Location)
+          int test = Rules.InteractionDistance(m_Actor.Location,x.Key);
+          if (test < dist) {
+            dist = test;
+            actor = x.Value;
+          }
+        }
+
         // We are having CPU loading problems, so don't retest the legality of the trade
         if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
           MarkActorAsRecentTrade(actor);
@@ -3475,7 +3486,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
     }
 
-    protected ActorAction BehaviorTrading(List<Percept> friends)
+    protected ActorAction BehaviorTrading()
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
@@ -3485,7 +3496,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorRequestCriticalFromGroup();
         if (null != tmpAction) return tmpAction;
         if (Directives.CanTrade) {
-          tmpAction = BehaviorFindTrade(friends);
+          tmpAction = BehaviorFindTrade();
           if (null != tmpAction) return tmpAction;
         }
         return null;

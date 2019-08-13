@@ -432,7 +432,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         tmpAction = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
         if (null != tmpAction) return tmpAction;
-        tmpAction = BehaviorTrading(friends);
+        tmpAction = BehaviorTrading();
         if (null != tmpAction) return tmpAction;
         tmpAction = Pathing<Goal_PathToStack>();
         if (null != tmpAction) return tmpAction;

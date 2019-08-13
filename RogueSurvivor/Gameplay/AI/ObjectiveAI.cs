@@ -3203,28 +3203,32 @@ restart_single_exit:
       return ret.Any() ? ret.ToList() : null;
     }
 
-    protected List<Percept> GetTradingTargets(IEnumerable<Percept> friends)
+    protected Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
+#if DEBUG
+        if (null == friends || 0 >= friends.Count) throw new ArgumentNullException(nameof(friends));
+#endif
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
         var TradeableItems = GetTradeableItems();
         if (0>=(TradeableItems?.Count ?? 0)) return null;
         Map map = m_Actor.Location.Map;
 
-        return friends.FilterOut(p => {
-          if (p.Turn != map.LocalTime.TurnCounter) return true;
-          Actor actor = p.Percepted as Actor;
-          if (actor.IsPlayer) return true;
-          if (this is OrderableAI ai && ai.IsActorTabooTrade(actor)) return true;
-          if (!m_Actor.CanTradeWith(actor)) return true;
-          if (null==m_Actor.MinStepPathTo(m_Actor.Location, p.Location)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+        var ret = new Dictionary< Location, Actor >(friends.Count);
+        foreach(var x in friends) {
+          if (x.Value.IsPlayer) continue;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(x.Value)) continue;
+          if (!m_Actor.CanTradeWith(x.Value)) continue;
+          if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Key)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
-            List<Item> other_TradeableItems = (actor.Controller as OrderableAI).GetTradeableItems();
-            if (null == other_TradeableItems) return true;
-            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) return true;
+            List<Item> other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
+            if (null == other_TradeableItems) continue;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
           }
-          if (!(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return true;
-          return !HaveTradeOptions(actor);
-        });
+          if (!(x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) continue;
+          if (!HaveTradeOptions(x.Value)) continue;
+          ret.Add(x.Key,x.Value);
+        }
+        return ret;
     }
 
     public List<KeyValuePair<Item, Item>> TradeOptions(Actor target)
