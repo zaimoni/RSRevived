@@ -2984,6 +2984,24 @@ namespace djack.RogueSurvivor.Data
       if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE) {
         if (!target.IsPlayer) return "in combat";
       }
+      // RS Revived: no trading with differing treacherous factions; should be "by AI controller" but player controller would need to simulate underlying target
+      switch(m_FactionID)
+      {
+      case (int)Gameplay.GameFactions.IDs.TheCHARCorporation:
+      case (int)Gameplay.GameFactions.IDs.TheBikers:
+      case (int)Gameplay.GameFactions.IDs.TheGangstas:
+        if (target.m_FactionID!=m_FactionID) return "untrustworthy";
+        break;
+      }
+
+      switch(target.m_FactionID)
+      {
+      case (int)Gameplay.GameFactions.IDs.TheCHARCorporation:
+      case (int)Gameplay.GameFactions.IDs.TheBikers:
+      case (int)Gameplay.GameFactions.IDs.TheGangstas:
+        if (target.m_FactionID!=m_FactionID) return "anticipates treachery";
+        break;
+      }
 
 #if OBSOLETE
       if (!IsPlayer) {
