@@ -44,33 +44,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // sleep (on bed) at time t with food value >= and sanity value >=
     // * reversed-sense of these inequalities may also be of use
     // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
-    [Serializable]
-    internal abstract class Objective
-    {
-      protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point.
-      protected readonly Actor m_Actor;   // owning actor is likely important
-      protected bool _isExpired;
-
-      public int TurnCounter { get { return turn; } }
-      public bool IsExpired { get { return _isExpired; } }
-      public Actor Actor { get { return m_Actor; } }
-
-      protected Objective(int t0, Actor who)
-      {
-#if DEBUG
-         if (null == who) throw new ArgumentNullException(nameof(who));
-#endif
-         turn = t0;
-         m_Actor = who;
-      }
-
-      /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
-      /// <returns>true to take action</returns>
-      public abstract bool UrgentAction(out ActorAction ret);
-
-      public virtual List<Objective> Subobjectives() { return null; }
-    }
-
     // workaround for breaking action loops
     [Serializable]
     internal class Goal_NextAction : Objective
@@ -476,7 +449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_PathToStack : Objective
+    internal class Goal_PathToStack : Objective,Pathable
     {
       private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
 
@@ -593,7 +566,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_HintPathToActor : Objective
+    internal class Goal_HintPathToActor : Objective,Pathable
     {
       private readonly Actor _dest;
       private readonly ActorAction _when_at_target;

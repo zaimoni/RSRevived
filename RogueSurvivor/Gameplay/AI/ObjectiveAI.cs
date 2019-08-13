@@ -244,6 +244,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Objectives.Insert(0,src);
     }
 
+    public ActorAction Pathing<T>() where T:Objective,Pathable
+    {
+        var remote = Goal<T>();
+        if (null != remote) {
+          var ret = remote.Pathing();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": " +ret.to_s());
+#endif
+          if (null != ret) return ret;
+        }
+        return null;
+    }
+
     public override bool InCombat { get {
       if (base.InCombat) return true;
       if (null != _enemies) return true;

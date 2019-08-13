@@ -430,31 +430,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
 
-        {   // leadership or trading requests
-        Goal_HintPathToActor remote = Goal<Goal_HintPathToActor>();
-        if (null != remote) {
-          tmpAction = remote.Pathing();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": "+tmpAction.to_s());
-#endif
-          if (null != tmpAction) return tmpAction;
-        }
-        }
+        tmpAction = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
+        if (null != tmpAction) return tmpAction;
         tmpAction = BehaviorTrading(friends);
         if (null != tmpAction) return tmpAction;
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
-#endif
-        {
-        Goal_PathToStack remote = Goal<Goal_PathToStack>();
-        if (null != remote) {
-          tmpAction = remote.Pathing();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": " +tmpAction.to_s());
-#endif
-          if (null != tmpAction) return tmpAction;
-        }
-        }
+        tmpAction = Pathing<Goal_PathToStack>();
+        if (null != tmpAction) return tmpAction;
       } // null == enemies && Directives.CanTakeItems
 
       // attempting extortion from cops should have consequences.
