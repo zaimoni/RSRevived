@@ -90,18 +90,29 @@ namespace djack.RogueSurvivor.Engine.Items
           return true;
         }
       }
+      return false;
+    }
+
+    public bool LearnHowToBypass(Actor a, bool is_real = false)
+    {
 #if PROTOTYPE
-      if (null != m_Known) {
-        var allies = a.StrictAllies;    // will be in communication due to radio, etc.
-        if (null != allies) {
-          allies.RemoveWhere(ally => ally.IsSleeping || ally.Controller.IsEngaged || !m_Known.Contains(ally));
-          if (0<allies.Count) {
-            if (!is_real) return true;
-            // \todo: initiate contact w/ally re trap
-            // one of the allies on the channel responds; *everyone* who hears the response has a chance of learning how to deal w/trap
-          }
+      if (null == m_Known) return false;
+      var allies = a.StrictAllies(ally => !ally.IsSleeping && !ally.Controller.IsEngaged && m_Known.Contains(ally));    // will be in communication due to radio, etc.
+      if (null == allies) return false;
+      foreach (var ally in allies) {
+        if (Rules.CHAT_RADIUS >= Rules.InteractionDistance(a.Location, ally.Location)) {
+          // in conversation range.
+          // \todo Everyone in conversation range can learn.
+          // \todo triggers general chat bonuses
+          m_Known.Add(a);
+          return true;
         }
       }
+      if (!is_real) return true;
+      // \todo: initiate contact w/ally re trap (ideally cellphone or radio needed)
+      // for now just do radios as cellphone needs a major rethinking
+      // one of the allies on the channel responds; *everyone* who hears both request and response has a chance of learning how to deal w/trap
+      // querent is guaranteed
 #endif
       return false;
     }

@@ -100,6 +100,7 @@ namespace djack.RogueSurvivor.Engine
     public const int SLEEP_EXHAUSTION_COLLAPSE_CHANCE = 5;
     public const int SLEEP_ON_COUCH_HEAL_CHANCE = 5;
     public const int SLEEP_HEAL_HITPOINTS = 2;
+    public const int CHAT_RADIUS = 1;   // would space-time scale close to angband scale (900 turns/hour), but not much as hard to hear past 20' or so
     public const int LOUD_NOISE_RADIUS = WorldTime.TURNS_PER_HOUR/6;    // space-time scales; value 5 for 30 turns/hour
     private const int LOUD_NOISE_BASE_WAKEUP_CHANCE = 10;
     private const int LOUD_NOISE_DISTANCE_BONUS = 10;

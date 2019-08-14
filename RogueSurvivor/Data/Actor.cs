@@ -1483,20 +1483,10 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public HashSet<Actor> StrictAllies {
-      get {
+    public HashSet<Actor> StrictAllies(Predicate<Actor> test) {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
-          Location radio_pos = Rules.PoliceRadioLocation(Location);
-          Engine.Session.Get.World.DoForAllMaps(m=> {
-              foreach(var a in m.Police.Get) {
-                if (a == this) continue;
-                Location other_radio_pos = Rules.PoliceRadioLocation(Location);
-                if (Engine.RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
-              }
-          });
-        }
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = Engine.Session.Get.World.PoliceInRadioRange(Location,test);
         if (0 >= ret.Count) return null;
         // 2) leader/follower cliques are not "strict"
         if (0 < CountFollowers) ret.ExceptWith(m_Followers);
@@ -1506,7 +1496,6 @@ namespace djack.RogueSurvivor.Data
           ret.ExceptWith(lead.m_Followers);
         }
         return (0<ret.Count ? ret : null);
-      }
     }
 
     // We do not handle the enemy relations here.
@@ -1514,19 +1503,10 @@ namespace djack.RogueSurvivor.Data
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
-          Location radio_pos = Rules.PoliceRadioLocation(Location);
-          Engine.Session.Get.World.DoForAllMaps(m=> {
-              foreach(var a in m.Police.Get) {
-                if (a == this) continue;
-                Location other_radio_pos = Rules.PoliceRadioLocation(Location);
-                if (Engine.RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
-              }
-          });
-        }
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = Engine.Session.Get.World.PoliceInRadioRange(Location);
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
-        else if (HasLeader) {
+        if (HasLeader) {    // 2019-08-14: currently mutually exclusive with above for NPCs
           ret.Add(Leader);
           ret.UnionWith(Leader.m_Followers);
           ret.Remove(this);
