@@ -8756,6 +8756,43 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // intended to be a side-effecting free action.  We intentionally do not support null op here
+    public bool DoBackgroundChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    {
+      var chat_competent = targets.FindAll(actor => Rules.CHAT_RADIUS >= Rules.InteractionDistance(speaker.Location, actor.Location));
+      if (0 >= chat_competent.Count) return false;
+      var target = Rules.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
+      bool see_speaker = ForceVisibleToPlayer(speaker);
+      bool see_target = see_speaker ? IsVisibleToPlayer(target) : ForceVisibleToPlayer(target);
+      bool speaker_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
+      bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,target.Location);
+      flags |= Sayflags.IS_FREE_ACTION;
+      if (see_speaker) {
+        if (speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
+        else AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
+      }
+      if (see_target) {
+        if (target_heard_clearly) DoSay(target, speaker, target_text, flags); 
+        else if (!see_speaker || speaker_heard_clearly) AddMessage(MakeMessage(target, Conjugate(target, VERB_CHAT_WITH), speaker));
+      }
+      // not nearly as sanity-restoring as proper chat, but worth something
+      if (speaker.Model.Abilities.HasSanity) speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+      if (target.Model.Abilities.HasSanity) target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+
+      // eavesdropping
+      var survey = new Rectangle(speaker.Location.Position+Rules.CHAT_RADIUS*Direction.NW, (Point)(2*Rules.CHAT_RADIUS+1));
+      survey.DoForEach(pt => {
+          if (pt == speaker.Location.Position) return;
+          Location loc = new Location(speaker.Location.Map, pt);
+          if (!loc.ForceCanonical()) return;
+          if (Rules.CHAT_RADIUS < Rules.InteractionDistance(target.Location, loc)) return;
+          var overhear = loc.Actor;
+          if (null == overhear) return;
+          op(overhear);
+      });
+      return true;
+    }
+
     private bool DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
 #if OBSOLETE

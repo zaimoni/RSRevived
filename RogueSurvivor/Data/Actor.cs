@@ -1483,21 +1483,6 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public HashSet<Actor> StrictAllies(Predicate<Actor> test) {
-        var ret = new HashSet<Actor>();
-        // 1) police have all other police as allies.
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = Engine.Session.Get.World.PoliceInRadioRange(Location,test);
-        if (0 >= ret.Count) return null;
-        // 2) leader/follower cliques are not "strict"
-        if (0 < CountFollowers) ret.ExceptWith(m_Followers);
-        var lead = LiveLeader;
-        if (null != lead) {
-          ret.Remove(lead);
-          ret.ExceptWith(lead.m_Followers);
-        }
-        return (0<ret.Count ? ret : null);
-    }
-
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
       get {
@@ -1544,6 +1529,24 @@ namespace djack.RogueSurvivor.Data
           return true;
       } 
       return m_Followers?.Contains(other) ?? false; // a follower?
+    }
+
+    public bool IsAlly(Actor other)
+    {
+      if (IsInGroupWith(other)) return true;
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return (int)Gameplay.GameFactions.IDs.ThePolice == other.Faction.ID;
+      return false;
+    }
+
+    public List<Actor> FilterAllies(IEnumerable<Actor> src, Predicate<Actor> test = null)
+    {
+        if (null == src || !src.Any()) return null;
+        List<Actor> ret = null;
+        foreach(var a in src) {
+          if (!IsAlly(a)) continue;
+          if (null==test || test(a)) (ret ?? (ret = new List<Actor>(src.Count()))).Add(a);
+        }
+        return 0<ret.Count ? ret : null;
     }
 
     // map-related, loosely
@@ -2461,15 +2464,15 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSanity { get { return Sheet.BaseSanity; } }
 
-    public void SpendSanity(int sanCost)
-    {
+    public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
+        {
       if (!Model.Abilities.HasSanity) return;
       m_Sanity -= sanCost;
       if (m_Sanity < 0) m_Sanity = 0;
     }
 
-    public void RegenSanity(int sanRegen)
-    {
+    public void RegenSanity(int sanRegen)   // \todo unclear whether ok to rely on guard clause
+        {
       if (!Model.Abilities.HasSanity) return;
       m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }

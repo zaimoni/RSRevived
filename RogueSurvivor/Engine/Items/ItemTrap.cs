@@ -93,29 +93,47 @@ namespace djack.RogueSurvivor.Engine.Items
       return false;
     }
 
-    public bool LearnHowToBypass(Actor a, bool is_real = false)
+    public bool WouldLearnHowToBypass(Actor a, bool is_real = false)
     {
+      var ai = a.Controller as Gameplay.AI.ObjectiveAI;
+      if (null == ai) return false;
+      var allies = a.FilterAllies(m_Known, ally => !ally.IsSleeping && !ally.Controller.IsEngaged && ai.InCommunicationWith(ally));
+      if (null == allies) return false; // intentionally unrealistically don't burn UI on automatic failure
+      if (!is_real) return true;
+      m_Known.Add(a);
+      void overheard_trap_instructions(Actor overhear) {
+        // The complexity of the instructions is roughly comparable to the plausibility of triggering the trap without help
+        // cf. Rules::CheckTrapTriggers (we intentionally allow a low plausibility even for 100% trigger chance)
+        if (!m_Known.Contains(overhear) && !RogueForm.Game.Rules.RollChance(TriggerChanceFor(overhear) + 1)) {
+          m_Known.Add(overhear);
+          if (overhear.Model.Abilities.HasSanity) overhear.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE / 15);
+        }
+      }
+
+      // \todo more informative questions
+      string question = "How to bypass?";
+      string answer = "Like this.";
+
+      // check for whether an ally is within chat range first
+      if (RogueForm.Game.DoBackgroundChat(a, allies, question, answer, overheard_trap_instructions)) return true;
+      // initiate contact w/ally re trap (ideally cellphone or radio needed)
+      // for now just do radios as cellphone needs a major rethinking -- we should be able to have them on w/o conflicting with other items
+      // one of the allies on the channel responds; *everyone* who hears both request and response has a chance of learning how to deal w/trap
+      // querent is guaranteed
+      // \todo reimplement/extend when either army radios or cellphone rewrite lands (police would prefer police radios, Nat guard prefers army radios, etc.)
 #if PROTOTYPE
-      if (null == m_Known) return false;
-      var allies = a.StrictAllies(ally => !ally.IsSleeping && !ally.Controller.IsEngaged && m_Known.Contains(ally));    // will be in communication due to radio, etc.
-      if (null == allies) return false;
-      foreach (var ally in allies) {
-        if (Rules.CHAT_RADIUS >= Rules.InteractionDistance(a.Location, ally.Location)) {
-          // in conversation range.
-          // \todo Everyone in conversation range can learn.
-          // \todo triggers general chat bonuses
-          m_Known.Add(a);
+      if (a.HasActivePoliceRadio) {
+        var radio_competent = allies.FindAll(ally => ally.HasActivePoliceRadio);
+        if (0< radio_competent.Count) {
+          RogueForm.Game.DoBackgroundPoliceRadioChat(a, radio_competent, question, answer, overheard_trap_instructions);    // \todo implement
           return true;
         }
       }
-      if (!is_real) return true;
-      // \todo: initiate contact w/ally re trap (ideally cellphone or radio needed)
-      // for now just do radios as cellphone needs a major rethinking
-      // one of the allies on the channel responds; *everyone* who hears both request and response has a chance of learning how to deal w/trap
-      // querent is guaranteed
 #endif
-      return false;
+      return true;
     }
+
+    public bool LearnHowToBypass(Actor a) { return WouldLearnHowToBypass(a, true); }
 
     // alpha10
     public int TriggerChanceFor(Actor a)
