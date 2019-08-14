@@ -8793,6 +8793,47 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+    public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Func<Actor, bool> msg_player_test, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    {
+      var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
+      if (0 >= radio_competent.Count) return false;
+      var target = Rules.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
+      var audience = new HashSet<Actor>();
+      var audience2 = new HashSet<Actor>(); 
+
+      int turnCounter = Session.Get.WorldTime.TurnCounter;
+      var msg_question = new Data.Message(string.Format("(police radio, {0}) {1}", speaker.Name, speaker_text), Session.Get.WorldTime.TurnCounter, Color.White);
+      var msg_answer = new Data.Message(string.Format("(police radio, {0}) {1}", target.Name, target_text), Session.Get.WorldTime.TurnCounter, Color.White);
+
+      void heard_question(Actor a) { audience.Add(a); }
+      void heard_answer(Actor a) { audience2.Add(a); }
+
+      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, a => {
+          AddMessage(msg_question);
+          heard_question(a);
+      }, a => {
+          (a.Controller as PlayerController).DeferMessage(msg_question);
+          heard_question(a);
+      }, msg_player_test);
+      target.MessageAllInDistrictByRadio(heard_answer, TRUE, a => {
+          AddMessage(msg_answer);
+          heard_answer(a);
+      }, a => {
+          (a.Controller as PlayerController).DeferMessage(msg_answer);
+          heard_answer(a);
+      }, msg_player_test);
+
+      // not nearly as sanity-restoring as proper chat, but worth something
+      if (speaker.Model.Abilities.HasSanity) speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+      if (target.Model.Abilities.HasSanity) target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+
+      // eavesdropping
+      foreach(var overhear in audience) {
+        if (overhear!=speaker && overhear!=target && audience2.Contains(overhear)) op(overhear);
+      }
+      return true;
+    }
+
     private bool DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
 #if OBSOLETE
@@ -10167,7 +10208,7 @@ namespace djack.RogueSurvivor.Engine
       if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.IsPlayer && !isMurder) {
         // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
         // also need to consider background thread to main thread issues
-            // possible verbs: killed, terminated, erased, downed, wasted.
+        // possible verbs: killed, terminated, erased, downed, wasted.
         var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
         killer.MessageAllInDistrictByRadio(NOP, FALSE, a => {
             AddMessage(msg);

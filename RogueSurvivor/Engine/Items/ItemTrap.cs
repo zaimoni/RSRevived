@@ -93,13 +93,13 @@ namespace djack.RogueSurvivor.Engine.Items
       return false;
     }
 
-    public bool WouldLearnHowToBypass(Actor a, bool is_real = false)
+    public bool WouldLearnHowToBypass(Actor a, Location? is_real = null)
     {
       var ai = a.Controller as Gameplay.AI.ObjectiveAI;
       if (null == ai) return false;
       var allies = a.FilterAllies(m_Known, ally => !ally.IsSleeping && !ally.Controller.IsEngaged && ai.InCommunicationWith(ally));
       if (null == allies) return false; // intentionally unrealistically don't burn UI on automatic failure
-      if (!is_real) return true;
+      if (null == is_real) return true;
       m_Known.Add(a);
       void overheard_trap_instructions(Actor overhear) {
         // The complexity of the instructions is roughly comparable to the plausibility of triggering the trap without help
@@ -110,9 +110,8 @@ namespace djack.RogueSurvivor.Engine.Items
         }
       }
 
-      // \todo more informative questions
-      string question = "How to bypass?";
-      string answer = "Like this.";
+      string question = "How do I bypass "+ TheName + " at "+is_real.Value+"?";
+      string answer = "That " + TheName + " is ....";
 
       // check for whether an ally is within chat range first
       if (RogueForm.Game.DoBackgroundChat(a, allies, question, answer, overheard_trap_instructions)) return true;
@@ -121,19 +120,13 @@ namespace djack.RogueSurvivor.Engine.Items
       // one of the allies on the channel responds; *everyone* who hears both request and response has a chance of learning how to deal w/trap
       // querent is guaranteed
       // \todo reimplement/extend when either army radios or cellphone rewrite lands (police would prefer police radios, Nat guard prefers army radios, etc.)
-#if PROTOTYPE
       if (a.HasActivePoliceRadio) {
-        var radio_competent = allies.FindAll(ally => ally.HasActivePoliceRadio);
-        if (0< radio_competent.Count) {
-          RogueForm.Game.DoBackgroundPoliceRadioChat(a, radio_competent, question, answer, overheard_trap_instructions);    // \todo implement
-          return true;
-        }
+        if (RogueForm.Game.DoBackgroundPoliceRadioChat(a, allies, question, answer, player => !m_Known.Contains(player), overheard_trap_instructions)) return true;
       }
-#endif
       return true;
     }
 
-    public bool LearnHowToBypass(Actor a) { return WouldLearnHowToBypass(a, true); }
+    public bool LearnHowToBypass(Actor a, Location loc) { return WouldLearnHowToBypass(a, loc); }
 
     // alpha10
     public int TriggerChanceFor(Actor a)
