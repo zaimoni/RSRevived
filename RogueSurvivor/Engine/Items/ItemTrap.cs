@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
-using System.Diagnostics.Contracts;
+using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -17,10 +17,11 @@ namespace djack.RogueSurvivor.Engine.Items
 
     private bool m_IsActivated;
     private bool m_IsTriggered;
-    Actor m_Owner;  // alpha10
+    private Actor m_Owner;  // alpha10
     // XXX we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
     // this allows the death of the trap-setter to not affect other group mates
     // this also allows overhearing the explanation via police radio to confer ability to pass
+    private List<Actor> m_Known;    // RS Revived
 
     // unclear whether current game logic allows a trap to be both activated and triggered at once.
     // leave getter/setter overhead in place in case these should be mutually exclusive.
@@ -38,6 +39,19 @@ namespace djack.RogueSurvivor.Engine.Items
         // cleanup dead owner reference
         if (m_Owner?.IsDead ?? false) m_Owner = null;
         return m_Owner;
+      }
+    }
+
+    public IEnumerable<Actor> KnownBy {
+      get {
+        if (null != m_Known) {
+          int i = m_Known.Count;
+          while(0 < i--) {
+            if (m_Known[i].IsDead) m_Known.RemoveAt(i);
+          }
+          if (0 >= m_Known.Count) m_Known = null;
+        }
+        return m_Known;
       }
     }
 
@@ -61,13 +75,28 @@ namespace djack.RogueSurvivor.Engine.Items
     public void Desactivate()
     {
       m_Owner = null;
+      m_Known = null;
       m_IsActivated = false;
+    }
+
+    public bool IsSafeFor(Actor a)  // alpha10 was Actor::IsSafeFrom
+    {
+      if (null != m_Known && m_Known.Contains(a)) return true;
+      if (null != m_Owner) {
+        if (a == m_Owner) return true;
+        if (a.IsInGroupWith(m_Owner)) { // XXX telepathy
+          var test = (m_Known ?? (m_Known = new List<Actor>()));
+          if (!test.Contains(a)) test.Add(a);
+          return true;
+        }
+      }
+      return false;
     }
 
     // alpha10
     public int TriggerChanceFor(Actor a)
     {
-      if (a.IsSafeFrom(this)) return 0;    // alpha 10.1: safe from trap, means safe from trap
+      if (IsSafeFor(a)) return 0;    // alpha 10.1: safe from trap, means safe from trap
 
       const int TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY = 30;
       const int TRAP_SMALL_ACTOR_AVOID_BONUS = 90;
@@ -89,6 +118,14 @@ namespace djack.RogueSurvivor.Engine.Items
 
       // cleanup dead owner ref
       if (m_Owner?.IsDead ?? false) m_Owner = null;
+
+      if (null != m_Known) {
+        int i = m_Known.Count;
+        while(0 < i--) {
+          if (m_Known[i].IsDead) m_Known.RemoveAt(i);
+        }
+        if (0 >= m_Known.Count) m_Known = null;
+      }
     }
   }
 }

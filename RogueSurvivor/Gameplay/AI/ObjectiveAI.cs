@@ -2900,7 +2900,7 @@ restart_single_exit:
         if (p.Location.Map!=m_Actor.Location.Map) continue; // XXX will be misrecorded
         List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
         if (null == tmp) continue;
-        int damage = tmp.Sum(trap => ((trap.IsActivated && !m_Actor.IsSafeFrom(trap)) ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
+        int damage = tmp.Sum(trap => ((trap.IsActivated && !trap.IsSafeFor(m_Actor)) ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
         if (0 >= damage) continue;
         if (damage_field.ContainsKey(p.Location.Position)) damage_field[p.Location.Position] += damage;
         else damage_field[p.Location.Position] = damage;

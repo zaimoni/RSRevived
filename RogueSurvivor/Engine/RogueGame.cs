@@ -7466,14 +7466,14 @@ namespace djack.RogueSurvivor.Engine
       if (tr.IsActivated) {
         lines.Add("** Activated! **");
         // alpha10
-        if (Player.IsSafeFrom(tr)) {
+        if (tr.IsSafeFor(Player)) {
           lines.Add("You will safely avoid this trap.");
           if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
         }
       } else if (tr.IsTriggered) {
         // alpha10
         lines.Add("** Triggered! **");
-        if (Player.IsSafeFrom(tr)) {
+        if (tr.IsSafeFor(Player)) {
           lines.Add("You will safely avoid this trap.");
           if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
         }
@@ -11889,13 +11889,13 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == trap) return "";
       if (trap.IsTriggered) {
-        if (trap.Owner == m_Player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
-        else if (Player.IsSafeFrom(trap)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
+        if (trap.Owner == Player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
+        else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
         return GameImages.ICON_TRAP_TRIGGERED;
       }
       if (trap.IsActivated) {
-        if (trap.Owner == m_Player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
-        else if (Player.IsSafeFrom(trap)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
+        if (trap.Owner == Player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
+        else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
         return GameImages.ICON_TRAP_ACTIVATED;
       }
       return "";

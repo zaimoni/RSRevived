@@ -1540,14 +1540,6 @@ namespace djack.RogueSurvivor.Data
       return m_Followers?.Contains(other) ?? false; // a follower?
     }
 
-    public bool IsSafeFrom(ItemTrap trap)  // alpha10
-    {
-      var owner = trap.Owner;
-      if (null == owner) return false;
-      if (this == owner) return true;
-      return IsInGroupWith(owner);
-    }
-
     // map-related, loosely
     public void RemoveFromMap()
     {
