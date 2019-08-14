@@ -7460,27 +7460,29 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemTrap(ItemTrap tr)
     {
-      var lines = new List<string>();
-      ItemTrapModel itemTrapModel = tr.Model;
-      lines.Add("> trap");
+      var lines = new List<string> { "> trap" };
+
+      // alpha10
+      void commentary() {
+        if (tr.IsSafeFor(Player)) {
+          lines.Add("You will safely avoid this trap.");
+          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
+        } else if (tr.WouldLearnHowToBypass(Player)) {
+          lines.Add("You would safely avoid this trap, with good advice.");
+        }
+      }
+
       if (tr.IsActivated) {
         lines.Add("** Activated! **");
-        // alpha10
-        if (tr.IsSafeFor(Player)) {
-          lines.Add("You will safely avoid this trap.");
-          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
-        }
+        commentary();
       } else if (tr.IsTriggered) {
-        // alpha10
         lines.Add("** Triggered! **");
-        if (tr.IsSafeFor(Player)) {
-          lines.Add("You will safely avoid this trap.");
-          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
-        }
+        commentary();
       }
       // alpha10
       lines.Add(string.Format("Trigger chance for you : {0}%.", tr.TriggerChanceFor(Player)));
 
+      ItemTrapModel itemTrapModel = tr.Model;
       if (itemTrapModel.IsOneTimeUse) lines.Add("Desactives when triggered.");
       if (itemTrapModel.IsNoisy) lines.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
       if (itemTrapModel.UseToActivate) lines.Add("Use to activate.");
