@@ -270,7 +270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         const int WANDER_RANDOM = 10;  // alpha10.1 much smaller random factor
 
         if (next == m_prevLocation) score += BACKTRACKING;
-        if (m_Actor.Model.Abilities.IsIntelligent && 0 < next.Map.TrapsMaxDamageAtFor(next.Position,m_Actor)) score += AVOID_TRAPS;
+        if (m_Actor.Model.Abilities.IsIntelligent && 0 < next.Map.TrapsUnavoidableMaxDamageAtFor(next.Position,m_Actor)) score += AVOID_TRAPS;
 
         // alpha10.1 prefer unexplored/oldest
         // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...

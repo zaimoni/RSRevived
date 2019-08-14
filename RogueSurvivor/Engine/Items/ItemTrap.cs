@@ -95,6 +95,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool WouldLearnHowToBypass(Actor a, Location? is_real = null)
     {
+      if (IsSafeFor(a)) return false;    // already safe
       var ai = a.Controller as Gameplay.AI.ObjectiveAI;
       if (null == ai) return false;
       var allies = a.FilterAllies(m_Known, ally => !ally.IsSleeping && !ally.Controller.IsEngaged && ai.InCommunicationWith(ally));

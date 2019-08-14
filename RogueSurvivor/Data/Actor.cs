@@ -3168,7 +3168,7 @@ namespace djack.RogueSurvivor.Data
         else if (!obj.IsMovable) return true; // would have to handle OnFire if that could happen
       }
       // e.g., inventory with both armed and unarmed bear traps
-      if (loc != Location && 2*loc.Map.TrapsMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
+      if (loc != Location && 2*loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
       return false;
     }
 

@@ -848,7 +848,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override int FastestTrapKill(Location loc)
     {
       if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage) return int.MaxValue;
-      int trapsMaxDamage = loc.Map.TrapsMaxDamageAtFor(loc.Position,m_Actor);
+      int trapsMaxDamage = loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,m_Actor);
       if (0 >= trapsMaxDamage) return int.MaxValue;
       return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
     }
@@ -1902,7 +1902,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // should be more careful about damaging traps
         Func<Point,Point,float> close_in = (ptA,ptB) => {
           if (ptA == ptB) return 0.0f;
-          if (0 < m_Actor.Location.Map.TrapsMaxDamageAtFor(ptA, m_Actor)) return float.NaN; // just cancel the move
+          if (0 < m_Actor.Location.Map.TrapsUnavoidableMaxDamageAtFor(ptA, m_Actor)) return float.NaN; // just cancel the move
           return (float)Rules.StdDistance(ptA, ptB);
         };
         var friends = friends_in_FOV;
@@ -2693,7 +2693,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
-        int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsMaxDamageAtFor(position,m_Actor) : 0;
+        int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsUnavoidableMaxDamageAtFor(position,m_Actor) : 0;
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;

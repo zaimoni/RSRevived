@@ -1409,6 +1409,17 @@ retry:
       return num;
     }
 
+    public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
+    {
+      if (a.Controller.IsEngaged) return TrapsMaxDamageAtFor(pos, a);
+      Inventory itemsAt = GetItemsAt(pos);
+      if (itemsAt == null) return 0;
+      int num = 0;
+      foreach (Item obj in itemsAt.Items) {
+        if (obj is Engine.Items.ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
+      }
+      return num;
+    }
 
     public void OpenAllGates()
     {

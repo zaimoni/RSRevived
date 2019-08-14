@@ -7746,6 +7746,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
+      // \todo possible micro-optimization from common tests behind these function calls
+      // sole caller has trap at victim's location
+      if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
+
       if (m_Rules.CheckTrapTriggers(trap, victim))
         DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim);
       else if (IsVisibleToPlayer(victim))
