@@ -143,9 +143,12 @@ namespace djack.RogueSurvivor.Data
     public abstract Dictionary<Location, Actor> enemies_in_FOV { get; }
     public virtual Dictionary<Location, Inventory> items_in_FOV { get { return null; } }
 
-    public virtual bool InCombat { get {
+    public virtual bool IsEngaged { get {
       return null!=enemies_in_FOV;
     } }
+
+    public virtual bool InCombat { get { return IsEngaged; } }
+
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>

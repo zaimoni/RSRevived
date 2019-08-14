@@ -1483,6 +1483,32 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    public HashSet<Actor> StrictAllies {
+      get {
+        var ret = new HashSet<Actor>();
+        // 1) police have all other police as allies.
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
+          Location radio_pos = Rules.PoliceRadioLocation(Location);
+          Engine.Session.Get.World.DoForAllMaps(m=> {
+              foreach(var a in m.Police.Get) {
+                if (a == this) continue;
+                Location other_radio_pos = Rules.PoliceRadioLocation(Location);
+                if (Engine.RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(radio_pos, other_radio_pos)) ret.Add(a); //  \todo change target for range reduction from being underground
+              }
+          });
+        }
+        if (0 >= ret.Count) return null;
+        // 2) leader/follower cliques are not "strict"
+        if (0 < CountFollowers) ret.ExceptWith(m_Followers);
+        var lead = LiveLeader;
+        if (null != lead) {
+          ret.Remove(lead);
+          ret.ExceptWith(lead.m_Followers);
+        }
+        return (0<ret.Count ? ret : null);
+      }
+    }
+
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
       get {

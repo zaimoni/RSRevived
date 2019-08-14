@@ -257,17 +257,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    public override bool InCombat { get {
-      if (base.InCombat) return true;
+    public override bool IsEngaged { get {
+      if (base.IsEngaged) return true;
       if (null != _enemies) return true;
+      return null!=Goal<Goal_Terminate>();
+    } }
 
+    public override bool InCombat { get {
+      if (IsEngaged) return true;   // inlining base.IsCombat
       var threats = m_Actor.Threats;
       if (null != threats) {
         if (threats.AnyThreatIn(m_Actor.Location.Map,m_Actor.Location.LocalView)) return true;
       }
 
-      return null!=Goal<Goal_Terminate>();
+      return false;
     } }
+
 
     public bool IsFocused { get {
       if (null!=Goal<Goal_NextAction>()) return true;

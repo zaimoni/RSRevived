@@ -90,6 +90,19 @@ namespace djack.RogueSurvivor.Engine.Items
           return true;
         }
       }
+#if PROTOTYPE
+      if (null != m_Known) {
+        var allies = a.StrictAllies;    // will be in communication due to radio, etc.
+        if (null != allies) {
+          allies.RemoveWhere(ally => ally.IsSleeping || ally.Controller.IsEngaged || !m_Known.Contains(ally));
+          if (0<allies.Count) {
+            if (!is_real) return true;
+            // \todo: initiate contact w/ally re trap
+            // one of the allies on the channel responds; *everyone* who hears the response has a chance of learning how to deal w/trap
+          }
+        }
+      }
+#endif
       return false;
     }
 
