@@ -8095,7 +8095,37 @@ namespace djack.RogueSurvivor.Engine
     {
       if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
+
+      if (aggressor.Model.Abilities.IsLawEnforcer && 0<target.MurdersOnRecord(aggressor)) {
+        var msg = new Data.Message(string.Format("(police radio, {0}) Executing {1} for murder.", aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_NORMAL_COLOR);
+        var officer_msg = new Data.Message(string.Format("(police radio, {0}) Executing {1} for murder.", aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR);
+        aggressor.MessageAllInDistrictByRadio(npc => {
+            target.RecordAggression(npc);
+        }, npc => {
+            if (npc == aggressor) return false;
+            if (npc == target) return false;
+            if (!npc.Model.Abilities.IsLawEnforcer) return false;
+            if (npc.IsInGroupWith(target)) return false;
+            if (npc.IsEnemyOf(target)) return false;
+            return true;
+        }, a => {
+          if (a.Model.Abilities.IsLawEnforcer && !a.IsInGroupWith(target) && !a.IsEnemyOf(target)) target.RecordAggression(a);
+          var danger = a.Model.Abilities.IsLawEnforcer || a.IsInGroupWith(target) || a.IsInGroupWith(aggressor);
+          AddMessage(danger ? officer_msg : msg);
+          if (danger) AddMessagePressEnter();
+        }, a => {
+          if (a.Model.Abilities.IsLawEnforcer && !a.IsInGroupWith(target) && !a.IsEnemyOf(target)) target.RecordAggression(a);
+          (a.Controller as PlayerController).DeferMessage((a.Model.Abilities.IsLawEnforcer || a.IsInGroupWith(target) || a.IsInGroupWith(aggressor)) ? officer_msg : msg);
+        }, player => {
+            if (player == aggressor) return false;
+            if (player == target) return false;
+            if (wasAlreadyEnemy && player.IsEnemyOf(target)) return false;
+            return true;
+        });
+      }
+
       aggressor.RecordAggression(target);
+
       // XXX \todo check for allies who witness this
       if (target.IsSleeping) return;
       if (!wasAlreadyEnemy) {
