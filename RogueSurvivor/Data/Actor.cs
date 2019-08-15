@@ -2455,26 +2455,19 @@ namespace djack.RogueSurvivor.Data
     }
 
     // sanity
-    public bool IsInsane {
-      get {
-        if (Model.Abilities.HasSanity) return m_Sanity <= 0;
-        return false;
-      }
-    }
-
+    public bool IsInsane { get { return Model.Abilities.HasSanity && 0 >= m_Sanity; } }
     public int MaxSanity { get { return Sheet.BaseSanity; } }
 
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
     {
-      if (!Model.Abilities.HasSanity) return;
-      m_Sanity -= sanCost;
-      if (m_Sanity < 0) m_Sanity = 0;
+      if (Model.Abilities.HasSanity) {
+        if (0 > (m_Sanity -= sanCost)) m_Sanity = 0;
+      }
     }
 
     public void RegenSanity(int sanRegen)   // \todo unclear whether ok to rely on guard clause
     {
-      if (!Model.Abilities.HasSanity) return;
-      m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
+      if (Model.Abilities.HasSanity) m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
 
     public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this); } }
