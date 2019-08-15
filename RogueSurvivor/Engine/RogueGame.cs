@@ -7704,13 +7704,16 @@ namespace djack.RogueSurvivor.Engine
       List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
       if (null == trapsAt) return;
       List<ItemTrap> trapList = null;
+      List<Actor> trap_owners = null;
       foreach (ItemTrap trap in trapsAt) {
+        var owner = trap.Owner;
         if (TryTriggerTrap(trap, actor)) {
+          if (null != owner) (trap_owners ?? (trap_owners = new List<Actor>())).Add(owner);
           (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
         }
       }
       map.RemoveAt(trapList, position);
-      if (0 >= actor.HitPoints) KillActor(null, actor, "trap");
+      if (0 >= actor.HitPoints) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
     }
 
     private bool TryActorLeaveTile(Actor actor)
