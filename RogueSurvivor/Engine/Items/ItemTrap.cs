@@ -147,6 +147,16 @@ namespace djack.RogueSurvivor.Engine.Items
       return baseChance - avoidBonus;
     }
 
+    public bool TriggeredBy(Actor a)
+    {
+      var chance = TriggerChanceFor(a);
+      if (RogueForm.Game.Rules.RollChance(chance)) return true;
+      if (0 < chance && a.Controller is Gameplay.AI.ObjectiveAI && a.Model.Abilities.CanUseItems) {
+        if (!RogueForm.Game.Rules.RollChance(chance)) m_Known.Add(a);   // learned, now safe
+      }
+      return false;
+    }
+
     // alpha10
     public override void OptimizeBeforeSaving()
     {

@@ -843,11 +843,6 @@ namespace djack.RogueSurvivor.Engine
       return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
     }
 
-    public bool CheckTrapTriggers(ItemTrap trap, Actor a)
-    {
-      return RollChance(trap.TriggerChanceFor(a));
-    }
-
     public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
     {
       int breakChance = trap.Model.BreakChance;

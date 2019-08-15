@@ -7752,7 +7752,7 @@ namespace djack.RogueSurvivor.Engine
       // sole caller has trap at victim's location
       if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
 
-      if (m_Rules.CheckTrapTriggers(trap, victim))
+      if (trap.TriggeredBy(victim))
         DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim);
       else if (IsVisibleToPlayer(victim))
         AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
