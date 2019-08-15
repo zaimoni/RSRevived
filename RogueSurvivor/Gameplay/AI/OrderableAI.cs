@@ -1638,43 +1638,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
-    protected void BehaviorUnequipLeftItem(RogueGame game)
-    {
-      Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (null != equippedItem) game.DoUnequipItem(m_Actor, equippedItem);
-    }
-
-    protected ItemLight GetLight()
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      ItemLight ret = null;
-      foreach(Item obj in m_Actor.Inventory.Items) { 
-        if (obj is ItemLight light && !light.IsUseless && (ret?.IsLessUsableThan(light) ?? true)) ret = light;
-      }
-      return ret;
-    }
-
     /// <returns>true if and only if light should be equipped</returns>
     protected bool BehaviorEquipLight()
     {
-      ItemLight tmp = GetLight();
-      if (null == tmp || !NeedsLight()) return false;
-      if (!tmp.IsEquipped /* && (m_Actor.CanEquip(tmp)  */) RogueForm.Game.DoEquipItem(m_Actor, tmp);
-      return true;
+      var light = m_Actor.Inventory.GetBestMatching<ItemLight>(it => !it.IsUseless,(lhs,rhs) => {
+          if (lhs.IsEquipped) return false;
+          if (rhs.IsEquipped) return true;
+          return lhs.IsLessUsableThan(rhs);
+      });
+      if (null == light) return false;
+      if (NeedsLight()) {
+        RogueForm.Game.DoEquipItem(m_Actor, light);
+        return true;
+      }
+      RogueForm.Game.DoUnequipItem(m_Actor, light);
+      return false;
     }
 
     /// <returns>true if and only if a cell phone is required to be equipped</returns>
     protected bool BehaviorEquipCellPhone(RogueGame game)
     {
-      bool wantCellPhone = m_Actor.NeedActiveCellPhone; // XXX could dial 911, at least while that desk is manned
-      if (!wantCellPhone) return false;
-      ItemTracker equippedCellPhone = m_Actor.GetEquippedCellPhone();
-      if (null != equippedCellPhone) return true;
-      ItemTracker firstTracker = m_Actor.Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
-      if (firstTracker != null /* && m_Actor.CanEquip(firstTracker) */) {
-        game.DoEquipItem(m_Actor, firstTracker);
+      var phone = m_Actor.Inventory.GetBestMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless, (lhs, rhs) => {
+          if (lhs.IsEquipped) return false;
+          if (rhs.IsEquipped) return true;
+          return lhs.Batteries>rhs.Batteries;
+      });
+      if (null == phone) return false;
+      if (m_Actor.NeedActiveCellPhone) {    // VAPORWARE could dial 911, at least while that desk is manned
+        game.DoEquipItem(m_Actor, phone);
         return true;
       }
+      game.DoUnequipItem(m_Actor, phone);
       return false;
     }
 
@@ -2756,18 +2750,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
     // with the new scent-suppressor mechaniics, the cutpoints are somewhat reasonable but extra distance/LoS breaking is needed
-    private bool IsGoodStenchKillerSpot(Map map, Point pos)
+    private bool IsGoodStenchKillerSpot(Location loc)
     {
 #if OBSOLETE
       if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
 #endif
       // 2. Spray in a good position:
       //    2.1 entering or leaving a building.
-      if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != map.IsInsideAt(pos)) return true;
+      if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != loc.Map.IsInsideAt(loc.Position)) return true;
       //    2.3 an exit.
-      if (map.HasExitAt(pos)) return true;
+      if (loc.Map.HasExitAt(loc.Position)) return true;
       //    2.2 a door/window.
-      return map.GetMapObjectAt(pos) is DoorWindow;
+      return loc.MapObject is DoorWindow;
     }
 
     protected ItemSprayScent GetEquippedStenchKiller()
@@ -2780,26 +2774,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      return m_Actor.Inventory.GetFirstMatching<ItemSprayScent>(fn);
-    }
-
     protected ActionSprayOdorSuppressor BehaviorUseStenchKiller()
     {
-      if (!(m_Actor.GetEquippedItem(DollPart.LEFT_HAND) is ItemSprayScent spray)) return null;
-      if (spray.IsUseless) return null;
       // alpha 10 redefined spray suppression to work on the odor source, not the odor
-      // if not proper odor, nope.
-      if (spray.Model.Odor != Odor.SUPPRESSOR) return null;
 
-      // first check if wants to use it on self, then check on adj leader/follower
+      // RS Revived: identify the least-charged stench killer.  Does not have to be equipped.
+      var spray = m_Actor.Inventory.GetBestMatching<ItemSprayScent>(it => !it.IsUseless && Odor.SUPPRESSOR == it.Model.Odor,
+                    (lhs,rhs) => lhs.SprayQuantity>rhs.SprayQuantity);
+      if (null == spray) return null;
+
+      const int USE_STENCH_KILLER_CHANCE = 75;
+      if (RogueForm.Game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {  // compromise between burning RNG and very high false negative rate
+      // first check if want to use it on self, then check on adj leader/follower
       Actor sprayOn = null;
 
       bool WantsToSprayOn(Actor a)
       {
-        // never spray on player, could mess with his tactics
+        // never spray on player, could mess with his tactics   \todo good use of a directive, if that wasn't obsolete
         if (a.IsPlayer) return false;
 
         // only if self or adjacent
@@ -2808,9 +2799,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // dont spray if already suppressed for 2h or more
         if (a.OdorSuppressorCounter >= 2 * WorldTime.TURNS_PER_HOUR) return false;
 
+        // RS Revived: If already suppressed, maintain it
+        // \todo be more flexible with the threshold once we have proper backward planning
+        if (0 < a.OdorSuppressorCounter) return true;
+
         // spot must be interesting to spray for either us or the target.
-        if (IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return true;
-        if (IsGoodStenchKillerSpot(a.Location.Map, a.Location.Position)) return true;
+        if (IsGoodStenchKillerSpot(m_Actor.Location)) return true;
+        if (IsGoodStenchKillerSpot(a.Location)) return true;
         return false;
       }
 
@@ -2818,40 +2813,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (WantsToSprayOn(m_Actor)) sprayOn = m_Actor;
       else {
         // ...adj leader/mates/followers
-        if (m_Actor.HasLeader) {
-          if (WantsToSprayOn(m_Actor.Leader)) sprayOn = m_Actor.Leader;
+        var leader = m_Actor.LiveLeader;
+        if (null != leader) {
+          if (WantsToSprayOn(leader)) sprayOn = leader;
           else {
-            foreach (Actor mate in m_Actor.Leader.Followers)
-              if (sprayOn == null && mate != m_Actor && WantsToSprayOn(mate))
+            foreach (Actor mate in leader.Followers)
+              if (mate != m_Actor && WantsToSprayOn(mate)) {
                 sprayOn = mate;
+                break;
+              }
           }
         }
 
         if (sprayOn == null && m_Actor.CountFollowers > 0) {
           foreach (Actor follower in m_Actor.Followers)
-            if (sprayOn == null && WantsToSprayOn(follower)) sprayOn = follower;
+            if (WantsToSprayOn(follower)) {
+              sprayOn = follower;
+              break;
+            }
         }
       }
 
       //  spray?
       if (sprayOn != null) {
-        ActionSprayOdorSuppressor sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
-        if (sprayIt.IsLegal()) return sprayIt;
+        RogueForm.Game.DoEquipItem(m_Actor,spray);
+        var sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
+        if (sprayIt.IsLegal()) return sprayIt;  // should be tautological given above
       }
+
+      }
+
+      var old_spray = GetEquippedStenchKiller();
+      if (null != old_spray) RogueForm.Game.DoUnequipItem(m_Actor,spray);
 
       return null;  // nope.
-    }
-
-    protected bool BehaviorEquipStenchKiller(RogueGame game)
-    {
-      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return false;
-      if (GetEquippedStenchKiller() != null) return true;
-      ItemSprayScent firstStenchKiller = GetFirstStenchKiller(it => !it.IsUseless);
-      if (firstStenchKiller != null /* && m_Actor.CanEquip(firstStenchKiller) */) {
-        game.DoEquipItem(m_Actor, firstStenchKiller);
-        return true;
-      }
-      return false;
     }
 #endregion
 

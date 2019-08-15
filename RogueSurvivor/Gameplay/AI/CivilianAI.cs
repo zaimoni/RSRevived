@@ -85,7 +85,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int TELL_FRIEND_ABOUT_ITEMS_CHANCE = 10;
     private const int TELL_FRIEND_ABOUT_SOLDIER_CHANCE = 20;
     private const int MIN_TURNS_SAFE_TO_SLEEP = 10;
-    private const int USE_STENCH_KILLER_CHANCE = 75;
     private const int HUNGRY_CHARGE_EMOTE_CHANCE = 50;
     private const int HUNGRY_PUSH_OBJECTS_CHANCE = 25;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
@@ -147,9 +146,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BehaviorEquipBestBodyArmor();
 
       // start item juggling
-      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {
-        BehaviorUnequipLeftItem(game);
-      }
+      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight()) {}
       // end extraction target: BehaviorEquipBestItems
 #if TIME_TURNS
       timer.Stop();
@@ -454,13 +451,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {    // civilian-specific
-        tmpAction = BehaviorUseStenchKiller();
+
+      tmpAction = BehaviorUseStenchKiller();    // civilian-specific
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using stench killer");
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using stench killer");
 #endif
-        if (null != tmpAction) return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
 
       bool? combat_unready = false;  // currently only matters for law enforcement
       if (m_Actor.Model.Abilities.IsLawEnforcer && !(combat_unready = CombatUnready()).Value) {

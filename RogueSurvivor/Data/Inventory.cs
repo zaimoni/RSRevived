@@ -476,6 +476,17 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public _T_ GetBestMatching<_T_>(Predicate<_T_> ok, Func<_T_, _T_, bool> lt) where _T_ : Item
+    {
+      _T_ ret = null;
+      foreach (Item obj in m_Items) {
+        if (obj is _T_ tmp && ok(tmp)) {
+          if (null == ret || lt(ret,tmp)) ret = tmp;
+        };
+      }
+      return ret;
+    }
+
     public void OptimizeBeforeSaving()  // alpha10
     {
       foreach (Item it in m_Items) it.OptimizeBeforeSaving();

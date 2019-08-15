@@ -73,9 +73,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BehaviorEquipBestBodyArmor();
 
       // start item juggling
-      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight()) {
-          BehaviorUnequipLeftItem(game);
-      }
+      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight()) {}
       // end item juggling check
 
       List<Percept> _all = FilterSameMap(UpdateSensors());
