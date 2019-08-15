@@ -544,7 +544,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MurdersOnRecord(Actor observer) {
       int circumstantial = MurdersInProgress;
-      if (observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
+      if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
       if (100 <= Rules.ActorUnsuspicousChance(observer, this)) return circumstantial;
       if (100 <= Rules.ActorSpotMurdererChance(observer, this)) return circumstantial;
       return m_MurdersCounter+ circumstantial;
