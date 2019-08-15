@@ -4072,7 +4072,7 @@ namespace djack.RogueSurvivor.Engine
       if (Player == null) return null;
       Inventory inventory = Player.Inventory;
       if (null == inventory) return null;
-      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
+      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
         inv = inventory;
@@ -4080,7 +4080,7 @@ namespace djack.RogueSurvivor.Engine
         return inventory[index1];
       }
       Inventory itemsAt = Player.Location.Items;
-      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
+      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2);
       if (itemsAt == null) return null;
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
@@ -4155,7 +4155,7 @@ namespace djack.RogueSurvivor.Engine
       if (Player == null) return null;
       List<Corpse> corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
       if (corpsesAt == null) return null;
-      var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
+      var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen);
       corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
       int index = inventorySlot.X + inventorySlot.Y * 10;
       if (index >= 0 && index < corpsesAt.Count) return corpsesAt[index];
@@ -12174,25 +12174,20 @@ namespace djack.RogueSurvivor.Engine
       return MapToScreen(tmp.Value.Position);
     }
 
-    private Point MouseToMap(GDI_Point mousePosition)
+    private Vector2D_int_stack LogicalPixel(GDI_Point mouse)   // does not belong in IRogueUI -- return type incompatible
     {
-      return MouseToMap(mousePosition.X, mousePosition.Y);
+      return new Vector2D_int_stack((int)(mouse.X / (double)m_UI.UI_GetCanvasScaleX()), (int)(mouse.Y / (double)m_UI.UI_GetCanvasScaleY()));
     }
 
-    private Vector2D_int_stack LogicalPixel(int mouseX, int mouseY)   // does not belong in IRogueUI -- return type incompatible
+    private Point MouseToMap(GDI_Point mouse)
     {
-      return new Vector2D_int_stack((int)(mouseX / (double)m_UI.UI_GetCanvasScaleX()), (int)(mouseY / (double)m_UI.UI_GetCanvasScaleY()));
-    }
-
-    private Point MouseToMap(int mouseX, int mouseY)
-    {
-      var logical = LogicalPixel(mouseX, mouseY) / TILE_SIZE;
+      var logical = LogicalPixel(mouse) / TILE_SIZE;
       return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
     }
 
-    private Vector2D_int_stack MouseToInventorySlot(int invX, int invY, int mouseX, int mouseY)
+    private Vector2D_int_stack MouseToInventorySlot(int invX, int invY, GDI_Point mouse)
     {
-      var logical = LogicalPixel(mouseX, mouseY);
+      var logical = LogicalPixel(mouse);
       logical -= new Vector2D_int_stack(invX,invY);
       return logical/ TILE_SIZE;
     }
