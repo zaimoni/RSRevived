@@ -6796,9 +6796,9 @@ namespace djack.RogueSurvivor.Engine
         } else
           lines.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
       }
-      if (actor.MurdersCounter > 0 && Player.Model.Abilities.IsLawEnforcer) {
+      if (Player.Model.Abilities.IsLawEnforcer && 0 < actor.MurdersOnRecord(Player)) {
         lines.Add("WANTED FOR MURDER!");
-        lines.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersCounter)));
+        lines.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersOnRecord(Player))));
       } else if (actor.HasLeader && actor.Leader.IsPlayer && actor.IsTrustingLeader) {
         lines.Add(actor.MurdersCounter > 0
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(actor.MurdersCounter))
@@ -10715,7 +10715,7 @@ namespace djack.RogueSurvivor.Engine
            && (null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
            // 3) must have in inventory: one of pistol or shotgun
            && (null != upgradeActor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != upgradeActor.GetItem(GameItems.IDs.RANGED_SHOTGUN))
-           // 4) must have committed no murders
+           // 4) must have committed no murders \todo once we have revamped the representation of crime, review this
            && 0 >= upgradeActor.MurdersCounter) {
         // then: y/n prompt, if y become cop
         AddMessage(MakeYesNoMessage("Become a cop"));

@@ -690,7 +690,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == killer) return false;
       if (null == victim) return false;
       if (victim.Model.Abilities.IsUndead) return false;
-      if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0) return false;
+      if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersOnRecord(killer) > 0) return false;
 #if POLICE_NO_QUESTIONS_ASKED
       if (killer.Model.Abilities.IsLawEnforcer && killer.Threats.IsThreat(victim)) return false;
 #endif

@@ -2078,7 +2078,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool decideToFlee = (null != legal_steps);
       if (decideToFlee) {
         if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
-        else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
+        else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersOnRecord(m_Actor) > 0)
           decideToFlee = false;
         else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
           decideToFlee = true;
@@ -2311,11 +2311,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var friends = friends_in_FOV;
       if (null == friends) return null;
       Dictionary<Location,Actor> murderers = null;
-      // \todo release block; next savegame; if either ActorUnsuspicousChance exceeds 100%, or ActorSpotMurdererChance is 0% or less, report
+      // if either ActorUnsuspicousChance exceeds 100%, or ActorSpotMurdererChance is 0% or less, report
       // the murders counter value as zero.  (This should not immunize against actually witnessing the murder, or murder in progress.)
       // this needs to affect the popup as well.  A murderer should not do an action that enables detection.
+      // \todo release block; next savegame; A murderer should not do an action that enables detection.
       foreach(var x in friends) {
-        if (0 >= x.Value.MurdersCounter) continue;
+        if (0 >= x.Value.MurdersOnRecord(m_Actor)) continue;
         (murderers ?? (murderers = new Dictionary<Location, Actor>()))[x.Key] = x.Value;
       }
       if (null == murderers) return null;
@@ -2323,19 +2324,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.RollChance(LAW_ENFORCE_CHANCE)) return null;  // \todo but should be 100% for hungry civilians attacking for food, that is in-progress
       friends = null;  // enable auto GC
       foreach(var x in murderers) {
-        if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, x.Value))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
+        if (0 >= x.Value.MurdersInProgress && game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, x.Value))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
         else (friends ?? new Dictionary<Location, Actor>())[x.Key] = x.Value;
       }
       if (null == friends) return null;
       // at this point, entries in friends are murderers that have elicited suspicion
       foreach(var x in friends) {
         game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", x.Value.Name));
-        if (!game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, x.Value))) continue;
+        if (0 >= x.Value.MurdersInProgress && !game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, x.Value))) continue;
         // XXX \todo V.0.10.0 this needs a rethinking (a well-armed murderer may be of more use killing z, a weak one should be assassinated)
         game.DoMakeAggression(m_Actor, x.Value);
         m_Actor.TargetActor = x.Value;
         // players are special: they get to react to this first
-        return new ActionSay(m_Actor, x.Value, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(x.Value.MurdersCounter).ToUpper()), (x.Value.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
+        return new ActionSay(m_Actor, x.Value, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(x.Value.MurdersOnRecord(m_Actor)).ToUpper()), (x.Value.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
       }
       return null;
     }

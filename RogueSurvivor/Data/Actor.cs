@@ -524,13 +524,30 @@ namespace djack.RogueSurvivor.Data
     public int CountSelfDefenceFrom { get { return m_SelfDefenceFrom?.Count ?? 0; } }
 #endif
 
-    public int MurdersCounter {
+    public int MurdersInProgress {
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
-        int planning_to_murder = 0;
-        if (IsHungry && !Model.Abilities.IsLawEnforcer) planning_to_murder = m_AggressorOf?.Count(a=> null != a?.Inventory.GetItemsByType<ItemFood>()) ?? 0;
-        return m_MurdersCounter+planning_to_murder;
+        int ret = 0;
+        if (null != m_AggressorOf) {
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.Inventory.GetItemsByType<ItemFood>());
+          if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
+        }
+        return ret;
       }
+    }
+
+    public int MurdersCounter {
+      get {
+        return m_MurdersCounter + MurdersInProgress;
+      }
+    }
+
+    public int MurdersOnRecord(Actor observer) {
+      int circumstantial = MurdersInProgress;
+      if (observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
+      if (100 <= Rules.ActorUnsuspicousChance(observer, this)) return circumstantial;
+      if (100 <= Rules.ActorSpotMurdererChance(observer, this)) return circumstantial;
+      return m_MurdersCounter+ circumstantial;
     }
 
     public void HasMurdered(Actor victim)
