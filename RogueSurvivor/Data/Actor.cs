@@ -2465,14 +2465,14 @@ namespace djack.RogueSurvivor.Data
     public int MaxSanity { get { return Sheet.BaseSanity; } }
 
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
-        {
+    {
       if (!Model.Abilities.HasSanity) return;
       m_Sanity -= sanCost;
       if (m_Sanity < 0) m_Sanity = 0;
     }
 
     public void RegenSanity(int sanRegen)   // \todo unclear whether ok to rely on guard clause
-        {
+    {
       if (!Model.Abilities.HasSanity) return;
       m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }

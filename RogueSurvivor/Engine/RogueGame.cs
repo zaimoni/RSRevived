@@ -10076,15 +10076,16 @@ namespace djack.RogueSurvivor.Engine
       Actor m_Player_bak = Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
+      var deadGuy_isUndead = new const_<bool>(deadGuy.Model.Abilities.IsUndead);
       // we could fold next two lines into above
       if (deadGuy.IsPlayer) deadGuy.Location.Map.Players.Recalc();
       if ((int)Gameplay.GameFactions.IDs.ThePolice == deadGuy.Faction.ID) deadGuy.Location.Map.Police.Recalc();
 
-      bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
+      var isMurder = new const_<bool>(Rules.IsMurder(killer, deadGuy));  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
       DoStopDragCorpse(deadGuy);
       deadGuy.Location.Items?.UntriggerAllTraps();
-      if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
+      if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
 
       var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
@@ -10150,93 +10151,97 @@ namespace djack.RogueSurvivor.Engine
         Session.Get.PoliceInvestigate.Record(deadGuy.Location.Map,deadGuy.Location.Position);  // cheating ai: police consider death drops tourism targets
       }
 
-      if (!deadGuy.Model.Abilities.IsUndead) SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
+      if (!deadGuy_isUndead.cache) {
+        SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
+        if (Session.Get.HasCorpses) DropCorpse(deadGuy);
+      }
 #if FAIL
       else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);
 #endif
-      if (Session.Get.HasCorpses && !deadGuy.Model.Abilities.IsUndead) DropCorpse(deadGuy);
-      killer?.RecordKill(deadGuy);
-      if (killer != null && Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
-        ActorModel actorModel = CheckUndeadEvolution(killer);
-        if (actorModel != null) {
-          SkillTable skillTable = null;
-          if (killer.Sheet.SkillTable?.Skills != null)
-            skillTable = new SkillTable(killer.Sheet.SkillTable);
-          killer.Model = actorModel;
-          killer.APreset(); // to avoid triggering a debug-mode crash
-          if (killer.IsPlayer) killer.PrepareForPlayerControl();
-          if (skillTable != null) {
-            foreach (var skill in skillTable.Skills) {
-              for (int index = 0; index < skill.Value; ++index) {
-                killer.SkillUpgrade(skill.Key);
+
+      if (null != killer) {
+        killer.RecordKill(deadGuy);
+        if (Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
+          ActorModel actorModel = CheckUndeadEvolution(killer);
+          if (actorModel != null) {
+            // don't need value-copy here due to how the model assignment works
+            SkillTable skillTable = (null != killer.Sheet.SkillTable?.Skills) ? killer.Sheet.SkillTable : null;
+            killer.Model = actorModel;
+            killer.APreset(); // to avoid triggering a debug-mode crash
+            if (killer.IsPlayer) killer.PrepareForPlayerControl();
+            if (skillTable != null) {
+              foreach (var skill in skillTable.Skills) {
+                for (int index = 0; index < skill.Value; ++index) {
+                  killer.SkillUpgrade(skill.Key);
+                }
               }
+              killer.RecomputeStartingStats();
             }
-            killer.RecomputeStartingStats();
-          }
-          if (ForceVisibleToPlayer(killer)) {
-            AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-            AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)));
-            RedrawPlayScreen();
-            AnimDelay(DELAY_LONG);
-            ClearOverlays();
-          }
-        }
-      }
-      if (killer != null && killer.CountFollowers > 0) {
-        foreach (Actor follower in killer.Followers) {
-          if (follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) {
-            DoSay(follower, killer, "That was close! Thanks for the help!!", RogueGame.Sayflags.IS_FREE_ACTION);
-            ModifyActorTrustInLeader(follower, Rules.TRUST_LEADER_KILL_ENEMY, true);
+            if (ForceVisibleToPlayer(killer)) {
+              AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
+              AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)));
+              RedrawPlayScreen();
+              AnimDelay(DELAY_LONG);
+              ClearOverlays();
+            }
           }
         }
-      }
-      if (killer != null && isMurder) {
-        killer.HasMurdered(deadGuy);
-        if (IsVisibleToPlayer(killer))
-          AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
-
-        PropagateSight(killer.Location, null, a => {
-          if (a.Model.Abilities.IsLawEnforcer && a != killer && a.Leader != killer && killer.Leader != a) {
-            DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
-            DoMakeAggression(a, killer);
+        if (killer.CountFollowers > 0) {
+          foreach (Actor follower in killer.Followers) {
+            if ((follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) {
+              DoSay(follower, killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
+              ModifyActorTrustInLeader(follower, Rules.TRUST_LEADER_KILL_ENEMY, true);
+            }
           }
-        }, TRUE);   // Action<Actor> doFn
-      }
+        }
+        if (isMurder.cache) {
+          killer.HasMurdered(deadGuy);
+          if (IsVisibleToPlayer(killer)) AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
 
-      if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
-         if (killer.IsPlayer)
-           AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
-         else
-           DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
-      }
+          PropagateSight(killer.Location, null, a => {
+            if (a.Model.Abilities.IsLawEnforcer && a != killer && a.Leader != killer && killer.Leader != a) {
+              DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+              DoMakeAggression(a, killer);
+            }
+          }, TRUE);   // Action<Actor> doFn
+        }
+        if (killer.Model.Abilities.IsLawEnforcer) {
+          if (!killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
+            if (killer.IsPlayer)
+              AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
+            else
+              DoSay(killer, deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+          }
 
-      // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
-      if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.IsPlayer && !isMurder) {
-        // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
-        // also need to consider background thread to main thread issues
-        // possible verbs: killed, terminated, erased, downed, wasted.
-        var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
-        killer.MessageAllInDistrictByRadio(NOP, FALSE, a => {
-            AddMessage(msg);
-        }, a => {
-            (a.Controller as PlayerController).DeferMessage(msg);
-        }, TRUE);
+          // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
+          if (!killer.IsPlayer && !isMurder.cache) {
+            // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
+            // also need to consider background thread to main thread issues
+            // possible verbs: killed, terminated, erased, downed, wasted.
+            var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
+            killer.MessageAllInDistrictByRadio(NOP, FALSE, a => {
+              AddMessage(msg);
+            }, a => {
+              (a.Controller as PlayerController).DeferMessage(msg);
+            }, TRUE);
+          }
+        }
+
+        // achievement: killing the Sewers Thing
+        // XXX \todo this achievement is newsworthy.
+        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
+          ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
+          var hero_team = killer.ChainOfCommand;
+          if (null != hero_team && killer.Controller is ObjectiveAI ai) {
+            foreach (Actor a in hero_team) {
+              if (!ai.InCommunicationWith(a) && killer.LiveLeader != a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
+              ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
+            }
+          }
+        }
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
-
-      // achievement: killing the Sewers Thing
-      // XXX \todo this achievement is newsworthy.
-      if (null != killer && deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
-        ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
-        var hero_team = killer.ChainOfCommand;
-        if (null != hero_team && killer.Controller is ObjectiveAI ai) {
-          foreach(Actor a in hero_team) {
-            if (!ai.InCommunicationWith(a) && killer.LiveLeader!=a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
-            ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
-          }
-        }
-      }
 
       if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
         // this may need to be multi-thread aware

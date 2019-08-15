@@ -877,4 +877,15 @@ namespace Zaimoni.Data
     public static bool FALSE<T>(T x) { return false; }
     public static T IDENTITY<T>(T x) { return x; }
   }
+
+  // const correctness hack
+  public readonly ref struct const_<T> where T:struct
+  {
+    public readonly T cache;
+
+    public const_(T src) {
+      cache = src;
+    }
+  }
+
 }   // Zaimoni.Data

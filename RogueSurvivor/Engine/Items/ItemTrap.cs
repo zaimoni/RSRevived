@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
     private bool m_IsActivated;
     private bool m_IsTriggered;
     private Actor m_Owner;  // alpha10
-    // XXX we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
+    // we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
     // this allows the death of the trap-setter to not affect other group mates
     // this also allows overhearing the explanation via police radio to confer ability to pass
     private List<Actor> m_Known;    // RS Revived
