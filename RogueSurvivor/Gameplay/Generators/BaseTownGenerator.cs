@@ -3596,8 +3596,7 @@ restart:
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).instantiate();
       numberedName.Inventory.AddAll(rw);
       numberedName.Inventory.AddAll(MakeAmmo(rw.Model.ID));
-      rw.Equip();
-      numberedName.OnEquipItem(rw);
+      numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it
       if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.instantiate());
@@ -3606,8 +3605,7 @@ restart:
       if (m_DiceRoller.RollChance(50)) {
         var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).instantiate();
         numberedName.Inventory.AddAll(armor);
-        armor.Equip();
-        numberedName.OnEquipItem(armor);
+        numberedName.Equip(armor);
       }
       if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
         numberedName.Controller = new PlayerController();

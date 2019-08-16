@@ -3458,18 +3458,19 @@ namespace djack.RogueSurvivor.Data
     }
 
     // event handlers
-    public void OnEquipItem(Item it)
+    public void Equip(Item it)
     {
-      if (it.Model is ItemMeleeWeaponModel) {
-        m_CurrentMeleeAttack = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet);
+      it.Equip();
+      if (it.Model is ItemMeleeWeaponModel melee) {
+        m_CurrentMeleeAttack = melee.BaseMeleeAttack(Sheet);
         return;
       }
-      if (it.Model is ItemRangedWeaponModel) {
-        m_CurrentRangedAttack = (it.Model as ItemRangedWeaponModel).Attack;   // value-copy due to struct Attack
+      if (it.Model is ItemRangedWeaponModel rw) {
+        m_CurrentRangedAttack = rw.Attack;   // value-copy due to struct Attack
         return;
       }
-      if (it.Model is ItemBodyArmorModel) {
-        m_CurrentDefence += (it.Model as ItemBodyArmorModel).ToDefence();
+      if (it.Model is ItemBodyArmorModel armor) {
+        m_CurrentDefence += armor.ToDefence();
         return;
       }
       if (it is BatteryPowered powered) {

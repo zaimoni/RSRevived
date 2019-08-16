@@ -9387,8 +9387,7 @@ namespace djack.RogueSurvivor.Engine
       if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
-      it.Equip();
-      actor.OnEquipItem(it);
+      actor.Equip(it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
