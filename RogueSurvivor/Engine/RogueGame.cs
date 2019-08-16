@@ -9381,6 +9381,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEquipItem(Actor actor, Item it)
     {
+#if CPU_HOG
+      if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
+#endif
       if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
@@ -9396,9 +9399,14 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
     {
-      it.Unequip();
-      actor.OnUnequipItem(it);
-      if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
+#if CPU_HOG
+      if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
+#endif
+      if (it.IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
+        it.Unequip();
+        actor.OnUnequipItem(it);
+        if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
+      }
     }
 
     public void DoDropItem(Actor actor, Item it)
