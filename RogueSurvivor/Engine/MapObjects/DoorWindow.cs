@@ -96,10 +96,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanBarricade()
-    {
-      return string.IsNullOrEmpty(ReasonCantBarricade());
-    }
+    public bool CanBarricade() { return string.IsNullOrEmpty(ReasonCantBarricade()); }
 
     override protected string StateToID(int x)
     {
@@ -111,17 +108,16 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     private void _SetState(int newState)
     { // cf IsTransparent
-      if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
+      var old_vis = IsTransparent;
       base.SetState(newState);
       if (STATE_BROKEN == State) {
           _break();
           m_BarricadePoints = 0;
       }
+      if (old_vis != IsTransparent) InvalidateLOS();
     }
 
-    public override void SetState(int newState) {
-      _SetState(newState);
-    }
+    public override void SetState(int newState) { _SetState(newState); }
 
     protected override void _destroy()
     {
