@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine.Items
       var chance = TriggerChanceFor(a);
       if (RogueForm.Game.Rules.RollChance(chance)) return true;
       if (0 < chance && a.Controller is Gameplay.AI.ObjectiveAI && a.Model.Abilities.CanUseItems) {
-        if (!RogueForm.Game.Rules.RollChance(chance)) m_Known.Add(a);   // learned, now safe
+        if (!RogueForm.Game.Rules.RollChance(chance)) (m_Known ?? (m_Known = new List<Actor>())).Add(a);   // learned, now safe
       }
       return false;
     }

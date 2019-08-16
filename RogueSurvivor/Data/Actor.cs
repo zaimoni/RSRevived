@@ -1563,7 +1563,7 @@ namespace djack.RogueSurvivor.Data
           if (!IsAlly(a)) continue;
           if (null==test || test(a)) (ret ?? (ret = new List<Actor>(src.Count()))).Add(a);
         }
-        return 0<ret.Count ? ret : null;
+        return ret;
     }
 
     // map-related, loosely
