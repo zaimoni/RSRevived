@@ -243,6 +243,7 @@ namespace djack.RogueSurvivor.Engine
     private const int MESSAGES_FADEOUT = 25;
     private const int MAX_MESSAGES = 7;
     private const int MESSAGES_HISTORY = 59;
+    private const int MESSAGES_LINE_LENGTH = 91;    // in characters (empirical constant rather than measured)
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
     private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
@@ -420,7 +421,7 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager.Add(msg);
     }
 
-    private void AddMessages(IEnumerable<Data.Message> msgs)
+    public void AddMessages(IEnumerable<Data.Message> msgs)
     {
       foreach(var msg in msgs) m_MessageManager.Add(msg);
     }
@@ -8839,26 +8840,64 @@ namespace djack.RogueSurvivor.Engine
       var audience2 = new HashSet<Actor>(); 
 
       var turnCounter = Session.Get.WorldTime.TurnCounter;
-      var msg_question = new Data.Message(string.Format("(police radio, {0}) {1}", speaker.Name, speaker_text), turnCounter, Color.White);
-      var msg_answer = new Data.Message(string.Format("(police radio, {0}) {1}", target.Name, target_text), turnCounter, Color.White);
+      List<Data.Message> format_msg(string src) {
+        var ret = new List<Data.Message>();
+        string trail = string.Empty;
+        while(MESSAGES_LINE_LENGTH < src.Length) {
+          int split = src.LastIndexOf(' ');
+          if (-1<split) {
+            trail = src.Substring(split+1);
+            src = src.Substring(0, split);
+            ret.Add(new Data.Message(src, turnCounter, Color.White));
+            src = "  "+trail;
+          }
+        }
+        ret.Add(new Data.Message(src, turnCounter, Color.White));
+        return ret;
+      }
+
+      var msg_question = format_msg(string.Format("(police radio, {0}) {1}", speaker.Name, speaker_text));
+      var msg_answer = format_msg(string.Format("(police radio, {0}) {1}", target.Name, target_text));
+      var is_player_turn = (0 < Player.ActionPoints);
+      var speaker_is_player = (speaker == Player);
+      var target_is_player = (target == Player);
+      var send_question = speaker.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : null;
+      var send_answer = target.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", target.Name, target_text)) : null;
 
       void heard_question(Actor a) { audience.Add(a); }
       void heard_answer(Actor a) { audience2.Add(a); }
+      void PC_message(Actor a, List<Data.Message> msgs) {
+        if (is_player_turn) {
+          if (   (speaker_is_player && a == speaker)
+              || (target_is_player && a == target)) {
+            AddMessages(msgs);
+            return;
+          }
+        }
+        (a.Controller as PlayerController).DeferMessages(msgs);
+      }
 
-      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, a => {
-          AddMessage(msg_question);
-          heard_question(a);
-      }, a => {
-          (a.Controller as PlayerController).DeferMessage(msg_question);
-          heard_question(a);
-      }, msg_player_test);
-      target.MessageAllInDistrictByRadio(heard_answer, TRUE, a => {
-          AddMessage(msg_answer);
-          heard_answer(a);
-      }, a => {
-          (a.Controller as PlayerController).DeferMessage(msg_answer);
-          heard_answer(a);
-      }, msg_player_test);
+      void PC_hear_question(Actor a) {
+        if (a==speaker) PC_message(a,send_question);
+        else PC_message(a,msg_question);
+      }
+      void PC_heard_question(Actor a) {
+        PC_hear_question(a);
+        heard_question(a);
+      }
+      void PC_hear_answer(Actor a) {
+        if (a==target) PC_message(a,send_answer);
+        else PC_message(a, msg_answer);
+      }
+      void PC_heard_answer(Actor a) {
+        PC_hear_answer(a);
+        heard_answer(a);
+      }
+
+      if (speaker.IsPlayer) PC_hear_question(speaker);
+      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, msg_player_test);
+      if (target.IsPlayer) PC_hear_answer(target);
+      target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, msg_player_test);
 
       // not nearly as sanity-restoring as proper chat, but worth something
       speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
@@ -8868,6 +8907,18 @@ namespace djack.RogueSurvivor.Engine
       foreach(var overhear in audience) {
         if (overhear!=speaker && overhear!=target && audience2.Contains(overhear)) op(overhear);
       }
+      // flush deferred reply now
+      void flush_messages(Actor pc) {
+        var deferredMessages = (pc.Controller as PlayerController).ReleaseMessages();
+        if (null != deferredMessages) { // should be non-null by construction
+          SetCurrentMap(pc.Location);
+          AddMessages(deferredMessages);
+          RedrawPlayScreen();
+        }
+      }
+
+      if (speaker.IsPlayer && (!is_player_turn || !speaker_is_player)) flush_messages(speaker);
+      if (target.IsPlayer && (!is_player_turn || !target_is_player)) flush_messages(target);
       return true;
     }
 
