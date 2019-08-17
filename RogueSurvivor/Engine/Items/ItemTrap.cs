@@ -96,6 +96,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool WouldLearnHowToBypass(Actor a, Location? is_real = null)
     {
       if (IsSafeFor(a)) return false;    // already safe
+      if (0 >= Model.Damage) return false;  // mostly harmless
       var ai = a.Controller as Gameplay.AI.ObjectiveAI;
       if (null == ai) return false;
 

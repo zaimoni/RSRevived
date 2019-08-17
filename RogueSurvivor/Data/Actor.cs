@@ -1505,7 +1505,7 @@ namespace djack.RogueSurvivor.Data
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = Engine.Session.Get.World.PoliceInRadioRange(Location);
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
         if (HasLeader) {    // 2019-08-14: currently mutually exclusive with above for NPCs
