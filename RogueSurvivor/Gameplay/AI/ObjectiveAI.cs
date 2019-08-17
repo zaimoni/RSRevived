@@ -819,7 +819,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              return alt_act;
           }
           if (null != _current_goals && !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
-#if DEBUG
+#if DETECT_PERIOD_2_MOVE_LOOP
           else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
       }
@@ -846,7 +846,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              return alt_act;
           }
           if (null == _current_goals || !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
-#if DEBUG
+#if DETECT_PERIOD_2_MOVE_LOOP
           else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
 #endif
       }
@@ -2501,7 +2501,7 @@ restart:
               altered = true;
             }
           }
-#if DEBUG
+#if DETECT_PERIOD_2_MOVE_LOOP
           if (null != test && test.dest == _last_move.origin) {
             bool backtrack_ok = false;
             if (act is ActionUseExit) {
