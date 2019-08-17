@@ -3379,6 +3379,14 @@ restart_single_exit:
       return 1;
     } }
 
+    public int WantRestoreSLP { get {   // arguably should be over at Actor
+      if (!m_Actor.Model.Abilities.HasToSleep) return 0;
+      var hours_to_zzz = m_Actor.HoursUntilSleepy;
+      if (3 >= hours_to_zzz) return 3;  // inlining Actor::IsAlmostSleepy
+      if (6 >= hours_to_zzz) return 2;
+      return 1;
+    } }
+
     private int ItemRatingCode(ItemEntertainment it)
     {
       if (!m_Actor.Inventory.Contains(it) && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
@@ -3401,6 +3409,10 @@ restart_single_exit:
       if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
       if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
         var rating = WantRestoreSAN;
+        if (1!=rating) return rating;
+      }
+      if (0 < it.SleepBoost) {
+        var rating = WantRestoreSLP;
         if (1!=rating) return rating;
       }
       return 1;
