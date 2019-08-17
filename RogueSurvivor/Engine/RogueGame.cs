@@ -10639,50 +10639,48 @@ namespace djack.RogueSurvivor.Engine
       HandleHiScores(true);
     }
 
+    private void HandleNewNight(Actor victor)
+    {
+      if (!victor.Model.Abilities.IsUndead) return;
+	  // Proboards leonelhenry: PC should be on the same options as undead
+	  if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, victor.Location.Map.LocalTime.Day)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(victor.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(victor.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(victor.Model)) return;
+      if (victor.IsPlayer) {
+        var msg_alive = new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green);
+        var msg_welcome = new Data.Message("Welcome to the night.", Session.Get.WorldTime.TurnCounter, Color.White);
+        if (IsSimulating || victor!=Player) {
+          var player = victor.Controller as PlayerController;
+          player.DeferMessage(msg_alive);
+          player.DeferMessage(msg_welcome);
+        } else {
+          ClearOverlays();
+          AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+          m_MusicManager.Stop();
+          m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+          ClearMessages();
+          AddMessage(msg_alive);
+          Player.Controller.UpdateSensors();
+          AddMessagePressEnter();
+//        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
+          ClearMessages();
+          AddMessage(msg_welcome);
+          ClearOverlays();
+          RedrawPlayScreen();
+          m_MusicManager.Stop();
+        }
+      }
+    }
+
     private void OnNewNight()
     {
-      Player.Controller.UpdateSensors();
-      if (!Player.Model.Abilities.IsUndead) return;
-	  // Proboards leonelhenry: PC should be on the same options as undead
-	  if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, Player.Location.Map.LocalTime.Day)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(Player.Model)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(Player.Model)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(Player.Model)) return;
-      ClearOverlays();
-      AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      m_MusicManager.Stop();
-      m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-      ClearMessages();
-      AddMessage(new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green));
-      Player.Controller.UpdateSensors();
-      AddMessagePressEnter();
-//    HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
-      ClearMessages();
-      AddMessage(new Data.Message("Welcome to the night.", Session.Get.WorldTime.TurnCounter, Color.White));
-      ClearOverlays();
-      RedrawPlayScreen();
-      m_MusicManager.Stop();
+      Session.Get.World.DoForAllActors(a => HandleNewNight(a));
     }
 
     private void OnNewDay()
     {
-      if (!Player.Model.Abilities.IsUndead) {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        m_MusicManager.Stop();
-        m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green));
-        Player.Controller.UpdateSensors();
-        AddMessagePressEnter();
-//      HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
-        ClearMessages();
-        AddMessage(new Data.Message("Welcome to tomorrow.", Session.Get.WorldTime.TurnCounter, Color.White));
-        ClearOverlays();
-        RedrawPlayScreen();
-        m_MusicManager.Stop();
-      }
-      Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));
+      Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));   // XXX reasonable name HandleNewDay
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
@@ -13391,9 +13389,7 @@ namespace djack.RogueSurvivor.Engine
       string name = achievement.Name;
       victor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
       if (!victor.IsPlayer) return;
-      string musicId = achievement.MusicID;
       string[] text = achievement.Text;
-      m_MusicManager.PlayLooping(musicId, MusicPriority.PRIORITY_EVENT);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
       var stringList = new List<string>(text.Length + 3 + 2){
         str,
@@ -13403,14 +13399,44 @@ namespace djack.RogueSurvivor.Engine
       stringList.AddRange(text);
       stringList.Add(string.Format("Achievements : {0}/{1}.", victor.ActorScoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
       stringList.Add(str);
-      AddOverlay(new OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
-      ClearMessages();
-      AddMessagePressEnter();
-      ClearOverlays();
+      if (IsSimulating || victor!=Player) {
+        var player = victor.Controller as PlayerController;
+        foreach(var msg in stringList) player.DeferMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Gold));
+      } else {
+        m_MusicManager.PlayLooping(achievement.MusicID, MusicPriority.PRIORITY_EVENT);
+        AddOverlay(new OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
+        ClearMessages();
+        AddMessagePressEnter();
+        ClearOverlays();
+      }
     }
 
     private void StayingAliveAchievements(Actor victor) {
       if (victor.Model.Abilities.IsUndead) return;
+      if (victor.IsPlayer) {
+        var msg_alive = new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green);
+        var msg_welcome = new Data.Message("Welcome to tomorrow.", Session.Get.WorldTime.TurnCounter, Color.White);
+        if (IsSimulating || victor!=Player) {
+          var player = victor.Controller as PlayerController;
+          player.DeferMessage(msg_alive);
+          player.DeferMessage(msg_welcome);
+        } else {
+          ClearOverlays();
+          AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+          m_MusicManager.Stop();
+          m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+          ClearMessages();
+          AddMessage(msg_alive);
+          victor.Controller.UpdateSensors();
+          AddMessagePressEnter();
+//        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
+          ClearMessages();
+          AddMessage(msg_welcome);
+          ClearOverlays();
+          RedrawPlayScreen();
+          m_MusicManager.Stop();
+        }
+      }
       int origin = new WorldTime(victor.SpawnTime).Day;
       int now = Session.Get.WorldTime.Day;
       // XXX \todo these are notable achievements
