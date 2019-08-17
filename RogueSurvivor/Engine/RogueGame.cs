@@ -12067,11 +12067,13 @@ namespace djack.RogueSurvivor.Engine
       if (trap.IsTriggered) {
         if (trap.Owner == Player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
         else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
+        else if (trap.WouldLearnHowToBypass(Player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
         return GameImages.ICON_TRAP_TRIGGERED;
       }
       if (trap.IsActivated) {
         if (trap.Owner == Player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
         else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
+        else if (trap.WouldLearnHowToBypass(Player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
         return GameImages.ICON_TRAP_ACTIVATED;
       }
       return "";
