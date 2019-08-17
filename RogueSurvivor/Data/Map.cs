@@ -2683,7 +2683,7 @@ retry:
             } else if (MapObject.IDs.LARGE_FORTIFICATION == tmp_obj.ID) {
               ascii_map[y][x] = large_fortification_symbol;
             } else if (MapObject.IDs.CHAR_POWER_GENERATOR == tmp_obj.ID) {
-              ascii_map[y][x] = power_symbol;
+              ascii_map[y][x] = ((tmp_obj as Engine.MapObjects.PowerGenerator).IsOn ? "<span class='power' style='background:green'>" : "<span class='power' style='background:red'>") +power_symbol+" </span>";
             } else if (MapObject.IDs.IRON_GATE_CLOSED == tmp_obj.ID) {
               ascii_map[y][x] = closed_gate;
             } else if (MapObject.IDs.IRON_FENCE == tmp_obj.ID || MapObject.IDs.WIRE_FENCE == tmp_obj.ID) {

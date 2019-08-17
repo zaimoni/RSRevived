@@ -226,6 +226,7 @@ namespace djack.RogueSurvivor.Data
       dest.WriteLine("pre {font-family: 'Courier New', monospace; font-size:15px}");
       dest.WriteLine(".inv {font-size:11px}");
       dest.WriteLine(".car {font-size:7px}");
+      dest.WriteLine(".power {font-size:8px}");
       dest.WriteLine(".lfort {font-size:11px}");
       dest.WriteLine(".chair {font-size:17px}");
       dest.WriteLine("-->\n</style>");
