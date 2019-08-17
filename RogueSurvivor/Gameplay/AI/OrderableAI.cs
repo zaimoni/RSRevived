@@ -3259,7 +3259,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // could happen in normal play in the sewers
             // under is handled within the Behavior functions
 #if TRACE_SELECTACTION
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+" has abandoned getting the items at "+ percept.Key);
 #endif
             stacks.Remove(percept.Key);
             percept = FilterNearest(stacks);

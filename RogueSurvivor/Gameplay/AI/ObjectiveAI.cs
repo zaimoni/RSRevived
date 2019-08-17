@@ -3422,6 +3422,7 @@ restart_single_exit:
       if (null == best_rating) return 2;  // martial arts invalidates starting baton for police
       if (best_rating < rating) return 2;
       if (best_rating > rating) return 1;
+      if (melee == m_Actor.GetBestMeleeWeapon()) return 2;
       int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
       if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
@@ -4679,7 +4680,7 @@ restart_single_exit:
     }
 
     /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
-    static public bool InventoryTradeVeto(Item mine, Item theirs)
+    public bool InventoryTradeVeto(Item mine, Item theirs)
     {
       switch(mine.Model.ID)
       {
@@ -4706,6 +4707,16 @@ restart_single_exit:
         if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
         break;
       }
+      // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
+      // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
+      if (mine is ItemAmmo am) {
+        var already_have = m_Actor.Count(am.Model);
+        if (1 <= already_have) {
+          if (theirs is ItemMeleeWeapon melee && melee==m_Actor.GetBestMeleeWeapon()) return true;
+          // could need to test for food as well, but no test case (yet)
+        }
+      }
+
       return false;
     }
 
