@@ -825,6 +825,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
     protected Percept m_LastRaidHeard;
+    [NonSerialized] protected List<Actor> _adjacent_friends;    // cache variable for above four
     protected bool m_ReachedPatrolPoint;
     protected int m_ReportStage;
 
@@ -1747,20 +1748,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else throw new InvalidOperationException("unhandled percept.Percepted type");
     }
 
-    protected ActorAction BehaviorTellFriendAboutPercept(RogueGame game, Percept percept)
+    protected ActorAction BehaviorTellFriendAboutPercept(Percept percept, int chance)
     {
-      Map map = m_Actor.Location.Map;
-      Dictionary<Point,Actor> friends = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        Actor a = m.GetActorAtExt(pt);
-        return (null == a || a.IsSleeping || m_Actor.IsEnemyOf(a)) ? null : a;
-      });
-      if (0 >= friends.Count) return null;
-      Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(friends).Value;
-      string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
-      string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+      var scan_friends = friends_in_FOV;
+      if (null == scan_friends) return null;
+      if (null == _adjacent_friends) {
+        _adjacent_friends = new List<Actor>();
+        foreach(var x in scan_friends) {
+          if (!(x.Value.Controller is ObjectiveAI ai)) continue;
+          if (   1 >= Rules.InteractionDistance(m_Actor.Location,x.Key)
+              && !x.Value.IsSleeping
+              && !ai.IsEngaged)   // RS Revived: don't chat to a combatant
+            _adjacent_friends.Add(x.Value);
+        }
+      }
+      if (0 >= _adjacent_friends.Count) return null;
+      if (!RogueForm.Game.Rules.RollChance(chance)) return null;
+      Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(_adjacent_friends);
       string text = DescribePercept(percept, actorAt1);
-      if (string.IsNullOrEmpty(text)) return null;
-      return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
+      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
     private ActorAction BehaviorSecurePerimeter()

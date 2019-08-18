@@ -763,46 +763,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 
 	  if (null != friends) {
-        if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+        if (m_LastRaidHeard != null) {
+          tmpAction = BehaviorTellFriendAboutPercept(m_LastRaidHeard, TELL_FRIEND_ABOUT_RAID_CHANCE);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
 #endif
             m_Actor.Activity = Activity.IDLE;
+            _adjacent_friends = null;
             return tmpAction;
           }
         }
-        if (m_LastSoldierSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+        if (m_LastSoldierSaw != null) {
+          tmpAction = BehaviorTellFriendAboutPercept(m_LastSoldierSaw, TELL_FRIEND_ABOUT_SOLDIER_CHANCE);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
 #endif
             m_Actor.Activity = Activity.IDLE;
+            _adjacent_friends = null;
             return tmpAction;
           }
         }
-        if (m_LastEnemySaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+        if (m_LastEnemySaw != null) {
+          tmpAction = BehaviorTellFriendAboutPercept(m_LastEnemySaw, TELL_FRIEND_ABOUT_ENEMY_CHANCE);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
 #endif
             m_Actor.Activity = Activity.IDLE;
+            _adjacent_friends = null;
             return tmpAction;
           }
         }
-        if (m_LastItemsSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+        if (m_LastItemsSaw != null) {
+          tmpAction = BehaviorTellFriendAboutPercept(m_LastItemsSaw, TELL_FRIEND_ABOUT_ITEMS_CHANCE);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
 #endif
             m_Actor.Activity = Activity.IDLE;
+           _adjacent_friends = null;
             return tmpAction;
           }
         }
+        _adjacent_friends = null;
 	  }
 
       if (m_Actor.CountFollowers > 0) {
