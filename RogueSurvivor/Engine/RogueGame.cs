@@ -7162,6 +7162,8 @@ namespace djack.RogueSurvivor.Engine
         if (trap.IsActivated) str += "(activated)";
         if (trap.IsTriggered) str += "(triggered)";
         if (trap.Owner == Player) str += "(yours)";  // alpha10
+        if (trap.WouldLearnHowToBypass(Player)) str += "(need mentoring)";
+        if (trap.IsSafeFor(Player)) str += "(safe)";
       }
       if (it.Quantity > 1) return string.Format("{0} {1}", it.Quantity, str);
       return str;
