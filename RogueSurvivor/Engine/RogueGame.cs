@@ -8831,7 +8831,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Func<Actor, bool> msg_player_test, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
       if (0 >= radio_competent.Count) return false;
@@ -8858,22 +8858,12 @@ namespace djack.RogueSurvivor.Engine
 
       var msg_question = format_msg(string.Format("(police radio, {0}) {1}", speaker.Name, speaker_text));
       var msg_answer = format_msg(string.Format("(police radio, {0}) {1}", target.Name, target_text));
-      var is_player_turn = (0 < Player.ActionPoints);
-      var speaker_is_player = (speaker == Player);
-      var target_is_player = (target == Player);
       var send_question = speaker.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : null;
       var send_answer = target.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", target.Name, target_text)) : null;
 
       void heard_question(Actor a) { audience.Add(a); }
       void heard_answer(Actor a) { audience2.Add(a); }
       void PC_message(Actor a, List<Data.Message> msgs) {
-        if (is_player_turn) {
-          if (   (speaker_is_player && a == speaker)
-              || (target_is_player && a == target)) {
-            AddMessages(msgs);
-            return;
-          }
-        }
         (a.Controller as PlayerController).DeferMessages(msgs);
       }
 
@@ -8895,9 +8885,9 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (speaker.IsPlayer) PC_hear_question(speaker);
-      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, msg_player_test);
+      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, TRUE);
       if (target.IsPlayer) PC_hear_answer(target);
-      target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, msg_player_test);
+      target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, TRUE);
 
       // not nearly as sanity-restoring as proper chat, but worth something
       speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
@@ -8917,8 +8907,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      if (speaker.IsPlayer && (!is_player_turn || !speaker_is_player)) flush_messages(speaker);
-      if (target.IsPlayer && (!is_player_turn || !target_is_player)) flush_messages(target);
+      if (speaker.IsPlayer && !IsSimulating) flush_messages(speaker);
+      if (target.IsPlayer && !IsSimulating) flush_messages(target);
       return true;
     }
 
