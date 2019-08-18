@@ -8803,18 +8803,23 @@ namespace djack.RogueSurvivor.Engine
       var chat_competent = targets.FindAll(actor => Rules.CHAT_RADIUS >= Rules.InteractionDistance(speaker.Location, actor.Location));
       if (0 >= chat_competent.Count) return false;
       var target = Rules.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
+
+      if (speaker.IsPlayer && Player!=speaker) PanViewportTo(speaker);
+      else if (target.IsPlayer && Player!=target) PanViewportTo(target);
+
       bool see_speaker = ForceVisibleToPlayer(speaker);
       bool see_target = see_speaker ? IsVisibleToPlayer(target) : ForceVisibleToPlayer(target);
       bool speaker_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
+      bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
       flags |= Sayflags.IS_FREE_ACTION;
-      if (see_speaker) {
-        if (speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
-        else AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
+
+      if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
+      if (see_target && target_heard_clearly) DoSay(target, speaker, target_text, flags);
+      if (!speaker_heard_clearly && !target_heard_clearly) {
+        if (see_speaker) AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
+        else if (see_target) AddMessage(MakeMessage(target, Conjugate(target, VERB_CHAT_WITH), speaker));
       }
-      if (see_target) {
-        if (Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location, target.Location)) DoSay(target, speaker, target_text, flags);
-        else if (!see_speaker || speaker_heard_clearly) AddMessage(MakeMessage(target, Conjugate(target, VERB_CHAT_WITH), speaker));
-      }
+
       // not nearly as sanity-restoring as proper chat, but worth something
       speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
       target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
@@ -8826,7 +8831,7 @@ namespace djack.RogueSurvivor.Engine
           Location loc = new Location(speaker.Location.Map, pt);
           if (loc.ForceCanonical() && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, loc)) {
               var overhear = loc.Actor;
-              if (null != overhear) op(overhear);
+              if (null != overhear && target != overhear) op(overhear);
           }
       });
       return true;
