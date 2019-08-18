@@ -8292,7 +8292,7 @@ namespace djack.RogueSurvivor.Engine
       bool isDefVisible = ForceVisibleToPlayer(defender);
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
-      bool display_defender = isDefVisible || (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
+      bool display_defender = isDefVisible || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
       bool player_knows(Actor a) {
         if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
@@ -8486,7 +8486,7 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
-        bool display_defender = see_defender || (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
+        bool display_defender = see_defender || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
         bool player_knows(Actor a) {
           if (a.Controller.CanSee(defender.Location)) return true; // we already checked the attacker visibility, he's the sound origin
