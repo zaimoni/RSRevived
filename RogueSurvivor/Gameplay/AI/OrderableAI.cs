@@ -2203,14 +2203,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = BehaviorUseAdjacentStack();
       if (null != tmp) return tmp;
 
+      var seen = new HashSet<Location> { dest };
+      var final_range = new Dictionary<Location,ActorAction>();
+
       var range = m_Actor.OnePathRange(dest);
       if (null == range) return null;
-      range.OnlyIf((Predicate<ActorAction>)(action => (action is ActionMoveStep || action is ActionPush || action is ActionOpenDoor || action is ActionUseExit) && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly and politely
-      if (0 >= range.Count) return null;
+
+      void reprocess_range(Dictionary<Location,ActorAction> src) {
+        var reject = new HashSet<Location>();
+        foreach(var x in src) {
+          seen.Add(x.Key);
+          var test = x.Value as ActorDest;
+          if (null == test && !(x.Value is ActionOpenDoor)) continue;
+          if (!VetoAction(x.Value)) {
+            final_range.Add(x.Key,x.Value);
+            continue;
+          }
+          reject.Add(x.Key);
+        }
+        foreach(var loc in reject) {
+          var failover = m_Actor.OnePathRange(loc);
+          if (null == failover) continue;
+          failover.OnlyIf(loc2 => !seen.Contains(loc2));
+          if (0 >= failover.Count) continue;
+          reprocess_range(failover);
+        }
+      }
+
+      reprocess_range(range);
+      if (0 >= final_range.Count);
+      range = final_range;
+
       // start function target
       var adjacent = m_Actor.OnePathRange(m_Actor.Location);
       if (null == adjacent) return null;
-      adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActionMoveStep || action is ActionPush || action is ActionOpenDoor || action is ActionUseExit) && action.IsLegal() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
+      adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsLegal() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
       if (0 >= adjacent.Count) return null;
       foreach(var x in range) {
         if (adjacent.TryGetValue(x.Key,out var act)) return act;
