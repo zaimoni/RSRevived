@@ -1013,36 +1013,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
-        Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (FilterNearest(enemies).Percepted as Actor).Name));
       }
-      ActorAction actorAction = null;
-      bool flag = false;
+      string text;
       switch (m_ReportStage)
       {
         case 0:
-          actorAction = m_LastRaidHeard == null ? new ActionSay(m_Actor, m_Actor.Leader, "No raids heard.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
           ++m_ReportStage;
-          break;
+          text = DescribePercept(m_LastRaidHeard, m_Actor.Leader);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No raids heard." : text), RogueGame.Sayflags.NONE);
         case 1:
-          actorAction = m_LastEnemySaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No enemies sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
           ++m_ReportStage;
-          break;
+          text = DescribePercept(m_LastEnemySaw, m_Actor.Leader);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No enemies sighted." : text), RogueGame.Sayflags.NONE);
         case 2:
-          actorAction = m_LastItemsSaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No items sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
           ++m_ReportStage;
-          break;
+          text = DescribePercept(m_LastItemsSaw, m_Actor.Leader);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No items sighted." : text), RogueGame.Sayflags.NONE);
         case 3:
-          actorAction = m_LastSoldierSaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No soldiers sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
           ++m_ReportStage;
-          break;
-        case 4:
-          flag = true;
-          actorAction = new ActionSay(m_Actor, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
-          break;
+          text = DescribePercept(m_LastSoldierSaw, m_Actor.Leader);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No soldiers sighted." : text), RogueGame.Sayflags.NONE);
+        default:
+          SetOrder(null);
+          return new ActionSay(m_Actor, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
       }
-      if (flag) SetOrder(null);
-      return actorAction ?? new ActionSay(m_Actor, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
     }
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
@@ -1734,6 +1729,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it != null && !(it is ItemBarricadeMaterial) && (m_Actor.Inventory.IsEmpty || !m_Actor.Inventory.Contains(it));
     }
 
+    protected string DescribePercept(Percept percept, Actor audience)
+    {
+      if (null == percept) return null;
+      string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
+      string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+
+      if (percept.Percepted is Actor old_a) return string.Format("I saw {0} {1} {2}.", old_a.Name, str1, str2);
+      else if (percept.Percepted is Inventory inventory) {
+        if (inventory.IsEmpty) return null;
+        Item it = RogueForm.Game.Rules.DiceRoller.Choose(inventory.Items);
+        if (!IsItemWorthTellingAbout(it)) return null;
+        int num = audience.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+        if ((double) Rules.StdDistance(percept.Location, audience.Location) <= (double) (2 + num)) return null;
+        return string.Format("I saw {0} {1} {2}.", it.AName, str1, str2);
+      } else if (percept.Percepted is string str3) return string.Format("I heard {0} {1} {2}!", str3, str1, str2);
+      else throw new InvalidOperationException("unhandled percept.Percepted type");
+    }
+
     protected ActorAction BehaviorTellFriendAboutPercept(RogueGame game, Percept percept)
     {
       Map map = m_Actor.Location.Map;
@@ -1745,19 +1758,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(friends).Value;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
       string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
-      string text;
-      if (percept.Percepted is Actor old_a)
-        text = string.Format("I saw {0} {1} {2}.", old_a.Name, str1, str2);
-      else if (percept.Percepted is Inventory inventory) {
-        if (inventory.IsEmpty) return null;
-        Item it = game.Rules.DiceRoller.Choose(inventory.Items);
-        if (!IsItemWorthTellingAbout(it)) return null;
-        int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
-        if ((double) Rules.StdDistance(percept.Location, actorAt1.Location) <= (double) (2 + num)) return null;
-        text = string.Format("I saw {0} {1} {2}.", it.AName, str1, str2);
-      } else if (percept.Percepted is string str3) {
-        text = string.Format("I heard {0} {1} {2}!", str3, str1, str2);
-      } else throw new InvalidOperationException("unhandled percept.Percepted type");
+      string text = DescribePercept(percept, actorAt1);
+      if (string.IsNullOrEmpty(text)) return null;
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
