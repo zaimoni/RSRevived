@@ -269,10 +269,7 @@ namespace djack.RogueSurvivor.Engine
     private const int SPAWN_DISTANCE_TO_PLAYER = WorldTime.TURNS_PER_HOUR/3;
     private const int SEWERS_INVASION_CHANCE = 1;
     public const float SEWERS_UNDEADS_FACTOR = 0.5f;
-    private const float REFUGEES_WAVE_SIZE = 0.2f;
     public const int REFUGEES_WAVE_ITEMS = 3;
-    private const int REFUGEE_SURFACE_SPAWN_CHANCE = 80;    // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
-    private const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
     public const int NATGUARD_DAY = 3;
     private const int NATGUARD_END_DAY = 10;
     private const int NATGUARD_ZTRACKER_DAY = NATGUARD_DAY + 3;
@@ -2511,6 +2508,11 @@ namespace djack.RogueSurvivor.Engine
     // their point of view.  It also artificially complicated using the subway as a safehouse.)
     private void FireEvent_RefugeesWave(District district)
     {
+      // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
+      const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
+      const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
+      const float REFUGEES_WAVE_SIZE = 0.2f;
+
       if (district == Player.Location.Map.District && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         AddMessage(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
         RedrawPlayScreen();
@@ -2525,11 +2527,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
       lock (Session.Get) {
-        UniqueActor[] local_6 = Array.FindAll<UniqueActor>(Session.Get.UniqueActors.ToArray(), a => {
-          if (a.IsWithRefugees && !a.IsSpawned) return !a.TheActor.IsDead;
-          return false;
-        });
-        if (0 >= (local_6?.Length ?? 0)) return;
+        UniqueActor[] local_6 = Array.FindAll(Session.Get.UniqueActors.ToArray(), a => a.IsWithRefugees && !a.IsSpawned && !a.TheActor.IsDead);
+        if (0 >= local_6.Length) return;
         FireEvent_UniqueActorArrive(district.EntryMap, m_Rules.DiceRoller.Choose(local_6));
       }
     }
