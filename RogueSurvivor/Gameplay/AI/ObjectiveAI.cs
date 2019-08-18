@@ -691,6 +691,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               foreach(var pt in path_pt[0]) {
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!_legal_path.ContainsKey(loc)) continue;  // something wrong here
+                if (!m_Actor.CanEnter(loc)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(loc)) continue;
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
@@ -738,6 +739,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
               foreach(var pt in path_pt[0]) {
                 if (!_legal_path.ContainsKey(pt)) continue;  // something wrong here
+                if (!m_Actor.CanEnter(pt)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(pt)) continue;
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
