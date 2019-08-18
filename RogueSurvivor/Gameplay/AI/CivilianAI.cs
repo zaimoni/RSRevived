@@ -676,9 +676,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         HashSet<Point> generators(Map m) {
           var gens = Generators(m);
           if (null == gens) return new HashSet<Point>();
-          if (WantToRecharge()) return new HashSet<Point>(gens.Select(obj => obj.Location.Position));
+          if (WantToRecharge()) return m_Actor.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
           var gens_off = gens.Where(obj => !obj.IsOn);
-          if (gens_off.Any()) return new HashSet<Point>(gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
+          if (gens_off.Any()) return m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
           return new HashSet<Point>();
         }
 

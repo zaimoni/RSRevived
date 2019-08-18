@@ -2453,6 +2453,23 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // generators work on point-based pathfinding
+    public HashSet<Point> CastToBumpableDestinations(Map m,IEnumerable<Point> src) {
+      var ret = new HashSet<Point>();
+      foreach(var pt in src) {
+        var loc = new Location(m, pt);
+        if (!CanEnter(loc)) {
+          foreach(var pt2 in pt.Adjacent()) {
+            if (CanEnter(new Location(m, pt2))) ret.Add(pt2);
+          }
+          continue;
+        }
+        // containers are also usually best to target adjacent, but usually getting within 1 triggers alternate behavior
+        ret.Add(pt);
+      }
+      return ret;
+    }
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {
