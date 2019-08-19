@@ -1214,7 +1214,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: fast retreat ok
         // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
         // XXX we also want to be close enough to fire at all
+        // XXX we actually need to signal DecideMove to request additional processing.
+        _caller = CallChain.ManageMeleeRisk;
         tmpAction = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
+        _caller = CallChain.NONE;
         if (null != tmpAction) {
           if (tmpAction is ActionMoveStep test) {
             // all setup should have been done in the run-retreat case
@@ -1238,7 +1241,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != _retreat) {
         if (   WillTireAfterAttack(m_Actor) // need stamina to melee: slow retreat ok
             || null != _slow_melee_threat) {    // have slow enemies nearby
+          _caller = CallChain.ManageMeleeRisk;
 	      tmpAction = DecideMove(_retreat);
+          _caller = CallChain.NONE;
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;
@@ -2047,11 +2052,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX or run for the exit here
-        tmpAction = (null!= m_Actor.Controller.enemies_in_FOV ? BehaviorWalkAwayFrom(m_Actor.Controller.enemies_in_FOV.Keys, LoF_reserve) : null);
-        if (null != tmpAction) {
-          if (doRun) m_Actor.Run();
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
+        {
+        var enemies_FOV = m_Actor.Controller.enemies_in_FOV;
+        if (null != enemies_FOV) {
+          tmpAction = BehaviorWalkAwayFrom(enemies_FOV.Keys, LoF_reserve);
+          if (null != tmpAction) {
+            if (doRun) m_Actor.Run();
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
+          }
+        }
         }
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))

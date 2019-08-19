@@ -1934,6 +1934,13 @@ retry:
       return IsWalkable(p.X, p.Y);
     }
 
+    public bool UnconditionallyBlockingFire(Point pt)
+    {
+      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent) return true;
+      var obj = GetMapObjectAtExt(pt);
+      return null != obj && !obj.IsMovable && !obj.IsTransparent;
+    }
+
     public bool IsBlockingFire(Point pt)
     {
       if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent || HasActorAt(pt)) return true;

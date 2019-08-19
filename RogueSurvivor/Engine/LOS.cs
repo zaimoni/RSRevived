@@ -245,6 +245,29 @@ namespace djack.RogueSurvivor.Engine
       return CanTraceViewLine(from, test.Value.Position, maxRange, line);
     }
 
+    public static Location[] IdealFireLine(Location fromLocation, Point toPosition, int maxRange)
+    {
+      Map map = fromLocation.Map;
+      Point start = fromLocation.Position;
+      Point goal = toPosition;
+      var line = new List<Point>();
+      if (!AngbandlikeTrace(maxRange, start, toPosition, pt => pt==start || pt==goal || !map.UnconditionallyBlockingFire(pt), line))
+         return null;
+      if (2 >= line.Count) return null; // nothing can get in the way
+
+      int i = line.Count-2;
+      var ret = new Location[i];
+      while(0 <= --i) (ret[i] = new Location(map,line[i+1])).ForceCanonical();  // invariant failure if this returns false
+      return ret;
+    }
+
+    public static Location[] IdealFireLine(Location from, Location to, int maxRange)
+    {
+      Location? test = from.Map.Denormalize(to);
+      if (null == test) return null;
+      return IdealFireLine(from, test.Value.Position, maxRange);
+    }
+
     public static bool CanTraceHypotheticalFireLine(Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
     {
       Map map = fromLocation.Map;

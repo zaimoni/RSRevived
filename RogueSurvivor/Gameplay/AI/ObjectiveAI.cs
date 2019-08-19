@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
@@ -16,30 +17,6 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using ActorDest = djack.RogueSurvivor.Engine.Actions.ActorDest;
-using ActionBreak = djack.RogueSurvivor.Engine.Actions.ActionBreak;
-using ActionBump = djack.RogueSurvivor.Engine.Actions.ActionBump;
-using ActionButcher = djack.RogueSurvivor.Engine.Actions.ActionButcher;
-using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
-using ActionCloseDoor = djack.RogueSurvivor.Engine.Actions.ActionCloseDoor;
-using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
-using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
-using ActionMoveStep = djack.RogueSurvivor.Engine.Actions.ActionMoveStep;
-using ActionOpenDoor = djack.RogueSurvivor.Engine.Actions.ActionOpenDoor;
-using ActionPush = djack.RogueSurvivor.Engine.Actions.ActionPush;
-using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
-using ActionRechargeItemBattery = djack.RogueSurvivor.Engine.Actions.ActionRechargeItemBattery;
-using ActionShove = djack.RogueSurvivor.Engine.Actions.ActionShove;
-using ActionSwitchPowerGenerator = djack.RogueSurvivor.Engine.Actions.ActionSwitchPowerGenerator;
-using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
-using ActionTakeItem = djack.RogueSurvivor.Engine.Actions.ActionTakeItem;
-using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
-using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
-using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
-using ActionTrade = djack.RogueSurvivor.Engine.Actions.ActionTrade;
-using ActionTradeWithContainer = djack.RogueSurvivor.Engine.Actions.ActionTradeWithContainer;
-using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
-using Resolvable = djack.RogueSurvivor.Engine.Actions.Resolvable;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -195,6 +172,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       TurnOnAdjacentGenerators_ObjAI
     };
 
+    protected enum CallChain {
+      NONE = 0,
+      ManageMeleeRisk   // OrderableAI::ManageMeleeRisk; this caller is retreating and needs additional postprocessing
+    }
+
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
     readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
@@ -217,6 +199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
     [NonSerialized] protected HashSet<Location> _current_goals = null;
+    [NonSerialized] protected CallChain _caller = CallChain.NONE;
 #if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
@@ -1364,6 +1347,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
+    private List<Point> DecideMove_LongPath(List<Point> src)
+    {
+      var plan = PlanWalkAwayFrom(enemies_in_FOV,src);
+      if (null != plan) {
+        var long_path = new List<Point>();
+        foreach(var x in plan) {
+          var loc = m_Actor.Location.Map.Denormalize(x.Key);
+          if (null != loc && src.Contains(loc.Value.Position)) long_path.Add(loc.Value.Position);
+        }
+        if (0 < long_path.Count) return long_path;
+      }
+      return src;
+    }
+
     private static List<T> DecideMove_NoShove<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
     {
       IEnumerable<T> no_shove = src.Where(loc=> !(legal_steps[loc] is ActionShove));
@@ -1517,6 +1514,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // weakly prefer not to jump
       tmp = DecideMove_NoJump(tmp);
+
+      if (CallChain.ManageMeleeRisk == _caller) tmp = DecideMove_LongPath(tmp);
       return _finalDecideMove(tmp, legal_steps);
 	}
 
@@ -1860,7 +1859,215 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ((0 < new_dest && new_dest < src.Count) ? safe.ToList() : src);
     }
-#endregion
+        #endregion
+
+    public Dictionary<Location, ActionMoveDelta> PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Location> range = null, IEnumerable<Location> range2 = null)
+    {
+      var move_plans = new Dictionary<Location,KeyValuePair<int,Dictionary<Location,ActionMoveDelta>>>();
+      var inverted_move_plans = new Dictionary<Location, Dictionary<Location, ActionMoveDelta>>();
+      var process = new HashSet<Location>();
+      var working_fear = new Dictionary<Location,Actor>(fear);  // need a value-copy just in case
+      var fire_lines = new Dictionary<Location,List<Location[]>>();
+
+      // moral constructors
+      {
+      var friends = friends_in_FOV;
+      if (null != friends) {
+         ItemRangedWeapon rw;
+         Location[] line;
+         foreach(var x in friends) {
+           if (null == (rw = (x.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo())) continue;
+           foreach(var y in fear) {
+             if (null == (line = LOS.IdealFireLine(x.Value.Location, y.Value.Location, rw.Model.Attack.Range))) continue;
+             foreach(var pt in line) {
+               if (fire_lines.TryGetValue(pt,out var cache)) cache.Add(line);
+               else fire_lines.Add(pt,new List<Location[]> { line });
+             }
+           }
+         }
+      }
+      }
+
+      var blacklist = new HashSet<Location>();
+      var whitelist = new HashSet<Location>();
+      if (null != range) {
+        whitelist.UnionWith(range);
+        foreach(var pt in m_Actor.Location.Position.Adjacent()) {
+          var loc = new Location(m_Actor.Location.Map,pt);
+          if (loc.ForceCanonical() && !whitelist.Contains(loc)) blacklist.Add(loc);
+        }
+      } else if (null != range2) {
+        whitelist.UnionWith(range2);
+        var map = m_Actor.Location.Map;
+        foreach(Point pt in Enumerable.Range(0,16).Select(i=> m_Actor.Location.Position.RadarSweep(2,i))) {
+          var loc = new Location(map, pt);
+          if (loc.ForceCanonical() && !whitelist.Contains(loc)) blacklist.Add(loc);
+        }
+        // do not have to update whitelist here
+        foreach(var pt in m_Actor.Location.Position.Adjacent()) {
+          var loc = new Location(map, pt);
+          if (loc.ForceCanonical() && !whitelist.Any(pt2 => 1==Rules.GridDistance(loc,pt2))) blacklist.Add(loc);
+        }
+      }
+
+      // local functions
+      bool destination_melee_safe(Location loc,int depth) {
+        if (!m_Actor.CanEnter(loc)) return false;
+        if (move_plans.ContainsKey(loc)) return false;
+        if (working_fear.ContainsKey(loc)) return false;
+        if (blacklist.Contains(loc)) return false;
+        foreach(var x in working_fear) {    // not quite true at very high speeds
+          if ((1<=depth || !m_Actor.WillActAgainBefore(x.Value))) {
+            if (1 >= Rules.InteractionDistance(loc,x.Key)) return false;
+          }
+        }
+        return true;
+      }
+
+      void unlink(Location dest)
+      {
+         if (!inverted_move_plans.TryGetValue(dest,out var cache)) return;
+         List<Location> staging = null;
+         foreach(var x in cache) {
+           if (!move_plans.TryGetValue(x.Key,out var test)) continue;
+           test.Value.Remove(dest);
+           if (0 >= test.Value.Count) {
+             (staging ?? (staging = new List<Location>())).Add(x.Key);
+             move_plans[x.Key] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(test.Key,null);
+           }
+         }
+         inverted_move_plans.Remove(dest);
+         if (null != staging) foreach(var x in staging) unlink(x);
+      }
+
+#if PROTOTYPE
+      int code(ActionMoveDelta x) {
+        var real = x.ConcreteAction;
+        if (real is ActionMoveStep || real is ActionUseExit) return 4;
+        else if (real is ActionOpenDoor) return 3;
+        else if (real is ActionPush || real is ActionPull || real is ActionShove) return 2;
+        else if (real is ActionSwitchPlace) return 1;
+        return 0;
+      }
+#endif
+
+      Dictionary<Location, ActionMoveDelta> decide() {
+        if (!move_plans.TryGetValue(m_Actor.Location,out var test)) return null;    // invalid
+        if (null == test.Value || 0 >= test.Value.Count) return null;   // invalid
+        return test.Value;
+      }
+
+      KeyValuePair<bool,Dictionary<Location,ActionMoveDelta>> trivialized()
+      {
+        if (move_plans.TryGetValue(m_Actor.Location,out var test)) {
+          if (null == test.Value || 0 >= test.Value.Count) return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(true,null);
+          if  (1 == test.Value.Count) return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(true, test.Value);
+        }
+        return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(false,null);
+      }
+
+      void install_moves(Location loc) {
+        if (!m_Actor.CanEnter(loc)) return;
+        int depth = 0;
+        if (move_plans.TryGetValue(loc,out var cache)) {
+          depth = cache.Key+1;
+          if (null == cache.Value || 0<cache.Value.Count) return;   // already done
+        } else move_plans[loc] = (cache = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(0,new Dictionary<Location, ActionMoveDelta>()));
+        // generate logical moves
+        foreach(var pt in loc.Position.Adjacent()) {
+          var loc2 = new Location(loc.Map,pt);
+          if (!loc2.ForceCanonical()) continue;
+          if (!destination_melee_safe(loc2, depth)) continue;
+          var delta = new ActionMoveDelta(m_Actor, loc2, loc);
+          if (delta.IsLegal()) {
+            cache.Value.Add(loc2, delta);
+            move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
+            if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
+            else (inverted_move_plans[loc2] = new Dictionary<Location, ActionMoveDelta>()).Add(loc, delta);
+          }
+        }
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          var e = loc.Exit;
+          if (null != e) {
+            var loc2 = e.Location;
+            if (destination_melee_safe(loc2, depth)) {
+              var delta = new ActionMoveDelta(m_Actor, loc2, loc);
+              if (delta.IsLegal()) {
+                cache.Value.Add(loc2, delta);
+                move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
+                if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
+                else (inverted_move_plans[loc2] = new Dictionary<Location, ActionMoveDelta>()).Add(loc, delta);
+              }
+            }
+          }
+        }
+        if (0 >= cache.Value.Count) {
+          move_plans[loc] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,null);
+          return;
+        }
+        if (2 <= cache.Value.Count) {
+          var blocked = new Dictionary<Location,int>();
+          foreach (var x in cache.Value) {
+            if (!fire_lines.TryGetValue(x.Key,out var failed)) continue;
+            blocked.Add(x.Key,failed.Count);
+          }
+          if (0 < blocked.Count) {
+            if (blocked.Count >= cache.Value.Count) {
+              cache.Value.Minimize(x => blocked[x.Key]);
+            } else {
+              foreach(var x in blocked) cache.Value.Remove(x.Key);
+            }
+          }
+        }
+        process.UnionWith(cache.Value.Keys);
+      }
+
+      // set up
+      int current_depth = 0;
+      install_moves(m_Actor.Location);  // depth 0
+      var trivial = trivialized();
+      if (trivial.Key) return trivial.Value;
+
+      // following would be a *very* inefficient Dijkstra if allowed to iterate indefinitely.
+      while(3 > ++current_depth) {
+        var working_process = process;
+        process = new HashSet<Location>();
+        foreach(var dest in working_process) install_moves(dest);
+        if (0 >= process.Count) return decide();
+
+        // any deadends just attempted (working process) should have their inverse moves pruned
+        bool have_pruned = false;
+        foreach(var x in working_process) {
+          if (move_plans.TryGetValue(x,out var cache) && null==cache.Value) {
+            unlink(x);
+            have_pruned = true;
+          }
+        }
+        if (have_pruned) {
+          trivial = trivialized();
+          if (trivial.Key) return trivial.Value;
+        }
+
+        // \todo the inverted move plans for depth 2 (in process here) are the first depth for which multiple routes are possible.
+      }
+
+      return decide();
+    }
+
+    public Dictionary<Location, ActionMoveDelta> PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Point> range = null, IEnumerable<Point> range2 = null)
+    {
+      List<Location> upgrade(IEnumerable<Point> src) {
+        var ret = new List<Location>();
+        var map = m_Actor.Location.Map;
+        foreach(var pt in src) {
+          var loc = new Location(map, pt);
+          if (loc.ForceCanonical()) ret.Add(loc);
+        }
+        return (0 < ret.Count) ? ret : null;
+      }
+
+      return PlanWalkAwayFrom(fear, (null != range) ? upgrade(range) : null, (null != range2) ? upgrade(range2) : null);
+    }
 
     public void ExecuteActionChain(IEnumerable<ActorAction> actions)
     {
