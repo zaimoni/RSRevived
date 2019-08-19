@@ -2239,7 +2239,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       reprocess_range(range);
-      if (0 >= final_range.Count);
+      if (0 >= final_range.Count) return null;
       range = final_range;
 
       // start function target
