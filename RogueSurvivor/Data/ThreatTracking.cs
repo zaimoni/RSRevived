@@ -59,7 +59,6 @@ namespace djack.RogueSurvivor.Data
         }
 
 
-#if DEAD_FUNC
 		public List<Actor> ThreatAt(Location loc)
 		{
 		  lock(_threats) {
@@ -67,6 +66,7 @@ namespace djack.RogueSurvivor.Data
 		  }
 		}
 
+#if DEAD_FUNC
 		public bool AnyThreatAt(Location loc)
 		{
 		  lock(_threats) {

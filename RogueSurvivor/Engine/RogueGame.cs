@@ -12324,6 +12324,10 @@ namespace djack.RogueSurvivor.Engine
     {
       Location origin = Player.Location;
       Location viewpoint = origin;
+      OverlayPopup inspect = null;
+      var overlay_anchor = MapToScreen(viewpoint);
+      overlay_anchor.X += TILE_SIZE;
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps.  RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
@@ -12398,7 +12402,27 @@ namespace djack.RogueSurvivor.Engine
           if (    !Player.Controller.IsKnown(tmp.Value)                             // disallow not-known
               && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.District!=tmp.Value.Map.District))    // but ok if same-district different map i.e. stairway
               continue;    // XXX probably should have some feedback here
+          if (null != inspect) {
+            RemoveOverlay(inspect);
+            inspect = null;
+          }
           viewpoint = tmp.Value;
+          // from Staying Alive: inspect mode within far-look
+          if (IsVisibleToPlayer(viewpoint)) {
+            string[] lines = DescribeStuffAt(viewpoint.Map, viewpoint.Position);
+            if (null != lines) inspect = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
+          } else {
+            var threat = Player.Threats;
+            if (null != threat) {
+                var compromised = threat.ThreatAt(viewpoint);
+                if (0 < compromised.Count) {
+                   var lines = new List<string> { "Possibly here:" };
+                   foreach(var x in compromised) lines.Add(x.Name);
+                   inspect = new OverlayPopup(lines.ToArray(), Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
+                }
+            }
+          }
+          if (null != inspect) AddOverlay(inspect);
           PanViewportTo(viewpoint);
         }
       } while(true);
