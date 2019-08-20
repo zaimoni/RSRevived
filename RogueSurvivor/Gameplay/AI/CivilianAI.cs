@@ -621,6 +621,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       pathing.OnlyIf(action => action.IsPerformable());
       
       if (null != _legal_path) {
+        if (!InCombat) {
+          tmpAction = UsePreexistingPath();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using pre-existing path");
+#endif
+          if (null != tmpAction) return tmpAction;
+        }
+
         // advanced pathing ultimately reduces to various flavors of calls to (specializations) of 
         // public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
 #if TRACE_SELECTACTION

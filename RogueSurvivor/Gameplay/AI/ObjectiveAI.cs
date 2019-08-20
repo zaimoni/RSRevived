@@ -654,7 +654,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return risk;
     }
 
-    private ActorAction UsePreexistingPath(HashSet<Location> goals=null)
+    protected ActorAction UsePreexistingPath(HashSet<Location> goals=null)
     {
           {
           var path_pt = GetMinStepPath<Point>();

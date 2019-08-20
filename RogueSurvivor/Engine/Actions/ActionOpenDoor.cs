@@ -14,6 +14,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly DoorWindow m_Door;
 
+    public DoorWindow door { get { return m_Door; } }
+
     public ActionOpenDoor(Actor actor, DoorWindow door)
       : base(actor)
     {
