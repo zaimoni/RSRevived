@@ -66,17 +66,15 @@ namespace djack.RogueSurvivor.Data
 		  }
 		}
 
-#if DEAD_FUNC
 		public bool AnyThreatAt(Location loc)
 		{
 		  lock(_threats) {
-            for(var x in _threats) {
+            foreach(var x in _threats) {
               if (x.Value.TryGetValue(loc.Map,out var cache) && cache.Contains(loc.Position)) return true;
             }
             return false;
 		  }
 		}
-#endif
 
         [NonSerialized] Dictionary<Map, HashSet<Point>> _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
 		public HashSet<Point> ThreatWhere(Map map)
