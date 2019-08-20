@@ -175,7 +175,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected enum CallChain {
       NONE = 0,
-      ManageMeleeRisk   // OrderableAI::ManageMeleeRisk; this caller is retreating and needs additional postprocessing
+      ManageMeleeRisk,   // OrderableAI::ManageMeleeRisk; this caller is retreating and needs additional postprocessing
+      SelectAction_LambdaPath   // ...::SelectAction: need to record path to the lambda path cache
     }
 
     readonly protected List<Objective> Objectives = new List<Objective>();
@@ -727,8 +728,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != ret) return ret;
         ret = UsePreexistingPath(GetMinStepPath<Location>(), goals);
         if (null != ret) return ret;
-        ret = GetLambdaPath()?.WalkPath(this);
-        if (null != ret) return ret;
+        if (null == goals) {
+          ret = GetLambdaPath()?.WalkPath(this);
+          if (null != ret) return ret;
+        }
         return null;
      }
 
@@ -771,7 +774,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
           var alt_act = _pathNear(test.dest);
           if (null != alt_act) {
-            _sparse.Set(SparseData.MinStepPath,src);
+            if (CallChain.SelectAction_LambdaPath == _caller) {
+              var prior = GetLambdaPath();
+              prior.Install(m_Actor.Location.Map, src,this);
+              _sparse.Unset(SparseData.MinStepPath);
+            } else {
+             _sparse.Set(SparseData.MinStepPath,src);
+            }
             return alt_act;
           }
 
@@ -789,7 +798,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: "+src.to_s());
 #endif
-      _sparse.Set(SparseData.MinStepPath,src);
+      if (CallChain.SelectAction_LambdaPath == _caller) {
+        var prior = GetLambdaPath();
+        prior.Install(m_Actor.Location.Map,src,this);
+        _sparse.Unset(SparseData.MinStepPath);
+      } else {
+        _sparse.Set(SparseData.MinStepPath,src);
+      }
       return act;
     }
 
@@ -798,7 +813,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
           var alt_act = _pathNear(test.dest);
           if (null != alt_act) {
-            _sparse.Set(SparseData.MinStepPath,src);
+            if (CallChain.SelectAction_LambdaPath == _caller) {
+              var prior = GetLambdaPath();
+              prior.Install(src,this);
+              _sparse.Unset(SparseData.MinStepPath);
+            } else {
+              _sparse.Set(SparseData.MinStepPath,src);
+            }
             return alt_act;
           }
 
@@ -816,7 +837,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: " + src.to_s());
 #endif
-      _sparse.Set(SparseData.MinStepPath,src);
+      if (CallChain.SelectAction_LambdaPath == _caller) {
+        var prior = GetLambdaPath();
+        prior.Install(src,this);
+        _sparse.Unset(SparseData.MinStepPath);
+      } else {
+        _sparse.Set(SparseData.MinStepPath,src);
+      }
       return act;
     }
 
@@ -2806,7 +2833,7 @@ restart:
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
       }
 
-      // check for pre-existing relevant path
+      // check for pre-existing relevant path (approaching dead code)
       {
       var path_pt = GetMinStepPath<Point>();
 #if TRACE_GOALS

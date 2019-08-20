@@ -53,9 +53,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         public readonly Dictionary<Location,int> reasons = new Dictionary<Location, int>();
         private List<List<Point>> pt_path = null;
         private List<List<Location>> loc_path = null;
-        [NonSerialized] private HashSet<Location> stage_view = new HashSet<Location>();
-        [NonSerialized] private HashSet<Location> stage_inventory = new HashSet<Location>();
-        [NonSerialized] private List<Engine.MapObjects.PowerGenerator> stage_generators = new List<Engine.MapObjects.PowerGenerator>();
+        private readonly HashSet<Location> stage_view = new HashSet<Location>(); // these three can be non-serialized only if they are rebuilt on load
+        private readonly HashSet<Location> stage_inventory = new HashSet<Location>();
+        private readonly List<Engine.MapObjects.PowerGenerator> stage_generators = new List<Engine.MapObjects.PowerGenerator>();
         private bool _expired = false;
         public bool Expired { get { return _expired; } }
 
@@ -73,9 +73,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         public void StageView(Map m, IEnumerable<Point> src) {
             foreach (var pt in src) stage_view.Add(new Location(m, pt));
         }
-        public void UnStageView(Map m, IEnumerable<Point> src)
+        public void UnStageView(Map m, Predicate<Point> reject)
         {
-            foreach (var pt in src) stage_view.Remove(new Location(m, pt));
+            stage_view.RemoveWhere(loc => {
+                if (loc.Map != m) return false;
+                return reject(loc.Position);
+            });
         }
 
         public void StageInventory(Map m, IEnumerable<Point> src) {
@@ -104,9 +107,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return 0 < xform.Count ? xform : null;
         }
 
-        private void _upgrade() {
+        private Map HomeMap(ObjectiveAI ai) {
+            if (null == pt_path) return null;
+            if (0 < reasons.Count) return reasons.First().Key.Map;
+            return ai.ControlledActor.Location.Map;
+        }
+
+        private void _upgrade(ObjectiveAI ai) {
             if (null == pt_path) return;
-            loc_path = _upgrade(reasons.First().Key.Map, pt_path);
+            loc_path = _upgrade(HomeMap(ai), pt_path);
             pt_path = null;
         }
 
@@ -153,7 +162,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 ForgetStaging();
                 return;
             }
-            if (null != pt_path) _upgrade();
+            if (null != pt_path) _upgrade(ai);
             if (null == loc_path) loc_path = src;
             else {
                 int merge_ub = loc_path.Count;
@@ -180,7 +189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 ForgetStaging();
                 return;
             }
-            if (null != pt_path || m != reasons.First().Key.Map) _upgrade();
+            if (null != pt_path && m != HomeMap(ai)) _upgrade(ai);
             if (null != loc_path) { // merging into location path
                 Install(_upgrade(m,src),ai);
                 return;
@@ -507,7 +516,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return test;
         }
 
-        private void recode_reasons(ObjectiveAI ai) {
+        private bool recode_reasons(ObjectiveAI ai) {
             var ret = new Dictionary<Location, int>();
             var retestable = static_reasons(ai);    // \todo cache variable candidate
             foreach (var x in reasons) {
@@ -526,8 +535,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     if (0 != code) ret.Add(x.Key, code);
                 }
             }
+//          if (0 >= ret.Count) return true;    // would be incorrect if tracking actors
+            if (ret.Count < reasons.Count) return true; // unclear how to safely update path so expire
             reasons.Clear();
             foreach (var x in ret) reasons.Add(x.Key, x.Value);
+            return false;
         }
 #endregion
 
@@ -537,8 +549,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 _expired = true;
                 return true;
             }
-            recode_reasons(ai);
-            if (0 >= reasons.Count) {   // would be incorrect if tracking actors here (unsure about technical viability)
+            if (recode_reasons(ai)) {
                 _expired = true;
                 return true;
             }
@@ -546,6 +557,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 _expired = true;
                 return true;
             }
+            // current initializers may truncate the path which invalidates the decay heuristics
+#if PROTOTYPE
             if (decay_reasons(pt_path) || decay_reasons(loc_path)) {
                 _expired = true;
                 return true;
@@ -554,6 +567,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 _expired = true;
                 return true;
             }
+#endif
             return false;
         }
 

@@ -649,21 +649,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // radio range is everything that fits on the minimap; distinct from local only for large maps
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
+        var update_path = ForceLambdaPath();
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
-          return (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) ? new HashSet<Point>() : threats.ThreatWhere(m);
+          if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable
+          var ret = threats.ThreatWhere(m);
+          if (0<ret.Count) update_path.StageView(m,ret);
+          return ret;
         }
 
         if (!combat_unready.Value && null != threats && threats.Any()) pathing_targets = hunt_threat;
 
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism for: "+m.ToString());
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, sights_to_see.In(m).to_s());
-#endif
-          return sights_to_see.In(m);
+          var ret = sights_to_see.In(m);
+          if (0<ret.Count) update_path.StageView(m,ret);
+          return ret;
         }
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
 
@@ -676,7 +678,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var handled = (a.Controller as ObjectiveAI)?.ClearingThisZone();
             if (null == handled) continue;
             if (handled.m != m) continue;
-            target.RemoveWhere(pt => handled.Rect.Contains(pt));
+            bool reject(Point pt) { return handled.Rect.Contains(pt); }
+            target.RemoveWhere(reject);
+            update_path.UnStageView(m,reject);
           }
         }
         if (null != allies) pathing_targets.Postfilter(already_handled);
@@ -684,9 +688,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         HashSet<Point> generators(Map m) {
           var gens = Generators(m);
           if (null == gens) return new HashSet<Point>();
-          if (WantToRecharge()) return m_Actor.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
+          if (WantToRecharge()) {
+            update_path.StageGenerators(gens);
+            return m_Actor.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
+          }
           var gens_off = gens.Where(obj => !obj.IsOn);
-          if (gens_off.Any()) return m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
+          if (gens_off.Any()) {
+            update_path.StageGenerators(gens_off);
+            return m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
+          }
           return new HashSet<Point>();
         }
 
@@ -694,7 +704,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         HashSet<Point> resupply_want(Map m)
         {
-          return WhereIs(want,m);
+          var ret = WhereIs(want, m);
+          if (0 < ret.Count) update_path.StageInventory(m,ret);
+          return ret;
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
@@ -718,11 +730,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           bool reject_view(Location loc) { return !view.Contains(loc); }
 
           // 1) view pathing
+          _caller = CallChain.SelectAction_LambdaPath;
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
+          _caller = CallChain.NONE;
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null!=tmpAction) return tmpAction;
+          update_path.ForgetStaging();
           // 2) minimap range pathing, if distinct from view
           if (0!= map_code) {
             view = m_Actor.Location.MiniMapView;
@@ -752,20 +767,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return true;   // \todo implement
             }
 #endif
+          _caller = CallChain.SelectAction_LambdaPath;
             tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap /*,postfilter_minimap*/);
+          _caller = CallChain.NONE;
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
 #endif
             if (null!=tmpAction) return tmpAction;
+            update_path.ForgetStaging();
           }
           // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
           if (combat_unready.Value && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
+          _caller = CallChain.SelectAction_LambdaPath;
           tmpAction = BehaviorPathTo(pathing_targets);
+          _caller = CallChain.NONE;
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within world: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null!=tmpAction) return tmpAction;
+          update_path.ForgetStaging();
         }
       }
 #endregion
