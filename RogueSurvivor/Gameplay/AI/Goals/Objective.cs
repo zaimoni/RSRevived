@@ -59,16 +59,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         private bool _expired = false;
         public bool Expired { get { return _expired; } }
 
-        PathToTarget(Dictionary<Location, int> why, List<List<Point>> src)
-        {
-            reasons = why;
-            pt_path = src;
-        }
-        PathToTarget(Dictionary<Location, int> why, List<List<Location>> src)
-        {
-            reasons = why;
-            loc_path = src;
-        }
+        public PathToTarget() { }
 
         public int steps {
             get {

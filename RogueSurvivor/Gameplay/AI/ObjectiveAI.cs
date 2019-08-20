@@ -163,7 +163,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       UsingChokepoint,
       MinStepPath,   // may be either List<List<Point>> or List<List<Location>>
       PathingTo,
-      EscapingTo
+      EscapingTo,
+      LambdaPath
     };
 
     public enum ZeroAryBehaviors {
@@ -316,6 +317,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #endif
         _sparse.Unset(SparseData.MinStepPath);
+        _last_move = null;
+      }
+      if (GetLambdaPath()?.Expire(this) ?? false) {
+        _sparse.Unset(SparseData.LambdaPath);
         _last_move = null;
       }
     }
@@ -722,6 +727,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != ret) return ret;
         ret = UsePreexistingPath(GetMinStepPath<Location>(), goals);
         if (null != ret) return ret;
+        ret = GetLambdaPath()?.WalkPath(this);
+        if (null != ret) return ret;
         return null;
      }
 
@@ -826,6 +833,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public List<List<T>> GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
+    protected PathToTarget GetLambdaPath() { return _sparse.Get<PathToTarget>(SparseData.LambdaPath); }
+    protected PathToTarget ForceLambdaPath() {
+      var prior = _sparse.Get<PathToTarget>(SparseData.LambdaPath);
+      if (null == prior) {
+        prior = new PathToTarget();
+        _sparse.Set(SparseData.LambdaPath, prior);
+      }
+      return prior;
+    }
 
 #if USING_ESCAPE_MOVES
     protected void RecordWantToEscapeTo(List<Location> src) { _sparse.Set(SparseData.EscapingTo, src); }
