@@ -451,6 +451,20 @@ namespace Zaimoni.Data
       return or;
     }
 
+    // C-ish.
+    public static Func<T,int> Or<T>(this Func<T, int> lhs, Func<T, int> rhs) {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      var r = rhs;
+      if (null == lhs) return r;
+      if (null == rhs) return l;
+      int or(T src) {
+        var test = l(src);
+        if (0 != test) return test;
+        return r(src);
+      };
+      return or;
+    }
+
     public static Func<T,bool> Or<T>(this Func<T, bool> lhs, Func<T, bool> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
@@ -876,6 +890,8 @@ namespace Zaimoni.Data
     public static bool TRUE<T>(T x) { return true; }
     public static bool FALSE<T>(T x) { return false; }
     public static T IDENTITY<T>(T x) { return x; }
+    public static T DEFAULT<T>(T x) { return default; }
+    public static int ZERO<T>(T x) { return 0; }
   }
 
   // const correctness hack

@@ -307,63 +307,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var choke = GetChokepoint();
       if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
 
-      bool reject_path_pt(List<List<Point>> min_path) {
-        if (null == min_path) return false;
-        int i = min_path.Count;
-        bool known_adjacent = false;
-        while(0 < i--) {
-          if (min_path[i].Any(pt => 1>=FastestTrapKill(new Location(m_Actor.Location.Map,pt)))) {
-            var nonlethal = min_path[i].FindAll(pt => 1<FastestTrapKill(new Location(m_Actor.Location.Map,pt)));
-            if (0 >= nonlethal.Count) return true;
-            min_path[i] = nonlethal;
-          }
-          if (min_path[i].Any(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt))) {
-            known_adjacent = true;
-            var adjacent = min_path[i].FindAll(pt => 1 == Rules.GridDistance(m_Actor.Location.Position, pt));
-            if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
-            if (0 < i) min_path.RemoveRange(0,i);
-            break;
-          }
-          if (min_path[i].Contains(m_Actor.Location.Position)) {
-            min_path.RemoveRange(0,i+1);
-            break;
-          }
-        }
-        if (0 >= min_path.Count) return true;
-        if (known_adjacent) return false;
-        // \todo could try to reconnect
-        return true;
-      }
-
-      bool reject_path_loc(List<List<Location>> min_path) {
-        if (null == min_path) return false;
-        int i = min_path.Count;
-        bool known_adjacent = false;
-        while(0 < i--) {
-          if (min_path[i].Any(pt => 1>=FastestTrapKill(pt))) {
-            var nonlethal = min_path[i].FindAll(pt => 1<FastestTrapKill(pt));
-            if (0 >= nonlethal.Count) return true;
-            min_path[i] = nonlethal;
-          }
-          if (min_path[i].Any(pt => 1==Rules.InteractionDistance(m_Actor.Location,pt))) {
-            known_adjacent = true;
-            var adjacent = min_path[i].FindAll(pt => 1 == Rules.InteractionDistance(m_Actor.Location, pt));
-            if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
-            if (0 < i) min_path.RemoveRange(0,i);
-            break;
-          }
-          if (min_path[i].Contains(m_Actor.Location)) {
-            min_path.RemoveRange(0,i+1);
-            break;
-          }
-        }
-        if (0 >= min_path.Count) return true;
-        if (known_adjacent) return false;
-        // \todo could try to reconnect
-        return true;
-      }
-
-      if (reject_path_pt(GetMinStepPath<Point>()) || reject_path_loc(GetMinStepPath<Location>())) {
+      if (PathToTarget.reject_path(GetMinStepPath<Point>(),this) || PathToTarget.reject_path(GetMinStepPath<Location>(),this)) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) {
             var pt_path = GetMinStepPath<Point>();
@@ -654,11 +598,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return risk;
     }
 
-    protected ActorAction UsePreexistingPath(HashSet<Location> goals=null)
+    public ActorAction UsePreexistingPath(List<List<Point>> path_pt, HashSet<Location> goals=null)
     {
-          {
-          var path_pt = GetMinStepPath<Point>();
-          if (null != path_pt && 2<=path_pt.Count) {
+        if (null == path_pt || 0 >= path_pt.Count) return null;
+        if (2 <= path_pt.Count) {
               // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
               var candidates = new List<List<ActionMoveDelta>>();
               var stage2 = new List<ActionMoveDelta>();
@@ -689,7 +632,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
               } // end scope brace for depth2
               // check for min-cost two steps
               var costs = new Dictionary<Location,int>();
-              var ok = new List<ActorAction>();
               foreach(var pt in path_pt[0]) {
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
@@ -697,17 +639,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var act in stage2) {
                   if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
                   costs[loc] = 1;
-                  ok.Add(considering);
                   break;
                 }
               }
-              if (1 == ok.Count) return ok[0];
+              if (1==costs.Count) return _legal_path[costs.First().Key];
               if (0 < costs.Count) return DecideMove(costs);
-          }
-          }
-          {
-          var path_pt = GetMinStepPath<Location>();
-          if (null != path_pt && 2 <= path_pt.Count) {
+        }
+        // one step remaining
+        {
+              var costs = new Dictionary<Location,int>();
+              foreach(var pt in path_pt[0]) {
+                var loc = new Location(m_Actor.Location.Map, pt);
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
+                costs[loc] = Map.PathfinderMoveCosts(considering);
+              }
+              if (1==costs.Count) return _legal_path[costs.First().Key];
+              if (0 < costs.Count) return DecideMove(costs);
+        }
+        return null;
+    }
+
+    public ActorAction UsePreexistingPath(List<List<Location>> path_pt, HashSet<Location> goals=null)
+    {
+        if (null == path_pt || 0 >= path_pt.Count) return null;
+        if (2 <= path_pt.Count) {
               // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
               var candidates = new List<List<ActionMoveDelta>>();
               var stage2 = new List<ActionMoveDelta>();
@@ -736,21 +691,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
               } // end scope brace for depth2
               // check for min-cost two steps
               var costs = new Dictionary<Location,int>();
-              var ok = new List<ActorAction>();
               foreach(var loc in path_pt[0]) {
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
                 if (1<Map.PathfinderMoveCosts(considering)) continue;
                 foreach(var act in stage2) {
                   if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
                   costs[loc] = 1;
-                  ok.Add(considering);
                   break;
                 }
               }
-              if (1 == ok.Count) return ok[0];
+              if (1==costs.Count) return _legal_path[costs.First().Key];
               if (0 < costs.Count) return DecideMove(costs);
-          }
-          }
+        }
+        // one step remaining
+        {
+              var costs = new Dictionary<Location,int>();
+              foreach(var loc in path_pt[0]) {
+                if (!_legal_path.TryGetValue(loc,out var considering)) continue;
+                costs[loc] = Map.PathfinderMoveCosts(considering);
+              }
+              if (1==costs.Count) return _legal_path[costs.First().Key];
+              if (0 < costs.Count) return DecideMove(costs);
+        }
+        return null;
+    }
+
+    protected ActorAction UsePreexistingPath(HashSet<Location> goals=null)
+    {
+        var ret = UsePreexistingPath(GetMinStepPath<Point>(), goals);
+        if (null != ret) return ret;
+        ret = UsePreexistingPath(GetMinStepPath<Location>(), goals);
+        if (null != ret) return ret;
         return null;
      }
 
@@ -1147,7 +1118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries<burn_time;
     }
 
-    protected bool WantToRecharge() {
+    public bool WantToRecharge() {
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
     }
 
