@@ -2091,6 +2091,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(_enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
       Actor enemy = target.Percepted as Actor;
+      Location e_loc = enemy.Location;
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);
@@ -2098,28 +2099,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
         else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersOnRecord(m_Actor) > 0)
           decideToFlee = false;
-        else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+        else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, e_loc))
           decideToFlee = true;
         else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
 	      decideToFlee = false;
+        } else if (ActorCourage.COWARD == courage) {
+          decideToFlee = true;
+          doRun = true;
         } else {
-          switch (courage) {
-            case ActorCourage.COWARD:
-              decideToFlee = true;
-              doRun = true;
-              break;
-            case ActorCourage.CAUTIOUS:
-            case ActorCourage.COURAGEOUS:
-              decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-              doRun = !HasSpeedAdvantage(m_Actor, enemy);
-              break;
-            default:
-              throw new ArgumentOutOfRangeException("unhandled courage");
-          }
+          decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+          doRun = !HasSpeedAdvantage(m_Actor, enemy);
         }
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
           if (   (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
-              || Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+              || Rules.IsAdjacent(m_Actor.Location, e_loc))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
@@ -2135,7 +2128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!decideToFlee) {
 //      if (null == GetBestRangedWeaponWithAmmo())  {   // call contract
            // check route
-           if (!CanReachSimple(enemy.Location, allowedChargeActions)) {
+           if (!CanReachSimple(e_loc, allowedChargeActions)) {
              if (null == (enemy.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
              decideToFlee = true;   // get out of here, now
            }
@@ -2154,10 +2147,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= approachable_enemies.Count) {
         if (null != legal_steps) {
           // nearest enemy is not adjacent.  Filter by whether it's legal to approach.
-          approachable_enemies = _enemies.Where(p => {
+          approachable_enemies = _enemies.FindAll(p => {
             int dist = Rules.GridDistance(m_Actor.Location,p.Location);
             return legal_steps.Any(pt => dist>Rules.GridDistance(new Location(m_Actor.Location.Map,pt),p.Location));
-          }).ToList();
+          });
           if (0 >= approachable_enemies.Count) approachable_enemies = null;
         }
       }
@@ -2166,7 +2159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
 
       // redo the pause check
-      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location) && !enemy.CanRun()) {
+      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, e_loc) && !enemy.CanRun()) {
           if (!m_Actor.WillActAgainBefore(enemy) && !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
             return new ActionWait(m_Actor);
 
@@ -2174,12 +2167,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // cannot close at normal speed safely; run-hit may be ok
             var dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
-            List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position)
+            List<Point> attack_possible = legal_steps.FindAll(pt => Rules.IsAdjacent(pt, e_loc.Position)
               && !(LoF_reserve?.Contains(pt) ?? false)
               && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep step
-              && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest))).ToList();
+              && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest)));
             ReserveSTA(0,0,0,0);  // baseline
-            if (!attack_possible.Any()) return new ActionWait(m_Actor);
+            if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
             m_Actor.IsRunning = true;
             return dash_attack[game.Rules.DiceRoller.Choose(attack_possible)];
