@@ -2117,8 +2117,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
               throw new ArgumentOutOfRangeException("unhandled courage");
           }
         }
-        if (!decideToFlee && WillTireAfterAttack(m_Actor) && null!=_damage_field && _damage_field.ContainsKey(m_Actor.Location.Position)) {
-          decideToFlee = true;    // but do not run as otherwise we won't build up stamina
+        if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+          if (   (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
+              || Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+            decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
 
