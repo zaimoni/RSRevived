@@ -2250,10 +2250,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // start function target
       var adjacent = m_Actor.OnePathRange(m_Actor.Location);
       if (null == adjacent) return null;
-      adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsLegal() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
+      adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsPerformable() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
       if (0 >= adjacent.Count) return null;
-      foreach(var x in range) {
-        if (adjacent.TryGetValue(x.Key,out var act)) return act;
+      adjacent.OnlyIf(loc => range.ContainsKey(loc));
+      if (0 < adjacent.Count) {
+        adjacent = adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts);
+        return RogueForm.Game.Rules.DiceRoller.Choose(adjacent).Value;
       }
       // end function target
       var init_costs = new Dictionary<Location,int>();
@@ -2332,7 +2334,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionWait(m_Actor);
       }
 	  ActorAction actorAction = BehaviorPathToAdjacent(other.Location);
-      if (!actorAction?.IsLegal() ?? true) return null;
+      if (!actorAction?.IsPerformable() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)

@@ -374,6 +374,28 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    // due to defective generics, we can't actually use all of the logical overloads we want (cleanly)
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable
+    {
+#if DEBUG
+      if (null == metric) throw new ArgumentNullException(nameof(metric));
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      var ret = new Dictionary<T, U>();
+      foreach(var x in src) {
+         R num2 = metric(x.Value);
+         int comp = num2.CompareTo(num1);
+         if (0 < comp) continue;
+         if (0 > comp) {
+           ret.Clear();
+           num1 = num2;
+         }
+         ret.Add(x.Key,x.Value);
+      }
+      return ret;
+    }
+
     // generic loop iteration ... probably inefficient compared to inlining
     public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn)
     {

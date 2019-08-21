@@ -27,8 +27,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "Fuck it I'm trapped!",
       "Come on"
     };
-    private const int FOLLOW_NPCLEADER_MAXDIST = 1;
-    private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
 
@@ -241,8 +239,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.HasLeader && !DontFollowLeader) {
-        int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

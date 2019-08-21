@@ -762,7 +762,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
-      if (actorAction == null || !actorAction.IsLegal()) return null;
+      if (actorAction == null || !actorAction.IsPerformable()) return null;
       if (other.IsRunning) m_Actor.Run();
       return actorAction;
     }

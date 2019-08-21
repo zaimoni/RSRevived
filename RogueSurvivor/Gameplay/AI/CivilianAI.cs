@@ -73,8 +73,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "KOMM HIER BITE"
     };
     private const int LOS_MEMORY = 1;   // just enough memory to not walk into exploding grenades
-    private const int FOLLOW_NPCLEADER_MAXDIST = 1;
-    private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
     private const int USE_EXIT_CHANCE = 20;
     private const int BUILD_TRAP_CHANCE = 50;
     private const int BUILD_SMALL_FORT_CHANCE = 20;
@@ -519,11 +517,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.HasLeader && !DontFollowLeader) {
         // \todo interposition target for pathing hints, etc. from leader
-        int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorFollowActor");
 #endif
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorFollowActor: "+(tmpAction?.ToString() ?? "null"));
 #endif

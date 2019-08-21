@@ -27,8 +27,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "waf!?",
       "GRRRRR WAF WAF"
     };
-    private const int FOLLOW_NPCLEADER_MAXDIST = 1;
-    private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
     private const int RUN_TO_TARGET_DISTANCE = 3;  // dogs run to their target when close enough
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
@@ -97,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsTired) return new ActionWait(m_Actor);
       if (m_Actor.IsSleepy) return new ActionSleep(m_Actor);
       if (m_Actor.HasLeader) {
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
           m_Actor.Walk();
           m_Actor.Activity = Activity.FOLLOWING;

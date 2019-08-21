@@ -2027,7 +2027,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (0 < blocked.Count) {
             if (blocked.Count >= cache.Value.Count) {
-              cache.Value.Minimize(x => blocked[x.Key]);
+              int min_blocked = blocked.Min(x => x.Value);
+              cache.Value.OnlyIf((Predicate<Location>)(x => min_blocked == blocked[x]));
             } else {
               foreach(var x in blocked) cache.Value.Remove(x.Key);
             }
