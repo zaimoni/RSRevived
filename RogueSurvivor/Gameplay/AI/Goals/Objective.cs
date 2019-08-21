@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
-using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
@@ -57,7 +56,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         private readonly HashSet<Location> stage_inventory = new HashSet<Location>();
         private readonly List<Engine.MapObjects.PowerGenerator> stage_generators = new List<Engine.MapObjects.PowerGenerator>();
         private bool _expired = false;
-        public bool Expired { get { return _expired; } }
 
         public PathToTarget() { }
 
@@ -144,9 +142,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                       return 0;
                     }
 
+                    int test;
                     foreach (var x in stage_inventory) {
-                      int test = code(x);
-                      if (0 != test) reasons[x] = test;
+                      if (0 != (test = code(x))) reasons[x] = test;
                     }
                 }
                 stage_inventory.Clear();
@@ -220,30 +218,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
            if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
+           bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, pt); };
+
            int i = min_path.Count;
-           bool known_adjacent = false;
            while(0 < i--) {
              if (min_path[i].Any(pt => 1>=ai.FastestTrapKill(pt))) {
                var nonlethal = min_path[i].FindAll(pt => 1< ai.FastestTrapKill(pt));
                if (0 >= nonlethal.Count) return true;
                min_path[i] = nonlethal;
              }
-             if (min_path[i].Any(pt => 1== Engine.Rules.InteractionDistance(loc, pt))) {
-               known_adjacent = true;
-               var adjacent = min_path[i].FindAll(pt => 1 == Engine.Rules.InteractionDistance(loc, pt));
+             if (min_path[i].Any(is_adjacent)) {
+               var adjacent = min_path[i].FindAll(is_adjacent);
                if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
                if (0 < i) min_path.RemoveRange(0,i);
-               break;
+               return false;
              }
              if (min_path[i].Contains(loc)) {
                min_path.RemoveRange(0,i+1);
                break;
              }
           }
-          if (0 >= min_path.Count) return true;
-          if (known_adjacent) return false;
-          // \todo could try to reconnect
-          return true;
+//        if (0 >= min_path.Count) return true;
+          return true;   // \todo could try to reconnect if there was a path
         }
 
         public static bool reject_path(List<List<Point>> min_path, ObjectiveAI ai)
@@ -252,32 +248,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
            Location loc = ai.ControlledActor.Location;
            Map map = loc.Map;
            Point pos = loc.Position;
+           bool is_adjacent(Point pt) { return 1 == Engine.Rules.InteractionDistance(loc, new Location(map, pt)); };
+
            int i = min_path.Count;
-           bool known_adjacent = false;
            while(0 < i--) {
              if (min_path[i].Any(pt => 1>=ai.FastestTrapKill(new Location(map,pt)))) {
                var nonlethal = min_path[i].FindAll(pt => 1< ai.FastestTrapKill(new Location(map, pt)));
                if (0 >= nonlethal.Count) return true;
                min_path[i] = nonlethal;
              }
-             if (min_path[i].Any(pt => 1== Engine.Rules.InteractionDistance(loc, new Location(map, pt)))) {
-               known_adjacent = true;
-               var adjacent = min_path[i].FindAll(pt => 1 == Engine.Rules.InteractionDistance(loc, new Location(map, pt)));
+             if (min_path[i].Any(is_adjacent)) {
+               var adjacent = min_path[i].FindAll(is_adjacent);
                if (adjacent.Count < min_path[i].Count) min_path[i] = adjacent;
                if (0 < i) min_path.RemoveRange(0,i);
-               break;
+               return false;
              }
              if (min_path[i].Contains(pos)) {
                min_path.RemoveRange(0,i+1);
                break;
              }
           }
-          if (0 >= min_path.Count) return true;
-          if (known_adjacent) return false;
-          // \todo could try to reconnect
-          return true;
+//        if (0 >= min_path.Count) return true;
+          return true;   // \todo could try to reconnect if there was a path
         }
 
+#if PROTOTYPE
         // eliminate reasons not near the path
         private bool decay_reasons(List<List<Location>> min_path) {
             if (null == min_path) return false;
@@ -479,8 +474,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             return false;
         }
+#endif
 
-        static Func<Location,int> static_reasons(ObjectiveAI ai)
+        static private Func<Location,int> static_reasons(ObjectiveAI ai)
         {
             Func<Location, int> test = null;
             var items = ai.ItemMemory;
@@ -518,7 +514,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         private bool recode_reasons(ObjectiveAI ai) {
             var ret = new Dictionary<Location, int>();
-            var retestable = static_reasons(ai);    // \todo cache variable candidate
+            var retestable = static_reasons(ai);
             foreach (var x in reasons) {
                 if ((int)What.GENERATOR_OFF == x.Value) {
                     if (x.Key.MapObject is Engine.MapObjects.PowerGenerator power && !power.IsOn) {
@@ -545,19 +541,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public bool Expire(ObjectiveAI ai) {
             if (_expired) return true;
-            if (0 >= steps) {
+            if (0 >= steps || recode_reasons(ai) || reject_path(pt_path, ai) || reject_path(loc_path, ai)) {
                 _expired = true;
                 return true;
             }
-            if (recode_reasons(ai)) {
-                _expired = true;
-                return true;
-            }
-            if (reject_path(pt_path, ai) || reject_path(loc_path, ai)) {
-                _expired = true;
-                return true;
-            }
-            // current initializers may truncate the path which invalidates the decay heuristics
+            // current initializers (in particular, escape from basements without any pathing targets)
+            // may truncate the path which invalidates the decay heuristics
 #if PROTOTYPE
             if (decay_reasons(pt_path) || decay_reasons(loc_path)) {
                 _expired = true;

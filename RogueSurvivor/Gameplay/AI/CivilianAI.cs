@@ -706,7 +706,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           var ret = WhereIs(want, m);
           if (0 < ret.Count) update_path.StageInventory(m,ret);
-          return ret;
+          return ret;   // \todo actively cast to destinations where the inventories can be used from, like we do for generators?
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
