@@ -320,9 +320,9 @@ namespace Zaimoni.Data
       if (null == fn) throw new ArgumentNullException(nameof(fn));
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
-      foreach(Key k in src.Keys.ToList()) {
-        if (!fn(src[k])) src.Remove(k);
-      }
+      var reject = new List<Key>(src.Count);
+      foreach(var x in src) if (!fn(x.Value)) reject.Add(x.Key);
+      foreach(var x in reject) src.Remove(x);
       return src;
     }
 
@@ -332,9 +332,9 @@ namespace Zaimoni.Data
       if (null == fn) throw new ArgumentNullException(nameof(fn));
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
-      foreach(Key k in src.Keys.ToList()) {
-        if (!fn(k)) src.Remove(k);
-      }
+      var reject = new List<Key>(src.Count);
+      foreach(var x in src) if (!fn(x.Key)) reject.Add(x.Key);
+      foreach(var x in reject) src.Remove(x);
       return src;
     }
 

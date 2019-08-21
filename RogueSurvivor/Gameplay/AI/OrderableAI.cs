@@ -3315,6 +3315,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == clan) return null;
         var critical = WhatDoINeedNow();
         if (0 >= critical.Count) return null;
+        critical.RemoveWhere(it => {
+          if (GameItems.ammo.Contains(it)) {
+            var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
+            if (null == rw || rw.Ammo == rw.Model.MaxAmmo) return true;  // not needed
+          }
+          return false;
+        });
+        if (0 >= critical.Count) return null;
         var insurance = new Dictionary<Actor, GameItems.IDs>();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
         var want = new Dictionary<Actor, GameItems.IDs>();
         foreach (var a in clan) {
@@ -3327,8 +3335,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach (var x in have.Key) {
                     if (!critical.Contains(x)) continue;
                     if (GameItems.ammo.Contains(x)) {
-                      var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
-                      if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;  // not needed
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
@@ -3346,8 +3352,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach (var x in have.Value) {
                     if (!critical.Contains(x)) continue;
                     if (GameItems.ammo.Contains(x)) {
-                      var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(x);
-                      if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                       var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
                       if (null != rw2 && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
                     }
