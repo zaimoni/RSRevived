@@ -1341,6 +1341,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? ok : src);
     }
 
+    private Dictionary<Location, T> DecideMove_Avoid<T>(Dictionary<Location,T> src, IEnumerable<Point> avoid)
+    {
+      if (null == avoid) return src;
+      var ok = new Dictionary<Location, T>();
+      foreach(var loc in src) {
+        Location? test = m_Actor.Location.Map.Denormalize(loc.Key);
+        if (null != test && avoid.Contains(test.Value.Position)) continue;  // null is expected for using a same-district exit
+        ok.Add(loc.Key,loc.Value);
+      }
+	  int new_dest = ok.Count;
+      return ((0 < new_dest && new_dest < src.Count) ? ok : src);
+    }
+
+
     private List<Point> DecideMove_NoJump(List<Point> src)
     {
       IEnumerable<Point> no_jump = src.Where(pt=> {
@@ -1359,6 +1373,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
 	  int new_dest = no_jump.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
+    }
+
+    private static Dictionary<Location, T> DecideMove_NoJump<T>(Dictionary<Location,T> src)
+    {
+      bool no_jump(Location loc) {
+        MapObject tmp2 = loc.MapObject;
+        if (null == tmp2) return true;
+        return !tmp2.IsJumpable;
+      }
+      if (!src.Any(x => no_jump(x.Key)) || !src.Any(x => !no_jump(x.Key))) return src;
+      return src.OnlyIf(no_jump);
     }
 
     private List<Point> DecideMove_LongPath(List<Point> src)
@@ -1382,11 +1407,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_shove.ToList() : src);
     }
 
+    private static Dictionary<T, ActorAction> DecideMove_NoShove<T>(Dictionary<T,ActorAction> src)
+    {
+      if (!src.Any(act => !(act.Value is ActionShove)) || !src.Any(act => act.Value is ActionShove)) return src;
+      src.OnlyIf((Predicate<ActorAction>)(act => !(act is ActionShove)));
+      return src;
+    }
+
     private static List<T> DecideMove_NoPush<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
     {
       IEnumerable<T> no_push = src.Where(loc => !(legal_steps[loc] is ActionPush));
 	  int new_dest = no_push.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_push.ToList() : src);
+    }
+
+    private static Dictionary<T, ActorAction> DecideMove_NoPush<T>(Dictionary<T, ActorAction> src)
+    {
+      if (!src.Any(act => !(act.Value is ActionPush)) || !src.Any(act => act.Value is ActionPush)) return src;
+      src.OnlyIf((Predicate<ActorAction>)(act => !(act is ActionPush)));
+      return src;
     }
 
     static private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
@@ -1428,6 +1467,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
         taint_exposed.OnlyIf(val=>max_taint_exposed==val);
         return taint_exposed.Keys.ToList();
+    }
+
+    private Dictionary<Location, T> DecideMove_maximize_visibility<T>(Dictionary<Location,T> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
+        tainted.IntersectWith(new_los);
+        if (0>=tainted.Count) return dests;
+        var taint_exposed = new Dictionary<Location,int>();
+        foreach(var loc in dests) {
+          var test = m_Actor.Location.Map.Denormalize(loc.Key);
+          if (null == test) {   // assume same-district exit use...don't really want to do this when other targets are close
+            taint_exposed[loc.Key] = 0;
+            continue;
+          }
+          if (!hypothetical_los.TryGetValue(test.Value.Position,out var src)) {
+            taint_exposed[loc.Key] = 0;
+            continue;
+          }
+          HashSet<Point> tmp2 = new HashSet<Point>(src);
+          tmp2.IntersectWith(tainted);
+          taint_exposed[loc.Key] = tmp2.Count;
+        }
+        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt.Key]).Max();
+        dests.OnlyIf(loc=>taint_exposed[loc]==max_taint_exposed);
+        return dests;
     }
 
     private ActorAction _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
@@ -1570,6 +1632,44 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
+    private ActorAction _finalDecideMove(Dictionary<Location,ActorAction> src)
+    {
+      if (null==src || 0==src.Count) return null;
+      if (1==src.Count) return src.First().Value;
+
+	  var secondary = new List<ActorAction>();
+      bool prefer_cardinal(Location loc) {
+        if (m_Actor.Location.Position.X == loc.Position.X) return true;
+        if (m_Actor.Location.Position.Y == loc.Position.Y) return true;
+        return false;
+      }
+      var tmp = src.Keys.ToList();
+	  while(0<tmp.Count) {
+        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
+        var ret = src[dest];    // sole caller guarantees exists and is performable
+        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
+           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+             // non-moving shove...would rather not spend the stamina if there is a better option
+             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+             continue;
+           }
+           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
+           // target should not be sleeping; check for that anyway
+           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
+
+           if (   null == ok_dests // shove is rude
+               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+                {
+                secondary.Add(ret);
+                continue;
+                }
+        }
+		return ret;
+	  }
+      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
+    }
+
     // \todo timing test: handle Resolvable before or after ActorDest?
     public bool VetoAction(ActorAction x)
     {
@@ -1657,12 +1757,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    protected void DecideMove_WaryOfTraps(Dictionary<Location, int> src)
+    protected void DecideMove_WaryOfTraps<T>(Dictionary<Location, T> src)
     {
 	  var trap_damage_field = new Dictionary<Location,int>();
-	  foreach (var x in src) {
-		trap_damage_field[x.Key] = x.Key.Map.TrapsUnavoidableMaxDamageAtFor(x.Key.Position,m_Actor);
-	  }
+	  foreach (var x in src) trap_damage_field.Add(x.Key,x.Key.Map.TrapsUnavoidableMaxDamageAtFor(x.Key.Position,m_Actor));
+
 	  var safe = src.Keys.Where(x => 0>=trap_damage_field[x]);
 	  int new_dest = safe.Count();
       if (0 == new_dest) {
@@ -1745,6 +1844,76 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // weakly prefer not to jump
       tmp = DecideMove_NoJump(tmp);
       return _finalDecideMove(tmp,legal_steps);
+	}
+
+    protected ActorAction DecideMove(Dictionary<Location,ActorAction> src)
+	{
+      if (null == src) return null; // does happen
+      src.OnlyIf(loc => 1==Rules.InteractionDistance(m_Actor.Location,loc));
+      if (0 >= src.Count) return null;
+
+      DecideMove_WaryOfTraps(src);
+
+      // XXX \todo if there are maps we do not want to path to, screen those here
+      if (1 >= src.Count) return _finalDecideMove(src);
+
+	  // do not get in the way of allies' line of fire
+	  src = DecideMove_Avoid(src, FriendsLoF());
+      if (1 >= src.Count) return _finalDecideMove(src);
+
+      // XXX if we have priority-see locations, maximize that
+      // XXX if we have threat tracking, maximize threat cleared
+      // XXX if we have item memory, maximize "update"
+	  bool want_LOS_heuristics = false;
+	  ThreatTracking threats = m_Actor.Threats;
+	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  if (null != threats || null != sights_to_see) want_LOS_heuristics = true;
+
+	  var hypothetical_los = want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>>() : null;
+      var new_los = new HashSet<Point>();
+	  if (null != hypothetical_los) {
+	    // only need points newly in FOV that aren't currently
+	    foreach(var x in src) {
+          if (x.Value is ActionUseExit) continue;
+          Location? test = m_Actor.Location.Map.Denormalize(x.Key);
+          if (null == test) throw new ArgumentNullException(nameof(test));
+	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          new_los.UnionWith(hypothetical_los[test.Value.Position]);
+	    }
+	  }
+      // only need to check if new locations seen
+      if (0 >= new_los.Count) {
+        threats = null;
+        sights_to_see = null;
+      }
+
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+
+      if (null != threats) {
+        src = DecideMove_maximize_visibility(src, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
+        if (1 >= src.Count) return _finalDecideMove(src);
+	  }
+	  if (null != sights_to_see) {
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
+        if (null!=inspect) {
+          src = DecideMove_maximize_visibility(src, inspect, new_los, hypothetical_los);
+          if (1 >= src.Count) return _finalDecideMove(src);
+        }
+	  }
+
+      // weakly prefer not to shove
+      src = DecideMove_NoShove(src);
+      if (1 >= src.Count) return _finalDecideMove(src);
+
+      List<Location> tmp = src.Keys.ToList();
+      // weakly prefer not to push
+      src = DecideMove_NoPush(src);
+      if (1 >= src.Count) return _finalDecideMove(src);
+
+      // weakly prefer not to jump
+      src = DecideMove_NoJump(src);
+      return _finalDecideMove(src);
 	}
 
     // direct move cost adapter; note reference copy of parameter

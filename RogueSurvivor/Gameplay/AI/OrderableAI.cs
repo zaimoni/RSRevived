@@ -2253,10 +2253,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsPerformable() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
       if (0 >= adjacent.Count) return null;
       adjacent.OnlyIf(loc => range.ContainsKey(loc));
-      if (0 < adjacent.Count) {
-        adjacent = adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts);
-        return RogueForm.Game.Rules.DiceRoller.Choose(adjacent).Value;
-      }
+      if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts));
+
       // end function target
       var init_costs = new Dictionary<Location,int>();
       foreach(var x in range) init_costs[x.Key] = 0;
