@@ -738,9 +738,9 @@ namespace djack.RogueSurvivor.Data
     public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
     {
       if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+      if (actor.CanEnter(new Location(this,pt))) return false;
       if (   1 == Engine.Rules.InteractionDistance(new Location(this,pt),actor.Location)
           && null == Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return true;
-      if (actor.CanEnter(new Location(this,pt))) return false;
       // generators may not be entered, but are still (unreliably) pathable
       if (GetMapObjectAtExt(pt) is Engine.MapObjects.PowerGenerator) return false;
 #if OBSOLETE
@@ -770,8 +770,7 @@ namespace djack.RogueSurvivor.Data
 
       Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(loc, actor, already); }
 
-	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => Location.IsInBounds(loc) && actor.CanEnter(loc));
-      var ret = new FloodfillPathfinder<Location>(m_StepPather);
+	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => Location.IsInBounds(loc) && actor.CanEnter(loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
@@ -783,8 +782,7 @@ namespace djack.RogueSurvivor.Data
 
       Dictionary<Point,int> fn(Point pt) { return OneStepForPathfinder(pt, actor, already); }
 
-	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
-      var ret = new FloodfillPathfinder<Point>(m_StepPather);
+	  var ret = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
       Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
