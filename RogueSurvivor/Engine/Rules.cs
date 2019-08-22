@@ -477,8 +477,8 @@ namespace djack.RogueSurvivor.Engine
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
-             Dictionary<Point, int> self_block = ai.MovePlanIf(actorAt.Location.Position);
-             if (null != self_block) push_dest.OnlyIf(pt => !self_block.ContainsKey(pt));
+             var self_block = ai.WantToGoHere(actorAt.Location);
+             if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(new Location(actorAt.Location.Map, pt)));
              push_legal = 1<=push_dest.Count;
            }
            if (push_legal) {
@@ -535,8 +535,8 @@ namespace djack.RogueSurvivor.Engine
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
            if (is_adjacent) {
              if (push_legal) {
-               Dictionary<Point, int> self_block = ai.MovePlanIf(mapObjectAt.Location.Position);
-               if (null != self_block) push_dest.OnlyIf(pt => !self_block.ContainsKey(pt));
+               var self_block = ai.WantToGoHere(mapObjectAt.Location);
+               if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(new Location(mapObjectAt.Location.Map, pt)));
 
                // function target
                List<KeyValuePair<Point, Direction>> candidates = null;

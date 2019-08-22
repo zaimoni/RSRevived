@@ -4999,12 +4999,8 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(new string[1] { string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location), SIZE_OF_ACTOR)));
       if (other.Controller is ObjectiveAI ai) {
-        Dictionary<Point, int> dests = ai.MovePlanIf(other.Location.Position);
-        if (null != dests) {
-          foreach(Point pt in dests.Keys) {
-            AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(new Location(other.Location.Map,pt)), SIZE_OF_ACTOR)));
-          }
-        }
+        var dests = ai.WantToGoHere(other.Location);
+        if (null != dests) foreach(var loc in dests) AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
 
       bool flag2 = false;
@@ -11715,12 +11711,8 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (actor.Controller is ObjectiveAI ai) {
-        Dictionary<Point, int> dests = ai.MovePlanIf(actor.Location.Position);
-        if (null != dests) {
-          foreach(Point pt in dests.Keys) {
-            AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(new Location(actor.Location.Map,pt)), SIZE_OF_ACTOR)));
-          }
-        }
+        var dests = ai.WantToGoHere(actor.Location);
+        if (null != dests) foreach(var loc in dests) AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
     }
 

@@ -3634,7 +3634,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (old_dist > new_dist) return false;
         if (old_dist < new_dist) return true;
       }
-      if (MovePlanIf(m_Actor.Location.Position)?.ContainsKey(dest.Position) ?? false) return false;    // needs adjusting for cross-district
+      if (WantToGoHere(m_Actor.Location)?.Contains(dest) ?? false) return false;
 
       var already_near_actor = GetCloseToActor();
       if (   null!=already_near_actor.Key && 0<already_near_actor.Value // reject default-initialization

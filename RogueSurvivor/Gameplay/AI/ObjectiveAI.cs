@@ -898,6 +898,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
+    public List<Location> WantToGoHere(Location loc) {
+      List<Location> ret = PathToTarget.WantToGoHere(GetMinStepPath<Location>(), loc);
+      if (null != ret) return ret;
+      var path = GetLambdaPath();
+      if (null != path) path.WantToGoHere(loc,this);
+      if (loc.Map == m_Actor.Location.Map) {
+         ret = PathToTarget.WantToGoHere(GetMinStepPath<Point>(), loc);
+         if (null != ret) return ret;
+         if (PlannedMoves.TryGetValue(loc.Position, out var src) && null!=src && 0 < src.Count) {
+            ret = new List<Location>(src.Count);
+            foreach(var x in src) ret.Add(new Location(m_Actor.Location.Map,x.Key));
+            return ret;
+         }
+      }
+      return null;
+    }
+
     [System.Flags]
     public enum ReactionCode : uint {
       NONE = 0,
@@ -1276,18 +1293,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return dest;
     }
 
-    protected void ClearMovePlan()
-    {
-      PlannedMoves.Clear();
-    }
-
-    public Dictionary<Point, int> MovePlanIf(Point pt)
-    {
-      if (   !PlannedMoves.TryGetValue(pt, out var src)
-          ||  null==src)  // XXX probably being used incorrectly
-        return null;
-      return new Dictionary<Point,int>(src);
-    }
+    protected void ClearMovePlan() { PlannedMoves.Clear(); }
 
     private List<Point> FindRetreat()
     {
@@ -1506,10 +1512,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  while(0<tmp.Count) {
 		ActorAction ret = legal_steps[RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+           var ok_dests = ai.WantToGoHere(shove.Target.Location);
+           if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
-             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+             if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
              continue;
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
@@ -1517,7 +1523,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
 
            if (   null == ok_dests // shove is rude
-               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+               || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
                 {
                 secondary.Add(ret);
                 continue;
@@ -1608,10 +1614,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           continue;
         };
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+           var ok_dests = ai.WantToGoHere(shove.Target.Location);
+           if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
-             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+             if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
              continue;
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
@@ -1619,7 +1625,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
 
            if (   null == ok_dests // shove is rude
-               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+               || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
                 {
                 secondary.Add(ret);
                 continue;
@@ -1646,10 +1652,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = src[dest];    // sole caller guarantees exists and is performable
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+           var ok_dests = ai.WantToGoHere(shove.Target.Location);
+           if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
-             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+             if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
              continue;
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
@@ -1657,7 +1663,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
 
            if (   null == ok_dests // shove is rude
-               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+               || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
                 {
                 secondary.Add(ret);
                 continue;
@@ -1690,8 +1696,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = close.Door.Location.Map.GetActorAtExt(pt);
           if (null == actor || m_Actor.IsEnemyOf(actor)) continue;
           if (actor.Controller is ObjectiveAI ai) {
-            Dictionary<Point, int> tmp = ai.MovePlanIf(actor.Location.Position);
-            if (tmp?.ContainsKey(close.Door.Location.Position) ?? false) return true;
+            var tmp = ai.WantToGoHere(actor.Location);
+            if (tmp?.Contains(close.Door.Location) ?? false) return true;
           }
         }
       }
@@ -1701,19 +1707,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
 
         if (shove.Target.Controller is ObjectiveAI ai) {
-          if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+          if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
             // non-moving shove...would rather not spend the stamina if there is a better option
-            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-            if (null != ok_dests) return !ok_dests.ContainsKey(shove.To); // shove is to a wanted destination
+            var ok_dests = ai.WantToGoHere(shove.Target.Location);
+            if (null != ok_dests) return !ok_dests.Contains(shove.a_dest); // shove is to a wanted destination
           }
           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
           // target should not be sleeping; check for that anyway
           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
-/*
-           if (   null == ok_dests // shove is rude
-               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
-               return tmp;
-*/
         }
       }
       if (x is ActionUseExit exit && exit.IsBlocked) return true;

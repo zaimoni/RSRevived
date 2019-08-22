@@ -212,6 +212,42 @@ namespace djack.RogueSurvivor.Gameplay.AI
             _expired = false;
         }
 
+        public static List<Location> WantToGoHere(List<List<Location>> src, Location loc) {
+            if (null == src || 0 >= src.Count) return null;
+            List<Location> ret;
+            int n = src.Count;
+            while (0 < n--) {
+                ret = src[n].FindAll(pt => 1 == Engine.Rules.InteractionDistance(loc, pt));
+                if (0 < ret.Count) return ret;
+            }
+            return null;
+        }
+
+        public static List<Location> WantToGoHere(List<List<Point>> src, Location loc) {
+            if (null == src || 0 >= src.Count) return null;
+            List<Point> working;
+            int n = src.Count;
+            while (0 < n--) {
+                working = src[n].FindAll(pt => 1 == Engine.Rules.GridDistance(loc.Position, pt));
+                if (0 < working.Count) {
+                    var ret = new List<Location>(working.Count);
+                    foreach (var pt in working) ret.Add(new Location(loc.Map, pt));
+                    return ret;
+                };
+            }
+            return null;
+        }
+
+        public List<Location> WantToGoHere(Location loc, ObjectiveAI ai) {
+            var ret = WantToGoHere(loc_path, loc);
+            if (null != ret) return ret;
+            if (HomeMap(ai) == loc.Map) {
+                ret = WantToGoHere(pt_path, loc);
+                if (null != ret) return ret;
+            }
+            return null;
+        }
+
 #region path management
         // require that we be adjacent to the path.
         public static bool reject_path(List<List<Location>> min_path, ObjectiveAI ai)
