@@ -1768,8 +1768,7 @@ restart:
           if (map.IsWalkable(rail.X+height-1, test.Y)) options[Compass.XCOMlike.W] = (rail.X+height-1)-test.X;
         }
         if (0==options.Count) throw new InvalidOperationException("subway station w/o candidate directions");
-        int min_cost = options.Values.Min();
-        options.OnlyIf(val => val <= min_cost);
+        options.OnlyIfMinimal();
         direction = Direction.COMPASS[(int)options.Keys.First()];
       }
       bool direction_ew = (2==direction.Index%4);
@@ -2458,8 +2457,7 @@ restart:
             air[test3] = basement.CountAdjacentTo(test3,pt => basement.GetTileModelAt(pt).IsWalkable);
         }
         if (!basement.HasExitAt(test)) {
-          int max = air.Values.Max();
-          air.OnlyIf(val => val==max);
+          air.OnlyIfMaximal();
           var exchange = m_DiceRoller.Choose(air).Key;
           basement.SetTileModelAt(test, GameTiles.WALL_BRICK);
           basement.SetTileModelAt(exchange, GameTiles.FLOOR_CONCRETE);

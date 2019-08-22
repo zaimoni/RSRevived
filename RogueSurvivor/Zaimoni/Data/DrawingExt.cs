@@ -314,7 +314,7 @@ namespace Zaimoni.Data
     }
 
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
-    public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
+    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -323,10 +323,9 @@ namespace Zaimoni.Data
       var reject = new List<Key>(src.Count);
       foreach(var x in src) if (!fn(x.Value)) reject.Add(x.Key);
       foreach(var x in reject) src.Remove(x);
-      return src;
     }
 
-    public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Key> fn)
+    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Key> fn)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -335,7 +334,56 @@ namespace Zaimoni.Data
       var reject = new List<Key>(src.Count);
       foreach(var x in src) if (!fn(x.Key)) reject.Add(x.Key);
       foreach(var x in reject) src.Remove(x);
-      return src;
+    }
+
+    public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Value:IComparable<Value>
+    {
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      if (1 >= src.Count) return;
+      var reject = new List<Key>();
+      var accept = new List<Key>();
+      Value num1 = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
+      foreach(var x in src) {
+        int comp = num1.CompareTo(x.Value);
+        if (0>comp) {
+            reject.Add(x.Key);
+            continue;
+        }
+        if (0<comp) {
+            reject.AddRange(accept);
+            accept.Clear();
+            num1 = x.Value;
+        }
+        accept.Add(x.Key);
+      }
+      foreach(var x in reject) src.Remove(x);
+    }
+
+    public static void OnlyIfMaximal<Key,Value>(this Dictionary<Key,Value> src) where Value:IComparable<Value>
+    {
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      if (1 >= src.Count) return;
+      var reject = new List<Key>();
+      var accept = new List<Key>();
+      Value num1 = (Value)typeof(Value).GetField("MinValue").GetValue(default(Value));
+      foreach(var x in src) {
+        int comp = num1.CompareTo(x.Value);
+        if (0<comp) {
+            reject.Add(x.Key);
+            continue;
+        }
+        if (0>comp) {
+            reject.AddRange(accept);
+            accept.Clear();
+            num1 = x.Value;
+        }
+        accept.Add(x.Key);
+      }
+      foreach(var x in reject) src.Remove(x);
     }
 
     public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
@@ -374,17 +422,39 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    // due to defective generics, we can't actually use all of the logical overloads we want (cleanly)
     public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
+      if (1 >= src.Count) return src;
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
       var ret = new Dictionary<T, U>();
       foreach(var x in src) {
          R num2 = metric(x.Value);
+         int comp = num2.CompareTo(num1);
+         if (0 < comp) continue;
+         if (0 > comp) {
+           ret.Clear();
+           num1 = num2;
+         }
+         ret.Add(x.Key,x.Value);
+      }
+      return ret;
+    }
+
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable
+    {
+#if DEBUG
+      if (null == metric) throw new ArgumentNullException(nameof(metric));
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      if (1 >= src.Count) return src;
+      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      var ret = new Dictionary<T, U>();
+      foreach(var x in src) {
+         R num2 = metric(x.Key);
          int comp = num2.CompareTo(num1);
          if (0 < comp) continue;
          if (0 > comp) {

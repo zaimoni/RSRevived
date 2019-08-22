@@ -1375,15 +1375,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
-    private static Dictionary<Location, T> DecideMove_NoJump<T>(Dictionary<Location,T> src)
+    private static void DecideMove_NoJump<T>(Dictionary<Location,T> src)
     {
       bool no_jump(Location loc) {
         MapObject tmp2 = loc.MapObject;
         if (null == tmp2) return true;
         return !tmp2.IsJumpable;
       }
-      if (!src.Any(x => no_jump(x.Key)) || !src.Any(x => !no_jump(x.Key))) return src;
-      return src.OnlyIf(no_jump);
+      if (!src.Any(x => no_jump(x.Key)) || !src.Any(x => !no_jump(x.Key))) return;
+      src.OnlyIf(no_jump);
     }
 
     private List<Point> DecideMove_LongPath(List<Point> src)
@@ -1441,8 +1441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmp2.IntersectWith(tainted);
           taint_exposed[pt] = tmp2.Count;
         }
-        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
-        taint_exposed.OnlyIf(val=>max_taint_exposed==val);
+        taint_exposed.OnlyIfMaximal();
         return taint_exposed.Keys.ToList();
     }
 
@@ -1464,8 +1463,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmp2.IntersectWith(tainted);
           taint_exposed[loc] = tmp2.Count;
         }
-        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
-        taint_exposed.OnlyIf(val=>max_taint_exposed==val);
+        taint_exposed.OnlyIfMaximal();
         return taint_exposed.Keys.ToList();
     }
 
@@ -1779,9 +1777,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
       src.OnlyIf(loc => legal_steps.ContainsKey(loc));
       if (0 >= src.Count) return null;
-
-      int min_cost = src.Values.Min();
-      src.OnlyIf(val => min_cost>=val);
+      src.OnlyIfMinimal();
 
       DecideMove_WaryOfTraps(src);
 
@@ -1912,7 +1908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1 >= src.Count) return _finalDecideMove(src);
 
       // weakly prefer not to jump
-      src = DecideMove_NoJump(src);
+      DecideMove_NoJump(src);
       return _finalDecideMove(src);
 	}
 
@@ -1923,8 +1919,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == dests) throw new ArgumentNullException(nameof(dests));
 #endif
       if (0 >= dests.Count) return null;
-      int min_cost = dests.Values.Min();
-      dests.OnlyIf(val => min_cost>=val);
+      dests.OnlyIfMinimal();
       return DecideMove(dests.Keys);
 	}
 
@@ -2770,57 +2765,17 @@ restart:
 #if DEBUG
       if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
 #endif
-      var ret = new Dictionary<Location, int>();
-      int max_seen = int.MinValue;
-      int tmp2;
-
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // mirror DecideMove so we don't error out
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       if (0 >= legal_steps.Count) return null;
+      move_scores.OnlyIf(loc => legal_steps.ContainsKey(loc));
+      if (0 >= move_scores.Count) return null;
+      move_scores.OnlyIfMaximal();
+      legal_steps.OnlyIf(loc => move_scores.ContainsKey(loc));
 
-      foreach(var x in move_scores) {
-        if (!legal_steps.ContainsKey(x.Key)) continue;
-        if (max_seen == (tmp2 = x.Value)) {
-          ret[x.Key] = tmp2;
-          continue;
-        }
-        if (max_seen > tmp2) continue;
-        ret.Clear();
-        ret[x.Key] = (max_seen = tmp2);
-      }
-      if (0 >= ret.Count) return null;
+      legal_steps = legal_steps.CloneOnlyMinimal(Map.PathfinderMoveCosts);
 
-      if (2 <= ret.Count) {
-        var tiebreak = new Dictionary<Location,int>();
-        int min_seen = int.MaxValue;
-        foreach(var x in ret) {
-          var working = Map.PathfinderMoveCosts(legal_steps[x.Key]);
-          if (min_seen < working) continue;
-          if (min_seen > working) {
-            min_seen = working;
-            tiebreak.Clear();
-          }
-          tiebreak.Add(x.Key,working);
-        }
-        ret.OnlyIf(loc => tiebreak.ContainsKey(loc));
-      }
-
-      if (2 <= ret.Count) {
-        var tiebreak = new Dictionary<Location,double>();
-        double min_seen = double.MaxValue;
-        foreach(var x in ret) {
-          var working = minimize(x.Key);
-          if (min_seen < working) continue;
-          if (min_seen > working) {
-            min_seen = working;
-            tiebreak.Clear();
-          }
-          tiebreak.Add(x.Key,working);
-        }
-        ret.OnlyIf(loc => tiebreak.ContainsKey(loc));
-      }
-
-      ActorAction tmp = DecideMove(ret);
+      ActorAction tmp = DecideMove(legal_steps.CloneOnlyMinimal(minimize));
 #if FALSE_POSITIVE
       if (null == tmp) throw new ArgumentNullException(nameof(tmp));
 #endif

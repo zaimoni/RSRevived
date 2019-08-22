@@ -1110,8 +1110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
-        int fast_approach = efficiency.Values.Max();
-        efficiency.OnlyIf(val=>fast_approach==val);
+        efficiency.OnlyIfMaximal();
         legal_steps = new List<Point>(efficiency.Keys);
       }
 
