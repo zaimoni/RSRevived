@@ -912,6 +912,52 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return ret;
          }
       }
+      if (null != _last_move) {
+        // educated guess
+        var domain = new Location?[8];
+        var ok = new HashSet<Location>();
+        Span<bool> can_enter = stackalloc bool[8];
+        int origin = -1;
+        foreach(var dir in Direction.COMPASS) {
+          var test = _last_move.dest + dir;
+          if (!test.ForceCanonical()) continue;
+          if (!m_Actor.CanEnter(test)) continue;
+          can_enter[dir.Index] = true;
+          if (test == _last_move.origin) origin = dir.Index;
+          else domain[dir.Index]=test;
+        }
+        if (!can_enter[(int)Compass.XCOMlike.N] && !can_enter[(int)Compass.XCOMlike.S]) {
+            // traveling EW or WE.  Use the C enumeration as a testing
+            Location? test;
+            if ((int)Compass.XCOMlike.S > origin) {
+                // EW: west destinations likely not-bad
+                if (null!=(test = domain[(int)Compass.XCOMlike.SW])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.W])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.NW])) ok.Add(test.Value);
+            } else {
+                // WE: east destinations likely not-bad
+                if (null!=(test = domain[(int)Compass.XCOMlike.NE])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.E])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.SE])) ok.Add(test.Value);
+            }
+        }
+        if (!can_enter[(int)Compass.XCOMlike.E] && !can_enter[(int)Compass.XCOMlike.W]) {
+            // traveling NS or SN
+            Location? test;
+            if ((int)Compass.XCOMlike.E > origin || (int)Compass.XCOMlike.W < origin) {
+                // NS: south destinations likely not-bad
+                if (null!=(test = domain[(int)Compass.XCOMlike.SE])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.S])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.SW])) ok.Add(test.Value);
+            } else {
+                // SN: north destinations likely not-bad
+                if (null!=(test = domain[(int)Compass.XCOMlike.NW])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.N])) ok.Add(test.Value);
+                if (null!=(test = domain[(int)Compass.XCOMlike.NE])) ok.Add(test.Value);
+            }
+        }
+        if (0 < ok.Count) return ok.ToList();
+      }
       return null;
     }
 

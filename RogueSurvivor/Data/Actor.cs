@@ -2479,6 +2479,20 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public List<Location> MutuallyAdjacentFor(Location a, Location b)
+    {
+      if (3 <= Rules.InteractionDistance(a,b)) return null;
+      var e = a.Exit;
+      if (null != e && e.Location==b) return null;  // may not be true indefinitely (helicopters and/or building roofs)
+      var ret = new List<Location>();
+      foreach(var dir in Direction.COMPASS) {
+        var loc = a+dir;
+        if (loc.ForceCanonical() && 1 == Rules.GridDistance(loc, b) && CanEnter(loc)) ret.Add(loc);
+      }
+      return (0<ret.Count) ? ret : null;
+    }
+
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {

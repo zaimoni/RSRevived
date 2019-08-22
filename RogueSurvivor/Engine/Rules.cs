@@ -462,11 +462,6 @@ namespace djack.RogueSurvivor.Engine
           if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
         }
 
-        // check for mutual-advantage switching place between ais
-        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
-            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true))
-           return new ActionSwitchPlaceEmergency(actor,actorAt);
-        
         // no chat when pathfinding
         // but it is ok to shove other actors
         if (actor.AbleToPush && actor.CanShove(actorAt)) {
@@ -478,21 +473,50 @@ namespace djack.RogueSurvivor.Engine
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
              var self_block = ai.WantToGoHere(actorAt.Location);
-             if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
-             push_legal = 1<=push_dest.Count;
+             if (null != self_block && 1==self_block.Count) {
+               push_dest.OnlyIf(pt => !self_block.Contains(pt));
+               push_legal = 1<=push_dest.Count;
+             }
            }
            if (push_legal) {
+             bool i_am_in_his_way = false;
+             bool i_can_help = false;
+             var help_him = (actorAt.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
+             if (null != help_him) {
+               i_am_in_his_way = help_him.Contains(actor.Location);
+               if (push_dest.NontrivialFilter(x => help_him.Contains(x.Key))) push_dest.OnlyIf(pt => help_him.Contains(pt));
+               i_can_help = help_him.Contains(push_dest.First().Key);
+             }
+
              // function target
-             List<KeyValuePair<Location, Direction>> candidates = null;
-             var candidates_2 = push_dest.Where(pt => !IsAdjacent(actor.Location, pt.Key));
-             var candidates_1 = push_dest.Where(pt => IsAdjacent(actor.Location, pt.Key));
-             if (candidates_2.Any()) candidates = candidates_2.ToList();
+             var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location, pt.Key));
+             var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(actor.Location, pt.Key));
+             var candidates = (i_can_help && candidates_2.Any()) ? candidates_2.ToList() : null;
+             if (null == candidates && !i_am_in_his_way && i_can_help && candidates_1.Any()) candidates = candidates_1.ToList();
+             if (null == candidates && i_am_in_his_way) {
+               // HMM...maybe step aside instead?
+               var considering = actor.MutuallyAdjacentFor(actor.Location,actorAt.Location);
+               if (null != considering) {
+                 considering = considering.FindAll(pt => pt.IsWalkableFor(actor));
+                 if (0 < considering.Count) return new ActionMoveStep(actor, RogueForm.Game.Rules.DiceRoller.Choose(considering));
+               }
+             }
+
+             // legacy initialization
+             if (null == candidates && candidates_2.Any()) candidates = candidates_2.ToList();
              if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
 
              if (null != candidates) return new ActionShove(actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
            }
         }
+
+        // check for mutual-advantage switching place between ais
+        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
+            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true)) {
+           return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+        }
+
         // consider re-legalizing chat here
         return null;
       }
@@ -536,7 +560,7 @@ namespace djack.RogueSurvivor.Engine
            if (is_adjacent) {
              if (push_legal) {
                var self_block = ai.WantToGoHere(mapObjectAt.Location);
-               if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
+               if (null != self_block && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                // function target
                List<KeyValuePair<Location, Direction>> candidates = null;

@@ -107,11 +107,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (m_Actor.IsPlayer || !actorAt.IsPlayer) {
           if (m_Actor.CanSwitchPlaceWith(actorAt, out m_FailReason)) return new ActionSwitchPlace(m_Actor, actorAt);
         }
-        // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
-        if (!((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(m_Actor.Location) ?? true))
-          return new ActionSwitchPlaceEmergency(m_Actor, actorAt);
 
-          if (m_Actor.AbleToPush && m_Actor.CanShove(actorAt)) {
+        if (m_Actor.AbleToPush && m_Actor.CanShove(actorAt)) {
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
            // we are adjacent due to the early-escape above
@@ -120,20 +117,47 @@ namespace djack.RogueSurvivor.Engine.Actions
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
              var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-             if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
-             push_legal = 1<=push_dest.Count;
+             if (null != self_block && 1==self_block.Count) {
+               push_dest.OnlyIf(pt => !self_block.Contains(pt));
+               push_legal = 1<=push_dest.Count;
+             }
            }
            if (push_legal) {
+             bool i_am_in_his_way = false;
+             bool i_can_help = false;
+             var help_him = (actorAt.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
+             if (null != help_him) {
+               i_am_in_his_way = help_him.Contains(m_Actor.Location);
+               if (push_dest.NontrivialFilter(x => help_him.Contains(x.Key))) push_dest.OnlyIf(pt => help_him.Contains(pt));
+               i_can_help = help_him.Contains(push_dest.First().Key);
+             }
+
              // function target
-             List<KeyValuePair<Location, Direction>> candidates = null;
              var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
              var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
-             if (candidates_2.Any()) candidates = candidates_2.ToList();
+             var candidates = (i_can_help && candidates_2.Any()) ? candidates_2.ToList() : null;
+             if (null == candidates && !i_am_in_his_way && i_can_help && candidates_1.Any()) candidates = candidates_1.ToList();
+             if (null == candidates && i_am_in_his_way) {
+               // HMM...maybe step aside instead?
+               var considering = m_Actor.MutuallyAdjacentFor(m_Actor.Location,actorAt.Location);
+               if (null != considering) {
+                 considering = considering.FindAll(pt => pt.IsWalkableFor(m_Actor));
+                 if (0 < considering.Count) return new ActionMoveStep(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(considering));
+               }
+             }
+
+             // legacy initialization
+             if (null == candidates && candidates_2.Any()) candidates = candidates_2.ToList();
              if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
 
              if (null != candidates) return new ActionShove(m_Actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
            }
+        }
+        // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
+        if (!((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(m_Actor.Location) ?? true)) {
+           return new ActionSwitchPlaceEmergency(m_Actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+        }
       } else if (null != obj) {
            if (obj is DoorWindow door) {
              if (door.BarricadePoints > 0) {
@@ -165,7 +189,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
            bool push_legal = (1 <= push_dest.Count); // always adjacent
            if (push_legal) {
-               var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
+               var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(m_Actor.Location);
                if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                // function target
@@ -187,7 +211,6 @@ namespace djack.RogueSurvivor.Engine.Actions
          }
          return null;
         }
-      }
       // \todo: handle pulling allies instead of just move-stepping, or pulling pushable objects
       return working;
     }

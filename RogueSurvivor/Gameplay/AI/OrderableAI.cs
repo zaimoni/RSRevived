@@ -3627,6 +3627,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null!=BehaviorUseAdjacentStack()) return true;
       if (null!=WouldUseAccessibleStack(dest)) return false;
+
+      var want_here = WantToGoHere(m_Actor.Location);
+      if (null != want_here) return !want_here.Contains(dest);
+
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
         var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min();
@@ -3634,7 +3638,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (old_dist > new_dist) return false;
         if (old_dist < new_dist) return true;
       }
-      if (WantToGoHere(m_Actor.Location)?.Contains(dest) ?? false) return false;
 
       var already_near_actor = GetCloseToActor();
       if (   null!=already_near_actor.Key && 0<already_near_actor.Value // reject default-initialization
