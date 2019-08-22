@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -31,5 +32,12 @@ namespace djack.RogueSurvivor.Data
     // Historical code in RogueGame that morally does the work of IsPerformable() should be lifted.
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
+
+    public static bool Is<T>(ActorAction src) where T:ActorAction { return src is T; }
+    public static bool IsNot<T>(ActorAction src) where T:ActorAction { return !(src is T); }
+
+    public static bool Is<T,U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return src is T; }
+    public static bool IsNot<T, U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return !(src is T); }
+
   }
 }

@@ -1388,8 +1388,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmp2) return true;
         return !tmp2.IsJumpable;
       }
-      if (!src.Any(x => no_jump(x.Key)) || !src.Any(x => !no_jump(x.Key))) return;
-      src.OnlyIf(no_jump);
+      if (src.NontrivialFilter(x => no_jump(x.Key))) src.OnlyIf(no_jump);
     }
 
     private List<Point> DecideMove_LongPath(List<Point> src)
@@ -1413,11 +1412,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_shove.ToList() : src);
     }
 
-    private static Dictionary<T, ActorAction> DecideMove_NoShove<T>(Dictionary<T,ActorAction> src)
+    private static void DecideMove_NoShove<T>(Dictionary<T,ActorAction> src)
     {
-      if (!src.Any(act => !(act.Value is ActionShove)) || !src.Any(act => act.Value is ActionShove)) return src;
-      src.OnlyIf((Predicate<ActorAction>)(act => !(act is ActionShove)));
-      return src;
+      if (src.NontrivialFilter(ActorAction.IsNot<ActionShove,T>)) src.OnlyIf(ActorAction.IsNot<ActionShove>);
     }
 
     private static List<T> DecideMove_NoPush<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
@@ -1427,11 +1424,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_push.ToList() : src);
     }
 
-    private static Dictionary<T, ActorAction> DecideMove_NoPush<T>(Dictionary<T, ActorAction> src)
+    private static void DecideMove_NoPush<T>(Dictionary<T, ActorAction> src)
     {
-      if (!src.Any(act => !(act.Value is ActionPush)) || !src.Any(act => act.Value is ActionPush)) return src;
-      src.OnlyIf((Predicate<ActorAction>)(act => !(act is ActionPush)));
-      return src;
+      if (src.NontrivialFilter(ActorAction.IsNot<ActionShove,T>)) src.OnlyIf(ActorAction.IsNot<ActionShove>);
     }
 
     static private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
@@ -1900,12 +1895,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
 
       // weakly prefer not to shove
-      src = DecideMove_NoShove(src);
+      DecideMove_NoShove(src);
       if (1 >= src.Count) return _finalDecideMove(src);
 
       List<Location> tmp = src.Keys.ToList();
       // weakly prefer not to push
-      src = DecideMove_NoPush(src);
+      DecideMove_NoPush(src);
       if (1 >= src.Count) return _finalDecideMove(src);
 
       // weakly prefer not to jump

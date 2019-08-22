@@ -313,6 +313,19 @@ namespace Zaimoni.Data
       return dest;
     }
 
+    public static bool NontrivialFilter<T>(this IEnumerable<T> src, Predicate<T> test) {
+      if (null == src) return false;
+      int found = 0;    // bitmap encoding: 1 found true, 2 found false
+      foreach(var x in src) {
+        if (test(x)) {
+          if (3 == (found |= 1)) return true;
+        } else {
+          if (3 == (found |= 2)) return true;
+        }
+      }
+      return false;
+    }
+
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {
