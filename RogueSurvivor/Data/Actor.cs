@@ -1923,20 +1923,29 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-    public bool CanBeShovedTo(Point toPos, out string reason)
+    /// <param name="to">Assumed to be in canonical form (in bounds)</param>
+    private string ReasonCantBeShovedTo(Location to)
     {
-      reason = ReasonCantBeShovedTo(toPos);
-      return string.IsNullOrEmpty(reason);
+      Map map = to.Map;
+      Point pos = to.Position;
+      if (map != Location.Map) return "out of map";  // XXX needs to go
+      if (!map.GetTileModelAt(pos).IsWalkable) return "blocked";
+      if (!map.GetMapObjectAt(pos)?.IsWalkable ?? false) return "blocked by an object";
+      if (map.HasActorAt(pos)) return "blocked by someone";
+      return "";
     }
 
-    public bool CanBeShovedTo(Point toPos)
-    {
-      return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos));
-    }
+    public bool CanBeShovedTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(toPos)); }
+    public bool CanBeShovedTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos)); }
+    /// <param name="to">Assumed to be in canonical form (in bounds)</param>
+    public bool CanBeShovedTo(Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(to)); }
+    /// <param name="to">Assumed to be in canonical form (in bounds)</param>
+    public bool CanBeShovedTo(Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(to)); }
 
-    public Dictionary<Point, Direction> ShoveDestinations {
+
+    public Dictionary<Location, Direction> ShoveDestinations {
       get {
-         return Location.Map.ValidDirections(Location.Position, (m, pt) => CanBeShovedTo(pt));
+         return Map.ValidDirections(Location, loc => CanBeShovedTo(loc));
       }
     }
 

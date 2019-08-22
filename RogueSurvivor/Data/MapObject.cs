@@ -449,23 +449,32 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantPushTo(Point toPos)
     {
       Map tmp = Location.Map;
-      if (!tmp.IsValid(toPos)) return "out of map";  // XXX should be IsValid but that's a completely different code path
-      if (!tmp.GetTileModelAtExt(toPos).IsWalkable) return "blocked by an obstacle";   // XXX likewise should be GetTileModelAtExt
+      if (!tmp.IsValid(toPos)) return "out of map";
+      if (!tmp.GetTileModelAtExt(toPos).IsWalkable) return "blocked by an obstacle";
       if (tmp.HasMapObjectAtExt(toPos)) return "blocked by an object";
       if (tmp.HasActorAt(toPos)) return "blocked by someone";
       return "";
     }
 
-    public bool CanPushTo(Point toPos, out string reason)
+    /// <param name="to">Assumed in canonical form (in-bounds)</param>
+    private string ReasonCantPushTo(Location to)
     {
-      reason = ReasonCantPushTo(toPos);
-      return string.IsNullOrEmpty(reason);
+      Map map = to.Map;
+      Point pos = to.Position;
+      if (!map.GetTileModelAt(pos).IsWalkable) return "blocked by an obstacle";
+      if (map.HasMapObjectAt(pos)) return "blocked by an object";
+      if (map.HasActorAt(pos)) return "blocked by someone";
+      return "";
     }
 
-    public bool CanPushTo(Point toPos)
-    {
-      return string.IsNullOrEmpty(ReasonCantPushTo(toPos));
-    }
+    public bool CanPushTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(toPos)); }
+
+    public bool CanPushTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantPushTo(toPos)); }
+
+    /// <param name="to">Assumed in canonical form (in-bounds)</param>
+    public bool CanPushTo(Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(to)); }
+    /// <param name="to">Assumed in canonical form (in-bounds)</param>
+    public bool CanPushTo(Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(to)); }
 
     public void PlaceAt(Map m, Point pos) {m.PlaceAt(this,pos);} // this guaranteed non-null so non-null precondition ok
 

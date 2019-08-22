@@ -1998,16 +1998,18 @@ retry:
       return 0;
     }
 
-    public Dictionary<Point,Direction> ValidDirections(Point pos, Func<Map, Point, bool> testFn)
+    /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
+    static public Dictionary<Location,Direction> ValidDirections(Location loc, Predicate<Location> testFn)
     {
 #if DEBUG
       if (null == testFn) throw new ArgumentNullException(nameof(testFn));
 #endif
-      var ret = new Dictionary<Point,Direction>(8);
+      var ret = new Dictionary<Location,Direction>(8);
       foreach(Direction dir in Direction.COMPASS) {
-        Point pt = pos+dir;
-        if (!testFn(this,pt)) continue;
-        ret[pt] = dir;
+        var pt = loc+dir;
+        if (!pt.ForceCanonical()) continue;
+        if (!testFn(pt)) continue;
+        ret.Add(pt,dir);
       }
       return ret;
     }

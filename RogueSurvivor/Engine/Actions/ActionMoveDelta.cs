@@ -115,19 +115,19 @@ namespace djack.RogueSurvivor.Engine.Actions
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
            // we are adjacent due to the early-escape above
-           Dictionary<Point,Direction> push_dest = actorAt.ShoveDestinations;
+           var push_dest = actorAt.ShoveDestinations;
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
              var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-             if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(new Location(actorAt.Location.Map, pt)));
+             if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
              push_legal = 1<=push_dest.Count;
            }
            if (push_legal) {
              // function target
-             List<KeyValuePair<Point, Direction>> candidates = null;
-             IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
-             IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
+             List<KeyValuePair<Location, Direction>> candidates = null;
+             var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
+             var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
              if (candidates_2.Any()) candidates = candidates_2.ToList();
              if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
@@ -156,22 +156,22 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (m_Actor.AbleToPush && m_Actor.CanPush(obj)) {
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
-           Dictionary<Point,Direction> push_dest = obj.Location.Map.ValidDirections(obj.Location.Position, (m, pt) => {
+           var push_dest = Map.ValidDirections(obj.Location, loc => {
                // short-circuit language requirement on operator && failed here
-               if (!obj.CanPushTo(pt)) return false;
-               if (m.HasExitAt(pt) && m.IsInBounds(pt)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
-               return !m.PushCreatesSokobanPuzzle(pt, m_Actor);
+               if (!obj.CanPushTo(loc)) return false;
+               if (loc.Map.HasExitAt(loc.Position)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
+               return !loc.Map.PushCreatesSokobanPuzzle(loc.Position, m_Actor);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)
 
            bool push_legal = (1 <= push_dest.Count); // always adjacent
            if (push_legal) {
                var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-               if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(new Location(actorAt.Location.Map, pt)));
+               if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                // function target
-               List<KeyValuePair<Point, Direction>> candidates = null;
-               IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
-               IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location.Position, pt.Key));
+               List<KeyValuePair<Location, Direction>> candidates = null;
+               var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
+               var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
                if (candidates_2.Any()) candidates = candidates_2.ToList();
                if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
                // end function target
