@@ -2479,6 +2479,27 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    // likewise inventories
+    public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point> src) {
+      var ret = new HashSet<Point>();
+      foreach(var pt in src) {
+        var loc = new Location(m, pt);
+        var obj = loc.MapObject;
+        if (CanEnter(loc) && (null == obj || !obj.IsContainer)) {
+          ret.Add(pt);
+          continue;
+        } else {
+          foreach(var pt2 in pt.Adjacent()) {
+            if (CanEnter(new Location(m, pt2))) ret.Add(pt2);
+          }
+          continue;
+        }
+        // containers are also usually best to target adjacent, but usually getting within 1 triggers alternate behavior
+        ret.Add(pt);
+      }
+      return ret;
+    }
+
     public List<Location> MutuallyAdjacentFor(Location a, Location b)
     {
       if (3 <= Rules.InteractionDistance(a,b)) return null;
