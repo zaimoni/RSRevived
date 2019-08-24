@@ -2191,11 +2191,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction WouldUseAccessibleStack(Location dest,bool is_real=false) {
         Dictionary<Point, Inventory> stacks = dest.Map.GetAccessibleInventories(dest.Position);
         if (0 < (stacks?.Count ?? 0)) {
+          ActorAction tmpAction;
+          var map = dest.Map;
           foreach(var x in stacks) {
-            Location? loc = (dest.Map.IsInBounds(x.Key) ? new Location(dest.Map, x.Key) : dest.Map.Normalize(x.Key));
-            if (null == loc) throw new ArgumentNullException(nameof(loc));
-            ActorAction tmpAction = WouldGrabFromAccessibleStack(loc.Value, x.Value, is_real);
-            if (null != tmpAction) return tmpAction;
+            var s_pos = x.Key;
+            if (null != (tmpAction = WouldGrabFromAccessibleStack((map.IsInBounds(s_pos) ? new Location(map, s_pos) : map.Normalize(s_pos).Value), x.Value, is_real))) return tmpAction;
           }
         }
         return null;
@@ -2205,16 +2205,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	protected ActorAction BehaviorPathTo(Location dest)
 	{
-      var tmp = BehaviorUseAdjacentStack();
-      if (null != tmp) return tmp;
       return BehaviorPathTo(new HashSet<Location> { dest });
 	}
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
 	{
-      var tmp = BehaviorUseAdjacentStack();
-      if (null != tmp) return tmp;
-
       var seen = new HashSet<Location> { dest };
       var final_range = new Dictionary<Location,ActorAction>();
 
@@ -3606,15 +3601,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
-      var tmp = BehaviorUseAdjacentStack();
-      if (null != tmp) return tmp;
-      return BehaviorPathTo(m => WhereIs(critical, m));
+      return BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,WhereIs(critical, m)));
     }
 
     public bool ProposeSwitchPlaces(Location dest)
     {
-      if (null!=BehaviorUseAdjacentStack()) return false;
-      if (null!=WouldUseAccessibleStack(dest)) return true;
+      if (null != WouldUseAccessibleStack(m_Actor.Location)) return false;
+      if (null != WouldUseAccessibleStack(dest)) return true;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
         if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
@@ -3625,8 +3618,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool RejectSwitchPlaces(Location dest)
     {
-      if (null!=BehaviorUseAdjacentStack()) return true;
-      if (null!=WouldUseAccessibleStack(dest)) return false;
+      if (null != WouldUseAccessibleStack(m_Actor.Location)) return true;
+      if (null != WouldUseAccessibleStack(dest)) return false;
 
       var want_here = WantToGoHere(m_Actor.Location);
       if (null != want_here) return !want_here.Contains(dest);
