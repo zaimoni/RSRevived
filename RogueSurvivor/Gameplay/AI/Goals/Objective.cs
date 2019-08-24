@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public static bool reject_path(List<List<Point>> min_path, ObjectiveAI ai)
         {
-           if (null == min_path) return true;
+           if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
            Map map = loc.Map;
            Point pos = loc.Position;

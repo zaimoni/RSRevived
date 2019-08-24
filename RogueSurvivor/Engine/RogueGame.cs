@@ -7,7 +7,6 @@
 // #define DATAFLOW_TRACE
 
 // #define STABLE_SIM_OPTIONAL
-#define ENABLE_THREAT_TRACKING
 #define NO_PEACE_WALLS
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
@@ -7648,9 +7647,7 @@ namespace djack.RogueSurvivor.Engine
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
 	  // committed to move now
-#if ENABLE_THREAT_TRACKING
 	  actor.Moved();
-#endif
       newLocation.Place(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
@@ -7695,9 +7692,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
-#if ENABLE_THREAT_TRACKING
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
-#endif
+      (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       if (map.IsTrapCoveringMapObjectAt(position)) return;
       List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
       if (null == trapsAt) return;
@@ -11033,9 +11029,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!isStartingGame) {
         deadVictim.Location.Place(actor);
-#if ENABLE_THREAT_TRACKING
 	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
-#endif
       }
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (0 < (skillTable?.CountSkills ?? 0)) {

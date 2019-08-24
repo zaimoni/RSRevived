@@ -300,15 +300,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
-    public void SparseReset()
-    {
-      _sparse.Unset(SparseData.LoF);
-      _sparse.Unset(SparseData.CloseToActor);
-      _sparse.Unset(SparseData.ClearingZone);
-      _sparse.Unset(SparseData.EscapingTo);
-      var choke = GetChokepoint();
-      if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
-
+    /// <summary>
+    /// should maintain any cache data that is location-based; incomplete implementation 2019-08-23
+    /// </summary>
+    public void OnMove() {
       if (PathToTarget.reject_path(GetMinStepPath<Point>(),this) || PathToTarget.reject_path(GetMinStepPath<Location>(),this)) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) {
@@ -324,6 +319,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _sparse.Unset(SparseData.LambdaPath);
         _last_move = null;
       }
+    }
+
+    public void SparseReset()
+    {
+      _sparse.Unset(SparseData.LoF);
+      _sparse.Unset(SparseData.CloseToActor);
+      _sparse.Unset(SparseData.ClearingZone);
+      _sparse.Unset(SparseData.EscapingTo);
+      var choke = GetChokepoint();
+      if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
+
+      OnMove();  // 2019-08-24: both calls required to pass regression test
     }
 
     private void UpdateRetreatDestinations()
