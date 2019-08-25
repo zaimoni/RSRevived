@@ -614,12 +614,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
 #region floodfill pathfinder
-      var pathing = m_Actor.OnePath(m_Actor.Location);
-      pathing.OnlyIf(action => action.IsPerformable());
-      
       if (null != _legal_path) {
-        if (!InCombat) {
-          tmpAction = UsePreexistingPath();
+        if (!InCombat) {    // want to recompute if threat tracking active within view rectangle
+          tmpAction = UsePreexistingLambdaPath();
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using pre-existing path");
 #endif

@@ -735,15 +735,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != ret) return ret;
         ret = UsePreexistingPath(GetMinStepPath<Location>(), goals);
         if (null != ret) return ret;
-        if (null == goals) {
-          ret = GetLambdaPath()?.WalkPath(this);
-          if (null != ret) return ret;
-        }
         return null;
-     }
+    }
 
-     private ActorAction _pathNear(Location loc)
-     {
+    protected ActorAction UsePreexistingLambdaPath() { return GetLambdaPath()?.WalkPath(this); }
+
+    private ActorAction _pathNear(Location loc)
+    {
         if (null != _legal_path) {
             var candidates = new List<ActorAction>(_legal_path.Count);
             foreach (var x in _legal_path) {
@@ -754,7 +752,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (0 < candidates.Count) return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
         }
         return null;
-     }
+    }
 
 #region sparse data accessors
     // protected setters could be eliminated by downgrading _sparse to protected, but types have to be manually aligned between set/get anyway
