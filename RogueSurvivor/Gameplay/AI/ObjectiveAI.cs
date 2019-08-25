@@ -176,7 +176,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected enum CallChain {
       NONE = 0,
       ManageMeleeRisk,   // OrderableAI::ManageMeleeRisk; this caller is retreating and needs additional postprocessing
-      SelectAction_LambdaPath   // ...::SelectAction: need to record path to the lambda path cache
+      SelectAction_LambdaPath   // ...::SelectAction: path is from a lambda pathing block and should be recorded to the lambda path cache
     }
 
     readonly protected List<Objective> Objectives = new List<Objective>();
@@ -964,6 +964,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < ok.Count) return ok.ToList();
       }
       return null;
+    }
+
+    /// <remark>This executes before the main lambda pathing block, so its use of the lambda pathing cache does not conflict with that.</remark>
+    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
+    {
+      var act = UsePreexistingLambdaPath();
+      if (null != act) return act;
+      var update_path = ForceLambdaPath();
+      HashSet<Point> inv_dests(Map m) {
+        var ret = WhereIs(critical, m);
+        if (null == ret || 0 >= ret.Count) return null;
+        update_path.StageInventory(m,ret);
+        return ret;
+      }
+      _caller = CallChain.SelectAction_LambdaPath;
+      act = BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
+      _caller = CallChain.NONE;
+      return act;
     }
 
     [System.Flags]

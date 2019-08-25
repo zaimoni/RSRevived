@@ -3599,11 +3599,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<tainted.Count;   // XXX could be more efficient?
     }
 
-    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
-    {
-      return BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,WhereIs(critical, m)));
-    }
-
     public bool ProposeSwitchPlaces(Location dest)
     {
       if (null != WouldUseAccessibleStack(m_Actor.Location)) return false;
