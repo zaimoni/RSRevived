@@ -210,29 +210,31 @@ namespace Zaimoni.Data
         }
 
         public void _iterate(Dictionary<int, HashSet<T>> _now, int max_cost = int.MaxValue)
-        {
+        {   // 2019-08-26: release-mode IL Code size       355 (0x163)
               int cost = _now.Keys.Min();
               int max_delta_cost = max_cost - cost;
+              T pt;
+              int delta_cost;
               foreach(T tmp in _now[cost]) {
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
-                  if (_blacklist.Contains(tmp2.Key)) continue;
-                  if (!_inDomain(tmp2.Key)) continue;
-                  if (max_delta_cost<= tmp2.Value) continue;
-                  if (null != _blacklist_fn && _blacklist_fn(tmp2.Key)) continue;
+                  if (_blacklist.Contains(pt = tmp2.Key)) continue;
+                  if (!_inDomain(pt)) continue;
+                  if (null != _blacklist_fn && _blacklist_fn(pt)) continue;
+                  if (max_delta_cost <= (delta_cost = tmp2.Value)) continue;
 #if DEBUG
-                  if (0 >= tmp2.Value) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
+                  if (0 >= delta_cost) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
 #else
-                  if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
+                  if (0 >= delta_cost) continue;    // disallow pathological cost functions
 #endif
-                  int new_cost = cost+tmp2.Value;
-                  if (_map.TryGetValue(tmp2.Key,out int old_cost)) {
+                  int new_cost = cost + delta_cost;
+                  if (_map.TryGetValue(pt, out int old_cost)) {
                     if (old_cost <= new_cost) continue;
-                    if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
+                    if (_now[old_cost].Remove(pt) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
                   }
-                  _map[tmp2.Key] = new_cost;
-                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(tmp2.Key);
-                  else _now[new_cost] = new HashSet<T>{tmp2.Key};
+                  _map[pt] = new_cost;
+                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(pt);
+                  else _now.Add(new_cost, new HashSet<T> { pt });
                 }
               }
               _now.Remove(cost);

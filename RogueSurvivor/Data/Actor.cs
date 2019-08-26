@@ -1751,26 +1751,24 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Dictionary<Location,ActorAction> OnePath(Location loc, Dictionary<Location, ActorAction> already)
-    {
+    {  // 2019-08-26: release-mode IL Code size       281 (0x119)
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
         if (!dest.ForceCanonical()) continue;
         if (already.TryGetValue(dest, out var relay)) {
-          ret[dest] = relay;
+          ret.Add(dest, relay);
           continue;
         }
         if (Location==dest) {
-          ret[dest] = new Engine.Actions.ActionMoveStep(this, dest.Position);
+          ret.Add(dest, new Engine.Actions.ActionMoveStep(this, dest.Position));
           continue;
         }
-        ActorAction tmp = Rules.IsPathableFor(this, dest);
-        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this,dest,loc);
-        if (null != tmp) ret[dest] = tmp;
+        if (null != (relay = Rules.IsPathableFor(this, dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, dest, loc) : null))) ret.Add(dest, relay);
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ret[exit.Location] = new ActionUseExit(this, loc);
+        ret.Add(exit.Location, new ActionUseExit(this, loc));
         // simulate Exit::ReasonIsBlocked
         switch(exit.Location.IsBlockedForPathing) {
         case 0: break;
@@ -2482,7 +2480,7 @@ namespace djack.RogueSurvivor.Data
     // likewise inventories
     public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point> src) {
       var ret = new HashSet<Point>();
-      foreach(var pt in src) {
+      if (null!=src) foreach(var pt in src) {
         var loc = new Location(m, pt);
         var obj = loc.MapObject;
         if (CanEnter(loc) && (null == obj || !obj.IsContainer)) {
@@ -2494,8 +2492,6 @@ namespace djack.RogueSurvivor.Data
           }
           continue;
         }
-        // containers are also usually best to target adjacent, but usually getting within 1 triggers alternate behavior
-        ret.Add(pt);
       }
       return ret;
     }
