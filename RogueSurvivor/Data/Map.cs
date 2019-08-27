@@ -1221,22 +1221,18 @@ retry:
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
     public bool PushCreatesSokobanPuzzle(Point dest,Actor actor)
-    {
+    { // 2019-08-27 release mode IL Code size       718 (0x2ce)
       if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
 
       Span<bool> is_wall = stackalloc bool[8];   // these default-initialize to false
       Span<bool> blocked = stackalloc bool[8];
       Span<bool> no_go = stackalloc bool[8];
+      sbyte dir;
       foreach(Point pt2 in dest.Adjacent()) {
         if (actor.Location.Map==this && actor.Location.Position==pt2) continue;
         if (IsWalkableFor(pt2,actor.Model)) continue;   // not interested in stamina for this
-        Direction dir = Direction.FromVector(pt2.X-dest.X,pt2.Y-dest.Y);
-#if DEBUG
-        if (null == dir) throw new ArgumentNullException(nameof(dir));
-#endif
-        no_go[dir.Index] = true;
-        if (IsValid(pt2) && GetTileModelAtExt(pt2).IsWalkable) blocked[dir.Index] = true;
-        else is_wall[dir.Index] = true;
+        no_go[dir = Direction.FromVector(pt2 - dest).Index] = true;    // non-null by construction
+        ((IsValid(pt2) && GetTileModelAtExt(pt2).IsWalkable) ? blocked : is_wall)[dir] = true;
       }
       // corners and walls are generally ok.  2019-01-04: preliminary tests suggest this is not a micro-optimization target
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.N] && is_wall[(int)Compass.XCOMlike.NE] && !is_wall[(int)Compass.XCOMlike.S] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
