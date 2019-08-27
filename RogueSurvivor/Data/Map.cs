@@ -2011,16 +2011,14 @@ retry:
 
     /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
     static public Dictionary<Location,Direction> ValidDirections(Location loc, Predicate<Location> testFn)
-    {
+    {   // 2019-08-27 release mode IL Code size       70 (0x46)
 #if DEBUG
       if (null == testFn) throw new ArgumentNullException(nameof(testFn));
 #endif
       var ret = new Dictionary<Location,Direction>(8);
       foreach(Direction dir in Direction.COMPASS) {
         var pt = loc+dir;
-        if (!pt.ForceCanonical()) continue;
-        if (!testFn(pt)) continue;
-        ret.Add(pt,dir);
+        if (pt.ForceCanonical() && testFn(pt)) ret.Add(pt, dir);
       }
       return ret;
     }
