@@ -2194,8 +2194,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActorAction tmpAction;
           var map = dest.Map;
           foreach(var x in stacks) {
-            var s_pos = x.Key;
-            if (null != (tmpAction = WouldGrabFromAccessibleStack((map.IsInBounds(s_pos) ? new Location(map, s_pos) : map.Normalize(s_pos).Value), x.Value, is_real))) return tmpAction;
+            var loc = new Location(map, x.Key);
+            if (loc.ForceCanonical() && (null != (tmpAction = WouldGrabFromAccessibleStack(loc, x.Value, is_real)))) return tmpAction;
           }
         }
         return null;

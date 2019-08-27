@@ -337,9 +337,12 @@ namespace djack.RogueSurvivor.Data
     }
     // end placeholder for define-controlled redefinitions
 
-    public Location? Normalize(Point pt)
+    /// <param name="pt">Precondition: not in bounds</param>
+    private Location? _Normalize(Point pt)
     {
-      if (IsInBounds(pt)) return null;
+#if IRRATIONAL_CAUTION
+      if (IsInBounds(pt)) throw new InvalidOperationException("precondition violated: IsInBounds(pt)");
+#endif
       int map_code = District.UsesCrossDistrictView(this);
       if (0>=map_code) return null;
       int delta_code = DistrictDeltaCode(pt);
@@ -368,7 +371,13 @@ namespace djack.RogueSurvivor.Data
       else if (-1==district_delta.X) pt.X += dest.Width;
       if (1==district_delta.Y) pt.Y -= Height;
       else if (-1==district_delta.Y) pt.Y += dest.Height;
-      return dest.IsInBounds(pt) ? new Location(dest, pt) : dest.Normalize(pt);
+      return dest.IsInBounds(pt) ? new Location(dest, pt) : dest._Normalize(pt);
+    }
+
+    public Location? Normalize(Point pt)
+    {
+      if (IsInBounds(pt)) return null;
+      return _Normalize(pt);
     }
 
     public Location? Denormalize(Location loc)
@@ -456,7 +465,7 @@ namespace djack.RogueSurvivor.Data
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(p)) return GetTileAt(p);
-      Location? loc = Normalize(p);
+      Location? loc = _Normalize(p);
 //    if (null == loc) throw ...;
       return loc.Value.Map.GetTileAt(loc.Value.Position);
 #else
@@ -496,7 +505,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsInsideAtExt(Point p)
     {
       if (IsInBounds(p)) return IsInsideAt(p);
-      Location? test = Normalize(p);
+      Location? test = _Normalize(p);
       return null!=test && test.Value.Map.IsInsideAt(test.Value.Position);
     }
 
@@ -533,7 +542,7 @@ namespace djack.RogueSurvivor.Data
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(x,y)) return Models.Tiles[m_TileIDs[x, y]];   //      return GetTileModelAt(x,y);
-      Location? loc = Normalize(new Point(x,y));
+      Location? loc = _Normalize(new Point(x,y));
 //    if (null == loc) throw ...;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
 #else
@@ -547,13 +556,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool TileIsWalkable(Point pt)
-    {
+    {   // 2019-8-27 release mode IL Code size       108 (0x6c)
       // should evaluate: IsValid(pt) && GetTileModelAtExt(pt).IsWalkable
       if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]].IsWalkable;
 #if NO_PEACE_WALLS
-      Location? loc = Normalize(pt);
-      if (null == loc) return false;
-      return loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
+      Location? loc = _Normalize(pt);
+      return null != loc && loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
 #else
       return false;
 #endif
@@ -598,11 +606,10 @@ namespace djack.RogueSurvivor.Data
     public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
 
     public bool HasExitAtExt(Point pos)
-    {
+    {   // 2019-08-27 release mode IL Code size       72 (0x48)
       if (IsInBounds(pos)) return HasExitAt(pos);
-      Location? test = Normalize(pos);
-      if (null == test) return false;
-      return test.Value.Map.HasExitAt(test.Value.Position);
+      Location? test = _Normalize(pos);
+      return null != test && test.Value.Map.HasExitAt(test.Value.Position);
     }
 
     public Exit GetExitAt(Point pos)
@@ -1018,7 +1025,7 @@ retry:
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(pt)) return GetActorAt(pt);
-      Location? test = Normalize(pt);
+      Location? test = _Normalize(pt);
       return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
 #else
       return GetActorAt(pt);
@@ -1026,13 +1033,12 @@ retry:
     }
 
     public bool HasActorAt(Point position)
-    {
+    {   // 2019-08-27 release mode IL Code size       87 (0x57)
 #if NO_PEACE_WALLS
       if (m_aux_ActorsByPosition.ContainsKey(position)) return true;
       if (IsInBounds(position)) return false;
-      Location? tmp = Normalize(position);
-      if (null == tmp) return false;
-      return tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
+      Location? tmp = _Normalize(position);
+      return null != tmp && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
 #else
       return m_aux_ActorsByPosition.ContainsKey(position);
 #endif
@@ -1311,24 +1317,22 @@ retry:
     }
 
     public MapObject GetMapObjectAtExt(int x, int y)
-    {
+    {   // 2019-08-27 release mode IL Code size       85 (0x55)
 #if NO_PEACE_WALLS
       if (IsInBounds(x,y)) return GetMapObjectAt(new Point(x, y));
-      Location? test = Normalize(new Point(x,y));
-      if (null==test) return null;
-      return test.Value.Map.GetMapObjectAt(test.Value.Position);
+      Location? test = _Normalize(new Point(x,y));
+      return null == test ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
 #else
       return GetMapObjectAt(new Point(x, y));
 #endif
     }
 
     public MapObject GetMapObjectAtExt(Point pt)
-    {
+    {   // 2019-08-27 release mode IL Code size       72 (0x48)
 #if NO_PEACE_WALLS
       if (IsInBounds(pt)) return GetMapObjectAt(pt);
-      Location? test = Normalize(pt);
-      if (null==test) return null;
-      return test.Value.Map.GetMapObjectAt(test.Value.Position);
+      Location? test = _Normalize(pt);
+      return null == test ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
 #else
       return GetMapObjectAt(new Point(x, y));
 #endif
@@ -1340,11 +1344,10 @@ retry:
     }
 
     public bool HasMapObjectAtExt(Point position)
-    {
+    {   // 2019-08-27 release mode IL Code size       71 (0x47)
       if (m_aux_MapObjectsByPosition.ContainsKey(position)) return true;
-      Location? test = Normalize(position);
-      if (null == test) return false;
-      return test.Value.Map.HasMapObjectAt(test.Value.Position);
+      Location? test = _Normalize(position);
+      return null!=test && test.Value.Map.HasMapObjectAt(test.Value.Position);
     }
 
     public void PlaceAt(MapObject mapObj, Point position)
@@ -1354,7 +1357,7 @@ retry:
 #endif
       if (!IsInBounds(position)) {
         // cross-map push or similar
-        Location? test = Normalize(position);
+        Location? test = _Normalize(position);
 #if DEBUG
         if (null == test) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
 #endif
@@ -1466,12 +1469,11 @@ retry:
     }
 
     public Inventory GetItemsAtExt(Point pt)
-    {
+    {   // 2019-08-27 release mode IL Code size       72 (0x48)
 #if NO_PEACE_WALLS
       if (IsInBounds(pt)) return GetItemsAt(pt);
-      Location? test = Normalize(pt);
-      if (null==test) return null;
-      return test.Value.Map.GetItemsAt(test.Value.Position);
+      Location? test = _Normalize(pt);
+      return null == test ? null : test.Value.Map.GetItemsAt(test.Value.Position);
 #else
       return GetItemsAt(pt);
 #endif
@@ -1563,8 +1565,10 @@ retry:
         DropItemAt(it, position);
         return;
       }
-      Location? tmp = Normalize(position);
+      Location? tmp = _Normalize(position);
+#if DEBUG
       if (null == tmp) throw new ArgumentOutOfRangeException(nameof(position),position,"invalid position for Item "+nameof(it));
+#endif
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
 #else
       DropItemAt(it,position);
@@ -1652,7 +1656,7 @@ retry:
         RemoveItemAt(it,position);
         return;
       }
-      Location? test = Normalize(position);
+      Location? test = _Normalize(position);
       if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
     }
 
@@ -1663,7 +1667,7 @@ retry:
         RemoveAt(src,position);
         return;
       }
-      Location? test = Normalize(position);
+      Location? test = _Normalize(position);
       if (null != test) test.Value.Map.RemoveAt(src, test.Value.Position);
     }
 
@@ -1688,12 +1692,11 @@ retry:
     }
 
     public List<Corpse> GetCorpsesAtExt(Point p)
-    {
+    {   // 2019-08-27 release mode IL Code size       72 (0x48)
 #if NO_PEACE_WALLS
       if (IsInBounds(p)) return GetCorpsesAt(p);
-      Location? test = Normalize(p);
-      if (null==test) return null;
-      return test.Value.Map.GetCorpsesAt(test.Value.Position);
+      Location? test = _Normalize(p);
+      return null == test ? null : test.Value.Map.GetCorpsesAt(test.Value.Position);
 #else
       return GetCorpsesAt(p);
 #endif
@@ -1797,8 +1800,8 @@ retry:
         OdorScent scentByOdor = GetScentByOdor(odor, position);
         if (scentByOdor != null) return scentByOdor.Strength;
 #if NO_PEACE_WALLS
-      } else if (IsStrictlyValid(position)) {
-        Location? tmp = Normalize(position);
+      } else {
+        Location? tmp = _Normalize(position);
         if (null != tmp) {
           OdorScent scentByOdor = tmp.Value.Map.GetScentByOdor(odor, tmp.Value.Position);
           if (scentByOdor != null) return scentByOdor.Strength;
