@@ -538,21 +538,16 @@ namespace djack.RogueSurvivor.Data
     }
 
     // possibly denormalized versions
-    public TileModel GetTileModelAtExt(int x, int y)
+    public TileModel GetTileModelAtExt(Point pt)
     {
 #if NO_PEACE_WALLS
-      if (IsInBounds(x,y)) return Models.Tiles[m_TileIDs[x, y]];   //      return GetTileModelAt(x,y);
-      Location? loc = _Normalize(new Point(x,y));
+      if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]];   //      return GetTileModelAt(x,y);
+      Location? loc = _Normalize(pt);
 //    if (null == loc) throw ...;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
 #else
-      return Models.Tiles[m_TileIDs[x,y]];
+      return Models.Tiles[m_TileIDs[pt.X,pt.Y]];
 #endif
-    }
-
-    public TileModel GetTileModelAtExt(Point pt)
-    {
-      return GetTileModelAtExt(pt.X,pt.Y);
     }
 
     public bool TileIsWalkable(Point pt)
@@ -1935,15 +1930,12 @@ retry:
       return GetMapObjectAtExt(pt)?.IsTransparent ?? true;
     }
 
-    public bool IsWalkable(int x, int y)
-    {
-      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable) return false;
-      return GetMapObjectAtExt(x, y)?.IsWalkable ?? true;
-    }
+    public bool IsWalkable(int x, int y) { return IsWalkable(new Point(x,y)); }
 
-    public bool IsWalkable(Point p)
+    public bool IsWalkable(Point pt)
     {
-      return IsWalkable(p.X, p.Y);
+      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsWalkable) return false;
+      return GetMapObjectAtExt(pt)?.IsWalkable ?? true;
     }
 
     public bool UnconditionallyBlockingFire(Point pt)
