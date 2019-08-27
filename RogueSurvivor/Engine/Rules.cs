@@ -409,15 +409,14 @@ namespace djack.RogueSurvivor.Engine
     // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
     // * ok to push objects aside
     // * not ok to chat as a time-cost action (could be re-implemented)
-    private static ActorAction IsPathableFor(Actor actor, Map map, Point point, out string reason)
+    private static ActorAction IsPathableFor(Actor actor, Location loc, out string reason)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == loc.Map) throw new ArgumentNullException(nameof(loc)+".Map");
       if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
       Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
-      Location loc = new Location(map,point);
       reason = "";
 
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
@@ -428,6 +427,8 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // unclear whether B_MOVIE_MARTIAL_ARTS requires pathfinding changes or not; changes would go here
+      var map = loc.Map;
+      var point = loc.Position;
       if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
@@ -607,11 +608,6 @@ namespace djack.RogueSurvivor.Engine
     public static ActorAction IsPathableFor(Actor actor, Location location)
     {
       return IsPathableFor(actor, location, out string reason);
-    }
-
-    public static ActorAction IsPathableFor(Actor actor, Location location, out string reason)
-    {
-      return IsPathableFor(actor, location.Map, location.Position, out reason);
     }
 
     public int ActorDamageVsCorpses(Actor a)
