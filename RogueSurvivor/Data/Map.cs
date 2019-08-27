@@ -546,6 +546,19 @@ namespace djack.RogueSurvivor.Data
       return GetTileModelAtExt(pt.X,pt.Y);
     }
 
+    public bool TileIsWalkable(Point pt)
+    {
+      // should evaluate: IsValid(pt) && GetTileModelAtExt(pt).IsWalkable
+      if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]].IsWalkable;
+#if NO_PEACE_WALLS
+      Location? loc = Normalize(pt);
+      if (null == loc) return false;
+      return loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
+#else
+      return false;
+#endif
+    }
+
     // thin wrappers based on Tile API
     public bool HasDecorationsAt(Point pt)
     {
@@ -1221,7 +1234,7 @@ retry:
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
     public bool PushCreatesSokobanPuzzle(Point dest,Actor actor)
-    { // 2019-08-27 release mode IL Code size       718 (0x2ce)
+    { // 2019-08-27 release mode IL Code size       703 (0x2bf)
       if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
 
       Span<bool> is_wall = stackalloc bool[8];   // these default-initialize to false
@@ -1232,7 +1245,7 @@ retry:
         if (actor.Location.Map==this && actor.Location.Position==pt2) continue;
         if (IsWalkableFor(pt2,actor.Model)) continue;   // not interested in stamina for this
         no_go[dir = Direction.FromVector(pt2 - dest).Index] = true;    // non-null by construction
-        ((IsValid(pt2) && GetTileModelAtExt(pt2).IsWalkable) ? blocked : is_wall)[dir] = true;
+        (TileIsWalkable(pt2) ? blocked : is_wall)[dir] = true;
       }
       // corners and walls are generally ok.  2019-01-04: preliminary tests suggest this is not a micro-optimization target
       if (is_wall[(int)Compass.XCOMlike.NW] && is_wall[(int)Compass.XCOMlike.N] && is_wall[(int)Compass.XCOMlike.NE] && !is_wall[(int)Compass.XCOMlike.S] && (!is_wall[(int)Compass.XCOMlike.E] || !is_wall[(int)Compass.XCOMlike.W])) return false;
