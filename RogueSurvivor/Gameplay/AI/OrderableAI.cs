@@ -2444,10 +2444,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected int SleepLocationRating(Location loc)
     {
       // the legacy tests
-      MapObject obj = loc.Map.GetMapObjectAtExt(loc.Position);
+      Map.Canonical(ref loc);
+      MapObject obj = loc.MapObject;
       if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
-      if (loc.Map.HasExitAtExt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
+      if (loc.Map.HasExitAt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
       if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
@@ -2456,8 +2457,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } // invalid is impassable so acts like a wall
 
       // geometric code (walls, etc)
-      if (!loc.Map.IsInsideAtExt(loc.Position)) return 0;
-      if (!loc.Map.GetTileModelAtExt(loc.Position).IsWalkable) return 0;
+      if (!loc.Map.IsInsideAt(loc.Position)) return 0;
+      if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return 0;
       // we don't want to sleep next to anything that looks like an ex-door
       bool[] walls = new bool[Direction.COMPASS.Length];
       foreach(Direction dir in Direction.COMPASS) walls[dir.Index] = wall_at(loc.Position + dir);
