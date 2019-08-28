@@ -2443,9 +2443,10 @@ namespace djack.RogueSurvivor.Data
     // optimized for pathfinding and ActionMoveDelta
     public bool CanEnter(Location loc)
     { // reference is Map::IsWalkableFor, taking an ActorModel
-      if (!loc.Map.GetTileModelAtExt(loc.Position).IsWalkable) return false;
+      if (!loc.ForceCanonical()) return false;
+      if (!loc.TileModel.IsWalkable) return false;
       // we don't check actors as this is a "is this valid, ever" test
-      var mapObjectAt = loc.Map.GetMapObjectAtExt(loc.Position);
+      var mapObjectAt = loc.MapObject;
       if (mapObjectAt?.IsWalkable ?? true) return true;
       if (mapObjectAt.IsJumpable) return CanJump;
       if (mapObjectAt is DoorWindow door) {
