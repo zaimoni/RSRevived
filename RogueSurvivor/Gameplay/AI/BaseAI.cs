@@ -254,7 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location next = m_Actor.Location + dir;
         if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
         if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, next))) return float.NaN;
-        if (!next.ForceCanonical()) return float.NaN;
+        if (!Map.Canonical(ref next)) return float.NaN;
 
         int score = 0;
 
@@ -418,7 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
           var loc = new Location(m_Actor.Location.Map, ptA);
-          if (!loc.ForceCanonical()) return float.NaN;
+          if (!Map.Canonical(ref loc)) return float.NaN;
           var turns_to_fatality = m_Actor.Controller.FastestTrapKill(loc);
           if (1 >= turns_to_fatality) return float.NaN;
           if (int.MaxValue > turns_to_fatality) return dist + MOVE_INTO_TRAPS_PENALTY;
@@ -663,7 +663,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var unclear = new Dictionary<Point,MapObject>();
       foreach(var x in food_blockers) {
         var loc = new Location(map,x.Key);
-        loc.ForceCanonical();
+        Map.Canonical(ref loc);
         if (null != loc.Exit) { // on same-district exit is clearly bad
           verified.Add(x.Key,x.Value);
           continue;
@@ -685,7 +685,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       bool safe_push(ActionPush act) {
         var loc = new Location(act.Target.Location.Map,act.To);
-        loc.ForceCanonical();
+        Map.Canonical(ref loc);
         if (loc.Map.IsFlushNWall(loc.Position)) return true;
         if (loc.Map.IsFlushSWall(loc.Position)) return true;
         if (loc.Map.IsFlushWWall(loc.Position)) return true;
@@ -909,7 +909,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
-        if (!loc.ForceCanonical()) return float.NaN;
+        if (!Map.Canonical(ref loc)) return float.NaN;
 
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;

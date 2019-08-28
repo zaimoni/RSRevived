@@ -54,14 +54,6 @@ namespace djack.RogueSurvivor.Data
     public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
     static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
 
-    public bool ForceCanonical() {
-      if (m_Map.IsInBounds(m_Position)) return true;
-      var test = m_Map.Normalize(m_Position);
-      if (null == test) return false;
-      this = test.Value;
-      return true;
-    }
-
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based
       var e = Exit;

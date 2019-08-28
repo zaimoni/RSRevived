@@ -8821,7 +8821,7 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(pt => {
           if (pt == speaker.Location.Position) return;
           Location loc = new Location(speaker.Location.Map, pt);
-          if (loc.ForceCanonical() && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, loc)) {
+          if (Map.Canonical(ref loc) && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, loc)) {
               var overhear = loc.Actor;
               if (null != overhear && target != overhear) op(overhear);
           }
@@ -9895,7 +9895,7 @@ namespace djack.RogueSurvivor.Engine
         DoStopDragCorpse(target);
         var t_loc = target.Location;
         var new_t_loc = new Location(t_loc.Map, toPos);
-        if (!new_t_loc.ForceCanonical()) throw new InvalidOperationException("shoved off map entirely");
+        if (!Map.Canonical(ref new_t_loc)) throw new InvalidOperationException("shoved off map entirely");
         bool non_adjacent = !Rules.IsAdjacent(new_t_loc, actor.Location);
         var obj = t_loc.MapObject;
         if (null != obj && obj.IsJumpable && non_adjacent) {
@@ -9944,7 +9944,7 @@ namespace djack.RogueSurvivor.Engine
       // actor...
       objDest.Map.Remove(actor);
       var actor_dest = new Location(objDest.Map, moveActorToPos);
-      actor_dest.ForceCanonical();
+      Map.Canonical(ref actor_dest);
       actor_dest.Place(actor);  // assumed to be walkable, checked by rules
       // ...object
       mapObj.Remove();

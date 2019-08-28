@@ -925,7 +925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int origin = -1;
         foreach(var dir in Direction.COMPASS) {
           var test = _last_move.dest + dir;
-          if (!test.ForceCanonical()) continue;
+          if (!Map.Canonical(ref test)) continue;
           if (!m_Actor.CanEnter(test)) continue;
           can_enter[dir.Index] = true;
           if (test == _last_move.origin) origin = dir.Index;
@@ -2137,19 +2137,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         whitelist.UnionWith(range);
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
           var loc = new Location(m_Actor.Location.Map,pt);
-          if (loc.ForceCanonical() && !whitelist.Contains(loc)) blacklist.Add(loc);
+          if (Map.Canonical(ref loc) && !whitelist.Contains(loc)) blacklist.Add(loc);
         }
       } else if (null != range2) {
         whitelist.UnionWith(range2);
         var map = m_Actor.Location.Map;
         foreach(Point pt in Enumerable.Range(0,16).Select(i=> m_Actor.Location.Position.RadarSweep(2,i))) {
           var loc = new Location(map, pt);
-          if (loc.ForceCanonical() && !whitelist.Contains(loc)) blacklist.Add(loc);
+          if (Map.Canonical(ref loc) && !whitelist.Contains(loc)) blacklist.Add(loc);
         }
         // do not have to update whitelist here
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
           var loc = new Location(map, pt);
-          if (loc.ForceCanonical() && !whitelist.Any(pt2 => 1==Rules.GridDistance(loc,pt2))) blacklist.Add(loc);
+          if (Map.Canonical(ref loc) && !whitelist.Any(pt2 => 1==Rules.GridDistance(loc,pt2))) blacklist.Add(loc);
         }
       }
 
@@ -2219,7 +2219,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // generate logical moves
         foreach(var pt in loc.Position.Adjacent()) {
           var loc2 = new Location(loc.Map,pt);
-          if (!loc2.ForceCanonical()) continue;
+          if (!Map.Canonical(ref loc2)) continue;
           if (!destination_melee_safe(loc2, depth)) continue;
           var delta = new ActionMoveDelta(m_Actor, loc2, loc);
           if (delta.IsLegal()) {
@@ -2305,7 +2305,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var map = m_Actor.Location.Map;
         foreach(var pt in src) {
           var loc = new Location(map, pt);
-          if (loc.ForceCanonical()) ret.Add(loc);
+          if (Map.Canonical(ref loc)) ret.Add(loc);
         }
         return (0 < ret.Count) ? ret : null;
       }
@@ -2427,7 +2427,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
           foreach(var pos_exit in exits) {
             Location loc = new Location(dest, pos_exit.Key);
-            if (!loc.ForceCanonical()) continue;
+            if (!Map.Canonical(ref loc)) continue;
             goals.Add(loc==m_Actor.Location ? pos_exit.Value.Location : loc);
           }
 #if TRACE_GOALS
@@ -2815,7 +2815,7 @@ restart:
         if (!loc.Map.WouldBlacklistFor(loc.Position,m_Actor)) continue;
         foreach(var offset in ideal) {
           var legal = new Location(loc.Map, loc.Position + offset); // may be denormalized
-          if (!legal.ForceCanonical()) continue;
+          if (!Map.Canonical(ref legal)) continue;
           if (tainted.Contains(legal)) continue;
           if (m_Actor.Location == legal) continue;
           if (legal.Map.WouldBlacklistFor(legal.Position,m_Actor)) continue;
@@ -2895,7 +2895,7 @@ restart:
             var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, target);
             foreach(var dir in stats.stats.advancing) {
               var loc = m_Actor.Location+dir;
-              if (!loc.ForceCanonical()) continue;
+              if (!Map.Canonical(ref loc)) continue;
               if (loc == test.dest) continue;
               if (!_legal_path.TryGetValue(loc,out var alt_act)) continue;
               if (1 >= FastestTrapKill(loc)) continue;
@@ -2957,7 +2957,7 @@ restart:
           if (null != exit && exit.Location == working) working = m_Actor.Location;
           foreach(var pt in working.Position.Adjacent()) {
             var loc = new Location(working.Map,pt);
-            if (!loc.ForceCanonical()) continue;
+            if (!Map.Canonical(ref loc)) continue;
             if (null!=preblacklist && preblacklist(loc.Map)) continue;
             if (!m_Actor.CanEnter(loc)) continue;
             if (ever_rude.Contains(loc)) continue;

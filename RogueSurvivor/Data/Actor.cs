@@ -1678,9 +1678,9 @@ namespace djack.RogueSurvivor.Data
         Location test = loc+dir;
         if (!test.Map.IsWalkableFor(test.Position, this)) continue;
 #if MAPGEN_OK
-        if (!test.ForceCanonical()) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
+        if (!Map.Canonical(ref test)) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
 #else
-        if (!test.ForceCanonical()) continue;
+        if (!Map.Canonical(ref test)) continue;
 #endif
         ret.Add(test);
       }
@@ -1718,19 +1718,19 @@ namespace djack.RogueSurvivor.Data
         ActorAction tmp = Rules.IsPathableFor(this,test);
         if (null == tmp) continue;
 #if MAPGEN_OK
-        if (!test.ForceCanonical()) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
+        if (!Map.Canonical(ref test)) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
 #else
-        if (!test.ForceCanonical()) continue;
+        if (!Map.Canonical(ref test)) continue;
 #endif
-        ret[test] = tmp;
+        ret.Add(test, tmp);
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
         ActionUseExit tmp = new ActionUseExit(this, loc);
         if (loc == Location) {
-          if (tmp.IsLegal() && !tmp.IsBlocked) ret[exit.Location] = tmp;
+          if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location, tmp);
         } else {
-          ret[exit.Location] = tmp;
+          ret.Add(exit.Location, tmp);
           // simulate Exit::ReasonIsBlocked
           switch(exit.Location.IsBlockedForPathing) {
           case 0: break;
@@ -1755,7 +1755,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
-        if (!dest.ForceCanonical()) continue;
+        if (!Map.Canonical(ref dest)) continue;
         if (already.TryGetValue(dest, out var relay)) {
           ret.Add(dest, relay);
           continue;
@@ -1796,7 +1796,7 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         Location dest = new Location(m,pt);
-        if (!dest.ForceCanonical()) continue;
+        if (!Map.Canonical(ref dest)) continue;
         if (Location==dest) {
           ret[pt] = new Engine.Actions.ActionMoveStep(this, pt);
           continue;
@@ -2443,7 +2443,7 @@ namespace djack.RogueSurvivor.Data
     // optimized for pathfinding and ActionMoveDelta
     public bool CanEnter(Location loc)
     { // reference is Map::IsWalkableFor, taking an ActorModel
-      if (!loc.ForceCanonical()) return false;
+      if (!Map.Canonical(ref loc)) return false;
       if (!loc.TileModel.IsWalkable) return false;
       // we don't check actors as this is a "is this valid, ever" test
       var mapObjectAt = loc.MapObject;
@@ -2505,7 +2505,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new List<Location>();
       foreach(var dir in Direction.COMPASS) {
         var loc = a+dir;
-        if (loc.ForceCanonical() && 1 == Rules.GridDistance(loc, b) && CanEnter(loc)) ret.Add(loc);
+        if (Map.Canonical(ref loc) && 1 == Rules.GridDistance(loc, b) && CanEnter(loc)) ret.Add(loc);
       }
       return (0<ret.Count) ? ret : null;
     }

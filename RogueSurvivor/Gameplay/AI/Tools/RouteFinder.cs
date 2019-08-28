@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         // location adapter for above
         bool CanMoveIn(RogueGame game, Actor a, Location loc)
         {
-            return loc.ForceCanonical() && CanMoveIn(game, a, loc.Map, loc.Position);
+            return Map.Canonical(ref loc) && CanMoveIn(game, a, loc.Map, loc.Position);
         }
         #endregion
     }

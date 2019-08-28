@@ -87,8 +87,7 @@ namespace djack.RogueSurvivor.Data
       for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
         for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
           var loc = new Location(m,point);
-          if (!loc.ForceCanonical()) continue;
-          doFn(loc);
+          if (Map.Canonical(ref loc)) doFn(loc);
         }
       }
     }

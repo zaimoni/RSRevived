@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (!(who.Controller is OrderableAI)) throw new InvalidOperationException("need an ai with inventory");
 #endif
-        if (!loc.ForceCanonical()) return;
+        if (!Map.Canonical(ref loc)) return;
         newStack(loc);
       }
 
@@ -1295,7 +1295,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null!=((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) continue;
         foreach(var pt in en.Location.Position.Adjacent()) {
           var test = new Location(en.Location.Map,pt);
-          if (test.ForceCanonical()) danger.Add(test);
+          if (Map.Canonical(ref test)) danger.Add(test);
         }
       }
       var range = m_Actor.CurrentRangedAttack.Range;
@@ -1304,7 +1304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var p in optimal_FOV) {
           var pt = p + en.Location.Position;
           var test = new Location(en.Location.Map,pt);
-          if (!test.ForceCanonical()) continue;
+          if (!Map.Canonical(ref test)) continue;
           if (ret.Contains(test)) continue;
           if (danger.Contains(test)) continue;
           if (!test.Map.IsWalkableFor(test.Position,m_Actor)) continue;
@@ -1315,7 +1315,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               int n = LoF.Count-1;
               while(1 < n--) {
                 var transit = new Location(test.Map,LoF[n]);
-                if (!transit.ForceCanonical()) throw new InvalidProgramException("line of fire contains impossible locations");
+                if (!Map.Canonical(ref transit)) throw new InvalidProgramException("line of fire contains impossible locations");
                 if (danger.Contains(transit)) continue;
                 ret.Add(transit);
               }
@@ -2195,7 +2195,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var map = dest.Map;
           foreach(var x in stacks) {
             var loc = new Location(map, x.Key);
-            if (loc.ForceCanonical() && (null != (tmpAction = WouldGrabFromAccessibleStack(loc, x.Value, is_real)))) return tmpAction;
+            if (Map.Canonical(ref loc) && (null != (tmpAction = WouldGrabFromAccessibleStack(loc, x.Value, is_real)))) return tmpAction;
           }
         }
         return null;
@@ -2270,7 +2270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var goals = new HashSet<Location>();
         rect.DoForEach(pt => {
             var loc2 = new Location(other.Location.Map, pt);
-            if (!loc2.ForceCanonical()) return;
+            if (!Map.Canonical(ref loc2)) return;
             if (clan.Any(a => loc2 == a.Location)) return;
             if (minDist > Rules.GridDistance(loc2, other.Location)) return; // no-op if minDist is 1
             if (!loc2.IsWalkableFor(m_Actor)) return;
@@ -2296,7 +2296,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (100 < ++num) return null;
         Point p = otherPosition + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
         loc = new Location(other.Location.Map,p);
-        if (!loc.ForceCanonical()) continue;
+        if (!Map.Canonical(ref loc)) continue;
         if (loc == m_Actor.Location) return new ActionWait(m_Actor);
         if (clan.Any(a => loc == a.Location)) continue;
       }
@@ -2451,7 +2451,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
-      bool wall_at(Point pt) { return loc.Map.IsValid(pt) ? !loc.Map.GetTileModelAtExt(pt).IsWalkable : true; } // invalid is impassable so acts like a wall
+      bool wall_at(Point pt) {
+        return loc.Map.IsValid(pt) ? !loc.Map.GetTileModelAtExt(pt).IsWalkable : true;
+      } // invalid is impassable so acts like a wall
 
       // geometric code (walls, etc)
       if (!loc.Map.IsInsideAtExt(loc.Position)) return 0;
@@ -2709,7 +2711,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
-        if (!loc.ForceCanonical()) return float.NaN;
+        if (!Map.Canonical(ref loc)) return float.NaN;
 
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;

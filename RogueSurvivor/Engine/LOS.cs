@@ -257,7 +257,10 @@ namespace djack.RogueSurvivor.Engine
 
       int i = line.Count-2;
       var ret = new Location[i];
-      while(0 <= --i) (ret[i] = new Location(map,line[i+1])).ForceCanonical();  // invariant failure if this returns false
+      while(0 <= --i) {
+        ret[i] = new Location(map, line[i + 1]);
+        Map.Canonical(ref ret[i]);  // invariant failure if this returns false
+      }
       return ret;
     }
 

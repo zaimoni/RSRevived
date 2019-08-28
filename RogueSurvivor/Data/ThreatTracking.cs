@@ -556,7 +556,7 @@ namespace djack.RogueSurvivor.Data
 
       public void Seen(Location loc)
       {
-        if (loc.ForceCanonical()) 
+        if (Map.Canonical(ref loc))
   		  lock(_locs) {
 		    if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
 		  }

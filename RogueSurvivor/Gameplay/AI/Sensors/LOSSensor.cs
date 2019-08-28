@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       int i = 0;
       foreach(var pt in m_FOV) {
         var loc = new Location(_view_map, pt);
-        if (!loc.ForceCanonical()) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
+        if (!Map.Canonical(ref loc)) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
         normalized_FOV[i++] = loc;
       }
       if (null != e) {

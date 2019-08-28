@@ -337,6 +337,15 @@ namespace djack.RogueSurvivor.Data
     }
     // end placeholder for define-controlled redefinitions
 
+    static public bool Canonical(ref Location loc) {
+      if (loc.Map.IsInBounds(loc.Position)) return true;
+      var test = loc.Map._Normalize(loc.Position);
+      if (null == test) return false;
+      loc = test.Value;
+      return true;
+    }
+
+
     /// <param name="pt">Precondition: not in bounds</param>
     private Location? _Normalize(Point pt)
     {
@@ -535,6 +544,14 @@ namespace djack.RogueSurvivor.Data
     public TileModel GetTileModelAt(Point pt)
     {
       return GetTileModelAt(pt.X,pt.Y);
+    }
+
+    public KeyValuePair<TileModel,Location> GetTileModelLocation(Point pt)
+    {
+      if (IsInBounds(pt)) return new KeyValuePair<TileModel, Location>(Models.Tiles[m_TileIDs[pt.X, pt.Y]], new Location(this,pt));
+      Location? loc = _Normalize(pt);
+      if (null == loc) return default;
+      return new KeyValuePair<TileModel, Location>(loc.Value.Map.GetTileModelAt(loc.Value.Position), loc.Value);
     }
 
     // possibly denormalized versions
@@ -1169,8 +1186,9 @@ retry:
 #else
       if (!IsInBounds(pt)) return "out of map";
 #endif
-      if (!GetTileModelAtExt(pt).IsWalkable) return "blocked";
-      MapObject mapObjectAt = GetMapObjectAtExt(pt);
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key.IsWalkable) return "blocked";   // should be non-null
+      var mapObjectAt = tile_loc.Value.MapObject;
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!model.Abilities.CanJump) return "cannot jump";
@@ -1178,7 +1196,7 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (HasActorAt(pt)) return "someone is there";  // XXX includes actor himself
+      if (null != tile_loc.Value.Actor) return "someone is there";  // XXX includes actor himself
       return "";
     }
 
@@ -1203,8 +1221,9 @@ retry:
 #else
       if (!IsInBounds(pt)) return "out of map";
 #endif
-      if (!GetTileModelAtExt(pt).IsWalkable) return "blocked";
-      MapObject mapObjectAt = GetMapObjectAtExt(pt);
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key.IsWalkable) return "blocked";   // should be non-null
+      var mapObjectAt = tile_loc.Value.MapObject;
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
@@ -1216,7 +1235,7 @@ retry:
       }
       // 1) does not have to be accurate except when adjacent
       // 2) treat null map as "omni-adjacent" (happens during spawning)
-      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,new Location(this, pt))) && HasActorAt(pt)) return "someone is there";  // XXX includes actor himself
+      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value)) && null!=tile_loc.Value.Actor) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
@@ -2009,14 +2028,14 @@ retry:
 
     /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
     static public Dictionary<Location,Direction> ValidDirections(Location loc, Predicate<Location> testFn)
-    {   // 2019-08-27 release mode IL Code size       70 (0x46)
+    {
 #if DEBUG
       if (null == testFn) throw new ArgumentNullException(nameof(testFn));
 #endif
       var ret = new Dictionary<Location,Direction>(8);
       foreach(Direction dir in Direction.COMPASS) {
         var pt = loc+dir;
-        if (pt.ForceCanonical() && testFn(pt)) ret.Add(pt, dir);
+        if (Canonical(ref pt) && testFn(pt)) ret.Add(pt, dir);
       }
       return ret;
     }

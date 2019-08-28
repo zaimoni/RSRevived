@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
       turn = 0;
       var memory = ItemMemory;
       if (null == memory) return false;
-      return x.ForceCanonical() && memory.HaveEverSeen(x, out turn);
+      return Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
     }
 
     public bool IsKnown(Location x) {
