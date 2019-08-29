@@ -536,20 +536,13 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs[pt.X, pt.Y] = (byte)(model.ID);
     }
 
-    public TileModel GetTileModelAt(int x, int y)
-    {
-      return Models.Tiles[m_TileIDs[x,y]];
-    }
-
-    public TileModel GetTileModelAt(Point pt)
-    {
-      return GetTileModelAt(pt.X,pt.Y);
-    }
+    public TileModel GetTileModelAt(int x, int y) { return Models.Tiles[m_TileIDs[x,y]]; }
+    public TileModel GetTileModelAt(Point pt) { return Models.Tiles[m_TileIDs[pt.X, pt.Y]]; }
 
     public KeyValuePair<TileModel,Location> GetTileModelLocation(Point pt)
     {
       if (IsInBounds(pt)) return new KeyValuePair<TileModel, Location>(Models.Tiles[m_TileIDs[pt.X, pt.Y]], new Location(this,pt));
-      Location? loc = _Normalize(pt);
+      Location? loc = _Normalize(pt);   // XXX would have to handle out-of-bounds exits when building with peace walls
       if (null == loc) return default;
       return new KeyValuePair<TileModel, Location>(loc.Value.Map.GetTileModelAt(loc.Value.Position), loc.Value);
     }
@@ -1187,13 +1180,9 @@ retry:
 #if DEBUG
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
-#if NO_PEACE_WALLS
-      if (!IsInBounds(pt) && !HasExitAt(pt)) return "out of map";
-#else
-      if (!IsInBounds(pt)) return "out of map";
-#endif
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key.IsWalkable) return "blocked";   // should be non-null
+      if (null == tile_loc.Key) return "out of map";
+      if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
@@ -1222,13 +1211,9 @@ retry:
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-#if NO_PEACE_WALLS
-      if (!IsInBounds(pt) && !HasExitAt(pt)) return "out of map";
-#else
-      if (!IsInBounds(pt)) return "out of map";
-#endif
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key.IsWalkable) return "blocked";   // should be non-null
+      if (null == tile_loc.Key) return "out of map";
+      if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
       if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
