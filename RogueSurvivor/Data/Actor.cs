@@ -1842,7 +1842,7 @@ namespace djack.RogueSurvivor.Data
       if (IsTired) return "tired";
       bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
       if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
-      if (mapObj.Location.Actor != null) return "someone is there";
+      if (mapObj.Location.StrictHasActorAt) return "someone is there";
       return "";
     }
 
@@ -1871,7 +1871,7 @@ namespace djack.RogueSurvivor.Data
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
-      if (mapObj.Location.Actor != null) return "someone is there";
+      if (mapObj.Location.StrictHasActorAt) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
       if (null != DraggedCorpse) return "dragging a corpse";
       return "";
@@ -1999,7 +1999,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
       if (!door.IsOpen) return "not open";
-      if (door.Location.Actor != null) return "someone is there";
+      if (door.Location.StrictHasActorAt) return "someone is there";
       return "";
     }
 

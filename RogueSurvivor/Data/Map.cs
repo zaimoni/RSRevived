@@ -1045,6 +1045,11 @@ retry:
 #endif
     }
 
+    public bool StrictHasActorAt(Point position)
+    {
+      return m_aux_ActorsByPosition.ContainsKey(position);
+    }
+
     public bool HasActorAt(Point position)
     {   // 2019-08-27 release mode IL Code size       87 (0x57)
 #if NO_PEACE_WALLS
@@ -1197,7 +1202,7 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (null != tile_loc.Value.Actor) return "someone is there";  // XXX includes actor himself
+      if (tile_loc.Value.StrictHasActorAt) return "someone is there";  // XXX includes actor himself
       return "";
     }
 
@@ -1236,7 +1241,7 @@ retry:
       }
       // 1) does not have to be accurate except when adjacent
       // 2) treat null map as "omni-adjacent" (happens during spawning)
-      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value)) && null!=tile_loc.Value.Actor) return "someone is there";  // XXX includes actor himself
+      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value)) && tile_loc.Value.StrictHasActorAt) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
@@ -1949,36 +1954,42 @@ retry:
 
     public bool IsTransparent(Point pt)
     {
-      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent) return false;
-      return GetMapObjectAtExt(pt)?.IsTransparent ?? true;
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      return tile_loc.Value.MapObject?.IsTransparent ?? true;
     }
 
     public bool IsWalkable(int x, int y) { return IsWalkable(new Point(x,y)); }
 
     public bool IsWalkable(Point pt)
     {
-      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsWalkable) return false;
-      return GetMapObjectAtExt(pt)?.IsWalkable ?? true;
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key?.IsWalkable ?? true) return true;
+      return tile_loc.Value.MapObject?.IsWalkable ?? true;
     }
 
     public bool UnconditionallyBlockingFire(Point pt)
     {
-      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent) return true;
-      var obj = GetMapObjectAtExt(pt);
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      var obj = tile_loc.Value.MapObject;
       return null != obj && !obj.IsMovable && !obj.IsTransparent;
     }
 
     public bool IsBlockingFire(Point pt)
     {
-      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsTransparent || HasActorAt(pt)) return true;
-      return !GetMapObjectAtExt(pt)?.IsTransparent ?? false;
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      if (tile_loc.Value.StrictHasActorAt) return true;
+      return !tile_loc.Value.MapObject?.IsTransparent ?? false;
     }
 
     public bool IsBlockingThrow(Point pt)
     {
-      if (!IsValid(pt) || !GetTileModelAtExt(pt).IsWalkable) return true;
-      MapObject mapObjectAt = GetMapObjectAtExt(pt);
-      return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
+      var tile_loc = GetTileModelLocation(pt);
+      if (!tile_loc.Key?.IsWalkable ?? true) return true;
+      var obj = tile_loc.Value.MapObject;
+      return obj != null && !obj.IsWalkable && !obj.IsJumpable;
     }
 
     /// <returns>0 not blocked, 1 jumping required, 2 blocked (for livings)</returns>

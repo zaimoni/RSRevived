@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   {
     private Actor m_Actor;
     private readonly SensingFilter Filters;
-    // Actor caches for AI pruposes
+    // Actor caches for AI purposes
     private Dictionary<Location, Actor> _friends;
     private Dictionary<Location, Actor> _enemies;
     private Dictionary<Location,Inventory> _items;

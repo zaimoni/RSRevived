@@ -43,6 +43,7 @@ namespace djack.RogueSurvivor.Data
     // thin wrappers
     public MapObject MapObject { get { return m_Map.GetMapObjectAt(m_Position); } }
     public Actor Actor { get { return m_Map.GetActorAt(m_Position); } }
+    public bool StrictHasActorAt { get { return m_Map.StrictHasActorAt(m_Position); } }
     public void Add(Corpse c) { m_Map.AddAt(c, m_Position); }
     public void Place(Actor actor) { m_Map.PlaceAt(actor, m_Position); }
     public void Place(MapObject obj) { m_Map.PlaceAt(obj, m_Position); }

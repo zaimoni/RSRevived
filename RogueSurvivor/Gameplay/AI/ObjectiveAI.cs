@@ -3212,7 +3212,7 @@ restart_single_exit:
               foreach(var dir in Direction.COMPASS) {
                 var pt = pt2 + dir;
                 if (sweep.Contains(pt)) continue;
-                if (map.GetTileModelAtExt(pt)?.IsWalkable ?? false) melee_damage_field.Add(pt, a_turns * a_max_dam);
+                if (map.GetTileModelAtExt(pt)?.IsWalkable ?? false) melee_damage_field[pt] = a_turns * a_max_dam;
               }
             }
           }

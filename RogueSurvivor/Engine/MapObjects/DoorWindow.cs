@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       if (!IsClosed && !IsBroken) return "not closed or broken";
       if (BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      if (Location.Actor != null) return "someone is there";
+      if (Location.StrictHasActorAt) return "someone is there";
       return "";
     }
 
