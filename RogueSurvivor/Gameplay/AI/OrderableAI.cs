@@ -2449,7 +2449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
       if (loc.Map.HasExitAt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
-      if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
+      if (m_Actor.Location!=loc && loc.StrictHasActorAt) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
       bool wall_at(Point pt) {
@@ -2458,7 +2458,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // geometric code (walls, etc)
       if (!loc.Map.IsInsideAt(loc.Position)) return 0;
-      if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return 0;
+      if (!loc.TileModel.IsWalkable) return 0;
       // we don't want to sleep next to anything that looks like an ex-door
       bool[] walls = new bool[Direction.COMPASS.Length];
       foreach(Direction dir in Direction.COMPASS) walls[dir.Index] = wall_at(loc.Position + dir);

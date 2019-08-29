@@ -1977,11 +1977,12 @@ retry:
     }
 
     public bool IsBlockingFire(Point pt)
-    {
+    { // 2019-08-29 release mode IL Code size       75 (0x4b)
       var tile_loc = GetTileModelLocation(pt);
       if (!tile_loc.Key?.IsTransparent ?? true) return true;
-      if (tile_loc.Value.StrictHasActorAt) return true;
-      return !tile_loc.Value.MapObject?.IsTransparent ?? false;
+      var loc = tile_loc.Value;
+      if (loc.StrictHasActorAt) return true;
+      return !loc.MapObject?.IsTransparent ?? false;
     }
 
     public bool IsBlockingThrow(Point pt)
@@ -1994,15 +1995,13 @@ retry:
 
     /// <returns>0 not blocked, 1 jumping required, 2 blocked (for livings)</returns>
     public int IsBlockedForPathing(Point pt)
-    {
+    { // 2019-08-29 release mode IL Code size       41 (0x29)
       // blockers are:
       // walls (hard) !map.GetTileModelAt(pt).IsWalkable
       // non-enterable objects (hard)
       // jumpable objects (soft) map.GetMapObjectAt(pt)
       MapObject obj = GetMapObjectAtExt(pt);
-      if (null == obj) return 0;
-      if (obj.IsCouch) return 0;
-      if (obj.IsWalkable) return 0;
+      if (null == obj || obj.IsCouch || obj.IsWalkable) return 0;
       if (obj.IsJumpable) return 1;
       return 2;
     }

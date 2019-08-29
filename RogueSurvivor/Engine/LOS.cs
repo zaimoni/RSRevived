@@ -389,15 +389,16 @@ namespace djack.RogueSurvivor.Engine
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
-        if (!a_loc.Map.IsValid(point1)) continue;
-          if (visibleSet.Contains(point1)) continue;
-          if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
+        if (visibleSet.Contains(point1)) continue;
+        var tile_loc = map.GetTileModelLocation(point1);
+        if (null == tile_loc.Key) continue;
+        if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
-            TileModel tileModel = map.GetTileModelAtExt(point1);
+            TileModel tileModel = tile_loc.Key;
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
-            else if (map.HasMapObjectAtExt(point1)) flag = true;
+            else if (tile_loc.Value.HasMapObject) flag = true;
             if (flag) pointList1.Add(point1);
-          } else visibleSet.Add(point1);
+        } else visibleSet.Add(point1);
       }
 
       // Postprocess map objects and tiles whose edges would reasonably be seen

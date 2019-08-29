@@ -448,11 +448,11 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantPushTo(Point toPos)
     {
-      Map tmp = Location.Map;
-      if (!tmp.IsValid(toPos)) return "out of map";
-      if (!tmp.GetTileModelAtExt(toPos).IsWalkable) return "blocked by an obstacle";
-      if (tmp.HasMapObjectAtExt(toPos)) return "blocked by an object";
-      if (tmp.HasActorAt(toPos)) return "blocked by someone";
+      var tile_loc = Location.Map.GetTileModelLocation(toPos);
+      if (null == tile_loc.Key) return "out of map";
+      if (!tile_loc.Key.IsWalkable) return "blocked by an obstacle";
+      if (tile_loc.Value.HasMapObject) return "blocked by an object";
+      if (tile_loc.Value.StrictHasActorAt) return "blocked by someone";
       return "";
     }
 
