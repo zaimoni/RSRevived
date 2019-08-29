@@ -1955,7 +1955,7 @@ retry:
     public bool IsTransparent(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      if (!tile_loc.Key?.IsTransparent ?? true) return false;
       return tile_loc.Value.MapObject?.IsTransparent ?? true;
     }
 
@@ -1964,14 +1964,14 @@ retry:
     public bool IsWalkable(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsWalkable ?? true) return true;
+      if (!tile_loc.Key?.IsWalkable ?? true) return false;
       return tile_loc.Value.MapObject?.IsWalkable ?? true;
     }
 
     public bool UnconditionallyBlockingFire(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      if (!tile_loc.Key?.IsTransparent ?? true) return false;
       var obj = tile_loc.Value.MapObject;
       return null != obj && !obj.IsMovable && !obj.IsTransparent;
     }
@@ -1979,7 +1979,7 @@ retry:
     public bool IsBlockingFire(Point pt)
     { // 2019-08-29 release mode IL Code size       75 (0x4b)
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsTransparent ?? true) return true;
+      if (!tile_loc.Key?.IsTransparent ?? true) return false;
       var loc = tile_loc.Value;
       if (loc.StrictHasActorAt) return true;
       return !loc.MapObject?.IsTransparent ?? false;
@@ -1988,7 +1988,7 @@ retry:
     public bool IsBlockingThrow(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsWalkable ?? true) return true;
+      if (!tile_loc.Key?.IsWalkable ?? true) return false;
       var obj = tile_loc.Value.MapObject;
       return obj != null && !obj.IsWalkable && !obj.IsJumpable;
     }
