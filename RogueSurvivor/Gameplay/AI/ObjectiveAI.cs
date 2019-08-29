@@ -3201,15 +3201,18 @@ restart_single_exit:
         int a_max_dam;
         if (Actor.STAMINA_MIN_FOR_ACTIVITY <= a.StaminaPoints) {
           a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable)) {
-            melee_damage_field[pt] = a_turns*a_max_dam;
+          foreach(var dir in Direction.COMPASS) {
+            var pt = a.Location.Position + dir;
+            if (map.GetTileModelAtExt(pt)?.IsWalkable ?? false) melee_damage_field.Add(pt, a_turns * a_max_dam);
           }
           while(1<a_turns) {
             HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
             a_turns--;
             foreach(Point pt2 in sweep) {
-              foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAtExt(pt).IsWalkable && !sweep.Contains(pt))) {
-                melee_damage_field[pt] = a_turns*a_max_dam;
+              foreach(var dir in Direction.COMPASS) {
+                var pt = pt2 + dir;
+                if (sweep.Contains(pt)) continue;
+                if (map.GetTileModelAtExt(pt)?.IsWalkable ?? false) melee_damage_field.Add(pt, a_turns * a_max_dam);
               }
             }
           }

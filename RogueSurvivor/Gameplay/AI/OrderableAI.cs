@@ -2453,7 +2453,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
       bool wall_at(Point pt) {
-        return loc.Map.IsValid(pt) ? !loc.Map.GetTileModelAtExt(pt).IsWalkable : true;
+        return !loc.Map.GetTileModelAtExt(pt)?.IsWalkable ?? true;
       } // invalid is impassable so acts like a wall
 
       // geometric code (walls, etc)

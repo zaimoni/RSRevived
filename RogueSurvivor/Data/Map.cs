@@ -555,12 +555,13 @@ namespace djack.RogueSurvivor.Data
     }
 
     // possibly denormalized versions
+    /// <returns>null if and only if location is invalid rather than merely denormalized</returns>
     public TileModel GetTileModelAtExt(Point pt)
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]];   //      return GetTileModelAt(x,y);
       Location? loc = _Normalize(pt);
-//    if (null == loc) throw ...;
+      if (null == loc) return null;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
 #else
       return Models.Tiles[m_TileIDs[pt.X,pt.Y]];
