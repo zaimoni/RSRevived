@@ -315,8 +315,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.Model.Abilities.CanTire) {
                 // jumping
                 if (action is ActionMoveStep) {
-                    MapObject mobj = loc.Map.GetMapObjectAt(loc.Position);
-                    if (mobj?.IsJumpable ?? false) cost = MOVE_DISTANCE_PENALTY;
+                    if (Location.RequiresJump(loc)) cost = MOVE_DISTANCE_PENALTY;
                 }
 
                 // actions that always consume sta or may take more than one turn
@@ -1073,8 +1072,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 3 If can tire, prefer not jumping.
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        MapObject mapObjectAt = from.MapObject;
-        if (mapObjectAt?.IsJumpable ?? false) jumpPenalty = 0.1f;
+        if (Location.RequiresJump(from)) jumpPenalty = 0.1f;
       }
 #endregion
       float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;

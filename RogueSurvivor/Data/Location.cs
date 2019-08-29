@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Collections.Generic;
 using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
@@ -55,6 +56,9 @@ namespace djack.RogueSurvivor.Data
     public TileModel TileModel { get { return m_Map.GetTileModelAt(m_Position); } }
     public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
     static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
+    static public bool RequiresJump(Location loc) { return loc.MapObject?.IsJumpable ?? false; }
+    static public bool NoJump(Location loc) { return !loc.MapObject?.IsJumpable ?? true; }
+    static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) { return !loc_x.Key.MapObject?.IsJumpable ?? true; }
 
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based

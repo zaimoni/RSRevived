@@ -1442,22 +1442,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private static List<Location> DecideMove_NoJump(List<Location> src)
     {
-      IEnumerable<Location> no_jump = src.Where(loc=> {
-        MapObject tmp2 = loc.MapObject;
-        return !tmp2?.IsJumpable ?? true;
-      });
+      IEnumerable<Location> no_jump = src.Where(Location.NoJump);
 	  int new_dest = no_jump.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
     private static void DecideMove_NoJump<T>(Dictionary<Location,T> src)
     {
-      bool no_jump(Location loc) {
-        MapObject tmp2 = loc.MapObject;
-        if (null == tmp2) return true;
-        return !tmp2.IsJumpable;
-      }
-      if (src.NontrivialFilter(x => no_jump(x.Key))) src.OnlyIf(no_jump);
+      if (src.NontrivialFilter(Location.NoJump)) src.OnlyIf(Location.NoJump);
     }
 
     private List<Point> DecideMove_LongPath(List<Point> src)
@@ -2710,7 +2702,7 @@ restart:
             if (1 < path[i].Count) {
               var no_jump = new List<Location>();
               var jump = new List<Location>();
-              foreach(Location loc in path[i]) ((loc.MapObject?.IsJumpable ?? false) ? jump : no_jump).Add(loc);
+              foreach(Location loc in path[i]) (Location.RequiresJump(loc) ? jump : no_jump).Add(loc);
               if (0<jump.Count && 0<no_jump.Count) {
                 path[i] = no_jump;
                 purge_non_adjacent(i);

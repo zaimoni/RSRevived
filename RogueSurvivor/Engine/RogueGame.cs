@@ -7649,10 +7649,11 @@ namespace djack.RogueSurvivor.Engine
 	  // committed to move now
 	  actor.Moved();
       newLocation.Place(actor);
+      bool dest_seen = ForceVisibleToPlayer(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveTo(draggedCorpse, newLocation.Position);
-        if (ForceVisibleToPlayer(newLocation) || ForceVisibleToPlayer(location))
+        if (dest_seen || ForceVisibleToPlayer(location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
       }
       int actionCost = Rules.BASE_ACTION_COST;
@@ -7661,18 +7662,15 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
       MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+      if (mapObjectAt?.IsJumpable ?? false) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (ForceVisibleToPlayer(actor))
-          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+        if (dest_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
-          if (IsVisibleToPlayer(actor))
-            AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+          if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
         }
       }
-      if (draggedCorpse != null)
-        actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
+      if (draggedCorpse != null) actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
       actor.SpendActionPoints(actionCost);
 
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
@@ -7681,7 +7679,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
         OnLoudNoise(newLocation, "A loud SCREAM");
-        if (!ForceVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
+        if (!dest_seen && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
@@ -7905,19 +7903,17 @@ namespace djack.RogueSurvivor.Engine
       bool need_stamina_regen = (actor.IsRunning ? !actor.RunIsFreeMove : !actor.WalkIsFreeMove) && null!=exitAt.Location.Map.NextActorToAct;
       actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
       if (actor.IsRunning) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
-      MapObject mapObjectAt = exitAt.Location.Map.GetMapObjectAt(exitAt.Location.Position);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+      bool origin_seen = ForceVisibleToPlayer(actor);
+      MapObject mapObjectAt = exitAt.Location.MapObject;
+      if (mapObjectAt?.IsJumpable ?? false) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (ForceVisibleToPlayer(actor))
-          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+        if (origin_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));   // XXX not quite right, cf. other jump usage
         if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actor.SpendActionPoints(Rules.JUMP_STUMBLE_ACTION_COST);
-          if (IsVisibleToPlayer(actor))
-            AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+          if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
         }
       }
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
+      if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       actor.RemoveFromMap();
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
 #if OBSOLETE
@@ -9897,8 +9893,7 @@ namespace djack.RogueSurvivor.Engine
         var new_t_loc = new Location(t_loc.Map, toPos);
         if (!Map.Canonical(ref new_t_loc)) throw new InvalidOperationException("shoved off map entirely");
         bool non_adjacent = !Rules.IsAdjacent(new_t_loc, actor.Location);
-        var obj = t_loc.MapObject;
-        if (null != obj && obj.IsJumpable && non_adjacent) {
+        if (non_adjacent && Location.RequiresJump(t_loc)) {
 #if DEBUG
           if (!actor.CanJump) throw new InvalidOperationException("shoving off a jumpable object this way requires jumping onto the object");
 #endif
