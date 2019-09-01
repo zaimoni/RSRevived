@@ -390,7 +390,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) => {
         if (ptA == ptB) return 0.0f;
-        float num = (float)Rules.StdDistance(ptA, ptB);
+        float num = (float)Rules.StdDistance(in ptA, in ptB);
         if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += MOVE_DISTANCE_PENALTY;
         return num;
       });
@@ -406,10 +406,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
-      float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, goal);
+      float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, in goal);
       Func<Point,Point,float> close_in = (ptA,ptB) => {
         if (ptA == ptB) return 0.0f;
-        float num = (float)Rules.StdDistance(ptA, ptB);
+        float num = (float)Rules.StdDistance(in ptA, in ptB);
         return (num >= currentDistance) ? float.NaN : num;
       };
 
@@ -680,7 +680,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (0 >= verified.Count && 0 >=unclear.Count) return null;
 
-      bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, pt); }
+      bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, in pt); }
 
       bool safe_push(ActionPush act) {
         var loc = new Location(act.Target.Location.Map,act.To);
@@ -1002,7 +1002,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 2 Prefer going outside/inside if majority of dangers are inside/outside.
       // 3 If can tire, prefer not jumping.
 #region Primary: Get away from dangers.
-      float avgDistance = (float) (dangers.Sum(pt => Rules.GridDistance(from, pt))) / (1 + dangers.Count());
+      float avgDistance = (float) (dangers.Sum(pt => Rules.GridDistance(in from, in pt))) / (1 + dangers.Count());
 #endregion
 #region 1 Avoid getting in corners.
       int countFreeSquares = map.CountAdjacentTo(from,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
@@ -1269,7 +1269,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected static bool IsBetween(Point A, in Point between, Point B)
     {
-      return Rules.StdDistance(A, between) + Rules.StdDistance(B, between) <= Rules.StdDistance(A, B) + 0.25;
+      return Rules.StdDistance(in A, in between) + Rules.StdDistance(in B, in between) <= Rules.StdDistance(in A, in B) + 0.25;
     }
 
     protected bool IsFriendOf(Actor other)

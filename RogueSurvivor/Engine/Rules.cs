@@ -238,12 +238,12 @@ namespace djack.RogueSurvivor.Engine
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
-    public bool CanActorPutItemIntoContainer(Actor actor, Point position)
+    public bool CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
-      return CanActorPutItemIntoContainer(actor, position, out string reason);
+      return CanActorPutItemIntoContainer(actor, in position, out string reason);
     }
 
-    public bool CanActorPutItemIntoContainer(Actor actor, Point position, out string reason)
+    public bool CanActorPutItemIntoContainer(Actor actor, in Point position, out string reason)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
@@ -629,7 +629,7 @@ namespace djack.RogueSurvivor.Engine
       return IsAdjacent(a.Position, b.Position);
     }
 
-    public static bool IsAdjacent(Point pA, Point pB)
+    public static bool IsAdjacent(in Point pA, in Point pB)
     {
       if (Math.Abs(pA.X - pB.X) < 2)
         return Math.Abs(pA.Y - pB.Y) < 2;
@@ -637,35 +637,32 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // L-infinity metric i.e. distance in moves
+    public static int GridDistance(Point pt)
+    {
+      return Math.Max(Math.Abs(pt.X), Math.Abs(pt.Y));
+    }
+
     public static int GridDistance(Point pA, int bX, int bY)
     {
       return Math.Max(Math.Abs(pA.X - bX), Math.Abs(pA.Y - bY));
     }
 
-    public static int GridDistance(Point pA, Point pB)
-    {
-      return Math.Max(Math.Abs(pA.X - pB.X), Math.Abs(pA.Y - pB.Y));
-    }
+    public static int GridDistance(in Point pA, in Point pB) { return GridDistance(pB - pA); }
 
     public static int GridDistance(Location locA, Location locB)
     {
       if (null == locA.Map) return int.MaxValue;
       if (null == locB.Map) return int.MaxValue;
-      if (locA.Map==locB.Map) return GridDistance(locA.Position,locB.Position);
+      if (locA.Map==locB.Map) return GridDistance(locB.Position - locA.Position);
       Location? tmp = locA.Map.Denormalize(locB);
       if (null == tmp) return int.MaxValue;
-      return GridDistance(locA.Position,tmp.Value.Position);
+      return GridDistance(tmp.Value.Position - locA.Position);
     }
 
     // Euclidean plane distance
-    public static double StdDistance(Point from, Point to)
-    {
-      int num1 = to.X - from.X;
-      int num2 = to.Y - from.Y;
-      return Math.Sqrt((double) (num1 * num1 + num2 * num2));
-    }
+    public static double StdDistance(in Point from, in Point to) { return StdDistance(to - from); }
 
-    public static double StdDistance(Point v)
+    public static double StdDistance(in Point v)
     {
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
@@ -674,9 +671,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Location? test = from.Map.Denormalize(to);
       if (null == test) return double.MaxValue;
-      int num1 = test.Value.Position.X - from.Position.X;
-      int num2 = test.Value.Position.Y - from.Position.Y;
-      return Math.Sqrt((double) (num1 * num1 + num2 * num2));
+      return StdDistance(test.Value.Position - from.Position);
     }
 
     public static double InteractionStdDistance(Location from, Location to)

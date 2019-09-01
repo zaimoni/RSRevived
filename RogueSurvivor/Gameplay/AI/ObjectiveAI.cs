@@ -623,7 +623,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var depth2 = path_pt[1];
               if (null != goals) {
                 depth2 = path_pt[1].FindAll(pt => goals.Contains(new Location(m_Actor.Location.Map,pt)));
-                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2.Position,pt)));
+                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2.Position,in pt)));
                 if (0 >= depth2.Count) depth2 = path_pt[1];
               }
 
@@ -633,7 +633,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!m_Actor.CanEnter(loc)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(loc)) continue;
                 foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  if (1!=Rules.GridDistance(in pt,in pt2)) continue;
                   var loc2 = new Location(m_Actor.Location.Map, pt2);
                   if (!m_Actor.CanEnter(loc2)) continue;
                   if (1 >= FastestTrapKill(loc2)) continue;
@@ -1268,7 +1268,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var cornered = new HashSet<Point>(_retreat);
       foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
-        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
+        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(in pt,in pt2)) && 0>=cornered.Count) return;
       }
 
       if (cornered.Count< _retreat.Count) _retreat.RemoveAll(pt => cornered.Contains(pt));
@@ -1283,7 +1283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var cornered = new HashSet<Point>(_run_retreat);
       foreach(Point pt in Enumerable.Range(0,24).Select(i=>m_Actor.Location.Position.RadarSweep(3,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
-        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
+        if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(in pt,in pt2)) && 0>=cornered.Count) return;
       }
 
       if (cornered.Count< _run_retreat.Count) _run_retreat.RemoveAll(pt => cornered.Contains(pt));
@@ -1382,8 +1382,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
       var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(pt)));
-//    ret.RemoveWhere(pt => !_legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());    // predicted to work but fails due to MS C# compiler bug April 12 2018
-      ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(pt,pt2))); // this does work and would be more efficient than the broken version above
+      ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(in pt,in pt2)));
 
       IEnumerable<Point> tmp_point = ret.Where(pt=>!_damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();
@@ -1981,7 +1980,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       var range = new Dictionary<Point,IEnumerable<Point>>();
       foreach (var pt in src) {
-        var test = tmp2.Where(pt2 => Rules.IsAdjacent(pt,pt2));
+        var test = tmp2.Where(pt2 => Rules.IsAdjacent(in pt,in pt2));
         if (!test.Any()) continue;
         range[pt] = test;
       }
@@ -2864,7 +2863,7 @@ restart:
           if (0 >= los.Count) continue;
           exposed[x] = los.Count;
           if (   m_Actor.RunIsFreeMove
-              || !los.Any(pt2 => Rules.IsAdjacent(pt2, x.Position))
+              || !los.Any(pt2 => Rules.IsAdjacent(in pt2, x.Position))
               || (x.MapObject is DoorWindow door && door.IsClosed)) {
             safe_exposed[x] = los.Count;
           }
@@ -3227,7 +3226,7 @@ restart_single_exit:
         a_turns = a_turns_bak;
         foreach(Point pt in aFOV) {
           if (pt == a.Location.Position) continue;
-          int dist = Rules.GridDistance(pt, a.Location.Position);
+          int dist = Rules.GridDistance(in pt, a.Location.Position);
           if (ranged_attacks.TryGetValue(dist,out var att)) {
             a_max_dam = ranged_attacks[dist].DamageValue;
             ranged_damage_field[pt] = a_turns*a_max_dam;
@@ -3244,7 +3243,7 @@ restart_single_exit:
               aFOV = LOS.ComputeFOVFor(a,new Location(a.Location.Map,pt2));
               aFOV.ExceptWith(ranged_damage_field.Keys);
               foreach(Point pt in aFOV) {
-                int dist = Rules.GridDistance(pt, a.Location.Position);
+                int dist = Rules.GridDistance(in pt, a.Location.Position);
                 if (ranged_attacks.TryGetValue(dist,out var att)) {
                   a_max_dam = ranged_attacks[dist].DamageValue;
                   ranged_damage_field[pt] = a_turns*a_max_dam;
@@ -3702,7 +3701,7 @@ restart_single_exit:
 #endif
           }
 #if DEBUG
-        if (!RogueForm.Game.Rules.CanActorPutItemIntoContainer(m_Actor, pos)) throw new InvalidOperationException("illegal put into container attempted");
+        if (!RogueForm.Game.Rules.CanActorPutItemIntoContainer(m_Actor, in pos)) throw new InvalidOperationException("illegal put into container attempted");
 #endif
         has_container.Add(pos);
       }

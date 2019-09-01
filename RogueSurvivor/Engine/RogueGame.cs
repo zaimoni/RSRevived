@@ -4384,7 +4384,7 @@ namespace djack.RogueSurvivor.Engine
           }
           AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason)));
           continue;
-        } else if (m_Rules.CanActorPutItemIntoContainer(player, point)) {
+        } else if (m_Rules.CanActorPutItemIntoContainer(player, in point)) {
           flag2 = true;
           DoPutItemInContainer(player, point, inventoryItem);
           break;
@@ -4779,7 +4779,7 @@ namespace djack.RogueSurvivor.Engine
         else if (key.KeyCode == Keys.F) {
           if (flag3) {
             bool flag4 = true;
-            if (Rules.GridDistance(player.Location.Position, point1) <= itemGrenadeModel.BlastAttack.Radius) {
+            if (Rules.GridDistance(player.Location.Position, in point1) <= itemGrenadeModel.BlastAttack.Radius) {
               ClearMessages();
               AddMessage(new Data.Message("You are in the blast radius!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
               AddMessage(MakeYesNoMessage("Really throw there"));
@@ -4803,7 +4803,7 @@ namespace djack.RogueSurvivor.Engine
           Direction direction = RogueGame.CommandToDirection(command);
           if (direction != null) {
             Point point2 = point1 + direction;
-            if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, point2) <= num)
+            if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, in point2) <= num)
               point1 = point2;
           }
         }
@@ -5868,7 +5868,7 @@ namespace djack.RogueSurvivor.Engine
       Inventory inv = player.Location.Map.GetItemsAt(src);
       if (null == inv) throw new ArgumentNullException(nameof(src),"no inventory at ("+src.X.ToString()+","+src.Y.ToString()+")");
       if (2 > inv.CountItems) throw new ArgumentOutOfRangeException(nameof(inv),"inventory was not a stack");
-      if (1 != Rules.GridDistance(player.Location.Position,src)) throw new ArgumentOutOfRangeException(nameof(src), "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
+      if (1 != Rules.GridDistance(player.Location.Position,in src)) throw new ArgumentOutOfRangeException(nameof(src), "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
       bool details(int index) {
@@ -10100,7 +10100,7 @@ namespace djack.RogueSurvivor.Engine
       }, pt => {
         actorAt = map.GetActorAtExt(pt);
         if (!(actorAt?.IsSleeping ?? false)) return false;
-        int noiseDistance = Rules.GridDistance(noisePosition, pt);
+        int noiseDistance = Rules.GridDistance(in noisePosition, in pt);
         return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
       });
     }
@@ -11278,7 +11278,7 @@ namespace djack.RogueSurvivor.Engine
             flag2 = true;
           }
 #if NO_PEACE_WALLS
-          if (!Player.IsSleeping && Rules.GridDistance(Player.Location.Position, point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
+          if (!Player.IsSleeping && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
 #else
           if (!Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(Player.Location.Position, point) <= 1) {    // XXX optimize when no peace walls
 #endif

@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Engine
           // We want to reject points that are out of range, but still look circular in an open space
           // the historical multipler was Math.Sqrt(.75)
           // however, since we are in a cartesian gridspace the "radius to the edge of the square at max_range on the coordinate axis" is "radius to midpoint of square"+.5
-          if (Rules.StdDistance(origin, pt) > edge_of_maxrange) continue;
+          if (Rules.StdDistance(in origin, in pt) > edge_of_maxrange) continue;
           // initialize all octants at once
           tmp.Add(pt);
           tmp.Add(-pt);

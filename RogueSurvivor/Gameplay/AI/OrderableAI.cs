@@ -672,7 +672,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var escape = new List<Point>(8);
           var motive = new List<Point>(8);
           foreach(Point pt in m_Actor.Location.Position.Adjacent()) {
-            if (Rules.IsAdjacent(pt, _dest.Position)) continue;
+            if (Rules.IsAdjacent(in pt, _dest.Position)) continue;
             if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.Add(pt);
             else {
               Actor helper = m_Actor.Location.Map.GetActorAt(pt);
@@ -709,7 +709,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(Point pt in move_to.ToList()) {
             bool ok = false;
             foreach(var x in helpers_at) {
-              if (Rules.IsAdjacent(pt,x.Key)) {
+              if (Rules.IsAdjacent(in pt,x.Key)) {
                 ok = true;
                 break;
               }
@@ -1102,7 +1102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           efficiency[pt] = 0;
           foreach(var pt_delta in goals) {
             // relies on FOV not being "too large"
-            int delta = pt_delta.Value-Rules.GridDistance(pt, pt_delta.Key);
+            int delta = pt_delta.Value-Rules.GridDistance(in pt, pt_delta.Key);
             if (min_dist == pt_delta.Value) {
               efficiency[pt] += near_scale*delta;
             } else {
@@ -1689,7 +1689,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Point? bestSpot = null;
       int bestSpotScore = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
-        if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, point))) continue;
+        if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, in point))) continue;
         if (maxRange < my_dist) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
         if (_blast_field?.Contains(point) ?? false) continue;
@@ -1724,9 +1724,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private static string MakeCentricLocationDirection(Location from, Location to)
     {
-      if (from.Map != to.Map) return string.Format("in {0}", (object) to.Map.Name);
+      if (from.Map != to.Map) return string.Format("in {0}", to.Map.Name);
       Point v = to.Position - from.Position;
-      return string.Format("{0} tiles to the {1}", (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v));
+      return string.Format("{0} tiles to the {1}", (int) Rules.StdDistance(in v), Direction.ApproximateFromVector(v));
     }
 
     private bool IsItemWorthTellingAbout(Item it)
@@ -1780,7 +1780,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Point position in m_Actor.Controller.FOV) {
         if (!(map.GetMapObjectAt(position) is DoorWindow door)) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
-          if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
+          if (Rules.IsAdjacent(in position, m_Actor.Location.Position)) {
             // this can trigger close-open loop with someone who is merely traveling
             // check for duplicating last action
             if (null!=Goal<Goal_LastAction<ActionCloseDoor>>(o => o.LastAction.Door == door)) {
@@ -1792,12 +1792,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Objectives.Add(new Goal_LastAction<ActionCloseDoor>(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,tmp));
             return tmp;
           }
-          want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
+          want_to_resolve[position] = Rules.GridDistance(in position, m_Actor.Location.Position);
         }
         if (door.IsWindow && !door.IsBarricaded && m_Actor.CanBarricade(door)) {
-          if (Rules.IsAdjacent(position, m_Actor.Location.Position))
+          if (Rules.IsAdjacent(in position, m_Actor.Location.Position))
             return new ActionBarricadeDoor(m_Actor, door);
-          want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
+          want_to_resolve[position] = Rules.GridDistance(in position, m_Actor.Location.Position);
         }
       }
       // we could floodfill this, of course -- but everything is in LoS so try something else
@@ -1909,7 +1909,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Func<Point,Point,float> close_in = (ptA,ptB) => {
           if (ptA == ptB) return 0.0f;
           if (0 < m_Actor.Location.Map.TrapsUnavoidableMaxDamageAtFor(ptA, m_Actor)) return float.NaN; // just cancel the move
-          return (float)Rules.StdDistance(ptA, ptB);
+          return (float)Rules.StdDistance(in ptA, in ptB);
         };
         var friends = friends_in_FOV;
         if (null != friends) {
@@ -2014,7 +2014,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!(m_Actor.Location.Map.GetMapObjectAt(pt) is DoorWindow door)) continue;
           if (!IsBetween(m_Actor.Location.Position, in pt, enemy.Location.Position)) continue;
           if (m_Actor.CanClose(door)) {
-            if ((!Rules.IsAdjacent(pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
+            if ((!Rules.IsAdjacent(in pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
           } else if (could_barricade && door.CanBarricade()) {
             barricade_doors[pt] = door;
           }
@@ -2167,7 +2167,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // cannot close at normal speed safely; run-hit may be ok
             var dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
-            List<Point> attack_possible = legal_steps.FindAll(pt => Rules.IsAdjacent(pt, e_loc.Position)
+            List<Point> attack_possible = legal_steps.FindAll(pt => Rules.IsAdjacent(in pt, e_loc.Position)
               && !(LoF_reserve?.Contains(pt) ?? false)
               && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep step
               && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest)));
@@ -2509,7 +2509,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           doors[pt] = delta;
         }
         if ( 0 >= rating) continue;
-        int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
+        int dist = Rules.GridDistance(m_Actor.Location.Position, in pt);
         ret[pt] = dist;
         if (m_Actor.Location.Map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
       }

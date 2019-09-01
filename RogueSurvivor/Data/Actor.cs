@@ -653,7 +653,7 @@ namespace djack.RogueSurvivor.Data
 
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       int maxRange = MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
-      if (Rules.GridDistance(Location.Position, pos) > maxRange) return "out of throwing range";
+      if (Rules.GridDistance(Location.Position, in pos) > maxRange) return "out of throwing range";
       if (!LOS.CanTraceThrowLine(Location, pos, maxRange, LoF)) return "no line of throwing";
       return "";
     }
@@ -809,7 +809,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      if (CurrentRangedAttack.Range < Rules.GridDistance(p, target.Location.Position)) return "out of range";
+      if (CurrentRangedAttack.Range < Rules.GridDistance(in p, target.Location.Position)) return "out of range";
       if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, CurrentRangedAttack.Range, this)) return "no line of fire";
       return "";
     }
@@ -1589,13 +1589,13 @@ namespace djack.RogueSurvivor.Data
       if (pt == Location.Position) return ret;
       Actor a = Location.Map.GetActorAtExt(pt);
       if (null!=a) ret[pt] = a;
-      if (!Rules.IsAdjacent(pt,Location.Position)) return ret;
+      if (!Rules.IsAdjacent(in pt,Location.Position)) return ret;
 #if B_MOVIE_MARTIAL_ARTS
       if (0 < UsingPolearmInBMovie) {
         // Polearms actually have range 2 (cf. Dungeon Crawl Stone Soup).
         // this would look much more reasonable at Angband space-time scale of 900 turns per hour, than the historical 30 turns/hour
         foreach(var pt2 in pt.Adjacent()) {
-          if (2!=Rules.GridDistance(Location.Position,pt2)) continue;
+          if (2!=Rules.GridDistance(Location.Position,in pt2)) continue;
           a = Location.Map.GetActorAtExt(pt2);
           if (null==a || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
           ret[pt2] = a;
@@ -1629,9 +1629,9 @@ namespace djack.RogueSurvivor.Data
 
     public List<Point> FastestStepTo(Map m,Point src,Point dest)
     {
-      int dist = Rules.GridDistance(src,dest);
+      int dist = Rules.GridDistance(in src,in dest);
       if (1==dist) return new List<Point>{ dest };
-      IEnumerable<Point> tmp = src.Adjacent().Where(pt=> dist>Rules.GridDistance(pt,dest) && m.IsWalkableFor(pt,this));
+      IEnumerable<Point> tmp = src.Adjacent().Where(pt=> dist>Rules.GridDistance(in pt,in dest) && m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
     }
 
@@ -1653,7 +1653,7 @@ namespace djack.RogueSurvivor.Data
       if (null == tmp) return null;
       ret.Add(tmp);
       while(!tmp.Contains(dest)) {
-        int dist = Rules.GridDistance(dest,tmp[0]);
+        int dist = Rules.GridDistance(in dest,tmp[0]);
         if (1==dist) {
           tmp = new List<Point>{dest};
         } else {

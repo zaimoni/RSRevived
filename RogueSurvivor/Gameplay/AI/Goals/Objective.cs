@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             List<Point> working;
             int n = src.Count;
             while (0 < n--) {
-                working = src[n].FindAll(pt => 1 == Engine.Rules.GridDistance(loc.Position, pt));
+                working = src[n].FindAll(pt => 1 == Engine.Rules.GridDistance(loc.Position, in pt));
                 if (0 < working.Count) {
                     var ret = new List<Location>(working.Count);
                     foreach (var pt in working) ret.Add(new Location(loc.Map, pt));

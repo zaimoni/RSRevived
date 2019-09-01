@@ -1925,7 +1925,7 @@ restart:
       for (var left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
           var pt = new Point(left, y);
-          if (CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && !Rules.IsAdjacent(pt, doorAt))
+          if (CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && !Rules.IsAdjacent(in pt, in doorAt))
             map.PlaceAt(MakeObjIronBench(), pt);
         }
       }

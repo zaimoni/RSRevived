@@ -305,7 +305,7 @@ namespace djack.RogueSurvivor.Data
       Location? test = m_Actor.Location.Map.Denormalize(loc);
       if (null == test) throw new ArgumentNullException(nameof(test));
       var v = test.Value.Position - m_Actor.Location.Position;
-      string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v));
+      string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(in v), Direction.ApproximateFromVector(v));
       if (null != color) return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
       return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter);
     }
