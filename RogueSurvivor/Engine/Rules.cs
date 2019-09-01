@@ -930,7 +930,7 @@ retry:
 // still want this
   internal static class ext_Rules
   {
-    public static bool IsScheduledBefore(this Point lhs, Point rhs) { // Cf. ScheduleAdjacentForAdvancePlay.  Almost anti-symmetric, irreflexive relation
+    public static bool IsScheduledBefore(in this Point lhs, in Point rhs) { // Cf. ScheduleAdjacentForAdvancePlay.  Almost anti-symmetric, irreflexive relation
       if (lhs.X <= rhs.X && lhs.Y <= rhs.Y) return false;   // this quadrant comes after us.  Includes equality.
       if (lhs.X >= rhs.X && lhs.Y >= rhs.Y) return true;    // this quadrant comes before us.  Would include equality except that already happened.
 

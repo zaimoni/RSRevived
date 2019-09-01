@@ -12,7 +12,8 @@ namespace Zaimoni.Data
     // 2r...4r: x constant r, y decrement r to -r
     // 4r..64: y constant -r, x decrement r to -r
     // 4r to 8r i.e. 0: x constant -r, y increment -r to r
-    public static Point RadarSweep(this Point origin,int radius,int i)
+#if DEAD_FUNC
+    public static Point RadarSweep(in this Point origin,int radius,int i)
     {
 #if DEBUG
       if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
@@ -30,7 +31,7 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
-    public static Vector2D_int RadarSweep(this Vector2D_int origin,int radius,int i)
+    public static Vector2D_int RadarSweep(in this Vector2D_int origin,int radius,int i)
     {
 #if DEBUG
       if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
@@ -47,11 +48,12 @@ namespace Zaimoni.Data
       if (6*radius>i) return new Vector2D_int((5*radius-i) + origin.X, -radius + origin.Y);
       /* if (8*radius>i) */ return new Vector2D_int(-radius + origin.X, (i-7* radius) + origin.Y);
     }
+#endif
 
-    public static Vector2D_short RadarSweep(this Vector2D_short origin,short radius,int i)
+    public static Vector2D_short RadarSweep(in this Vector2D_short origin,short radius,int i)
     {
 #if DEBUG
-      if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
+      if (0 >= radius /* || int.MaxValue/8 < radius */) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
       if (short.MaxValue - radius < origin.X || short.MinValue + radius > origin.X) throw new ArgumentOutOfRangeException(nameof(origin.X),origin.X.ToString(), "must be in "+(short.MinValue + radius).ToString()+".." +(short.MaxValue - radius).ToString());
       if (short.MaxValue - radius < origin.Y || short.MinValue + radius > origin.Y) throw new ArgumentOutOfRangeException(nameof(origin.Y),origin.Y.ToString(), "must be in "+(short.MinValue + radius).ToString()+".." +(short.MaxValue - radius).ToString());
 #endif
@@ -895,9 +897,11 @@ namespace Zaimoni.Data
       return string.Join(",\n",tmp);
     }
 
-    public static string to_s(this Point x) {
+#if DEAD_FUNC
+    public static string to_s(in this Point x) {
       return "("+x.X.ToString()+","+x.Y.ToString()+")";
     }
+#endif
 
     // ultimate fallback
     public static string to_s<T>(this T x) {

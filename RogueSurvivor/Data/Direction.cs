@@ -220,10 +220,11 @@ diagonalExit:
 #endif
     }
 
-    public static Point[] Adjacent(this Point pt) {
+    public static Point[] Adjacent(in this Point pt) {
       lock (_adjacent) {
         if (_adjacent.TryGetValue(pt, out Point[] value)) return value;
-        Point[] ret = Direction.COMPASS.Select(dir => pt+dir).ToArray();
+        Point[] ret = new Point[Direction.COMPASS.Length];
+        foreach(var dir in Direction.COMPASS) ret[dir.Index] = pt+dir;
         _adjacent.Set(pt, ret);
         return ret;
       }
