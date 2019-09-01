@@ -638,8 +638,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (!m_Actor.CanEnter(loc2)) continue;
                   if (1 >= FastestTrapKill(loc2)) continue;
                   var act = new ActionMoveDelta(m_Actor, loc2, loc);
-                  if (!act.IsLegal()) continue;
-                  stage2.Add(act);
+                  if (act.IsLegal()) stage2.Add(act);
                 }
               }
               } // end scope brace for depth2
@@ -697,8 +696,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (!m_Actor.CanEnter(pt2)) continue;
                   if (1 >= FastestTrapKill(pt2)) continue;
                   var act = new ActionMoveDelta(m_Actor, pt2, pt);
-                  if (!act.IsLegal()) continue;
-                  stage2.Add(act);
+                  if (act.IsLegal()) stage2.Add(act);
                 }
               }
               } // end scope brace for depth2
@@ -925,8 +923,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int origin = -1;
         foreach(var dir in Direction.COMPASS) {
           var test = _last_move.dest + dir;
-          if (!Map.Canonical(ref test)) continue;
-          if (!m_Actor.CanEnter(test)) continue;
+          if (!m_Actor.CanEnter(ref test)) continue;
           can_enter[dir.Index] = true;
           if (test == _last_move.origin) origin = dir.Index;
           else domain[dir.Index]=test;
@@ -2949,9 +2946,8 @@ restart:
           if (null != exit && exit.Location == working) working = m_Actor.Location;
           foreach(var pt in working.Position.Adjacent()) {
             var loc = new Location(working.Map,pt);
-            if (!Map.Canonical(ref loc)) continue;
+            if (!m_Actor.CanEnter(ref loc)) continue;
             if (null!=preblacklist && preblacklist(loc.Map)) continue;
-            if (!m_Actor.CanEnter(loc)) continue;
             if (ever_rude.Contains(loc)) continue;
             if (rude_goal(loc)) {
               next_rude.Add(loc);

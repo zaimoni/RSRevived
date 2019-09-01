@@ -798,7 +798,7 @@ namespace djack.RogueSurvivor.Data
 
       Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(loc, actor, already); }
 
-	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => Location.IsInBounds(loc) && actor.CanEnter(loc));
+	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
@@ -810,7 +810,7 @@ namespace djack.RogueSurvivor.Data
 
       Dictionary<Point,int> fn(Point pt) { return OneStepForPathfinder(pt, actor, already); }
 
-	  var ret = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
+	  var ret = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
       Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }

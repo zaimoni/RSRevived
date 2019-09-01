@@ -2440,9 +2440,9 @@ namespace djack.RogueSurvivor.Data
 #endif
 
     // optimized for pathfinding and ActionMoveDelta
-    public bool CanEnter(Location loc)
+    /// <param name="loc">preconditon: IsInBounds</param>
+    private bool _CanEnter(Location loc)
     { // reference is Map::IsWalkableFor, taking an ActorModel
-      if (!Map.Canonical(ref loc)) return false;
       if (!loc.TileModel.IsWalkable) return false;
       // we don't check actors as this is a "is this valid, ever" test
       var mapObjectAt = loc.MapObject;
@@ -2458,6 +2458,24 @@ namespace djack.RogueSurvivor.Data
       // have to inline relevant parts of Actor::CanPush
       if (mapObjectAt.IsMovable && !mapObjectAt.IsOnFire && AbleToPush) return true;
       return false;
+    }
+
+    public bool CanEnter(Location loc)
+    {
+      if (!Map.Canonical(ref loc)) return false;
+      return _CanEnter(loc);
+    }
+
+    public bool CanEnter(ref Location loc)
+    {
+      if (!Map.Canonical(ref loc)) return false;
+      return _CanEnter(loc);
+    }
+
+    public bool StrictCanEnter(Location loc)
+    {
+      if (!Location.IsInBounds(loc)) return false;
+      return _CanEnter(loc);
     }
 
     // generators work on point-based pathfinding
@@ -2504,7 +2522,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new List<Location>();
       foreach(var dir in Direction.COMPASS) {
         var loc = a+dir;
-        if (Map.Canonical(ref loc) && 1 == Rules.GridDistance(loc, b) && CanEnter(loc)) ret.Add(loc);
+        if (CanEnter(ref loc) && 1 == Rules.GridDistance(loc, b)) ret.Add(loc);
       }
       return (0<ret.Count) ? ret : null;
     }
