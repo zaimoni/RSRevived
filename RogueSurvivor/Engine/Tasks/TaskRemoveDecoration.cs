@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
     private readonly Point m_pt;
     private readonly string m_imageID;
 
-    public TaskRemoveDecoration(int turns, Point pt, string imageID)
+    public TaskRemoveDecoration(int turns, in Point pt, string imageID)
       : base(turns)
     {
       m_pt = pt;

@@ -4870,7 +4870,7 @@ restart_single_exit:
       return IsInterestingItem(offeredItem);
     }
 
-    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
+    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, in Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
     {
         if (!rws?.Any() ?? true) return;
 
@@ -4952,7 +4952,7 @@ restart_single_exit:
       var discard_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
       var reload_rw = new Dictionary<Point, ItemRangedWeapon[]>();
 
-      _InterpretRangedWeapons(rws, viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
+      _InterpretRangedWeapons(rws, in viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
 
       if (reload_rw.ContainsKey(viewpoint_inventory)) {
         { // historically, we preferred handling this reload-get combination elsewhere

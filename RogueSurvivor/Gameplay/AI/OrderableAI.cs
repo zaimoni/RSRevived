@@ -2398,7 +2398,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, true);
     }
 
-    protected static bool IsDoorwayOrCorridor(Map map, Point pos)
+    protected static bool IsDoorwayOrCorridor(Map map, in Point pos)
     { // all of these can use IsInBounds
       if (!map.GetTileModelAt(pos).IsWalkable) return false;
       Point p5 = pos + Direction.NE;
@@ -2433,7 +2433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(point) || map.HasExitAt(point))
           return false;
-        return IsDoorwayOrCorridor(map, point); // this allows using IsInBounds rather than IsValid
+        return IsDoorwayOrCorridor(map, in point); // this allows using IsInBounds rather than IsValid
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;

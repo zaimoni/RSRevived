@@ -10412,14 +10412,13 @@ namespace djack.RogueSurvivor.Engine
       Tile tileAt1 = map.GetTileAt(position);
       if (tileAt1.Model.IsWalkable && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
         tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
-        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position, GameImages.DECO_BLOODIED_FLOOR));
+        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in position, GameImages.DECO_BLOODIED_FLOOR));
       }
       map.ForEachAdjacent(position,(p => {
-        if (!m_Rules.RollChance(20)) return;
         Tile tileAt2 = map.GetTileAt(p);
-        if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL)) {
+        if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL) && m_Rules.RollChance(20)) {
           tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
-          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p, GameImages.DECO_BLOODIED_WALL));
+          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in p, GameImages.DECO_BLOODIED_WALL));
         }
       }));
     }

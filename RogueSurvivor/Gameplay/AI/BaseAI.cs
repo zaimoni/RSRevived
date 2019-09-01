@@ -1322,9 +1322,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Exit> exitList = ListAdjacentExits(fromLocation);
       return null != exitList ? exitList[game.Rules.Roll(0, exitList.Count)] : null;
     }
-#endif
 
-#if DEAD_FUNC
     public static bool IsZoneChange(Map map, Point pos)
     {
       List<Zone> zonesHere = map.GetZonesAt(pos);
