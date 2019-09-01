@@ -639,18 +639,9 @@ restart:
       // layout logic: E-W more important than N-S
       // the neutral segments are less important than the full-length segments E-W, N-S
       // storage room is adjacent to rails
-      void PoliceEnlightenment(Point pt)
-      {
-        Session.Get.ForcePoliceKnown(new Location(subway, pt));
-      }
-      void lay_NS_rail(Point pt)
-      {
-        subway.SetTileModelAt(pt, GameTiles.RAIL_NS);
-      }
-      void lay_EW_rail(Point pt)
-      {
-        subway.SetTileModelAt(pt, GameTiles.RAIL_EW);
-      }
+      void PoliceEnlightenment(Point pt) { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }
+      void lay_NS_rail(Point pt) { subway.SetTileModelAt(pt, GameTiles.RAIL_NS); }
+      void lay_EW_rail(Point pt) { subway.SetTileModelAt(pt, GameTiles.RAIL_EW); }
       var toolroom_superposition = new HashSet<Rectangle>();   // historically: m_DiceRoller.Roll(10, subway.Width - 10) for anchor point center
       const int toolsRoomWidth = 5; // these should be odd numbers to allow visual centering on-grid for the door
       const int toolsRoomHeight = 5;
@@ -2380,7 +2371,7 @@ restart:
 #else
       inner.DoForEach(pt => candidates.Add(pt));
 #endif
-      bool walkable_loc(Point test) {
+      bool walkable_loc(in Point test) {
         if (!basement.GetTileModelAt(test).IsWalkable) {
           candidates.Remove(test);
 #if MORE_AGGRESSIVE_CONNECTED_BASEMENTS
@@ -2437,10 +2428,10 @@ restart:
 
       while(0<candidates.Count) {
         var test = candidates.First();
-        if (!walkable_loc(test)) continue;
+        if (!walkable_loc(in test)) continue;
         bool no_problem = false;
         foreach(var test2 in test.Adjacent()) {
-          if (walkable_loc(test2)) {
+          if (walkable_loc(in test2)) {
             no_problem = true;
             break;
           }

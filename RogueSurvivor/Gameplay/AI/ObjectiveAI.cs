@@ -2767,13 +2767,13 @@ restart:
           var archive = new Dictionary<Location,int>();
           var navigate = PathfinderFor(test, src);
 
-          int exit_cost(Point pt) {
+          int exit_cost(in Point pt) {
             if (src.IsInBounds(pt)) return navigate.Cost(pt) + 1;
             return pt.Adjacent().Where(pt2 => src.IsInBounds(pt2)).Select(pt2 => navigate.Cost(pt2) + 1).Min();
           }
 
           src.ForEachExit((pt,e)=> {
-            int cost = exit_cost(pt);
+            int cost = exit_cost(in pt);
             archive[e.Location] = cost;
             if (e.Location.Map!=dest) return;
             goal_costs[e.Location] = cost;
@@ -3689,7 +3689,8 @@ restart_single_exit:
       if (null != tmp) return tmp;
 
       List<Point> has_container = new List<Point>();
-      foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
+      foreach(var dir in Direction.COMPASS) {
+        var pos = m_Actor.Location.Position + dir;
         MapObject container = m_Actor.Location.Map.GetMapObjectAtExt(pos);
         if (!container?.IsContainer ?? true) continue;
         Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(pos);

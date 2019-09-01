@@ -2008,10 +2008,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         bool could_barricade = m_Actor.CouldBarricade();
         var close_doors = new Dictionary<Point,DoorWindow>();
         var barricade_doors = new Dictionary<Point,DoorWindow>();
-        foreach(Point pt in Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir)) {
+        foreach(var dir in Direction.COMPASS) {
+          var pt = m_Actor.Location.Position + dir;
           if (LoF_reserve?.Contains(pt) ?? false) continue;
           if (!(m_Actor.Location.Map.GetMapObjectAt(pt) is DoorWindow door)) continue;
-          if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
+          if (!IsBetween(m_Actor.Location.Position, in pt, enemy.Location.Position)) continue;
           if (m_Actor.CanClose(door)) {
             if ((!Rules.IsAdjacent(pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
           } else if (could_barricade && door.CanBarricade()) {

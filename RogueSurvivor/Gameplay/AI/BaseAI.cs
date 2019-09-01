@@ -1267,9 +1267,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (num1 > num2) || (actor.CanRun() && !target.CanRun() && !WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 
-    protected static bool IsBetween(Point A, Point between, Point B)
+    protected static bool IsBetween(Point A, in Point between, Point B)
     {
-      return (double) Rules.StdDistance(A, between) + (double) Rules.StdDistance(B, between) <= (double) Rules.StdDistance(A, B) + 0.25;
+      return Rules.StdDistance(A, between) + Rules.StdDistance(B, between) <= Rules.StdDistance(A, B) + 0.25;
     }
 
     protected bool IsFriendOf(Actor other)
