@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
+      RogueForm.Game.DoBuildFortification(m_Actor, in m_BuildPos, m_IsLarge);
     }
   }
 }

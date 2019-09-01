@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoPull(m_Actor, m_Object, m_MoveActorTo);
+            RogueForm.Game.DoPull(m_Actor, m_Object, in m_MoveActorTo);
         }
         #endregion
 

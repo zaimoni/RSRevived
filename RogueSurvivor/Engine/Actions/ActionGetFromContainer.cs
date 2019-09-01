@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoTakeFromContainer(m_Actor, m_Position);
+      RogueForm.Game.DoTakeFromContainer(m_Actor, in m_Position);
     }
   }
 }

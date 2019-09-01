@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoPutItemInContainer(m_Actor,m_Position,m_Item);
+            RogueForm.Game.DoPutItemInContainer(m_Actor,in m_Position,m_Item);
         }
     }
 }

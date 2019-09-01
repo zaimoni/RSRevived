@@ -2667,7 +2667,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
       Tile tileAt = map.GetTileAt(pt);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,pt,SPAWN_DISTANCE_TO_PLAYER);
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
     }
 
     static private bool AirdropWithoutIncident(Map map, Point pt)  // XXX should be able to partially precalculate
@@ -2800,7 +2800,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actor = SpawnNewSurvivor(map);
       if (actor == null) return;
       for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
-        SpawnNewSurvivor(map, actor.Location.Position);
+        SpawnNewSurvivor(actor.Location);
       NotifyOrderablesAI(RaidType.SURVIVORS, actor.Location);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
@@ -2828,7 +2828,7 @@ namespace djack.RogueSurvivor.Engine
       return DistanceToPlayer(map, pos.X, pos.Y);
     }
 
-    static private bool NoPlayersNearerThan(Map map, Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
+    static private bool NoPlayersNearerThan(Map map, in Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
     {
         var exclude = new Rectangle(pos - (Point)(min_distance-1), (Point)(-1+2* min_distance));
         return !exclude.Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
@@ -2838,7 +2838,7 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Point> tmp = map.Rect.WhereOnEdge(pt => {
          if (!map.IsWalkableFor(pt, actorToSpawn)) return false;
-         if (!NoPlayersNearerThan(map, pt, minDistToPlayer)) return false;
+         if (!NoPlayersNearerThan(map, in pt, minDistToPlayer)) return false;
          if (actorToSpawn.WouldBeAdjacentToEnemy(map, pt)) return false;
          return true;
       });
@@ -2848,8 +2848,11 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private bool SpawnActorNear(Map map, Actor actorToSpawn, int minDistToPlayer, Point nearPoint, int maxDistToPoint)
+    private bool SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
     {
+      Map map = near.Map;
+      Point nearPoint = near.Position;
+
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
       var range = new Rectangle((Point)1,(Point)maxDistToPoint);
@@ -2911,10 +2914,10 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER) ? newSurvivor : null);
     }
 
-    private Actor SpawnNewSurvivor(Map map, Point bandPos)
+    private Actor SpawnNewSurvivor(Location near)
     {
-      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      return (SpawnActorNear(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, bandPos, 3) ? newSurvivor : null);
+      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(near.Map.LocalTime.TurnCounter);
+      return (SpawnActorNear(near, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, 3) ? newSurvivor : null);
     }
 
     private Actor SpawnNewNatGuardLeader(Map map)
@@ -2933,7 +2936,7 @@ namespace djack.RogueSurvivor.Engine
         armyNationalGuard.Inventory.AddAll(GameItems.COMBAT_KNIFE.create());
       else
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
-      return (SpawnActorNear(leader.Location.Map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? armyNationalGuard : null);
+      return (SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3) ? armyNationalGuard : null);
     }
 
     private Actor SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
@@ -2950,7 +2953,7 @@ namespace djack.RogueSurvivor.Engine
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
-      return (SpawnActorNear(leader.Location.Map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newBikerMan : null);
+      return (SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBikerMan : null);
     }
 
     private Actor SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
@@ -2966,7 +2969,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
-      return (SpawnActorNear(leader.Location.Map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newGangstaMan : null);
+      return (SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newGangstaMan : null);
     }
 
     private Actor SpawnNewBlackOpsLeader(Map map)
@@ -2985,7 +2988,7 @@ namespace djack.RogueSurvivor.Engine
       newBlackOps.StartingSkill(Skills.IDs.AGILE);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
-      return (SpawnActorNear(leader.Location.Map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newBlackOps : null);
+      return (SpawnActorNear(leader.Location, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBlackOps : null);
     }
 
     public void StopTheWorld()
@@ -4386,7 +4389,7 @@ namespace djack.RogueSurvivor.Engine
           continue;
         } else if (m_Rules.CanActorPutItemIntoContainer(player, in point)) {
           flag2 = true;
-          DoPutItemInContainer(player, point, inventoryItem);
+          DoPutItemInContainer(player, in point, inventoryItem);
           break;
         }
         AddMessage(MakeErrorMessage("Noone there."));
@@ -4616,7 +4619,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
             if (player.CanBuildFortification(point, isLarge, out string reason)) {
-              DoBuildFortification(player, point, isLarge);
+              DoBuildFortification(player, in point, isLarge);
               RedrawPlayScreen();
               flag1 = false;
               flag2 = true;
@@ -4790,9 +4793,9 @@ namespace djack.RogueSurvivor.Engine
             }
             if (flag4) {
               if (itemGrenade != null)
-                DoThrowGrenadeUnprimed(player, point1);
+                DoThrowGrenadeUnprimed(player, in point1);
               else
-                DoThrowGrenadePrimed(player, point1);
+                DoThrowGrenadePrimed(player, in point1);
               RedrawPlayScreen();
               flag1 = false;
               flag2 = true;
@@ -4800,7 +4803,7 @@ namespace djack.RogueSurvivor.Engine
           } else
             AddMessage(MakeErrorMessage(string.Format("Can't throw there : {0}.", reason)));
         } else {
-          Direction direction = RogueGame.CommandToDirection(command);
+          Direction direction = CommandToDirection(command);
           if (direction != null) {
             Point point2 = point1 + direction;
             if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, in point2) <= num)
@@ -4979,7 +4982,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = mapObj.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
             if (mapObj.CanPushTo(point, out string reason)) {
-              DoPush(player, mapObj, point);
+              DoPush(player, mapObj, in point);
               flag2 = true;
               break;
             } else
@@ -5011,7 +5014,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = other.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
             if (other.CanBeShovedTo(point, out string reason)) {
-              DoShove(player, other, point);
+              DoShove(player, other, in point);
               flag2 = true;
               break;
             } else
@@ -5111,7 +5114,7 @@ namespace djack.RogueSurvivor.Engine
           Point moveToPos = player.Location.Position + dir;
           if (player.Location.Map.IsInBounds(moveToPos)) {
             if (player.CanPull(mapObj, moveToPos, out string reason)) {
-              DoPull(player, mapObj, moveToPos);
+              DoPull(player, mapObj, in moveToPos);
               actionDone = true;
               break;
             } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
@@ -5146,7 +5149,7 @@ namespace djack.RogueSurvivor.Engine
           Point moveToPos = player.Location.Position + dir;
           if (player.Location.Map.IsInBounds(moveToPos)) {
             if (player.CanPull(other, moveToPos, out string reason)) {
-              DoPullActor(player, other, moveToPos);
+              DoPullActor(player, other, in moveToPos);
               actionDone = true;
               break;
             } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
@@ -5874,7 +5877,7 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) {
         Item obj = inv[index];
         if (player.CanGet(obj, out string reason)) {
-          DoTakeItem(player, src, obj);
+          DoTakeItem(player, in src, obj);
           return true;
         }
         ClearMessages();
@@ -6757,7 +6760,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actorAt = map.GetActorAt(mapPos);
       if (actorAt != null) return DescribeActor(actorAt);
       MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
-      if (mapObjectAt != null) return DescribeMapObject(mapObjectAt, map, mapPos);
+      if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
       Inventory itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null) return DescribeInventory(itemsAt);
       List<Corpse> corpsesAt = map.GetCorpsesAt(mapPos);
@@ -7027,7 +7030,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
+    static private string[] DescribeMapObject(MapObject obj)
     {
       var stringList = new List<string>(4) { string.Format("{0}.", obj.AName) };
       if (obj.IsJumpable) stringList.Add("Can be jumped on.");
@@ -7058,7 +7061,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", obj.Weight));
-      Inventory itemsAt = map.GetItemsAt(mapPos);
+      Inventory itemsAt = obj.Location.Items;
       if (itemsAt != null) stringList.AddRange(DescribeInventory(itemsAt));
       return stringList.ToArray();
     }
@@ -7748,7 +7751,7 @@ namespace djack.RogueSurvivor.Engine
       if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
 
       if (trap.TriggeredBy(victim))
-        DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim);
+        DoTriggerTrap(trap, victim);
       else if (IsVisibleToPlayer(victim))
         AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
       return trap.Quantity == 0;
@@ -7777,7 +7780,7 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-    private void CheckMapObjectTriggersTraps(Map map, Point pos)
+    private void CheckMapObjectTriggersTraps(Map map, in Point pos)
     {
       MapObject mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
       if (null == mapObjectAt) return;
@@ -7786,7 +7789,7 @@ namespace djack.RogueSurvivor.Engine
       List<Item> objList = null;
       foreach (Item obj in itemsAt.Items) {
         if (obj is ItemTrap trap && trap.IsActivated) {
-          DoTriggerTrap(trap, map, pos, mapObjectAt);
+          DoTriggerTrap(trap, map, in pos, mapObjectAt);
           if (trap.Quantity <= 0) {
             (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
           }
@@ -7803,14 +7806,14 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim)
+    private void DoTriggerTrap(ItemTrap trap, Actor victim)
     {
 #if DEBUG
       if (null==victim) throw new ArgumentNullException(nameof(victim));
 #endif
-      ItemTrapModel trapModel = trap.Model;
-      bool player = ForceVisibleToPlayer(map, pos);
+      bool player = ForceVisibleToPlayer(victim);
       trap.IsTriggered = true;
+      ItemTrapModel trapModel = trap.Model;
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0) {
         InflictDamage(victim, dmg);
@@ -7825,7 +7828,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (trapModel.IsNoisy) {
         if (player) AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
-        OnLoudNoise(map, pos, trapModel.NoiseName);
+        OnLoudNoise(victim.Location, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
@@ -7834,13 +7837,13 @@ namespace djack.RogueSurvivor.Engine
       --trap.Quantity;
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, MapObject mobj)
+    private void DoTriggerTrap(ItemTrap trap, Map map, in Point pos, MapObject mobj)
     {
 #if DEBUG
       if (null==mobj) throw new ArgumentNullException(nameof(mobj));
 #endif
       ItemTrapModel trapModel = trap.Model;
-      bool player = ForceVisibleToPlayer(map, pos);
+      bool player = ForceVisibleToPlayer(map, in pos);
       trap.IsTriggered = true;
       if (trapModel.IsNoisy) {
         if (player) AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
@@ -7853,7 +7856,7 @@ namespace djack.RogueSurvivor.Engine
       --trap.Quantity;
     }
 
-    public bool DoLeaveMap(Actor actor, Point exitPoint, bool askForConfirmation)
+    public bool DoLeaveMap(Actor actor, in Point exitPoint, bool askForConfirmation)
     {
       bool isPlayer = actor.IsPlayer;
       Exit exitAt = actor.Location.Map.GetExitAt(exitPoint);
@@ -8003,10 +8006,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    public bool DoUseExit(Actor actor, Point exitPoint)
-    {
-      return DoLeaveMap(actor, exitPoint, false);
-    }
+    public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint, false); }
 
     public void DoSwitchPlace(Actor actor, Actor other)
     {
@@ -8590,7 +8590,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public void DoThrowGrenadeUnprimed(Actor actor, Point targetPos)
+    public void DoThrowGrenadeUnprimed(Actor actor, in Point targetPos)
     {
       if (!(actor.GetEquippedWeapon() is ItemGrenade itemGrenade)) throw new InvalidOperationException("throwing grenade but no grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8598,7 +8598,7 @@ namespace djack.RogueSurvivor.Engine
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
       actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)));
@@ -8608,13 +8608,13 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    public void DoThrowGrenadePrimed(Actor actor, Point targetPos)
+    public void DoThrowGrenadePrimed(Actor actor, in Point targetPos)
     {
       if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
       actor.Location.Map.DropItemAtExt(itemGrenadePrimed, targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)));
@@ -8660,17 +8660,17 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag = false;
       foreach(Point pt in Enumerable.Range(0, 8*waveDistance).Select(i => center.Position.RadarSweep(waveDistance,i))) {
-          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
+          flag |= ApplyExplosionWaveSub(center, in pt, waveDistance, blast);
       }
       return flag;
     }
 
-    private bool ApplyExplosionWaveSub(Location blastCenter, Point pt, int waveDistance, BlastAttack blast)
+    private bool ApplyExplosionWaveSub(Location blastCenter, in Point pt, int waveDistance, BlastAttack blast)
     {
-      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance))
-        return false;
-      int damage = ApplyExplosionDamage(new Location(blastCenter.Map, pt), waveDistance, blast);
-      if (!ForceVisibleToPlayer(blastCenter.Map, pt)) return false;
+      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance)) return false;
+      var center = new Location(blastCenter.Map, pt);
+      int damage = ApplyExplosionDamage(center, waveDistance, blast);
+      if (!ForceVisibleToPlayer(center)) return false;
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
@@ -9012,7 +9012,7 @@ namespace djack.RogueSurvivor.Engine
       speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
-    public void DoTradeWithContainer(Actor actor, Point pos, Item give, Item take)
+    public void DoTradeWithContainer(Actor actor, in Point pos, Item give, Item take)
     {
       Inventory dest = actor.Location.Map.GetItemsAtExt(pos);
 
@@ -9285,7 +9285,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-    public void DoTakeFromContainer(Actor actor, Point position)
+    public void DoTakeFromContainer(Actor actor, in Point position)
     {
       Inventory inv = actor.Location.Map.GetItemsAt(position);
       if (actor.IsPlayer && 2 <= inv.CountItems) {
@@ -9293,11 +9293,11 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      Item topItem = actor.Location.Map.GetItemsAt(position).TopItem;
-      DoTakeItem(actor, position, topItem);
+      Item topItem = inv.TopItem;
+      DoTakeItem(actor, in position, topItem);
     }
 
-    public void DoTakeItem(Actor actor, Point position, Item it)
+    public void DoTakeItem(Actor actor, in Point position, Item it)
     {
 #if DEBUG
       if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
@@ -9398,7 +9398,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
     }
 
-    public void DoPutItemInContainer(Actor actor, Point dest, Item gift)
+    public void DoPutItemInContainer(Actor actor, in Point dest, Item gift)
     {
       if (actor.CanUnequip(gift)) DoUnequipItem(actor,gift,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -9409,7 +9409,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
 #endif
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, dest)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in dest)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} away", Conjugate(actor, VERB_PUT), gift.TheName)));
     }
 
@@ -9694,7 +9694,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
-    public void DoBuildFortification(Actor actor, Point buildPos, bool isLarge)
+    public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = actor.BarricadingMaterialNeedForFortification(isLarge);
@@ -9705,7 +9705,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
-      CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
+      CheckMapObjectTriggersTraps(actor.Location.Map, in buildPos);
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
@@ -9842,7 +9842,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoPush(Actor actor, MapObject mapObj, Point toPos)
+    public void DoPush(Actor actor, MapObject mapObj, in Point toPos)
     {
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
@@ -9880,10 +9880,10 @@ namespace djack.RogueSurvivor.Engine
         // \todo: get away from the fighting
       }
       PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
-      CheckMapObjectTriggersTraps(o_loc.Map, toPos);
+      CheckMapObjectTriggersTraps(o_loc.Map, in toPos);
     }
 
-    public void DoShove(Actor actor, Actor target, Point toPos)
+    public void DoShove(Actor actor, Actor target, in Point toPos)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (TryActorLeaveTile(target)) {
@@ -9906,7 +9906,7 @@ namespace djack.RogueSurvivor.Engine
             OnActorEnterTile(actor);
           };
         }
-        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, toPos)) {
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, in toPos)) {
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
           RedrawPlayScreen();
         }
@@ -9915,7 +9915,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoPull(Actor actor, MapObject mapObj, Point moveActorToPos) // alpha10
+    public void DoPull(Actor actor, MapObject mapObj, in Point moveActorToPos) // alpha10
     {
       bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staCost = mapObj.Weight;
@@ -9977,7 +9977,7 @@ namespace djack.RogueSurvivor.Engine
       CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
     }
 
-    public void DoPullActor(Actor actor, Actor target, Point moveActorToPos)    // alpha10
+    public void DoPullActor(Actor actor, Actor target, in Point moveActorToPos)    // alpha10
     {
       bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target);
 
@@ -10090,19 +10090,22 @@ namespace djack.RogueSurvivor.Engine
     {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
       Rectangle survey = new Rectangle(noisePosition - (Point)Rules.LOUD_NOISE_RADIUS, (Point)(2* Rules.LOUD_NOISE_RADIUS + 1));
 
-      Actor actorAt = null;
-      survey.DoForEach(pt => {
-        DoWakeUp(actorAt);
-        if (ForceVisibleToPlayer(actorAt)) {
-          AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actorAt.TheName), map.LocalTime.TurnCounter, actorAt == Player ? Color.Red : Color.White));
-          RedrawPlayScreen();
+      void loud_noise(Point pt) {
+        var actor = map.GetActorAtExt(pt);
+        if (null != actor && actor.IsSleeping) {
+          int noiseDistance = Rules.GridDistance(in noisePosition, in pt);
+          // would need to test for other kinds of distance
+          if (/* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actor, noiseDistance))) {
+            DoWakeUp(actor);
+            if (ForceVisibleToPlayer(actor)) {
+              AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
+              RedrawPlayScreen();
+            }
+          }
         }
-      }, pt => {
-        actorAt = map.GetActorAtExt(pt);
-        if (!(actorAt?.IsSleeping ?? false)) return false;
-        int noiseDistance = Rules.GridDistance(in noisePosition, in pt);
-        return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
-      });
+      }
+
+      survey.DoForEach(loud_noise);
     }
 
     private void InflictDamage(Actor actor, int dmg)
@@ -10407,7 +10410,7 @@ namespace djack.RogueSurvivor.Engine
 	  return (index != undead.Model.ID ? GameActors[index] : null);
     }
 
-    public void SplatterBlood(Map map, Point position)
+    private void SplatterBlood(Map map, Point position)
     {
       Tile tileAt1 = map.GetTileAt(position);
       if (tileAt1.Model.IsWalkable && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
@@ -12424,13 +12427,14 @@ namespace djack.RogueSurvivor.Engine
       HandlePlayerSetWaypoint(player);
     }
 
-    private bool ForceVisibleToPlayer(Map map, Point position)
+    private bool ForceVisibleToPlayer(Map map, in Point position)
     {
       if (   null == map   // convince Duckman to not superheroically crash many games on turn 0
           || !map.IsValid(position))
         return false;
       Rectangle survey = new Rectangle(position-(Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
       var players = new List<Actor>();
+      var view = new Location(map, position);
 
       void id_player(Actor player) {
         if (!player?.IsPlayer ?? true) return;
@@ -12441,7 +12445,7 @@ namespace djack.RogueSurvivor.Engine
 #else
         if (player.IsDead) return;
 #endif
-        if (player.Controller.CanSee(new Location(map, position))) players.Add(player);
+        if (player.Controller.CanSee(view)) players.Add(player);
       }
 
       survey.DoForEach(pt => id_player(map.GetActorAtExt(pt)));
