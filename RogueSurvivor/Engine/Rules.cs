@@ -642,11 +642,6 @@ namespace djack.RogueSurvivor.Engine
       return Math.Max(Math.Abs(pt.X), Math.Abs(pt.Y));
     }
 
-    public static int GridDistance(Point pA, int bX, int bY)
-    {
-      return Math.Max(Math.Abs(pA.X - bX), Math.Abs(pA.Y - bY));
-    }
-
     public static int GridDistance(in Point pA, in Point pB) { return GridDistance(pB - pA); }
 
     public static int GridDistance(Location locA, Location locB)

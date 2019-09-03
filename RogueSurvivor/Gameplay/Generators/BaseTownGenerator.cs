@@ -808,7 +808,7 @@ restart:
         for (short y2 = 0; y2 < subway.Height; ++y2) {
           Point pt = new Point(x2,y2);
           Tile tileAt = subway.GetTileAt(pt);
-          if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, pt) >= 2 && m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
+          if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, in pt) >= 2 && m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
             if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
             if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
           }
@@ -1975,7 +1975,7 @@ restart:
         if (!map.HasMapObjectAt(pt)) return;
         map.SetTileModelAt(pt, floor);
       });
-      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, pt) && !map.AnyAdjacent<DoorWindow>(pt); };
+      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, in pt) && !map.AnyAdjacent<DoorWindow>(pt); };
       MapObject make_door_window(Point pt) { return ((!map.GetTileAt(pt).IsInside && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
       foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);

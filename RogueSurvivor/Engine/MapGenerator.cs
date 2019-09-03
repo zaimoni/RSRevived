@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Engine
       return map.CountAdjacentTo(p, pt => !map.GetTileModelAt(pt).IsWalkable);
     }
 
-    protected static int CountAdjWalkables(Map map, Point p)
+    protected static int CountAdjWalkables(Map map, in Point p)
     {
       return map.CountAdjacentTo(p, pt => map.GetTileModelAt(pt).IsWalkable);
     }
@@ -313,7 +313,7 @@ namespace djack.RogueSurvivor.Engine
       MapObjectPlace(map, pt, mapObj);
     }
 
-    protected static bool IsAccessible(Map map, Point pos)
+    protected static bool IsAccessible(Map map, in Point pos)
     {
       return map.CountAdjacentTo(pos, pt => map.IsWalkable(pt)) >= 6;
     }

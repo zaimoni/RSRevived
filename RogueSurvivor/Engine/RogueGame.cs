@@ -2643,7 +2643,7 @@ namespace djack.RogueSurvivor.Engine
           (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
           already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
-        },pt => AirdropWithoutIncident(map,pt));
+        },pt => AirdropWithoutIncident(map, in pt));
 
       // \todo this should alert the ais to potential food/medikits if they hear it
       NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map,dropPoint));
@@ -2661,22 +2661,20 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
-    static private bool IsSuitableDropSuppliesPoint(Map map, Point pt)  // XXX should be able to partially precalculate
+    static private bool IsSuitableDropSuppliesPoint(Map map, in Point pt)  // XXX should be able to partially precalculate
     {
 #if DEBUG
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
-      Tile tileAt = map.GetTileAt(pt);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
+      return !map.IsInsideAt(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
     }
 
-    static private bool AirdropWithoutIncident(Map map, Point pt)  // XXX should be able to partially precalculate
+    static private bool AirdropWithoutIncident(Map map, in Point pt)  // XXX should be able to partially precalculate
     {
 #if DEBUG
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
-      Tile tileAt = map.GetTileAt(pt);
-      if (   tileAt.IsInside || !tileAt.Model.IsWalkable        // VAPORWARE hit roof instead
+      if (   map.IsInsideAt(pt) || !map.GetTileModelAt(pt).IsWalkable        // VAPORWARE hit roof instead
           || map.HasActorAt(pt))  // B-movies never hit anyone with an airdrop
         return false;
       var obj = map.GetMapObjectAt(pt);
@@ -2688,8 +2686,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
     {
-      dropPoint = new Point();
-      var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, pt));
+      dropPoint = default;
+      var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, in pt));
       if (0 >= pts.Count) return false;
       dropPoint = m_Rules.DiceRoller.Choose(pts);
       return true;
@@ -2816,16 +2814,11 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
     }
 
-    static private int DistanceToPlayer(Map map, int x, int y)
+    static private int DistanceToPlayer(Map map, Point pos)
     {
 	  var players = map.Players.Get;
 	  if (0 >= players.Count) return int.MaxValue;
-	  return players.Select(p=> Rules.GridDistance(p.Location.Position, x, y)).Min();
-    }
-
-    static private int DistanceToPlayer(Map map, Point pos)
-    {
-      return DistanceToPlayer(map, pos.X, pos.Y);
+	  return players.Select(p=> Rules.GridDistance(p.Location.Position, pos)).Min();
     }
 
     static private bool NoPlayersNearerThan(Map map, in Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
@@ -3983,7 +3976,7 @@ namespace djack.RogueSurvivor.Engine
       if (!IsInViewRect(pt)) return false;
       if (!CurrentMap.IsValid(pt)) return true;
       ClearOverlays();
-      if (IsVisibleToPlayer(CurrentMap, pt)) {
+      if (IsVisibleToPlayer(CurrentMap, in pt)) {
         var screen = MapToScreen(pt);
         string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (lines != null) {
@@ -5586,7 +5579,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
-            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
+            if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (follower.CanBuildFortification(map2, isLarge, out string reason)) {
                 nullable = map2;
                 color = Color.LightGreen;
@@ -5637,7 +5630,7 @@ namespace djack.RogueSurvivor.Engine
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             nullable = map2;
-            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
+            if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (map1.GetMapObjectAt(map2) is DoorWindow door) {
                 if (follower.CanBarricade(door, out string reason)) {
                   color = Color.LightGreen;
@@ -5684,7 +5677,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
-            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
+            if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out string reason)) {
                 nullable = map2;
                 color = Color.LightGreen;
@@ -5743,7 +5736,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
-            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
+            if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               bool flag3 = true;
               string reason = "";
               if (map1.GetZonesAt(map2) == null) {
@@ -6738,13 +6731,10 @@ namespace djack.RogueSurvivor.Engine
     private bool WaitYesOrNo()
     {
       KeyEventArgs keyEventArgs;
-      do
-      {
+      do {
         keyEventArgs = m_UI.UI_WaitKey();
-        if (keyEventArgs.KeyCode == Keys.Y)
-          return true;
-      }
-      while (keyEventArgs.KeyCode != Keys.N && keyEventArgs.KeyCode != Keys.Escape);
+        if (keyEventArgs.KeyCode == Keys.Y) return true;
+      } while (keyEventArgs.KeyCode != Keys.N && keyEventArgs.KeyCode != Keys.Escape);
       return false;
     }
 
@@ -10412,15 +10402,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void SplatterBlood(Map map, Point position)
     {
-      Tile tileAt1 = map.GetTileAt(position);
-      if (tileAt1.Model.IsWalkable && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
-        tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
+      if (map.GetTileModelAt(position).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_FLOOR, position)) {
+        map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, position);
         map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in position, GameImages.DECO_BLOODIED_FLOOR));
       }
       map.ForEachAdjacent(position,(p => {
-        Tile tileAt2 = map.GetTileAt(p);
-        if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL) && m_Rules.RollChance(20)) {
-          tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
+        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, position) && m_Rules.RollChance(20)) {
+          map.AddDecorationAt(GameImages.DECO_BLOODIED_WALL, position);
           map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in p, GameImages.DECO_BLOODIED_WALL));
         }
       }));
@@ -11203,7 +11191,7 @@ namespace djack.RogueSurvivor.Engine
       int i = view_squares;
       while(0 < i--) {
         MapViewRect.convert(i,ref point);
-        is_visible[i] = IsVisibleToPlayer(map, point);
+        is_visible[i] = IsVisibleToPlayer(map, in point);
         if (is_visible[i]) { 
           Actor actorAt = map.GetActorAtExt(point);
           if (null == actorAt) continue;
@@ -12275,7 +12263,7 @@ namespace djack.RogueSurvivor.Engine
       return Player?.Controller.IsVisibleTo(location) ?? false;
     }
 
-    private static bool IsVisibleToPlayer(Map map, Point position)
+    private static bool IsVisibleToPlayer(Map map, in Point position)
     {
       return Player?.Controller.IsVisibleTo(map,position) ?? false;
     }

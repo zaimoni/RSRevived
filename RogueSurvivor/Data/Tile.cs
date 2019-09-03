@@ -65,20 +65,24 @@ namespace djack.RogueSurvivor.Data
       m_Location.Map.AddDecorationAt(imageID,m_Location.Position);
     }
 
+#if DEAD_FUNC
     public bool HasDecoration(string imageID)
     {
       return m_Location.Map.HasDecorationAt(imageID,m_Location.Position);
     }
+#endif
 
     public void RemoveAllDecorations()
     {
       m_Location.Map.RemoveAllDecorationsAt(m_Location.Position);
     }
 
+#if DEAD_FUNC
     public void RemoveDecoration(string imageID)
     {
       m_Location.Map.RemoveDecorationAt(imageID,m_Location.Position);
     }
+#endif
 
     [System.Flags]
     private enum Flags
