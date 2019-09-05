@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define ANGBAND
-
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
@@ -76,63 +74,6 @@ namespace djack.RogueSurvivor.Engine
       return tmp2;
     }
 
-#if ANGBAND
-#else
-    private static bool AsymetricBresenhamTrace(int maxSteps, Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
-    {
-      int num1 = Math.Abs(xTo - xFrom) << 1;
-      int num2 = Math.Abs(yTo - yFrom) << 1;
-      int num3 = xTo > xFrom ? 1 : -1;
-      int num4 = yTo > yFrom ? 1 : -1;
-      if (line != null)
-        line.Add(new Point(xFrom, yFrom));
-      int num5 = 0;
-      if (num1 >= num2)
-      {
-        int num6 = num2 - (num1 >> 1);
-        while (xFrom != xTo)
-        {
-          if (num6 >= 0 && (num6 != 0 || num3 > 0))
-          {
-            yFrom += num4;
-            num6 -= num1;
-          }
-          xFrom += num3;
-          num6 += num2;
-          if (++num5 > maxSteps || !fn(xFrom, yFrom))
-            return false;
-          if (line != null)
-            line.Add(new Point(xFrom, yFrom));
-        }
-      }
-      else
-      {
-        int num6 = num1 - (num2 >> 1);
-        while (yFrom != yTo)
-        {
-          if (num6 >= 0 && (num6 != 0 || num4 > 0))
-          {
-            xFrom += num3;
-            num6 -= num2;
-          }
-          yFrom += num4;
-          num6 += num1;
-          if (++num5 > maxSteps || !fn(xFrom, yFrom))
-            return false;
-          if (line != null)
-            line.Add(new Point(xFrom, yFrom));
-        }
-      }
-      return true;
-    }
-
-    private static bool AsymetricBresenhamTrace(Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
-    {
-      return LOS.AsymetricBresenhamTrace(int.MaxValue, map, xFrom, yFrom, xTo, yTo, line, fn);
-    }
-#endif
-
-#if ANGBAND
     private static bool AngbandlikeTrace(int maxSteps, Point from, Point to, Func<Point, bool> fn, List<Point> line = null)
     {
 #if DEBUG
@@ -224,17 +165,11 @@ namespace djack.RogueSurvivor.Engine
         while (++i < actualRange);
         return start == to;
     }
-#endif
 
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
     {
       Map map = fromLocation.Map;
-      Point goal = toPosition;
-#if ANGBAND
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => map.IsTransparent(pt) || pt == goal,line);
-#else
-      return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>)null, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
-#endif
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
     }
 
     public static bool CanTraceViewLine(Location from, Location to, int maxRange = int.MaxValue, List<Point> line = null)
@@ -249,9 +184,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      Point goal = toPosition;
       var line = new List<Point>();
-      if (!AngbandlikeTrace(maxRange, start, toPosition, pt => pt==start || pt==goal || !map.UnconditionallyBlockingFire(pt), line))
+      if (!AngbandlikeTrace(maxRange, start, toPosition, pt => pt==start || pt==toPosition || !map.UnconditionallyBlockingFire(pt), line))
          return null;
       if (2 >= line.Count) return null; // nothing can get in the way
 
@@ -275,11 +209,10 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      Point goal = toPosition;
       return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
             {
 				if (pt == start) return true;
-				if (pt == goal) return true;
+				if (pt == toPosition) return true;
 				if (pt == shooter.Location.Position) return true;  // testing whether can fire from FromLocation, so not really here
 				return !map.IsBlockingFire(pt);
             }, line);
@@ -296,23 +229,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      Point goal = toPosition;
-#if ANGBAND
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
-            {
-                return pt == start || pt == goal || !map.IsBlockingFire(pt);
-            }, line);
-#else
-      bool fireLineClear = true;
-            LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>)((x, y) =>
-            {
-                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
-                    return true;
-                fireLineClear = false;
-                return true;
-            }));
-      return fireLineClear;
-#endif
+      return AngbandlikeTrace(maxRange, start, toPosition, pt => pt == start || pt == toPosition || !map.IsBlockingFire(pt), line);
     }
 
     public static bool CanTraceFireLine(Location fromLocation, Location toLocation, int maxRange, List<Point> line=null)
@@ -327,49 +244,19 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-#if ANGBAND
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
-            {
-                return pt == start || !map.IsBlockingThrow(pt);
-            }, line);
-#else
-      Point goal = toPosition;
-      bool throwLineClear = true;
-                  LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
-                  {
-                    if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
-                      return true;
-                    throwLineClear = false;
-                    return true;
-                  }));
-      if (map.IsBlockingThrow(toPosition.X, toPosition.Y))
-        throwLineClear = false;
-      return throwLineClear;
-#endif
-        }
+      return AngbandlikeTrace(maxRange, start, toPosition, pt => pt == start || !map.IsBlockingThrow(pt), line);
+    }
 
     private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
-      Point goal = toPosition;
-#if ANGBAND
-            return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
-            {
-                bool flag = pt==goal || map.IsTransparent(pt);
+      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => {
+                bool flag = pt== toPosition || map.IsTransparent(pt);
                 if (flag) visibleSetRef.Add(pt);
                 return flag;
-            });
-#else
-                  return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>) null, (Func<int, int, bool>) ((x, y) =>
-                  {
-                    bool flag = x == goal.X && y == goal.Y || map.IsTransparent(x, y);
-                    if (flag)
-                      visibleSetRef.Add(new Point(x, y));
-                    return flag;
-                  }));
-#endif
-        }
+      });
+    }
 
     // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
     // and also ditch the cache when it got "old"
