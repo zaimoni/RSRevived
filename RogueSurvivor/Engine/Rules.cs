@@ -366,10 +366,9 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        if (actor.CanGetFromContainer(point, out reason)) {
-          ActionGetFromContainer tmp = new ActionGetFromContainer(actor, point);
-          if (actor.IsPlayer || ((actor.Controller as Gameplay.AI.ObjectiveAI)?.IsInterestingItem(tmp.Item) ?? false)) return tmp;
-        }
+        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFromContainer(loc);
+        if (null != act) return act;
+        // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
@@ -537,10 +536,9 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        if (actor.CanGetFromContainer(point, out reason)) {
-          ActionGetFromContainer tmp = new ActionGetFromContainer(actor, point);
-          if ((actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(tmp.Item)) return tmp;
-        }
+        var act = ai?.WouldGetFromContainer(loc);
+        if (null != act) return act;
+        // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);

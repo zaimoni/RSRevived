@@ -293,11 +293,11 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    protected override ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack) // XXX placeholder \todo PlayerController implementation followed by conversion to abstract
+    protected override ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
     {
+      if (m_Actor.CanGetFromContainer(loc.Position)) return new Engine.Actions.ActionGetFromContainer(m_Actor, loc.Position);
       return null;
     }
-
 
     // while the following is "valid" for any actor, messages are shown *only* to the player
     public Data.Message MakeCentricMessage(string eventText, Location loc, Color? color=null)

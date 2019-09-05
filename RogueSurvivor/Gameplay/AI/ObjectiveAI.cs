@@ -3445,6 +3445,14 @@ restart_single_exit:
 
     abstract protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack);
 
+    public ActorAction WouldGetFromContainer(Location loc)
+    {
+      if (!loc.MapObject?.IsContainer ?? true) return null;
+      var stack = loc.Items;
+      if (null == stack || stack.IsEmpty) return null;
+      return BehaviorWouldGrabFromStack(loc, stack);
+    }
+
     protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {
       var items = items_in_FOV;
