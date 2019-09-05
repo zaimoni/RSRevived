@@ -476,7 +476,7 @@ namespace djack.RogueSurvivor.Data
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
     public bool CanPushTo(Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(to)); }
 
-    public void PlaceAt(Map m, Point pos) {m.PlaceAt(this,pos);} // this guaranteed non-null so non-null precondition ok
+    public void PlaceAt(Map m, in Point pos) {m.PlaceAt(this, pos);} // this guaranteed non-null so non-null precondition ok
 
     public void Remove()
     {

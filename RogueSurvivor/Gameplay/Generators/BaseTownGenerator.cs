@@ -1031,17 +1031,17 @@ restart:
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
-          Session.Get.PoliceInvestigate.Record(shopBasement, pt);
+          Session.Get.PoliceInvestigate.Record(shopBasement, in pt);
           if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
-              Session.Get.PoliceInvestigate.Record(shopBasement, pt);
+              Session.Get.PoliceInvestigate.Record(shopBasement, in pt);
               MakeRandomShopItem(shopType)?.DropAt(shopBasement,pt);              
             }
           }
           if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
-          shopBasement.PlaceAt(CreateNewBasementRatZombie(0), pt);
+          shopBasement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
         }));
 
         // alpha10 music
@@ -1129,7 +1129,7 @@ restart:
       var squad = new List<Actor>();
       for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
         var guard = CreateNewCHARGuard(0);
-        map.PlaceAt(guard, locs[index]); // do not use the ActorPlace function as we have pre-arranged the conditions when initializing the locs array
+        map.PlaceAt(guard, in locs[index]); // do not use the ActorPlace function as we have pre-arranged the conditions when initializing the locs array
         squad.Add(guard);
       }
       Gameplay.AI.CHARGuardAI.DeclareSquad(squad);
@@ -1254,7 +1254,7 @@ restart:
         rect5.Intersect(rect4);
         rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));    // table is already placed
         if (2 >= chair_pos.Count) {
-          foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,pt);
+          foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map, in pt);
           chair_pos.Clear();
           continue;
         }
@@ -1355,7 +1355,7 @@ restart:
         Item it = MakeShopConstructionItem();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         map.DropItemAt(it, pt);
-        Session.Get.PoliceInvestigate.Record(map,pt);
+        Session.Get.PoliceInvestigate.Record(map, in pt);
       });
     }
 
@@ -1700,7 +1700,7 @@ restart:
           return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => {
           map.DropItemAt(MakeShopConstructionItem(), pt);
-          Session.Get.PoliceInvestigate.Record(map, pt);
+          Session.Get.PoliceInvestigate.Record(map, in pt);
           return MakeObjTable(GameImages.OBJ_TABLE);
         });
       if (m_DiceRoller.RollChance(33)) {
@@ -1714,7 +1714,7 @@ restart:
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
-          Session.Get.PoliceInvestigate.Record(map, pt);
+          Session.Get.PoliceInvestigate.Record(map, in pt);
           return MakeObjFridge();
         }));
       }
@@ -2013,7 +2013,7 @@ restart:
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 map.DropItemAt(MakeRandomBedroomItem(), pt2);
-                Session.Get.PoliceInvestigate.Record(map, pt2);
+                Session.Get.PoliceInvestigate.Record(map, in pt2);
                 return MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
               }));
               return MakeObjBed(GameImages.OBJ_BED);
@@ -2026,7 +2026,7 @@ restart:
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               map.DropItemAt(MakeRandomBedroomItem(), pt);
-              Session.Get.PoliceInvestigate.Record(map, pt);
+              Session.Get.PoliceInvestigate.Record(map, in pt);
               return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
             }));
           break;
@@ -2043,7 +2043,7 @@ restart:
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
                 map.DropItemAt(MakeRandomKitchenItem(), pt);
               }
-              Session.Get.PoliceInvestigate.Record(map, pt);
+              Session.Get.PoliceInvestigate.Record(map, in pt);
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
@@ -2069,7 +2069,7 @@ restart:
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
               map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
-            Session.Get.PoliceInvestigate.Record(map, pt);
+            Session.Get.PoliceInvestigate.Record(map, in pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
             {
               return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
@@ -2084,7 +2084,7 @@ restart:
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
               map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
-            Session.Get.PoliceInvestigate.Record(map, pt);
+            Session.Get.PoliceInvestigate.Record(map, in pt);
             return MakeObjFridge();
           }));
           break;
@@ -2500,7 +2500,7 @@ restart:
       var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
       basement.Rect.DoForEach(pt => {
           if (!basement.GetTileModelAt(pt).IsWalkable) return;
-          Session.Get.PoliceInvestigate.Record(basement, pt);
+          Session.Get.PoliceInvestigate.Record(basement, in pt);
           Session.Get.PoliceItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
       });
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
@@ -2535,7 +2535,7 @@ restart:
         DoForEachTile(basement.Rect, (Action<Point>) (pt =>
         {
           if (!basement.IsWalkable(pt) || basement.HasExitAt(pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
-          basement.PlaceAt(CreateNewBasementRatZombie(0), pt);
+          basement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
         MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
@@ -2550,7 +2550,7 @@ restart:
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), pt);
           basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Value), pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Value), pt);
-          Session.Get.PoliceInvestigate.Record(basement, pt);
+          Session.Get.PoliceInvestigate.Record(basement, in pt);
           return MakeObjShelf();
         }));
 
@@ -2947,7 +2947,7 @@ restart:
       Point[] ideal = new Point[5] { new Point(17, 2), new Point(16, 2), new Point(15, 2), new Point(14, 2), new Point(13, 2) };
 
       for (int index = 0; index < 5; ++index) {
-        map.PlaceAt(CreateNewPoliceman(0), ideal[index]);
+        map.PlaceAt(CreateNewPoliceman(0), in ideal[index]);
       }
       
       // XXX AI by default would "stock up" before charging out to the surface.
@@ -3083,7 +3083,7 @@ restart:
 
       typical = map.Police.Get.ToList();
       for (int index = 0; index < 5; ++index) {
-        map.PlaceAt(typical[index], ideal[index]);
+        map.PlaceAt(typical[index], in ideal[index]);
       }
 #endif
 
@@ -3123,7 +3123,7 @@ restart:
           // being held with cause, at least as understood before the z-apocalypse
           newCivilian.Inventory.AddAll(MakeItemGroceries());
         }
-        map.PlaceAt(newCivilian, dest);
+        map.PlaceAt(newCivilian, in dest);
       }
       DoForEachTile(map.Rect, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       return map;

@@ -182,8 +182,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
-      var position = roller.Choose(valid_spawn);
-      map.PlaceAt(actor, position);
+      map.PlaceAt(actor, roller.Choose(valid_spawn));
       if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
         Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
       return true;
@@ -235,7 +234,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == createFn) throw new ArgumentNullException(nameof(createFn));
 #endif
       rect.DoForEach(pt => {
-        createFn(pt)?.PlaceAt(map,pt);   // XXX RNG potentially involved
+        createFn(pt)?.PlaceAt(map, in pt);   // XXX RNG potentially involved
       }, pt => !map.HasMapObjectAt(pt));
     }
 
@@ -248,7 +247,7 @@ namespace djack.RogueSurvivor.Engine
       List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
       if (0 >= pointList.Count) return;
       Point pt2 = roller.Choose(pointList);
-      createFn(pt2)?.PlaceAt(map,pt2);
+      createFn(pt2)?.PlaceAt(map, in pt2);
     }
 #endregion
 

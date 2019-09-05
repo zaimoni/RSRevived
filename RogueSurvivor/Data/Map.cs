@@ -1055,7 +1055,7 @@ retry:
 #endif
     }
 
-    public void PlaceAt(Actor actor, Point position)
+    public void PlaceAt(Actor actor, in Point position)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));

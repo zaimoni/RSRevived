@@ -654,7 +654,7 @@ namespace djack.RogueSurvivor.Data
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       int maxRange = MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       if (Rules.GridDistance(Location.Position, in pos) > maxRange) return "out of throwing range";
-      if (!LOS.CanTraceThrowLine(Location, pos, maxRange, LoF)) return "no line of throwing";
+      if (!LOS.CanTraceThrowLine(Location, in pos, maxRange, LoF)) return "no line of throwing";
       return "";
     }
 
@@ -1798,7 +1798,7 @@ namespace djack.RogueSurvivor.Data
         Location dest = new Location(m,pt);
         if (!Map.Canonical(ref dest)) continue;
         if (Location==dest) {
-          ret[pt] = new Engine.Actions.ActionMoveStep(this, pt);
+          ret[pt] = new Engine.Actions.ActionMoveStep(this, in pt);
           continue;
         }
         ActorAction tmp = Rules.IsPathableFor(this, dest);

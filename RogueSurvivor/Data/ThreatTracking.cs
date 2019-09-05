@@ -536,7 +536,7 @@ namespace djack.RogueSurvivor.Data
         }
       }
 
-      public void Record(Map m, Point pt)
+      public void Record(Map m, in Point pt)
       {
         lock(_locs) {
           if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles

@@ -52,8 +52,9 @@ namespace djack.RogueSurvivor.Data
             Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
             return;
           }
-          if (Engine.Session.Get.PoliceInvestigate.Contains(new Location(m_EntryMap,pt))) return; // already known
-          Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap, pt);
+          var loc = new Location(m_EntryMap, pt);
+          if (Engine.Session.Get.PoliceInvestigate.Contains(loc)) return; // already known
+          Engine.Session.Get.PoliceInvestigate.Record(loc);
         });
       }
     }

@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Engine
       return tmp2;
     }
 
-    private static bool AngbandlikeTrace(int maxSteps, Point from, Point to, Func<Point, bool> fn, List<Point> line = null)
+    private static bool AngbandlikeTrace(int maxSteps, in Point from, in Point to, Func<Point, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Engine
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
     {
       Map map = fromLocation.Map;
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
+      return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
     }
 
     public static bool CanTraceViewLine(Location from, Location to, int maxRange = int.MaxValue, List<Point> line = null)
@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       var line = new List<Point>();
-      if (!AngbandlikeTrace(maxRange, start, toPosition, pt => pt==start || pt==toPosition || !map.UnconditionallyBlockingFire(pt), line))
+      if (!AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt==start || pt==toPosition || !map.UnconditionallyBlockingFire(pt), line))
          return null;
       if (2 >= line.Count) return null; // nothing can get in the way
 
@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt =>
+      return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt =>
             {
 				if (pt == start) return true;
 				if (pt == toPosition) return true;
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      return AngbandlikeTrace(maxRange, start, toPosition, pt => pt == start || pt == toPosition || !map.IsBlockingFire(pt), line);
+      return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || pt == toPosition || !map.IsBlockingFire(pt), line);
     }
 
     public static bool CanTraceFireLine(Location fromLocation, Location toLocation, int maxRange, List<Point> line=null)
@@ -240,18 +240,18 @@ namespace djack.RogueSurvivor.Engine
       return CanTraceFireLine(fromLocation, tmp.Value.Position, maxRange, line);
     }
 
-    public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
+    public static bool CanTraceThrowLine(Location fromLocation, in Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      return AngbandlikeTrace(maxRange, start, toPosition, pt => pt == start || !map.IsBlockingThrow(pt), line);
+      return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || !map.IsBlockingThrow(pt), line);
     }
 
     private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
-      return AngbandlikeTrace(maxRange, fromLocation.Position, toPosition, pt => {
+      return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
                 bool flag = pt== toPosition || map.IsTransparent(pt);
                 if (flag) visibleSetRef.Add(pt);
                 return flag;

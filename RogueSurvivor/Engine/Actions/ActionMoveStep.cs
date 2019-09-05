@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_NewLocation = actor.Location + direction;
     }
 
-    public ActionMoveStep(Actor actor, Point to)
+    public ActionMoveStep(Actor actor, in Point to)
       : base(actor)
     {
       m_NewLocation = new Location(actor.Location.Map, to);

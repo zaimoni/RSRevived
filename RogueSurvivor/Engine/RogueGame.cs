@@ -2636,7 +2636,7 @@ namespace djack.RogueSurvivor.Engine
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
           map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), pt);
-          Session.Get.PoliceInvestigate.Record(map, pt);
+          Session.Get.PoliceInvestigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures propor prioritzation
           var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc);
@@ -2855,7 +2855,7 @@ namespace djack.RogueSurvivor.Engine
         p = nearPoint + m_Rules.DiceRoller.Choose(range) - m_Rules.DiceRoller.Choose(range);
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
-          map.PlaceAt(actorToSpawn, p);
+          map.PlaceAt(actorToSpawn, in p);
           return true;
         }
       }
@@ -7957,8 +7957,7 @@ namespace djack.RogueSurvivor.Engine
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
 #endif
         } else if (TryActorLeaveTile(fo)) {
-          Point position = m_Rules.DiceRoller.Choose(pointList);
-          to.Map.PlaceAt(fo, position);
+          to.Map.PlaceAt(fo, m_Rules.DiceRoller.Choose(pointList));
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
         }
@@ -8150,7 +8149,7 @@ namespace djack.RogueSurvivor.Engine
         if (exit_to_surface.Y-2 <=p.Y && exit_to_surface.Y + 2 >= p.Y) return false;
         return true;
       };
-      m.Rect.DoForEach(pt=>Session.Get.PoliceInvestigate.Record(m, pt),
+      m.Rect.DoForEach(pt=>Session.Get.PoliceInvestigate.Record(m, in pt),
           pt => in_underground_base_room(pt));
 #endregion
 #region 2) examine all CHAR offices
@@ -8158,7 +8157,7 @@ namespace djack.RogueSurvivor.Engine
        Map map = d.EntryMap;
        foreach(Zone zone in map.Zones) {
          if (!zone.Name.Contains("CHAR Office")) continue;
-         zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, pt); });
+         zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, in pt); });
        }
      });
 #endregion
@@ -9986,10 +9985,10 @@ namespace djack.RogueSurvivor.Engine
       // move actor...
       Point pullTargetTo = actor.Location.Position;
       map.Remove(actor);
-      map.PlaceAt(actor, moveActorToPos);
+      map.PlaceAt(actor, in moveActorToPos);
       // ...move target
       map.Remove(target);
-      map.PlaceAt(target, pullTargetTo);
+      map.PlaceAt(target, in pullTargetTo);
 
       // if target is sleeping, wakes him up!
       if (target.IsSleeping) DoWakeUp(target);
@@ -10213,7 +10212,7 @@ namespace djack.RogueSurvivor.Engine
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }
-        Session.Get.PoliceInvestigate.Record(deadGuy.Location.Map,deadGuy.Location.Position);  // cheating ai: police consider death drops tourism targets
+        Session.Get.PoliceInvestigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
       }
 
       if (!deadGuy_isUndead.cache) {
@@ -14089,7 +14088,7 @@ namespace djack.RogueSurvivor.Engine
           z.Bounds.DoForEach(pt => {
             if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
             if (storage.AnyAdjacent<DoorWindow>(pt)) return;
-            Session.Get.PoliceInvestigate.Record(storage, pt);
+            Session.Get.PoliceInvestigate.Record(storage, in pt);
           });
         }
       }

@@ -1691,7 +1691,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Point point in m_Actor.Controller.FOV) {
         if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, in point))) continue;
         if (maxRange < my_dist) continue;
-        if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
+        if (!LOS.CanTraceThrowLine(m_Actor.Location, in point, maxRange)) continue;
         if (_blast_field?.Contains(point) ?? false) continue;
         int score = 0;
         Rectangle blast_zone = new Rectangle(point - (Point)blast_radius, (Point)(2 * blast_radius + 1));
@@ -2395,7 +2395,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!m_Actor.CanBuildFortification(point1, true)) return null;
-      return new ActionBuildFortification(m_Actor, point1, true);
+      return new ActionBuildFortification(m_Actor, in point1, true);
     }
 
     protected static bool IsDoorwayOrCorridor(Map map, in Point pos)
@@ -2438,7 +2438,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!m_Actor.CanBuildFortification(point1, false)) return null;
-      return new ActionBuildFortification(m_Actor, point1, false);
+      return new ActionBuildFortification(m_Actor, in point1, false);
     }
 
     /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>

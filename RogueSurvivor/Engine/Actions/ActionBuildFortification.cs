@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Point m_BuildPos;
     private readonly bool m_IsLarge;
 
-    public ActionBuildFortification(Actor actor, Point buildPos, bool isLarge)
+    public ActionBuildFortification(Actor actor, in Point buildPos, bool isLarge)
       : base(actor)
     {
       m_BuildPos = buildPos;
