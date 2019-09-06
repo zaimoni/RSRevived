@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       survey.DoForEach(pt => { 
         m_List.Add(new Percept_<AIScent>(new AIScent(scentByOdorAt), turnCounter, new Location(map, pt)));
       },pt => { 
-        scentByOdorAt = map.GetScentByOdorAt(m_OdorToSmell, pt); // XXX 0 is the no-scent value
+        scentByOdorAt = map.GetScentByOdorAt(m_OdorToSmell, in pt); // XXX 0 is the no-scent value
         return scentByOdorAt >= num;
       });
       return m_List;

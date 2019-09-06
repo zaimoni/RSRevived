@@ -7697,7 +7697,7 @@ namespace djack.RogueSurvivor.Engine
           (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
         }
       }
-      map.RemoveAt(trapList, position);
+      map.RemoveAt(trapList, in position);
       if (0 >= actor.HitPoints) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
     }
 
@@ -7720,7 +7720,7 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
-          map.RemoveAt(objList, position);
+          map.RemoveAt(objList, in position);
           if (canLeave && flag) actor.Location.Items?.UntriggerAllTraps();
         }
       }
@@ -7785,7 +7785,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      map.RemoveAt(objList,pos);
+      map.RemoveAt(objList, in pos);
     }
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
@@ -8586,7 +8586,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.Consume(itemGrenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
-      actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
+      actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), in targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
@@ -8602,7 +8602,7 @@ namespace djack.RogueSurvivor.Engine
       if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
-      actor.Location.Map.DropItemAtExt(itemGrenadePrimed, targetPos);
+      actor.Location.Map.DropItemAtExt(itemGrenadePrimed, in targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
@@ -9297,7 +9297,7 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       int quantity = it.Quantity;
       int quantityAdded = actor.Inventory.AddAsMuchAsPossible(it);
-      if (quantityAdded == quantity) map.RemoveItemAt(it, position);
+      if (quantityAdded == quantity) map.RemoveItemAt(it, in position);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
@@ -11275,12 +11275,12 @@ namespace djack.RogueSurvivor.Engine
             if (isUndead) {
               if (flag1) {
                 int num5 = Player.SmellThreshold;
-                int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, point);
+                int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, in point);
                 if (scentByOdorAt1 >= num5) {
                   float num6 = (float) (0.9 * scentByOdorAt1 / OdorScent.MAX_STRENGTH);
                   m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_LIVING, screen.X, screen.Y);
                 }
-                int scentByOdorAt2 = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, point);
+                int scentByOdorAt2 = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, in point);
                 if (scentByOdorAt2 >= num5) {
                   float num6 = (float) (0.9 * scentByOdorAt2 / OdorScent.MAX_STRENGTH);
                   m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_ZOMBIEMASTER, screen.X, screen.Y);

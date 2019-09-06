@@ -1566,7 +1566,7 @@ retry:
         itemsAt.AddAll(it);
     }
 
-    public void DropItemAtExt(Item it, Point position)
+    public void DropItemAtExt(Item it, in Point position)
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(position)) {
@@ -1583,7 +1583,7 @@ retry:
 #endif
     }
 
-    public void RemoveItemAt(Item it, Point position)
+    public void RemoveItemAt(Item it, in Point position)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -1598,7 +1598,7 @@ retry:
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
-    public void RemoveAt<T>(IEnumerable<T> src, Point position) where T:Item
+    public void RemoveAt<T>(IEnumerable<T> src, in Point position) where T:Item
     {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
@@ -1655,6 +1655,7 @@ retry:
       return true;
     }
 
+#if DEAD_FUNC
     public void RemoveItemAtExt(Item it, Point position)
     {
 #if DEBUG
@@ -1667,12 +1668,13 @@ retry:
       Location? test = _Normalize(position);
       if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
     }
+#endif
 
     public void RemoveAtExt<T>(IEnumerable<T> src, Point position) where T:Item
     {
       if (null == src) return;
       if (IsInBounds(position)) {
-        RemoveAt(src,position);
+        RemoveAt(src, in position);
         return;
       }
       Location? test = _Normalize(position);
@@ -1802,10 +1804,10 @@ retry:
       }
     }
 
-    public int GetScentByOdorAt(Odor odor, Point position)
+    public int GetScentByOdorAt(Odor odor, in Point position)
     {
       if (IsInBounds(position)) {
-        OdorScent scentByOdor = GetScentByOdor(odor, position);
+        OdorScent scentByOdor = GetScentByOdor(odor, in position);
         if (scentByOdor != null) return scentByOdor.Strength;
 #if NO_PEACE_WALLS
       } else {
@@ -1819,7 +1821,7 @@ retry:
       return 0;
     }
 
-    private OdorScent GetScentByOdor(Odor odor, Point p)
+    private OdorScent GetScentByOdor(Odor odor, in Point p)
     {
       if (!m_ScentsByPosition.TryGetValue(p, out List<OdorScent> odorScentList)) return null;
       foreach (OdorScent odorScent in odorScentList) {
