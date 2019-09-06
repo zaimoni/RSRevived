@@ -1828,6 +1828,7 @@ retry:
       return null;
     }
 
+#if OBSOLETE
     private void AddNewScent(OdorScent scent, Point position)
     {
       if (m_ScentsByPosition.TryGetValue(position, out List<OdorScent> odorScentList)) {
@@ -1837,7 +1838,6 @@ retry:
       }
     }
 
-#if OBSOLETE
     public void ModifyScentAt(Odor odor, int strengthChange, Point position)
     {
 #if DEBUG
@@ -1856,12 +1856,26 @@ retry:
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
+#if OBSOLETE
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null) {
         AddNewScent(new OdorScent(odor, freshStrength), position);
       } else if (scentByOdor.Strength < freshStrength) {
         scentByOdor.Strength = freshStrength;
       }
+#else
+      if (m_ScentsByPosition.TryGetValue(position, out var odorScentList)) {
+        foreach (var odorScent in odorScentList) {
+          if (odorScent.Odor == odor) {
+            if (odorScent.Strength < freshStrength) odorScent.Strength = freshStrength;
+            return;
+          };
+        }
+        odorScentList.Add(new OdorScent(odor, freshStrength));
+      } else {
+        m_ScentsByPosition.Add(position, new List<OdorScent>(2) { new OdorScent(odor, freshStrength) });
+      };
+#endif
     }
 
 #if DEAD_FUNC
