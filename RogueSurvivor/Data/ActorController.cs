@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Data
       return _IsVisibleTo(location.Map, location.Position);
     }
 
-    public bool IsVisibleTo(Map map, Point position)
+    public bool IsVisibleTo(Map map, in Point position)
     {
       if (null == m_Actor) return false;
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0

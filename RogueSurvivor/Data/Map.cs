@@ -585,23 +585,23 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public void AddDecorationAt(string imageID, Point pt)
+    public void AddDecorationAt(string imageID, in Point pt)
     {
       if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)) {
         ret.Add(imageID);
       } else {
-        m_Decorations[pt] = new HashSet<string>{ imageID };
+        m_Decorations.Add(pt, new HashSet<string>{ imageID });
       }
     }
 
-    public bool HasDecorationAt(string imageID, Point pt)
+    public bool HasDecorationAt(string imageID, in Point pt)
     {
       return m_Decorations.TryGetValue(pt, out HashSet<string> ret) && ret.Contains(imageID);
     }
 
     public void RemoveAllDecorationsAt(Point pt) { m_Decorations.Remove(pt); }
 
-    public void RemoveDecorationAt(string imageID, Point pt)
+    public void RemoveDecorationAt(string imageID, in Point pt)
     {
       if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)
           && ret.Remove(imageID)
@@ -752,9 +752,9 @@ namespace djack.RogueSurvivor.Data
 	}
 
     private Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
-	{ // 2019-08-26 release mode IL Code size       120 (0x78)
+	{ // 2019-09-07 release mode IL Code size       121 (0x79)
 	  var ret = new Dictionary<Point, int>();
-      Dictionary<Point,ActorAction> moves = a.OnePath(this, pt, already);
+      Dictionary<Point,ActorAction> moves = a.OnePath(this, in pt, already);
       foreach(var move in moves) {
         var pt2 = move.Key;
         if (1>= a.Controller.FastestTrapKill(new Location(a.Location.Map, pt2))) continue;
@@ -1348,12 +1348,14 @@ retry:
       return m_aux_MapObjectsByPosition.ContainsKey(position);
     }
 
+#if DEAD_FUNC
     public bool HasMapObjectAtExt(Point position)
     {   // 2019-08-27 release mode IL Code size       71 (0x47)
       if (m_aux_MapObjectsByPosition.ContainsKey(position)) return true;
       Location? test = _Normalize(position);
       return null!=test && test.Value.Map.HasMapObjectAt(test.Value.Position);
     }
+#endif
 
     public void PlaceAt(MapObject mapObj, Point position)
     {
@@ -1527,7 +1529,7 @@ retry:
       return null;
     }
 
-    public void DropItemAt(Item it, Point position)
+    public void DropItemAt(Item it, in Point position)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -1570,7 +1572,7 @@ retry:
     {
 #if NO_PEACE_WALLS
       if (IsInBounds(position)) {
-        DropItemAt(it, position);
+        DropItemAt(it, in position);
         return;
       }
       Location? tmp = _Normalize(position);

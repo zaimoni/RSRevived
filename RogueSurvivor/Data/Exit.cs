@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     public Map ToMap { get { return m_Location.Map; } }
     public Location Location { get { return m_Location; } }
 
-    public Exit(Map toMap, Point toPosition)
+    public Exit(Map toMap, in Point toPosition)
     {
 #if DEBUG
       if (null == toMap) throw new ArgumentNullException(nameof(toMap));

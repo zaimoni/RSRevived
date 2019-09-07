@@ -24,9 +24,6 @@ namespace djack.RogueSurvivor.Engine.Tasks
       m_imageID = imageID;
     }
 
-    public override void Trigger(Map m)
-    {
-      m.RemoveDecorationAt(m_imageID, m_pt);
-    }
+    public override void Trigger(Map m) { m.RemoveDecorationAt(m_imageID, in m_pt); }
   }
 }

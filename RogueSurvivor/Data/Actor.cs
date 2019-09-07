@@ -804,7 +804,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantFireAt(target,range,null));
     }
 
-    private string ReasonCantContrafactualFireAt(Actor target, Point p)
+    private string ReasonCantContrafactualFireAt(Actor target, in Point p)
     {
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
@@ -817,14 +817,14 @@ namespace djack.RogueSurvivor.Data
 #if DEAD_FUNC
 	public bool CanContrafactualFireAt(Actor target, Point p, out string reason)
 	{
-	  reason = ReasonCantContrafactualFireAt(target,p);
+	  reason = ReasonCantContrafactualFireAt(target, in p);
 	  return string.IsNullOrEmpty(reason);
 	}
 #endif
 
 	public bool CanContrafactualFireAt(Actor target, Point p)
 	{
-	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, p));
+	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, in p));
 	}
 
 #if B_MOVIE_MARTIAL_ARTS
@@ -1787,7 +1787,7 @@ namespace djack.RogueSurvivor.Data
       return OnePath(loc,already);
     }
 
-    public Dictionary<Point,ActorAction> OnePath(Map m, Point p, Dictionary<Point, ActorAction> already)
+    public Dictionary<Point,ActorAction> OnePath(Map m, in Point p, Dictionary<Point, ActorAction> already)
     {
       var ret = new Dictionary<Point, ActorAction>(9);
       foreach(var pt in p.Adjacent()) {
@@ -1948,7 +1948,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // alpha10: pull support
-    private string ReasonCantPull(MapObject mapObj, Point moveToPos)
+    private string ReasonCantPull(MapObject mapObj, in Point moveToPos)
     {
       string ret = ReasonCantPush(mapObj);
       if (!string.IsNullOrEmpty(ret)) return ret;
@@ -1960,15 +1960,15 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public bool CanPull(MapObject mapObj, Point moveToPos, out string reason)
+    public bool CanPull(MapObject mapObj, in Point moveToPos, out string reason)
     {
-      reason = ReasonCantPull(mapObj, moveToPos);
+      reason = ReasonCantPull(mapObj, in moveToPos);
       return string.IsNullOrEmpty(reason);
     }
 
     public bool CanPull(MapObject mapObj, Point moveToPos)
     {
-      return string.IsNullOrEmpty(ReasonCantPull(mapObj, moveToPos));
+      return string.IsNullOrEmpty(ReasonCantPull(mapObj, in moveToPos));
     }
 
     private string ReasonCantPull(Actor other, Point moveToPos)
@@ -1980,7 +1980,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public bool CanPull(Actor other, Point moveToPos, out string reason)
+    public bool CanPull(Actor other, in Point moveToPos, out string reason)
     {
       reason = ReasonCantPull(other, moveToPos);
       return string.IsNullOrEmpty(reason);

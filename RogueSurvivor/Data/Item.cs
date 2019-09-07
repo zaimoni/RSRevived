@@ -114,7 +114,7 @@ namespace djack.RogueSurvivor.Data
     public virtual void OptimizeBeforeSaving() { }  // alpha 10
 
     // thin wrappers
-    public void DropAt(Map m, Point pos) {m.DropItemAt(this,pos);} // this guaranteed non-null so non-null precondition ok
+    public void DropAt(Map m, in Point pos) {m.DropItemAt(this, in pos);} // this guaranteed non-null so non-null precondition ok
 
     public override string ToString()
     {

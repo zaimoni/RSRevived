@@ -484,10 +484,7 @@ namespace djack.RogueSurvivor.Data
       Location.Map.RemoveMapObjectAt(Location.Position);
     }
 
-    protected virtual void _destroy()   // subtypes that do not simply vanish must override
-    {
-      Remove();
-    }
+    protected virtual void _destroy() { Remove(); }   // subtypes that do not simply vanish must override
 
     public void Destroy()
     {
@@ -499,10 +496,10 @@ namespace djack.RogueSurvivor.Data
             Quantity = (sbyte)Math.Min(Gameplay.GameItems.WOODENPLANK.StackingLimit, val2)
           };
           val2 -= barricadeMaterial.Quantity;
-          Location.Map.DropItemAt(barricadeMaterial, Location.Position);
+          Location.Drop(barricadeMaterial);
         }
         if (RogueForm.Game.Rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          Location.Map.DropItemAt((RogueForm.Game.Rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate(), Location.Position);
+          Location.Drop((RogueForm.Game.Rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
         }
       }
       _destroy();
@@ -510,10 +507,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // flag handling
-    private bool GetFlag(Flags f)
-    {
-      return (m_Flags & f) != Flags.NONE;
-    }
+    private bool GetFlag(Flags f) { return (m_Flags & f) != Flags.NONE; }
 
 #if DEAD_FUNC
     private void SetFlag(Flags f, bool value)

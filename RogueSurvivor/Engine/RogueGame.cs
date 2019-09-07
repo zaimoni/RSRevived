@@ -2635,7 +2635,7 @@ namespace djack.RogueSurvivor.Engine
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
-          map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), pt);
+          map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), in pt);
           Session.Get.PoliceInvestigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures propor prioritzation
@@ -5141,7 +5141,7 @@ namespace djack.RogueSurvivor.Engine
         else if (dir != Direction.NEUTRAL) {
           Point moveToPos = player.Location.Position + dir;
           if (player.Location.Map.IsInBounds(moveToPos)) {
-            if (player.CanPull(other, moveToPos, out string reason)) {
+            if (player.CanPull(other, in moveToPos, out string reason)) {
               DoPullActor(player, other, in moveToPos);
               actionDone = true;
               break;
@@ -9392,7 +9392,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.CanUnequip(gift)) DoUnequipItem(actor,gift,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (gift is ItemTrap trap) trap.Desactivate();    // alpha10
-      actor.Location.Map.DropItemAt(gift, dest);
+      actor.Location.Map.DropItemAt(gift, in dest);
       actor.Inventory.RemoveAllQuantity(gift);
 
 #if DEBUG
@@ -9471,15 +9471,14 @@ namespace djack.RogueSurvivor.Engine
     static private void DropItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
-      actor.Location.Map.DropItemAt(it, actor.Location.Position);
+      actor.Location.Drop(it);
       it.Unequip();
     }
 
     static private void DropCloneItem(Actor actor, Item it, Item clone)
     {
-      if (--it.Quantity <= 0)
-        actor.Inventory.RemoveAllQuantity(it);
-      actor.Location.Map.DropItemAt(clone, actor.Location.Position);
+      if (--it.Quantity <= 0) actor.Inventory.RemoveAllQuantity(it);
+      actor.Location.Drop(clone);
       clone.Unequip();
     }
 
@@ -9535,7 +9534,7 @@ namespace djack.RogueSurvivor.Engine
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap emptyCan = new ItemTrap(GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
           emptyCan.Activate(actor);  // alpha10
-          actor.Location.Map.DropItemAt(emptyCan, actor.Location.Position);
+          actor.Location.Drop(emptyCan);
         }
         bool player = ForceVisibleToPlayer(actor);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -10026,7 +10025,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       --spray.PaintQuantity;
-      actor.Location.Map.AddDecorationAt(spray.Model.TagImageID,pos);
+      actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
     }
@@ -10205,7 +10204,7 @@ namespace djack.RogueSurvivor.Engine
         // the implicit police radio goes explicit on death, as a generic item
         if (GameFactions.ThePolice == deadGuy.Faction) {
           var it = GameItems.POLICE_RADIO.instantiate();
-          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Map.DropItemAt(it, deadGuy.Location.Position);
+          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
         }
         foreach (Item it in deadGuy.Inventory.Items.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
@@ -10354,7 +10353,7 @@ namespace djack.RogueSurvivor.Engine
        Point dropOnTile;
        if (dropTiles.Count > 0) dropOnTile = m_Rules.DiceRoller.Choose(dropTiles);
        else dropOnTile = actor.Location.Position;
-       actor.Location.Map.DropItemAt(disarmIt, dropOnTile);
+       actor.Location.Map.DropItemAt(disarmIt, in dropOnTile);
 
        return disarmIt; // done
     }
@@ -10401,13 +10400,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void SplatterBlood(Map map, Point position)
     {
-      if (map.GetTileModelAt(position).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_FLOOR, position)) {
-        map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, position);
+      if (map.GetTileModelAt(position).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position)) {
+        map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position);
         map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in position, GameImages.DECO_BLOODIED_FLOOR));
       }
       map.ForEachAdjacent(position,(p => {
-        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, position) && m_Rules.RollChance(20)) {
-          map.AddDecorationAt(GameImages.DECO_BLOODIED_WALL, position);
+        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, in p) && m_Rules.RollChance(20)) {
+          map.AddDecorationAt(GameImages.DECO_BLOODIED_WALL, in p);
           map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in p, GameImages.DECO_BLOODIED_WALL));
         }
       }));
@@ -11833,10 +11832,10 @@ namespace djack.RogueSurvivor.Engine
       if (s_Options.ShowPlayerTagsOnMinimap) {
         view.DoForEach(pt => {
             string imageID = null;
-            if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG1, pt)) imageID = GameImages.MINI_PLAYER_TAG1;
-            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, pt)) imageID = GameImages.MINI_PLAYER_TAG2;
-            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, pt)) imageID = GameImages.MINI_PLAYER_TAG3;
-            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG4, pt)) imageID = GameImages.MINI_PLAYER_TAG4;
+            if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG1, in pt)) imageID = GameImages.MINI_PLAYER_TAG1;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, in pt)) imageID = GameImages.MINI_PLAYER_TAG2;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, in pt)) imageID = GameImages.MINI_PLAYER_TAG3;
+            else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG4, in pt)) imageID = GameImages.MINI_PLAYER_TAG4;
             if (imageID != null) {
               m_UI.UI_DrawImage(imageID, MINIMAP_X + (pt.X - view.Left) * MINITILE_SIZE - 1, MINIMAP_Y + (pt.Y - view.Top) * MINITILE_SIZE - 1);
             }
@@ -12264,7 +12263,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool IsVisibleToPlayer(Map map, in Point position)
     {
-      return Player?.Controller.IsVisibleTo(map,position) ?? false;
+      return Player?.Controller.IsVisibleTo(map, in position) ?? false;
     }
 
     private static bool IsVisibleToPlayer(Actor actor)
@@ -13115,7 +13114,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
     {
-      fromMap.SetExitAt(from, new Exit(toMap, to));
+      fromMap.SetExitAt(from, new Exit(toMap, in to));
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
@@ -13134,8 +13133,8 @@ namespace djack.RogueSurvivor.Engine
       Map map = m_Rules.DiceRoller.Choose(mapList);
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
       Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
-      map.DropItemAt(it, point);
-      map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, point);
+      map.DropItemAt(it, in point);
+      map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in point);
       return new UniqueItem{
         TheItem = it,
         IsSpawned = true

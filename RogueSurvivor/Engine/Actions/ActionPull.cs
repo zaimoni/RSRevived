@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         #region ActorAction
         public override bool IsLegal()
         {
-            return m_Actor.CanPull(m_Object, m_MoveActorTo, out m_FailReason);
+            return m_Actor.CanPull(m_Object, in m_MoveActorTo, out m_FailReason);
         }
 
         public override bool IsPerformable()
