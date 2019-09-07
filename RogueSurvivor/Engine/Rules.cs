@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Engine
 
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.COURAGEOUS;  // need this to be inoperative for z
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous && 1>=actor.Controller.FastestTrapKill(loc)) {
+      if (!imStarvingOrCourageous && 1>=actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
       }
@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFromContainer(loc);
+        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFromContainer(in loc);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
@@ -420,7 +420,7 @@ namespace djack.RogueSurvivor.Engine
 
       ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous && 1 >= actor.Controller.FastestTrapKill(loc)) {
+      if (!imStarvingOrCourageous && 1 >= actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
       }
@@ -536,7 +536,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = ai?.WouldGetFromContainer(loc);
+        var act = ai?.WouldGetFromContainer(in loc);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause

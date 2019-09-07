@@ -293,7 +293,7 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    protected override ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
+    protected override ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack)
     {
       if (m_Actor.CanGetFromContainer(loc.Position)) return new Engine.Actions.ActionGetFromContainer(m_Actor, loc.Position);
       return null;

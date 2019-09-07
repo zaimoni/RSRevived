@@ -464,7 +464,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!(who.Controller is OrderableAI)) throw new InvalidOperationException("need an ai with inventory");
 #endif
         if (!Map.Canonical(ref loc)) return;
-        newStack(loc);
+        newStack(in loc);
       }
 
       /// <returns>true if and only if no stacks remain</returns>
@@ -529,10 +529,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      public void newStack(Location loc) {
+      public void newStack(in Location loc) {
         Inventory inv = loc.Items;
         if (inv?.IsEmpty ?? true) return;
-        if (!(m_Actor.Controller as OrderableAI).WouldGrabFromStack(loc, inv)) return;
+        if (!(m_Actor.Controller as OrderableAI).WouldGrabFromStack(in loc, inv)) return;
 #if DEBUG
         if (!m_Actor.CanEnter(loc)) throw new InvalidOperationException(m_Actor.Name+" wants inaccessible ground inventory at "+loc);
 #endif
@@ -846,7 +846,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.WouldLikeToSleep && m_Actor.CanSleep();
     } }
 
-    public override int FastestTrapKill(Location loc)
+    public override int FastestTrapKill(in Location loc)
     {
       if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage) return int.MaxValue;
       int trapsMaxDamage = loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,m_Actor);
@@ -903,7 +903,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!toTheMax) SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location, false, false);
+      tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
       if (null == tmpAction) return null;
       m_Actor.Run();
       return tmpAction;
@@ -920,7 +920,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location, false, false);
+      tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
       if (null == tmpAction) return null;
       m_Actor.Run();
       return tmpAction;
@@ -936,7 +936,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.Location.Position != location.Position) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location, false, false);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(in location, false, false);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -965,7 +965,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
       if (!m_ReachedPatrolPoint) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location, false, false);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(in location, false, false);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -1442,7 +1442,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var dest = shove.Target.Location+d;
               if (!shove.Target.CanBeShovedTo(dest.Position)) continue;
               // _damage_field expected to be non-null as we have at least one enemy in sight
-              int incoming = RiskAt(dest);
+              int incoming = RiskAt(in dest);
               if (0 >= incoming) (norisk ?? (norisk = new List<Location>())).Add(dest);
             }
             if (null != norisk) {
@@ -1983,7 +1983,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
-        float num = SafetyFrom(location, goals);
+        float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
           num -= (float)Rules.StdDistance(location, leader.Location);
@@ -2128,7 +2128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!decideToFlee) {
 //      if (null == GetBestRangedWeaponWithAmmo())  {   // call contract
            // check route
-           if (!CanReachSimple(e_loc, allowedChargeActions)) {
+           if (!CanReachSimple(in e_loc, allowedChargeActions)) {
              if (null == (enemy.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
              decideToFlee = true;   // get out of here, now
            }
@@ -2189,25 +2189,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
     
-    public ActorAction WouldUseAccessibleStack(Location dest,bool is_real=false) {
+    public ActorAction WouldUseAccessibleStack(in Location dest,bool is_real=false) {
         Dictionary<Point, Inventory> stacks = dest.Map.GetAccessibleInventories(dest.Position);
         if (0 < (stacks?.Count ?? 0)) {
           ActorAction tmpAction;
           var map = dest.Map;
           foreach(var x in stacks) {
             var loc = new Location(map, x.Key);
-            if (Map.Canonical(ref loc) && (null != (tmpAction = WouldGrabFromAccessibleStack(loc, x.Value, is_real)))) return tmpAction;
+            if (Map.Canonical(ref loc) && (null != (tmpAction = WouldGrabFromAccessibleStack(in loc, x.Value, is_real)))) return tmpAction;
           }
         }
         return null;
     }
 
     public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
-
-	protected ActorAction BehaviorPathTo(Location dest)
-	{
-      return BehaviorPathTo(new HashSet<Location> { dest });
-	}
+	protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
 	{
@@ -2304,7 +2300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
       _last_move = null;    // very random if we reach this point, expected to false-positive
 
-	  ActorAction actorAction = BehaviorPathTo(loc);
+	  ActorAction actorAction = BehaviorPathTo(in loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
       if (actorAction is ActionMoveStep tmp) {
         if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)   // no-op by construction; retaining this as placeholder for run logic refinement
@@ -2313,7 +2309,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    private bool InProximity(Location src, Location dest, int maxDist)
+    private bool InProximity(in Location src, Location dest, int maxDist)
     {  // due to definitions, for maxDist=1 the other two tests are implied by the GridDistance test for m_Actor.Location
        return Rules.GridDistance(src, dest) <= maxDist
            && (1 >= maxDist || (CanSee(dest) && null != m_Actor.MinStepPathTo(src, dest)));
@@ -2731,7 +2727,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return float.NaN;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
-        if (!exploration.HasExplored(loc)) num += EXPLORE_LOCS;
+        if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
@@ -2944,21 +2940,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj;
     }
 
-    protected override ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
+    protected override ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack)
     {
-      return BehaviorGrabFromStack(loc,stack,false);
+      return BehaviorGrabFromStack(in loc,stack,false);
     }
 
-    public bool WouldGrabFromStack(Location loc, Inventory stack)
+    public bool WouldGrabFromStack(in Location loc, Inventory stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
       if (m_Actor.StackIsBlocked(loc)) return false;
-      return WouldGrabFromAccessibleStack(loc,stack)?.IsLegal() ?? false;
+      return WouldGrabFromAccessibleStack(in loc,stack)?.IsLegal() ?? false;
     }
 
-    private ActorAction _takeThis(Location loc, Item obj, ActorAction recover, bool is_real)
+    private ActorAction _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
     {
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
         if (obj is ItemBodyArmor armor) {
@@ -2986,7 +2982,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmp;
     }
 
-    public ActorAction WouldGrabFromAccessibleStack(Location loc, Inventory stack, bool is_real=false)
+    public ActorAction WouldGrabFromAccessibleStack(in Location loc, Inventory stack, bool is_real=false)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -3016,7 +3012,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = _takeThis(loc, obj, recover, is_real);
+      ActorAction tmp = _takeThis(in loc, obj, recover, is_real);
       if (null == tmp) return null;
 #if DEBUG
       if (is_real) {
@@ -3031,10 +3027,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
     {
-      return WouldGrabFromAccessibleStack(loc, stack, true);
+      return WouldGrabFromAccessibleStack(in loc, stack, true);
     }
 
-    protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack, bool is_real = true)
+    protected ActorAction BehaviorGrabFromStack(in Location loc, Inventory stack, bool is_real = true)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -3071,7 +3067,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool may_take = is_real ? m_Actor.MayTakeFromStackAt(loc) : true;
 
       if (may_take) {
-        tmp = _takeThis(loc, obj, recover, is_real);
+        tmp = _takeThis(in loc, obj, recover, is_real);
         if (null == tmp) return null;
 #if DEBUG
       if (is_real) {
@@ -3606,7 +3602,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool ProposeSwitchPlaces(Location dest)
     {
       if (null != WouldUseAccessibleStack(m_Actor.Location)) return false;
-      if (null != WouldUseAccessibleStack(dest)) return true;
+      if (null != WouldUseAccessibleStack(in dest)) return true;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
         if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
@@ -3618,7 +3614,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool RejectSwitchPlaces(Location dest)
     {
       if (null != WouldUseAccessibleStack(m_Actor.Location)) return true;
-      if (null != WouldUseAccessibleStack(dest)) return false;
+      if (null != WouldUseAccessibleStack(in dest)) return false;
 
       var want_here = WantToGoHere(m_Actor.Location);
       if (null != want_here) return !want_here.Contains(dest);
@@ -3633,7 +3629,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var already_near_actor = GetCloseToActor();
       if (   null!=already_near_actor.Key && 0<already_near_actor.Value // reject default-initialization
-          && InProximity(dest, already_near_actor.Key.Location, already_near_actor.Value))
+          && InProximity(in dest, already_near_actor.Key.Location, already_near_actor.Value))
         return false;
 
       return true;

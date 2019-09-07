@@ -275,7 +275,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // alpha10.1 prefer unexplored/oldest
         // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...
         if (exploration != null) {
-          int locAge = exploration.GetExploredAge(next);
+          int locAge = exploration.GetExploredAge(in next);
           score += (0 == locAge) ? UNEXPLORED_LOC : locAge;
         }
 
@@ -305,7 +305,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         /// <param name="action"></param>
         /// <returns></returns>
         /// <see cref="BehaviorBumpToward(RogueGame, Point, bool, bool, Func{Point, Point, float})"/>
-        protected float EstimateBumpActionCost(Location loc, ActorAction action)
+        protected float EstimateBumpActionCost(in Location loc, ActorAction action)
         {
             float cost = 0;
 
@@ -370,7 +370,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         float cost = distanceFn(next.Position, goal);
 
         // alpha10 add action cost heuristic if npc is intelligent
-        if (!float.IsNaN(cost) && m_Actor.Model.Abilities.IsIntelligent) cost += EstimateBumpActionCost(next, action);
+        if (!float.IsNaN(cost) && m_Actor.Model.Abilities.IsIntelligent) cost += EstimateBumpActionCost(in next, action);
 
         return cost;
       }, (a, b) => a < b);
@@ -396,7 +396,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
     }
 
-    protected ActorAction BehaviorStupidBumpToward(Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction BehaviorStupidBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
       if (m_Actor.Location.Map == goal.Map) return BehaviorStupidBumpToward(goal.Position, canCheckBreak, canCheckPush);
       Location? test = m_Actor.Location.Map.Denormalize(goal);
@@ -418,7 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
           var loc = new Location(m_Actor.Location.Map, ptA);
           if (!Map.Canonical(ref loc)) return float.NaN;
-          var turns_to_fatality = m_Actor.Controller.FastestTrapKill(loc);
+          var turns_to_fatality = m_Actor.Controller.FastestTrapKill(in loc);
           if (1 >= turns_to_fatality) return float.NaN;
           if (int.MaxValue > turns_to_fatality) return dist + MOVE_INTO_TRAPS_PENALTY;
           return dist;
@@ -427,7 +427,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, close_in);
     }
 
-    protected ActorAction BehaviorIntelligentBumpToward(Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction BehaviorIntelligentBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
       if (m_Actor.Location.Map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position, canCheckBreak, canCheckPush);
       Location? test = m_Actor.Location.Map.Denormalize(goal);
@@ -435,10 +435,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
-    protected ActorAction BehaviorHeadFor(Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction BehaviorHeadFor(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
-      if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(goal, canCheckBreak, canCheckPush);
-      return BehaviorStupidBumpToward(goal, canCheckBreak, canCheckPush);
+      if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(in goal, canCheckBreak, canCheckPush);
+      return BehaviorStupidBumpToward(in goal, canCheckBreak, canCheckPush);
     }
 
     protected ActorAction BehaviorHeadFor(IEnumerable<Location> goals, bool canCheckBreak, bool canCheckPush)
@@ -449,7 +449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Location goal in goals) {
         int new_dist = Rules.GridDistance(m_Actor.Location, goal);
         if (dist <= new_dist) continue;
-        ActorAction tmp = BehaviorHeadFor(goal, canCheckBreak, canCheckPush);
+        ActorAction tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
         if (null == tmp) continue;
         dist = new_dist;
         ret = tmp;
@@ -922,7 +922,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point position = loc.Position;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
-        if (!exploration.HasExplored(loc)) num += EXPLORE_LOCS;
+        if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
@@ -1036,7 +1036,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // as above, but location-based
-    protected float SafetyFrom(Location from, IEnumerable<Location> dangers)
+    protected float SafetyFrom(in Location from, IEnumerable<Location> dangers)
     {
       Map map = m_Actor.Location.Map;
 
@@ -1047,7 +1047,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 2 Prefer going outside/inside if majority of dangers are inside/outside.
       // 3 If can tire, prefer not jumping.
 #region Primary: Get away from dangers.
-      float avgDistance = (float) (dangers.Sum(pt => (double)Rules.InteractionDistance(from, pt)) / (1 + dangers.Count()));  // other side of exit is int.MaxValue distance but should be 1 here
+      double avgDistance = 0.0;
+      int count_plus_1 = 1;
+      foreach(var pt in dangers) {
+        count_plus_1++;
+        avgDistance += Rules.InteractionDistance(from, pt);
+      }
+      avgDistance /= count_plus_1;
 #endregion
 #region 1 Avoid getting in corners.
       int countFreeSquares = map.CountAdjacentTo(from.Position,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
@@ -1076,7 +1082,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endregion
       float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
-      return avgDistance * heuristicFactorBonus;
+      return (float)(avgDistance * heuristicFactorBonus);
     }
 
     // isBetterThanEvalFn will never see NaN
@@ -1295,7 +1301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // XXX these two break down cross-map
-    protected bool CanReachSimple(Location dest, RouteFinder.SpecialActions allowedActions)
+    protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
        (m_RouteFinder ?? (m_RouteFinder = new RouteFinder(this))).AllowedActions = allowedActions;
        return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, Rules.GridDistance(m_Actor.Location, dest), Rules.GridDistance);

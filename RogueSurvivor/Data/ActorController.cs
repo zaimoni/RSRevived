@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Data
     public abstract ActorAction GetAction(RogueGame game);
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>
-    public virtual int FastestTrapKill(Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs
+    public virtual int FastestTrapKill(in Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs
 
     // savegame support
     public virtual void OptimizeBeforeSaving() { }  // override this if there are memorized sensors

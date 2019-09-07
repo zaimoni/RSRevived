@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     var need = ai.WhatDoINeedNow();
                     var want = ai.WhatDoIWantNow();
 
-                    int code(Location loc) {
+                    int code(in Location loc) {
                       var think_is_there = items.WhatIsAt(loc);
                       if (null != think_is_there) {
                         // \todo duplicate cheating postfilters from ActorController::WhereIs
@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
                     int test;
                     foreach (var x in stage_inventory) {
-                      if (0 != (test = code(x))) reasons[x] = test;
+                      if (0 != (test = code(in x))) reasons[x] = test;
                     }
                 }
                 stage_inventory.Clear();
@@ -238,7 +238,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return null;
         }
 
-        public List<Location> WantToGoHere(Location loc, ObjectiveAI ai) {
+        public List<Location> WantToGoHere(in Location loc, ObjectiveAI ai) {
             var ret = WantToGoHere(loc_path, loc);
             if (null != ret) return ret;
             if (HomeMap(ai) == loc.Map) {
@@ -258,8 +258,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
            int i = min_path.Count;
            while(0 < i--) {
-             if (min_path[i].Any(pt => 1>=ai.FastestTrapKill(pt))) {
-               var nonlethal = min_path[i].FindAll(pt => 1< ai.FastestTrapKill(pt));
+             if (min_path[i].Any(pt => 1>=ai.FastestTrapKill(in pt))) {
+               var nonlethal = min_path[i].FindAll(pt => 1< ai.FastestTrapKill(in pt));
                if (0 >= nonlethal.Count) return true;
                min_path[i] = nonlethal;
              }

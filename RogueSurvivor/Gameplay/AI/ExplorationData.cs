@@ -31,12 +31,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    public bool HasExplored(Location loc)
-    {
-      return m_LocationsQueue.Contains(loc);
-    }
+    public bool HasExplored(in Location loc) { return m_LocationsQueue.Contains(loc); }
 
-    private void AddExplored(Location loc)
+    private void AddExplored(in Location loc)
     {
       int i = m_LocationsQueue.IndexOf(loc);
       if (-1 < i) {
@@ -49,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // alpha10.1
     /// <param name="loc"></param>
     /// <returns>0 for locs not explored</returns>
-    public int GetExploredAge(Location loc)
+    public int GetExploredAge(in Location loc)
     {
       int i = m_LocationsQueue.LastIndexOf(loc);    // Irrational caution (in case deduplication fails); IndexOf should be fine
       return (-1 < i) ? m_LocationsQueue.Count-i : 0;
@@ -118,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void Update(Location location)
     {
-      AddExplored(location);
+      AddExplored(in location);
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
       if (0 >= (zonesAt?.Count ?? 0)) return;
       foreach (Zone zone in zonesAt) AddExplored(zone);
@@ -126,7 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void Update(Location location, Action<Zone> new_zone_handler)
     {
-      AddExplored(location);
+      AddExplored(in location);
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
       if (0 >= (zonesAt?.Count ?? 0)) return;
       foreach (Zone zone in zonesAt) AddExplored(zone, new_zone_handler);

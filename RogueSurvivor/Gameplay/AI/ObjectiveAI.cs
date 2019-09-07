@@ -581,7 +581,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
-    public int RiskAt(Location loc) {
+    public int RiskAt(in Location loc) {
       if (null != _damage_field) {
         var denorm = m_Actor.Location.Map.Denormalize(loc);
         if (null != denorm) {
@@ -631,12 +631,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!_legal_path.ContainsKey(loc)) continue;  // something wrong here
                 if (!m_Actor.CanEnter(loc)) continue;  // generators are pathable but not enterable
-                if (1 >= FastestTrapKill(loc)) continue;
+                if (1 >= FastestTrapKill(in loc)) continue;
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(in pt,in pt2)) continue;
                   var loc2 = new Location(m_Actor.Location.Map, pt2);
                   if (!m_Actor.CanEnter(loc2)) continue;
-                  if (1 >= FastestTrapKill(loc2)) continue;
+                  if (1 >= FastestTrapKill(in loc2)) continue;
                   var act = new ActionMoveDelta(m_Actor, loc2, loc);
                   if (act.IsLegal()) stage2.Add(act);
                 }
@@ -690,11 +690,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
               foreach(var pt in path_pt[0]) {
                 if (!_legal_path.ContainsKey(pt)) continue;  // something wrong here
                 if (!m_Actor.CanEnter(pt)) continue;  // generators are pathable but not enterable
-                if (1 >= FastestTrapKill(pt)) continue;
+                if (1 >= FastestTrapKill(in pt)) continue;
                 foreach(var pt2 in depth2) {
                   if (1!=Rules.GridDistance(pt,pt2)) continue;
                   if (!m_Actor.CanEnter(pt2)) continue;
-                  if (1 >= FastestTrapKill(pt2)) continue;
+                  if (1 >= FastestTrapKill(in pt2)) continue;
                   var act = new ActionMoveDelta(m_Actor, pt2, pt);
                   if (act.IsLegal()) stage2.Add(act);
                 }
@@ -905,7 +905,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Location> ret = PathToTarget.WantToGoHere(GetMinStepPath<Location>(), loc);
       if (null != ret) return ret;
       var path = GetLambdaPath();
-      if (null != path) path.WantToGoHere(loc,this);
+      if (null != path) path.WantToGoHere(in loc,this);
       if (loc.Map == m_Actor.Location.Map) {
          ret = PathToTarget.WantToGoHere(GetMinStepPath<Point>(), loc);
          if (null != ret) return ret;
@@ -2142,7 +2142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // local functions
-      bool destination_melee_safe(Location loc,int depth) {
+      bool destination_melee_safe(in Location loc,int depth) {
         if (!m_Actor.CanEnter(loc)) return false;
         if (move_plans.ContainsKey(loc)) return false;
         if (working_fear.ContainsKey(loc)) return false;
@@ -2155,7 +2155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;
       }
 
-      void unlink(Location dest)
+      void unlink(in Location dest)
       {
          if (!inverted_move_plans.TryGetValue(dest,out var cache)) return;
          List<Location> staging = null;
@@ -2168,7 +2168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            }
          }
          inverted_move_plans.Remove(dest);
-         if (null != staging) foreach(var x in staging) unlink(x);
+         if (null != staging) foreach(var x in staging) unlink(in x);
       }
 
 #if PROTOTYPE
@@ -2197,7 +2197,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(false,null);
       }
 
-      void install_moves(Location loc) {
+      void install_moves(in Location loc) {
         if (!m_Actor.CanEnter(loc)) return;
         int depth = 0;
         if (move_plans.TryGetValue(loc,out var cache)) {
@@ -2208,7 +2208,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var pt in loc.Position.Adjacent()) {
           var loc2 = new Location(loc.Map,pt);
           if (!Map.Canonical(ref loc2)) continue;
-          if (!destination_melee_safe(loc2, depth)) continue;
+          if (!destination_melee_safe(in loc2, depth)) continue;
           var delta = new ActionMoveDelta(m_Actor, loc2, loc);
           if (delta.IsLegal()) {
             cache.Value.Add(loc2, delta);
@@ -2221,7 +2221,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var e = loc.Exit;
           if (null != e) {
             var loc2 = e.Location;
-            if (destination_melee_safe(loc2, depth)) {
+            if (destination_melee_safe(in loc2, depth)) {
               var delta = new ActionMoveDelta(m_Actor, loc2, loc);
               if (delta.IsLegal()) {
                 cache.Value.Add(loc2, delta);
@@ -2264,14 +2264,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while(3 > ++current_depth) {
         var working_process = process;
         process = new HashSet<Location>();
-        foreach(var dest in working_process) install_moves(dest);
+        foreach(var dest in working_process) install_moves(in dest);
         if (0 >= process.Count) return decide();
 
         // any deadends just attempted (working process) should have their inverse moves pruned
         bool have_pruned = false;
         foreach(var x in working_process) {
           if (move_plans.TryGetValue(x,out var cache) && null==cache.Value) {
-            unlink(x);
+            unlink(in x);
             have_pruned = true;
           }
         }
@@ -2331,7 +2331,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       waypoint_dist[m_Actor.Location] = new Point(0,0);
       bool last_waypoint_ok = false;
 
-      Point waypoint_bounds(Location loc) {
+      Point waypoint_bounds(in Location loc) {
         Point ret = Point.MaxValue;
         last_waypoint_ok = false;
         foreach(var x in waypoint_dist) {
@@ -2362,7 +2362,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < dests.Count) {
           foreach(var pt in dests) {
             var loc = new Location(m,pt);
-            Point dist = waypoint_bounds(loc);
+            Point dist = waypoint_bounds(in loc);
             if (last_waypoint_ok) {
               if (ub < dist.X) continue;
               if (ub > dist.Y) {
@@ -2886,7 +2886,7 @@ restart:
               if (!Map.Canonical(ref loc)) continue;
               if (loc == test.dest) continue;
               if (!_legal_path.TryGetValue(loc,out var alt_act)) continue;
-              if (1 >= FastestTrapKill(loc)) continue;
+              if (1 >= FastestTrapKill(in loc)) continue;
               act = alt_act;
               test = alt_act as ActorDest;
               altered = true;
@@ -3443,14 +3443,14 @@ restart_single_exit:
       }
     }
 
-    abstract protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack);
+    abstract protected ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack);
 
-    public ActorAction WouldGetFromContainer(Location loc)
+    public ActorAction WouldGetFromContainer(in Location loc)
     {
       if (!loc.MapObject?.IsContainer ?? true) return null;
       var stack = loc.Items;
       if (null == stack || stack.IsEmpty) return null;
-      return BehaviorWouldGrabFromStack(loc, stack);
+      return BehaviorWouldGrabFromStack(in loc, stack);
     }
 
     protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
