@@ -15,47 +15,41 @@ using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transi
 
 namespace djack.RogueSurvivor.Data
 {
-  // This must *not* implement ISerializable.  Save-load puts the Prisoner Who Should Not Be at 0,0 rather than his intended location if the reasonable optimization
-  // of saving/loading short rather than int is done.
   [Serializable]
-  internal struct Location : IEquatable<Location>
+  internal readonly struct Location : IEquatable<Location>
     {
-    private readonly Map m_Map;
-    private Point m_Position;
-
-    public Map Map { get { return m_Map; } }
-
-    public Point Position { get { return m_Position; } }
+    public readonly Map Map;
+    public readonly Point Position;
 
     public Location(Map map, Point position)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
 #endif
-      m_Map = map;
-      m_Position = position;
+      Map = map;
+      Position = position;
     }
 
     public static Location operator +(Location lhs, Direction rhs)
     {
-      return new Location(lhs.m_Map, lhs.m_Position+rhs);
+      return new Location(lhs.Map, lhs.Position+rhs);
     }
 
     // thin wrappers
-    public MapObject MapObject { get { return m_Map.GetMapObjectAt(m_Position); } }
-    public bool HasMapObject { get { return m_Map.HasMapObjectAt(m_Position); } }
-    public Actor Actor { get { return m_Map.GetActorAt(m_Position); } }
-    public bool StrictHasActorAt { get { return m_Map.StrictHasActorAt(m_Position); } }
-    public void Add(Corpse c) { m_Map.AddAt(c, m_Position); }
-    public void Place(Actor actor) { m_Map.PlaceAt(actor, in m_Position); }
-    public void Place(MapObject obj) { m_Map.PlaceAt(obj, m_Position); }
-    public void Drop(Item it) { m_Map.DropItemAt(it, in m_Position); }
-    public bool IsWalkableFor(Actor actor) { return m_Map.IsWalkableFor(m_Position, actor); }
-    public bool IsWalkableFor(Actor actor, out string reason) { return m_Map.IsWalkableFor(m_Position, actor, out reason); }
-    public Inventory Items { get { return m_Map.GetItemsAt(m_Position); } }
-    public Exit Exit { get { return m_Map.GetExitAt(m_Position); } }
-    public TileModel TileModel { get { return m_Map.GetTileModelAt(m_Position); } }
-    public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
+    public MapObject MapObject { get { return Map.GetMapObjectAt(Position); } }
+    public bool HasMapObject { get { return Map.HasMapObjectAt(Position); } }
+    public Actor Actor { get { return Map.GetActorAt(Position); } }
+    public bool StrictHasActorAt { get { return Map.StrictHasActorAt(Position); } }
+    public void Add(Corpse c) { Map.AddAt(c, Position); }
+    public void Place(Actor actor) { Map.PlaceAt(actor, in Position); }
+    public void Place(MapObject obj) { Map.PlaceAt(obj, Position); }
+    public void Drop(Item it) { Map.DropItemAt(it, in Position); }
+    public bool IsWalkableFor(Actor actor) { return Map.IsWalkableFor(Position, actor); }
+    public bool IsWalkableFor(Actor actor, out string reason) { return Map.IsWalkableFor(Position, actor, out reason); }
+    public Inventory Items { get { return Map.GetItemsAt(Position); } }
+    public Exit Exit { get { return Map.GetExitAt(Position); } }
+    public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
+    public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }
     static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
     static public bool RequiresJump(Location loc) { return loc.MapObject?.IsJumpable ?? false; }
     static public bool NoJump(Location loc) { return !loc.MapObject?.IsJumpable ?? true; }
@@ -169,7 +163,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool Equals(Location x)
     {
-      return m_Map == x.m_Map && m_Position == x.m_Position;
+      return Map == x.Map && Position == x.Position;
     }
 
     public override bool Equals(object obj)
@@ -182,13 +176,13 @@ namespace djack.RogueSurvivor.Data
     // i.e. has a high collision rate.
     public override int GetHashCode()
     {
-      return m_Map.GetHashCode() ^ (m_Position.X+Engine.RogueGame.MAP_MAX_WIDTH*m_Position.Y);
+      return Map.GetHashCode() ^ (Position.X+Engine.RogueGame.MAP_MAX_WIDTH*Position.Y);
     }
 #endregion
 
     public override string ToString()
     {
-      return m_Map.Name+"@"+m_Position.X.ToString()+","+m_Position.Y.ToString();
+      return Map.Name+"@"+Position.X.ToString()+","+Position.Y.ToString();
     }
   }
 }
