@@ -674,9 +674,7 @@ namespace djack.RogueSurvivor.Engine
         Exit exit = from.Exit;
         return (null != exit && exit.Location == to) ? 1.0 : double.MaxValue;
       }
-      int num1 = test.Value.Position.X - from.Position.X;
-      int num2 = test.Value.Position.Y - from.Position.Y;
-      return Math.Sqrt((double) (num1 * num1 + num2 * num2));
+      return StdDistance(test.Value.Position - from.Position);
     }
 
     // allows stairways for melee range, etc.
