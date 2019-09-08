@@ -1635,16 +1635,9 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public List<List<Point> > MinStepPathTo(Location origin, Location target)
+    /// <param name="target">may be denormalized to guarantee origin.Map==target.Map</param>
+    private List<List<Point>> _MinStepPathTo(in Location origin, in Location target)
     {
-      if (origin==target) return null;
-
-      if (origin.Map!=target.Map) {
-        Location? test = origin.Map.Denormalize(in target);
-        if (null == test) return null;
-        target = test.Value;
-      }
-
       Map m = origin.Map;
       Point src = origin.Position;
       Point dest = target.Position;
@@ -1669,6 +1662,18 @@ namespace djack.RogueSurvivor.Data
         ret.Add(tmp);
       }
       return ret;
+    }
+
+    public List<List<Point> > MinStepPathTo(in Location origin, in Location target)
+    {
+      if (origin==target) return null;
+
+      if (origin.Map!=target.Map) {
+        Location? test = origin.Map.Denormalize(in target);
+        if (null == test) return null;
+        return _MinStepPathTo(in origin, test.Value);
+      }
+      return _MinStepPathTo(in origin, in target);
     }
 
     public List<Location> OneStepRange(Location loc)

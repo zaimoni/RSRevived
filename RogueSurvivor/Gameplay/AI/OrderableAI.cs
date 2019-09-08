@@ -2312,7 +2312,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private bool InProximity(in Location src, Location dest, int maxDist)
     {  // due to definitions, for maxDist=1 the other two tests are implied by the GridDistance test for m_Actor.Location
        return Rules.GridDistance(src, dest) <= maxDist
-           && (1 >= maxDist || (CanSee(in dest) && null != m_Actor.MinStepPathTo(src, dest)));
+           && (1 >= maxDist || (CanSee(in dest) && null != m_Actor.MinStepPathTo(in src, in dest)));
     }
 
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
