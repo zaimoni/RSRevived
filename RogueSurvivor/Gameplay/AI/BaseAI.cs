@@ -355,7 +355,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 List<Direction> validPushes = new List<Direction>(8);
                 foreach (Direction pushDir in Direction.COMPASS) {
                   var dest = obj.Location.Position + pushDir;
-                  if (obj.Location.Map.IsInBounds(dest) && obj.Location.Map.HasExitAt(dest)) continue;  // constructor crash
+                  if (obj.Location.Map.IsInBounds(dest) && obj.Location.Map.HasExitAt(in dest)) continue;  // constructor crash
                   if (obj.CanPushTo(dest)) validPushes.Add(pushDir);
                 }
                 if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, RogueForm.Game.Rules.DiceRoller.Choose(validPushes));
@@ -577,7 +577,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
         if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
-        else if (map.HasExitAt(pos)) reason = "protecting the exit with";
+        else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
@@ -708,7 +708,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(var x in verified) {
         foreach(var dir in Direction.COMPASS) {
           var dest = x.Key+dir;
-          if (map.IsInBounds(dest) && map.HasExitAt(dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
           var act = new ActionPush(m_Actor, x.Value, dir);
           if (act.IsPerformable()) pushes.Add(act);
         }
@@ -719,7 +719,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(var x in unclear) {
         foreach(var dir in Direction.COMPASS) {
           var dest = x.Key+dir;
-          if (map.IsInBounds(dest) && map.HasExitAt(dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
           var act = new ActionPush(m_Actor, x.Value, dir);
           if (act.IsPerformable()) pushes.Add(act);
         }

@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Data
       Point pos = to.Position;
       if (!map.GetTileModelAt(pos).IsWalkable) return "blocked by an obstacle";
       if (map.HasMapObjectAt(pos)) return "blocked by an object";
-      if (map.HasActorAt(pos)) return "blocked by someone";
+      if (map.HasActorAt(in pos)) return "blocked by someone";
       return "";
     }
 

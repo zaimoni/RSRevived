@@ -2666,7 +2666,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
-      return !map.IsInsideAt(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
+      return !map.IsInsideAt(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
     }
 
     static private bool AirdropWithoutIncident(Map map, in Point pt)  // XXX should be able to partially precalculate
@@ -2675,7 +2675,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
       if (   map.IsInsideAt(pt) || !map.GetTileModelAt(pt).IsWalkable        // VAPORWARE hit roof instead
-          || map.HasActorAt(pt))  // B-movies never hit anyone with an airdrop
+          || map.HasActorAt(in pt))  // B-movies never hit anyone with an airdrop
         return false;
       var obj = map.GetMapObjectAt(pt);
       if (null == obj) return true;
@@ -4245,7 +4245,7 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
-      List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(pt) && !map.HasMapObjectAt(pt));
+      List<Point> pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
       if (pointList == null) {
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
@@ -5218,7 +5218,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "out of map";
         return false;
       }
-      if (map.HasActorAt(pos)) {
+      if (map.HasActorAt(in pos)) {
         reason = "someone there";
         return false;
       }
@@ -6059,10 +6059,10 @@ namespace djack.RogueSurvivor.Engine
           return map.AnyAdjacent<MapObject>(position, mapObjectAt => Player.CanBreak(mapObjectAt));
         case AdvisorHint.BARRICADE:
           return map.AnyAdjacent<DoorWindow>(position, door => Player.CanBarricade(door));
-        case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(position);
+        case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(in position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (var point in position.Adjacent()) {
-            if (!map.IsInBounds(point) && map.HasExitAt(point)) return true;
+            if (!map.IsInBounds(point) && map.HasExitAt(in point)) return true;
           }
           return false;
         case AdvisorHint.STATE_SLEEPY: return Player.IsSleepy;
@@ -6090,7 +6090,7 @@ namespace djack.RogueSurvivor.Engine
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.BUILD_FORTIFICATION:
-          return map.HasAnyAdjacentInMap(position, pt => Player.CanBuildFortification(pt, false));
+          return map.HasAnyAdjacentInMap(position, pt => Player.CanBuildFortification(in pt, false));
         case AdvisorHint.LEADING_NEED_SKILL:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
@@ -7935,64 +7935,19 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, in Location from)
     {
-#if NO_PEACE_WALLS
-#else
-      List<Actor> actorList = null;
-#endif
+      var map = to.Map;
+      List<Point> pointList;
       foreach(Actor fo in leader.Followers) {
-        bool flag3 = false;
-        if (fo.Location.Map==to.Map) continue;  // already in destination, ok
-#if NO_PEACE_WALLS
-        if (fo.Location.Map.District != to.Map.District) continue;  // cross-district change
-#endif
-        List<Point> pointList = null;
-        if (Rules.IsAdjacent(from, fo.Location)) {
-          pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo) && !to.Map.HasActorAt(pt));
-          flag3 = (0 < (pointList?.Count ?? 0));
-        }
-
-        if (!flag3) {
-#if NO_PEACE_WALLS
-#else
-          (actorList ?? (actorList = new List<Actor>())).Add(fo);
-#endif
-        } else if (TryActorLeaveTile(fo)) {
-          to.Map.PlaceAt(fo, m_Rules.DiceRoller.Choose(pointList));
-          to.Map.MoveActorToFirstPosition(fo);
+        if (fo.Location.Map==map) continue;  // already in destination, ok
+        if (fo.Location.Map.District != map.District) continue;  // cross-district change
+        pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
+                                                        : null;
+        if (null != pointList && 0 < pointList.Count && TryActorLeaveTile(fo)) {
+          map.PlaceAt(fo, m_Rules.DiceRoller.Choose(pointList));
+          map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
         }
       }
-#if NO_PEACE_WALLS
-#else
-      if (actorList == null) return;
-
-      bool flag2 = Player == leader;
-      if (to.Map.District != from.Map.District) {
-        foreach (Actor other in actorList) {
-          if (!other.IsPlayer) leader.RemoveFollower(other);
-          leader.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
-          if (flag2) {
-            ClearMessages();
-            if (other.IsPlayer) {
-              AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, other.Location.Map.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-            } else {
-              AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", other.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
-            }
-            AddMessagePressEnter();
-            ClearMessages();
-          }
-        }
-      } else if (flag2) {
-        foreach (Actor other in actorList) {
-          if (other.Location.Map == from.Map) {
-            ClearMessages();
-            AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, from.Map.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-            AddMessagePressEnter();
-            ClearMessages();
-          }
-        }
-      }
-#endif
     }
 
     public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint, false); }

@@ -1922,7 +1922,7 @@ namespace djack.RogueSurvivor.Data
       if (!map.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid
       if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked"; // XXX should be GetTileModelAtExt
       if (!map.GetMapObjectAt(toPos)?.IsWalkable ?? false) return "blocked by an object";
-      if (map.HasActorAt(toPos)) return "blocked by someone";
+      if (map.HasActorAt(in toPos)) return "blocked by someone";
       return "";
     }
 
@@ -1934,7 +1934,7 @@ namespace djack.RogueSurvivor.Data
       if (map != Location.Map) return "out of map";  // XXX needs to go
       if (!map.GetTileModelAt(pos).IsWalkable) return "blocked";
       if (!map.GetMapObjectAt(pos)?.IsWalkable ?? false) return "blocked by an object";
-      if (map.HasActorAt(pos)) return "blocked by someone";
+      if (map.HasActorAt(in pos)) return "blocked by someone";
       return "";
     }
 
@@ -2121,7 +2121,7 @@ namespace djack.RogueSurvivor.Data
 
       int num = BarricadingMaterialNeedForFortification(isLarge);
       if (CountItems<ItemBarricadeMaterial>() < num) return string.Format("not enough barricading material, need {0}.", (object) num);
-      if (map.HasMapObjectAt(pos) || map.HasActorAt(pos)) return "blocked";
+      if (map.HasMapObjectAt(pos) || map.HasActorAt(in pos)) return "blocked";
       return "";
     }
 
@@ -2131,7 +2131,7 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanBuildFortification(Point pos, bool isLarge)
+    public bool CanBuildFortification(in Point pos, bool isLarge)
     {
 	  return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
     }
@@ -2406,9 +2406,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    private string ReasonCantUseExit(Point exitPoint)
+    private string ReasonCantUseExit(in Point exitPoint)
     {
-      if (!Location.Map.HasExitAt(exitPoint)) return "no exit there";
+      if (!Location.Map.HasExitAt(in exitPoint)) return "no exit there";
       if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
       if (IsSleeping) return "is sleeping";
       return "";
@@ -2416,12 +2416,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanUseExit(Point exitPoint)
     {
-      return string.IsNullOrEmpty(ReasonCantUseExit(exitPoint));
+      return string.IsNullOrEmpty(ReasonCantUseExit(in exitPoint));
     }
 
     public bool CanUseExit(Point exitPoint, out string reason)
     {
-      reason = ReasonCantUseExit(exitPoint);
+      reason = ReasonCantUseExit(in exitPoint);
       return string.IsNullOrEmpty(reason);
     }
 

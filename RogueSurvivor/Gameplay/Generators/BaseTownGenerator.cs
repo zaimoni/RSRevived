@@ -397,8 +397,8 @@ restart:
       do {
         foreach(Point pt in candidates) {
           // these two tests will only trigger on sewer exits due to the prefilter above.  Adjacency across district boundaries is a known bug
-          if (sewers.HasAnyAdjacentInMap(pt, p => sewers.HasExitAt(p))) continue;
-          if (surface.HasAnyAdjacentInMap(pt, p => surface.HasExitAt(p))) continue;
+          if (sewers.HasAnyAdjacentInMap(pt, p => sewers.HasExitAt(in p))) continue;
+          if (surface.HasAnyAdjacentInMap(pt, p => surface.HasExitAt(in p))) continue;
           if (1<candidates.Count && !m_DiceRoller.RollChance(3)) continue;
           AddExit(sewers, pt, surface, pt, GameImages.DECO_SEWER_LADDER);
           AddExit(surface, pt, sewers, pt, GameImages.DECO_SEWER_HOLE);
@@ -1032,7 +1032,7 @@ restart:
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
           Session.Get.PoliceInvestigate.Record(shopBasement, in pt);
-          if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(pt)) return;
+          if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(in pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
@@ -2447,7 +2447,7 @@ restart:
             if (basement.IsOnEdge(test3)) continue;
             air[test3] = basement.CountAdjacentTo(test3,pt => basement.GetTileModelAt(pt).IsWalkable);
         }
-        if (!basement.HasExitAt(test)) {
+        if (!basement.HasExitAt(in test)) {
           air.OnlyIfMaximal();
           var exchange = m_DiceRoller.Choose(air).Key;
           basement.SetTileModelAt(test, GameTiles.WALL_BRICK);
@@ -2506,7 +2506,7 @@ restart:
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
-        if (basement.HasExitAt(pt)) return null;
+        if (basement.HasExitAt(in pt)) return null;
         if (!basement.IsWalkable(pt)) return null;
         switch (m_DiceRoller.Roll(0, 5)) {
           case 0:
@@ -2534,11 +2534,11 @@ restart:
       if (Session.Get.HasZombiesInBasements)
         DoForEachTile(basement.Rect, (Action<Point>) (pt =>
         {
-          if (!basement.IsWalkable(pt) || basement.HasExitAt(pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+          if (!basement.IsWalkable(pt) || basement.HasExitAt(in pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           basement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
-        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
+        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(in pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         { // survivalist weapons cache.  Grenades were not acquired locally.  Guaranteed usable.
           basement.DropItemAt(MakeItemGrenade(), in pt);
           basement.DropItemAt(MakeItemGrenade(), in pt);
@@ -2687,7 +2687,7 @@ restart:
         }
       }
 
-      bool actor_ok_here(Point pt) { return !underground.HasExitAt(pt); };
+      bool actor_ok_here(Point pt) { return !underground.HasExitAt(in pt); };
 
       int width = underground.Width;
       for (int index1 = 0; index1 < width; ++index1) {
@@ -2737,7 +2737,7 @@ restart:
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
-        if (map.HasExitAt(pt)) return null;
+        if (map.HasExitAt(in pt)) return null;
         int choice = m_DiceRoller.Roll(0, CHAR_armory_checksum / 4*5);   // historically 80% chance of an item
         if (CHAR_armory_checksum <= choice) return null;
         map.DropItemAt(PostprocessQuantity(Models.Items[(int)CHAR_armory_stock.UseRarityTable(choice)].create()), in pt);
@@ -2751,7 +2751,7 @@ restart:
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt) > 0) return null;
-        if (map.HasExitAt(pt)) return null;
+        if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(50)) return null;
         return (m_DiceRoller.RollChance(50) ? MakeObjJunk() : MakeObjBarrels());
       }));
@@ -2770,7 +2770,7 @@ restart:
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
-        if (map.HasExitAt(pt)) return null;
+        if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (m_DiceRoller.RollChance(50)) return MakeObjBed(GameImages.OBJ_BED);
         return MakeObjFridge();
@@ -2778,7 +2778,7 @@ restart:
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt) > 0) return null;
-        if (map.HasExitAt(pt)) return null;
+        if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
         map.DropItemAt(MakeItemCannedFood(), in pt);
@@ -2791,7 +2791,7 @@ restart:
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
-        if (map.HasExitAt(pt)) return null;
+        if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(MakeHospitalItem(), in pt);
         return MakeObjShelf();
@@ -2814,7 +2814,7 @@ restart:
       }));
       DoForEachTile(roomRect, (Action<Point>) (pt =>
       {
-        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(pt) || CountAdjWalls(map, pt) < 3) return;
+        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(in pt) || CountAdjWalls(map, pt) < 3) return;
         map.PlaceAt(MakeObjPowerGenerator(), pt);
       }));
     }

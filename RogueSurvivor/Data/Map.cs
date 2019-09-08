@@ -609,11 +609,11 @@ namespace djack.RogueSurvivor.Data
           m_Decorations.Remove(pt);
     }
 
-    public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
+    public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
 
     public bool HasExitAtExt(Point pos)
-    {   // 2019-08-27 release mode IL Code size       72 (0x48)
-      if (IsInBounds(pos)) return HasExitAt(pos);
+    {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
+      if (IsInBounds(pos)) return HasExitAt(in pos);
       Location? test = _Normalize(pos);
       return null != test && test.Value.Map.HasExitAt(test.Value.Position);
     }
@@ -697,7 +697,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAnExitIn(Rectangle rect)
     {
-      return rect.Any(pt => HasExitAt(pt));
+      return rect.Any(pt => HasExitAt(in pt));
     }
 
     // <remark>only caller wants result in-bounds</remark>
@@ -1043,8 +1043,8 @@ retry:
       return m_aux_ActorsByPosition.ContainsKey(position);
     }
 
-    public bool HasActorAt(Point position)
-    {   // 2019-08-27 release mode IL Code size       87 (0x57)
+    public bool HasActorAt(in Point position)
+    {   // 2019-08-27 release mode IL Code size       87 (0x57) [invalidated]
 #if NO_PEACE_WALLS
       if (m_aux_ActorsByPosition.ContainsKey(position)) return true;
       if (IsInBounds(position)) return false;
@@ -1245,8 +1245,8 @@ retry:
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
     public bool PushCreatesSokobanPuzzle(Point dest,Actor actor)
-    { // 2019-08-27 release mode IL Code size       703 (0x2bf)
-      if (HasExitAt(dest)) return true;   // this just isn't a good idea for pathing
+    { // 2019-08-27 release mode IL Code size       703 (0x2bf) [invalidated]
+      if (HasExitAt(in dest)) return true;   // this just isn't a good idea for pathing
 
       Span<bool> is_wall = stackalloc bool[8];   // these default-initialize to false
       Span<bool> blocked = stackalloc bool[8];

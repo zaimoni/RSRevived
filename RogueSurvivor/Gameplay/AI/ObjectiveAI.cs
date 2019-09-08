@@ -1381,7 +1381,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
       if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
-      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(pt)));
+      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(in pt)));
       ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(in pt,in pt2)));
 
       IEnumerable<Point> tmp_point = ret.Where(pt=>!_damage_field.ContainsKey(pt));

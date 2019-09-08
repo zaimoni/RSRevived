@@ -2380,7 +2380,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(in point) || map.HasExitAt(in point) || map.IsInsideAt(point))
           return false;
         var inv = map.GetItemsAt(point);
         if (null != inv && !inv.IsEmpty && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
@@ -2390,7 +2390,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!m_Actor.CanBuildFortification(point1, true)) return null;
+      if (!m_Actor.CanBuildFortification(in point1, true)) return null;
       return new ActionBuildFortification(m_Actor, in point1, true);
     }
 
@@ -2426,15 +2426,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
-        Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(point) || map.HasExitAt(point))
+        Point pt = m_Actor.Location.Position + dir;
+        if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt))
           return false;
-        return IsDoorwayOrCorridor(map, in point); // this allows using IsInBounds rather than IsValid
+        return IsDoorwayOrCorridor(map, in pt); // this allows using IsInBounds rather than IsValid
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
-      Point point1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!m_Actor.CanBuildFortification(point1, false)) return null;
-      return new ActionBuildFortification(m_Actor, in point1, false);
+      Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
+      if (!m_Actor.CanBuildFortification(in pt1, false)) return null;
+      return new ActionBuildFortification(m_Actor, in pt1, false);
     }
 
     /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>
