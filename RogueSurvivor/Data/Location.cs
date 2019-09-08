@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
       // check map for topology-based
       foreach (var dir in Direction.COMPASS) {
         var loc = this+dir;
-        if (2> Engine.Rules.GridDistance(loc,viewpoint.Location)) continue;
+        if (2> Engine.Rules.GridDistance(in loc, viewpoint.Location)) continue;
         Actor a = loc.Actor;
         if (null == a || a.IsEnemyOf(viewpoint)) continue;
         var steps = a.LegalSteps;

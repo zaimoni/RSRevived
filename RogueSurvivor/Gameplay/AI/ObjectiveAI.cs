@@ -683,7 +683,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var depth2 = path_pt[1];
               if (null != goals) {
                 depth2 = path_pt[1].FindAll(pt => goals.Contains(pt));
-                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(pt2,pt)));
+                if (0 >= depth2.Count) depth2 = path_pt[1].FindAll(pt => goals.Any(pt2 => 1==Rules.GridDistance(in pt2,pt)));
                 if (0 >= depth2.Count) depth2 = path_pt[1];
               }
 
@@ -692,7 +692,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!m_Actor.CanEnter(pt)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(in pt)) continue;
                 foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(pt,pt2)) continue;
+                  if (1!=Rules.GridDistance(in pt, in pt2)) continue;
                   if (!m_Actor.CanEnter(pt2)) continue;
                   if (1 >= FastestTrapKill(in pt2)) continue;
                   var act = new ActionMoveDelta(m_Actor, pt2, pt);
@@ -2137,7 +2137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // do not have to update whitelist here
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
           var loc = new Location(map, pt);
-          if (Map.Canonical(ref loc) && !whitelist.Any(pt2 => 1==Rules.GridDistance(loc,pt2))) blacklist.Add(loc);
+          if (Map.Canonical(ref loc) && !whitelist.Any(pt2 => 1==Rules.GridDistance(loc, in pt2))) blacklist.Add(loc);
         }
       }
 
@@ -3039,7 +3039,7 @@ restart:
 
       var near_tainted = new HashSet<Location>();
       foreach(var loc in goals) {
-        if (fov + 1 < Rules.GridDistance(loc, m_Actor.Location)) continue;
+        if (fov + 1 < Rules.GridDistance(in loc, m_Actor.Location)) continue;
         if (edge_of_maxrange > Rules.StdDistance(in loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
       }
 

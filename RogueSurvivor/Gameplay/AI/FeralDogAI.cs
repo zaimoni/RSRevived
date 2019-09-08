@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void RunToIfCloseTo(Location loc, int closeDistance)
     {
-      if (Rules.GridDistance(m_Actor.Location, loc) <= closeDistance) {
+      if (Rules.GridDistance(m_Actor.Location, in loc) <= closeDistance) {
         m_Actor.Run();
       } else {
         m_Actor.Walk();

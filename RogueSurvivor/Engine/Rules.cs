@@ -642,7 +642,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static int GridDistance(in Point pA, in Point pB) { return GridDistance(pB - pA); }
 
-    public static int GridDistance(Location locA, Location locB)    // used as lambda function
+    public static int GridDistance(in Location locA, in Location locB)
     {
       if (null == locA.Map) return int.MaxValue;
       if (null == locB.Map) return int.MaxValue;
@@ -650,6 +650,11 @@ namespace djack.RogueSurvivor.Engine
       Location? tmp = locA.Map.Denormalize(in locB);
       if (null == tmp) return int.MaxValue;
       return GridDistance(tmp.Value.Position - locA.Position);
+    }
+
+    public static int GridDistanceFn(Location locA, Location locB)  // for function pointer usage
+    {
+      return GridDistance(in locA, in locB);
     }
 
     // Euclidean plane distance

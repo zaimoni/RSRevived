@@ -447,7 +447,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int dist = int.MaxValue;
       ActorAction ret = null;
       foreach(Location goal in goals) {
-        int new_dist = Rules.GridDistance(m_Actor.Location, goal);
+        int new_dist = Rules.GridDistance(m_Actor.Location, in goal);
         if (dist <= new_dist) continue;
         ActorAction tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
         if (null == tmp) continue;
@@ -1304,7 +1304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
        (m_RouteFinder ?? (m_RouteFinder = new RouteFinder(this))).AllowedActions = allowedActions;
-       return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, Rules.GridDistance(m_Actor.Location, dest), Rules.GridDistance);
+       return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 
     protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)

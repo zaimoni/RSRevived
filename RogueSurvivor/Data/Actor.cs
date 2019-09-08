@@ -848,7 +848,7 @@ namespace djack.RogueSurvivor.Data
 #if B_MOVIE_MARTIAL_ARTS
       bool in_range = Rules.IsAdjacent(in m_Location, target.Location);
       // even martial arts 1 unlocks extended range.
-      if (!in_range && 0<UsingPolearmInBMovie && 2==Rules.GridDistance(Location,target.Location)) in_range = true;
+      if (!in_range && 0<UsingPolearmInBMovie && 2==Rules.GridDistance(in m_Location,target.Location)) in_range = true;
       if (!in_range) return "not adjacent";
 #else
       if (!Rules.IsAdjacent(Location, target.Location)) return "not adjacent";
@@ -1243,7 +1243,7 @@ namespace djack.RogueSurvivor.Data
           }
           if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
           var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
-          if (Engine.RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location,dest_radio_location)) continue;
+          if (Engine.RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
 
           // note: UI redraw will fail if IsSimulating; should be deferring message in that case
           if (actor.IsPlayer && msg_player_test(actor)) {
@@ -2529,7 +2529,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new List<Location>();
       foreach(var dir in Direction.COMPASS) {
         var loc = a+dir;
-        if (CanEnter(ref loc) && 1 == Rules.GridDistance(loc, b)) ret.Add(loc);
+        if (CanEnter(ref loc) && 1 == Rules.GridDistance(in loc, in b)) ret.Add(loc);
       }
       return (0<ret.Count) ? ret : null;
     }
@@ -3244,7 +3244,7 @@ namespace djack.RogueSurvivor.Data
     public bool MayTakeFromStackAt(in Location loc)
     {
       if (Location == loc) return true;
-      if (1 != Rules.GridDistance(Location, loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
+      if (1 != Rules.GridDistance(in m_Location, in loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
       // currently all containers are not-walkable for UI reasons.
       return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
     }

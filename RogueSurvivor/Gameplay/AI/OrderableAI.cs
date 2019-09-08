@@ -1266,8 +1266,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int max_dist = int.MinValue;
       var dist = new Dictionary<Location,int>();
       foreach(var loc in tainted) {
-        int tmp = Rules.GridDistance(loc, m_Actor.Location);
-        dist[loc] = tmp;
+        int tmp = Rules.GridDistance(in loc, m_Actor.Location);
+        dist.Add(loc, tmp);
         if (tmp > max_dist) max_dist = tmp;
         if (tmp < min_dist) min_dist = tmp;
       }
@@ -2159,7 +2159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
 
       // redo the pause check
-      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, e_loc) && !enemy.CanRun()) {
+      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, in e_loc) && !enemy.CanRun()) {
           if (!m_Actor.WillActAgainBefore(enemy) && !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
             return new ActionWait(m_Actor);
 
@@ -2269,7 +2269,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var loc2 = new Location(other.Location.Map, pt);
             if (!Map.Canonical(ref loc2)) return;
             if (clan.Any(a => loc2 == a.Location)) return;
-            if (minDist > Rules.GridDistance(loc2, other.Location)) return; // no-op if minDist is 1
+            if (minDist > Rules.GridDistance(in loc2, other.Location)) return; // no-op if minDist is 1
             if (!loc2.IsWalkableFor(m_Actor)) return;
             goals.Add(loc2);
         });
@@ -2297,7 +2297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (loc == m_Actor.Location) return new ActionWait(m_Actor);
         if (clan.Any(a => loc == a.Location)) continue;
       }
-      while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(loc,other.Location) < minDist);
+      while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(in loc,other.Location) < minDist);
       _last_move = null;    // very random if we reach this point, expected to false-positive
 
 	  ActorAction actorAction = BehaviorPathTo(in loc);
@@ -2309,9 +2309,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    private bool InProximity(in Location src, Location dest, int maxDist)
+    private bool InProximity(in Location src, in Location dest, int maxDist)
     {  // due to definitions, for maxDist=1 the other two tests are implied by the GridDistance test for m_Actor.Location
-       return Rules.GridDistance(src, dest) <= maxDist
+       return Rules.GridDistance(in src, in dest) <= maxDist
            && (1 >= maxDist || (CanSee(in dest) && null != m_Actor.MinStepPathTo(in src, in dest)));
     }
 
@@ -3016,7 +3016,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == tmp) return null;
 #if DEBUG
       if (is_real) {
-         if (1 < Rules.GridDistance(loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
+         if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
       }
 #endif
       if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
@@ -3071,7 +3071,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmp) return null;
 #if DEBUG
       if (is_real) {
-         if (1 < Rules.GridDistance(loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
+         if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
       }
 #endif
         if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
@@ -3080,7 +3080,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       { // scoping brace
       if (null == _legal_steps) return null;
-      int current_distance = Rules.GridDistance(m_Actor.Location, loc);
+      int current_distance = Rules.GridDistance(m_Actor.Location, in loc);
       Location? denorm = m_Actor.Location.Map.Denormalize(in loc);
       var costs = new Dictionary<Point,int>();
       var vis_costs = new Dictionary<Point,int>();
@@ -3093,7 +3093,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } else {
         foreach(Point pt in _legal_steps) {
           Location test = new Location(m_Actor.Location.Map,pt);
-          int dist = Rules.GridDistance(test,loc);
+          int dist = Rules.GridDistance(in test, in loc);
           if (dist >= current_distance) continue;
           costs[pt] = dist;
           // this particular heuristic breaks badly if it loses sight of its target
@@ -3104,7 +3104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= costs.Count) {
           foreach(Point pt in _legal_steps) {
             Location test = new Location(m_Actor.Location.Map,pt);
-            int dist = Rules.GridDistance(test,loc);
+            int dist = Rules.GridDistance(in test, in loc);
             if (dist == current_distance) continue;
             costs[pt] = dist;
             // this particular heuristic breaks badly if it loses sight of its target
@@ -3605,8 +3605,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != WouldUseAccessibleStack(in dest)) return true;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return false;
-//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min()) return true;
+        if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min()) return false;
+//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min()) return true;
       }
       return true;
     }
@@ -3621,8 +3621,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(loc, m_Actor.Location)).Min();
-        var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(loc, dest)).Min();
+        var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min();
+        var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min();
         if (old_dist > new_dist) return false;
         if (old_dist < new_dist) return true;
       }
