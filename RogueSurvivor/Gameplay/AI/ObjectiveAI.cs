@@ -583,7 +583,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public int RiskAt(in Location loc) {
       if (null != _damage_field) {
-        var denorm = m_Actor.Location.Map.Denormalize(loc);
+        var denorm = m_Actor.Location.Map.Denormalize(in loc);
         if (null != denorm) {
           _damage_field.TryGetValue(loc.Position,out var damage);
           return damage;
@@ -594,7 +594,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var en in _enemies) {
           var rw = ((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
           int range = null!=rw ? rw.Model.Attack.Range : 1; // Father Time's scythe is range 2
-          if (range < Rules.InteractionDistance(loc,en.Location)) continue;
+          if (range < Rules.InteractionDistance(in loc,en.Location)) continue;
           risk += null!=rw ? rw.Model.Attack.DamageValue : (en.Percepted as Actor).CurrentMeleeAttack.DamageValue;
         }
       }
@@ -604,7 +604,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var en in en_FOV) {
           var rw = (en.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
           int range = null!=rw ? rw.Model.Attack.Range : 1; // Father Time's scythe is range 2
-          if (range < Rules.InteractionDistance(loc,en.Key)) continue;
+          if (range < Rules.InteractionDistance(in loc,en.Key)) continue;
           risk += null!=rw ? rw.Model.Attack.DamageValue : en.Value.CurrentMeleeAttack.DamageValue;
         }
       }
@@ -744,7 +744,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var candidates = new List<ActorAction>(_legal_path.Count);
             foreach (var x in _legal_path) {
                 if (x.Key == loc) continue;
-                if (1 != Rules.InteractionDistance(x.Key, loc)) continue;
+                if (1 != Rules.InteractionDistance(x.Key, in loc)) continue;
                 candidates.Add(x.Value);
             }
             if (0 < candidates.Count) return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
@@ -1294,9 +1294,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanRun()) return false;
       // we don't want preparing to push a car to block running at full stamina
       if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
-        if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
+        if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(in dest))) return false;
         if (m_Actor.NextMoveLostWithoutRunOrWait) return true;
-        int double_run_STA = 2 * m_Actor.RunningStaminaCost(dest);
+        int double_run_STA = 2 * m_Actor.RunningStaminaCost(in dest);
         if (m_Actor.WillTireAfter(STA_reserve + double_run_STA)) {
           if (m_Actor.WillTireAfter(STA_reserve + double_run_STA - Actor.STAMINA_REGEN_WAIT)) return false;
           return 1 >= m_Actor.MoveLost(1, 1, 1);
@@ -1404,7 +1404,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == avoid) return src;
       List<Location> ok = new List<Location>();
       foreach(Location loc in src) {
-        Location? test = m_Actor.Location.Map.Denormalize(loc);
+        Location? test = m_Actor.Location.Map.Denormalize(in loc);
         if (null != test && avoid.Contains(test.Value.Position)) continue;  // null is expected for using a same-district exit
         ok.Add(loc);
       }
@@ -1508,18 +1508,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0>=tainted.Count) return dests;
         var taint_exposed = new Dictionary<Location,int>();
         foreach(Location loc in dests) {
-          Location? test = m_Actor.Location.Map.Denormalize(loc);
+          Location? test = m_Actor.Location.Map.Denormalize(in loc);
           if (null == test) {   // assume same-district exit use...don't really want to do this when other targets are close
-            taint_exposed[loc] = 0;
+            taint_exposed.Add(loc, 0);
             continue;
           }
           if (!hypothetical_los.TryGetValue(test.Value.Position,out var src)) {
-            taint_exposed[loc] = 0;
+            taint_exposed.Add(loc, 0);
             continue;
           }
           HashSet<Point> tmp2 = new HashSet<Point>(src);
           tmp2.IntersectWith(tainted);
-          taint_exposed[loc] = tmp2.Count;
+          taint_exposed.Add(loc, tmp2.Count);
         }
         taint_exposed.OnlyIfMaximal();
         return taint_exposed.Keys.ToList();
@@ -1857,7 +1857,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    foreach(var x in tmp) {
           if (!legal_steps.ContainsKey(x)) continue;
           if (legal_steps[x] is ActionUseExit) continue;
-          Location? test = m_Actor.Location.Map.Denormalize(x);
+          Location? test = m_Actor.Location.Map.Denormalize(in x);
           if (null == test) throw new ArgumentNullException(nameof(test));
 	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
@@ -1898,7 +1898,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction DecideMove(Dictionary<Location,ActorAction> src)
 	{
       if (null == src) return null; // does happen
-      src.OnlyIf(loc => 1==Rules.InteractionDistance(m_Actor.Location,loc));
+      src.OnlyIf(loc => 1==Rules.InteractionDistance(m_Actor.Location,in loc));
       if (0 >= src.Count) return null;
 
       DecideMove_WaryOfTraps(src);
@@ -2149,7 +2149,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (blacklist.Contains(loc)) return false;
         foreach(var x in working_fear) {    // not quite true at very high speeds
           if ((1<=depth || !m_Actor.WillActAgainBefore(x.Value))) {
-            if (1 >= Rules.InteractionDistance(loc,x.Key)) return false;
+            if (1 >= Rules.InteractionDistance(in loc,x.Key)) return false;
           }
         }
         return true;
@@ -2336,7 +2336,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         last_waypoint_ok = false;
         foreach(var x in waypoint_dist) {
           if (x.Key==loc) return x.Value;
-          int dist = Rules.InteractionDistance(x.Key,loc);
+          int dist = Rules.InteractionDistance(x.Key,in loc);
           if (short.MaxValue <= dist || short.MaxValue - dist <= x.Value.X) continue;
           last_waypoint_ok = true;
           int lb_dist = dist + x.Value.X;
@@ -2685,7 +2685,7 @@ restart:
       if (null != path) {
         void purge_non_adjacent(int i) {    // \todo non-local function target?
           while(0 < i) {
-            var tmp = path[i - 1].FindAll(loc => path[i].Any(loc2 => Rules.IsAdjacent(loc2, loc)));
+            var tmp = path[i - 1].FindAll(loc => path[i].Any(loc2 => Rules.IsAdjacent(in loc2, loc)));
             if (tmp.Count >= path[i - 1].Count || 0>=tmp.Count) return;
             path[--i] = tmp;
           }
@@ -2698,7 +2698,7 @@ restart:
             if (1 < path[i].Count) {
               var no_jump = new List<Location>();
               var jump = new List<Location>();
-              foreach(Location loc in path[i]) (Location.RequiresJump(loc) ? jump : no_jump).Add(loc);
+              foreach(Location loc in path[i]) (Location.RequiresJump(in loc) ? jump : no_jump).Add(loc);
               if (0<jump.Count && 0<no_jump.Count) {
                 path[i] = no_jump;
                 purge_non_adjacent(i);
@@ -2807,7 +2807,7 @@ restart:
           if (tainted.Contains(legal)) continue;
           if (m_Actor.Location == legal) continue;
           if (legal.Map.WouldBlacklistFor(legal.Position,m_Actor)) continue;
-          if (LOS.CanTraceViewLine(legal,loc)) tainted.Add(legal);
+          if (LOS.CanTraceViewLine(in legal, in loc)) tainted.Add(legal);
         }
         tainted.Remove(loc);
       }
@@ -2853,7 +2853,7 @@ restart:
             foreach(var loc in inspect) {
               if (loc.Map==x.Map) cache.Add(loc.Position);
               else {
-                var test = x.Map.Denormalize(loc);
+                var test = x.Map.Denormalize(in loc);
                 if (null!=test) cache.Add(test.Value.Position);
               }
             }
@@ -2878,7 +2878,7 @@ restart:
         if (goals.ValueEqual(GetPreviousGoals()) && act is ActorDest test && null != _last_move && test.dest == _last_move.origin) {
           bool altered = false;
           foreach(var target in goals) {
-            var denorm = m_Actor.Location.Map.Denormalize(target);
+            var denorm = m_Actor.Location.Map.Denormalize(in target);
             if (null == denorm) continue;
             var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, target);
             foreach(var dir in stats.stats.advancing) {
@@ -2995,7 +2995,7 @@ restart:
       if (0 >= moves.Count) return null;    // possibly ActionWait instead
 
       // if we couldn't path to an adjacent goal, wait
-      if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, loc))) {
+      if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, in loc))) {
         var e = m_Actor.Location.Exit;
         if (null!=e && goals.Contains(e.Location)) {
           // copied from BaseAI::BehaviorUseExit
@@ -3040,13 +3040,13 @@ restart:
       var near_tainted = new HashSet<Location>();
       foreach(var loc in goals) {
         if (fov + 1 < Rules.GridDistance(loc, m_Actor.Location)) continue;
-        if (edge_of_maxrange > Rules.StdDistance(loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
+        if (edge_of_maxrange > Rules.StdDistance(in loc,m_Actor.Location)) near_tainted.Add(loc);  // slight underestimate for diagonal steps
       }
 
       double dist_to_all_goals(Location test) {
         double ret = 0;
         foreach(var loc in goals) {
-          int working = Rules.InteractionDistance(loc,test);
+          int working = Rules.InteractionDistance(in loc,in test);
           if (int.MaxValue==working) continue;
           ret += working;
         }

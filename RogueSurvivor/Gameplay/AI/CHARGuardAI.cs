@@ -297,8 +297,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // hunt down threats would go here
       // tourism would go here
 
-      tmpAction = BehaviorWander(null, loc => RogueGame.IsInCHAROffice(loc));
+      tmpAction = BehaviorWander(null, RogueGame.IsInCHAROffice);
       if (null != tmpAction) return tmpAction;
+      // \todo path to CHAR office?
       return BehaviorWander();
     }
 

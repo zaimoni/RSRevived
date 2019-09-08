@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_NewLocation = to;
       m_Origin = from;
 #if DEBUG
-      if (1!=Rules.InteractionDistance(m_NewLocation,m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
+      if (1!=Rules.InteractionDistance(in m_NewLocation,in m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
       if (!m_Actor.CanEnter(m_Origin)) throw new InvalidOperationException("must be able to exist at the origin");
       if (!m_Actor.CanEnter(m_NewLocation)) throw new InvalidOperationException("must be able to exist at the destination");
 #endif
@@ -59,13 +59,13 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (null != exit && exit.Location == m_NewLocation) { // may want to cache this: non-null if needed
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return false;
       }
-      if (1!=Rules.InteractionDistance(m_Actor.Location,m_NewLocation)) return true;
+      if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return true;
       return (_result ?? (_result = _resolve()))?.IsLegal() ?? false;
     }
 
     public override bool IsPerformable()
     {
-      if (1!=Rules.InteractionDistance(m_Actor.Location,m_NewLocation)) return false;
+      if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return false;
       if (!base.IsPerformable()) return false;
       return (_result ?? (_result = _resolve()))?.IsPerformable() ?? false;
     }
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
         (_result ?? (_result = _resolve()))?.Perform();
         _result = null;
-        if (1 == Rules.InteractionDistance(m_Actor.Location, m_NewLocation)) {
+        if (1 == Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) {
             // reschedule ourselves
             (m_Actor.Controller as djack.RogueSurvivor.Gameplay.AI.ObjectiveAI)?.SetObjective(new djack.RogueSurvivor.Gameplay.AI.Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, this));
         }
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Engine.Actions
            // better to push to non-adjacent when pathing
            var push_dest = Map.ValidDirections(obj.Location, loc => {
                // short-circuit language requirement on operator && failed here
-               if (!obj.CanPushTo(loc)) return false;
+               if (!obj.CanPushTo(in loc)) return false;
                if (loc.Map.HasExitAt(loc.Position)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
                return !loc.Map.PushCreatesSokobanPuzzle(loc.Position, m_Actor);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)

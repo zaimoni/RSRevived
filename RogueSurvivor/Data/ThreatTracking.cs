@@ -59,14 +59,20 @@ namespace djack.RogueSurvivor.Data
         }
 
 
-		public List<Actor> ThreatAt(Location loc)
+		public List<Actor> ThreatAt(in Location loc)
 		{
 		  lock(_threats) {
-			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(loc.Map) && _threats[a][loc.Map].Contains(loc.Position)).ToList();
+            var ret = new List<Actor>();
+            foreach(var x in _threats) {
+              if (!x.Value.TryGetValue(loc.Map,out var cache)) continue;
+              if (!cache.Contains(loc.Position)) continue;
+              ret.Add(x.Key);
+            }
+            return ret;
 		  }
 		}
 
-		public bool AnyThreatAt(Location loc)
+		public bool AnyThreatAt(in Location loc)
 		{
 		  lock(_threats) {
             foreach(var x in _threats) {
@@ -456,7 +462,7 @@ namespace djack.RogueSurvivor.Data
         lock(_locs) { _locs.Clear(); }
       }
 
-      public bool Contains(Location loc)
+      public bool Contains(in Location loc)
       {
         lock(_locs) {
 		  return _locs.TryGetValue(loc.Map,out var test) && test.Contains(loc.Position);
@@ -545,12 +551,12 @@ namespace djack.RogueSurvivor.Data
         }
       }
 
-      public void Record(Location loc)
+      public void Record(in Location loc)
       {
+        if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return; // reject unwalkable tiles
 		lock(_locs) {
-          if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return; // reject unwalkable tiles
-		  if (!_locs.ContainsKey(loc.Map)) _locs[loc.Map] = new HashSet<Point>();
-          _locs[loc.Map].Add(loc.Position);
+          if (_locs.TryGetValue(loc.Map, out var cache)) cache.Add(loc.Position);
+          else _locs.Add(loc.Map, new HashSet<Point> { loc.Position });
 		}
       }
 

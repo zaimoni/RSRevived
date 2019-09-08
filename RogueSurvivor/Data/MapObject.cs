@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
-    private string ReasonCantPushTo(Location to)
+    private string ReasonCantPushTo(in Location to)
     {
       Map map = to.Map;
       Point pos = to.Position;
@@ -471,10 +471,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanPushTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantPushTo(toPos)); }
 
+#if DEAD_FUNC
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
-    public bool CanPushTo(Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(to)); }
+    public bool CanPushTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(in to)); }
+#endif
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
-    public bool CanPushTo(Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(to)); }
+    public bool CanPushTo(in Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(in to)); }
 
     public void PlaceAt(Map m, in Point pos) {m.PlaceAt(this, pos);} // this guaranteed non-null so non-null precondition ok
 
@@ -503,7 +505,7 @@ namespace djack.RogueSurvivor.Data
         }
       }
       _destroy();
-      RogueForm.Game.OnLoudNoise(Location, "A loud *CRASH*");
+      RogueForm.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
     }
 
     // flag handling

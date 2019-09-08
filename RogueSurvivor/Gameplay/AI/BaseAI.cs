@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Location from = m_Actor.Location;
       Dictionary<Percept_<_T_>, int> dict = new Dictionary<Percept_<_T_>, int>(perceptList.Count);
       foreach(Percept_<_T_> p in perceptList) {
-        dict.Add(p,Rules.InteractionDistance(p.Location, from));
+        dict.Add(p,Rules.InteractionDistance(p.Location, in from));
       }
       perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
       return perceptList;
@@ -315,7 +315,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.Model.Abilities.CanTire) {
                 // jumping
                 if (action is ActionMoveStep) {
-                    if (Location.RequiresJump(loc)) cost = MOVE_DISTANCE_PENALTY;
+                    if (Location.RequiresJump(in loc)) cost = MOVE_DISTANCE_PENALTY;
                 }
 
                 // actions that always consume sta or may take more than one turn
@@ -381,7 +381,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
     {
       if (m_Actor.Location.Map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
-      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      Location? test = m_Actor.Location.Map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorBumpToward(test.Value.Position, canCheckBreak, canCheckPush, distanceFn);
     }
@@ -399,7 +399,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorStupidBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
       if (m_Actor.Location.Map == goal.Map) return BehaviorStupidBumpToward(goal.Position, canCheckBreak, canCheckPush);
-      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      Location? test = m_Actor.Location.Map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorStupidBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
@@ -430,7 +430,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorIntelligentBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
       if (m_Actor.Location.Map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position, canCheckBreak, canCheckPush);
-      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      Location? test = m_Actor.Location.Map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorIntelligentBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
@@ -482,7 +482,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
-          num -= (float)Rules.StdDistance(location, leader.Location);
+          num -= (float)Rules.StdDistance(in location, leader.Location);
         }
         return num;
       }, (a, b) => a > b);
@@ -1051,7 +1051,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int count_plus_1 = 1;
       foreach(var pt in dangers) {
         count_plus_1++;
-        avgDistance += Rules.InteractionDistance(from, pt);
+        avgDistance += Rules.InteractionDistance(in from, in pt);
       }
       avgDistance /= count_plus_1;
 #endregion
@@ -1078,7 +1078,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 3 If can tire, prefer not jumping.
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        if (Location.RequiresJump(from)) jumpPenalty = 0.1f;
+        if (Location.RequiresJump(in from)) jumpPenalty = 0.1f;
       }
 #endregion
       float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;

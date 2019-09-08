@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         {
             m = src.Map;
             m_Origin = src.Position;
-            var denorm = src.Map.Denormalize(dest);
+            var denorm = src.Map.Denormalize(in dest);
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
             target = denorm.Value.Position;
             resetOrigin(src);
@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
         private void resetOrigin(Location src)
         {
-            var denorm = m.Denormalize(src);
+            var denorm = m.Denormalize(in src);
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
             m_Origin = denorm.Value.Position;
 

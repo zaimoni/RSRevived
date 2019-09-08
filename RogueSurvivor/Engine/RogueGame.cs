@@ -450,7 +450,7 @@ namespace djack.RogueSurvivor.Engine
     // XXX just about everything that rates this is probable cause for police investigation
     [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
-      if (null != Player && !Player.IsSleeping && Rules.StdDistance(Player.Location, loc) <= Player.AudioRange) {
+      if (null != Player && !Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
         RedrawPlayScreen();
       }
@@ -7646,7 +7646,7 @@ namespace djack.RogueSurvivor.Engine
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveTo(draggedCorpse, newLocation.Position);
-        if (dest_seen || ForceVisibleToPlayer(location))
+        if (dest_seen || ForceVisibleToPlayer(in location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
       }
       int actionCost = Rules.BASE_ACTION_COST;
@@ -7671,7 +7671,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < actor.ActionPoints) actor.DropScent();    // alpha10 fix
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
-        OnLoudNoise(newLocation, "A loud SCREAM");
+        OnLoudNoise(in newLocation, "A loud SCREAM");
         if (!dest_seen && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
@@ -8623,8 +8623,8 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] private void DoBlast(Location location, BlastAttack blastAttack)
     {
-      OnLoudNoise(location, "A loud EXPLOSION");
-      bool isVisible = ForceVisibleToPlayer(location);
+      OnLoudNoise(in location, "A loud EXPLOSION");
+      bool isVisible = ForceVisibleToPlayer(in location);
       if (isVisible) {
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
@@ -8632,9 +8632,9 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       } else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
         AddMessageIfAudibleForPlayer(location, "You hear an explosion");
-      ApplyExplosionDamage(location, 0, blastAttack);
+      ApplyExplosionDamage(in location, 0, blastAttack);
       for (short waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance) {
-        if (ApplyExplosionWave(location, waveDistance, blastAttack)) {
+        if (ApplyExplosionWave(in location, waveDistance, blastAttack)) {
           isVisible = true; // alpha10
           RedrawPlayScreen();
           AnimDelay(DELAY_NORMAL);
@@ -8645,26 +8645,26 @@ namespace djack.RogueSurvivor.Engine
       if (isVisible) ClearOverlays();
     }
 
-    private bool ApplyExplosionWave(Location center, short waveDistance, BlastAttack blast)
+    private bool ApplyExplosionWave(in Location center, short waveDistance, BlastAttack blast)
     {
       bool flag = false;
-      foreach(Point pt in Enumerable.Range(0, 8*waveDistance).Select(i => center.Position.RadarSweep(waveDistance,i))) {
-          flag |= ApplyExplosionWaveSub(center, in pt, waveDistance, blast);
+      foreach(var i in Enumerable.Range(0, 8 * waveDistance)) {
+        flag |= ApplyExplosionWaveSub(in center, center.Position.RadarSweep(waveDistance, i), waveDistance, blast);
       }
       return flag;
     }
 
-    private bool ApplyExplosionWaveSub(Location blastCenter, in Point pt, int waveDistance, BlastAttack blast)
+    private bool ApplyExplosionWaveSub(in Location blastCenter, Point pt, int waveDistance, BlastAttack blast)
     {
-      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance)) return false;
+      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(in blastCenter, pt, waveDistance)) return false;
       var center = new Location(blastCenter.Map, pt);
-      int damage = ApplyExplosionDamage(center, waveDistance, blast);
-      if (!ForceVisibleToPlayer(center)) return false;
+      int damage = ApplyExplosionDamage(in center, waveDistance, blast);
+      if (!ForceVisibleToPlayer(in center)) return false;
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
 
-    private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
+    private int ApplyExplosionDamage(in Location location, int distanceFromBlast, BlastAttack blast)
     {
 #if DEBUG
       if (blast.CanDestroyWalls) throw new InvalidOperationException("need to implement explosives destroying walls");
@@ -8806,7 +8806,7 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(pt => {
           if (pt == speaker.Location.Position) return;
           Location loc = new Location(speaker.Location.Map, pt);
-          if (Map.Canonical(ref loc) && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, loc)) {
+          if (Map.Canonical(ref loc) && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, in loc)) {
               var overhear = loc.Actor;
               if (null != overhear && target != overhear) op(overhear);
           }
@@ -9881,7 +9881,7 @@ namespace djack.RogueSurvivor.Engine
         var new_t_loc = new Location(t_loc.Map, toPos);
         if (!Map.Canonical(ref new_t_loc)) throw new InvalidOperationException("shoved off map entirely");
         bool non_adjacent = !Rules.IsAdjacent(new_t_loc, actor.Location);
-        if (non_adjacent && Location.RequiresJump(t_loc)) {
+        if (non_adjacent && Location.RequiresJump(in t_loc)) {
 #if DEBUG
           if (!actor.CanJump) throw new InvalidOperationException("shoving off a jumpable object this way requires jumping onto the object");
 #endif
@@ -10069,7 +10069,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
     }
 
-    public void OnLoudNoise(Location loc, string noiseName)
+    public void OnLoudNoise(in Location loc, string noiseName)
     {
       OnLoudNoise(loc.Map,loc.Position,noiseName);
     }
@@ -11034,9 +11034,9 @@ namespace djack.RogueSurvivor.Engine
       return MapViewRect.Contains(mapPosition);
     }
 
-    private static bool IsInViewRect(Location loc)
+    private static bool IsInViewRect(in Location loc)
     {
-      return m_MapView.Contains(loc);
+      return m_MapView.Contains(in loc);
     }
 
     static private ColorString WeatherStatusText()
@@ -11763,7 +11763,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Location loc = actor.Location;
       if (loc.Map != CurrentMap) {
-        Location? test = CurrentMap.Denormalize(loc);
+        Location? test = CurrentMap.Denormalize(in loc);
         if (null == test) return;   // XXX invariant failure
         loc = test.Value;
       }
@@ -11772,7 +11772,7 @@ namespace djack.RogueSurvivor.Engine
         point += (loc.Position - view.Location)* MINITILE_SIZE;
         m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
       }
-      if (IsInViewRect(loc) && !IsVisibleToPlayer(actor)) {
+      if (IsInViewRect(in loc) && !IsVisibleToPlayer(actor)) {
         var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
@@ -12207,7 +12207,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static GDI_Point MapToScreen(Location loc)
     {
-      if (!m_MapView.ContainsExt(loc)) {
+      if (!m_MapView.ContainsExt(in loc)) {
           var e = loc.Exit;
           if (null!=e && e.Location == m_MapView.Center) {
             // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
@@ -12226,7 +12226,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
 
-      Location? tmp = CurrentMap.Denormalize(loc);
+      Location? tmp = CurrentMap.Denormalize(in loc);
 #if DEBUG
       if (null == tmp) throw new ArgumentNullException(nameof(tmp));
 #endif
@@ -12256,9 +12256,9 @@ namespace djack.RogueSurvivor.Engine
       return new GDI_Point(invX + slot.X * TILE_SIZE, invY + slot.Y * TILE_SIZE);
     }
 
-    private static bool IsVisibleToPlayer(Location location)
+    private static bool IsVisibleToPlayer(in Location location)
     {
-      return Player?.Controller.IsVisibleTo(location) ?? false;
+      return Player?.Controller.IsVisibleTo(in location) ?? false;
     }
 
     private static bool IsVisibleToPlayer(Map map, in Point position)
@@ -12276,7 +12276,7 @@ namespace djack.RogueSurvivor.Engine
       return Player?.Controller.IsVisibleTo(mapObj.Location) ?? false;
     }
 
-    public void PanViewportTo(Location loc)
+    public void PanViewportTo(in Location loc)
     {
       lock(m_MapView) { m_MapView = loc.View; }
       RedrawPlayScreen();
@@ -12311,7 +12311,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           case Keys.R:  // run to ...
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).RunTo(viewpoint);
+              (Player.Controller as PlayerController).RunTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12319,7 +12319,7 @@ namespace djack.RogueSurvivor.Engine
             break;  // XXX \todo be somewhat more informative
           case Keys.W:  // walk to ...
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).WalkTo(viewpoint);
+              (Player.Controller as PlayerController).WalkTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12335,7 +12335,7 @@ namespace djack.RogueSurvivor.Engine
           case Keys.D8:
           case Keys.D9:
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).WalkTo(viewpoint, (int)key.KeyCode - (int)Keys.D0);
+              (Player.Controller as PlayerController).WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12377,13 +12377,13 @@ namespace djack.RogueSurvivor.Engine
           }
           viewpoint = tmp.Value;
           // from Staying Alive: inspect mode within far-look
-          if (IsVisibleToPlayer(viewpoint)) {
+          if (IsVisibleToPlayer(in viewpoint)) {
             string[] lines = DescribeStuffAt(viewpoint.Map, viewpoint.Position);
             if (null != lines) inspect = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             var threat = Player.Threats;
             if (null != threat) {
-                var compromised = threat.ThreatAt(viewpoint);
+                var compromised = threat.ThreatAt(in viewpoint);
                 if (0 < compromised.Count) {
                    var lines = new List<string> { "Possibly here:" };
                    foreach(var x in compromised) lines.Add(x.Name);
@@ -12392,7 +12392,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           if (null != inspect) AddOverlay(inspect);
-          PanViewportTo(viewpoint);
+          PanViewportTo(in viewpoint);
         }
       } while(true);
     }
@@ -12476,7 +12476,7 @@ namespace djack.RogueSurvivor.Engine
       return ForceVisibleToPlayer(mapObj.Location);
     }
 
-    private bool ForceVisibleToPlayer(Location location)
+    private bool ForceVisibleToPlayer(in Location location)
     {
       return ForceVisibleToPlayer(location.Map, location.Position);
     }
@@ -13906,7 +13906,7 @@ namespace djack.RogueSurvivor.Engine
         if (null == actor) return false;
         if (!actor.Model.Abilities.HasSanity) return false;
         if (actor.IsSleeping) return false;
-        if (!LOS.CanTraceViewLine(loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return false;
+        if (!LOS.CanTraceViewLine(in loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return false;
         return true;
       });
     }

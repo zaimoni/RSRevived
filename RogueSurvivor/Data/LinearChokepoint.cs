@@ -23,9 +23,9 @@ namespace djack.RogueSurvivor.Data
             if (null == exit) throw new ArgumentNullException(nameof(exit));
 
             int end = choke.Length - 1;
-            foreach (var x in enter) if (1!=Rules.InteractionDistance(x,choke[0])) throw new InvalidOperationException("topology failed");
-            foreach (var x in exit) if (1 != Rules.InteractionDistance(x, choke[end])) throw new InvalidOperationException("topology failed");
-            foreach (var x in enter) foreach(var y in exit) if (1 == Rules.InteractionDistance(x, y)) throw new InvalidOperationException("topology failed");
+            foreach (var x in enter) if (1 != Rules.InteractionDistance(in x, in choke[0])) throw new InvalidOperationException("topology failed");
+            foreach (var x in exit) if (1 != Rules.InteractionDistance(in x, in choke[end])) throw new InvalidOperationException("topology failed");
+            foreach (var x in enter) foreach(var y in exit) if (1 == Rules.InteractionDistance(in x, in y)) throw new InvalidOperationException("topology failed");
 #endif
             Entrance = enter;
             Chokepoint = choke;

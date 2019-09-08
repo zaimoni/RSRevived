@@ -660,7 +660,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;    // cancel: something urgent
           return true;
         }
-        if (Rules.IsAdjacent(m_Actor.Location, _dest)) {
+        if (Rules.IsAdjacent(m_Actor.Location, in _dest)) {
           if (m_Actor.CanBreak(door)) {
             ret = new ActionBreak(m_Actor, door);
             return true;
@@ -1309,7 +1309,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (danger.Contains(test)) continue;
           if (!test.Map.IsWalkableFor(test.Position,m_Actor)) continue;
           var LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
-          if (LOS.CanTraceHypotheticalFireLine(test, en.Location, range, m_Actor, LoF)) {
+          if (LOS.CanTraceHypotheticalFireLine(in test, en.Location, range, m_Actor, LoF)) {
             ret.Add(test);
             if (4 >= LoF.Count || 0 == p.X || 0 == p.Y || p.X == p.Y || p.X == -p.Y) {  // some conditions where adding the whole line of fire is safe
               int n = LoF.Count-1;
@@ -1455,7 +1455,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (null == loc) continue;
                   foreach(var dest in norisk) {
                     var line = new List<Point>();
-                    if (!LOS.CanTraceHypotheticalFireLine(dest, loc.Value.Position, target_rw.Model.Attack.Range, shove.Target, line)) continue;
+                    if (!LOS.CanTraceHypotheticalFireLine(in dest, loc.Value.Position, target_rw.Model.Attack.Range, shove.Target, line)) continue;
                     if (!Rules.IsAdjacent(m_Actor.Location,dest) && line.Contains(shove.Target.Location.Position)) continue;
                     if (null == targets) targets = new Dictionary<Point, int> { [dest.Position] = 1 };
                     else if (!targets.ContainsKey(dest.Position)) targets[dest.Position] = 1;
@@ -1986,7 +1986,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
-          num -= (float)Rules.StdDistance(location, leader.Location);
+          num -= (float)Rules.StdDistance(in location, leader.Location);
           if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
         }
         return num;
@@ -2099,7 +2099,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
         else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersOnRecord(m_Actor) > 0)
           decideToFlee = false;
-        else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, e_loc))
+        else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, in e_loc))
           decideToFlee = true;
         else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
 	      decideToFlee = false;
@@ -2112,7 +2112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
           if (   (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
-              || Rules.IsAdjacent(m_Actor.Location, e_loc))
+              || Rules.IsAdjacent(m_Actor.Location, in e_loc))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
@@ -2210,7 +2210,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var seen = new HashSet<Location> { dest };
       var final_range = new Dictionary<Location,ActorAction>();
 
-      var range = m_Actor.OnePathRange(dest);
+      var range = m_Actor.OnePathRange(in dest);
       if (null == range) return null;
 
       void reprocess_range(Dictionary<Location,ActorAction> src) {
@@ -2226,7 +2226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           reject.Add(x.Key);
         }
         foreach(var loc in reject) {
-          var failover = m_Actor.OnePathRange(loc);
+          var failover = m_Actor.OnePathRange(in loc);
           if (null == failover) continue;
           failover.OnlyIf(loc2 => !seen.Contains(loc2));
           if (0 >= failover.Count) continue;
@@ -2950,7 +2950,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(loc)) return false;
+      if (m_Actor.StackIsBlocked(in loc)) return false;
       return WouldGrabFromAccessibleStack(in loc,stack)?.IsLegal() ?? false;
     }
 
@@ -2965,7 +2965,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 #if DEBUG
-        if (is_real && !m_Actor.MayTakeFromStackAt(loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
+        if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
         ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
@@ -3035,7 +3035,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(loc)) return null;
+      if (m_Actor.StackIsBlocked(in loc)) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
@@ -3064,7 +3064,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
       // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
-      bool may_take = is_real ? m_Actor.MayTakeFromStackAt(loc) : true;
+      bool may_take = is_real ? m_Actor.MayTakeFromStackAt(in loc) : true;
 
       if (may_take) {
         tmp = _takeThis(in loc, obj, recover, is_real);
@@ -3081,7 +3081,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       { // scoping brace
       if (null == _legal_steps) return null;
       int current_distance = Rules.GridDistance(m_Actor.Location, loc);
-      Location? denorm = m_Actor.Location.Map.Denormalize(loc);
+      Location? denorm = m_Actor.Location.Map.Denormalize(in loc);
       var costs = new Dictionary<Point,int>();
       var vis_costs = new Dictionary<Point,int>();
       if (_legal_steps.Contains(denorm.Value.Position)) {

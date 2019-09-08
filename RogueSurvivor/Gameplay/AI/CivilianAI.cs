@@ -721,7 +721,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
 
           // these two may need to be new parameters for BehaviorPathTo
-          bool reject_view(Location loc) { return !view.Contains(loc); }
+          bool reject_view(Location loc) { return !view.Contains(in loc); }
 
           // 1) view pathing
           _caller = CallChain.SelectAction_LambdaPath;

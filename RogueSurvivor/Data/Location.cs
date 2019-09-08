@@ -50,8 +50,8 @@ namespace djack.RogueSurvivor.Data
     public Exit Exit { get { return Map.GetExitAt(Position); } }
     public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
     public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }
-    static public bool IsInBounds(Location loc) { return loc.Map.IsInBounds(loc.Position); }
-    static public bool RequiresJump(Location loc) { return loc.MapObject?.IsJumpable ?? false; }
+    static public bool IsInBounds(in Location loc) { return loc.Map.IsInBounds(loc.Position); }
+    static public bool RequiresJump(in Location loc) { return loc.MapObject?.IsJumpable ?? false; }
     static public bool NoJump(Location loc) { return !loc.MapObject?.IsJumpable ?? true; }
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) { return !loc_x.Key.MapObject?.IsJumpable ?? true; }
 

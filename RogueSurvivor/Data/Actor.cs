@@ -654,7 +654,7 @@ namespace djack.RogueSurvivor.Data
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       int maxRange = MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       if (Rules.GridDistance(Location.Position, in pos) > maxRange) return "out of throwing range";
-      if (!LOS.CanTraceThrowLine(Location, in pos, maxRange, LoF)) return "no line of throwing";
+      if (!LOS.CanTraceThrowLine(in m_Location, in pos, maxRange, LoF)) return "no line of throwing";
       return "";
     }
 
@@ -686,7 +686,7 @@ namespace djack.RogueSurvivor.Data
     if (null == target) throw new ArgumentNullException(nameof(target));
     if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
 #endif
-    Attack attack = RangedAttack(Rules.InteractionDistance(Location,target.Location),target);
+    Attack attack = RangedAttack(Rules.InteractionDistance(in m_Location,target.Location),target);
     Defence defence = target.Defence;
 
     int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
@@ -703,7 +703,7 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range+1 < Rules.InteractionDistance(Location, target.Location)) return "out of range";
+      if (CurrentRangedAttack.Range+1 < Rules.InteractionDistance(in m_Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (target.IsDead) return "already dead!";
       return "";
@@ -753,10 +753,10 @@ namespace djack.RogueSurvivor.Data
 #endif
       LoF?.Clear();
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      int dist = Rules.InteractionDistance(Location, target.Location);
+      int dist = Rules.InteractionDistance(in m_Location, target.Location);
       if (CurrentRangedAttack.Range < dist) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (1<dist && !LOS.CanTraceFireLine(Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (1<dist && !LOS.CanTraceFireLine(in m_Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -784,9 +784,9 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       LoF?.Clear();
-      int dist = Rules.InteractionDistance(Location, target.Location);
+      int dist = Rules.InteractionDistance(in m_Location, target.Location);
       if (range < dist) return "out of range";
-      if (1<dist && !LOS.CanTraceFireLine(Location, target.Location, range, LoF)) return "no line of fire";
+      if (1<dist && !LOS.CanTraceFireLine(in m_Location, target.Location, range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -846,7 +846,7 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
 #if B_MOVIE_MARTIAL_ARTS
-      bool in_range = Rules.IsAdjacent(Location, target.Location);
+      bool in_range = Rules.IsAdjacent(in m_Location, target.Location);
       // even martial arts 1 unlocks extended range.
       if (!in_range && 0<UsingPolearmInBMovie && 2==Rules.GridDistance(Location,target.Location)) in_range = true;
       if (!in_range) return "not adjacent";
@@ -1640,7 +1640,7 @@ namespace djack.RogueSurvivor.Data
       if (origin==target) return null;
 
       if (origin.Map!=target.Map) {
-        Location? test = origin.Map.Denormalize(target);
+        Location? test = origin.Map.Denormalize(in target);
         if (null == test) return null;
         target = test.Value;
       }
@@ -1710,7 +1710,7 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Location,ActorAction> OnePathRange(Location loc)
+    public Dictionary<Location,ActorAction> OnePathRange(in Location loc)
     {
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
@@ -1750,8 +1750,8 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Location,ActorAction> OnePath(Location loc, Dictionary<Location, ActorAction> already)
-    {  // 2019-08-26: release-mode IL Code size       281 (0x119)
+    public Dictionary<Location,ActorAction> OnePath(in Location loc, Dictionary<Location, ActorAction> already)
+    {  // 2019-08-26: release-mode IL Code size       281 (0x119) [invalidated]
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
@@ -1784,7 +1784,7 @@ namespace djack.RogueSurvivor.Data
     public Dictionary<Location,ActorAction> OnePath(Location loc)   // adapter
     {
       var already = new Dictionary<Location, ActorAction>();
-      return OnePath(loc,already);
+      return OnePath(in loc,already);
     }
 
     public Dictionary<Point,ActorAction> OnePath(Map m, in Point p, Dictionary<Point, ActorAction> already)
@@ -1922,7 +1922,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    private string ReasonCantBeShovedTo(Location to)
+    private string ReasonCantBeShovedTo(in Location to)
     {
       Map map = to.Map;
       Point pos = to.Position;
@@ -1935,15 +1935,17 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanBeShovedTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(toPos)); }
     public bool CanBeShovedTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos)); }
+#if DEAD_FUNC
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    public bool CanBeShovedTo(Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(to)); }
+    public bool CanBeShovedTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(in to)); }
+#endif
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    public bool CanBeShovedTo(Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(to)); }
+    public bool CanBeShovedTo(in Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(in to)); }
 
 
     public Dictionary<Location, Direction> ShoveDestinations {
       get {
-         return Map.ValidDirections(Location, loc => CanBeShovedTo(loc));
+         return Map.ValidDirections(in m_Location, loc => CanBeShovedTo(in loc));
       }
     }
 
@@ -2330,9 +2332,9 @@ namespace djack.RogueSurvivor.Data
       return STAMINA_MIN_FOR_ACTIVITY > m_StaminaPoints-staminaCost;
     }
 
-    public int RunningStaminaCost(Location dest)
+    public int RunningStaminaCost(in Location dest)
     {
-      if (Location.RequiresJump(dest)) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
+      if (Location.RequiresJump(in dest)) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
       return Rules.STAMINA_COST_RUNNING + NightSTApenalty;
     }
 
@@ -2441,7 +2443,7 @@ namespace djack.RogueSurvivor.Data
 
     // optimized for pathfinding and ActionMoveDelta
     /// <param name="loc">preconditon: IsInBounds</param>
-    private bool _CanEnter(Location loc)
+    private bool _CanEnter(in Location loc)
     { // reference is Map::IsWalkableFor, taking an ActorModel
       if (!loc.TileModel.IsWalkable) return false;
       // we don't check actors as this is a "is this valid, ever" test
@@ -2463,19 +2465,19 @@ namespace djack.RogueSurvivor.Data
     public bool CanEnter(Location loc)
     {
       if (!Map.Canonical(ref loc)) return false;
-      return _CanEnter(loc);
+      return _CanEnter(in loc);
     }
 
     public bool CanEnter(ref Location loc)
     {
       if (!Map.Canonical(ref loc)) return false;
-      return _CanEnter(loc);
+      return _CanEnter(in loc);
     }
 
-    public bool StrictCanEnter(Location loc)
+    public bool StrictCanEnter(in Location loc)
     {
-      if (!Location.IsInBounds(loc)) return false;
-      return _CanEnter(loc);
+      if (!Location.IsInBounds(in loc)) return false;
+      return _CanEnter(in loc);
     }
 
     // generators work on point-based pathfinding
@@ -2516,7 +2518,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<Location> MutuallyAdjacentFor(Location a, Location b)
     {
-      if (3 <= Rules.InteractionDistance(a,b)) return null;
+      if (3 <= Rules.InteractionDistance(in a, in b)) return null;
       var e = a.Exit;
       if (null != e && e.Location==b) return null;  // may not be true indefinitely (helicopters and/or building roofs)
       var ret = new List<Location>();
@@ -3196,7 +3198,7 @@ namespace djack.RogueSurvivor.Data
        if (!suppressor.IsEquipped || (!Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
 
        // 4. SprayOn is not self or adjacent.
-       if (sprayOn != this && Rules.IsAdjacent(Location, sprayOn.Location)) return "not adjacent";
+       if (sprayOn != this && Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
             
        return "";  // all clear.
     }
@@ -3234,7 +3236,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
-    public bool MayTakeFromStackAt(Location loc)
+    public bool MayTakeFromStackAt(in Location loc)
     {
       if (Location == loc) return true;
       if (1 != Rules.GridDistance(Location, loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
@@ -3242,7 +3244,7 @@ namespace djack.RogueSurvivor.Data
       return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
     }
 
-    public bool StackIsBlocked(Location loc)
+    public bool StackIsBlocked(in Location loc)
     {
       MapObject obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
       if (null == obj) return false;

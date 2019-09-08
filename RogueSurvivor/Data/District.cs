@@ -53,8 +53,8 @@ namespace djack.RogueSurvivor.Data
             return;
           }
           var loc = new Location(m_EntryMap, pt);
-          if (Engine.Session.Get.PoliceInvestigate.Contains(loc)) return; // already known
-          Engine.Session.Get.PoliceInvestigate.Record(loc);
+          if (Engine.Session.Get.PoliceInvestigate.Contains(in loc)) return; // already known
+          Engine.Session.Get.PoliceInvestigate.Record(in loc);
         });
       }
     }

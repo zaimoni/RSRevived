@@ -166,21 +166,21 @@ namespace djack.RogueSurvivor.Engine
         return start == to;
     }
 
-    public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
+    public static bool CanTraceViewLine(in Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
     }
 
-    public static bool CanTraceViewLine(Location from, Location to, int maxRange = int.MaxValue, List<Point> line = null)
+    public static bool CanTraceViewLine(in Location from, in Location to, int maxRange = int.MaxValue, List<Point> line = null)
     {
-      if (from.Map == to.Map) return CanTraceViewLine(from, to.Position, maxRange);
-      Location? test = from.Map.Denormalize(to);
+      if (from.Map == to.Map) return CanTraceViewLine(in from, to.Position, maxRange);
+      Location? test = from.Map.Denormalize(in to);
       if (null == test) return false;
-      return CanTraceViewLine(from, test.Value.Position, maxRange, line);
+      return CanTraceViewLine(in from, test.Value.Position, maxRange, line);
     }
 
-    public static Location[] IdealFireLine(Location fromLocation, Point toPosition, int maxRange)
+    public static Location[] IdealFireLine(in Location fromLocation, Point toPosition, int maxRange)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -200,12 +200,12 @@ namespace djack.RogueSurvivor.Engine
 
     public static Location[] IdealFireLine(Location from, Location to, int maxRange)
     {
-      Location? test = from.Map.Denormalize(to);
+      Location? test = from.Map.Denormalize(in to);
       if (null == test) return null;
-      return IdealFireLine(from, test.Value.Position, maxRange);
+      return IdealFireLine(in from, test.Value.Position, maxRange);
     }
 
-    public static bool CanTraceHypotheticalFireLine(Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
+    public static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -218,36 +218,36 @@ namespace djack.RogueSurvivor.Engine
             }, line);
     }
 
-    public static bool CanTraceHypotheticalFireLine(Location from, Location to, int maxRange, Actor shooter, List<Point> line=null)
+    public static bool CanTraceHypotheticalFireLine(in Location from, Location to, int maxRange, Actor shooter, List<Point> line=null)
     {
-      Location? test = from.Map.Denormalize(to);
+      Location? test = from.Map.Denormalize(in to);
       if (null == test) return false;
-      return CanTraceHypotheticalFireLine(from, test.Value.Position, maxRange, shooter, line);
+      return CanTraceHypotheticalFireLine(in from, test.Value.Position, maxRange, shooter, line);
     }
 
-    public static bool CanTraceFireLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
+    public static bool CanTraceFireLine(in Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || pt == toPosition || !map.IsBlockingFire(pt), line);
     }
 
-    public static bool CanTraceFireLine(Location fromLocation, Location toLocation, int maxRange, List<Point> line=null)
+    public static bool CanTraceFireLine(in Location fromLocation, in Location toLocation, int maxRange, List<Point> line=null)
     {
-      if (fromLocation.Map==toLocation.Map) return CanTraceFireLine(fromLocation, toLocation.Position, maxRange, line);
-      Location? tmp = fromLocation.Map.Denormalize(toLocation);
+      if (fromLocation.Map==toLocation.Map) return CanTraceFireLine(in fromLocation, toLocation.Position, maxRange, line);
+      Location? tmp = fromLocation.Map.Denormalize(in toLocation);
       if (null == tmp) return false;
-      return CanTraceFireLine(fromLocation, tmp.Value.Position, maxRange, line);
+      return CanTraceFireLine(in fromLocation, tmp.Value.Position, maxRange, line);
     }
 
-    public static bool CanTraceThrowLine(Location fromLocation, in Point toPosition, int maxRange, List<Point> line=null)
+    public static bool CanTraceThrowLine(in Location fromLocation, in Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || !map.IsBlockingThrow(pt), line);
     }
 
-    private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
+    private static bool FOVSub(in Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.Engine
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     // the return of a cached value is assumed to be by value
-    public static HashSet<Point> ComputeFOVFor(Location a_loc, short maxRange)
+    public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
         var tmp = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Engine
         if (visibleSet.Contains(point1)) continue;
         var tile_loc = map.GetTileModelLocation(point1);
         if (null == tile_loc.Key) continue;
-        if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
+        if (!LOS.FOVSub(in a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
             TileModel tileModel = tile_loc.Key;
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
@@ -319,12 +319,12 @@ namespace djack.RogueSurvivor.Engine
 
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-      return ComputeFOVFor(a_loc, (short)maxRange);
+      return ComputeFOVFor(in a_loc, (short)maxRange);
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
     {
-      return ComputeFOVFor(a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      return ComputeFOVFor(in a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor)

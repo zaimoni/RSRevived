@@ -389,7 +389,7 @@ namespace djack.RogueSurvivor.Data
       return _Normalize(pt);
     }
 
-    public Location? Denormalize(Location loc)
+    public Location? Denormalize(in Location loc)
     {
       if (this == loc.Map && IsValid(loc.Position)) return loc;
 #if NO_PEACE_WALLS
@@ -415,7 +415,7 @@ namespace djack.RogueSurvivor.Data
       if (null == locs) return null;
       var ret = new List<Location>(locs.Count());
       foreach(var x in locs) {
-        Location? test = Denormalize(x);
+        Location? test = Denormalize(in x);
         if (null != test) ret.Add(test.Value);
       }
       return 0<ret.Count ? ret : null;
@@ -424,7 +424,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsInViewRect(Location loc, Rectangle view)
     {
       if (this != loc.Map) {
-        Location? test = Denormalize(loc);
+        Location? test = Denormalize(in loc);
         if (null == test) return false;
         loc = test.Value;
       }
@@ -739,10 +739,10 @@ namespace djack.RogueSurvivor.Data
         return 1;  // normal case
     }
 
-    private static Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
+    private static Dictionary<Location,int> OneStepForPathfinder(in Location loc, Actor a, Dictionary<Location,ActorAction> already)
 	{  // 2019-08-26 release mode IL Code size       99 (0x63) [invalidated]
 	  var ret = new Dictionary<Location, int>();
-      Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
+      Dictionary<Location, ActorAction> moves = a.OnePath(in loc, already);
       foreach(var move in moves) {
         var pt = move.Key;
         if (1>= a.Controller.FastestTrapKill(in pt)) continue;
@@ -796,9 +796,9 @@ namespace djack.RogueSurvivor.Data
 	{
       var already = new Dictionary<Location,ActorAction>();
 
-      Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(loc, actor, already); }
+      Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(in loc, actor, already); }
 
-	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(loc));
+	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(in loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
@@ -2041,7 +2041,7 @@ retry:
     }
 
     /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
-    static public Dictionary<Location,Direction> ValidDirections(Location loc, Predicate<Location> testFn)
+    static public Dictionary<Location,Direction> ValidDirections(in Location loc, Predicate<Location> testFn)
     {
 #if DEBUG
       if (null == testFn) throw new ArgumentNullException(nameof(testFn));

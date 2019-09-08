@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         HashSet<Point> has_threat = new HashSet<Point>();
         foreach (var loc in normalized_FOV) {
           Actor actorAt = loc.Actor;
-          var test = m_Actor.Location.Map.Denormalize(loc);
+          var test = m_Actor.Location.Map.Denormalize(in loc);
           if (   null==actorAt
               || actorAt== m_Actor
               || actorAt.IsDead) {

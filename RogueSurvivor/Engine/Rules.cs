@@ -549,7 +549,7 @@ namespace djack.RogueSurvivor.Engine
            // better to push to non-adjacent when pathing
            var push_dest = Map.ValidDirections(mapObjectAt.Location, loc2 => {
                // short-circuit language requirement on operator && failed here
-               if (!mapObjectAt.CanPushTo(loc2)) return false;
+               if (!mapObjectAt.CanPushTo(in loc2)) return false;
                if (loc.Map.HasExitAt(loc2.Position)) return false;   // pushing onto an exit is very disruptive; may be ok tactically, but not when pathing
                return !loc2.Map.PushCreatesSokobanPuzzle(loc2.Position, actor);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)
@@ -614,15 +614,15 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // These two somewhat counter-intuitively consider "same location" as adjacent
-    public static bool IsAdjacent(Location a, Location b)
+    public static bool IsAdjacent(in Location a, in Location b)
     {
       if (a.Map != b.Map) {
-        Location? test = a.Map.Denormalize(b);
+        Location? test = a.Map.Denormalize(in b);
         if (null == test) {
           Exit exit = a.Exit;
           return null != exit && exit.Location == b;
         }
-        b = test.Value;
+        IsAdjacent(a.Position, test.Value.Position);
       }
       return IsAdjacent(a.Position, b.Position);
     }
@@ -642,12 +642,12 @@ namespace djack.RogueSurvivor.Engine
 
     public static int GridDistance(in Point pA, in Point pB) { return GridDistance(pB - pA); }
 
-    public static int GridDistance(Location locA, Location locB)
+    public static int GridDistance(Location locA, Location locB)    // used as lambda function
     {
       if (null == locA.Map) return int.MaxValue;
       if (null == locB.Map) return int.MaxValue;
       if (locA.Map==locB.Map) return GridDistance(locB.Position - locA.Position);
-      Location? tmp = locA.Map.Denormalize(locB);
+      Location? tmp = locA.Map.Denormalize(in locB);
       if (null == tmp) return int.MaxValue;
       return GridDistance(tmp.Value.Position - locA.Position);
     }
@@ -660,16 +660,16 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-    public static double StdDistance(Location from, Location to)
+    public static double StdDistance(in Location from, in Location to)
     {
-      Location? test = from.Map.Denormalize(to);
+      Location? test = from.Map.Denormalize(in to);
       if (null == test) return double.MaxValue;
       return StdDistance(test.Value.Position - from.Position);
     }
 
     public static double InteractionStdDistance(Location from, Location to)
     {
-      Location? test = from.Map.Denormalize(to);
+      Location? test = from.Map.Denormalize(in to);
       if (null == test) {
         Exit exit = from.Exit;
         return (null != exit && exit.Location == to) ? 1.0 : double.MaxValue;
@@ -678,15 +678,15 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // allows stairways for melee range, etc.
-    public static int InteractionDistance(Location a, Location b)
+    public static int InteractionDistance(in Location a, in Location b)
     {
       if (a.Map != b.Map) {
-        Location? test = a.Map.Denormalize(b);
+        Location? test = a.Map.Denormalize(in b);
         if (null == test) {
           Exit exit = a.Exit;
           return (null != exit && exit.Location == b) ? 1 : int.MaxValue;
         }
-        b = test.Value;
+        return GridDistance(a.Position, test.Value.Position);
       }
       return GridDistance(a.Position, b.Position);
     }

@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Data
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
-        tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(loc));
+        tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (0 >= tmp.Count) continue;
         if (Gameplay.GameItems.ranged.Contains(it)) {
@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Actor) return false;
       if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       if (x.Map != m_Actor.Location.Map) {
-        Location? test = m_Actor.Location.Map.Denormalize(x);
+        Location? test = m_Actor.Location.Map.Denormalize(in x);
         if (null == test) return false;
         x = test.Value;
       }
@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.Data
       return FOV?.Contains(position) ?? false;
     }
 
-    private bool _IsVisibleTo(Location location)
+    private bool _IsVisibleTo(in Location location)
     {
       return _IsVisibleTo(location.Map, location.Position);
     }
@@ -203,11 +203,11 @@ namespace djack.RogueSurvivor.Data
       return _IsVisibleTo(map,position);
     }
 
-    public bool IsVisibleTo(Location loc)
+    public bool IsVisibleTo(in Location loc)
     {
       if (null == m_Actor) return false;
       if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
-      return _IsVisibleTo(loc);
+      return _IsVisibleTo(in loc);
     }
 
     public bool IsVisibleTo(Actor actor)

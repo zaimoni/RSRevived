@@ -49,13 +49,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsPerformable()
     {
       if (!base.IsPerformable()) return false;
-      return m_Actor.MayTakeFromStackAt(m_Location);
+      return m_Actor.MayTakeFromStackAt(in m_Location);
     }
 
     public override void Perform()
     {
 #if DEBUG
-      if (!m_Actor.MayTakeFromStackAt(m_Location)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + m_Location + " at " + m_Actor.Location);
+      if (!m_Actor.MayTakeFromStackAt(in m_Location)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + m_Location + " at " + m_Actor.Location);
 #endif
       if (m_Location.Map==m_Actor.Location.Map) RogueForm.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
     }

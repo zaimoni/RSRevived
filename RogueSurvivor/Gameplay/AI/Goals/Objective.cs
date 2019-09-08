@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             List<Location> ret;
             int n = src.Count;
             while (0 < n--) {
-                ret = src[n].FindAll(pt => 1 == Engine.Rules.InteractionDistance(loc, pt));
+                ret = src[n].FindAll(pt => 1 == Engine.Rules.InteractionDistance(loc, in pt));
                 if (0 < ret.Count) return ret;
             }
             return null;
@@ -254,7 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
            if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
-           bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, pt); };
+           bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, in pt); };
 
            int i = min_path.Count;
            while(0 < i--) {
@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            Location loc = ai.ControlledActor.Location;
            Map map = loc.Map;
            Point pos = loc.Position;
-           bool is_adjacent(Point pt) { return 1 == Engine.Rules.InteractionDistance(loc, new Location(map, pt)); };
+           bool is_adjacent(Point pt) { return 1 == Engine.Rules.InteractionDistance(in loc, new Location(map, pt)); };
 
            int i = min_path.Count;
            while(0 < i--) {
@@ -536,13 +536,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
             var threat = ai.ControlledActor.Threats;
             if (null != threat) test = test.Or(loc => {
-                if (threat.AnyThreatAt(loc) && !ai.CanSee(loc)) return (int)What.VIEW;
+                if (threat.AnyThreatAt(in loc) && !ai.CanSee(loc)) return (int)What.VIEW;
                 return 0;
             });
 
             var tourism = ai.ControlledActor.InterestingLocs;
             if (null != tourism) test = test.Or(loc => {
-                if (tourism.Contains(loc)) return (int)What.VIEW;
+                if (tourism.Contains(in loc)) return (int)What.VIEW;
                 return 0;
             });
             return test;

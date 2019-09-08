@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.AI
     public int Turn { get; set; }
     public Location Location { get; set; }
 
-    public WhereWhen(Location loc, int t0)
+    public WhereWhen(in Location loc, int t0)
     {
 #if DEBUG
       if (0 > t0) throw new ArgumentOutOfRangeException(nameof(t0),t0, "0 > t0");
@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.AI
     public _T_ Percepted { get { return m_Percepted; } }
 
     public Percept_(_T_ percepted, int turn, Location location)
-     : base(location,turn)
+     : base(in location,turn)
     {
 #if DEBUG
       if (null == percepted) throw new ArgumentNullException(nameof(percepted));

@@ -72,10 +72,10 @@ namespace djack.RogueSurvivor.Data
       Rect = _r;
     }
 
-    public bool Contains(Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
-    public bool ContainsExt(Location loc) {
+    public bool Contains(in Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
+    public bool ContainsExt(in Location loc) {
       if (m == loc.Map) return Rect.Contains(loc.Position);
-      var test = m.Denormalize(loc);
+      var test = m.Denormalize(in loc);
       return null!=test && Rect.Contains(test.Value.Position);
     }
 
