@@ -446,6 +446,18 @@ namespace djack.RogueSurvivor.Data
       if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
+    public string ReasonCantPutItemIn(Actor actor, in Point position)
+    {
+      if (!IsContainer) return "object is not a container";
+      if (   !actor.Model.Abilities.HasInventory
+          || !actor.Model.Abilities.CanUseMapObjects
+          || actor.Inventory == null)
+          return "cannot take an item";
+      Inventory itemsAt = Location.Items;
+      if (null != itemsAt && itemsAt.IsFull) return "container is full";
+      return "";
+    }
+
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);

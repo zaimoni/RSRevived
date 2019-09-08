@@ -240,6 +240,9 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
+#if DEBUG
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#endif
       return CanActorPutItemIntoContainer(actor, in position, out string reason);
     }
 
@@ -249,32 +252,16 @@ namespace djack.RogueSurvivor.Engine
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
       MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
-      if (mapObjectAt == null || !mapObjectAt.IsContainer)
-      {
-        reason = "object is not a container";
-        return false;
-      }
-      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || actor.Inventory == null)
-      {
-        reason = "cannot take an item";
-        return false;
-      }
-      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
-      if (null != itemsAt && itemsAt.IsFull)
-      {
-        reason = "container is full";
-        return false;
-      }
-      reason = "";
-      return true;
+      reason = mapObjectAt?.ReasonCantPutItemIn(actor, position) ?? "object is not a container";
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (it == null)
-        throw new ArgumentNullException("item");
+#if DEBUG
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (it == null) throw new ArgumentNullException("item");
+#endif
       if (!(it is ItemFood))
       {
         reason = "not food";
