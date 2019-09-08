@@ -238,22 +238,24 @@ namespace djack.RogueSurvivor.Engine
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
-    public bool CanActorPutItemIntoContainer(Actor actor, in Point position)
+    static public MapObject CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-      return CanActorPutItemIntoContainer(actor, in position, out string reason);
+      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position);
+      if (null == mapObjectAt) return null;
+      return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
 
-    public bool CanActorPutItemIntoContainer(Actor actor, in Point position, out string reason)
+    static public MapObject CanActorPutItemIntoContainer(Actor actor, in Point position, out string reason)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
       MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
-      reason = mapObjectAt?.ReasonCantPutItemIn(actor, position) ?? "object is not a container";
-      return string.IsNullOrEmpty(reason);
+      reason = mapObjectAt?.ReasonCantPutItemIn(actor) ?? "object is not a container";
+      return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
 
     public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)

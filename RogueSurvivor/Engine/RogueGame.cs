@@ -4380,10 +4380,13 @@ namespace djack.RogueSurvivor.Engine
           }
           AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason)));
           continue;
-        } else if (m_Rules.CanActorPutItemIntoContainer(player, in point)) {
-          flag2 = true;
-          DoPutItemInContainer(player, in point, inventoryItem);
-          break;
+        } else {
+          var container = Rules.CanActorPutItemIntoContainer(player, in point);
+          if (null != container) {
+            flag2 = true;
+            DoPutItemInContainer(player, container, inventoryItem);
+            break;
+          }
         }
         AddMessage(MakeErrorMessage("Noone there."));
       }
@@ -9342,21 +9345,19 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
     }
 
-    public void DoPutItemInContainer(Actor actor, in Point dest, Item gift)
+    public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
     {
       if (actor.CanUnequip(gift)) DoUnequipItem(actor,gift,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (gift is ItemTrap trap) trap.Desactivate();    // alpha10
-      actor.Location.Map.DropItemAt(gift, in dest);
+      container.PutItemIn(gift);
       actor.Inventory.RemoveAllQuantity(gift);
 
 #if DEBUG
-      if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
+      if (0< (container.Inventory?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + container.Inventory.ToString());
 #endif
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in dest)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(container)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} away", Conjugate(actor, VERB_PUT), gift.TheName)));
     }
-
 
     public void DoEquipItem(Actor actor, Item it)
     {

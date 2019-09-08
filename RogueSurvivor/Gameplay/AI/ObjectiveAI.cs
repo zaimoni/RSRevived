@@ -3698,9 +3698,9 @@ restart_single_exit:
       List<Point> has_container = new List<Point>();
       foreach(var dir in Direction.COMPASS) {
         var pos = m_Actor.Location.Position + dir;
-        MapObject container = m_Actor.Location.Map.GetMapObjectAtExt(pos);
-        if (!container?.IsContainer ?? true) continue;
-        Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(pos);
+        MapObject container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
+        if (null == container) continue;
+        Inventory itemsAt = container.Inventory;
         if (null != itemsAt)
           {
           if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration
@@ -3708,9 +3708,6 @@ restart_single_exit:
           if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
 #endif
           }
-#if DEBUG
-        if (!RogueForm.Game.Rules.CanActorPutItemIntoContainer(m_Actor, in pos)) throw new InvalidOperationException("illegal put into container attempted");
-#endif
         has_container.Add(pos);
       }
       if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, RogueForm.Game.Rules.DiceRoller.Choose(has_container));

@@ -9,6 +9,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
         private readonly Point m_Position;
         private readonly Item m_Item;
+        private MapObject m_Container = null;   // would be non-serialized
 
         public Item Item { get { return m_Item; } }
 
@@ -25,12 +26,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override bool IsLegal()
         {
-            return RogueForm.Game.Rules.CanActorPutItemIntoContainer(m_Actor, in m_Position, out m_FailReason);
+            m_Container = Rules.CanActorPutItemIntoContainer(m_Actor, in m_Position, out m_FailReason);
+            return null != m_Container;
         }
 
         public override void Perform()
         {
-            RogueForm.Game.DoPutItemInContainer(m_Actor,in m_Position,m_Item);
+            RogueForm.Game.DoPutItemInContainer(m_Actor,m_Container ?? Rules.CanActorPutItemIntoContainer(m_Actor, in m_Position, out m_FailReason),m_Item);
         }
     }
 }

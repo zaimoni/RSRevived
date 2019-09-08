@@ -446,17 +446,34 @@ namespace djack.RogueSurvivor.Data
       if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
-    public string ReasonCantPutItemIn(Actor actor, in Point position)
+    public string ReasonCantPutItemIn(Actor actor)
     {
       if (!IsContainer) return "object is not a container";
       if (   !actor.Model.Abilities.HasInventory
           || !actor.Model.Abilities.CanUseMapObjects
           || actor.Inventory == null)
           return "cannot take an item";
-      Inventory itemsAt = Location.Items;
+      Inventory itemsAt = Inventory;
       if (null != itemsAt && itemsAt.IsFull) return "container is full";
       return "";
     }
+
+    public void PutItemIn(Item gift)
+    {
+#if DEBUG
+      if (null == gift) throw new ArgumentNullException(nameof(gift));
+      if (!IsContainer) throw new InvalidOperationException("cannot put "+gift+" into non-container "+this+" @ "+Location);
+#endif
+      if (gift is Engine.Items.ItemTrap trap) trap.Desactivate();    // alpha10
+      Location.Drop(gift);  // VAPORWARE: containers actually have inventory and items they contain are pushed with them
+    }
+
+    public Inventory Inventory { get {
+#if DEBUG
+      if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
+#endif
+      return Location.Items;
+    } }
 
     private string ReasonCantPushTo(Point toPos)
     {
