@@ -1688,13 +1688,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int my_dist;
       Point? bestSpot = null;
       int bestSpotScore = 0;
-      foreach (Point point in m_Actor.Controller.FOV) {
-        if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, in point))) continue;
+      foreach(var view in m_Actor.Controller.FOV) {
+        if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, in view))) continue;
         if (maxRange < my_dist) continue;
-        if (!LOS.CanTraceThrowLine(m_Actor.Location, in point, maxRange)) continue;
-        if (_blast_field?.Contains(point) ?? false) continue;
+        if (!LOS.CanTraceThrowLine(m_Actor.Location, in view, maxRange)) continue;
+        if (_blast_field?.Contains(view) ?? false) continue;
         int score = 0;
-        Rectangle blast_zone = new Rectangle(point - (Point)blast_radius, (Point)(2 * blast_radius + 1));
+        Rectangle blast_zone = new Rectangle(view - (Point)blast_radius, (Point)(2 * blast_radius + 1));
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
         if (   !blast_zone.Any(pt => {
                   Actor actorAt = a_map.GetActorAtExt(pt);
@@ -1703,13 +1703,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (actorAt == m_Actor) throw new InvalidProgramException("actorAt == m_Actor"); // integrity issue w/map
 #endif
                   if (m_Actor.IsEnemyOf(actorAt)) {
-                    score += (itemGrenadeModel.BlastAttack.DamageAt(Rules.GridDistance(new Location(a_map, point), actorAt.Location)) * actorAt.MaxHPs);
+                    score += (itemGrenadeModel.BlastAttack.DamageAt(Rules.GridDistance(new Location(a_map, view), actorAt.Location)) * actorAt.MaxHPs);
                     return false;
                   }
                   return true;
                })
             &&  score>bestSpotScore) {
-            bestSpot = point;
+            bestSpot = view;
             bestSpotScore = score;
           }
       }
@@ -2379,19 +2379,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
-        Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point) || map.HasActorAt(in point) || map.HasExitAt(in point) || map.IsInsideAt(point))
+        Point pt = m_Actor.Location.Position + dir;
+        if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt) || map.IsInsideAt(pt))
           return false;
-        var inv = map.GetItemsAt(point);
+        var inv = map.GetItemsAt(pt);
         if (null != inv && !inv.IsEmpty && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
-        int num1 = map.CountAdjacentTo(point, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
-        int num2 = map.CountAdjacent<Fortification>(point, fortification => !fortification.IsTransparent);
+        int num1 = map.CountAdjacentTo(pt, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
+        int num2 = map.CountAdjacent<Fortification>(pt, fortification => !fortification.IsTransparent);
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
-      Point point1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!m_Actor.CanBuildFortification(in point1, true)) return null;
-      return new ActionBuildFortification(m_Actor, in point1, true);
+      Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
+      if (!m_Actor.CanBuildFortification(in pt1, true)) return null;
+      return new ActionBuildFortification(m_Actor, in pt1, true);
     }
 
     protected static bool IsDoorwayOrCorridor(Map map, in Point pos)
