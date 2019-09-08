@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
     }
 
-    public ActionMoveDelta(Actor actor, Location to, Location from)
+    public ActionMoveDelta(Actor actor, in Location to, in Location from)
       : base(actor)
     {
       m_NewLocation = to;
@@ -91,14 +91,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
       if (null != exit && exit.Location == m_NewLocation) {
-        if (!see_dest || string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, m_Origin);  // all failures of this test require sight information
+        if (!see_dest || string.IsNullOrEmpty(exit.ReasonIsBlocked(m_Actor))) return new ActionUseExit(m_Actor, in m_Origin);  // all failures of this test require sight information
         if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
         if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
         return null;    // probably an error in map object properties
       }
       }
 
-      if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = new ActionMoveStep(m_Actor, m_NewLocation);
+      if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = new ActionMoveStep(m_Actor, in m_NewLocation);
 
       if (null != actorAt) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing

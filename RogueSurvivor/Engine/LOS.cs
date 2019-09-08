@@ -322,7 +322,7 @@ namespace djack.RogueSurvivor.Engine
       return ComputeFOVFor(in a_loc, (short)maxRange);
     }
 
-    public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
+    public static HashSet<Point> ComputeFOVFor(Actor actor, in Location a_loc)
     {
       return ComputeFOVFor(in a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
     }

@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       readonly private HashSet<Location> _locs;
 
-      public Goal_AcquireLineOfSight(int t0, Actor who, Location loc)
+      public Goal_AcquireLineOfSight(int t0, Actor who, in Location loc)
       : base(t0,who)
       {
         _locs = new HashSet<Location>{loc};
@@ -404,7 +404,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly bool walking;
       private int turns;
 
-      public Goal_PathTo(int t0, Actor who, Location loc, bool walk=false,int n=int.MaxValue)
+      public Goal_PathTo(int t0, Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
       : base(t0,who)
       {
         _locs = new HashSet<Location>{loc};
@@ -547,7 +547,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 
-        _stacks.Add(new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, loc));   // otherwise, add
+        _stacks.Add(new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));   // otherwise, add
       }
 
       public ActorAction Pathing()
@@ -1164,7 +1164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public void OnRaid(RaidType raid, Location location)
+    public void OnRaid(RaidType raid, in Location location)
     {
       if (m_Actor.IsSleeping) return;
 
@@ -1180,7 +1180,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       };
 
-      m_LastRaidHeard = new Percept(text(), location.Map.LocalTime.TurnCounter, location);
+      m_LastRaidHeard = new Percept(text(), location.Map.LocalTime.TurnCounter, in location);
     }
 
     // Behaviors and support functions
@@ -1982,7 +1982,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
+        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
         float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
@@ -2708,7 +2708,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
-        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
+        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
 
         const int EXPLORE_ZONES = 1000;
@@ -2967,7 +2967,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
-        ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
+        ActorAction tmp = new ActionTakeItem(m_Actor, in loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
@@ -3089,7 +3089,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location test = new Location(m_Actor.Location.Map,pt);
         costs[pt] = 1;
         // this particular heuristic breaks badly if it loses sight of its target
-        if (LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) vis_costs[pt] = 1;
+        if (LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) vis_costs[pt] = 1;
       } else {
         foreach(Point pt in _legal_steps) {
           Location test = new Location(m_Actor.Location.Map,pt);
@@ -3097,7 +3097,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (dist >= current_distance) continue;
           costs[pt] = dist;
           // this particular heuristic breaks badly if it loses sight of its target
-          if (!LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) continue;
+          if (!LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) continue;
           vis_costs[pt] = dist;
         }
         // above fails if a direct diagonal path is blocked.
@@ -3108,7 +3108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (dist == current_distance) continue;
             costs[pt] = dist;
             // this particular heuristic breaks badly if it loses sight of its target
-            if (!LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) continue;
+            if (!LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) continue;
             vis_costs[pt] = dist;
           }
         }

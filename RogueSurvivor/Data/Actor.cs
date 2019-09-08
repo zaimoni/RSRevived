@@ -1478,8 +1478,8 @@ namespace djack.RogueSurvivor.Data
       if (2 <= actorList.Count) {
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {
-          double num1 = Rules.InteractionStdDistance(a.Location, Location);
-          double num2 = Rules.InteractionStdDistance(b.Location, Location);
+          double num1 = Rules.InteractionStdDistance(a.Location, in m_Location);
+          double num2 = Rules.InteractionStdDistance(b.Location, in m_Location);
           return num1.CompareTo(num2);
         }));
       }
@@ -1691,7 +1691,7 @@ namespace djack.RogueSurvivor.Data
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ActionUseExit tmp = new ActionUseExit(this, loc);
+        var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location);
         } else {
@@ -1720,7 +1720,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
-        ActorAction tmp = Rules.IsPathableFor(this,test);
+        ActorAction tmp = Rules.IsPathableFor(this, in test);
         if (null == tmp) continue;
 #if MAPGEN_OK
         if (!Map.Canonical(ref test)) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
@@ -1731,7 +1731,7 @@ namespace djack.RogueSurvivor.Data
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ActionUseExit tmp = new ActionUseExit(this, loc);
+        var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location, tmp);
         } else {
@@ -1769,11 +1769,11 @@ namespace djack.RogueSurvivor.Data
           ret.Add(dest, new Engine.Actions.ActionMoveStep(this, dest.Position));
           continue;
         }
-        if (null != (relay = Rules.IsPathableFor(this, dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, dest, loc) : null))) ret.Add(dest, relay);
+        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ret.Add(exit.Location, new ActionUseExit(this, loc));
+        ret.Add(exit.Location, new ActionUseExit(this, in loc));
         // simulate Exit::ReasonIsBlocked
         switch(exit.Location.IsBlockedForPathing) {
         case 0: break;
@@ -1806,8 +1806,8 @@ namespace djack.RogueSurvivor.Data
           ret[pt] = new Engine.Actions.ActionMoveStep(this, in pt);
           continue;
         }
-        ActorAction tmp = Rules.IsPathableFor(this, dest);
-        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this,dest,new Location(m,p));
+        ActorAction tmp = Rules.IsPathableFor(this, in dest);
+        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this, in dest, new Location(m,p));
         if (null != tmp) ret[pt] = tmp;
       }
       return ret;

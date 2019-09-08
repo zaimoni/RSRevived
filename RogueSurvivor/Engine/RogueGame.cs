@@ -433,7 +433,7 @@ namespace djack.RogueSurvivor.Engine
           if (a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
           if (a.Controller is PlayerController player) {
             if (player_knows(a)) return;
-            var msg = player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR);
+            var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
             if (null != Player && Player == a) {
               AddMessage(msg);
               RedrawPlayScreen();
@@ -451,7 +451,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
       if (null != Player && !Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+        AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
         RedrawPlayScreen();
       }
       if (1>=Session.Get.World.PlayerCount) return;
@@ -460,7 +460,7 @@ namespace djack.RogueSurvivor.Engine
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO,(Point)(2*GameActors.HUMAN_AUDIO+1));
       survey.DoForEach(pt=>{
         if (a.Controller is PlayerController player) {
-          player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+          player.DeferMessage(player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
         }
       },pt=>{
         a = loc.Map.GetActorAtExt(pt);
@@ -1959,7 +1959,7 @@ namespace djack.RogueSurvivor.Engine
     static private void NotifyOrderablesAI(RaidType raid, Location loc)
     {
       foreach (Actor actor in loc.Map.Actors) {
-        (actor.Controller as OrderableAI)?.OnRaid(raid, loc);
+        (actor.Controller as OrderableAI)?.OnRaid(raid, in loc);
       }
     }
 
@@ -7627,7 +7627,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoMoveActor(Actor actor, Location newLocation)
+    public void DoMoveActor(Actor actor, in Location newLocation)
     {
 #if DEBUG
       if (!Rules.IsAdjacent(actor.Location,newLocation)) throw new InvalidOperationException("tried to teleport from "+actor.Location+" to "+newLocation);
@@ -7927,13 +7927,13 @@ namespace djack.RogueSurvivor.Engine
       }
       if (need_stamina_regen) actor.PreTurnStart();
       OnActorEnterTile(actor);
-      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, origin);
+      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, in origin);
       if (isPlayer) PanViewportTo(actor.Location);
       else RedrawPlayScreen();
       return true;
     }
 
-    [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, Location from)
+    [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, in Location from)
     {
 #if NO_PEACE_WALLS
 #else
@@ -8674,7 +8674,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = location.Map;
       Actor actorAt =  location.Map.GetActorAtExt(location.Position);
       if (actorAt != null) {
-        ExplosionChainReaction(actorAt.Inventory, location);
+        ExplosionChainReaction(actorAt.Inventory, in location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
           InflictDamage(actorAt, dmg);
@@ -8690,7 +8690,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Inventory itemsAt = location.Map.GetItemsAtExt(location.Position);
       if (itemsAt != null) {
-        ExplosionChainReaction(itemsAt, location);
+        ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
         var objList = new List<Item>(itemsAt.CountItems);
         foreach (Item obj in itemsAt.Items) {
@@ -8723,7 +8723,7 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-    static private void ExplosionChainReaction(Inventory inv, Location location)
+    static private void ExplosionChainReaction(Inventory inv, in Location location)
     {
       if (inv?.IsEmpty ?? true) return;
       List<ItemExplosive> itemExplosiveList = null;

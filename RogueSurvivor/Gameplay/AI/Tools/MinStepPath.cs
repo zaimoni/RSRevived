@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         public int span { get { return span_spread.Key; } }
         public int spread { get { return span_spread.Value; } }
 
-        public MinStepPathStats(Location src, Location dest)
+        public MinStepPathStats(in Location src, in Location dest)
         {
             m = src.Map;
             m_Origin = src.Position;
@@ -66,13 +66,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         private readonly HashSet<Point> _impassible;
         private readonly HashSet<Point> _clear;
 
-        public MinStepPath(Actor a, Location src, Location dest) {
+        public MinStepPath(Actor a, in Location src, in Location dest) {
 #if DEBUG
            if (!a.CanEnter(src)) throw new InvalidOperationException("must be able to exist at the origin");
            if (!a.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
 #endif
             m_Actor = a;
-            stats = new MinStepPathStats(src, dest);
+            stats = new MinStepPathStats(in src, in dest);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_Direction = direction;
       m_NewLocation = actor.Location + direction;   // tentatively excluding this ActionBump class from IsPerformable upgrade due to this
-      m_ConcreteAction = Rules.IsBumpableFor(m_Actor, m_NewLocation, out m_FailReason);
+      m_ConcreteAction = Rules.IsBumpableFor(m_Actor, in m_NewLocation, out m_FailReason);
     }
 
     public override bool IsLegal()

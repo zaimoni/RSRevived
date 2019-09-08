@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Data
 
     public void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, loc, true, n));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));
     }
 
     public void WalkTo(IEnumerable<Location> locs, int n = int.MaxValue)
@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RunTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, loc, false, n));
+      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, false, n));
     }
 
     public void RunTo(IEnumerable<Location> locs, int n = int.MaxValue)
@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // while the following is "valid" for any actor, messages are shown *only* to the player
-    public Data.Message MakeCentricMessage(string eventText, Location loc, Color? color=null)
+    public Data.Message MakeCentricMessage(string eventText, in Location loc, Color? color=null)
     {
       Location? test = m_Actor.Location.Map.Denormalize(in loc);
       if (null == test) throw new ArgumentNullException(nameof(test));

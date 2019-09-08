@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_NewLocation = new Location(actor.Location.Map, to);
     }
 
-    public ActionMoveStep(Actor actor, Location to)
+    public ActionMoveStep(Actor actor, in Location to)
       : base(actor)
     {
       m_NewLocation = to;
@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      if (m_Actor.Location.Map==m_NewLocation.Map) RogueForm.Game.DoMoveActor(m_Actor, m_NewLocation);
+      if (m_Actor.Location.Map==m_NewLocation.Map) RogueForm.Game.DoMoveActor(m_Actor, in m_NewLocation);
       else if (m_Actor.Location.Map.District!=m_NewLocation.Map.District) {
         var test = m_Actor.Location.Map.Denormalize(in m_NewLocation);
         RogueForm.Game.DoLeaveMap(m_Actor, test.Value.Position, true);

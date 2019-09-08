@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       foreach (var loc in normalized_FOV) {
         Inventory itemsAt = loc.Items;
         if (null==itemsAt || itemsAt.IsEmpty) continue;
-        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
+        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
         (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
       }
     }
@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;
         }
-        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, loc));
+        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
         items.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);
         (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
       }
@@ -146,7 +146,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
         foreach (var loc in normalized_FOV) {
           List<Corpse> corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
-          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, actor.Location.Map.LocalTime.TurnCounter, loc));
+          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, actor.Location.Map.LocalTime.TurnCounter, in loc));
         }
       }
       return perceptList;

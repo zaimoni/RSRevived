@@ -637,7 +637,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var loc2 = new Location(m_Actor.Location.Map, pt2);
                   if (!m_Actor.CanEnter(loc2)) continue;
                   if (1 >= FastestTrapKill(in loc2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, loc2, loc);
+                  var act = new ActionMoveDelta(m_Actor, in loc2, in loc);
                   if (act.IsLegal()) stage2.Add(act);
                 }
               }
@@ -695,7 +695,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (1!=Rules.GridDistance(in pt, in pt2)) continue;
                   if (!m_Actor.CanEnter(pt2)) continue;
                   if (1 >= FastestTrapKill(in pt2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, pt2, pt);
+                  var act = new ActionMoveDelta(m_Actor, in pt2, in pt);
                   if (act.IsLegal()) stage2.Add(act);
                 }
               }
@@ -2209,7 +2209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var loc2 = new Location(loc.Map,pt);
           if (!Map.Canonical(ref loc2)) continue;
           if (!destination_melee_safe(in loc2, depth)) continue;
-          var delta = new ActionMoveDelta(m_Actor, loc2, loc);
+          var delta = new ActionMoveDelta(m_Actor, in loc2, in loc);
           if (delta.IsLegal()) {
             cache.Value.Add(loc2, delta);
             move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
@@ -2222,7 +2222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != e) {
             var loc2 = e.Location;
             if (destination_melee_safe(in loc2, depth)) {
-              var delta = new ActionMoveDelta(m_Actor, loc2, loc);
+              var delta = new ActionMoveDelta(m_Actor, in loc2, in loc);
               if (delta.IsLegal()) {
                 cache.Value.Add(loc2, delta);
                 move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
@@ -2880,7 +2880,7 @@ restart:
           foreach(var target in goals) {
             var denorm = m_Actor.Location.Map.Denormalize(in target);
             if (null == denorm) continue;
-            var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, target);
+            var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, in target);
             foreach(var dir in stats.stats.advancing) {
               var loc = m_Actor.Location+dir;
               if (!Map.Canonical(ref loc)) continue;

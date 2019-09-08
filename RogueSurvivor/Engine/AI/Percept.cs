@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public _T_ Percepted { get { return m_Percepted; } }
 
-    public Percept_(_T_ percepted, int turn, Location location)
+    public Percept_(_T_ percepted, int turn, in Location location)
      : base(in location,turn)
     {
 #if DEBUG

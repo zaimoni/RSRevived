@@ -253,7 +253,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
         if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
-        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, next))) return float.NaN;
+        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, in next))) return float.NaN;
         if (!Map.Canonical(ref next)) return float.NaN;
 
         int score = 0;
@@ -332,7 +332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
-        ActorAction a = Rules.IsBumpableFor(m_Actor, next);
+        ActorAction a = Rules.IsBumpableFor(m_Actor, in next);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             MapObject mapObjectAt = next.MapObject;
@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor leader = m_Actor.LiveLeader;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
+        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
@@ -907,7 +907,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
-        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
+        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
 
         const int EXPLORE_ZONES = 1000;
@@ -1304,7 +1304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
        (m_RouteFinder ?? (m_RouteFinder = new RouteFinder(this))).AllowedActions = allowedActions;
-       return m_RouteFinder.CanReachSimple(RogueForm.Game, dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
+       return m_RouteFinder.CanReachSimple(RogueForm.Game, in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 
     protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)

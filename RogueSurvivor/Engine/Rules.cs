@@ -393,12 +393,12 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public static ActorAction IsBumpableFor(Actor actor, Location location)
+    public static ActorAction IsBumpableFor(Actor actor, in Location location)
     {
-      return IsBumpableFor(actor, location, out string reason);
+      return IsBumpableFor(actor, in location, out string reason);
     }
 
-    public static ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
+    public static ActorAction IsBumpableFor(Actor actor, in Location location, out string reason)
     {
       return IsBumpableFor(actor, location.Map, location.Position, out reason);
     }
@@ -431,7 +431,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, loc);
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, in loc);
       if (loc.IsWalkableFor(actor, out reason)) {
         reason = "";
         if (map!=actor.Location.Map) {
@@ -603,7 +603,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public static ActorAction IsPathableFor(Actor actor, Location location)
+    public static ActorAction IsPathableFor(Actor actor, in Location location)
     {
       return IsPathableFor(actor, location, out string reason);
     }
@@ -672,7 +672,7 @@ namespace djack.RogueSurvivor.Engine
       return StdDistance(test.Value.Position - from.Position);
     }
 
-    public static double InteractionStdDistance(Location from, Location to)
+    public static double InteractionStdDistance(in Location from, in Location to)
     {
       Location? test = from.Map.Denormalize(in to);
       if (null == test) {

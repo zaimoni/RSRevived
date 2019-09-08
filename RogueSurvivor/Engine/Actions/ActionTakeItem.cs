@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_Location;
     private readonly Item m_Item;
 
-    public ActionTakeItem(Actor actor, Location loc, Item it)
+    public ActionTakeItem(Actor actor, in Location loc, Item it)
       : base(actor)
     {
 #if DEBUG
