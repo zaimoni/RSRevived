@@ -536,7 +536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
             var threat = ai.ControlledActor.Threats;
             if (null != threat) test = test.Or(loc => {
-                if (threat.AnyThreatAt(in loc) && !ai.CanSee(loc)) return (int)What.VIEW;
+                if (threat.AnyThreatAt(in loc) && !ai.CanSee(in loc)) return (int)What.VIEW;
                 return 0;
             });
 

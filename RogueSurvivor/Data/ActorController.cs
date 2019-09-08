@@ -154,18 +154,24 @@ namespace djack.RogueSurvivor.Data
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
     public virtual ActorAction ExecAryZeroBehavior(int code) { return null; }
 
-    public bool CanSee(Location x)  // correctness requires Location being value-copied
+    /// <param name="x"></param>
+    private bool _CanSee(Point pos)
+    {
+      if (pos == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
+      if (m_Actor.IsSleeping) return false;
+      return FOV?.Contains(pos) ?? false;
+    }
+
+    public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
       if (null == m_Actor) return false;
       if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       if (x.Map != m_Actor.Location.Map) {
         Location? test = m_Actor.Location.Map.Denormalize(in x);
         if (null == test) return false;
-        x = test.Value;
+        return _CanSee(test.Value.Position);
       }
-      if (x.Position == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
-      if (m_Actor.IsSleeping) return false;
-      return FOV?.Contains(x.Position) ?? false;
+      return _CanSee(x.Position);
     }
 
     // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases

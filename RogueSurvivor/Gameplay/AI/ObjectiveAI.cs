@@ -2928,7 +2928,7 @@ restart:
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
 
       bool rude_goal(Location loc) {
-        if (!CanSee(loc)) return false;
+        if (!CanSee(in loc)) return false;
         var actor = loc.Actor;
         if (null == actor) return false;
         return !m_Actor.IsEnemyOf(actor);

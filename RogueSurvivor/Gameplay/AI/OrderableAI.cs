@@ -275,13 +275,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        IEnumerable<Location> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(loc));
+        IEnumerable<Location> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(in loc));
         if (!tmp.Any()) return true;
         ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
         // if any in-communication ally can see the location, clear it
         foreach(Actor friend in m_Actor.Allies) {
           if (!ai.InCommunicationWith(friend)) continue;
-          tmp = tmp.Where(loc => !friend.Controller.CanSee(loc));
+          tmp = tmp.Where(loc => !friend.Controller.CanSee(in loc));
           if (!tmp.Any()) return true;
         }
         if (_locs.Count > tmp.Count()) {
@@ -334,7 +334,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private bool SuppressVisibleFor(Actor a)
       {
         foreach(var x in _target_locs) {
-          x.Value.RemoveWhere(loc => a.Controller.CanSee(loc));
+          x.Value.RemoveWhere(loc => a.Controller.CanSee(in loc));
         }
         return false;
       }
@@ -2312,7 +2312,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private bool InProximity(in Location src, Location dest, int maxDist)
     {  // due to definitions, for maxDist=1 the other two tests are implied by the GridDistance test for m_Actor.Location
        return Rules.GridDistance(src, dest) <= maxDist
-           && (1 >= maxDist || (CanSee(dest) && null != m_Actor.MinStepPathTo(src, dest)));
+           && (1 >= maxDist || (CanSee(in dest) && null != m_Actor.MinStepPathTo(src, dest)));
     }
 
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)

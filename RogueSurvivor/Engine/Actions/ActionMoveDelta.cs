@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private ActorAction _resolve()
     {
       ActorAction working = null;
-      bool see_dest = m_Actor.Controller.CanSee(m_NewLocation);
+      bool see_dest = m_Actor.Controller.CanSee(in m_NewLocation);
       var obj = see_dest ? m_NewLocation.MapObject : null;
       var actorAt = see_dest ? m_NewLocation.Actor : null;
 
