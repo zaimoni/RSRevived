@@ -60,10 +60,7 @@ namespace djack.RogueSurvivor.Data
       m_Location = loc;
     }
 
-    public void AddDecoration(string imageID)
-    {
-      m_Location.Map.AddDecorationAt(imageID,m_Location.Position);
-    }
+    public void AddDecoration(string imageID) { m_Location.AddDecoration(imageID); }
 
 #if DEAD_FUNC
     public bool HasDecoration(string imageID)

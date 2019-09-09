@@ -9507,8 +9507,7 @@ namespace djack.RogueSurvivor.Engine
       actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
       actor.Drowse(WorldTime.TURNS_PER_HOUR);
       actor.Appetite(WorldTime.TURNS_PER_HOUR);
-      Location location = actor.Location;
-      location.Map.AddDecorationAt(GameImages.DECO_VOMIT, location.Position);
+      actor.Location.AddDecoration(GameImages.DECO_VOMIT);  // \todo timed removal
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)
