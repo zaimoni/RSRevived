@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool HasDecorations { get { return m_Location.Map.HasDecorationsAt(m_Location.Position); } }
-    public IEnumerable<string> Decorations { get { return m_Location.Map.DecorationsAt(m_Location.Position); } }
+    public void DoForAllDecorations(Action<string> op) { m_Location.Map.DoForAllDecorationsAt(m_Location.Position, op); }
 
     public Tile(int modelID, bool inside, Location loc)
     {

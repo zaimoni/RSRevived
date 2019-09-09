@@ -11344,18 +11344,14 @@ namespace djack.RogueSurvivor.Engine
         string imageID = MovingWaterImage(tile.Model, Session.Get.WorldTime.TurnCounter);
         if (imageID != null)
           m_UI.UI_DrawImage(imageID, screen.X, screen.Y, tint);
-        if (!tile.HasDecorations) return;
-        foreach (string decoration in tile.Decorations)
-          m_UI.UI_DrawImage(decoration, screen.X, screen.Y, tint);
+        tile.DoForAllDecorations(decoration => m_UI.UI_DrawImage(decoration, screen.X, screen.Y));
       } else {
         if (!tile.IsVisited || IsPlayerSleeping()) return;
         m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
         string imageID = MovingWaterImage(tile.Model, Session.Get.WorldTime.TurnCounter);
         if (imageID != null)
           m_UI.UI_DrawGrayLevelImage(imageID, screen.X, screen.Y);
-        if (!tile.HasDecorations) return;
-        foreach (string decoration in tile.Decorations)
-          m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y);
+        tile.DoForAllDecorations(decoration => m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y));
       }
     }
 
