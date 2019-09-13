@@ -1226,7 +1226,7 @@ retry:
       }
       // 1) does not have to be accurate except when adjacent
       // 2) treat null map as "omni-adjacent" (happens during spawning)
-      if ((null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value)) && tile_loc.Value.StrictHasActorAt) return "someone is there";  // XXX includes actor himself
+      if (tile_loc.Value.StrictHasActorAt && (null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value))) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
