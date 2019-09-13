@@ -72,20 +72,39 @@ namespace djack.RogueSurvivor.Data
 		  }
 		}
 
+		private HashSet<Point> _ThreatWhere(Map map)
+		{
+          var ret = new HashSet<Point>();
+		  lock(_threats) {
+            foreach (var x in _threats) {
+              if (x.Value.TryGetValue(map, out var src)) ret.UnionWith(src);
+            }
+            _ThreatWhere_cache.Add(map, ret);
+		  }
+		  return ret;
+		}
+
 		public bool AnyThreatAt(in Location loc)
 		{
+          if (_ThreatWhere_cache.TryGetValue(loc.Map, out var cache2)) return cache2.Contains(loc.Position);
+          return _ThreatWhere(loc.Map).Contains(loc.Position);
+#if OBSOLETE
 		  lock(_threats) {
             foreach(var x in _threats) {
               if (x.Value.TryGetValue(loc.Map,out var cache) && cache.Contains(loc.Position)) return true;
             }
             return false;
 		  }
-		}
+#endif
+        }
 
         [NonSerialized] Dictionary<Map, HashSet<Point>> _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
+        /// <remarks>Both callers only use the value in read-only ways so correctness-required value copy is omitted</remarks>
 		public HashSet<Point> ThreatWhere(Map map)
 		{
-          if (_ThreatWhere_cache.TryGetValue(map, out var cache)) return new HashSet<Point>(cache);   // value copy for correctness
+          if (_ThreatWhere_cache.TryGetValue(map, out var cache)) return cache;
+          return _ThreatWhere(map);
+#if OBSOLETE
           var ret = new HashSet<Point>();
 		  lock(_threats) {
             foreach (var x in _threats) {
@@ -94,9 +113,10 @@ namespace djack.RogueSurvivor.Data
             _ThreatWhere_cache[map] = new HashSet<Point>(ret);
 		  }
 		  return ret;
-		}
+#endif
+        }
 
-		public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
+        public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
 		{
           var ret = new HashSet<Point>();
           if (null == map) return ret;
