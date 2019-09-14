@@ -287,9 +287,7 @@ namespace djack.RogueSurvivor.Engine
       reason = "";
       Location loc = new Location(map,point);
 
-      ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.COURAGEOUS;  // need this to be inoperative for z
-      bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous && 1>=actor.Controller.FastestTrapKill(in loc)) {
+      if (1>=actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
       }
@@ -404,12 +402,9 @@ namespace djack.RogueSurvivor.Engine
       if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
-      Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
       reason = "";
 
-      ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
-      bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      if (!imStarvingOrCourageous && 1 >= actor.Controller.FastestTrapKill(in loc)) {
+      if (1 >= actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
       }
@@ -437,6 +432,8 @@ namespace djack.RogueSurvivor.Engine
         }
         return actionMoveStep;
       }
+
+      Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
 
       // respec of IsWalkableFor guarantees that any actor will be adjacent
       reason = actionMoveStep.FailReason;
