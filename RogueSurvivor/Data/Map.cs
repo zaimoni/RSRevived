@@ -219,7 +219,7 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Extent", Extent);
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
-      info.AddValue("m_ActorsList", m_ActorsList);
+      info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
       info.AddValue("m_MapObjectsList", m_MapObjectsList);
       info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
       info.AddValue("m_CorpsesList", m_CorpsesList);
