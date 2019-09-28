@@ -362,6 +362,10 @@ namespace djack.RogueSurvivor.Engine
     static public void Load(SerializationInfo info, StreamingContext context)
     {
       m_Player = (Actor) info.GetValue("m_Player",typeof(Actor));
+    }
+
+    static public void AfterLoad()
+    {
       m_MapView = m_Player.Location.View;
     }
 

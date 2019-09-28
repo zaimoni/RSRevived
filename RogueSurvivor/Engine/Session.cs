@@ -130,6 +130,11 @@ namespace djack.RogueSurvivor.Engine
       // non-serialized fields
       m_Scoring_fatality = null;
     }
+
+    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    {
+      RogueGame.AfterLoad();
+    }
 #endregion
 
     public void Reset()
