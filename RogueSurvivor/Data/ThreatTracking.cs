@@ -9,7 +9,7 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 namespace djack.RogueSurvivor.Data
 {
     [Serializable]
-    class ThreatTracking : ISerializable
+    class ThreatTracking
     {
         // The first iteration of this cost 39MB of savefile size for a full probability analysis.
 
@@ -21,24 +21,14 @@ namespace djack.RogueSurvivor.Data
 
         public ThreatTracking()
         {
-          Actor.Dies += HandleDie;  // XXX removal would be in destructor
-          Actor.Moving += HandleMove;
+          InstallHandlers(default);
         }
 
-#region Implement ISerializable
-        // general idea is Plain Old Data before objects.
-        protected ThreatTracking(SerializationInfo info, StreamingContext context)
-        {
-          _threats = (Dictionary<Actor, Dictionary<Map, HashSet<Point>>>)info.GetValue("threats",typeof(Dictionary<Actor, Dictionary<Map, HashSet<Point>>>));
+        [OnDeserialized] private void InstallHandlers(StreamingContext context) { 
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
+          _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
         }
-
-        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-          info.AddValue("threats", _threats, typeof(Dictionary<Actor, HashSet<Location>>));
-        }
-#endregion
 
         public void Clear()
         {
