@@ -7,6 +7,7 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -33,10 +34,8 @@ namespace djack.RogueSurvivor.Engine.Items
       return m_BoringFor?.Contains(a) ?? false;
     }
 
-    public override void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      base.OptimizeBeforeSaving();
-
       // clean up dead actors refs
       // side effect: revived actors will forget about boring items
       if (null != m_BoringFor) {

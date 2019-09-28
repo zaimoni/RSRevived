@@ -10,9 +10,7 @@ using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if SAVELOAD_KILL
 using System.Runtime.Serialization;
-#endif
 using System.Threading;
 using Zaimoni.Data;
 
@@ -3826,7 +3824,7 @@ namespace djack.RogueSurvivor.Data
 
     // This is a backstop for bugs elsewhere.
     // Just optimize everything that's an Actor or contains an Actor.
-    public void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       if (m_TargetActor?.IsDead ?? false) m_TargetActor = null;
       if (m_Leader?.IsDead ?? false) m_Leader = null;
@@ -3857,9 +3855,6 @@ namespace djack.RogueSurvivor.Data
         if (0 == m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
         else m_SelfDefenceFrom.TrimExcess();
       }
-
-      m_Controller?.OptimizeBeforeSaving();
-      m_Inventory?.OptimizeBeforeSaving();
     }
 
 #region IEquatable<>

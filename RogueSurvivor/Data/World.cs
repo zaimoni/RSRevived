@@ -565,13 +565,5 @@ restart:
     {
       return string.Format("{0}{1}", (object) (char) (65 + x), (object) y);
     }
-
-    public void OptimizeBeforeSaving()
-    {
-      for (int index1 = 0; index1 < m_Size; ++index1) {
-        for (int index2 = 0; index2 < m_Size; ++index2)
-          m_DistrictsGrid[index1, index2].OptimizeBeforeSaving();
-      }
-    }
   }
 }

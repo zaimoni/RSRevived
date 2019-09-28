@@ -221,7 +221,6 @@ namespace djack.RogueSurvivor.Engine
 #if LINUX
       filename = filename.Replace("\\", "/");
 #endif
-      session.World.OptimizeBeforeSaving();
       switch (format) {
         case SaveFormat.FORMAT_BIN:
           SaveBin(session, filepath);

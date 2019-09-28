@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -16,9 +15,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-#if TIME_TURNS
-using System.Diagnostics;
-#endif
+using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
@@ -100,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // we don't have memory, but we do have taboo trades
-    public override void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       if (null == TabooTrades) return;
       int i = TabooTrades.Count;
@@ -146,26 +143,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight()) {}
       // end extraction target: BehaviorEquipBestItems
-#if TIME_TURNS
-      timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorUnequipLeftItem " + timer.ElapsedMilliseconds.ToString()+"ms");
-      timer.Restart();
-#endif
       // end item juggling check
       _all = FilterSameMap(UpdateSensors());
-#if TIME_TURNS
-      timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts_all " + timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
       List<Percept> current = FilterCurrent(_all);    // this tests fast
-#if TIME_TURNS
-      timer.Restart();
-#endif
       ReviewItemRatings();  // XXX highly inefficient when called here; should "update on demand"
-#if TIME_TURNS
-      timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ReviewItemRatings " + timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
 
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
@@ -273,15 +254,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
 
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
-#if TIME_TURNS
-        timer.Restart();
-#endif
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-#if TIME_TURNS
-        timer.Stop();
-        if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif

@@ -2933,20 +2933,15 @@ retry:
       }
     }
 
-    public void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       int i = m_ActorsList.Count;
       while (0 < i--) {
         var a = m_ActorsList[i];
         if (a.IsDead) m_ActorsList.RemoveAt(i);
-        else a.OptimizeBeforeSaving();
       }
 
-      // alpha10 items stacks
-      foreach (Inventory stack in m_GroundItemsByPosition.Values)
-        stack.OptimizeBeforeSaving();
-
-      m_ActorsList.TrimExcess();
+      m_ActorsList.TrimExcess();    // 2019-09-28: unsure if these actually do anything useful (inherited from Alpha 9)
       m_MapObjectsList.TrimExcess();
       m_Zones.TrimExcess();
       m_CorpsesList.TrimExcess();

@@ -7,6 +7,7 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -174,10 +175,8 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     // alpha10
-    public override void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      base.OptimizeBeforeSaving();
-
       // cleanup dead owner ref
       if (m_Owner?.IsDead ?? false) m_Owner = null;
 

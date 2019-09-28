@@ -487,11 +487,6 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public void OptimizeBeforeSaving()  // alpha10
-    {
-      foreach (Item it in m_Items) it.OptimizeBeforeSaving();
-    }
-
     public override string ToString()
     {
       var ret = new List<string>(1 + m_Items.Count) {

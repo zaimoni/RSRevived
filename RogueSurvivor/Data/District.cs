@@ -480,13 +480,6 @@ namespace djack.RogueSurvivor.Data
       Name = EntryMap.Name;
     }
 
-    public void OptimizeBeforeSaving()
-    {
-      m_Maps.TrimExcess();
-      foreach (Map mMap in m_Maps)
-        mMap.OptimizeBeforeSaving();
-    }
-
     public override int GetHashCode()
     {
       return WorldPosition.GetHashCode();

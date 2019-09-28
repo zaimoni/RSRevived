@@ -8,12 +8,12 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
-    public override void OptimizeBeforeSaving()
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       m_MemLOSSensor.Forget(m_Actor);
     }
