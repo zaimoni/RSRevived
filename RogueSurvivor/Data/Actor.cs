@@ -331,6 +331,9 @@ namespace djack.RogueSurvivor.Data
 
     public Activity Activity;
 
+    public bool IsAvailableToHelp { get { return Activity.IDLE == Activity || Activity.FOLLOWING == Activity; } }
+    public bool IsEngaged { get { return Activity.CHASING == Activity || Activity.FIGHTING == Activity; } }
+
     public Actor TargetActor {
       get {
         return m_TargetActor;
@@ -1453,6 +1456,12 @@ namespace djack.RogueSurvivor.Data
       else if (m_SelfDefenceFrom.Contains(other)) return;
       else m_SelfDefenceFrom.Add(other);
       Threats?.RecordTaint(other, other.Location);
+    }
+
+    public void Aggress(Actor defender) { 
+      Activity = Activity.FIGHTING;
+      m_TargetActor = defender;
+      if (!IsEnemyOf(defender)) RogueForm.Game.DoMakeAggression(this, defender);
     }
 
     // No UI updates here (that differs by context)

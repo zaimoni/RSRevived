@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
+
 using static Zaimoni.Data.Functor;
 
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
@@ -2241,7 +2242,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsSleeping) {
 #region 4.2 Handle sleeping actors.
               bool isOnCouch = actor.IsOnCouch;
-              actor.Activity = Activity.SLEEPING;
+              actor.Activity = Data.Activity.SLEEPING;
               actor.Rest(actor.SleepRegen(isOnCouch));
               if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + Rules.ActorHealChanceBonus(actor)))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
@@ -4257,7 +4258,7 @@ namespace djack.RogueSurvivor.Engine
           corpse.DeadGuy.IsDead = false;
           corpse.DeadGuy.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
           corpse.DeadGuy.Doll.RemoveDecoration(GameImages.BLOODIED);
-          corpse.DeadGuy.Activity = Activity.IDLE;
+          corpse.DeadGuy.Activity = djack.RogueSurvivor.Data.Activity.IDLE;
           corpse.DeadGuy.TargetActor = null;
           map.Remove(corpse);
           map.PlaceAt(corpse.DeadGuy, m_Rules.DiceRoller.Choose(pointList));
@@ -6984,33 +6985,31 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsPlayer) return null;
       switch (actor.Activity) {
-        case Activity.IDLE:
-          return null;
-        case Activity.CHASING:
+        case Data.Activity.IDLE: return null;
+        case Data.Activity.CHASING:
           if (actor.TargetActor == null)
             return "Chasing!";
           return string.Format("Chasing {0}!", actor.TargetActor.Name);
-        case Activity.FIGHTING:
+        case djack.RogueSurvivor.Data.Activity.FIGHTING:
           if (actor.TargetActor == null)
             return "Fighting!";
           return string.Format("Fighting {0}!", actor.TargetActor.Name);
-        case Activity.TRACKING:
-          return "Tracking!";
-        case Activity.FLEEING:
-          return "Fleeing!";
-        case Activity.FOLLOWING:
+        case Data.Activity.TRACKING: return "Tracking!";
+        case Data.Activity.FLEEING: return "Fleeing!";
+        case Data.Activity.FOLLOWING:
           if (actor.TargetActor == null) return "Following.";
           // alpha10
           if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", HisOrHer(actor));
           return string.Format("Following {0}.", actor.TargetActor.Name);
-        case Activity.SLEEPING:
-          return "Sleeping.";
-        case Activity.FOLLOWING_ORDER:
-          return "Following orders.";
-        case Activity.FLEEING_FROM_EXPLOSIVE:
-          return "Fleeing from explosives!";
+        case Data.Activity.SLEEPING: return "Sleeping.";
+        case Data.Activity.FOLLOWING_ORDER: return "Following orders.";
+        case Data.Activity.FLEEING_FROM_EXPLOSIVE: return "Fleeing from explosives!";
         default:
+#if DEBUG
           throw new ArgumentException("unhandled activity " + actor.Activity);
+#else
+          return null;
+#endif
       }
     }
 
@@ -7672,7 +7671,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
 
       if (0 < actor.ActionPoints) actor.DropScent();    // alpha10 fix
-      if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
+      if (!actor.IsPlayer && (actor.Activity == Data.Activity.FLEEING || actor.Activity == Data.Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
         OnLoudNoise(in newLocation, "A loud SCREAM");
         if (!dest_seen && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
@@ -8212,9 +8211,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
     {
-      attacker.Activity = Activity.FIGHTING;
-      attacker.TargetActor = defender;
-      if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
+      attacker.Aggress(defender);
       Attack attack = attacker.MeleeAttack(defender);
       Defence defence = defender.Defence;
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8360,7 +8357,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
-      if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
+      attacker.Aggress(defender);
       var ai = attacker.Controller as ObjectiveAI;
       ai?.RecordLoF(LoF);
       switch (mode) {
@@ -8390,9 +8387,7 @@ namespace djack.RogueSurvivor.Engine
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
     private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
-      attacker.Activity = Activity.FIGHTING;
-      attacker.TargetActor = defender;
-      // stamina pental is simply copied through from the base ranged attack (calculated below)
+      // stamina penalty is simply copied through from the base ranged attack (calculated below)
       attacker.SpendStaminaPoints(attacker.CurrentRangedAttack.StaminaPenalty);
       if (attacker.CurrentRangedAttack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
@@ -9769,7 +9764,7 @@ namespace djack.RogueSurvivor.Engine
       List<Actor> helpers = null;
       foreach (Actor fo in actor.Followers) {
         // follower can help if: not sleeping, idle and adj to map object.
-        if (!fo.IsSleeping && (fo.Activity == Activity.IDLE || fo.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
+        if (!fo.IsSleeping && fo.IsAvailableToHelp && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
           if (helpers == null) helpers = new List<Actor>(actor.CountFollowers);
           helpers.Add(fo);
         }
@@ -9962,13 +9957,13 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       DoStopDragCorpse(actor);
-      actor.Activity = Activity.SLEEPING;
+      actor.Activity = Data.Activity.SLEEPING;
       actor.IsSleeping = true;
     }
 
     public void DoWakeUp(Actor actor)
     {
-      actor.Activity = Activity.IDLE;
+      actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
       if (ForceVisibleToPlayer(actor))
       AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
@@ -11458,7 +11453,7 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx2, gy2, tint);
       }
       switch (actor.Activity) {
-        case Activity.IDLE:
+        case Data.Activity.IDLE:
           int maxHitPoints = actor.MaxHPs;
           if (actor.HitPoints < maxHitPoints) DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
           if (actor.IsRunning) m_UI.UI_DrawImage(GameImages.ICON_RUNNING, gx2, gy2, tint);
@@ -11491,38 +11486,38 @@ namespace djack.RogueSurvivor.Engine
           if (!s_Options.IsCombatAssistantOn || actor == Player || (Player == null || !actor.IsEnemyOf(Player))) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
-        case Activity.CHASING:
-        case Activity.FIGHTING:
+        case Data.Activity.CHASING:
+        case Data.Activity.FIGHTING:
           if (!actor.IsPlayer && null != actor.TargetActor) {
             m_UI.UI_DrawImage(((actor.TargetActor == Player) ? GameImages.ACTIVITY_CHASING_PLAYER : GameImages.ACTIVITY_CHASING), gx2, gy2, tint);
           }
-          goto case Activity.IDLE;
-        case Activity.TRACKING:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.TRACKING:
           if (!actor.IsPlayer) {
             m_UI.UI_DrawImage(GameImages.ACTIVITY_TRACKING, gx2, gy2, tint);
           }
-          goto case Activity.IDLE;
-        case Activity.FLEEING:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.FLEEING:
           if (!actor.IsPlayer) {
             m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx2, gy2, tint);
           }
-          goto case Activity.IDLE;
-        case Activity.FOLLOWING:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.FOLLOWING:
           if (!actor.IsPlayer && null != actor.TargetActor) {
             m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : (actor.TargetActor == actor.Leader ? GameImages.ACTIVITY_FOLLOWING_LEADER : GameImages.ACTIVITY_FOLLOWING)), gx2, gy2);
           }
-          goto case Activity.IDLE;
-        case Activity.SLEEPING:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.SLEEPING:
           m_UI.UI_DrawImage(GameImages.ACTIVITY_SLEEPING, gx2, gy2);
-          goto case Activity.IDLE;
-        case Activity.FOLLOWING_ORDER:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.FOLLOWING_ORDER:
           m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_ORDER, gx2, gy2);
-          goto case Activity.IDLE;
-        case Activity.FLEEING_FROM_EXPLOSIVE:
+          goto case Data.Activity.IDLE;
+        case Data.Activity.FLEEING_FROM_EXPLOSIVE:
           if (!actor.IsPlayer) {
             m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx2, gy2, tint);
           }
-          goto case Activity.IDLE;
+          goto case Data.Activity.IDLE;
         default:
           throw new InvalidOperationException("unhandled activity " + actor.Activity);
       }
@@ -11626,7 +11621,7 @@ namespace djack.RogueSurvivor.Engine
         if (other == actor || other.IsDead || !IsVisibleToPlayer(other)) continue;
 
         // targetting this actor
-        if (other.TargetActor == actor && (other.Activity == Activity.CHASING || other.Activity == Activity.FIGHTING)) {
+        if (other.TargetActor == actor && other.IsEngaged) {
           if (!isTargettedHighlighted) {
             AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
             isTargettedHighlighted = true;
@@ -11655,7 +11650,7 @@ namespace djack.RogueSurvivor.Engine
         if (pt == player.Location.Position) continue;
         actor = player.Location.Map.GetActorAtExt(pt);
         if (null==actor || actor.IsDead) continue;
-        if (actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
+        if (actor.TargetActor == player && actor.IsEngaged) {
           var screen = MapToScreen(player.Location);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
@@ -13677,7 +13672,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       newPlayerAvatar.Controller = new PlayerController();
-      if (newPlayerAvatar.Activity != Activity.SLEEPING) newPlayerAvatar.Activity = Activity.IDLE;
+      if (newPlayerAvatar.Activity != Data.Activity.SLEEPING) newPlayerAvatar.Activity = Data.Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
       m_Player = newPlayerAvatar;
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
