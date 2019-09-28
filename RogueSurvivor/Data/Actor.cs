@@ -10,7 +10,9 @@ using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if SAVELOAD_KILL
 using System.Runtime.Serialization;
+#endif
 using System.Threading;
 using Zaimoni.Data;
 
