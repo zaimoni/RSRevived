@@ -124,6 +124,7 @@ namespace djack.RogueSurvivor.Data
     private Corpse m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
+    [NonSerialized] private bool _has_to_eat;
 
     public ActorModel Model
     {
@@ -617,6 +618,7 @@ namespace djack.RogueSurvivor.Data
     private void OnModelSet()
     {
       ActorModel model = Model;
+      _has_to_eat = model.Abilities.HasToEat;
       m_Doll = new Doll(model);
       m_Sheet = new ActorSheet(model.StartingSheet);
       m_ActionPoints = m_Doll.Body.Speed;
@@ -632,11 +634,10 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
-#if PROTOTYPE
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
+      _has_to_eat = Model.Abilities.HasToEat;
     }
-#endif
 
 	public void PrefixName(string prefix)
 	{
@@ -645,7 +646,7 @@ namespace djack.RogueSurvivor.Data
 
     public int DamageBonusVsUndeads {
       get {
-        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
+        return SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       }
     }
 
@@ -2596,8 +2597,8 @@ namespace djack.RogueSurvivor.Data
     }
 
     // hunger
-    public bool IsHungry { get { return Model.Abilities.HasToEat && FOOD_HUNGRY_LEVEL >= m_FoodPoints; } }
-    public bool IsStarving { get { return Model.Abilities.HasToEat && 0 >= m_FoodPoints; } }
+    public bool IsHungry { get { return _has_to_eat && FOOD_HUNGRY_LEVEL >= m_FoodPoints; } }
+    public bool IsStarving { get { return _has_to_eat && 0 >= m_FoodPoints; } }
     public bool IsRotHungry { get { return Model.Abilities.IsRotting && ROT_HUNGRY_LEVEL >= m_FoodPoints; } }
     public bool IsRotStarving { get { return Model.Abilities.IsRotting && 0 >= m_FoodPoints; } }
 
@@ -2608,7 +2609,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsAlmostHungry { get { return Model.Abilities.HasToEat && HoursUntilHungry <= 3; } }
+    public bool IsAlmostHungry { get { return _has_to_eat && HoursUntilHungry <= 3; } }
 
     public int HoursUntilRotHungry {
       get {
@@ -2980,7 +2981,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
     {
-      if (!Model.Abilities.HasToEat) return true;
+      if (!_has_to_eat) return true;
       if (Inventory?.IsEmpty ?? true) return false;
       List<ItemFood> tmp = Inventory.GetItemsByType<ItemFood>();
       if (null == tmp) return false;
@@ -3161,7 +3162,7 @@ namespace djack.RogueSurvivor.Data
 #else
       if (!Engine.RogueGame.IsUsable(it.Model)) return "not a usable item type";
 #endif
-      if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
+      if (it is ItemFood && !_has_to_eat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
       if (it is ItemAmmo itemAmmo) {
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
