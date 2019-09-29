@@ -1444,7 +1444,7 @@ namespace djack.RogueSurvivor.Data
 
       // my leader enemies are my enemies.
       // my mates enemies are my enemies.
-      bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
+      static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
       {
         if (groupActor.Leader.IsEnemyOf(target, false)) return true;
         foreach (Actor mate in groupActor.Leader.m_Followers)
@@ -1453,7 +1453,7 @@ namespace djack.RogueSurvivor.Data
       }
 
       // my followers enemies are my enemies
-      bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
+      static bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
         foreach (Actor follower in groupActor.m_Followers)
           if (follower.IsEnemyOf(target, false)) return true;

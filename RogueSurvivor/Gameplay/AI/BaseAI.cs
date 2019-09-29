@@ -682,7 +682,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, in pt); }
 
-      bool safe_push(ActionPush act) {
+      static bool safe_push(ActionPush act) {
         var loc = new Location(act.Target.Location.Map,act.To);
         Map.Canonical(ref loc);
         if (loc.Map.IsFlushNWall(loc.Position)) return true;
@@ -695,7 +695,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (loc.Map.IsSECorner(loc.Position)) return true;
         return false;
       }
-      bool unsafe_push(ActionPush act) { return !safe_push(act); }
+      static bool unsafe_push(ActionPush act) { return !safe_push(act); }
 
 
       // fail over to legacy code here

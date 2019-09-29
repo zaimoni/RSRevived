@@ -3012,7 +3012,7 @@ restart:
       var followers = new List<Actor>();
       var typical = map.Police.Get.ToList();
 
-      Actor DraftLeader(List<Actor> pool) {
+      static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
         Actor awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
@@ -3037,7 +3037,7 @@ restart:
         return pool.FirstOrDefault();
       }
 
-      void Draft(List<Actor> dest, List<Actor> pool) {
+      static void Draft(List<Actor> dest, List<Actor> pool) {
         Actor leader = DraftLeader(pool);
         dest.Add(leader);
         pool.Remove(leader);
@@ -3261,7 +3261,6 @@ restart:
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
       offices_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
-      int y2 = 0;
       while (offices_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalOfficeRoom(map, "office", offices_room, false);
         offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;

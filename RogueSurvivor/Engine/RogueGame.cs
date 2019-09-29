@@ -1118,7 +1118,7 @@ namespace djack.RogueSurvivor.Engine
       const int gx = 0;
       int gy1 = 0;
 
-      bool? command_line()
+      static bool? command_line()
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
         switch(x.Substring(1,1))
@@ -1177,7 +1177,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  femaleStats.BaseHitPoints,  femaleStats.BaseDefence.Value,  femaleStats.UnarmedAttack.DamageValue)
       };
 
-      bool? command_line()
+      static bool? command_line()
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
         switch(x.Substring(2,1))
@@ -1240,7 +1240,7 @@ namespace djack.RogueSurvivor.Engine
       string[] entries = (new string[] { "*Random*" }).Concat(undead.Select(x => x.Name)).ToArray();
       string[] values = (new string[] { "(picks a type at random for you)" }).Concat(undead.Select(x => DescribeUndeadModelStatLine(x))).ToArray();
 
-      GameActors.IDs? command_line()
+      static GameActors.IDs? command_line()
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
         switch(x.Substring(2,1))
@@ -1293,7 +1293,7 @@ namespace djack.RogueSurvivor.Engine
       string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
       string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
 
-      Skills.IDs? command_line()
+      static Skills.IDs? command_line()
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
         try {
@@ -1638,7 +1638,7 @@ namespace djack.RogueSurvivor.Engine
         return null;
       });
 
-      bool? choice_handler(int currentChoice) { return null; };
+      static bool? choice_handler(int currentChoice) { return null; };
 
       Func<Keys,int,bool?> failover_handler = ((k,currentChoice) => {
         switch (k) {
@@ -1679,7 +1679,7 @@ namespace djack.RogueSurvivor.Engine
               case GameOptions.IDs.GAME_NATGUARD_FACTOR: s_Options.NatGuardFactor -= 10; break;
               case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR: s_Options.SuppliesDropFactor -= 10; break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays - 1;
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) s_Options.ZombifiedsUpgradeDays -= 1;
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE: s_Options.RatsUpgrade = !s_Options.RatsUpgrade; break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE: s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade; break;
@@ -1722,7 +1722,7 @@ namespace djack.RogueSurvivor.Engine
               case GameOptions.IDs.GAME_NATGUARD_FACTOR: s_Options.NatGuardFactor += 10; break;
               case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR: s_Options.SuppliesDropFactor += 10; break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF) s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays + 1;
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF) s_Options.ZombifiedsUpgradeDays += 1;
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE: s_Options.RatsUpgrade = !s_Options.RatsUpgrade; break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE: s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade; break;
@@ -8803,7 +8803,7 @@ namespace djack.RogueSurvivor.Engine
 
       void heard_question(Actor a) { audience.Add(a); }
       void heard_answer(Actor a) { audience2.Add(a); }
-      void PC_message(Actor a, List<Data.Message> msgs) {
+      static void PC_message(Actor a, List<Data.Message> msgs) {
         (a.Controller as PlayerController).DeferMessages(msgs);
       }
 
@@ -10140,7 +10140,7 @@ namespace djack.RogueSurvivor.Engine
       // note that if police went after a follower for murder, the police threat tracking historically would target the leader indefinitely.
       // We don't have the CPU or savefile size for that (we *should* be tracking something, but we'd need a more detailed
       // crime blotter representation).
-      bool police_wanted(Actor a) {
+      static bool police_wanted(Actor a) {
         if (a.Faction.IsEnemyOf(GameFactions.ThePolice)) return true;
         foreach(var who in a.Aggressors) {
           if (GameFactions.ThePolice == who.Faction) return true;
@@ -12782,7 +12782,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
 
-      void _validateCity()
+      static void _validateCity()
       {
         if (!Session.CommandLineOptions.TryGetValue("city",out string x)) return;
         int split = x.IndexOf(",");
@@ -12798,7 +12798,7 @@ namespace djack.RogueSurvivor.Engine
         s_Options.DistrictSize = district_size;
       }
 
-      void _validateSpawn()
+      static void _validateSpawn()
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return;
         // character 0 is the game mode.  Choice values are 0..2 currently

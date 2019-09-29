@@ -2434,9 +2434,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
           Point dist = waypoint_bounds(new Location(m2, pt));
 #if DEBUG
-          if (int.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
+          if (short.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
 #else
-          if (int.MaxValue == dist.X) return; // something haywire, discard
+          if (short.MaxValue == dist.X) return; // something haywire, discard
 #endif
           bool in_bounds = m2.IsInBounds(pt);
           if (in_bounds) {

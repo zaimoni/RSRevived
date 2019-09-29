@@ -53,8 +53,8 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 #endif
-      if (m_Attributes == null) return default (_T_);
-      if (!m_Attributes.TryGetValue(key, out object obj)) return default (_T_);
+      if (m_Attributes == null) return default;
+      if (!m_Attributes.TryGetValue(key, out object obj)) return default;
       if (!(obj is _T_)) throw new InvalidOperationException("game attribute is not of requested type");
       return (_T_) obj;
     }

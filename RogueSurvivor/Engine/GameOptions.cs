@@ -599,7 +599,7 @@ namespace djack.RogueSurvivor.Engine
         rating += 0.5f*(!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? -k : k);
       }
       if (ZombifiedsUpgradeDays != GameOptions.ZupDays.THREE) {
-        float DeltaDifficulty(ZupDays x) {
+        static float DeltaDifficulty(ZupDays x) {
           switch (x) {
             case ZupDays.ONE: return 0.5f;
             case ZupDays.TWO: return 0.25f;

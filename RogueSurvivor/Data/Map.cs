@@ -727,7 +727,7 @@ namespace djack.RogueSurvivor.Data
 
     public static int PathfinderMoveCosts(ActorAction act)
     {
-        int teardown_turns(MapObject obj) {
+        static int teardown_turns(MapObject obj) {
 		    int cost = 1;
             if (obj is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
             else cost += (obj.HitPoints+7)/8;	// time cost to break, as per barricade
@@ -2876,7 +2876,7 @@ retry:
         // need a value copy of relevant (infected) corpses
         var tmp = new Dictionary<Point, List<Corpse>>(m_aux_CorpsesByPosition.Count);
 
-        bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
+        static bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
 
         foreach(var x in m_aux_CorpsesByPosition) {
           if (0>= x.Value.Count) continue;

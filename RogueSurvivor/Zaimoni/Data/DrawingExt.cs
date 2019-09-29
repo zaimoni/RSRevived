@@ -408,7 +408,7 @@ namespace Zaimoni.Data
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
-      T ret = default(T);
+      T ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
          if (0>num2.CompareTo(num1)) {
@@ -426,7 +426,7 @@ namespace Zaimoni.Data
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
-      T ret = default(T);
+      T ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
          if (0<num2.CompareTo(num1)) {

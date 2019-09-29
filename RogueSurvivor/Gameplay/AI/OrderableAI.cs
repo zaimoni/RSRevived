@@ -2565,7 +2565,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
 
       // go to SLP-relevant medicines in inventory stacks that are in sight
-      bool has_SLP_relevant(Inventory inv) {
+      static bool has_SLP_relevant(Inventory inv) {
         return null!=inv.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
       }
 
