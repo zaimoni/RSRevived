@@ -113,7 +113,6 @@ namespace Zaimoni.Data
           // XXX general implementation would have the four edges of the reference square \todo IMPLEMENT
           default: return false;
           }
-          return false; // in case of typos
         }
 
         // Five line segments based on the extended compass may be encoded into a 32-bit unsigned integer without unusual measures.

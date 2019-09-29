@@ -461,6 +461,8 @@ namespace djack.RogueSurvivor.Data
       return 0 == pt.X || pt.X == Width-1 || 0 == pt.Y || pt.Y == Height-1;
     }
 
+#nullable enable
+
     /// <summary>
     /// GetTileAt does not bounds-check for efficiency reasons;
     /// the typical use case is known to be in bounds by construction.
@@ -487,7 +489,7 @@ namespace djack.RogueSurvivor.Data
 #if NO_PEACE_WALLS
       if (IsInBounds(p)) return GetTileAt(p);
       Location? loc = _Normalize(p);
-//    if (null == loc) throw ...;
+      if (null == loc) throw new InvalidOperationException("non-normalizable coordinate for tile");
       return loc.Value.Map.GetTileAt(loc.Value.Position);
 #else
       int i = p.Y*Width+p.X;
@@ -495,6 +497,7 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+#nullable restore
 
     public void SetIsInsideAt(int x, int y, bool inside=true)
     {
@@ -630,9 +633,9 @@ namespace djack.RogueSurvivor.Data
     {
       m_Exits.TryGetValue(pos, out Exit exit);
       return exit;
-     }
+    }
 
-     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
+    public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif

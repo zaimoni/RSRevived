@@ -174,8 +174,9 @@ namespace djack.RogueSurvivor.Engine.Actions
         m_FailReason = "target does not have room in inventory";
 #if DEBUG
         throw new InvalidOperationException("tracing");
-#endif
+#else
         return false;
+#endif
       }
       return true;
     }
