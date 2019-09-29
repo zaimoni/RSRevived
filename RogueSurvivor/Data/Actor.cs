@@ -28,11 +28,7 @@ using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-#if SAVELOAD_KILL
-  internal class Actor : IEquatable<Actor>, ISerializable
-#else
   internal class Actor : IEquatable<Actor>
-#endif
     {
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
@@ -613,98 +609,6 @@ namespace djack.RogueSurvivor.Data
       OnModelSet();
     }
 
-#if SAVELOAD_KILL
-#region Implement ISerializable
-    protected Actor(SerializationInfo info, StreamingContext context)
-    {
-      m_Flags = (Actor.Flags) info.GetValue("m_Flags", typeof(Actor.Flags));
-      m_ModelID = (Gameplay.GameActors.IDs) info.GetValue("m_ModelID", typeof(Gameplay.GameActors.IDs));
-      m_FactionID = (int) info.GetValue("m_FactionID", typeof(int));
-      m_GangID = (Gameplay.GameGangs.IDs) info.GetValue("m_GangID", typeof(Gameplay.GameGangs.IDs));
-      m_Name = (string) info.GetValue("m_Name", typeof(string));
-      m_Controller = (ActorController) info.GetValue("m_Controller", typeof(ActorController));
-      m_Sheet = (ActorSheet) info.GetValue("m_Sheet", typeof(ActorSheet));
-      m_SpawnTime = (int) info.GetValue("m_SpawnTime", typeof(int));
-      m_Inventory = (Inventory) info.GetValue("m_Inventory", typeof(Inventory));
-      m_Doll = (Doll) info.GetValue("m_Doll", typeof(Doll));
-      m_HitPoints = (int) info.GetValue("m_HitPoints", typeof(int));
-      m_previousHitPoints = (int) info.GetValue("m_previousHitPoints", typeof(int));
-      m_StaminaPoints = (int) info.GetValue("m_StaminaPoints", typeof(int));
-      m_previousStamina = (int) info.GetValue("m_previousStamina", typeof(int));
-      m_FoodPoints = (int) info.GetValue("m_FoodPoints", typeof(int));
-      m_previousFoodPoints = (int) info.GetValue("m_previousFoodPoints", typeof(int));
-      m_SleepPoints = (int) info.GetValue("m_SleepPoints", typeof(int));
-      m_previousSleepPoints = (int) info.GetValue("m_previousSleepPoints", typeof(int));
-      m_Sanity = (int) info.GetValue("m_Sanity", typeof(int));
-      m_previousSanity = (int) info.GetValue("m_previousSanity", typeof(int));
-      m_Location = (Location) info.GetValue("m_Location", typeof(Location));
-      m_ActionPoints = (int) info.GetValue("m_ActionPoints", typeof(int));
-      m_LastActionTurn = (int) info.GetValue("m_LastActionTurn", typeof(int));
-      m_TargetActor = (Actor) info.GetValue("m_TargetActor", typeof(Actor));
-      m_AudioRangeMod = (int) info.GetValue("m_AudioRangeMod", typeof(int));
-      m_CurrentMeleeAttack = (Attack) info.GetValue("m_CurrentMeleeAttack", typeof(Attack));
-      m_CurrentRangedAttack = (Attack) info.GetValue("m_CurrentRangedAttack", typeof(Attack));
-      m_CurrentDefence = (Defence) info.GetValue("m_CurrentDefence", typeof(Defence));
-      m_Leader = (Actor) info.GetValue("m_Leader", typeof(Actor));
-      m_Followers = (List<Actor>) info.GetValue("m_Followers", typeof(List<Actor>));
-      m_TrustInLeader = (int) info.GetValue("m_TrustInLeader", typeof(int));
-      m_TrustDict = (Dictionary<Actor, int>) info.GetValue("m_TrustDict", typeof(Dictionary<Actor, int>));
-      m_KillsCount = (int) info.GetValue("m_KillsCount", typeof(int));
-      m_AggressorOf = (List<Actor>) info.GetValue("m_AggressorOf", typeof(List<Actor>));
-      m_SelfDefenceFrom = (List<Actor>) info.GetValue("m_SelfDefenceFrom", typeof(List<Actor>));
-      m_MurdersCounter = (int) info.GetValue("m_MurdersCounter", typeof(int));
-      m_Infection = (int) info.GetValue("m_Infection", typeof(int));
-      m_DraggedCorpse = (Corpse) info.GetValue("m_DraggedCorpse", typeof(Corpse));
-      OdorSuppressorCounter = (int) info.GetValue("OdorSuppressorCounter", typeof(int));
-      ActorScoring = (Engine.ActorScoring) info.GetValue("ActorScoring", typeof(Engine.ActorScoring));
-    }
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("m_Flags", m_Flags);
-      info.AddValue("m_ModelID", m_ModelID);
-      info.AddValue("m_FactionID", m_FactionID);
-      info.AddValue("m_GangID", m_GangID);
-      info.AddValue("m_Name", m_Name);
-      info.AddValue("m_Controller", m_Controller);
-      info.AddValue("m_Sheet", m_Sheet);
-      info.AddValue("m_SpawnTime", m_SpawnTime);
-      info.AddValue("m_Inventory", m_Inventory);
-      info.AddValue("m_Doll", m_Doll);
-      info.AddValue("m_HitPoints", m_HitPoints);
-      info.AddValue("m_previousHitPoints", m_previousHitPoints);
-      info.AddValue("m_StaminaPoints", m_StaminaPoints);
-      info.AddValue("m_previousStamina", m_previousStamina);
-      info.AddValue("m_FoodPoints", m_FoodPoints);
-      info.AddValue("m_previousFoodPoints", m_previousFoodPoints);
-      info.AddValue("m_SleepPoints", m_SleepPoints);
-      info.AddValue("m_previousSleepPoints", m_previousSleepPoints);
-      info.AddValue("m_Sanity", m_Sanity);
-      info.AddValue("m_previousSanity", m_previousSanity);
-      info.AddValue("m_Location", m_Location);
-      info.AddValue("m_ActionPoints", m_ActionPoints);
-      info.AddValue("m_LastActionTurn", m_LastActionTurn);
-      info.AddValue("m_TargetActor", m_TargetActor);
-      info.AddValue("m_AudioRangeMod", m_AudioRangeMod);
-      info.AddValue("m_CurrentMeleeAttack", m_CurrentMeleeAttack);
-      info.AddValue("m_CurrentRangedAttack", m_CurrentRangedAttack);
-      info.AddValue("m_CurrentDefence", m_CurrentDefence);
-      info.AddValue("m_Leader", m_Leader);
-      info.AddValue("m_Followers", m_Followers);
-      info.AddValue("m_TrustInLeader", m_TrustInLeader);
-      info.AddValue("m_TrustDict", m_TrustDict);
-      info.AddValue("m_KillsCount", m_KillsCount);
-      info.AddValue("m_AggressorOf", m_AggressorOf);
-      info.AddValue("m_SelfDefenceFrom", m_SelfDefenceFrom);
-      info.AddValue("m_MurdersCounter", m_MurdersCounter);
-      info.AddValue("m_Infection", m_Infection);
-      info.AddValue("m_DraggedCorpse", m_DraggedCorpse);
-      info.AddValue("OdorSuppressorCounter", OdorSuppressorCounter);
-      info.AddValue("ActorScoring", ActorScoring);
-     }
-#endregion
-#endif
-
     public void Retype(ActorModel model)
     {
       m_ModelID = model.ID;
@@ -727,6 +631,12 @@ namespace djack.RogueSurvivor.Data
       m_CurrentDefence = model.StartingSheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
+
+#if PROTOTYPE
+    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    {
+    }
+#endif
 
 	public void PrefixName(string prefix)
 	{
