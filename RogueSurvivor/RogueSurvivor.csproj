@@ -136,6 +136,7 @@
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />
     <Compile Include="Gameplay\AI\Tools\MinStepPath.cs" />
     <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
+    <Compile Include="Microsoft\Random.cs" />
     <Compile Include="RogueForm.cs">
       <SubType>Form</SubType>
     </Compile>

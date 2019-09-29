@@ -283,6 +283,7 @@
     <Compile Include="..\Zaimoni\Data\DenormalizedProbability.cs" />
     <Compile Include="..\Zaimoni\Data\PlausibilityMap.cs" />
     <Compile Include="..\Zaimoni\Data\FloodfillPathfinder.cs" />
+    <Compile Include="..\Microsoft\Random.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Bugreport.resx" />

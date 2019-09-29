@@ -10,6 +10,7 @@ using System.Linq;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
+using Random = Microsoft.Random;
 
 namespace djack.RogueSurvivor.Engine
 {
