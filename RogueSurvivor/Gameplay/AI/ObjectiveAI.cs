@@ -5293,6 +5293,25 @@ restart_single_exit:
       return obj1;
     }
 
+    public KeyValuePair<Actor,ItemRangedWeapon>? GetNearestTargetFor()
+    {
+      var rw = GetBestRangedWeaponWithAmmo();
+      if (null == rw) return null;
+      var range = rw.Model.Attack.Range;
+      short r = 0;
+      while (++r <= range) {
+        foreach (Point pt in Enumerable.Range(0, 8 * r).Select(i => m_Actor.Location.Position.RadarSweep(r, i))) {
+            Location loc = new Location(m_Actor.Location.Map, pt);
+            if (!Map.Canonical(ref loc)) continue;
+            var actor2 = loc.Actor;
+            if (null != actor2 && !actor2.IsDead && m_Actor != actor2 && m_Actor.IsEnemyOf(actor2)) {
+              if (LOS.CanTraceViewLine(m_Actor.Location, actor2.Location)) return new KeyValuePair<Actor, ItemRangedWeapon>(actor2,rw);
+            }
+        }
+      }
+      return null;
+    }
+
     public Dictionary<int,Attack> GetBestRangedAttacks(Actor target)
     {
       if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory

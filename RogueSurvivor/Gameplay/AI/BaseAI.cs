@@ -1284,22 +1284,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected static Actor GetNearestTargetFor(Actor actor)
-    {
-      Actor actor1 = null;
-      int num1 = int.MaxValue;
-      foreach (Actor actor2 in actor.Location.Map.Actors) {
-        if (!actor2.IsDead && actor2 != actor && actor.IsEnemyOf(actor2)) {
-          int num2 = Rules.GridDistance(actor2.Location.Position, actor.Location.Position);
-          if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position))) {
-            num1 = num2;
-            actor1 = actor2;
-          }
-        }
-      }
-      return actor1;
-    }
-
     // XXX these two break down cross-map
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {

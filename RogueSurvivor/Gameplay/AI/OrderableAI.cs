@@ -1899,13 +1899,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
     {
       Actor leader = m_Actor.LiveLeader;
-      var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
-      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
-      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;    // XXX \todo cross-map conversion
+      var ranged_target = null != leader ? (leader.Controller as ObjectiveAI)?.GetNearestTargetFor() : null;
+      Actor actor = ranged_target?.Key;
+      bool checkLeaderLof = null != actor;
       List<Point> leaderLoF = null;
-      if (checkLeaderLoF) {
+      if (checkLeaderLof) {
         leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
+        LOS.CanTraceFireLine(leader.Location, actor.Location, ranged_target.Value.Value.Model.Attack.Range, leaderLoF);
       }
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
