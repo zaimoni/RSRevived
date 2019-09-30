@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define NO_PEACE_WALLS
-
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
@@ -183,16 +181,12 @@ namespace djack.RogueSurvivor.Data
 #endif
       var e = map.GetExitAt(position);
       if (null != e && e.Location==m_Actor.Location) return true;
-#if NO_PEACE_WALLS
       if (map != m_Actor.Location.Map)
         {
         Location? tmp = m_Actor.Location.Map.Denormalize(new Location(map, position));
         if (null == tmp) return false;
         return _IsVisibleTo(tmp.Value.Map,tmp.Value.Position);
         }
-#else
-      if (map != m_Actor.Location.Map) return false;
-#endif
       if (!map.IsValid(position)) return false;
       return FOV?.Contains(position) ?? false;
     }

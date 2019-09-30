@@ -7,7 +7,6 @@
 // #define DATAFLOW_TRACE
 
 // #define STABLE_SIM_OPTIONAL
-#define NO_PEACE_WALLS
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
@@ -306,9 +305,7 @@ namespace djack.RogueSurvivor.Engine
     private const int PLAYER_HEAR_BASH_CHANCE = 25;
     private const int PLAYER_HEAR_BREAK_CHANCE = 50;
     private const int PLAYER_HEAR_EXPLOSION_CHANCE = 100;
-    private const int BLOOD_WALL_SPLAT_CHANCE = 20;
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
-    private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;   // XXX dead now that exit generation is on NO_PEACE_WALLS
 
 #if DEBUG
     public static bool IsDebugging;
@@ -7919,13 +7916,10 @@ namespace djack.RogueSurvivor.Engine
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
 #endif
       exitAt.Location.Place(actor); // Adds at last position by default
-#if NO_PEACE_WALLS
       if (   exitAt.ToMap.District == map.District // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
           || run_was_free_move)
         exitAt.ToMap.MoveActorToFirstPosition(actor);
-#else
-      exitAt.ToMap.MoveActorToFirstPosition(actor);
-#endif
+
       if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
       if (map.District != exitAt.ToMap.District) {
@@ -10354,12 +10348,14 @@ namespace djack.RogueSurvivor.Engine
 
     private void SplatterBlood(Map map, Point position)
     {
+      const int BLOOD_WALL_SPLAT_CHANCE = 20;
+
       if (map.GetTileModelAt(position).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position)) {
         map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position);
         map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in position, GameImages.DECO_BLOODIED_FLOOR));
       }
       map.ForEachAdjacent(position,(p => {
-        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, in p) && m_Rules.RollChance(20)) {
+        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, in p) && m_Rules.RollChance(BLOOD_WALL_SPLAT_CHANCE)) {
           map.AddDecorationAt(GameImages.DECO_BLOODIED_WALL, in p);
           map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in p, GameImages.DECO_BLOODIED_WALL));
         }
@@ -11121,18 +11117,11 @@ namespace djack.RogueSurvivor.Engine
       int working = 0;
 
       lock(m_MapView) {
-#if NO_PEACE_WALLS
       var num1 = MapViewRect.Left;
       var num2 = MapViewRect.Right;
       var num3 = MapViewRect.Top;
       var num4 = MapViewRect.Bottom;
       var view_center = MapViewRect.Location + (Point)HALF_VIEW_WIDTH;
-#else
-      var num1 = Math.Max(-1, m_MapViewRect.Left);
-      var num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
-      var num3 = Math.Max(-1, m_MapViewRect.Top);
-      var num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
-#endif
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
       HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
@@ -11179,32 +11168,17 @@ namespace djack.RogueSurvivor.Engine
         point.X = x;
         for (var y = num3; y < num4; ++y) {
           point.Y = y;
-#if NO_PEACE_WALLS
           if (!map.IsValid(x, y)) continue;
-#endif
           MapViewRect.convert(point,ref working);   // likely a VM issue if this throws
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
-#if NO_PEACE_WALLS
           Tile tile = map.GetTileAtExt(point);   // non-null for valid coordinates by construction
-#else
-          Tile tile = map.IsValid(x, y) ? map.GetTileAtExt(x, y) : null;
-          if (null != tile) {
-#endif
-            tile.IsInView = player;
-            tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
-            DrawTile(tile, screen, tint);
-            if (!string.IsNullOrEmpty(overlays[working])) m_UI.UI_DrawImage(overlays[working], screen.X, screen.Y, tint);
+          tile.IsInView = player;
+          tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
+          DrawTile(tile, screen, tint);
+          if (!string.IsNullOrEmpty(overlays[working])) m_UI.UI_DrawImage(overlays[working], screen.X, screen.Y, tint);
 
-#if NO_PEACE_WALLS
-#else
-          } else if (map.IsMapBoundary(x, y)) {
-            Exit tmp = map.GetExitAt(point);
-            if (null!=tmp && string.IsNullOrEmpty(tmp.ReasonIsBlocked(m_Player)))
-              DrawExit(screen);
-          }
-#endif
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
             List<Corpse> corpsesAt = map.GetCorpsesAtExt(point);
@@ -11220,11 +11194,7 @@ namespace djack.RogueSurvivor.Engine
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
           }
-#if NO_PEACE_WALLS
           if (!Player.IsSleeping && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
-#else
-          if (!Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(Player.Location.Position, point) <= 1) {    // XXX optimize when no peace walls
-#endif
             if (isUndead) {
               if (flag1) {
                 int num5 = Player.SmellThreshold;
@@ -11260,23 +11230,13 @@ namespace djack.RogueSurvivor.Engine
               flag2 = true;
             }
           }
-#if NO_PEACE_WALLS
           if (tile.HasDecorations) flag2 = true;
-#else
-          if (tile != null && tile.HasDecorations) flag2 = true;
-#endif
           if (flag2 && tile.Model.IsWater) DrawTileWaterCover(tile, screen, tint);
-#if NO_PEACE_WALLS
           if (player && imageID != null && !tile.IsInside)
-#else
-          if (player && imageID != null && (tile != null && !tile.IsInside))
-#endif
             m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
-#if NO_PEACE_WALLS
           if (view_center.X==x && view_center.Y==y && (map!=Player.Location.Map || view_center!=Player.Location.Position)) {
             m_UI.UI_DrawImage(GameImages.ITEM_SLOT, screen.X, screen.Y, tint);    // XXX overload this
           }
-#endif
         }
       }
       } // lock(m_MapView)
@@ -11361,14 +11321,6 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
       }
     }
-
-#if NO_PEACE_WALLS
-#else
-    public void DrawExit(Point screen)
-    {
-      m_UI.UI_DrawImage(GameImages.MAP_EXIT, screen.X, screen.Y);
-    }
-#endif
 
 #if DEAD_FUNC
     public void DrawTileRectangle(Point mapPosition, Color color)
