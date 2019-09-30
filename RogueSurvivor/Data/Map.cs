@@ -123,7 +123,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
 #nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
-    public int CountActors { get { return m_ActorsList.Count; } }
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
     public IEnumerable<Inventory> GroundInventories { get { return m_GroundItemsByPosition.Values; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
@@ -1746,6 +1745,17 @@ retry:
         timer.Tick(this);
         if (timer.IsCompleted) m_Timers.RemoveAt(i);
       }
+    }
+
+    public KeyValuePair<bool,bool> AdvanceLocalTime()
+    {
+      bool wasNight = LocalTime.IsNight;
+      ++LocalTime.TurnCounter;
+      bool isDay = !LocalTime.IsNight;
+
+      if (0 < m_ActorsList.Count) Engine.LOS.Now(this);
+      Engine.LOS.Expire(this);
+      return new KeyValuePair<bool,bool>(wasNight == isDay, isDay);
     }
 
     public int GetScentByOdorAt(Odor odor, in Point position)

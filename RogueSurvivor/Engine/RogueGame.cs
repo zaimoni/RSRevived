@@ -2156,10 +2156,7 @@ namespace djack.RogueSurvivor.Engine
                     }
                   }
                 }
-                if (flag4) {
-                  if (actorList == null) actorList = new List<Actor>(map.CountActors);
-                  actorList.Add(actor);
-                }
+                if (flag4) (actorList ?? (actorList = new List<Actor>())).Add(actor);
               }
             }
           }
@@ -2406,24 +2403,15 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
-#region Advance local time
-      bool wasNight = map.LocalTime.IsNight;
-      ++map.LocalTime.TurnCounter;
-      bool isDay = !map.LocalTime.IsNight;
-
-      if (0 < map.CountActors) LOS.Now(map);
-      LOS.Expire(map);
-#endregion
-#region Check for NPC upgrade
-	  if (wasNight != isDay) return;	// night/day did not end, do not upgrade skills
-      if (isDay) {
-        HandleLivingNPCsUpgrade(map);
-      } else {
-        if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day))
-          return;
-        HandleUndeadNPCsUpgrade(map);
+      var time = map.AdvanceLocalTime();
+      if (time.Key) { // night/day ended; upgrade NPC skills
+        if (time.Value) {   // day
+          HandleLivingNPCsUpgrade(map);
+        } else {    // night
+          if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day)) return;
+          HandleUndeadNPCsUpgrade(map);
+        }
       }
-#endregion
     }
 
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
