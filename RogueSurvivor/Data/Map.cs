@@ -42,8 +42,8 @@ namespace djack.RogueSurvivor.Data
 	[NonSerialized] public readonly Rectangle Rect;
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
-    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
 #nullable enable
+    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
 #nullable restore
     private readonly List<Zone> m_Zones = new List<Zone>(5);
@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Data
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
-      m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
+      _read(ref m_Decorations, "m_Decorations", info);
       m_BgMusic = (string)info.GetValue("m_BgMusic", typeof(string));   // alpha10
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
@@ -569,6 +569,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // thin wrappers based on Tile API
+#nullable enable
     public bool HasDecorationsAt(Point pt) { return m_Decorations.ContainsKey(pt); }
 
     public void DoForAllDecorationsAt(Point pt, Action<string> op)
@@ -578,7 +579,7 @@ namespace djack.RogueSurvivor.Data
 
     public void AddDecorationAt(string imageID, in Point pt)
     {
-      if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)) {
+      if (m_Decorations.TryGetValue(pt, out var ret)) {
         ret.Add(imageID);
       } else {
         m_Decorations.Add(pt, new HashSet<string>{ imageID });
@@ -587,18 +588,19 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasDecorationAt(string imageID, in Point pt)
     {
-      return m_Decorations.TryGetValue(pt, out HashSet<string> ret) && ret.Contains(imageID);
+      return m_Decorations.TryGetValue(pt, out var ret) && ret.Contains(imageID);
     }
 
     public void RemoveAllDecorationsAt(Point pt) { m_Decorations.Remove(pt); }
 
     public void RemoveDecorationAt(string imageID, in Point pt)
     {
-      if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)
+      if (m_Decorations.TryGetValue(pt, out var ret)
           && ret.Remove(imageID)
           && 0 >= ret.Count)
           m_Decorations.Remove(pt);
     }
+#nullable restore
 
     public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
 
