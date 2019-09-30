@@ -1976,7 +1976,7 @@ restart:
         map.SetTileModelAt(pt, floor);
       });
       bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, in pt) && !map.AnyAdjacent<DoorWindow>(pt); };
-      MapObject make_door_window(Point pt) { return ((!map.GetTileAt(pt).IsInside && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
+      MapObject make_door_window(Point pt) { return ((!map.IsInsideAt(pt) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
       foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);
     }

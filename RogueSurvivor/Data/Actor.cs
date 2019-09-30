@@ -1640,7 +1640,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInside {
       get {
-        return Location.Map.GetTileAt(Location.Position).IsInside;
+        return Location.Map.IsInsideAt(Location.Position);
       }
     }
 

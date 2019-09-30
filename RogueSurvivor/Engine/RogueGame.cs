@@ -11173,7 +11173,7 @@ namespace djack.RogueSurvivor.Engine
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
-          Tile tile = map.GetTileAtExt(point);   // non-null for valid coordinates by construction
+          var tile = map.GetTileAtExt(point);   // non-null for valid coordinates by construction
           tile.IsInView = player;
           tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
           DrawTile(tile, screen, tint);
