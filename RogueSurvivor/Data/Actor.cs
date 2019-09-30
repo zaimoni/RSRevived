@@ -2134,7 +2134,7 @@ namespace djack.RogueSurvivor.Data
       if (0 >= Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
 
       Map map = Location.Map;
-      if (!map.GetTileModelAtExt(pos).IsWalkable) return  "cannot build on walls";
+      if (!map.GetTileModelAtExt(pos)?.IsWalkable ?? true) return  "cannot build on walls";
 
       int num = BarricadingMaterialNeedForFortification(isLarge);
       if (CountItems<ItemBarricadeMaterial>() < num) return string.Format("not enough barricading material, need {0}.", (object) num);

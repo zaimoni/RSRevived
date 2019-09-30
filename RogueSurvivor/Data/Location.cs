@@ -48,7 +48,9 @@ namespace djack.RogueSurvivor.Data
     public bool IsWalkableFor(Actor actor, out string reason) { return Map.IsWalkableFor(Position, actor, out reason); }
     public Inventory Items { get { return Map.GetItemsAt(Position); } }
     public Exit Exit { get { return Map.GetExitAt(Position); } }
+#nullable enable
     public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
+#nullable restore
     public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }
     public void AddDecoration(string imageID) { Map.AddDecorationAt(imageID, Position); }
 
