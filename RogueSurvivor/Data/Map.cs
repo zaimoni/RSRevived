@@ -177,6 +177,15 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region Implement ISerializable
+#nullable enable
+    static private void _read<T>(ref T dest, string src, SerializationInfo info) where T:class
+    {
+      var tmp = info.GetValue(src, typeof(T)) as T; // should have thrown already but this function doesn't have proper annotations
+      if (null == tmp) throw new ArgumentNullException(src);
+      else dest = tmp;
+    }
+#nullable restore
+
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = (int) info.GetValue("m_Seed", typeof (int));
@@ -185,9 +194,7 @@ namespace djack.RogueSurvivor.Data
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
-#nullable enable
-      m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
-#nullable restore
+      _read(ref m_Exits, "m_Exits", info);
       m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
       m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
