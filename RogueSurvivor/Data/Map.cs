@@ -43,7 +43,9 @@ namespace djack.RogueSurvivor.Data
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
+#nullable enable
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
+#nullable restore
     private readonly List<Zone> m_Zones = new List<Zone>(5);
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
@@ -117,7 +119,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
+#nullable enable
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
+#nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public int CountActors { get { return m_ActorsList.Count; } }
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
@@ -181,7 +185,9 @@ namespace djack.RogueSurvivor.Data
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
+#nullable enable
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
+#nullable restore
       m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
       m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
@@ -597,41 +603,34 @@ namespace djack.RogueSurvivor.Data
       return null != test && test.Value.Map.HasExitAt(test.Value.Position);
     }
 
-    public Exit GetExitAt(Point pos)
+#nullable enable
+    public Exit? GetExitAt(Point pos)
     {
-      m_Exits.TryGetValue(pos, out Exit exit);
-      return exit;
+      if (m_Exits.TryGetValue(pos, out var exit)) return exit;
+      return null;
     }
 
     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-#endif
       var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
-        if (fn(x.Value)) ret[x.Key] = x.Value;
+        if (fn(x.Value)) ret.Add(x.Key, x.Value);
       }
       return ret;
     }
 
      public Dictionary<Point,Exit> ExitsFor(Map dest) {
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
       var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
-        if (x.Value.ToMap == dest) ret[x.Key] = x.Value;
+        if (x.Value.ToMap == dest) ret.Add(x.Key, x.Value);
       }
       return ret;
     }
 
     public KeyValuePair<Point,Exit>? FirstExitFor(Map dest) {
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
       foreach(var x in m_Exits) if (x.Value.ToMap == dest) return x;
       return null;
     }
+#nullable restore
 
     public List<Point> GetEdge()    // \todo refactor to a cache variable setter
     {
@@ -658,6 +657,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+#nullable enable
     public void ForEachExit(Action<Point,Exit> op)
     {
        foreach(var x in m_Exits) op(x.Key,x.Value);
@@ -666,6 +666,7 @@ namespace djack.RogueSurvivor.Data
     public void SetExitAt(Point pos, Exit exit) {
       m_Exits.Add(pos, exit);
     }
+#nullable restore
 
 #if DEAD_FUNC
     public void RemoveExitAt(Point pos)
@@ -678,23 +679,6 @@ namespace djack.RogueSurvivor.Data
     {
       return rect.Any(pt => HasExitAt(in pt));
     }
-
-    // <remark>only caller wants result in-bounds</remark>
-	public List<Point> ExitLocations(HashSet<Exit> src)
-	{
-      if (0 >= (src?.Count ?? 0)) return null;
-	  var ret = new HashSet<Point>();
-      foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
-        if (!src.Contains(mExit.Value)) continue;
-        if (IsInBounds(mExit.Key)) ret.Add(mExit.Key);
-        else {
-          foreach(var pt in mExit.Key.Adjacent()) {
-            if (IsInBounds(pt)) ret.Add(pt);
-          }
-        }
-      }
-	  return (0<ret.Count ? ret.ToList() : null);
-	}
 
     public static int PathfinderMoveCosts(ActorAction act)
     {
