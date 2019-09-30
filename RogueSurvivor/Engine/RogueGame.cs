@@ -2313,75 +2313,39 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 5. Check batteries : lights, trackers.
         // lights and normal trackers
-        foreach (Actor actor in map.Actors) {
-          Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
-          if (equippedItem is BatteryPowered tmp && 0 < tmp.Batteries) {
-            --tmp.Batteries;
-             if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
-               AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
-          }
+        bool is_drained(BatteryPowered it) {
+          return 0 < it.Batteries && 0 >= --it.Batteries;
         }
-        // police radios
-        foreach (Actor actor in map.Actors) {
-          if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker && tracker.Batteries > 0) {
-            --tracker.Batteries;
-            if (tracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", tracker.TheName)));
-          }
+        void drain(Actor actor, Item it) {
+          if (it is BatteryPowered batt && is_drained(batt) && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", it.TheName)));
         }
+        map.DoForAllActors(a => {
+          drain(a, a.GetEquippedItem(DollPart.LEFT_HAND));    // lights and normal trackers
+          drain(a, a.GetEquippedItem(DollPart.HIP_HOLSTER));    // police radios
+        });
 #endregion
 
 #region 6. Check explosives.
         bool hasExplosivesToExplode = false;
-        Action<ItemPrimedExplosive> expire_exp = (exp => {
-          if (0 >= --exp.FuseTimeLeft) hasExplosivesToExplode = true;
-        });
-#region 6.1 Update fuses.
-        foreach (Inventory inv in map.GroundInventories) {
-          inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp);
-        }
-        foreach (Actor actor in map.Actors) {
-          actor.Inventory?.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp);
-        }
-#endregion
+        void expire_exp(ItemPrimedExplosive exp) { if (0 >= --exp.FuseTimeLeft) hasExplosivesToExplode = true; };
+        void expire_all_exp(Inventory inv) { inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp); }
+        map.DoForAllInventory(expire_all_exp);  // 6.1 Update fuses.
+
         if (hasExplosivesToExplode) {
 #region 6.2 Explode.
-          bool hasExplodedSomething;
-          do {
-            hasExplodedSomething = false;
-            foreach (Inventory groundInventory in map.GroundInventories) {
-              List<ItemPrimedExplosive> tmp = groundInventory.GetItemsByType<ItemPrimedExplosive>();
-              if (null == tmp) continue;
-
-              // leave in for formal correctness.
-              Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
-              if (null == inventoryPosition) throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
-
-              foreach (ItemPrimedExplosive exp in tmp) {
-                if (0 >= exp.FuseTimeLeft) {
-                  map.RemoveItemAt(exp, inventoryPosition.Value);
-                  DoBlast(new Location(map, inventoryPosition.Value), exp.Model.BlastAttack);
-                  hasExplodedSomething = true;
-                  break;
-                }
-              }
-              if (hasExplodedSomething) break;
-            }
-            if (!hasExplodedSomething) {
-              foreach (Actor actor in map.Actors) {
-                List<ItemPrimedExplosive> tmp = actor.Inventory?.GetItemsByType<ItemPrimedExplosive>();
-                if (null == tmp) continue;
-                foreach (ItemPrimedExplosive exp in tmp) {
-                  if (0 >= exp.FuseTimeLeft) {
-                    actor.Inventory.RemoveAllQuantity(exp);
-                    DoBlast(new Location(map, actor.Location.Position), exp.Model.BlastAttack);
-                    hasExplodedSomething = true;
-                    break;
-                  }
-                }
+          bool find_live_grenade(Inventory inv, Location loc) {
+            var tmp = inv.GetItemsByType<ItemPrimedExplosive>();
+            if (null != tmp) foreach (var exp in tmp) {
+              if (0 >= exp.FuseTimeLeft) {
+                inv.RemoveAllQuantity(exp);
+                DoBlast(loc, exp.Model.BlastAttack);
+                return true;
               }
             }
-          } while (hasExplodedSomething);
+            return false;
+          }
+
+          while(map.DoForOneInventory(find_live_grenade));
 #endregion
         }
 #endregion
@@ -2425,20 +2389,12 @@ namespace djack.RogueSurvivor.Engine
 
     static private int CountFoodItemsNutrition(Map map)
     {
-      int num1 = 0;
       int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
 
-      foreach (Inventory groundInventory in map.GroundInventories) {
-        List<ItemFood> tmp = groundInventory.GetItemsByType<ItemFood>();
-        if (null == tmp) continue;
-        num1 += tmp.Sum(nutrition);
-      }
-      foreach (Actor actor in map.Actors) {
-        List<ItemFood> tmp = actor.Inventory?.GetItemsByType<ItemFood>();
-        if (null == tmp) continue;
-        num1 += tmp.Sum(nutrition);
-      }
-      return num1;
+      return map.SumOverAllInventory(inv => { 
+        var tmp = inv.GetItemsByType<ItemFood>();
+        return null!=tmp ? tmp.Sum(nutrition) : 0;
+      });
     }
 
     static private bool CheckForEvent_ZombieInvasion(Map map)
@@ -13721,13 +13677,8 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
           bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
-          var actorList2 = new List<Actor>();
           // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
-          foreach (Map map in CurrentMap.District.Maps) {
-            foreach (Actor actor in map.Actors) {
-              if (IsSuitableReincarnation(actor, asLiving)) actorList2.Add(actor);
-            }
-          }
+          var actorList2 = CurrentMap.District.FilterActors(actor => IsSuitableReincarnation(actor, asLiving));
           matchingActors = actorList2.Count;
           return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList2);
         default: throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
@@ -14034,21 +13985,12 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    static private List<Actor> ListDistrictActors(District d, RogueGame.MapListFlags flags, Predicate<Actor> pred)
+#nullable enable
+    static private List<Actor> ListDistrictActors(District d, MapListFlags flags, Predicate<Actor> pred)
     {
-#if DEBUG
-      if (null == pred) throw new ArgumentNullException(nameof(pred));
-#endif
-      var actorList = new List<Actor>();
-      foreach (Map map in d.Maps) {
-        if ((flags & MapListFlags.EXCLUDE_SECRET_MAPS) == MapListFlags.NONE || !map.IsSecret) {
-          foreach (Actor actor in map.Actors) {
-            if (pred(actor)) actorList.Add(actor);
-          }
-        }
-      }
-      return actorList;
+      return d.FilterActors(pred, map => (flags & MapListFlags.EXCLUDE_SECRET_MAPS) == MapListFlags.NONE || !map.IsSecret);
     }
+#nullable restore
 
     static private string FunFactActorResume(Actor a, string info)
     {

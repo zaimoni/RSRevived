@@ -367,6 +367,24 @@ namespace djack.RogueSurvivor.Data
        return null;
     }
 
+#nullable enable
+    public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
+
+    public List<Actor> FilterActors(Predicate<Actor> test) {
+      var ret = new List<Actor>();
+      void include(Actor a) { if (test(a)) ret.Add(a); };
+      foreach(Map m in m_Maps) m.DoForAllActors(include);
+      return ret;
+    }
+
+    public List<Actor> FilterActors(Predicate<Actor> test, Predicate<Map> m_test) {
+      var ret = new List<Actor>();
+      void include(Actor a) { if (test(a)) ret.Add(a); };
+      foreach(Map m in m_Maps) if (m_test(m)) m.DoForAllActors(include);
+      return ret;
+    }
+#nullable restore
+
     public bool MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool> pred =null)
     {
 #if DEBUG

@@ -139,17 +139,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void DoForAllActors(Action<Actor> op)
-    {
-#if DEBUG
-      if (null == op) throw new ArgumentNullException(nameof(op));
-#endif
-      foreach(District d in m_DistrictsGrid) {
-        foreach(Map m in d.Maps) {
-          foreach(Actor a in m.Actors) op(a);
-        }
-      }
-    }
+#nullable enable
+    public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
+#nullable restore
 
     public World(short size)
     {
@@ -312,15 +304,10 @@ namespace djack.RogueSurvivor.Data
     public void MakePC() {
       if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {    // could be call graph precondition, but this doesn't have to be fast
         string[] names = Engine.Session.CommandLineOptions["PC"].Split('\0');
-        foreach(District d in m_DistrictsGrid) {
-          foreach(Map m in d.Maps) {
-            foreach(Actor a in m.Actors) {
-              if (!names.Contains(a.UnmodifiedName)) continue;
-              if (a.IsPlayer) continue;
-              a.Controller = new PlayerController();
-            }
-          }
-        }
+
+        void make_PC(Actor a) { if (names.Contains(a.UnmodifiedName) && !a.IsPlayer) a.Controller = new PlayerController(); };
+
+        DoForAllActors(make_PC);
       }
     }
 

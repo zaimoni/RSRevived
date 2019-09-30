@@ -979,6 +979,49 @@ retry:
       }
     }
 
+#nullable enable
+    public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
+#nullable restore
+
+    public void DoForAllInventory(Action<Inventory> op)
+    {
+      foreach (var x in m_GroundItemsByPosition) op(x.Value);
+      foreach (var actor in m_ActorsList) {
+        var inv = actor.Inventory;
+        if (null != inv) op(inv);
+      }
+    }
+
+    public int SumOverAllInventory(Func<Inventory,int> xform)
+    {
+      int ret = 0;
+
+      foreach (var x in m_GroundItemsByPosition) ret += xform(x.Value);
+      foreach (var actor in m_ActorsList) {
+        var inv = actor.Inventory;
+        if (null == inv) continue;
+        ret += xform(inv);
+      }
+
+      return ret;
+    }
+
+    public bool DoForOneInventory(Func<Inventory,Location,bool> test)
+    {
+      foreach (var x in m_GroundItemsByPosition) {
+        if (test(x.Value,new Location(this,x.Key))) {
+          if (x.Value.IsEmpty) m_GroundItemsByPosition.Remove(x.Key);
+          return true;
+        }
+      }
+      foreach (var actor in m_ActorsList) {
+        var inv = actor.Inventory;
+        if (null == inv) continue;
+        if (test(inv,actor.Location)) return true;
+      }
+      return false;
+    }
+
     // Actor manipulation functions
     public bool HasActor(Actor actor)
     {
