@@ -45,8 +45,8 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
-#nullable restore
     private readonly List<Zone> m_Zones = new List<Zone>(5);
+#nullable restore
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
@@ -118,8 +118,8 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    public IEnumerable<Zone> Zones { get { return m_Zones; } }
 #nullable enable
+    public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
 #nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Data
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
       _read(ref m_Exits, "m_Exits", info);
-      m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
+      _read(ref m_Zones, "m_Zones", info);
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
       m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
       m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
@@ -921,50 +921,36 @@ retry:
       return exit_maps;
     }
 
+#nullable enable
 #region zones: map generation support
-    public void AddZone(Zone zone)
-    {
-      m_Zones.Add(zone);
-    }
-
-    public void RemoveZone(Zone zone)
-    {
-      m_Zones.Remove(zone);
-    }
+    public void AddZone(Zone zone) { m_Zones.Add(zone); }
+    public void RemoveZone(Zone zone) { m_Zones.Remove(zone); }
 
     public void RemoveAllZonesAt(Point pt)
     {
-      List<Zone> zonesAt = GetZonesAt(pt);
-      if (zonesAt == null) return;
-      foreach (Zone zone in zonesAt)
-        RemoveZone(zone);
+      var zonesAt = GetZonesAt(pt);
+      if (null != zonesAt) foreach (var zone in zonesAt) RemoveZone(zone);
     }
 #endregion
 
     /// <remark>shallow copy needed to be safe for foreach loops</remark>
     /// <returns>null, or a non-empty list of zones</returns>
-    public List<Zone> GetZonesAt(Point pt)
+    public List<Zone>? GetZonesAt(Point pt)
     {
       var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(pt));
       return (0<zoneList.Count) ? zoneList : null;
     }
 
-#if DEAD_FUNC
-    public Zone GetZoneByName(string name)
-    {
-      return m_Zones.FirstOrDefault(mZone => mZone.Name == name);
-    }
-#endif
-
-    public List<Zone> GetZonesByPartialName(string partOfname)
+    public List<Zone>? GetZonesByPartialName(string partOfname)
     {
       var ret = m_Zones.Where(z => z.Name.Contains(partOfname));
       return ret.Any() ? ret.ToList() : null;
     }
 
-    public Zone GetZoneByPartialName(string partOfname)
+    public Zone? GetZoneByPartialName(string partOfname)
     {
-      return m_Zones.FirstOrDefault(mZone => mZone.Name.Contains(partOfname));
+      foreach(var z in m_Zones) if (z.Name.Contains(partOfname)) return z;
+      return null;
     }
 
     public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
@@ -981,7 +967,6 @@ retry:
       }
     }
 
-#nullable enable
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
 #nullable restore
 

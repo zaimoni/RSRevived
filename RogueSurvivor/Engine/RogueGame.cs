@@ -8054,7 +8054,7 @@ namespace djack.RogueSurvivor.Engine
 #region 2) examine all CHAR offices
      Session.Get.World.DoForAllDistricts(d=> {
        Map map = d.EntryMap;
-       foreach(Zone zone in map.Zones) {
+       foreach(var zone in map.Zones) {
          if (!zone.Name.Contains("CHAR Office")) continue;
          zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, in pt); });
        }
@@ -12992,7 +12992,7 @@ namespace djack.RogueSurvivor.Engine
       var districtList = new List<District>();
       world.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
-        foreach(Zone zone in d.EntryMap.Zones) {
+        foreach(var zone in d.EntryMap.Zones) {
           if (!zone.HasGameAttribute("CHAR Office")) continue;
           districtList.Add(d);
           return;
@@ -13001,7 +13001,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= districtList.Count) throw new InvalidOperationException("world has no business districts with offices");
       District district = m_Rules.DiceRoller.Choose(districtList);
       var zoneList = new List<Zone>();
-      foreach (Zone zone in district.EntryMap.Zones) {
+      foreach (var zone in district.EntryMap.Zones) {
         if (zone.HasGameAttribute("CHAR Office")) zoneList.Add(zone);
       }
       Zone officeZone = m_Rules.DiceRoller.Choose(zoneList);
@@ -13923,7 +13923,7 @@ namespace djack.RogueSurvivor.Engine
       // by a policeman sighting this.
       if (3>Session.Get.ScriptStage_HospitalPowerup) {
         Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
-        foreach(Zone z in storage.Zones) {
+        foreach(var z in storage.Zones) {
           if ("storage@" != z.Name.Substring(0, "storage@".Length)) continue;
           z.Bounds.DoForEach(pt => {
             if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
