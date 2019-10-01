@@ -92,7 +92,9 @@ namespace djack.RogueSurvivor.Data
     private ActorController m_Controller;
     private ActorSheet m_Sheet;
     private readonly int m_SpawnTime;
-    private Inventory m_Inventory;
+#nullable enable
+    private Inventory? m_Inventory;
+#nullable restore
     private Doll m_Doll;
     private int m_HitPoints;
     private int m_previousHitPoints;
@@ -271,7 +273,9 @@ namespace djack.RogueSurvivor.Data
     public void Walk() { Clear(Flags.IS_RUNNING); }
     public void Run() { if (CanRun()) Set(Flags.IS_RUNNING); }
 
-    public Inventory Inventory { get { return m_Inventory; } }
+#nullable enable
+    public Inventory? Inventory { get { return m_Inventory; } }
+#nullable restore
 
     public int HitPoints {
       get {
@@ -529,17 +533,19 @@ namespace djack.RogueSurvivor.Data
     public int CountSelfDefenceFrom { get { return m_SelfDefenceFrom?.Count ?? 0; } }
 #endif
 
+#nullable enable
     public int MurdersInProgress {
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int ret = 0;
         if (null != m_AggressorOf) {
-          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.Inventory.GetItemsByType<ItemFood>());
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.m_Inventory.GetItemsByType<ItemFood>());
           if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
         }
         return ret;
       }
     }
+#nullable restore
 
     public int MurdersCounter {
       get {
@@ -954,14 +960,14 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
-    public ItemMeleeWeapon GetBestMeleeWeapon()
+#nullable enable
+    public ItemMeleeWeapon? GetBestMeleeWeapon()
     {
-      if (Inventory == null) return null;
-      List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
       int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int num1 = 0;
-      ItemMeleeWeapon itemMeleeWeapon1 = null;
+      ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         int num2 = MeleeWeaponAttack(obj.Model).Rating;
         if (num2 <= martial_arts_rating || num2 <= num1) continue;
@@ -971,14 +977,13 @@ namespace djack.RogueSurvivor.Data
       return itemMeleeWeapon1;
     }
 
-    public ItemMeleeWeapon GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
+    public ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
     {
-      if (Inventory == null) return null;
-      List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
       int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int num1 = 0;
-      ItemMeleeWeapon itemMeleeWeapon1 = null;
+      ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         int num2 = MeleeWeaponAttack(obj.Model, toBreak).Rating;
         if (num2 <= martial_arts_rating || num2 <= num1) continue;
@@ -990,8 +995,7 @@ namespace djack.RogueSurvivor.Data
 
     public int? GetBestMeleeWeaponRating()
     {
-      if (Inventory == null) return null;
-      List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
       int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int? ret = null;
@@ -1003,6 +1007,7 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     }
+#nullable restore
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
@@ -1102,32 +1107,33 @@ namespace djack.RogueSurvivor.Data
       return HypotheticalRangedAttack(CurrentRangedAttack, distance, target);
     }
 
+#nullable enable
     public bool HasActiveCellPhone {
       get {
-        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
+        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
       }
     }
 
     public bool HasCellPhone {
       get {
-        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
+        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
       }
     }
-
 
     public bool HasActivePoliceRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
+        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
 
     public bool HasPoliceRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
+        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
+#nullable restore
 
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
     public bool HasActiveArmyRadio {
@@ -1217,10 +1223,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public ItemTracker GetEquippedCellPhone()
+#nullable enable
+    public ItemTracker? GetEquippedCellPhone()
     {
-      return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
+      return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
+#nullable restore
 
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
@@ -2016,11 +2024,9 @@ namespace djack.RogueSurvivor.Data
     }
     // alpha10: end pull support
 
+#nullable enable
     private string ReasonCantClose(DoorWindow door)
     {
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
       if (!door.IsOpen) return "not open";
       if (door.Location.StrictHasActorAt) return "someone is there";
@@ -2040,9 +2046,6 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBarricade(DoorWindow door)
     {
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       if (!door.CanBarricade(out string reason)) return reason;
       return ReasonCouldntBarricade();
     }
@@ -2062,8 +2065,8 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCouldntBarricade()
     {
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
-      if (Inventory == null || Inventory.IsEmpty) return "no items";
-      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
+      if (m_Inventory == null || m_Inventory.IsEmpty) return "no items";
+      if (!m_Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
     }
 
@@ -2082,9 +2085,6 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBash(DoorWindow door)
 	{
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       if (!Model.Abilities.CanBashDoors) return "can't bash doors";
       if (IsTired) return "tired";
       if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) return "can't break this object";
@@ -2104,9 +2104,6 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantOpen(DoorWindow door)
 	{
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       if (!Model.Abilities.CanUseMapObjects) return "no ability to open";
 	  if (door.BarricadePoints > 0) return "is barricaded";
       if (!door.IsClosed) return "not closed";
@@ -2123,6 +2120,7 @@ namespace djack.RogueSurvivor.Data
     {
 	  return string.IsNullOrEmpty(ReasonCantOpen(door));
     }
+#nullable restore
 
     public int BarricadingMaterialNeedForFortification(bool isLarge)
     {
@@ -2199,13 +2197,11 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+#nullable enable
 	private string ReasonCantRecharge(Item it)
 	{
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
-      if (!it.IsEquipped || !Inventory.Contains(it)) return "item not equipped";
+      if (!it.IsEquipped || !m_Inventory.Contains(it)) return "item not equipped";
       if (!(it is BatteryPowered)) return "not a battery powered item";
       return "";
 	}
@@ -2222,6 +2218,7 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantRecharge(it));
     }
 #endif
+#nullable restore
 
     // event timing
     public void SpendActionPoints(int actionCost)
@@ -2729,15 +2726,13 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+#nullable enable
     private string ReasonCantRevive(Corpse corpse)
     {
-#if DEBUG
-      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
-#endif
       if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
       if (corpse.Position != Location.Position) return "not there";
       if (corpse.RotLevel > 0) return "corpse not fresh";
-      if (!Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
+      if (!m_Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
       return "";
     }
 
@@ -2751,7 +2746,7 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantRevive(corpse));
     }
-
+#nullable restore
 
     public int ReviveChance(Corpse corpse)
     {
@@ -2892,6 +2887,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public bool HasItemOfModel(ItemModel model)
     {
       return m_Inventory?.HasModel(model) ?? false;
@@ -2909,7 +2905,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountItemsOfSameType(Type tt)
     {
-      if (m_Inventory?.IsEmpty ?? true) return 0;
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
       int num = 0;
       foreach (Item obj in m_Inventory.Items) {
         if (obj.IsUseless) continue;
@@ -2920,7 +2916,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountItems<_T_>() where _T_ : Item
     {
-      if (m_Inventory?.IsEmpty ?? true) return 0;
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
       return m_Inventory.Items.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
@@ -2931,14 +2927,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
-      if (m_Inventory?.IsEmpty ?? true) return false;
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
     public bool HasAtLeastFullStackOf(ItemModel it, int n)
     {
-      if (m_Inventory?.IsEmpty ?? true) return false;
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       if (it.IsStackable) return m_Inventory.CountQuantityOf(it) >= n * it.StackingLimit;
       return m_Inventory.Count(it) >= n;
     }
@@ -2947,15 +2943,15 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOf(Gameplay.GameItems.IDs it, int n)
     {
-      if (m_Inventory?.IsEmpty ?? true) return false;
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       ItemModel model = Models.Items[(int)it];
       if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
       return m_Inventory.Count(model) >= n; // XXX assumes each model goes with a specific item type
     }
 
-    public ItemMeleeWeapon GetWorstMeleeWeapon()
+    public ItemMeleeWeapon? GetWorstMeleeWeapon()
     {
-      var melee = Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      var melee = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == melee) return null;
       if (1 == melee.Count) return melee[0];
       // some sort of invariant problem here
@@ -2965,25 +2961,21 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public ItemBodyArmor GetBestBodyArmor(Predicate<ItemBodyArmor> fn=null)
+    public ItemBodyArmor? GetBestBodyArmor()
     {
-      if (null == Inventory) return null;
-      IEnumerable<ItemBodyArmor> armors = Inventory.Items.Select(it=>it as ItemBodyArmor).Where(armor=>null!=armor);
-      if (null!=fn) armors = armors.Where(armor=>fn(armor));
-      return armors.Maximize(armor=>armor.Rating);
+      return m_Inventory?.GetItemsByType< ItemBodyArmor >()?.Maximize(armor => armor.Rating);
     }
 
-    public ItemBodyArmor GetWorstBodyArmor()
+    public ItemBodyArmor? GetWorstBodyArmor()
     {
-      if (null == Inventory) return null;
-      return Inventory.Items.Select(it=>it as ItemBodyArmor).Where(armor=>null!=armor && DollPart.NONE == armor.EquippedPart).Minimize(armor=>armor.Rating);
+      return m_Inventory?.GetItemsByType<ItemBodyArmor>(armor => !armor.IsEquipped)?.Minimize(armor => armor.Rating);
     }
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
     {
       if (!_has_to_eat) return true;
-      if (Inventory?.IsEmpty ?? true) return false;
-      List<ItemFood> tmp = Inventory.GetItemsByType<ItemFood>();
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      var tmp = m_Inventory.GetItemsByType<ItemFood>();
       if (null == tmp) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;
 //    int num = 0;
@@ -2996,6 +2988,7 @@ namespace djack.RogueSurvivor.Data
       }
       return false;
     }
+#nullable restore
 
     public int ItemNutritionValue(int baseValue)
     {
@@ -3012,8 +3005,8 @@ namespace djack.RogueSurvivor.Data
       return ItemNutritionValue(food.NutritionAt(Location.Map.LocalTime.TurnCounter));
     }
 
-    // prevents sinking IsInterestingTradeItem and IsTradeableItem below ActorController (these must work for both OrderableAI and PlayerController)
-    public List<Item> GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
+#nullable enable
+    public List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
 #if DEBUG
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
@@ -3022,63 +3015,48 @@ namespace djack.RogueSurvivor.Data
 
 #if OBSOLETE
 #else
-      if (buyer.IsPlayer && IsPlayer) return Inventory.Items.ToList();
+      if (buyer.IsPlayer && IsPlayer) return m_Inventory.Items.ToList();
 #endif
+      var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
+      var ai = Controller as Gameplay.AI.ObjectiveAI;
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
-      List<Item> objList = Inventory.Items.Where(it=> (buyer.Controller as Gameplay.AI.ObjectiveAI).IsInterestingTradeItem(this, it) && (Controller as Gameplay.AI.ObjectiveAI).IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
+      var objList = m_Inventory.Items.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
       return 0<objList.Count ? objList : null;
     }
 
-    public List<Item> GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
+    public List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
     {
 #if DEBUG
-      if (null == buyer) throw new ArgumentNullException(nameof(buyer));
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
 #endif
 
 //    if (buyer.IsPlayer) return Inventory.Items
 
-      IEnumerable<Item> objList = Inventory.Items.Where(it=> buyer.IsRationalTradeItem(this, it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
+      var objList = m_Inventory.Items.Where(it=> buyer.IsRationalTradeItem(this, it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 
     // equipped items
-    public Item GetEquippedItem(DollPart part)
+    public Item? GetEquippedItem(DollPart part)
     {
-      if (null == m_Inventory || DollPart.NONE == part) return null;
-      return m_Inventory.Items.FirstOrDefault(obj => obj.EquippedPart == part);
+      return m_Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
     }
 
-    public Item GetEquippedItem(Gameplay.GameItems.IDs id)
+    public Item? GetEquippedItem(Gameplay.GameItems.IDs id)
     {
-      if (null == m_Inventory) return null;
-      return m_Inventory.Items.FirstOrDefault(obj => obj.Model.ID == id && DollPart.NONE != obj.EquippedPart);
+      return m_Inventory?.GetFirst<Item>(obj => obj.Model.ID == id && DollPart.NONE != obj.EquippedPart);
     }
 
     // this cannot be side-effecting (martial arts, grenades)
-    public Item GetEquippedWeapon()
-    {
-      return GetEquippedItem(DollPart.RIGHT_HAND);
-    }
-
-    public bool HasEquipedRangedWeapon()
-    {
-      return GetEquippedWeapon() is ItemRangedWeapon;
-    }
+    public Item? GetEquippedWeapon() { return GetEquippedItem(DollPart.RIGHT_HAND); }
+    public bool HasEquipedRangedWeapon() { return GetEquippedWeapon() is ItemRangedWeapon; }
 
     // maybe this should be over on the Inventory object
-    public Item GetItem(Gameplay.GameItems.IDs id)
-    {
-      if (null == m_Inventory) return null;
-      return m_Inventory.Items.FirstOrDefault(obj => obj.Model.ID == id);
-    }
+    public Item? GetItem(Gameplay.GameItems.IDs id) { return m_Inventory?.GetFirst(id); }
 
     private string ReasonCantTradeWith(Actor target)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
 #if OBSOLETE
       if (target.IsPlayer) return "target is player";
 #else
@@ -3088,8 +3066,8 @@ namespace djack.RogueSurvivor.Data
       if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
       if (IsEnemyOf(target)) return "is an enemy";
       if (target.IsSleeping) return "is sleeping";
-      if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
-      if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
+      if (m_Inventory == null || m_Inventory.IsEmpty) return "nothing to offer";
+      if (target.m_Inventory == null || target.m_Inventory.IsEmpty) return "has nothing to trade";
       // alpha10 dont bother someone who is fighting or fleeing
       if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE) {
         if (!target.IsPlayer) return "in combat";
@@ -3118,9 +3096,9 @@ namespace djack.RogueSurvivor.Data
 #else
       if (!IsPlayer && !target.IsPlayer) {
 #endif
-        List<Item> theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
+        var theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
         if (null == theirs) return "target unwilling to trade";
-        List<Item> mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
+        var mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
         if (null == mine) return "unwilling to trade";
         bool ok = false;
         foreach(Item want in theirs) {
@@ -3150,9 +3128,6 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantUseItem(Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (it is ItemWeapon) return "to use a weapon, equip it";
       if (it is ItemBodyArmor) return "to use armor, wear it";
@@ -3165,7 +3140,7 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood && !_has_to_eat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
       if (it is ItemAmmo itemAmmo) {
-        ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+        var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
         if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
 #if OBSOLETE
@@ -3178,7 +3153,7 @@ namespace djack.RogueSurvivor.Data
         if (!Model.Abilities.IsIntelligent) return "not intelligent";
         if (ent.IsBoringFor(this)) return "bored by this";
       }
-      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -3196,11 +3171,6 @@ namespace djack.RogueSurvivor.Data
     // alpha10
     private string ReasonCantSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn)
     {
-#if DEBUG
-       if (suppressor == null) throw new ArgumentNullException(nameof(suppressor));
-       if (sprayOn == null) throw new ArgumentNullException(nameof(sprayOn));
-#endif
-
        ///////////////////////////////////////////////////////
        // Cant if any is true:
        // 1. Actor cannot use items
@@ -3217,7 +3187,7 @@ namespace djack.RogueSurvivor.Data
 
        // 3. Spray is not equiped by actor or has no spray left.
        if (suppressor.SprayQuantity <= 0) return "no spray left";
-       if (!suppressor.IsEquipped || (!Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
+       if (!suppressor.IsEquipped || (!m_Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
 
        // 4. SprayOn is not self or adjacent.
        if (sprayOn != this && Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
@@ -3238,11 +3208,8 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantGet(Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
-      if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || Inventory == null) return "no inventory";
-      if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
+      if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || m_Inventory == null) return "no inventory";
+      if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
       if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
       return "";
     }
@@ -3257,6 +3224,7 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
+#nullable restore
 
     public bool MayTakeFromStackAt(in Location loc)
     {
@@ -3349,13 +3317,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantEquip(it));
     }
 
+#nullable enable
     private string ReasonCantUnequip(Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       if (!it.IsEquipped) return "not equipped";
-      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -3372,11 +3338,8 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantDrop(Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       if (it.IsEquipped && Controller is PlayerController) return "unequip first";  // AI doesn't need that UI safety
-      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -3390,28 +3353,26 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantDrop(it));
     }
+#nullable restore
 
     public void SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);
       switch(id)
       {
-      case Skills.IDs.HAULER: if (null != m_Inventory) Inventory.MaxCapacity = MaxInv;
+      case Skills.IDs.HAULER: if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
         break;
-      case Skills.IDs.TOUGH: m_HitPoints += Actor.SKILL_TOUGH_HP_BONUS;
+      case Skills.IDs.TOUGH: m_HitPoints += SKILL_TOUGH_HP_BONUS;
         break;
-      case Skills.IDs.Z_TOUGH: m_HitPoints += Actor.SKILL_ZTOUGH_HP_BONUS;
+      case Skills.IDs.Z_TOUGH: m_HitPoints += SKILL_ZTOUGH_HP_BONUS;
         break;
       }
     }
 
     // flag handling
-    private bool GetFlag(Actor.Flags f)
-    {
-      return (m_Flags & f) != Actor.Flags.NONE;
-    }
+    private bool GetFlag(Flags f) { return (m_Flags & f) != Flags.NONE; }
 
-    private void SetFlag(Actor.Flags f, bool value)
+    private void SetFlag(Flags f, bool value)
     {
       if (value)
         m_Flags |= f;
@@ -3420,12 +3381,12 @@ namespace djack.RogueSurvivor.Data
     }
 
 #if DEAD_FUNC
-    private void OneFlag(Actor.Flags f)
+    private void OneFlag(Flags f)
     {
       m_Flags |= f;
     }
 
-    private void ZeroFlag(Actor.Flags f)
+    private void ZeroFlag(Flags f)
     {
       m_Flags &= ~f;
     }
@@ -3679,6 +3640,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;
@@ -3686,8 +3648,7 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = MaxFood;
       m_SleepPoints = MaxSleep;
       m_Sanity = MaxSanity;
-      if (m_Inventory == null) return;
-      m_Inventory.MaxCapacity = MaxInv;
+      if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
     }
 
     public void CreateCivilianDeductFoodSleep(Rules r) {
@@ -3702,6 +3663,7 @@ namespace djack.RogueSurvivor.Data
       m_previousSleepPoints = m_SleepPoints;
       m_previousSanity = m_Sanity;
     }
+#nullable restore
 
     public void DropScent()
     {
