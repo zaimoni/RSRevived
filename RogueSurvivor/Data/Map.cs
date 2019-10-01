@@ -176,15 +176,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region Implement ISerializable
-#nullable enable
-    static private void _read<T>(ref T dest, string src, SerializationInfo info) where T:class
-    {
-      var tmp = info.GetValue(src, typeof(T)) as T; // should have thrown already but this function doesn't have proper annotations
-      if (null == tmp) throw new ArgumentNullException(src);
-      else dest = tmp;
-    }
-#nullable restore
-
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = (int) info.GetValue("m_Seed", typeof (int));
@@ -193,8 +184,8 @@ namespace djack.RogueSurvivor.Data
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
-      _read(ref m_Exits, "m_Exits", info);
-      _read(ref m_Zones, "m_Zones", info);
+      info.read(ref m_Exits, "m_Exits");
+      info.read(ref m_Zones, "m_Zones");
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
       m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
       m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
@@ -204,7 +195,7 @@ namespace djack.RogueSurvivor.Data
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
-      _read(ref m_Decorations, "m_Decorations", info);
+      info.read(ref m_Decorations, "m_Decorations");
       m_BgMusic = (string)info.GetValue("m_BgMusic", typeof(string));   // alpha10
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
