@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_Position = position;
 #if DEBUG
-      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+      var itemsAt = actor.Location.Map.GetItemsAt(position);
       if (null == itemsAt) throw new InvalidOperationException("no items in container");
 #endif
     }

@@ -193,7 +193,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
         // expire if the offending item is not in LoS
-        if (m_Actor.Controller.FOV.Select(pt => m_Actor.Location.Map.GetItemsAt(pt)).Any(inv => null!=inv && inv.Has(Avoid))) return false;
+        var stacks = m_Actor.Controller.items_in_FOV;
+        if (null != stacks) foreach(var x in stacks) if (x.Value.Has(Avoid)) return false;
 //      if (m_Actor.Inventory.Has(Avoid)) return false; // checking whether this is actually needed
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
@@ -474,7 +475,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         while(0 < i--) {
           { // scope var p
           var p = _stacks[i];
-          Inventory inv = p.Location.Items;
+          var inv = p.Location.Items;
           if (    (inv?.IsEmpty ?? true)    // can crash otherwise in presence of bugs
                || !m_Actor.CanEnter(p.Location)
                || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
@@ -530,7 +531,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       public void newStack(in Location loc) {
-        Inventory inv = loc.Items;
+        var inv = loc.Items;
         if (inv?.IsEmpty ?? true) return;
         if (!(m_Actor.Controller as OrderableAI).WouldGrabFromStack(in loc, inv)) return;
 #if DEBUG

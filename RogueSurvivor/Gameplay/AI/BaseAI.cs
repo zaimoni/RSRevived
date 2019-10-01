@@ -580,7 +580,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
-      Inventory itemsAt = map.GetItemsAt(pos);
+      var itemsAt = map.GetItemsAt(pos);
       if (null == itemsAt) return true;
       return 3 >= itemsAt.Items.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
     }
@@ -964,7 +964,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (stacksPercepts == null) return null;
       List<Percept> percepts = stacksPercepts.Filter(p => (p.Percepted as Inventory).Has<ItemFood>());
       if (percepts == null) return null;
-      ItemFood firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
+      var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
       Percept percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(percept.Location,false,false);

@@ -453,7 +453,7 @@ namespace djack.RogueSurvivor.Data
           || !actor.Model.Abilities.CanUseMapObjects
           || actor.Inventory == null)
           return "cannot take an item";
-      Inventory itemsAt = Inventory;
+      var itemsAt = Inventory;
       if (null != itemsAt && itemsAt.IsFull) return "container is full";
       return "";
     }
@@ -468,12 +468,14 @@ namespace djack.RogueSurvivor.Data
       Location.Drop(gift);  // VAPORWARE: containers actually have inventory and items they contain are pushed with them
     }
 
-    public Inventory Inventory { get {
+#nullable enable
+    public Inventory? Inventory { get {
 #if DEBUG
       if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
 #endif
       return Location.Items;
     } }
+#nullable restore
 
     private string ReasonCantPushTo(Point toPos)
     {

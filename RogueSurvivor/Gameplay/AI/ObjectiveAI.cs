@@ -1005,7 +1005,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(var x in items) {
              if (x.Value.IsEmpty) continue;
              if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-             Inventory inv = x.Key.Items;
+             var inv = x.Key.Items;
              if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(x.Key, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
                ret |= ReactionCode.ITEM;
                break;
@@ -3700,7 +3700,7 @@ restart_single_exit:
         var pos = m_Actor.Location.Position + dir;
         MapObject container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
         if (null == container) continue;
-        Inventory itemsAt = container.Inventory;
+        var itemsAt = container.Inventory;
         if (null != itemsAt)
           {
           if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration

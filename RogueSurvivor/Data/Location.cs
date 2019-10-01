@@ -46,7 +46,9 @@ namespace djack.RogueSurvivor.Data
     public void Drop(Item it) { Map.DropItemAt(it, in Position); }
     public bool IsWalkableFor(Actor actor) { return Map.IsWalkableFor(Position, actor); }
     public bool IsWalkableFor(Actor actor, out string reason) { return Map.IsWalkableFor(Position, actor, out reason); }
-    public Inventory Items { get { return Map.GetItemsAt(Position); } }
+#nullable enable
+    public Inventory? Items { get { return Map.GetItemsAt(Position); } }
+#nullable restore
     public Exit Exit { get { return Map.GetExitAt(Position); } }
 #nullable enable
     public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }

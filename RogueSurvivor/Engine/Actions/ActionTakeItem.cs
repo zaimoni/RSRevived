@@ -12,6 +12,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+#nullable enable
   [Serializable]
   internal class ActionTakeItem : ActorAction
   {
@@ -22,7 +23,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
       if (!(actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
 #if TRACER
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Location = loc;
       m_Item = it;
 #if DEBUG
-      Inventory itemsAt = loc.Map.GetItemsAtExt(loc.Position);
+      var itemsAt = loc.Map.GetItemsAtExt(loc.Position);
       if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
 #endif
     }
@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      Inventory itemsAt = m_Location.Map.GetItemsAtExt(m_Location.Position);
+      var itemsAt = m_Location.Map.GetItemsAtExt(m_Location.Position);
       if (!itemsAt?.Contains(m_Item) ?? true) return false;
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.Name + " takes " + m_Item;
     }
   } // ActionTakeItem
-
+#nullable restore
 
   [Serializable]
   internal class ActionTake : ActorAction

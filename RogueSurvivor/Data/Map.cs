@@ -50,7 +50,9 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
+#nullable enable
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
+#nullable restore
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
@@ -124,7 +126,6 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
-    public IEnumerable<Inventory> GroundInventories { get { return m_GroundItemsByPosition.Values; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
 
@@ -188,7 +189,7 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_Zones, "m_Zones");
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
       m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
-      m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
+      info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
       m_CorpsesList = (List<Corpse>) info.GetValue("m_CorpsesList", typeof (List<Corpse>));
       m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
       m_ScentsByPosition = (Dictionary<Point, List<OdorScent>>) info.GetValue("m_ScentsByPosition", typeof (Dictionary<Point, List<OdorScent>>));
@@ -959,7 +960,6 @@ retry:
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
-#nullable restore
 
     public void DoForAllInventory(Action<Inventory> op)
     {
@@ -999,6 +999,7 @@ retry:
       }
       return false;
     }
+#nullable restore
 
     // Actor manipulation functions
     public bool HasActor(Actor actor)
@@ -1391,12 +1392,13 @@ retry:
       return mapObjectAt;
     }
 
+#nullable enable
     public int TrapsMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
     {
-      Inventory itemsAt = GetItemsAt(pos);
+      var itemsAt = GetItemsAt(pos);
       if (itemsAt == null) return 0;
       int num = 0;
-      foreach (Item obj in itemsAt.Items) {
+      foreach (var obj in itemsAt.Items) {
         if (obj is Engine.Items.ItemTrap trap && !trap.IsSafeFor(a)) num += trap.Model.Damage;
       }
       return num;
@@ -1405,14 +1407,15 @@ retry:
     public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
     {
       if (a.Controller.IsEngaged) return TrapsMaxDamageAtFor(pos, a);
-      Inventory itemsAt = GetItemsAt(pos);
+      var itemsAt = GetItemsAt(pos);
       if (itemsAt == null) return 0;
       int num = 0;
-      foreach (Item obj in itemsAt.Items) {
+      foreach (var obj in itemsAt.Items) {
         if (obj is Engine.Items.ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
       }
       return num;
     }
+#nullable restore
 
     public void OpenAllGates()
     {
@@ -1429,15 +1432,10 @@ retry:
       }
     }
 
-    public bool HasItemsAt(Point position)
-    {
-#if AUDIT_ITEM_INVARIANTS
-      if (!IsInBounds(position)) return false;
-#endif
-      return m_GroundItemsByPosition.ContainsKey(position);
-    }
+    public bool HasItemsAt(Point pos) { return m_GroundItemsByPosition.ContainsKey(pos); }
 
-    public Inventory GetItemsAt(Point position)
+#nullable enable
+    public Inventory? GetItemsAt(Point position)
     {
 #if AUDIT_ITEM_INVARIANTS
       if (!IsInBounds(position)) return null;
@@ -1447,17 +1445,18 @@ retry:
       }
       return null;
 #else
-      m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory);
-      return inventory;
+      if (m_GroundItemsByPosition.TryGetValue(position, out var inventory)) return inventory;
+      return null;
 #endif
     }
 
-    public Inventory GetItemsAtExt(Point pt)
-    {   // 2019-08-27 release mode IL Code size       72 (0x48)
+    public Inventory? GetItemsAtExt(Point pt)
+    {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
       if (IsInBounds(pt)) return GetItemsAt(pt);
       Location? test = _Normalize(pt);
       return null == test ? null : test.Value.Map.GetItemsAt(test.Value.Position);
     }
+#nullable restore
 
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
     {
@@ -1475,37 +1474,21 @@ retry:
       return ground_inv;
     }
 
-
-    public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
-    {
-      return GetItemsAt(pos)?.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
-    }
-
-    public Point? GetGroundInventoryPosition(Inventory groundInv)
-    {
-      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition) {
-        if (keyValuePair.Value == groundInv) return keyValuePair.Key;
-      }
-      return null;
-    }
-
+#nullable enable
     // Clairvoyant.  Useful for fine-tuning map generation and little else
     private KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
-      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition) {
-        if (keyValuePair.Value.Has(id)) return keyValuePair;
-      }
+      foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
       return null;
     }
 
     public void DropItemAt(Item it, in Point position)
     {
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
       if (!GetTileModelAt(position).IsWalkable) throw new InvalidOperationException("tried to drop "+it+" on a wall at "+(new Location(this,position)));
 #endif
-      Inventory itemsAt = GetItemsAt(position);
+      var itemsAt = GetItemsAt(position);
       if (itemsAt == null) {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
         m_GroundItemsByPosition.Add(position, inventory);
@@ -1516,11 +1499,11 @@ retry:
         if (quantityAdded >= quantity) return;
         // Hammerspace inventory is already gamey.  We can afford to be even more gamey if it makes things more playable.
         // ensure that legendary artifacts don't disappear (yes, could infinite-loop but there aren't that many artifacts)
-        Item crushed = itemsAt.BottomItem;
+        Item crushed = itemsAt.BottomItem!;
         while(crushed.Model.IsUnbreakable || crushed.IsUnique) {
           itemsAt.RemoveAllQuantity(crushed);
           itemsAt.AddAll(crushed);
-          crushed = itemsAt.BottomItem;
+          crushed = itemsAt.BottomItem!;
         }
         // the test game series ending with the savefile break on April 28 2018 had a number of stacks with lots of baseball bats.  If there are two or more
         // destructible melee weapons in a stack, the worst one can be destroyed with minimal inconvenience.
@@ -1554,10 +1537,9 @@ retry:
     public void RemoveItemAt(Item it, in Point position)
     {
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
-      Inventory itemsAt = GetItemsAt(position);
+      var itemsAt = GetItemsAt(position);
 #if DEBUG
       if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
       if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
@@ -1566,13 +1548,13 @@ retry:
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
-    public void RemoveAt<T>(IEnumerable<T> src, in Point position) where T:Item
+    public void RemoveAt<T>(IEnumerable<T>? src, in Point position) where T:Item
     {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
       if (null==src) return;
-      Inventory itemsAt = GetItemsAt(position);
+      var itemsAt = GetItemsAt(position);
 #if DEBUG
       if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt));
 #endif
@@ -1588,12 +1570,9 @@ retry:
     // Clairvoyant.
     public bool TakeItemType(Gameplay.GameItems.IDs id, Inventory dest)
     {
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
       var src = GetInventoryHaving(id);
       if (null == src) return false;
-      Item it = src.Value.Value.GetFirst(id);
+      var it = src.Value.Value.GetFirst(id);
       if (null == it) return false;
       src.Value.Value.RemoveAllQuantity(it);
       dest.AddAsMuchAsPossible(it);
@@ -1604,15 +1583,12 @@ retry:
     // Clairvoyant.
     public bool SwapItemTypes(Gameplay.GameItems.IDs want, Gameplay.GameItems.IDs donate, Inventory dest)
     {
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
-      Item giving = dest.GetFirst(donate);
+      var giving = dest.GetFirst(donate);
       if (null == giving) return TakeItemType(want, dest);
 
       var src = GetInventoryHaving(want);
       if (null == src) return false;
-      Item it = src.Value.Value.GetFirst(want);
+      var it = src.Value.Value.GetFirst(want);
       if (null == it) return false;
       it.Unequip();
 
@@ -1622,6 +1598,7 @@ retry:
       dest.AddAsMuchAsPossible(it);
       return true;
     }
+#nullable restore
 
 #if DEAD_FUNC
     public void RemoveItemAtExt(Item it, Point position)
@@ -2734,7 +2711,7 @@ retry:
 		  }
 #endregion
 #region map inventory
-          Inventory inv = GetItemsAt(pt);
+          var inv = GetItemsAt(pt);
           if (!inv?.IsEmpty ?? false) {
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             foreach (Item it in inv.Items) {

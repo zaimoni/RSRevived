@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
       _items = null;
       foreach (var loc in normalized_FOV) {
-        Inventory itemsAt = loc.Items;
+        var itemsAt = loc.Items;
         if (null==itemsAt || itemsAt.IsEmpty) continue;
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
         (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
       _items = null;
       foreach (var loc in normalized_FOV) {
-        Inventory itemsAt = loc.Items;
+        var itemsAt = loc.Items;
         if (null== itemsAt || itemsAt.IsEmpty) {
           items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;

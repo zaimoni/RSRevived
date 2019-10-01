@@ -4011,7 +4011,7 @@ namespace djack.RogueSurvivor.Engine
       inv = null;
       itemPos = GDI_Point.Empty;
       if (Player == null) return null;
-      Inventory inventory = Player.Inventory;
+      var inventory = Player.Inventory;
       if (null == inventory) return null;
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
@@ -4020,7 +4020,7 @@ namespace djack.RogueSurvivor.Engine
         itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1);
         return inventory[index1];
       }
-      Inventory itemsAt = Player.Location.Items;
+      var itemsAt = Player.Location.Items;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2);
       if (itemsAt == null) return null;
@@ -4259,12 +4259,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlotTake(Actor player, int slot)
     {
-      Inventory itemsAt = player.Location.Items;
+      var itemsAt = player.Location.Items;
       if (itemsAt == null) {
         AddMessage(MakeErrorMessage("No items on ground."));
         return false;
       }
-      Item it = itemsAt[slot];
+      var it = itemsAt[slot];
       if (it == null) {
         AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", slot + 1)));
         return false;
@@ -5810,7 +5810,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerTakeItemFromContainer(Actor player, Point src)
     {
-      Inventory inv = player.Location.Map.GetItemsAt(src);
+      var inv = player.Location.Map.GetItemsAt(src);
       if (null == inv) throw new ArgumentNullException(nameof(src),"no inventory at ("+src.X.ToString()+","+src.Y.ToString()+")");
       if (2 > inv.CountItems) throw new ArgumentOutOfRangeException(nameof(inv),"inventory was not a stack");
       if (1 != Rules.GridDistance(player.Location.Position,in src)) throw new ArgumentOutOfRangeException(nameof(src), "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
@@ -5945,43 +5945,33 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.ITEM_GRAB_CONTAINER:
           return map.HasAnyAdjacentInMap(position, pt => Player.CanGetFromContainer(pt));
         case AdvisorHint.ITEM_GRAB_FLOOR:
-          Inventory itemsAt = map.GetItemsAt(position);
+          var itemsAt = map.GetItemsAt(position);
           if (itemsAt == null) return false;
-          foreach (Item it in itemsAt.Items) {
-            if (Player.CanGet(it)) return true;
-          }
+          foreach (var it in itemsAt.Items) if (Player.CanGet(it)) return true;
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
-          Inventory inventory1 = Player.Inventory;
+          var inventory1 = Player.Inventory;
           if (inventory1?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory1.Items) {
-            if (Player.CanUnequip(it)) return true;
-          }
+          foreach (Item it in inventory1.Items) if (Player.CanUnequip(it)) return true;
           return false;
         case AdvisorHint.ITEM_EQUIP:
-          Inventory inventory2 = Player.Inventory;
+          var inventory2 = Player.Inventory;
           if (inventory2?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory2.Items) {
-            if (!it.IsEquipped && Player.CanEquip(it)) return true;
-          }
+          foreach (Item it in inventory2.Items) if (!it.IsEquipped && Player.CanEquip(it)) return true;
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
-          Inventory inventory3 = Player.Inventory;
+          var inventory3 = Player.Inventory;
           if (inventory3?.IsEmpty ?? true) return false;
           return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
-          Inventory inventory4 = Player.Inventory;
+          var inventory4 = Player.Inventory;
           if (inventory4?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory4.Items) {
-            if (Player.CanDrop(it)) return true;
-          }
+          foreach (Item it in inventory4.Items) if (Player.CanDrop(it)) return true;
           return false;
         case AdvisorHint.ITEM_USE:
-          Inventory inventory5 = Player.Inventory;
+          var inventory5 = Player.Inventory;
           if (inventory5?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory5.Items) {
-            if (Player.CanUse(it)) return true;
-          }
+          foreach (Item it in inventory5.Items) if (Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.FLASHLIGHT: return Player.Inventory.Has<ItemLight>();
         case AdvisorHint.CELLPHONES: return Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) != null;
@@ -5991,11 +5981,9 @@ namespace djack.RogueSurvivor.Engine
           return 0 < ((Player.GetEquippedWeapon() as ItemRangedWeapon)?.Ammo ?? 0);
         case AdvisorHint.WEAPON_RELOAD:
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
-          Inventory inventory6 = Player.Inventory;
+          var inventory6 = Player.Inventory;
           if (inventory6?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory6.Items) {
-            if (it is ItemAmmo && Player.CanUse(it)) return true;
-          }
+          foreach (Item it in inventory6.Items) if (it is ItemAmmo && Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
         case AdvisorHint.DOORWINDOW_OPEN:
@@ -6700,7 +6688,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorAt != null) return DescribeActor(actorAt);
       MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
       if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
-      Inventory itemsAt = map.GetItemsAt(mapPos);
+      var itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null) return DescribeInventory(itemsAt);
       List<Corpse> corpsesAt = map.GetCorpsesAt(mapPos);
       if (corpsesAt != null) return DescribeCorpses(corpsesAt);
@@ -6998,7 +6986,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", obj.Weight));
-      Inventory itemsAt = obj.Location.Items;
+      var itemsAt = obj.Location.Items;
       if (itemsAt != null) stringList.AddRange(DescribeInventory(itemsAt));
       return stringList.ToArray();
     }
@@ -7654,7 +7642,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = actor.Location.Position;
       bool canLeave = true;
       if (!map.IsTrapCoveringMapObjectAt(position)) {
-        Inventory itemsAt = map.GetItemsAt(position);
+        var itemsAt = map.GetItemsAt(position);
         if (itemsAt != null) {
           List<Item> objList = null;
           bool flag = false;
@@ -7721,7 +7709,7 @@ namespace djack.RogueSurvivor.Engine
     {
       MapObject mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
       if (null == mapObjectAt) return;
-      Inventory itemsAt = map.GetItemsAt(pos);
+      var itemsAt = map.GetItemsAt(pos);
       if (itemsAt == null) return;
       List<Item> objList = null;
       foreach (Item obj in itemsAt.Items) {
@@ -8896,12 +8884,16 @@ namespace djack.RogueSurvivor.Engine
       speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
+#nullable enable
     public void DoTradeWithContainer(Actor actor, in Point pos, Item give, Item take)
     {
-      Inventory dest = actor.Location.Map.GetItemsAtExt(pos);
+      var dest = actor.Location.Map.GetItemsAtExt(pos);
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+      if (null == actor.Inventory) throw new ArgumentNullException("actor.Inventory");
+#endif
 
-      bool flag1 = ForceVisibleToPlayer(actor);
-      if (flag1) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (give.IsEquipped) DoUnequipItem(actor, give, false);
@@ -8910,7 +8902,7 @@ namespace djack.RogueSurvivor.Engine
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       actor.Inventory.AddAsMuchAsPossible(take);
     }
-
+#nullable restore
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
     private void DoTrade(Actor speaker, KeyValuePair<Item, Item>? trade, Actor target, bool doesTargetCheckForInterestInOffer)
@@ -11211,7 +11203,7 @@ namespace djack.RogueSurvivor.Engine
         // XXX currently smell does not go through (vertical) exits directly
         if (tile.IsInView) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-            Inventory itemsAt = e.Location.Items;
+            var itemsAt = e.Location.Items;
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
