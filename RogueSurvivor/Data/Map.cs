@@ -1711,11 +1711,13 @@ retry:
       RemoveFromPos(c);
     }
 
+#nullable enable
     public void Destroy(Corpse c)
     {
       c.DraggedBy?.StopDraggingCorpse();
       Remove(c);
     }
+#nullable restore
 
     public bool TryRemoveCorpseOf(Actor a)
     {

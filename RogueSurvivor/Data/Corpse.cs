@@ -8,6 +8,8 @@ using System;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -20,15 +22,12 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     public readonly float Rotation;
     public readonly float Scale; // currently not used properly
-    public Actor DraggedBy;
+    public Actor? DraggedBy;
 
     public bool IsDragged { get { return !DraggedBy?.IsDead ?? false; } }
 
     public Corpse(Actor deadGuy, float rotation, float scale=1f)
     {
-#if DEBUG
-      if (null == deadGuy) throw new ArgumentNullException(nameof(deadGuy));
-#endif
       DeadGuy = deadGuy;
       Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
       HitPoints = (float)deadGuy.MaxHPs;

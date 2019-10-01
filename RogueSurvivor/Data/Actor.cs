@@ -2704,11 +2704,9 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+#nullable enable
     private string ReasonCantStopDrag(Corpse corpse)
     {
-#if DEBUG
-      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
-#endif
       if (this != corpse.DraggedBy) return "not dragging this corpse";
       return "";
     }
@@ -2726,7 +2724,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-#nullable enable
     private string ReasonCantRevive(Corpse corpse)
     {
       if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
