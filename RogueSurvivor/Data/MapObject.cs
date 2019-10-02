@@ -169,16 +169,6 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-#if PROTOTYPE
-    public bool IsLivingPathable {
-      get { 
-        if (IsCouch) return true;
-        if (IsJumpable) return true;
-        return false;
-      }
-    }
-#endif
-
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
     private static byte _ID_Weight(IDs x)
     {
@@ -446,17 +436,19 @@ namespace djack.RogueSurvivor.Data
       if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
+#nullable enable
     public string ReasonCantPutItemIn(Actor actor)
     {
       if (!IsContainer) return "object is not a container";
       if (   !actor.Model.Abilities.HasInventory
           || !actor.Model.Abilities.CanUseMapObjects
-          || actor.Inventory == null)
+          ||  actor.Inventory == null)
           return "cannot take an item";
       var itemsAt = Inventory;
       if (null != itemsAt && itemsAt.IsFull) return "container is full";
       return "";
     }
+#nullable restore
 
     public void PutItemIn(Item gift)
     {

@@ -187,15 +187,15 @@ namespace djack.RogueSurvivor.Data
       Rect = new Rectangle(Point.Empty,Extent);
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
-      m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
-      m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
+      info.read(ref m_ActorsList, "m_ActorsList");
+      info.read(ref m_MapObjectsList, "m_MapObjectsList");
       info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
-      m_CorpsesList = (List<Corpse>) info.GetValue("m_CorpsesList", typeof (List<Corpse>));
+      info.read(ref m_CorpsesList, "m_CorpsesList");
       m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
-      m_ScentsByPosition = (Dictionary<Point, List<OdorScent>>) info.GetValue("m_ScentsByPosition", typeof (Dictionary<Point, List<OdorScent>>));
-      m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
-      m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
-      m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
+      info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
+      info.read(ref m_Timers, "m_Timers");
+      info.read(ref m_TileIDs, "m_TileIDs");
+      info.read(ref m_IsInside, "m_IsInside");
       info.read(ref m_Decorations, "m_Decorations");
       m_BgMusic = (string)info.GetValue("m_BgMusic", typeof(string));   // alpha10
       // readonly block
