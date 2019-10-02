@@ -5808,29 +5808,6 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private void HandlePlayerTakeItemFromContainer(Actor player, Point src)
-    {
-      var inv = player.Location.Map.GetItemsAt(src);
-      if (null == inv) throw new ArgumentNullException(nameof(src),"no inventory at ("+src.X.ToString()+","+src.Y.ToString()+")");
-      if (2 > inv.CountItems) throw new ArgumentOutOfRangeException(nameof(inv),"inventory was not a stack");
-      if (1 != Rules.GridDistance(player.Location.Position,in src)) throw new ArgumentOutOfRangeException(nameof(src), "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
-
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
-      bool details(int index) {
-        Item obj = inv[index];
-        if (player.CanGet(obj, out string reason)) {
-          DoTakeItem(player, in src, obj);
-          return true;
-        }
-        ClearMessages();
-        AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason)));
-        AddMessagePressEnter();
-        return false;
-      };
-
-      PagedMenu("Taking...", inv.CountItems, label, details);
-    }
-
     private void HandleAiActor(Actor aiActor)
     {
 #if DEBUG
@@ -9161,17 +9138,41 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
+#nullable enable
+    private void HandlePlayerTakeItemFromContainer(Actor player, Inventory inv, Point src)
+    {
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
+      bool details(int index) {
+        Item obj = inv[index]!;
+        if (player.CanGet(obj, out string reason)) {
+          DoTakeItem(player, in src, obj);
+          return true;
+        }
+        ClearMessages();
+        AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason)));
+        AddMessagePressEnter();
+        return false;
+      };
+
+      PagedMenu("Taking...", inv.CountItems, label, details);
+    }
+
     public void DoTakeFromContainer(Actor actor, in Point position)
     {
-      Inventory inv = actor.Location.Map.GetItemsAt(position);
+      var inv = actor.Location.Map.GetItemsAt(position);
+#if DEBUG
+      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(inv));
+      if (1 != Rules.GridDistance(actor.Location.Position,in position)) throw new ArgumentOutOfRangeException(nameof(position), "("+ position.X.ToString()+", "+ position.Y.ToString()+") not adjacent");
+#endif
       if (actor.IsPlayer && 2 <= inv.CountItems) {
-        HandlePlayerTakeItemFromContainer(actor, position);
+        HandlePlayerTakeItemFromContainer(actor, inv, position);
         return;
       }
 
-      Item topItem = inv.TopItem;
+      Item topItem = inv.TopItem!;
       DoTakeItem(actor, in position, topItem);
     }
+#nullable restore
 
     public void DoTakeItem(Actor actor, in Point position, Item it)
     {
