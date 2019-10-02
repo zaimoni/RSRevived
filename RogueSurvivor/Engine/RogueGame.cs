@@ -4094,7 +4094,7 @@ namespace djack.RogueSurvivor.Engine
     {
       corpsePos = GDI_Point.Empty;
       if (Player == null) return null;
-      List<Corpse> corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
+      var corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
       if (corpsesAt == null) return null;
       var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen);
       corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
@@ -6667,7 +6667,7 @@ namespace djack.RogueSurvivor.Engine
       if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
       var itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null) return DescribeInventory(itemsAt);
-      List<Corpse> corpsesAt = map.GetCorpsesAt(mapPos);
+      var corpsesAt = map.GetCorpsesAt(mapPos);
       if (corpsesAt != null) return DescribeCorpses(corpsesAt);
       return null;
     }
@@ -8574,11 +8574,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      List<Corpse> corpsesAt = map.GetCorpsesAt(location.Position);
-      if (corpsesAt != null) {
-        foreach (Corpse c in corpsesAt)
-           c.TakeDamage(num1);
-      }
+      var corpsesAt = map.GetCorpsesAt(location.Position);
+      if (corpsesAt != null) foreach (var c in corpsesAt) c.TakeDamage(num1);
       // XXX implementation of blast.CanDestroyWalls goes here
       return num1;
     }
@@ -11118,11 +11115,8 @@ namespace djack.RogueSurvivor.Engine
 
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
-            List<Corpse> corpsesAt = map.GetCorpsesAtExt(point);
-            if (corpsesAt != null) {
-              foreach (Corpse c in corpsesAt)
-                DrawCorpse(c, screen.X, screen.Y, tint);
-            }
+            var corpsesAt = map.GetCorpsesAtExt(point);
+            if (corpsesAt != null) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
           }
           if (s_Options.ShowPlayerTargets && !Player.IsSleeping && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
@@ -11188,11 +11182,8 @@ namespace djack.RogueSurvivor.Engine
         DrawTile(tile, screen, tint);   // mostly ignore overlays (tourism and line of fire auto-cleared, threat may be inferred by other means)
         if (tile.IsInView) {
           // XXX should be visible only if underlying AI sees corpses
-          List<Corpse> corpsesAt = e.Location.Map.GetCorpsesAt(e.Location.Position);
-          if (corpsesAt != null) {
-            foreach (Corpse c in corpsesAt)
-              DrawCorpse(c, screen.X, screen.Y, tint);
-          }
+          var corpsesAt = e.Location.Map.GetCorpsesAt(e.Location.Position);
+          if (corpsesAt != null) foreach (var c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
         }
         // XXX DrawPlayerActorTargets should take account of threat at the exit
         bool flag2 = false;

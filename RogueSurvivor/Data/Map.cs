@@ -52,8 +52,8 @@ namespace djack.RogueSurvivor.Data
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
 #nullable enable
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
-#nullable restore
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
+#nullable restore
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
     // position inverting caches
@@ -61,8 +61,9 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized]
     private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
-    [NonSerialized]
-    private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
+#nullable enable
+    [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
+#nullable restore
     // AI support caches, etc.
     [NonSerialized]
     public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
@@ -126,8 +127,10 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
+#nullable enable
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
+#nullable restore
 
     // there is a very rare multi-threading related crash due to m_ActorsList (the parameter for these) being adjusted
     // mid-enumeration
@@ -1633,36 +1636,25 @@ retry:
     }
 #endif
 
+#nullable enable
     /// <remark>Map generation depends on this being no-fail</remark>
-    public void RemoveAllItemsAt(Point position)
-    {
-      m_GroundItemsByPosition.Remove(position);
-    }
+    public void RemoveAllItemsAt(Point position) { m_GroundItemsByPosition.Remove(position); }
 
-    public List<Corpse> GetCorpsesAt(Point p)
+    public List<Corpse>? GetCorpsesAt(Point p)
     {
-      if (m_aux_CorpsesByPosition.TryGetValue(p, out List<Corpse> corpseList))
-        return corpseList;
+      if (m_aux_CorpsesByPosition.TryGetValue(p, out var corpseList)) return corpseList;
       return null;
     }
 
-    public List<Corpse> GetCorpsesAtExt(Point p)
+    public List<Corpse>? GetCorpsesAtExt(Point p)
     {   // 2019-08-27 release mode IL Code size       72 (0x48)
       if (IsInBounds(p)) return GetCorpsesAt(p);
       Location? test = _Normalize(p);
       return null == test ? null : test.Value.Map.GetCorpsesAt(test.Value.Position);
     }
 
-    public bool HasCorpsesAt(Point p)
-    {
-      return m_aux_CorpsesByPosition.ContainsKey(p);
-    }
-
-
-    public bool Has(Corpse c)
-    {
-      return m_CorpsesList.Contains(c);
-    }
+    public bool HasCorpsesAt(Point p) { return m_aux_CorpsesByPosition.ContainsKey(p); }
+    public bool Has(Corpse c) { return m_CorpsesList.Contains(c); }
 
     public void AddAt(Corpse c, Point p)
     {
@@ -1688,19 +1680,17 @@ retry:
       RemoveFromPos(c);
     }
 
-#nullable enable
     public void Destroy(Corpse c)
     {
       c.DraggedBy?.StopDraggingCorpse();
       Remove(c);
     }
-#nullable restore
 
     public bool TryRemoveCorpseOf(Actor a)
     {
-      foreach (Corpse mCorpses in m_CorpsesList) {
-        if (mCorpses.DeadGuy == a) {
-          Remove(mCorpses);
+      foreach (var c in m_CorpsesList) {
+        if (c.DeadGuy == a) {
+          Remove(c);
           return true;
         }
       }
@@ -1709,19 +1699,19 @@ retry:
 
     private void RemoveFromPos(Corpse c)
     {
-      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out List<Corpse> corpseList)) return;
+      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out var corpseList)) return;
       corpseList.Remove(c);
-      if (corpseList.Count != 0) return;
-      m_aux_CorpsesByPosition.Remove(c.Position);
+      if (0 >= corpseList.Count) m_aux_CorpsesByPosition.Remove(c.Position);
     }
 
     private void InsertAtPos(Corpse c)
     {
-      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out List<Corpse> corpseList))
+      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out var corpseList))
         corpseList.Insert(0, c);
       else
         m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
     }
+#nullable restore
 
     public void AddTimer(TimedTask t)
     {
@@ -2867,8 +2857,8 @@ retry:
       foreach (MapObject mMapObjects in m_MapObjectsList)
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
       m_aux_CorpsesByPosition.Clear();
-      foreach (Corpse mCorpses in m_CorpsesList) {
-        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out List<Corpse> corpseList))
+      foreach (var mCorpses in m_CorpsesList) {
+        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out var corpseList))
           corpseList.Add(mCorpses);
         else
           m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) {

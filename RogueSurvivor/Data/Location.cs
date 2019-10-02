@@ -40,7 +40,9 @@ namespace djack.RogueSurvivor.Data
     public bool HasMapObject { get { return Map.HasMapObjectAt(Position); } }
     public Actor Actor { get { return Map.GetActorAt(Position); } }
     public bool StrictHasActorAt { get { return Map.StrictHasActorAt(Position); } }
+#nullable enable
     public void Add(Corpse c) { Map.AddAt(c, Position); }
+#nullable restore
     public void Place(Actor actor) { Map.PlaceAt(actor, in Position); }
     public void Place(MapObject obj) { Map.PlaceAt(obj, Position); }
     public void Drop(Item it) { Map.DropItemAt(it, in Position); }
