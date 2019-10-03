@@ -4861,14 +4861,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPush(Actor player)
     {
-      if (!player.AbleToPush) {
-        AddMessage(MakeErrorMessage("Cannot push objects."));
+      string err = player.ReasonCantPush();
+      if (!string.IsNullOrEmpty(err)) {
+        AddMessage(MakeErrorMessage(err));
         return false;
       }
-      if (player.IsTired) {
-        AddMessage(MakeErrorMessage("Too tired to push."));
-        return false;
-      }
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -4971,18 +4969,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPull(Actor player) // alpha10
     {
-      // fail immediatly for stupid cases.
-      if (!player.AbleToPush) {
-        AddMessage(MakeErrorMessage("Cannot pull objects."));
-        return false;
-      }
-      if (player.IsTired) {
-        AddMessage(MakeErrorMessage("Too tired to pull."));
-        return false;
-      }
-      var otherMobj = player.Location.MapObject;
-      if (null != otherMobj) {
-        AddMessage(MakeErrorMessage(string.Format("Cannot pull : {0} is blocking.", otherMobj.TheName)));
+      // fail immediately for stupid cases.
+      string err = player.ReasonCantPull();
+      if (!string.IsNullOrEmpty(err)) {
+        AddMessage(MakeErrorMessage(err));
         return false;
       }
 

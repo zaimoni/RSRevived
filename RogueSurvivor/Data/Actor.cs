@@ -2023,6 +2023,28 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantPull(other, moveToPos));
     }
+#nullable restore
+
+    // these two are optimized for RogueGame::HandlePlayerPull (fast-fail)
+    public string ReasonCantPush(string verb="push")
+    {
+      if (!AbleToPush) return "Cannot "+verb+" objects.";
+      if (IsTired) return "Too tired to " + verb + ".";
+      if (null != m_DraggedCorpse) return "Cannot " + verb + ": dragging corpse of " + m_DraggedCorpse.DeadGuy.Name+".";
+      return "";
+    }
+
+#nullable enable
+    public string ReasonCantPull()
+    {
+      string ret = ReasonCantPush("pull");
+      if (!string.IsNullOrEmpty(ret)) return ret;
+
+      var other = Location.MapObject;
+      if (null != other) return string.Format("Cannot pull: {0} is blocking", other.TheName);
+
+      return ret;
+    }
     // alpha10: end pull support
 
     private string ReasonCantClose(DoorWindow door)
