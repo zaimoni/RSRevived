@@ -1429,7 +1429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private List<Point> DecideMove_NoJump(List<Point> src)
     {
       IEnumerable<Point> no_jump = src.Where(pt=> {
-        MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
+        var tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
           return !tmp2?.IsJumpable ?? true;
       });
 	  int new_dest = no_jump.Count();
@@ -3698,7 +3698,7 @@ restart_single_exit:
       List<Point> has_container = new List<Point>();
       foreach(var dir in Direction.COMPASS) {
         var pos = m_Actor.Location.Position + dir;
-        MapObject container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
+        var container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
         if (null == container) continue;
         var itemsAt = container.Inventory;
         if (null != itemsAt)

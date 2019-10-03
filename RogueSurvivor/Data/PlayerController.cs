@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.Data
       if (null != stim) {
         MapObject car = null;
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
-          MapObject tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt);
+          var tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt);
           if (null == tmp) continue;
           switch(tmp.ID) {
           case MapObject.IDs.CAR1:

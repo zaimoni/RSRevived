@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define POLICE_NO_QUESTIONS_ASKED
+// #define VERIFY_MOVES
 #define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Data;
@@ -232,31 +233,27 @@ namespace djack.RogueSurvivor.Engine
       return DenormalizedProbability<int>.Apply(sk_prob*sk_prob,_Average);  // XXX \todo cache this
     }
 
+#nullable enable
     public int RollDamage(int damageValue)
     {
       if (damageValue <= 0) return 0;
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
-    static public MapObject CanActorPutItemIntoContainer(Actor actor, in Point position)
+    static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
-#if DEBUG
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
-#endif
-      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position);
+      var mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position);
       if (null == mapObjectAt) return null;
       return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
 
-    static public MapObject CanActorPutItemIntoContainer(Actor actor, in Point position, out string reason)
+    static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point pos, out string reason)
     {
-#if DEBUG
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
-#endif
-      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
-      reason = mapObjectAt?.ReasonCantPutItemIn(actor) ?? "object is not a container";
-      return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
+      var obj = actor.Location.Map.GetMapObjectAt(pos);
+      reason = obj?.ReasonCantPutItemIn(actor) ?? "object is not a container";
+      return string.IsNullOrEmpty(reason) ? obj : null;
     }
+#nullable restore
 
     public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
@@ -336,7 +333,7 @@ namespace djack.RogueSurvivor.Engine
         return actionMoveStep;
       }
       reason = actionMoveStep.FailReason;
-      MapObject mapObjectAt = map.GetMapObjectAt(point);
+      var mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
         if (mapObjectAt is DoorWindow door) {
           if (door.IsClosed) {
@@ -382,7 +379,13 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsBumpableFor(Actor actor, in Location location)
     {
+#if VERIFY_MOVES
+      var ret = IsBumpableFor(actor, in location, out string reason);
+      if (ret is ActorDest a_dest && !actor.CanEnter(a_dest.dest)) throw new InvalidOperationException(actor.Name+" considered illegal destination "+a_dest.dest);
+      return ret;
+#else
       return IsBumpableFor(actor, in location, out string reason);
+#endif
     }
 
     public static ActorAction IsBumpableFor(Actor actor, in Location location, out string reason)
@@ -425,7 +428,7 @@ namespace djack.RogueSurvivor.Engine
            if (string.IsNullOrEmpty(exit.ReasonIsBlocked(actor))) return new ActionUseExit(actor, actor.Location);
            Actor a = exit.Location.Actor;
            if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
-           MapObject obj = exit.Location.MapObject;
+           var obj = exit.Location.MapObject;
            if (obj != null && actor.CanBreak(obj)) return new ActionBreak(actor, obj);
            return null;
           }
@@ -506,7 +509,7 @@ namespace djack.RogueSurvivor.Engine
         // consider re-legalizing chat here
         return null;
       }
-      MapObject mapObjectAt = map.GetMapObjectAt(point);
+      var mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
         if (mapObjectAt is DoorWindow door) {
           if (door.BarricadePoints > 0) {
@@ -591,7 +594,13 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsPathableFor(Actor actor, in Location location)
     {
+#if VERIFY_MOVES
+      var ret = IsPathableFor(actor, location, out string reason);
+      if (ret is ActorDest a_dest && !actor.CanEnter(a_dest.dest)) throw new InvalidOperationException(actor.Name+" considered illegal destination "+a_dest.dest);
+      return ret;
+#else
       return IsPathableFor(actor, location, out string reason);
+#endif
     }
 
     public int ActorDamageVsCorpses(Actor a)

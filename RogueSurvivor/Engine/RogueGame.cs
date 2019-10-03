@@ -4374,7 +4374,7 @@ namespace djack.RogueSurvivor.Engine
         Inventory ground_inv = player.Location.Map.GetItemsAtExt(point);
         if (inv?.IsEmpty ?? true) ground_inv = null;
         else if (direction != Direction.NEUTRAL) {
-          MapObject obj = player.Location.Map.GetMapObjectAtExt(point);
+          var obj = player.Location.Map.GetMapObjectAtExt(point);
           if (!obj?.IsContainer ?? true) ground_inv = null;
         }
         if (null != ground_inv) {
@@ -4411,7 +4411,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsInBounds(point)) {  // doors never generate on map edges so IsInBounds ok
-            MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt is DoorWindow door) {
               if (player.CanClose(door, out string reason)) {
 #if PROTOTYPE
@@ -4447,7 +4447,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
               if (mapObjectAt is DoorWindow door) {
                 if (player.CanBarricade(door, out string reason)) {
@@ -4504,7 +4504,7 @@ namespace djack.RogueSurvivor.Engine
               } else
                 AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", actorAt.Name)));
             } else {
-              MapObject mapObjectAt = exitAt.Location.MapObject;
+              var mapObjectAt = exitAt.Location.MapObject;
               if (mapObjectAt != null) {
                 if (player.CanBreak(mapObjectAt, out reason)) {
                   DoBreak(player, mapObjectAt);
@@ -4519,7 +4519,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
               if (player.CanBreak(mapObjectAt, out string reason)) {
                 DoBreak(player, mapObjectAt);
@@ -4881,7 +4881,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
-            MapObject mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
             string reason;
             if (actorAt != null) {
               if (player.CanShove(actorAt, out reason)) {
@@ -4980,7 +4980,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage("Too tired to pull."));
         return false;
       }
-      MapObject otherMobj = player.Location.MapObject;
+      var otherMobj = player.Location.MapObject;
       if (null != otherMobj) {
         AddMessage(MakeErrorMessage(string.Format("Cannot pull : {0} is blocking.", otherMobj.TheName)));
         return false;
@@ -5005,7 +5005,7 @@ namespace djack.RogueSurvivor.Engine
         else if (dir != Direction.NEUTRAL) {
           Point pos = player.Location.Position + dir;
           if (player.Location.Map.IsValid(pos)) {
-            MapObject mapObj = player.Location.Map.GetMapObjectAtExt(pos);
+            var mapObj = player.Location.Map.GetMapObjectAtExt(pos);
             Actor other = player.Location.Map.GetActorAtExt(pos);
             string reason;
             if (other != null) {
@@ -6663,7 +6663,7 @@ namespace djack.RogueSurvivor.Engine
 
       Actor actorAt = map.GetActorAt(mapPos);
       if (actorAt != null) return DescribeActor(actorAt);
-      MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
+      var mapObjectAt = map.GetMapObjectAt(mapPos);
       if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
       var itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null) return DescribeInventory(itemsAt);
@@ -7566,7 +7566,7 @@ namespace djack.RogueSurvivor.Engine
         actionCost /= 2;
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
-      MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position);
+      var mapObjectAt = newLocation.MapObject;
       if (mapObjectAt?.IsJumpable ?? false) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (dest_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
@@ -7591,6 +7591,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
+#nullable enable
     public void OnActorEnterTile(Actor actor)
     {
       Map map = actor.Location.Map;
@@ -7598,10 +7599,10 @@ namespace djack.RogueSurvivor.Engine
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
       (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       if (map.IsTrapCoveringMapObjectAt(position)) return;
-      List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
+      var trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
       if (null == trapsAt) return;
-      List<ItemTrap> trapList = null;
-      List<Actor> trap_owners = null;
+      List<ItemTrap>? trapList = null;
+      List<Actor>? trap_owners = null;
       foreach (ItemTrap trap in trapsAt) {
         var owner = trap.Owner;
         if (TryTriggerTrap(trap, actor)) {
@@ -7612,6 +7613,7 @@ namespace djack.RogueSurvivor.Engine
       map.RemoveAt(trapList, in position);
       if (0 >= actor.HitPoints) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
     }
+#nullable restore
 
     private bool TryActorLeaveTile(Actor actor)
     {
@@ -7682,14 +7684,15 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
+#nullable enable
     private void CheckMapObjectTriggersTraps(Map map, in Point pos)
     {
-      MapObject mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
+      var mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
       if (null == mapObjectAt) return;
       var itemsAt = map.GetItemsAt(pos);
       if (itemsAt == null) return;
-      List<Item> objList = null;
-      foreach (Item obj in itemsAt.Items) {
+      List<Item>? objList = null;
+      foreach (var obj in itemsAt.Items) {
         if (obj is ItemTrap trap && trap.IsActivated) {
           DoTriggerTrap(trap, map, in pos, mapObjectAt);
           if (trap.Quantity <= 0) {
@@ -7699,6 +7702,7 @@ namespace djack.RogueSurvivor.Engine
       }
       map.RemoveAt(objList, in pos);
     }
+#nullable restore
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
     {
@@ -7809,7 +7813,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
       if (actor.IsRunning) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       bool origin_seen = ForceVisibleToPlayer(actor);
-      MapObject mapObjectAt = exitAt.Location.MapObject;
+      var mapObjectAt = exitAt.Location.MapObject;
       if (mapObjectAt?.IsJumpable ?? false) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (origin_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));   // XXX not quite right, cf. other jump usage
@@ -8419,7 +8423,7 @@ namespace djack.RogueSurvivor.Engine
     private bool DoCheckFireThrough(Actor attacker, List<Point> LoF)
     {
       foreach (Point point in LoF) {
-        MapObject mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
+        var mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
           bool player1 = ForceVisibleToPlayer(attacker);
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
@@ -8560,7 +8564,7 @@ namespace djack.RogueSurvivor.Engine
         map.RemoveAtExt(objList, location.Position);
       }
       if (blast.CanDamageObjects) {
-        MapObject mapObjectAt = map.GetMapObjectAt(location.Position);
+        var mapObjectAt = map.GetMapObjectAtExt(location.Position);
         if (mapObjectAt != null) {
           DoorWindow doorWindow = mapObjectAt as DoorWindow;
           if (mapObjectAt.IsBreakable || doorWindow != null && doorWindow.IsBarricaded) {
@@ -11120,7 +11124,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (s_Options.ShowPlayerTargets && !Player.IsSleeping && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
-          MapObject mapObjectAt = map.GetMapObjectAtExt(point);
+          var mapObjectAt = map.GetMapObjectAtExt(point);
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
@@ -11187,7 +11191,7 @@ namespace djack.RogueSurvivor.Engine
         }
         // XXX DrawPlayerActorTargets should take account of threat at the exit
         bool flag2 = false;
-        MapObject mapObjectAt = e.Location.MapObject;
+        var mapObjectAt = e.Location.MapObject;
         if (mapObjectAt != null) {
           DrawMapObject(mapObjectAt, screen, tile, tint);
           flag2 = true;
@@ -13047,7 +13051,7 @@ namespace djack.RogueSurvivor.Engine
                  if (!m_CharGen.IsUndead) return false;
                }
                if (IsInCHAROffice(new Location(map, pt))) return false;
-               MapObject mapObjectAt = map.GetMapObjectAt(pt);
+               var mapObjectAt = map.GetMapObjectAt(pt);
                if (m_CharGen.IsUndead) return mapObjectAt == null;
                return mapObjectAt?.IsCouch ?? false;
              })
@@ -13672,13 +13676,11 @@ namespace djack.RogueSurvivor.Engine
     private ActorAction GenerateInsaneAction(Actor actor)
     {
       switch (m_Rules.Roll(0, 5)) {
-        case 0:
-          return new ActionShout(actor, "AAAAAAAAAAA!!!");
-        case 1:
-          return new ActionBump(actor, m_Rules.RollDirection());
+        case 0: return new ActionShout(actor, "AAAAAAAAAAA!!!");
+        case 1: return new ActionBump(actor, m_Rules.RollDirection());
         case 2:
           Direction direction = m_Rules.RollDirection();
-          MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
+          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
           if (mapObjectAt == null) return null;
           return new ActionBreak(actor, mapObjectAt);
         case 3:

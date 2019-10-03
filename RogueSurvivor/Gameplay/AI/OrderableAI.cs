@@ -638,16 +638,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
 
+#nullable enable
       public Goal_BreakBarricade(int t0, Actor who, DoorWindow dest)
       : base(t0, who)
       {
-#if DEBUG
-        if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
         _dest = dest.Location;
       }
 
-      public DoorWindow Target { get { return _dest.MapObject as DoorWindow; } }
+      public DoorWindow? Target { get { return _dest.MapObject as DoorWindow; } }
+#nullable restore
 
       public override bool UrgentAction(out ActorAction ret)
       {
@@ -2370,7 +2369,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       // the legacy tests
       Map.Canonical(ref loc);
-      MapObject obj = loc.MapObject;
+      var obj = loc.MapObject;
       if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
       if (loc.Map.HasExitAt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
@@ -2656,7 +2655,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
         if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
-        MapObject mapObjectAt = map.GetMapObjectAt(position);
+        var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
           num += (loc != PrevLocation ? EXPLORE_BARRICADES : -EXPLORE_DIRECTION);

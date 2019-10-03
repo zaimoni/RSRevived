@@ -1979,14 +1979,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     // alpha10: pull support
     private string ReasonCantPull(MapObject mapObj, in Point moveToPos)
     {
       string ret = ReasonCantPush(mapObj);
       if (!string.IsNullOrEmpty(ret)) return ret;
 
-      MapObject other = Location.MapObject;
-      if (null != Location.MapObject) return string.Format("{0} is blocking", other.TheName);
+      var other = Location.MapObject;
+      if (null != other) return string.Format("{0} is blocking", other.TheName);
 
       Location.Map.IsWalkableFor(moveToPos, this, out ret);
       return ret;
@@ -2024,7 +2025,6 @@ namespace djack.RogueSurvivor.Data
     }
     // alpha10: end pull support
 
-#nullable enable
     private string ReasonCantClose(DoorWindow door)
     {
       if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
@@ -2516,8 +2516,9 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+#nullable enable
     // likewise inventories
-    public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point> src) {
+    public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point>? src) {
       var ret = new HashSet<Point>();
       if (null!=src) foreach(var pt in src) {
         var loc = new Location(m, pt);
@@ -2534,6 +2535,7 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     }
+#nullable restore
 
     public List<Location> MutuallyAdjacentFor(Location a, Location b)
     {
@@ -3221,7 +3223,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
-#nullable restore
 
     public bool MayTakeFromStackAt(in Location loc)
     {
@@ -3233,7 +3234,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool StackIsBlocked(in Location loc)
     {
-      MapObject obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      var obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
       if (null == obj) return false;
       if (!obj.IsContainer && !loc.IsWalkableFor(this)) {
         // Cf. Actor::CanOpen
@@ -3245,6 +3246,7 @@ namespace djack.RogueSurvivor.Data
       if (loc != Location && 2*loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
       return false;
     }
+#nullable restore
 
     private string ReasonCantGiveTo(Actor target, Item gift)
     {

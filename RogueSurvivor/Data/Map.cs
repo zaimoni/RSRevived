@@ -49,8 +49,8 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
-    private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
 #nullable enable
+    private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
 #nullable restore
@@ -59,9 +59,8 @@ namespace djack.RogueSurvivor.Data
     // position inverting caches
     [NonSerialized]
     private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-    [NonSerialized]
-    private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
 #nullable enable
+    [NonSerialized] private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
 #nullable restore
     // AI support caches, etc.
@@ -1160,17 +1159,15 @@ retry:
       }
     }
 
+#nullable enable
     // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
     private string ReasonNotWalkableFor(Point pt, ActorModel model)
     {
-#if DEBUG
-      if (null == model) throw new ArgumentNullException(nameof(model));
-#endif
       var tile_loc = GetTileModelLocation(pt);
       if (null == tile_loc.Key) return "out of map";
       if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
-      if (!mapObjectAt?.IsWalkable ?? false) {
+      if (null != mapObjectAt && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
           if (!model.Abilities.CanJump) return "cannot jump";
         } else if (model.Abilities.IsSmall) {
@@ -1194,14 +1191,11 @@ retry:
 
     private string ReasonNotWalkableFor(Point pt, Actor actor)
     {
-#if DEBUG
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
-#endif
       var tile_loc = GetTileModelLocation(pt);
       if (null == tile_loc.Key) return "out of map";
       if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
-      if (!mapObjectAt?.IsWalkable ?? false) {
+      if (null != mapObjectAt && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
           // We only have to be completely accurate when adjacent to a square.
@@ -1227,6 +1221,7 @@ retry:
       reason = ReasonNotWalkableFor(p, actor);
       return string.IsNullOrEmpty(reason);
     }
+#nullable restore
 
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
@@ -1288,33 +1283,24 @@ retry:
                            : Players.Get.ActOnce(pan_to, pred));
     }
 
+#nullable enable
     // map object manipulation functions
-    public bool HasMapObject(MapObject mapObj)
-    {
-      return m_MapObjectsList.Contains(mapObj);
-    }
+    public bool HasMapObject(MapObject x) { return m_MapObjectsList.Contains(x); }
 
-    public MapObject GetMapObjectAt(Point position)
+    public MapObject? GetMapObjectAt(Point pos)
     {
-      if (m_aux_MapObjectsByPosition.TryGetValue(position, out MapObject mapObject)) {
+      if (m_aux_MapObjectsByPosition.TryGetValue(pos, out var mapObject)) {
 #if DEBUG
         // existence check for bugs relating to map object location
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
-        if (position!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
+        if (pos!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
 #endif
         return mapObject;
       }
       return null;
     }
 
-    public MapObject GetMapObjectAtExt(int x, int y)
-    {   // 2019-08-27 release mode IL Code size       85 (0x55)
-      if (IsInBounds(x,y)) return GetMapObjectAt(new Point(x, y));
-      Location? test = _Normalize(new Point(x,y));
-      return null == test ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
-    }
-
-    public MapObject GetMapObjectAtExt(Point pt)
+    public MapObject? GetMapObjectAtExt(Point pt)
     {   // 2019-08-27 release mode IL Code size       72 (0x48)
       if (IsInBounds(pt)) return GetMapObjectAt(pt);
       Location? test = _Normalize(pt);
@@ -1325,15 +1311,7 @@ retry:
     {
       return m_aux_MapObjectsByPosition.ContainsKey(position);
     }
-
-#if DEAD_FUNC
-    public bool HasMapObjectAtExt(Point position)
-    {   // 2019-08-27 release mode IL Code size       71 (0x47)
-      if (m_aux_MapObjectsByPosition.ContainsKey(position)) return true;
-      Location? test = _Normalize(position);
-      return null!=test && test.Value.Map.HasMapObjectAt(test.Value.Position);
-    }
-#endif
+#nullable restore
 
     public void PlaceAt(MapObject mapObj, Point position)
     {
@@ -1352,7 +1330,7 @@ retry:
 #if DEBUG
       if (!GetTileModelAt(position).IsWalkable) throw new ArgumentOutOfRangeException(nameof(position),position, "!GetTileModelAt(position).IsWalkable");
 #endif
-      MapObject mapObjectAt = GetMapObjectAt(position);
+      var mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj) return;
 #if DEBUG
       if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
@@ -1368,9 +1346,10 @@ retry:
       mapObj.Location = new Location(this, position);
     }
 
+#nullable enable
     public void RemoveMapObjectAt(Point pt)
     {
-      MapObject mapObjectAt = GetMapObjectAt(pt);
+      var mapObjectAt = GetMapObjectAt(pt);
       if (mapObjectAt == null) return;
       m_MapObjectsList.Remove(mapObjectAt);
       m_aux_MapObjectsByPosition.Remove(pt);
@@ -1378,16 +1357,16 @@ retry:
 
     public bool IsTrapCoveringMapObjectAt(Point pos)
     {
-      MapObject mapObjectAt = GetMapObjectAt(pos);
+      var mapObjectAt = GetMapObjectAt(pos);
       if (mapObjectAt == null) return false;
       if (mapObjectAt is DoorWindow) return false;
       if (mapObjectAt.IsJumpable) return true;
       return mapObjectAt.IsWalkable;
     }
 
-    public MapObject GetTrapTriggeringMapObjectAt(Point pos)
+    public MapObject? GetTrapTriggeringMapObjectAt(Point pos)
     {
-      MapObject mapObjectAt = GetMapObjectAt(pos);
+      var mapObjectAt = GetMapObjectAt(pos);
       if (mapObjectAt == null) return null;
       if (mapObjectAt is DoorWindow) return null;
       if (mapObjectAt.IsJumpable) return null;
@@ -1395,7 +1374,6 @@ retry:
       return mapObjectAt;
     }
 
-#nullable enable
     public int TrapsMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
     {
       var itemsAt = GetItemsAt(pos);
@@ -1418,16 +1396,16 @@ retry:
       }
       return num;
     }
-#nullable restore
 
     public void OpenAllGates()
     {
-      foreach(MapObject obj in m_MapObjectsList) {
+      foreach(var obj in m_MapObjectsList) {
         if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_OPEN;
         RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
       }
     }
+#nullable restore
 
     public double PowerRatio {
       get {
@@ -1435,9 +1413,9 @@ retry:
       }
     }
 
+#nullable enable
     public bool HasItemsAt(Point pos) { return m_GroundItemsByPosition.ContainsKey(pos); }
 
-#nullable enable
     public Inventory? GetItemsAt(Point position)
     {
 #if AUDIT_ITEM_INVARIANTS
@@ -1459,25 +1437,22 @@ retry:
       Location? test = _Normalize(pt);
       return null == test ? null : test.Value.Map.GetItemsAt(test.Value.Position);
     }
-#nullable restore
 
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
     {
       var ground_inv = new Dictionary<Point, Inventory>();
-      Inventory inv = GetItemsAtExt(pt);
-      if (!inv?.IsEmpty ?? false) ground_inv[pt] = inv;
+      var inv = GetItemsAtExt(pt);
+      if (null != inv && !inv.IsEmpty) ground_inv.Add(pt, inv);
       foreach(var adjacent in pt.Adjacent()) {
-        inv = GetItemsAtExt(adjacent);
-        if (inv?.IsEmpty ?? true) continue;
-        MapObject mapObjectAt = GetMapObjectAtExt(adjacent);
-        if (null == mapObjectAt) continue;
-        if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
-        ground_inv[adjacent] = inv;
+        var obj = GetMapObjectAtExt(adjacent);
+        if (null != obj && obj.IsContainer) {
+          inv = obj.Inventory;
+          if (null != inv && !inv.IsEmpty) ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
+        }
       }
       return ground_inv;
     }
 
-#nullable enable
     // Clairvoyant.  Useful for fine-tuning map generation and little else
     private KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
     {
@@ -1895,6 +1870,7 @@ retry:
       foreach (var actor in m_ActorsList) actor.PreTurnStart();
     }
 
+#nullable enable
     public bool IsTransparent(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
@@ -1943,11 +1919,12 @@ retry:
       // walls (hard) !map.GetTileModelAt(pt).IsWalkable
       // non-enterable objects (hard)
       // jumpable objects (soft) map.GetMapObjectAt(pt)
-      MapObject obj = GetMapObjectAtExt(pt);
+      var obj = GetMapObjectAtExt(pt);
       if (null == obj || obj.IsCouch || obj.IsWalkable) return 0;
       if (obj.IsJumpable) return 1;
       return 2;
     }
+#nullable restore
 
 #if DEAD_FUNC
     /// <returns>0 not blocked, 1 jumping required both ways, 2 one wall one jump, 3 two walls (for livings)</returns>
@@ -2000,21 +1977,21 @@ retry:
         pathing_exits_to_goals.Now(LocalTime.TurnCounter);
     }
 
+#nullable enable
     /// <remark>testFn has to tolerate denormalized coordinates</remark>
-    public Dictionary<Point,T> FindAdjacent<T>(Point pos, Func<Map,Point,T> testFn) where T:class
+    public Dictionary<Point,T> FindAdjacent<T>(Point pos, Func<Map,Point,T?> testFn) where T:class
     {
 #if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
       if (!IsInBounds(pos)) throw new InvalidOperationException("!IsInBounds(pos)");
 #endif
       var ret = new Dictionary<Point,T>();
       foreach(Point pt in Direction.COMPASS.Select(dir => pos + dir)) {
         T test = testFn(this,pt);
-        if (null == test) continue;
-        ret[pt] = test;
+        if (null != test) ret.Add(pt, test);
       }
       return ret;
     }
+#nullable restore
 
     public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
@@ -2649,7 +2626,7 @@ retry:
           const string iron_fence = "<span class='lfort'>&#x2632;</span>";    // unicode: misc symbols (I Ching fire)
           const string open_gate = "<span class='lfort'>&#x2637;</span>";    // unicode: misc symbols (I Ching earth)
           const string chair = "<span class='chair'>&#x2441;</span>";    // unicode: OCR chair
-          MapObject tmp_obj = GetMapObjectAt(pt);  // micro-optimization target (one Point temporary involved)
+          var tmp_obj = GetMapObjectAt(pt);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
@@ -2854,8 +2831,7 @@ retry:
         (mActors.Controller as PlayerController)?.InstallHandlers();
       }
       m_aux_MapObjectsByPosition.Clear();
-      foreach (MapObject mMapObjects in m_MapObjectsList)
-        m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
+      foreach (var obj in m_MapObjectsList) m_aux_MapObjectsByPosition.Add(obj.Location.Position, obj);
       m_aux_CorpsesByPosition.Clear();
       foreach (var mCorpses in m_CorpsesList) {
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out var corpseList))

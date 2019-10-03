@@ -255,6 +255,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
         if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, in next))) return float.NaN;
         if (!Map.Canonical(ref next)) return float.NaN;
+#if DEBUG
+        if (m_Actor.IsDebuggingTarget && dir==Direction.N) throw new InvalidOperationException("tracing");
+#endif
 
         int score = 0;
 
@@ -335,7 +338,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction a = Rules.IsBumpableFor(m_Actor, in next);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
-            MapObject mapObjectAt = next.MapObject;
+            var mapObjectAt = next.MapObject;
             if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
               Direction pushDir = RogueForm.Game.Rules.RollDirection();
               if (mapObjectAt.CanPushTo(mapObjectAt.Location.Position + pushDir))
@@ -345,11 +348,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // alpha10 check special actions
           if (canCheckBreak) {
-            MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
+            var obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
             if (null != obj && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
           }
           if (canCheckPush) {
-            MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
+            var obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
             if (null != obj && m_Actor.CanPush(obj)) {
                 // push in a valid direction at random
                 List<Direction> validPushes = new List<Direction>(8);
@@ -564,6 +567,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionDropItem(m_Actor, itemTrap);
     }
 
+#nullable enable
     protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
     {
       reason = "";
@@ -585,17 +589,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 3 >= itemsAt.Items.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
     }
 
-    protected ActorAction BehaviorAttackBarricade()
+    protected ActorAction? BehaviorAttackBarricade()
     {
       Map map = m_Actor.Location.Map;
       Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
-        DoorWindow doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
+        DoorWindow? doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
         return ((doorWindow?.IsBarricaded ?? false) ? doorWindow : null);
       });
       if (0 >= doors.Count) return null;
       DoorWindow doorWindow1 = RogueForm.Game.Rules.DiceRoller.Choose(doors).Value;
       return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
+#nullable restore
 
 #if DEAD_FUNC
     // intentionally disabled in alpha 9; for ZM AI
@@ -617,19 +622,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected ActionPush BehaviorPushNonWalkableObject()
+#nullable enable
+    protected ActionPush? BehaviorPushNonWalkableObject()
     {
       if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
       Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        MapObject o = m.GetMapObjectAtExt(pt);
-        if (o?.IsWalkable ?? true) return null;
+        var o = m.GetMapObjectAtExt(pt);
+        if (null == o || o.IsWalkable) return null;
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
       ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
     }
+#nullable restore
 
     protected ActionPush BehaviorPushNonWalkableObjectForFood()
     {
@@ -923,7 +930,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
         if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
-        MapObject mapObjectAt = map.GetMapObjectAt(position);
+        var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
           num += (loc != PrevLocation ? EXPLORE_BARRICADES : -EXPLORE_DIRECTION);
@@ -943,16 +950,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Exit exitAt = m_Actor.Location.Exit;
       if (null == exitAt) return null;
-      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
+      if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       string reason = exitAt.ReasonIsBlocked(m_Actor);
       if (string.IsNullOrEmpty(reason)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
-      if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
+      if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
-      if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
-        MapObject mapObjectAt = exitAt.Location.MapObject;
+      if ((useFlags & UseExitFlags.BREAK_BLOCKING_OBJECTS) != UseExitFlags.NONE) {
+        var mapObjectAt = exitAt.Location.MapObject;
         if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }
@@ -1027,7 +1034,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 3 If can tire, prefer not jumping.
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        MapObject mapObjectAt = map.GetMapObjectAtExt(from);
+        var mapObjectAt = map.GetMapObjectAtExt(from);
         if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
       }
 #endregion
@@ -1177,12 +1184,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
 
-    static protected bool IsValidFleeingAction(ActorAction a)
+    protected bool IsValidFleeingAction(ActorAction a)
     {
       if (null == a) return false;
-      if (!(a is ActionMoveStep) && !(a is ActionOpenDoor))
-        return a is ActionSwitchPlace;
-      return true;
+      if (a is Resolvable res) return IsValidFleeingAction(res.ConcreteAction);
+      return a is ActionMoveStep || a is ActionOpenDoor || a is ActionSwitchPlace;
     }
 
     protected bool IsValidWanderAction(ActorAction a)
@@ -1204,9 +1210,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    static protected bool IsValidMoveTowardGoalAction(ActorAction a)
+    protected bool IsValidMoveTowardGoalAction(ActorAction a)
     {
-      if (a != null && !(a is ActionChat) && (!(a is ActionGetFromContainer) && !(a is ActionSwitchPowerGenerator)))
+      if (null == a) return false;
+      if (a is Resolvable res) return IsValidMoveTowardGoalAction(res.ConcreteAction);
+      if (!(a is ActionChat) && (!(a is ActionGetFromContainer) && !(a is ActionSwitchPowerGenerator)))
         return !(a is ActionRechargeItemBattery);
       return false;
     }

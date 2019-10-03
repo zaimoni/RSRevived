@@ -211,7 +211,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             // check tile & mapobj
             if (map.IsWalkable(pos)) return true;
 
-            MapObject mobj = map.GetMapObjectAt(pos);
+            var mobj = map.GetMapObjectAt(pos);
             if (mobj == null) return false;   // blocked by a wall tile
 
             // blocked by a mapobj, can we operate it?

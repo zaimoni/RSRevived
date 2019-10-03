@@ -36,7 +36,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     // thin wrappers
-    public MapObject MapObject { get { return Map.GetMapObjectAt(Position); } }
+#nullable enable
+    public MapObject? MapObject { get { return Map.GetMapObjectAt(Position); } }
+#nullable restore
     public bool HasMapObject { get { return Map.HasMapObjectAt(Position); } }
     public Actor Actor { get { return Map.GetActorAt(Position); } }
     public bool StrictHasActorAt { get { return Map.StrictHasActorAt(Position); } }
@@ -59,9 +61,11 @@ namespace djack.RogueSurvivor.Data
     public void AddDecoration(string imageID) { Map.AddDecorationAt(imageID, Position); }
 
     static public bool IsInBounds(in Location loc) { return loc.Map.IsInBounds(loc.Position); }
+#nullable enable
     static public bool RequiresJump(in Location loc) { return loc.MapObject?.IsJumpable ?? false; }
     static public bool NoJump(Location loc) { return !loc.MapObject?.IsJumpable ?? true; }
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) { return !loc_x.Key.MapObject?.IsJumpable ?? true; }
+#nullable restore
 
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based

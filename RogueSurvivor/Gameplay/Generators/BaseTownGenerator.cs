@@ -1010,7 +1010,7 @@ restart:
       }
       if (shopType == ShopType.GUNSHOP) BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       ItemsDrop(map, b.InsideRect, pt => {
-        MapObject mapObjectAt = map.GetMapObjectAt(pt);
+        var mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
       }, pt => MakeRandomShopItem(shopType));

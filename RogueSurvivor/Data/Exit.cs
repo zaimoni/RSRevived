@@ -20,13 +20,12 @@ namespace djack.RogueSurvivor.Data
     public Map ToMap { get { return m_Location.Map; } }
     public Location Location { get { return m_Location; } }
 
+#nullable enable
     public Exit(Map toMap, in Point toPosition)
     {
-#if DEBUG
-      if (null == toMap) throw new ArgumentNullException(nameof(toMap));
-#endif
       m_Location = new Location(toMap,toPosition);
     }
+#nullable restore
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
     // we do not consider actors to block exits when pathfinding
@@ -35,7 +34,7 @@ namespace djack.RogueSurvivor.Data
         Actor actorAt = Location.Actor;
         if (actorAt != null) return string.Format("{0} is blocking your way.", actorAt.Name);
       }
-      MapObject mapObjectAt = Location.MapObject;
+      var mapObjectAt = Location.MapObject;
       if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return string.Format("{0} is blocking your way.", mapObjectAt.AName);
       return "";
     }
