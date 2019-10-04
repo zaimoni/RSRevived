@@ -123,7 +123,9 @@ namespace djack.RogueSurvivor.Data
     private List<Actor> m_SelfDefenceFrom;
     private int m_MurdersCounter;   // sparse field
     private int m_Infection;
-    private Corpse m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
+#nullable enable
+    private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
+#nullable restore
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
     [NonSerialized] private bool _has_to_eat;
@@ -144,12 +146,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsUnique
     {
-      get {
-        return GetFlag(Actor.Flags.IS_UNIQUE);
-      }
-      set {
-        SetFlag(Actor.Flags.IS_UNIQUE, value);
-      }
+      get { return GetFlag(Flags.IS_UNIQUE); }
+      set { SetFlag(Flags.IS_UNIQUE, value); }
     }
 
     public Faction Faction
@@ -568,7 +566,8 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int Infection { get { return m_Infection; } }
-    public Corpse DraggedCorpse { get { return m_DraggedCorpse; } }
+#nullable enable
+    public Corpse? DraggedCorpse { get { return m_DraggedCorpse; } }
 
     public void Drag(Corpse c)
     {
@@ -576,15 +575,16 @@ namespace djack.RogueSurvivor.Data
       m_DraggedCorpse = c;
     }
 
-    public Corpse StopDraggingCorpse()
+    public Corpse? StopDraggingCorpse()
     {
-      Corpse ret = m_DraggedCorpse;
+      var ret = m_DraggedCorpse;
       if (null != ret) {
         ret.DraggedBy = null;
         m_DraggedCorpse = null;
       }
       return ret;
     }
+#nullable restore
 
     public bool IsDebuggingTarget {
       get {
@@ -1893,17 +1893,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     private string ReasonCantPush(MapObject mapObj)
     {
-#if DEBUG
-      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
-#endif
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
       if (mapObj.Location.StrictHasActorAt) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
-      if (null != DraggedCorpse) return "dragging a corpse";
+      if (null != m_DraggedCorpse) return "dragging a corpse";
       return "";
     }
 
@@ -1921,12 +1919,9 @@ namespace djack.RogueSurvivor.Data
     // currently other is unused, but that is not an invariant
     private string ReasonCantShove(Actor other)
     {
-#if DEBUG
-      if (null == other) throw new ArgumentNullException(nameof(other));
-#endif
       if (!AbleToPush) return "cannot shove people";
       if (IsTired) return "tired";
-      if (null != DraggedCorpse) return "dragging a corpse";
+      if (null != m_DraggedCorpse) return "dragging a corpse";
       return "";
     }
 
@@ -1940,6 +1935,7 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantShove(other));
     }
+#nullable restore
 
     private string ReasonCantBeShovedTo(Point toPos)
     {
@@ -2023,7 +2019,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantPull(other, moveToPos));
     }
-#nullable restore
 
     // these two are optimized for RogueGame::HandlePlayerPull (fast-fail)
     public string ReasonCantPush(string verb="push")
@@ -2034,7 +2029,6 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-#nullable enable
     public string ReasonCantPull()
     {
       string ret = ReasonCantPush("pull");
@@ -2280,7 +2274,7 @@ namespace djack.RogueSurvivor.Data
         if (IsExhausted) num /= 2f;
         else if (IsSleepy) { num *= 2f; num /= 3f; }
         if (GetEquippedItem(DollPart.TORSO) is Engine.Items.ItemBodyArmor armor) num -= armor.Weight;
-        if (DraggedCorpse != null) num /= 2f;
+        if (null != m_DraggedCorpse) num /= 2f;
         return Math.Max((int) num, 0);
       }
     }
@@ -2682,11 +2676,9 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantEatCorpse());
     }
 
+#nullable enable
     private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
     {
-#if DEBUG
-      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
-#endif
       if (IsTired) return "tired";
       if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
       return "";
@@ -2705,13 +2697,10 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantStartDrag(Corpse corpse)
     {
-#if DEBUG
-      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
-#endif
       if (corpse.IsDragged) return "corpse is already being dragged";
       if (IsTired) return "tired";
       if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
-      if (null != DraggedCorpse) return "already dragging a corpse";
+      if (null != m_DraggedCorpse) return "already dragging a corpse";
       return "";
     }
 
@@ -2728,7 +2717,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-#nullable enable
     private string ReasonCantStopDrag(Corpse corpse)
     {
       if (this != corpse.DraggedBy) return "not dragging this corpse";

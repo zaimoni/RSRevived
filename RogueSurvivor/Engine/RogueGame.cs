@@ -4132,6 +4132,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#nullable enable
     public void DoStartDragCorpse(Actor a, Corpse c)
     {
       a.Drag(c);
@@ -4141,11 +4142,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
     {
-      Corpse c = a.StopDraggingCorpse();
+      var c = a.StopDraggingCorpse();
       if (null == c) return;
       if (!ForceVisibleToPlayer(a)) return;
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
     }
+#nullable restore
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
@@ -7545,7 +7547,7 @@ namespace djack.RogueSurvivor.Engine
 	  actor.Moved();
       newLocation.Place(actor);
       bool dest_seen = ForceVisibleToPlayer(actor);
-      Corpse draggedCorpse = actor.DraggedCorpse;
+      var draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveTo(draggedCorpse, newLocation.Position);
         if (dest_seen || ForceVisibleToPlayer(in location))
