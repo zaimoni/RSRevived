@@ -23,7 +23,9 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
 #if DEBUG
-      if (!(actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+      var ai = actor.Controller as Gameplay.AI.ObjectiveAI;
+      if (null == ai) throw new ArgumentNullException(nameof(ai));
+      if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
 #if TRACER
       if (actor.IsDebuggingTarget && Gameplay.GameItems.IDs.==it.Model.ID) throw new InvalidOperationException(actor.Name+": "+it.ToString());

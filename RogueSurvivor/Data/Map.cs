@@ -40,9 +40,9 @@ namespace djack.RogueSurvivor.Data
 	public short Width { get {return Extent.X;} }
 	public short Height { get {return Extent.Y;} }
 	[NonSerialized] public readonly Rectangle Rect;
+#nullable enable
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
-#nullable enable
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
     private readonly List<Zone> m_Zones = new List<Zone>(5);
@@ -382,6 +382,7 @@ namespace djack.RogueSurvivor.Data
       return dest.IsInBounds(pt) ? new Location(dest, pt) : dest._Normalize(pt);
     }
 
+#nullable enable
     public Location? Normalize(Point pt)
     {
       if (IsInBounds(pt)) return null;
@@ -390,7 +391,10 @@ namespace djack.RogueSurvivor.Data
 
     public Location? Denormalize(in Location loc)
     {
-      if (this == loc.Map && IsValid(loc.Position)) return loc;
+      if (this == loc.Map) {
+        if (IsValid(loc.Position)) return loc;  // operator ? : syntax errors; Location? not inferred from Location and null
+        else return null;
+      }
       int map_code = District.UsesCrossDistrictView(this);
       if (0>=map_code || map_code != District.UsesCrossDistrictView(loc.Map)) return null;
       Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
@@ -405,9 +409,8 @@ namespace djack.RogueSurvivor.Data
       return new Location(this,not_in_bounds);
     }
 
-    public List<Location> Denormalize(IEnumerable<Location> locs)
+    public List<Location>? Denormalize(IEnumerable<Location> locs)
     {
-      if (null == locs) return null;
       var ret = new List<Location>(locs.Count());
       foreach(var x in locs) {
         Location? test = Denormalize(in x);
@@ -426,25 +429,11 @@ namespace djack.RogueSurvivor.Data
       return view.Contains(loc.Position);
     }
 
-    // these two look wrong, may need fixing later
-    public bool IsMapBoundary(int x, int y)
-    {
-      return -1 == x || x == Width || -1 == y || y == Height;
-    }
-
-#if DEAD_FUNC
-    public bool IsOnMapBorder(int x, int y)
-    {
-      return 0 == x || x == Width-1 || 0 == y || y == Height-1;
-    }
-#endif
-
+    // this looks wrong, may need fixing later
     public bool IsOnMapBorder(Point pt)
     {
       return 0 == pt.X || pt.X == Width-1 || 0 == pt.Y || pt.Y == Height-1;
     }
-
-#nullable enable
 
     /// <summary>
     /// GetTileAt does not bounds-check for efficiency reasons;
@@ -474,8 +463,6 @@ namespace djack.RogueSurvivor.Data
       if (null == loc) throw new InvalidOperationException("non-normalizable coordinate for tile");
       return loc.Value.Map.GetTileAt(loc.Value.Position);
     }
-
-#nullable restore
 
     public void SetIsInsideAt(int x, int y, bool inside=true)
     {
@@ -514,7 +501,6 @@ namespace djack.RogueSurvivor.Data
     public void SetTileModelAt(int x, int y, TileModel model)
     {
 #if DEBUG
-      if (null == model) throw new ArgumentNullException(nameof(model));
       if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("("+nameof(x)+","+nameof(y)+")", "(" + x.ToString() + "," + y.ToString() + ")", "!IsInBounds(x,y)");
 #endif
       m_TileIDs[x, y] = (byte)(model.ID);
@@ -523,13 +509,10 @@ namespace djack.RogueSurvivor.Data
     public void SetTileModelAt(Point pt, TileModel model)
     {
 #if DEBUG
-      if (null == model) throw new ArgumentNullException(nameof(model));
       if (!IsInBounds(pt)) throw new InvalidOperationException("!IsInBounds(pt)");
 #endif
       m_TileIDs[pt.X, pt.Y] = (byte)(model.ID);
     }
-
-#nullable enable
 
     public TileModel GetTileModelAt(int x, int y) { return Models.Tiles[m_TileIDs[x,y]]; }
     public TileModel GetTileModelAt(Point pt) { return Models.Tiles[m_TileIDs[pt.X, pt.Y]]; }
@@ -552,8 +535,6 @@ namespace djack.RogueSurvivor.Data
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
     }
 
-#nullable restore
-
     public bool TileIsWalkable(Point pt)
     {   // 2019-8-27 release mode IL Code size       108 (0x6c)
       // should evaluate: IsValid(pt) && GetTileModelAtExt(pt).IsWalkable
@@ -563,7 +544,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // thin wrappers based on Tile API
-#nullable enable
     public bool HasDecorationsAt(Point pt) { return m_Decorations.ContainsKey(pt); }
 
     public void DoForAllDecorationsAt(Point pt, Action<string> op)
@@ -1977,7 +1957,7 @@ retry:
 #endif
       var ret = new Dictionary<Point,T>();
       foreach(Point pt in Direction.COMPASS.Select(dir => pos + dir)) {
-        T test = testFn(this,pt);
+        var test = testFn(this,pt);
         if (null != test) ret.Add(pt, test);
       }
       return ret;

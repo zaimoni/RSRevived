@@ -537,7 +537,7 @@ namespace djack.RogueSurvivor.Data
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int ret = 0;
         if (null != m_AggressorOf) {
-          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.m_Inventory.GetItemsByType<ItemFood>());
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.m_Inventory?.GetItemsByType<ItemFood>());
           if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
         }
         return ret;
@@ -2980,7 +2980,7 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory?.GetItemsByType<ItemBodyArmor>(armor => !armor.IsEquipped)?.Minimize(armor => armor.Rating);
     }
 
-    public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
+    public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
     {
       if (!_has_to_eat) return true;
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
