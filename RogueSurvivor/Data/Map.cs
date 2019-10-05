@@ -53,8 +53,8 @@ namespace djack.RogueSurvivor.Data
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
-#nullable restore
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
+#nullable restore
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
     // position inverting caches
     [NonSerialized]
@@ -1723,29 +1723,29 @@ retry:
       return new KeyValuePair<bool,bool>(wasNight == isDay, isDay);
     }
 
+#nullable enable
     public int GetScentByOdorAt(Odor odor, in Point position)
     {
       if (IsInBounds(position)) {
-        OdorScent scentByOdor = GetScentByOdor(odor, in position);
+        var scentByOdor = GetScentByOdor(odor, in position);
         if (scentByOdor != null) return scentByOdor.Strength;
       } else {
         Location? tmp = _Normalize(position);
         if (null != tmp) {
-          OdorScent scentByOdor = tmp.Value.Map.GetScentByOdor(odor, tmp.Value.Position);
+          var scentByOdor = tmp.Value.Map.GetScentByOdor(odor, tmp.Value.Position);
           if (scentByOdor != null) return scentByOdor.Strength;
         }
       }
       return 0;
     }
 
-    private OdorScent GetScentByOdor(Odor odor, in Point p)
+    private OdorScent? GetScentByOdor(Odor odor, in Point p)
     {
-      if (!m_ScentsByPosition.TryGetValue(p, out List<OdorScent> odorScentList)) return null;
-      foreach (OdorScent odorScent in odorScentList) {
-        if (odorScent.Odor == odor) return odorScent;
-      }
+      if (!m_ScentsByPosition.TryGetValue(p, out var odorScentList)) return null;
+      foreach (var odorScent in odorScentList) if (odorScent.Odor == odor) return odorScent;
       return null;
     }
+#nullable restore
 
 #if OBSOLETE
     private void AddNewScent(OdorScent scent, Point position)
@@ -1770,19 +1770,12 @@ retry:
     }
 #endif
 
+#nullable enable
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
-#if OBSOLETE
-      OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor == null) {
-        AddNewScent(new OdorScent(odor, freshStrength), position);
-      } else if (scentByOdor.Strength < freshStrength) {
-        scentByOdor.Strength = freshStrength;
-      }
-#else
       if (m_ScentsByPosition.TryGetValue(position, out var odorScentList)) {
         foreach (var odorScent in odorScentList) {
           if (odorScent.Odor == odor) {
@@ -1794,8 +1787,8 @@ retry:
       } else {
         m_ScentsByPosition.Add(position, new List<OdorScent>(2) { new OdorScent(odor, freshStrength) });
       };
-#endif
     }
+#nullable restore
 
 #if DEAD_FUNC
     public void RemoveScent(OdorScent scent)
@@ -1839,6 +1832,7 @@ retry:
     }
 #endif
 
+#nullable enable
     public void DecayScents()
     {
       // Cf. Location.OdorsDecay
@@ -1846,7 +1840,7 @@ retry:
       if (this == District.SewersMap) mapOdorDecayRate += 2;
 
       var discard = new List<OdorScent>();
-      List<Point> discard2 = null;
+      List<Point>? discard2 = null;
       foreach(var tmp in m_ScentsByPosition) {
         int odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
         foreach(OdorScent scent in tmp.Value) {
@@ -1859,9 +1853,7 @@ retry:
           if (0 >= tmp.Value.Count) (discard2 ?? (discard2 = new List<Point>())).Add(tmp.Key);
         }
       }
-      if (null != discard2) {
-        foreach(var x in discard2) m_ScentsByPosition.Remove(x);
-      }
+      if (null != discard2) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
     }
 
     public void PreTurnStart()
@@ -1870,7 +1862,6 @@ retry:
       foreach (var actor in m_ActorsList) actor.PreTurnStart();
     }
 
-#nullable enable
     public bool IsTransparent(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
