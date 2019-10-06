@@ -34,13 +34,13 @@ namespace djack.RogueSurvivor.Data
     public readonly District District;
 	public readonly string Name;
     private string m_BgMusic;  // alpha10
+#nullable enable
     private Lighting m_Lighting;
 	public readonly WorldTime LocalTime;
     public readonly Size Extent;
 	public short Width { get {return Extent.X;} }
 	public short Height { get {return Extent.Y;} }
 	[NonSerialized] public readonly Rectangle Rect;
-#nullable enable
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.Data
       Seed = (int) info.GetValue("m_Seed", typeof (int));
       District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
-      LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
+      info.read(ref LocalTime, "m_LocalTime");
       Extent = (Size) info.GetValue("m_Extent", typeof (Size));
       Rect = new Rectangle(Point.Empty,Extent);
       info.read(ref m_Exits, "m_Exits");

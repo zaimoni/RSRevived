@@ -9,6 +9,8 @@ using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
 #if PROTOTYPE
@@ -57,40 +59,25 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int Quantity {
-      get {
-        return m_Quantity;
-      }
+      get { return m_Quantity; }
       set {
 #if DEBUG
         if (Model.StackingLimit < value ) throw new ArgumentOutOfRangeException(nameof(value),value,"exceeds "+Model.StackingLimit.ToString());
 #endif
-        m_Quantity = value;
-        if (m_Quantity >= 0) return;
-        m_Quantity = 0;
+        m_Quantity = (0 < value ? value : 0);
       }
     }
 
     public bool CanStackMore {
       get {
         ItemModel model = Model;
-        if (model.IsStackable)
-          return m_Quantity < model.StackingLimit;
-        return false;
+        return model.IsStackable && m_Quantity < model.StackingLimit;
       }
     }
 
     public bool IsEquipped { get { return EquippedPart != DollPart.NONE; } }
-
-    public void Equip()
-    {   
-      EquippedPart = Model.EquipmentPart;
-    }
-
-    public void Unequip()
-    {   
-      EquippedPart = DollPart.NONE;
-    }
-
+    public void Equip() { EquippedPart = Model.EquipmentPart; }
+    public void Unequip() { EquippedPart = DollPart.NONE; }
     public bool IsUnique { get { return Model.IsUnique; } }
 #if DEAD_FUNC
     public bool IsForbiddenToAI { get { return Model.IsForbiddenToAI; } }
@@ -99,9 +86,6 @@ namespace djack.RogueSurvivor.Data
 
     public Item(ItemModel model)
     {
-#if DEBUG
-      if (null == model) throw new ArgumentNullException(nameof(model));
-#endif
       m_ModelID = (int) model.ID;
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;

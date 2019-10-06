@@ -7,15 +7,17 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemFood : Item
   {
     public readonly int Nutrition;
-    public readonly WorldTime BestBefore;
+    public readonly WorldTime? BestBefore;
 
-    new public ItemFoodModel Model { get {return base.Model as ItemFoodModel; } }
+    new public ItemFoodModel Model { get {return (base.Model as ItemFoodModel)!; } }
     public bool IsPerishable { get { return Model.IsPerishable; } }
 
     // if those groceries expire on day 100, they will not spoil until day 200(?!)
@@ -27,9 +29,9 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool IsExpiredAt(int turnCounter)
     {
-      if (IsPerishable && turnCounter >= BestBefore.TurnCounter)
-        return turnCounter < 2 * BestBefore.TurnCounter;
-      return false;
+      if (!IsPerishable) return false;
+      int t0 = BestBefore.TurnCounter;
+      return turnCounter >= t0 && turnCounter < 2*t0;
     }
 
     public bool IsSpoiledAt(int turnCounter)
@@ -45,8 +47,7 @@ namespace djack.RogueSurvivor.Engine.Items
       return (2*Nutrition)/3;
     }
 
-    public ItemFood(ItemFoodModel model)
-      : base(model)
+    public ItemFood(ItemFoodModel model) : base(model)
     {
 #if DEBUG
       if (model.IsPerishable) throw new InvalidOperationException("wrong constructor");
@@ -54,8 +55,7 @@ namespace djack.RogueSurvivor.Engine.Items
       Nutrition = model.Nutrition;
     }
 
-    public ItemFood(ItemFoodModel model, int bestBefore)
-      : base(model)
+    public ItemFood(ItemFoodModel model, int bestBefore) : base(model)
     {
 #if DEBUG
       if (0 > bestBefore) throw new InvalidOperationException("expired in past");

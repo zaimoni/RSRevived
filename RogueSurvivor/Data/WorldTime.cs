@@ -5,7 +5,10 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Data
 {
@@ -16,8 +19,14 @@ namespace djack.RogueSurvivor.Data
     public const int TURNS_PER_HOUR = 30;   // defines space-time scale.  Standard game is 30 turns/hour, district size 50
                                             // Angband space-time scale is 900 turns/hour, district size 1500
     public const int TURNS_PER_DAY = HOURS_PER_DAY * TURNS_PER_HOUR;
-    private static readonly DayPhase[] _phases = new DayPhase[HOURS_PER_DAY];
-    private static readonly bool[] _is_night = new bool[HOURS_PER_DAY];
+
+    private const int HOUR_MIDNIGHT = 0;
+    private const int HOUR_SUNRISE = 6;     // XXX equatorial; would like to use a more real calendar
+    private const int HOUR_NOON = 12;
+    private const int HOUR_SUNSET = 18;
+
+    private static readonly DayPhase[] _phases = Enumerable.Range(0, HOURS_PER_DAY).Select(h => phase(h)).ToArray();
+    private static readonly bool[] _is_night = Enumerable.Range(0, HOURS_PER_DAY).Select(h => is_night(h)).ToArray();
 
     private int m_TurnCounter;
     private int m_Day;
@@ -26,12 +35,7 @@ namespace djack.RogueSurvivor.Data
 
     public int TurnCounter
     {
-      get {
-#if DEBUG
-        if (0 > m_TurnCounter) throw new InvalidOperationException("0 > TurnCounter");
-#endif
-        return m_TurnCounter;
-      }
+      get { return m_TurnCounter; }
       set {
 #if DEBUG
         if (0 > value) throw new InvalidOperationException("0 > TurnCounter");
@@ -48,87 +52,37 @@ namespace djack.RogueSurvivor.Data
     public bool IsNight { get { return _is_night[m_Hour]; } }
     public DayPhase Phase { get { return _phases[m_Hour]; } }
     public bool IsStrikeOfHour(int n) { return n==m_Hour && 0==m_Tick; }
-    public bool IsStrikeOfMidnight { get { return IsStrikeOfHour(0); } }
-    public bool IsStrikeOfMidday { get { return IsStrikeOfHour(12); } }
+    public bool IsStrikeOfMidnight { get { return IsStrikeOfHour(HOUR_MIDNIGHT); } }
+    public bool IsStrikeOfMidday { get { return IsStrikeOfHour(HOUR_NOON); } }
 
     // These two are correct only on the equator.  Providing thin-wrappers so
     // it is easy to bulk them out to account for latitude (after optimizing the game to be playable at 900 turns/hour)
-    public bool IsDawn { get { return IsStrikeOfHour(6); } }
-    public bool IsDusk { get { return IsStrikeOfHour(18); } }
+    public bool IsDawn { get { return IsStrikeOfHour(HOUR_SUNRISE); } }
+    public bool IsDusk { get { return IsStrikeOfHour(HOUR_SUNSET); } }
 
-    static WorldTime()
-    {
-      int hour=0;
-      do {
-        switch (hour)
-        {
-        case 0:
-          _phases[hour] = DayPhase.MIDNIGHT;
-          _is_night[hour] = true;
-          break;
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-          _phases[hour] = DayPhase.DEEP_NIGHT;
-          _is_night[hour] = true;
-          break;
-        case 6:
-          _phases[hour] = DayPhase.SUNRISE;
-          _is_night[hour] = false;
-          break;
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-          _phases[hour] = DayPhase.MORNING;
-          _is_night[hour] = false;
-          break;
-        case 12:
-          _phases[hour] = DayPhase.MIDDAY;
-          _is_night[hour] = false;
-          break;
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-          _phases[hour] = DayPhase.AFTERNOON;
-          _is_night[hour] = false;
-          break;
-        case 18:
-          _phases[hour] = DayPhase.SUNSET;
-          _is_night[hour] = true;
-          break;
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-        case 23:
-          _phases[hour] = DayPhase.EVENING;
-          _is_night[hour] = true;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled hour",hour.ToString());
-        }
-      } while(++hour < HOURS_PER_DAY);
+    /// <remark>only has to work for 0...23</remark>
+    static private bool is_night(int hour) { return 6 >= hour || 18 <= hour; }
+    /// <remark>only has to work for 0...23</remark>
+    static private DayPhase phase(int hour) {
+      switch(hour)
+      {
+      case HOUR_MIDNIGHT: return DayPhase.MIDNIGHT;
+      case HOUR_SUNRISE: return DayPhase.SUNRISE;
+      case HOUR_NOON: return DayPhase.MIDDAY;
+      case HOUR_SUNSET: return DayPhase.SUNSET;
+      }
+      if (HOUR_SUNRISE > hour) return DayPhase.DEEP_NIGHT;
+      if (HOUR_NOON > hour) return DayPhase.MORNING;
+      if (HOUR_SUNSET > hour) return DayPhase.AFTERNOON;
+      return DayPhase.EVENING;
     }
 
-    public WorldTime(WorldTime src)
-      : this(src.TurnCounter)
+    public WorldTime(WorldTime src) : this(src.TurnCounter)
     {
-#if DEBUG
-      if (null==src) throw new ArgumentNullException(nameof(src));
-#endif
     }
 
     public WorldTime(int turnCounter=0)
     {
-#if DEBUG
-      if (0 > turnCounter) throw new ArgumentOutOfRangeException(nameof(turnCounter),turnCounter, "0 > turnCounter");
-#endif
       TurnCounter = turnCounter;
     }
 
@@ -147,23 +101,19 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      return string.Format("day {0} hour {1:D2}", (object)Day, (object)Hour);
+      return string.Format("day {0} hour {1:D2}", m_Day, m_Hour);
     }
 
     public static string MakeTimeDurationMessage(int turns)
     {
-      if (turns < TURNS_PER_HOUR)
-        return "less than a hour";
-      if (turns < TURNS_PER_DAY)
-      {
+      if (turns < TURNS_PER_HOUR) return "less than a hour";
+      if (turns < TURNS_PER_DAY) {
         int num = turns / TURNS_PER_HOUR;
-        if (num == 1)
-          return "about 1 hour";
+        if (num == 1) return "about 1 hour";
         return string.Format("about {0} hours", (object) num);
       }
       WorldTime worldTime = new WorldTime(turns);
-      if (worldTime.Day == 1)
-        return "about 1 day";
+      if (worldTime.Day == 1) return "about 1 day";
       return string.Format("about {0} days", (object) worldTime.Day);
     }
 
@@ -180,16 +130,16 @@ namespace djack.RogueSurvivor.Data
 
     public int MidnightToDawnDuration {
       get {
-        if (6>m_Hour) return Turn(m_Day,6)-TurnCounter;
-        return 6*TURNS_PER_HOUR;
+        if (HOUR_SUNRISE > m_Hour) return Turn(m_Day, HOUR_SUNRISE) -TurnCounter;
+        return HOUR_SUNRISE * TURNS_PER_HOUR;
       }
     }
 
     public int SunsetToDawnDuration {
       get {
-        if (6>m_Hour) return Turn(m_Day,6)-TurnCounter;
-        if (18<=m_Hour) return Turn(m_Day+1,6)-TurnCounter;
-        return 12*TURNS_PER_HOUR;
+        if (HOUR_SUNRISE > m_Hour) return Turn(m_Day, HOUR_SUNRISE) -TurnCounter;
+        if (HOUR_SUNSET <= m_Hour) return Turn(m_Day+1, HOUR_SUNRISE) -TurnCounter;
+        return (HOUR_SUNSET- HOUR_SUNRISE)*TURNS_PER_HOUR;
       }
     }
   }
