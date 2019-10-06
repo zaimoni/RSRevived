@@ -54,8 +54,8 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
-#nullable restore
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
+#nullable restore
     // position inverting caches
     [NonSerialized]
     private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
@@ -1666,23 +1666,16 @@ retry:
       else
         m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
     }
-#nullable restore
 
-    public void AddTimer(TimedTask t)
-    {
-      m_Timers.Add(t);
-    }
-
+    public void AddTimer(TimedTask t) { m_Timers.Add(t); }
 #if DEAD_FUNC
-    public void RemoveTimer(TimedTask t)    // would be expected by Create-Read-Update-Delete idiom
-    {
-      m_Timers.Remove(t);
-    }
+    // would be expected by Create-Read-Update-Delete idiom
+    public void RemoveTimer(TimedTask t) { m_Timers.Remove(t); }
 #endif
 
     public void UpdateTimers()
     {
-      int i = m_Timers?.Count ?? 0;
+      int i = m_Timers.Count;
       if (0 >= i) return;
       // we use this idiom to allow a triggering timer to add more timers to the map safely
       while(0 < i--) {
@@ -1703,7 +1696,6 @@ retry:
       return new KeyValuePair<bool,bool>(wasNight == isDay, isDay);
     }
 
-#nullable enable
     public int GetScentByOdorAt(Odor odor, in Point position)
     {
       if (IsInBounds(position)) {
