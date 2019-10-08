@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Data
     public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
-    private Actor.Flags m_Flags;
+    private Flags m_Flags;
     private Gameplay.GameActors.IDs m_ModelID;
     private int m_FactionID;
     private Gameplay.GameGangs.IDs m_GangID;  // sparse field
@@ -224,42 +224,26 @@ namespace djack.RogueSurvivor.Data
     public int SpawnTime { get { return m_SpawnTime; } }
 
     public Gameplay.GameGangs.IDs GangID {
-      get {
-        return m_GangID;
-      }
-      set {
-        m_GangID = value;
-      }
+      get { return m_GangID; }
+      set { m_GangID = value; }
     }
 
     public bool IsInAGang { get { return m_GangID != 0; } }
-    public Doll Doll { get { return m_Doll; } }
+    public ref readonly Doll Doll { get { return ref m_Doll; } }
 
     public bool IsDead {
-      get {
-        return GetFlag(Actor.Flags.IS_DEAD);
-      }
-      set {
-        SetFlag(Actor.Flags.IS_DEAD, value);
-      }
+      get { return GetFlag(Flags.IS_DEAD); }
+      set { SetFlag(Flags.IS_DEAD, value); }
     }
 
     public bool IsSleeping {
-      get {
-        return GetFlag(Actor.Flags.IS_SLEEPING);
-      }
-      set {
-        SetFlag(Actor.Flags.IS_SLEEPING, value);
-      }
+      get { return GetFlag(Flags.IS_SLEEPING); }
+      set { SetFlag(Flags.IS_SLEEPING, value); }
     }
 
     public bool IsRunning {
-      get {
-        return GetFlag(Actor.Flags.IS_RUNNING);
-      }
-      set {
-        SetFlag(Actor.Flags.IS_RUNNING, value);
-      }
+      get { return GetFlag(Flags.IS_RUNNING); }
+      set { SetFlag(Flags.IS_RUNNING, value); }
     }
     public void Walk() { Clear(Flags.IS_RUNNING); }
     public void Run() { if (CanRun()) Set(Flags.IS_RUNNING); }
@@ -269,32 +253,20 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
 
     public int HitPoints {
-      get {
-        return m_HitPoints;
-      }
-      set {
-        m_HitPoints = value;
-      }
+      get { return m_HitPoints; }
+      set { m_HitPoints = value; }
     }
 
     public int PreviousHitPoints { get { return m_previousHitPoints; } }
 
     public int StaminaPoints {
-      get {
-        return m_StaminaPoints;
-      }
-      set {
-        m_StaminaPoints = value;
-      }
+      get { return m_StaminaPoints; }
+      set { m_StaminaPoints = value; }
     }
 
     public int PreviousStaminaPoints {
-      get {
-        return m_previousStamina;
-      }
-      set {
-        m_previousStamina = value;
-      }
+      get { return m_previousStamina; }
+      set { m_previousStamina = value; }
     }
 
     public int FoodPoints { get { return m_FoodPoints; } }
@@ -311,12 +283,8 @@ namespace djack.RogueSurvivor.Data
     public int LastActionTurn { get { return m_LastActionTurn; } }
 
     public Location Location {
-      get {
-        return m_Location;
-      }
-      set {
-        m_Location = value;
-      }
+      get { return m_Location; }
+      set { m_Location = value; }
     }
 
     public Activity Activity;
@@ -325,25 +293,12 @@ namespace djack.RogueSurvivor.Data
     public bool IsEngaged { get { return Activity.CHASING == Activity || Activity.FIGHTING == Activity; } }
 
     public Actor TargetActor {
-      get {
-        return m_TargetActor;
-      }
-      set {
-        m_TargetActor = value;
-      }
+      get { return m_TargetActor; }
+      set { m_TargetActor = value; }
     }
 
-    public int AudioRange {
-      get {
-        return m_Sheet.BaseAudioRange + m_AudioRangeMod;
-      }
-    }
-
-    public int AudioRangeMod {
-      get {
-        return m_AudioRangeMod;
-      }
-    }
+    public int AudioRange { get { return m_Sheet.BaseAudioRange + m_AudioRangeMod; } }
+    public int AudioRangeMod { get { return m_AudioRangeMod; } }
 
     public Attack CurrentMeleeAttack { get { return m_CurrentMeleeAttack; } }
     public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Doll
+  internal readonly struct Doll
   {
     public readonly DollBody Body;
     private readonly List<string>?[]? m_Decorations;  // XXX only valid if the Model imageID is null
