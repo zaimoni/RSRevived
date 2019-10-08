@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class Doll
   {
     public readonly DollBody Body;
-    private readonly List<string>[] m_Decorations;  // XXX only valid if the Model imageID is null
+    private readonly List<string>?[]? m_Decorations;  // XXX only valid if the Model imageID is null
 
     public Doll(ActorModel model)
     {
@@ -21,45 +23,37 @@ namespace djack.RogueSurvivor.Data
       m_Decorations = (string.IsNullOrEmpty(model.ImageID) ? new List<string>[(int) DollPart._COUNT] : null);
     }
 
-    public List<string> GetDecorations(DollPart part)
+    public List<string>? GetDecorations(DollPart part)
     {
-      return m_Decorations[(int) part];
+      return null!= m_Decorations ? m_Decorations[(int) part] : null;
     }
-
-#if DEAD_FUNC
-    public int CountDecorations(DollPart part)
-    {
-      return GetDecorations(part)?.Count ?? 0;
-    }
-#endif
 
     public void AddDecoration(DollPart part, string imageID)
     {
+#if DEBUG
+      if (null == m_Decorations) throw new ArgumentNullException(nameof(m_Decorations));
+#endif
       (GetDecorations(part) ?? (m_Decorations[(int) part] = new List<string>(1))).Add(imageID);
     }
 
     public void RemoveDecoration(string imageID)
     {
-      for (int index = 0; index < (int)DollPart._COUNT; ++index) {
-        List<string> stringList = m_Decorations[index];
-        if (stringList?.Remove(imageID) ?? false) {
-          if (stringList.Count == 0) m_Decorations[index] = null;
+      for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index) {
+        var x = GetDecorations(index);
+        if (null != x && x.Remove(imageID) && 0 >= x.Count) {
+          m_Decorations![(int)index] = null;
           break;
         }
       }
     }
 
-#if DEAD_FUNC
-    public void RemoveDecoration(DollPart part)
-    {
-      m_Decorations[(int) part] = null;
-    }
-#endif
-
     public void RemoveAllDecorations()
     {
-      for (int index = 0; index < (int)DollPart._COUNT; ++index)
-        m_Decorations[index] = null;
+#if DEBUG
+      if (null == m_Decorations) throw new ArgumentNullException(nameof(m_Decorations));
+#endif
+      for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index)
+        m_Decorations[(int)index] = null;
     }
   }
 }

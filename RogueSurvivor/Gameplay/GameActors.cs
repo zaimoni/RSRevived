@@ -43,22 +43,13 @@ namespace djack.RogueSurvivor.Gameplay
     private const int NO_AUDIO = 0;
     private const int NO_STA = 99;  // XXX arguably should be Actor.STAMINA_INFINITE
 
-    public ActorModel this[int id] {
-      get {
-        return m_Models[id];
-      }
-    }
+#nullable enable
+    public ActorModel this[int id] { get { return m_Models[id]; } }
+    public ActorModel this[IDs id] { get { return this[(int) id]; } }
 
-    public ActorModel this[GameActors.IDs id] {
-      get {
-        return this[(int) id];
-      }
-    }
-
-    private static void _setModel(IDs id, ActorModel model)
+    private static void _setModel(ActorModel model)
     {
-        m_Models[(int) id] = model;
-        m_Models[(int) id].ID = id;
+        m_Models[(int) model.ID] = model;
     }
 
     static public ActorModel Skeleton { get { return m_Models[(int) IDs.UNDEAD_SKELETON]; } }
@@ -88,6 +79,7 @@ namespace djack.RogueSurvivor.Gameplay
     static public ActorModel Policeman { get { return m_Models[(int) IDs.POLICEMAN]; } }
     static public ActorModel BlackOps { get { return m_Models[(int) IDs.BLACKOPS_MAN]; } }
     static public ActorModel JasonMyers { get { return m_Models[(int) IDs.JASON_MYERS]; } }
+#nullable restore
 
     public GameActors(IRogueUI ui)
     {
@@ -173,98 +165,98 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       // so as long as Jason myers is interpolated correctly for SPD from the male civilian, we can decommission all other human stat columsn and just leave the text configuration
       // NOTE: AudioRange space-time scales.  Currently, zero or 16==3*LOUD_NOISE_RADIUS+1
 
-      _setModel(IDs.UNDEAD_SKELETON, new ActorModel(GameImages.ACTOR_SKELETON, DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_SKELETON, GameImages.ACTOR_SKELETON, DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
           Abilities.Flags.UNDEAD),
           new ActorSheet(DATA_SKELETON, NO_FOOD, NO_SLEEP, NO_SANITY, CLAW, NO_INVENTORY), typeof (SkeletonAI)));
-      _setModel(IDs.UNDEAD_RED_EYED_SKELETON, new ActorModel(GameImages.ACTOR_RED_EYED_SKELETON, DATA_RED_EYED_SKELETON.NAME, DATA_RED_EYED_SKELETON.PLURAL, DATA_RED_EYED_SKELETON.SCORE, DATA_RED_EYED_SKELETON.FLAVOR, new DollBody(true, DATA_RED_EYED_SKELETON.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_RED_EYED_SKELETON, GameImages.ACTOR_RED_EYED_SKELETON, DATA_RED_EYED_SKELETON.NAME, DATA_RED_EYED_SKELETON.PLURAL, DATA_RED_EYED_SKELETON.SCORE, DATA_RED_EYED_SKELETON.FLAVOR, new DollBody(true, DATA_RED_EYED_SKELETON.SPD), new Abilities(
           Abilities.Flags.UNDEAD),
           new ActorSheet(DATA_RED_EYED_SKELETON, NO_FOOD, NO_SLEEP, NO_SANITY, CLAW, NO_INVENTORY), typeof (SkeletonAI)));
-      _setModel(IDs.UNDEAD_RED_SKELETON, new ActorModel(GameImages.ACTOR_RED_SKELETON, DATA_RED_SKELETON.NAME, DATA_RED_SKELETON.PLURAL, DATA_RED_SKELETON.SCORE, DATA_RED_SKELETON.FLAVOR, new DollBody(true, DATA_RED_SKELETON.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_RED_SKELETON, GameImages.ACTOR_RED_SKELETON, DATA_RED_SKELETON.NAME, DATA_RED_SKELETON.PLURAL, DATA_RED_SKELETON.SCORE, DATA_RED_SKELETON.FLAVOR, new DollBody(true, DATA_RED_SKELETON.SPD), new Abilities(
           Abilities.Flags.UNDEAD),
           new ActorSheet(DATA_RED_SKELETON, NO_FOOD, NO_SLEEP, NO_SANITY, CLAW, NO_INVENTORY), typeof(SkeletonAI)));
-      _setModel(IDs.UNDEAD_ZOMBIE, new ActorModel(GameImages.ACTOR_ZOMBIE, DATA_ZOMBIE.NAME, DATA_ZOMBIE.PLURAL, DATA_ZOMBIE.SCORE, DATA_ZOMBIE.FLAVOR, new DollBody(true, DATA_ZOMBIE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_ZOMBIE, GameImages.ACTOR_ZOMBIE, DATA_ZOMBIE.NAME, DATA_ZOMBIE.PLURAL, DATA_ZOMBIE.SCORE, DATA_ZOMBIE.FLAVOR, new DollBody(true, DATA_ZOMBIE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING),
           new ActorSheet(DATA_ZOMBIE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof (ZombieAI)));
-      _setModel(IDs.UNDEAD_DARK_EYED_ZOMBIE, new ActorModel(GameImages.ACTOR_DARK_EYED_ZOMBIE, DATA_DARK_EYED_ZOMBIE.NAME, DATA_DARK_EYED_ZOMBIE.PLURAL, DATA_DARK_EYED_ZOMBIE.SCORE, DATA_DARK_EYED_ZOMBIE.FLAVOR, new DollBody(true, DATA_DARK_EYED_ZOMBIE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_DARK_EYED_ZOMBIE, GameImages.ACTOR_DARK_EYED_ZOMBIE, DATA_DARK_EYED_ZOMBIE.NAME, DATA_DARK_EYED_ZOMBIE.PLURAL, DATA_DARK_EYED_ZOMBIE.SCORE, DATA_DARK_EYED_ZOMBIE.FLAVOR, new DollBody(true, DATA_DARK_EYED_ZOMBIE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING),
           new ActorSheet(DATA_DARK_EYED_ZOMBIE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_DARK_ZOMBIE, new ActorModel(GameImages.ACTOR_DARK_ZOMBIE, DATA_DARK_ZOMBIE.NAME, DATA_DARK_ZOMBIE.PLURAL, DATA_DARK_ZOMBIE.SCORE, DATA_DARK_ZOMBIE.FLAVOR, new DollBody(true, DATA_DARK_ZOMBIE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_DARK_ZOMBIE, GameImages.ACTOR_DARK_ZOMBIE, DATA_DARK_ZOMBIE.NAME, DATA_DARK_ZOMBIE.PLURAL, DATA_DARK_ZOMBIE.SCORE, DATA_DARK_ZOMBIE.FLAVOR, new DollBody(true, DATA_DARK_ZOMBIE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING),
           new ActorSheet(DATA_DARK_ZOMBIE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_MALE_ZOMBIFIED, new ActorModel(null, DATA_MALE_ZOMBIFIED.NAME, DATA_MALE_ZOMBIFIED.PLURAL, DATA_MALE_ZOMBIFIED.SCORE, DATA_MALE_ZOMBIFIED.FLAVOR, new DollBody(true, DATA_MALE_ZOMBIFIED.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_MALE_ZOMBIFIED, null, DATA_MALE_ZOMBIFIED.NAME, DATA_MALE_ZOMBIFIED.PLURAL, DATA_MALE_ZOMBIFIED.SCORE, DATA_MALE_ZOMBIFIED.FLAVOR, new DollBody(true, DATA_MALE_ZOMBIFIED.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING),
           new ActorSheet(DATA_MALE_ZOMBIFIED, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_FEMALE_ZOMBIFIED, new ActorModel(null, DATA_FEMALE_ZOMBIFIED.NAME, DATA_FEMALE_ZOMBIFIED.PLURAL, DATA_FEMALE_ZOMBIFIED.SCORE, DATA_FEMALE_ZOMBIFIED.FLAVOR, new DollBody(true, DATA_FEMALE_ZOMBIFIED.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_FEMALE_ZOMBIFIED, null, DATA_FEMALE_ZOMBIFIED.NAME, DATA_FEMALE_ZOMBIFIED.PLURAL, DATA_FEMALE_ZOMBIFIED.SCORE, DATA_FEMALE_ZOMBIFIED.FLAVOR, new DollBody(true, DATA_FEMALE_ZOMBIFIED.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING),
           new ActorSheet(DATA_FEMALE_ZOMBIFIED, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_MALE_NEOPHYTE, new ActorModel(GameImages.ACTOR_MALE_NEOPHYTE, DATA_MALE_NEOPHYTE.NAME, DATA_MALE_NEOPHYTE.PLURAL, DATA_MALE_NEOPHYTE.SCORE, DATA_MALE_NEOPHYTE.FLAVOR, new DollBody(true, DATA_MALE_NEOPHYTE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_MALE_NEOPHYTE, GameImages.ACTOR_MALE_NEOPHYTE, DATA_MALE_NEOPHYTE.NAME, DATA_MALE_NEOPHYTE.PLURAL, DATA_MALE_NEOPHYTE.SCORE, DATA_MALE_NEOPHYTE.FLAVOR, new DollBody(true, DATA_MALE_NEOPHYTE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH),
           new ActorSheet(DATA_MALE_NEOPHYTE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_FEMALE_NEOPHYTE, new ActorModel(GameImages.ACTOR_FEMALE_NEOPHYTE, DATA_FEMALE_NEOPHYTE.NAME, DATA_FEMALE_NEOPHYTE.PLURAL, DATA_FEMALE_NEOPHYTE.SCORE, DATA_FEMALE_NEOPHYTE.FLAVOR, new DollBody(true, DATA_FEMALE_NEOPHYTE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_FEMALE_NEOPHYTE, GameImages.ACTOR_FEMALE_NEOPHYTE, DATA_FEMALE_NEOPHYTE.NAME, DATA_FEMALE_NEOPHYTE.PLURAL, DATA_FEMALE_NEOPHYTE.SCORE, DATA_FEMALE_NEOPHYTE.FLAVOR, new DollBody(true, DATA_FEMALE_NEOPHYTE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH),
           new ActorSheet(DATA_FEMALE_NEOPHYTE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_MALE_DISCIPLE, new ActorModel(GameImages.ACTOR_MALE_DISCIPLE, DATA_MALE_DISCIPLE.NAME, DATA_MALE_DISCIPLE.PLURAL, DATA_MALE_DISCIPLE.SCORE, DATA_MALE_DISCIPLE.FLAVOR, new DollBody(true, DATA_MALE_DISCIPLE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_MALE_DISCIPLE, GameImages.ACTOR_MALE_DISCIPLE, DATA_MALE_DISCIPLE.NAME, DATA_MALE_DISCIPLE.PLURAL, DATA_MALE_DISCIPLE.SCORE, DATA_MALE_DISCIPLE.FLAVOR, new DollBody(true, DATA_MALE_DISCIPLE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH),
           new ActorSheet(DATA_MALE_DISCIPLE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_FEMALE_DISCIPLE, new ActorModel(GameImages.ACTOR_FEMALE_DISCIPLE, DATA_FEMALE_DISCIPLE.NAME, DATA_FEMALE_DISCIPLE.PLURAL, DATA_FEMALE_DISCIPLE.SCORE, DATA_FEMALE_DISCIPLE.FLAVOR, new DollBody(true, DATA_FEMALE_DISCIPLE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_FEMALE_DISCIPLE, GameImages.ACTOR_FEMALE_DISCIPLE, DATA_FEMALE_DISCIPLE.NAME, DATA_FEMALE_DISCIPLE.PLURAL, DATA_FEMALE_DISCIPLE.SCORE, DATA_FEMALE_DISCIPLE.FLAVOR, new DollBody(true, DATA_FEMALE_DISCIPLE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH),
           new ActorSheet(DATA_FEMALE_DISCIPLE, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_ZOMBIE_MASTER, new ActorModel(GameImages.ACTOR_ZOMBIE_MASTER, DATA_ZM.NAME, DATA_ZM.PLURAL, DATA_ZM.SCORE, DATA_ZM.FLAVOR, new DollBody(true, DATA_ZM.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_ZOMBIE_MASTER, GameImages.ACTOR_ZOMBIE_MASTER, DATA_ZM.NAME, DATA_ZM.PLURAL, DATA_ZM.SCORE, DATA_ZM.FLAVOR, new DollBody(true, DATA_ZM.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH |
           Abilities.Flags.UNDEAD_MASTER | STD_ZM),
           new ActorSheet(DATA_ZM, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_ZOMBIE_LORD, new ActorModel(GameImages.ACTOR_ZOMBIE_LORD, DATA_ZL.NAME, DATA_ZL.PLURAL, DATA_ZL.SCORE, DATA_ZL.FLAVOR, new DollBody(true, DATA_ZL.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_ZOMBIE_LORD, GameImages.ACTOR_ZOMBIE_LORD, DATA_ZL.NAME, DATA_ZL.PLURAL, DATA_ZL.SCORE, DATA_ZL.FLAVOR, new DollBody(true, DATA_ZL.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH |
           Abilities.Flags.UNDEAD_MASTER | STD_ZM),
           new ActorSheet(DATA_ZL, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_ZOMBIE_PRINCE, new ActorModel(GameImages.ACTOR_ZOMBIE_PRINCE, DATA_ZP.NAME, DATA_ZP.PLURAL, DATA_ZP.SCORE, DATA_ZP.FLAVOR, new DollBody(true, DATA_ZP.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_ZOMBIE_PRINCE, GameImages.ACTOR_ZOMBIE_PRINCE, DATA_ZP.NAME, DATA_ZP.PLURAL, DATA_ZP.SCORE, DATA_ZP.FLAVOR, new DollBody(true, DATA_ZP.SPD), new Abilities(
           Abilities.Flags.UNDEAD | STD_ZOMBIFYING | Abilities.Flags.CAN_PUSH |
           Abilities.Flags.UNDEAD_MASTER | STD_ZM),
           new ActorSheet(DATA_ZP, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof(ZombieAI)));
-      _setModel(IDs.UNDEAD_RAT_ZOMBIE, new ActorModel(GameImages.ACTOR_RAT_ZOMBIE, DATA_RAT_ZOMBIE.NAME, DATA_RAT_ZOMBIE.PLURAL, DATA_RAT_ZOMBIE.SCORE, DATA_RAT_ZOMBIE.FLAVOR, new DollBody(true, DATA_RAT_ZOMBIE.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.UNDEAD_RAT_ZOMBIE, GameImages.ACTOR_RAT_ZOMBIE, DATA_RAT_ZOMBIE.NAME, DATA_RAT_ZOMBIE.PLURAL, DATA_RAT_ZOMBIE.SCORE, DATA_RAT_ZOMBIE.FLAVOR, new DollBody(true, DATA_RAT_ZOMBIE.SPD), new Abilities(
           Abilities.Flags.UNDEAD | Abilities.Flags.IS_SMALL | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_RAT_ZOMBIE, NO_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof (RatAI)));
-      _setModel(IDs.SEWERS_THING, new ActorModel(GameImages.ACTOR_SEWERS_THING, DATA_SEWERS_THING.NAME, DATA_SEWERS_THING.PLURAL, DATA_SEWERS_THING.SCORE, DATA_SEWERS_THING.FLAVOR, new DollBody(true, DATA_SEWERS_THING.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.SEWERS_THING, GameImages.ACTOR_SEWERS_THING, DATA_SEWERS_THING.NAME, DATA_SEWERS_THING.PLURAL, DATA_SEWERS_THING.SCORE, DATA_SEWERS_THING.FLAVOR, new DollBody(true, DATA_SEWERS_THING.SPD), new Abilities(
           Abilities.Flags.UNDEAD | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS),
           new ActorSheet(DATA_SEWERS_THING, NO_FOOD, NO_SLEEP, NO_SANITY, BITE, NO_INVENTORY), typeof (SewersThingAI)));
-      _setModel(IDs.MALE_CIVILIAN, new ActorModel(null, DATA_MALE_CIVILIAN.NAME, DATA_MALE_CIVILIAN.PLURAL, DATA_MALE_CIVILIAN.SCORE, DATA_MALE_CIVILIAN.FLAVOR, new DollBody(true, DATA_MALE_CIVILIAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.MALE_CIVILIAN, null, DATA_MALE_CIVILIAN.NAME, DATA_MALE_CIVILIAN.PLURAL, DATA_MALE_CIVILIAN.SCORE, DATA_MALE_CIVILIAN.FLAVOR, new DollBody(true, DATA_MALE_CIVILIAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_MALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
-      _setModel(IDs.FEMALE_CIVILIAN, new ActorModel(null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, DATA_FEMALE_CIVILIAN.FLAVOR, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.FEMALE_CIVILIAN, null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, DATA_FEMALE_CIVILIAN.FLAVOR, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_FEMALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
-      _setModel(IDs.CHAR_GUARD, new ActorModel(null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, DATA_CHAR_GUARD.FLAVOR, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.CHAR_GUARD, null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, DATA_CHAR_GUARD.FLAVOR, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),
           new ActorSheet(DATA_CHAR_GUARD, NO_FOOD, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CHARGuardAI)));
-      _setModel(IDs.ARMY_NATIONAL_GUARD, new ActorModel(null, DATA_NATGUARD.NAME, DATA_NATGUARD.PLURAL, DATA_NATGUARD.SCORE, DATA_NATGUARD.FLAVOR, new DollBody(true, DATA_NATGUARD.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.ARMY_NATIONAL_GUARD, null, DATA_NATGUARD.NAME, DATA_NATGUARD.PLURAL, DATA_NATGUARD.SCORE, DATA_NATGUARD.FLAVOR, new DollBody(true, DATA_NATGUARD.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),
           new ActorSheet(DATA_NATGUARD, NO_FOOD, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (SoldierAI)));
-      _setModel(IDs.BIKER_MAN, new ActorModel(null, DATA_BIKER_MAN.NAME, DATA_BIKER_MAN.PLURAL, DATA_BIKER_MAN.SCORE, DATA_BIKER_MAN.FLAVOR, new DollBody(true, DATA_BIKER_MAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.BIKER_MAN, null, DATA_BIKER_MAN.NAME, DATA_BIKER_MAN.PLURAL, DATA_BIKER_MAN.SCORE, DATA_BIKER_MAN.FLAVOR, new DollBody(true, DATA_BIKER_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS),
           new ActorSheet(DATA_BIKER_MAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (GangAI)));
-      _setModel(IDs.GANGSTA_MAN, new ActorModel(null, DATA_GANGSTA_MAN.NAME, DATA_GANGSTA_MAN.PLURAL, DATA_GANGSTA_MAN.SCORE, DATA_GANGSTA_MAN.FLAVOR, new DollBody(true, DATA_GANGSTA_MAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.GANGSTA_MAN, null, DATA_GANGSTA_MAN.NAME, DATA_GANGSTA_MAN.PLURAL, DATA_GANGSTA_MAN.SCORE, DATA_GANGSTA_MAN.FLAVOR, new DollBody(true, DATA_GANGSTA_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT),
           new ActorSheet(DATA_GANGSTA_MAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(GangAI)));
-      _setModel(IDs.POLICEMAN, new ActorModel(null, DATA_POLICEMAN.NAME, DATA_POLICEMAN.PLURAL, DATA_POLICEMAN.SCORE, DATA_POLICEMAN.FLAVOR, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.POLICEMAN, null, DATA_POLICEMAN.NAME, DATA_POLICEMAN.PLURAL, DATA_POLICEMAN.SCORE, DATA_POLICEMAN.FLAVOR, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
           new ActorSheet(DATA_POLICEMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
-      _setModel(IDs.BLACKOPS_MAN, new ActorModel(null, DATA_BLACKOPS_MAN.NAME, DATA_BLACKOPS_MAN.PLURAL, DATA_BLACKOPS_MAN.SCORE, DATA_BLACKOPS_MAN.FLAVOR, new DollBody(true, DATA_BLACKOPS_MAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.BLACKOPS_MAN, null, DATA_BLACKOPS_MAN.NAME, DATA_BLACKOPS_MAN.PLURAL, DATA_BLACKOPS_MAN.SCORE, DATA_BLACKOPS_MAN.FLAVOR, new DollBody(true, DATA_BLACKOPS_MAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),
           new ActorSheet(DATA_BLACKOPS_MAN, NO_FOOD, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(SoldierAI)));
-      _setModel(IDs.FERAL_DOG, new ActorModel(null, DATA_FERAL_DOG.NAME, DATA_FERAL_DOG.PLURAL, DATA_FERAL_DOG.SCORE, DATA_FERAL_DOG.FLAVOR, new DollBody(true, DATA_FERAL_DOG.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.FERAL_DOG, null, DATA_FERAL_DOG.NAME, DATA_FERAL_DOG.PLURAL, DATA_FERAL_DOG.SCORE, DATA_FERAL_DOG.FLAVOR, new DollBody(true, DATA_FERAL_DOG.SPD), new Abilities(
           STD_LIVING |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_FERAL_DOG, DOG_HUN, DOG_SLP, NO_SANITY, BITE, DOG_INVENTORY), typeof (FeralDogAI)));
-      _setModel(IDs.JASON_MYERS, new ActorModel(null, DATA_JASON_MYERS.NAME, DATA_JASON_MYERS.PLURAL, DATA_JASON_MYERS.SCORE, DATA_JASON_MYERS.FLAVOR, new DollBody(true, DATA_JASON_MYERS.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.JASON_MYERS, null, DATA_JASON_MYERS.NAME, DATA_JASON_MYERS.PLURAL, DATA_JASON_MYERS.SCORE, DATA_JASON_MYERS.FLAVOR, new DollBody(true, DATA_JASON_MYERS.SPD), new Abilities(
           STD_LIVING | STD_HUMAN |
           Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_JASON_MYERS, NO_FOOD, NO_SLEEP, NO_SANITY, PUNCH, HUMAN_INVENTORY), typeof (InsaneHumanAI)));
-      _setModel(IDs.POLICEWOMAN, new ActorModel(null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(false, DATA_POLICEWOMAN.SPD), new Abilities(
+      _setModel(new ActorModel(IDs.POLICEWOMAN, null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(false, DATA_POLICEWOMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
@@ -313,7 +305,8 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     }
 #endif
 
-        static public bool IsSkeletonBranch(ActorModel m)
+#nullable enable
+    static public bool IsSkeletonBranch(ActorModel m)
     {
       return m == Skeleton || m == Red_Eyed_Skeleton || m == Red_Skeleton;
     }
@@ -327,6 +320,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     {
       return m == RatZombie;
     }
+#nullable restore
 
     public enum IDs
     {

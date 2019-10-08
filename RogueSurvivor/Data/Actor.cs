@@ -130,15 +130,11 @@ namespace djack.RogueSurvivor.Data
     public readonly Engine.ActorScoring ActorScoring;
     [NonSerialized] private bool _has_to_eat;
 
+#nullable enable
     public ActorModel Model
     {
-      get {
-        return Models.Actors[(int)m_ModelID];
-      }
+      get { return Models.Actors[(int)m_ModelID]; }
       set { // this must be public due to undead evolution
-#if DEBUG
-        if (null == value) throw new ArgumentNullException(nameof(value));
-#endif
         m_ModelID = value.ID;
         OnModelSet();
       }
@@ -149,15 +145,12 @@ namespace djack.RogueSurvivor.Data
       get { return GetFlag(Flags.IS_UNIQUE); }
       set { SetFlag(Flags.IS_UNIQUE, value); }
     }
+#nullable restore
 
     public Faction Faction
     {
-      get {
-        return Models.Factions[m_FactionID];
-      }
-      set {
-        m_FactionID = value.ID;
-      }
+      get { return Models.Factions[m_FactionID]; }
+      set { m_FactionID = value.ID; }
     }
 
     public string Name

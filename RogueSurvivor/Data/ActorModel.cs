@@ -8,14 +8,16 @@ using System;
 using System.Runtime.Serialization;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
-  internal class ActorModel
+  internal class ActorModel // looks like a good case for readonly struct, but would need reference return
   {
     static private ulong[] _createdCounts = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
 
-    public Gameplay.GameActors.IDs ID { get; set; }
-    public readonly string ImageID;
+    public readonly Gameplay.GameActors.IDs ID;
+    public readonly string? ImageID;
     public readonly DollBody DollBody;
     public readonly string Name;
     public readonly string PluralName;
@@ -43,16 +45,12 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-    public ActorModel(string imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
+    public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
     {
 #if DEBUG
       // using logical XOR to restate IFF, logical AND to restate logical implication
       if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
       if (string.IsNullOrEmpty(flavor)) throw new ArgumentNullException(nameof(flavor));
-      if (null == body) throw new ArgumentNullException(nameof(body));
-      if (null == abilities) throw new ArgumentNullException(nameof(abilities));
-      if (null == startingSheet) throw new ArgumentNullException(nameof(startingSheet));
-      if (null == defaultController) throw new ArgumentNullException(nameof(defaultController));
       if (!defaultController.IsSubclassOf(typeof(ActorController))) throw new InvalidOperationException("!defaultController.IsSubclassOf(typeof(ActorController))");
       if (abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)) throw new InvalidOperationException("abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)");
       if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new InvalidOperationException("(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
@@ -63,6 +61,7 @@ namespace djack.RogueSurvivor.Data
       if (!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
       if (!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
 #endif
+      ID = id;
       ImageID = imageID;
       DollBody = body;
       Name = name;
@@ -86,7 +85,7 @@ namespace djack.RogueSurvivor.Data
     // should be private, but savefile auto-repair contraindicates
     public ActorController InstanciateController()
     {
-      return DefaultController.GetConstructor(Type.EmptyTypes).Invoke((object[]) null) as ActorController;
+      return (DefaultController.GetConstructor(Type.EmptyTypes).Invoke(null) as ActorController)!;
     }
 
     public Actor CreateAnonymous(Faction faction, int spawnTime)
@@ -111,9 +110,6 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBreak(MapObject mapObj)
     {
-#if DEBUG
-      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
-#endif
       if (!Abilities.CanBreakObjects) return "cannot break objects";
       bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
       if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
