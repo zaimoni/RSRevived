@@ -430,7 +430,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO, (Point)(2 * GameActors.HUMAN_AUDIO + 1));
       survey.DoForEach(pt => {
-          Actor a = loc.Map.GetActorAtExt(pt);
+          var a = loc.Map.GetActorAtExt(pt);
           if (a?.IsSleeping ?? true) return;    // XXX \todo integrate loud noise wakeup here
           if (a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
           if (a.Controller is PlayerController player) {
@@ -4319,7 +4319,7 @@ namespace djack.RogueSurvivor.Engine
         if (Direction.NEUTRAL == direction) continue;
         Point point = player.Location.Position + direction;
         if (!player.Location.Map.IsValid(point)) continue;
-        Actor actorAt = player.Location.Map.GetActorAtExt(point);
+        var actorAt = player.Location.Map.GetActorAtExt(point);
         if (actorAt != null) {
           if (player.CanGiveTo(actorAt, inventoryItem, out string reason)) {
             flag2 = true;
@@ -4358,7 +4358,7 @@ namespace djack.RogueSurvivor.Engine
         Point point = player.Location.Position + direction;
         if (!player.Location.Map.IsValid(point)) continue;
         if (direction != Direction.NEUTRAL) {
-          Actor actorAt = player.Location.Map.GetActorAtExt(point);
+          var actorAt = player.Location.Map.GetActorAtExt(point);
           if (actorAt != null) {
             if (player.CanTradeWith(actorAt, out string reason)) {
               flag2 = true;
@@ -4998,7 +4998,7 @@ namespace djack.RogueSurvivor.Engine
           Point pos = player.Location.Position + dir;
           if (player.Location.Map.IsValid(pos)) {
             var mapObj = player.Location.Map.GetMapObjectAtExt(pos);
-            Actor other = player.Location.Map.GetActorAtExt(pos);
+            var other = player.Location.Map.GetActorAtExt(pos);
             string reason;
             if (other != null) {
               // pull-shove.
@@ -5199,7 +5199,7 @@ namespace djack.RogueSurvivor.Engine
         Direction dir = WaitDirectionOrCancel();
 
         if (dir == null) break;
-        Actor sprayOn = (dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir));
+        var sprayOn = (dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir));
 
         if (sprayOn == null) {
           AddMessage(MakeErrorMessage("No one to spray on here."));
@@ -8528,7 +8528,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
-      Actor actorAt =  location.Map.GetActorAtExt(location.Position);
+      var actorAt =  location.Map.GetActorAtExt(location.Position);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, in location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
@@ -11064,7 +11064,7 @@ namespace djack.RogueSurvivor.Engine
         MapViewRect.convert(i,ref point);
         is_visible[i] = IsVisibleToPlayer(map, in point);
         if (is_visible[i]) { 
-          Actor actorAt = map.GetActorAtExt(point);
+          var actorAt = map.GetActorAtExt(point);
           if (null == actorAt) continue;
           List<Point> LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
           if (null == LoF) continue;
@@ -11146,12 +11146,12 @@ namespace djack.RogueSurvivor.Engine
           }
           if (player) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-            Inventory itemsAt = map.GetItemsAtExt(point);
+            var itemsAt = map.GetItemsAtExt(point);
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            Actor actorAt = map.GetActorAtExt(point);
+            var actorAt = map.GetActorAtExt(point);
             if (actorAt != null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;

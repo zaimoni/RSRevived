@@ -1624,7 +1624,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Rectangle blast_zone = new Rectangle(view - (Point)blast_radius, (Point)(2 * blast_radius + 1));
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
         if (   !blast_zone.Any(pt => {
-                  Actor actorAt = a_map.GetActorAtExt(pt);
+                  var actorAt = a_map.GetActorAtExt(pt);
                   if (null == actorAt) return false;
 #if DEBUG
                   if (actorAt == m_Actor) throw new InvalidProgramException("actorAt == m_Actor"); // integrity issue w/map

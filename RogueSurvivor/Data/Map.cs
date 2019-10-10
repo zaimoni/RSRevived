@@ -6,7 +6,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define AUDIT_ACTOR_MOVEMENT
-// # define LOCK_ACTORSLIST
 // #define AUDIT_ITEM_INVARIANTS
 
 using System;
@@ -981,51 +980,38 @@ retry:
       }
       return false;
     }
-#nullable restore
 
     // Actor manipulation functions
-    public bool HasActor(Actor actor)
+    public bool HasActor(Actor actor) { return m_ActorsList.Contains(actor); }
+
+    public Actor? GetActorAt(Point position)
     {
-      return m_ActorsList.Contains(actor);
+      if (m_aux_ActorsByPosition.TryGetValue(position, out var actor)) return actor;
+      return null;
     }
 
-    public Actor GetActor(int index)
-    {
-      return m_ActorsList[index];
-    }
-
-    public Actor GetActorAt(Point position)
-    {
-      m_aux_ActorsByPosition.TryGetValue(position, out Actor actor);
-      return actor;
-    }
-
-    public Actor GetActorAtExt(Point pt)
+    public Actor? GetActorAtExt(Point pt)
     {
       if (IsInBounds(pt)) return GetActorAt(pt);
       Location? test = _Normalize(pt);
       return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
     }
 
-    public bool StrictHasActorAt(Point position)
-    {
-      return m_aux_ActorsByPosition.ContainsKey(position);
-    }
+    public bool StrictHasActorAt(Point pt) { return m_aux_ActorsByPosition.ContainsKey(pt); }
 
-    public bool HasActorAt(in Point position)
+    public bool HasActorAt(in Point pt)
     {   // 2019-08-27 release mode IL Code size       87 (0x57) [invalidated]
-      if (m_aux_ActorsByPosition.ContainsKey(position)) return true;
-      if (IsInBounds(position)) return false;
-      Location? tmp = _Normalize(position);
+      if (m_aux_ActorsByPosition.ContainsKey(pt)) return true;
+      if (IsInBounds(pt)) return false;
+      Location? tmp = _Normalize(pt);
       return null != tmp && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
     }
 
     public void PlaceAt(Actor actor, in Point position)
     {
 #if DEBUG
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-      Actor actorAt = GetActorAt(position);
+      var actorAt = GetActorAt(position);
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
       lock(m_aux_ActorsByPosition) {
@@ -1118,17 +1104,16 @@ retry:
         foreach(var x in m_aux_ActorsByPosition) {
           if (x.Value == actor) throw new InvalidOperationException(actor.Name+" still in position cache");
         }
-        if (m_ActorsList.Contains(actor)) throw new InvalidOperationException(actor.Name + " still in map");
 #endif
       }
     }
 
-    public Actor NextActorToAct {
+    public Actor? NextActorToAct {
       get {
         int countActors = m_ActorsList.Count;
         // use working copy of m_iCheckNextActorIndex to mitigate multi-threading issues
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
-          Actor actor = m_ActorsList[checkNextActorIndex];
+          var actor = m_ActorsList[checkNextActorIndex];
           if (actor.CanActThisTurn && !actor.IsSleeping) {
             m_iCheckNextActorIndex = checkNextActorIndex;
             return actor;
@@ -1139,7 +1124,6 @@ retry:
       }
     }
 
-#nullable enable
     // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
     private string ReasonNotWalkableFor(Point pt, ActorModel model)
     {
@@ -1201,7 +1185,6 @@ retry:
       reason = ReasonNotWalkableFor(p, actor);
       return string.IsNullOrEmpty(reason);
     }
-#nullable restore
 
     // AI-ish, but essentially a map geometry property
     // we are considering a non-jumpable pushable object here (e.g. shop shelves)
@@ -1237,6 +1220,7 @@ retry:
 
       return false;
     }
+#nullable restore
 
     // tracking players on map
     public int PlayerCorpseCount {
@@ -1249,11 +1233,9 @@ retry:
     public int PlayerCount { get { return Players.Get.Count; } }
     public Actor FindPlayer { get { return Players.Get.FirstOrDefault(); } }
 
-    public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
+#nullable enable
+    public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool>? pred =null)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-#endif
       void pan_to(Actor a) {
           RogueForm.Game.PanViewportTo(a);
           fn(a);
@@ -1263,7 +1245,6 @@ retry:
                            : Players.Get.ActOnce(pan_to, pred));
     }
 
-#nullable enable
     // map object manipulation functions
     public bool HasMapObject(MapObject x) { return m_MapObjectsList.Contains(x); }
 
@@ -1986,19 +1967,18 @@ retry:
     }
 #endif
 
+#nullable enable
     public bool HasAnyAdjacent(Point position, Predicate<Actor> test)
     {
-#if DEBUG
-      if (null == test) throw new ArgumentNullException(nameof(test));
-#endif
       if (!IsValid(position)) return false;
       foreach(Point pt in position.Adjacent()) {
         if (!IsValid(pt)) continue;
-        Actor a = GetActorAtExt(pt);
+        var a = GetActorAtExt(pt);
         if (null != a && test(a)) return true;
       }
       return false;
     }
+#nullable restore
 
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {

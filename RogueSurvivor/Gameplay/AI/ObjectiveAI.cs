@@ -1745,7 +1745,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
         foreach(var pt in close.Door.Location.Position.Adjacent()) {
-          Actor actor = close.Door.Location.Map.GetActorAtExt(pt);
+          var actor = close.Door.Location.Map.GetActorAtExt(pt);
           if (null == actor || m_Actor.IsEnemyOf(actor)) continue;
           if (actor.Controller is ObjectiveAI ai) {
             var tmp = ai.WantToGoHere(actor.Location);

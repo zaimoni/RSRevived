@@ -1460,18 +1460,17 @@ namespace djack.RogueSurvivor.Data
     }
 
     // stripped down from above
+#nullable enable
     public bool AnyEnemiesInFov(HashSet<Point> fov)
     {
-#if DEBUG
-      if (null == fov) throw new ArgumentNullException(nameof(fov));
-#endif
       if (1 >= fov.Count) return false;  // sleeping?
       foreach (Point position in fov) {
-        Actor actorAt = Location.Map.GetActorAtExt(position);
+        var actorAt = Location.Map.GetActorAtExt(position);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) return true;
       }
       return false;
     }
+#nullable restore
 
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
@@ -1545,6 +1544,7 @@ namespace djack.RogueSurvivor.Data
       Location.Map?.Remove(this);   // DuckMan and other uniques start with null map before spawning
     }
 
+#nullable enable
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
       return map.HasAnyAdjacent(p, a => a.IsEnemyOf(this));
@@ -1560,7 +1560,7 @@ namespace djack.RogueSurvivor.Data
     {
       var ret = new Dictionary<Point,Actor>();
       if (pt == Location.Position) return ret;
-      Actor a = Location.Map.GetActorAtExt(pt);
+      var a = Location.Map.GetActorAtExt(pt);
       if (null!=a) ret[pt] = a;
       if (!Rules.IsAdjacent(in pt,Location.Position)) return ret;
 #if B_MOVIE_MARTIAL_ARTS
@@ -1571,7 +1571,7 @@ namespace djack.RogueSurvivor.Data
           if (2!=Rules.GridDistance(Location.Position,in pt2)) continue;
           a = Location.Map.GetActorAtExt(pt2);
           if (null==a || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
-          ret[pt2] = a;
+          ret.Add(pt2, a);
         }
       }
 #endif
@@ -1599,6 +1599,7 @@ namespace djack.RogueSurvivor.Data
         return Location.Map.IsInsideAt(Location.Position);
       }
     }
+#nullable restore
 
     public List<Point> FastestStepTo(Map m,Point src,Point dest)
     {
@@ -3399,6 +3400,14 @@ namespace djack.RogueSurvivor.Data
       return (Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather));
     }
 
+    /* XXX we have a lighting paradox (worse in Staying Alive where on-fire cars are light sources, but can be triggered here as well)
+     * In a subway, base FOV range is 8 in a lit section, but 2 in an unlit section -- even when at the border between a lit and unlit
+     * subway map
+     *
+     * The "intuitive" way is to say that each location has a light level, and that if the light level equals or exceeds the required-to-see
+     * light level then it's in view; flashlights "work" by lowering the required-to-see light level (as we're gamey and don't micro-manage
+     * things like exactly where the flashlight is pointing, *especially* when at the default time scale of 2 minutes/turn.)
+     */
     public short FOVrangeNoFlashlight(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0;
