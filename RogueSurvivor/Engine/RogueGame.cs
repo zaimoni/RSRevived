@@ -329,9 +329,9 @@ namespace djack.RogueSurvivor.Engine
     private static GameHintsStatus s_Hints = new GameHintsStatus();
     private OverlayPopup m_HintAvailableOverlay;  // alpha10
     private readonly BaseTownGenerator m_TownGenerator;
-    private bool m_PlayedIntro;
+    private static bool m_PlayedIntro = false;
     private readonly IMusicManager m_MusicManager;
-    private RogueGame.CharGen m_CharGen;
+    private CharGen m_CharGen;
     private TextFile m_Manual;
     private int m_ManualLine;
     private readonly GameActors m_GameActors;
@@ -861,7 +861,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] private void HandleMainMenu()
     {
       bool flag2 = File.Exists(GetUserSave());
-      string[] entries = new string[9] {
+      string[] entries = new string[] {
         "New Game",
         flag2 ? "Load Game" : "(Load Game)",
         "Redefine keys",
