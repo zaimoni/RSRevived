@@ -630,27 +630,6 @@ namespace djack.RogueSurvivor.Engine
       return verb.Conjugate((Player == actor && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
-    private static string HisOrHer(Actor actor)
-    {
-      return !actor.Model.DollBody.IsMale ? "her" : "his";
-    }
-
-    private string HeOrShe(Actor actor)
-    {
-      return !actor.Model.DollBody.IsMale ? "she" : "he";
-    }
-
-    private static string HimOrHer(Actor actor)
-    {
-      return !actor.Model.DollBody.IsMale ? "her" : "him";
-    }
-
-    // alpha10
-    private string HimselfOrHerself(Actor actor)
-    {
-       return actor.Model.DollBody.IsMale ? "himself" : "herself";
-    }
-
     private string TruncateString(string s, int maxLength)
     {
       if (s.Length > maxLength) return s.Substring(0, maxLength);
@@ -2283,9 +2262,9 @@ namespace djack.RogueSurvivor.Engine
               actor.RegenSanity(Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), actor.Leader.Name, HimOrHer(actor))));
+                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), actor.Leader.Name, actor.HimOrHer)));
               if (ForceVisibleToPlayer(actor.Leader))
-                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor.Leader, VERB_FEEL), actor.Name, HimOrHer(actor.Leader))));
+                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor.Leader, VERB_FEEL), actor.Name, actor.Leader.HimOrHer)));
             }
 #endregion
           }
@@ -3840,11 +3819,11 @@ namespace djack.RogueSurvivor.Engine
                 // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
                 // XXX if the CHAR default orders document has been read then this text should be revised
                 display.Add("Something's very wrong; CHAR guards are attacking us cops.");
-                if (1==Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make "+HimOrHer(Session.Get.UniqueActors.PoliceStationPrisoner.TheActor)+" squawk.");
+                if (1 == Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HimOrHer + " squawk.");
                 // XXX ok for police to invade CHAR Offices at this point.
                 // XXX police will be able to aggress CHAR without risking murder at this point
               }
-              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; "+HeOrShe(Session.Get.UniqueActors.PoliceStationPrisoner.TheActor) + " was contaminated by a ZM transformer agent.");
+              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HeOrShe + " was contaminated by a ZM transformer agent.");
               if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should record sighting officer
                 // XXX the cell phone used for last contact should be down here (plausibly not an artifact, however)
@@ -6699,8 +6678,8 @@ namespace djack.RogueSurvivor.Engine
                      : "Has committed no murders.");
       }
       if (actor.IsAggressorOf(Player)) lines.Add("Aggressed you.");
-      if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
-      if (Player.IsAggressorOf(actor)) lines.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
+      if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", actor.HimOrHer));
+      if (Player.IsAggressorOf(actor)) lines.Add(string.Format("You aggressed {0}.", actor.HimOrHer));
       if (actor.IsSelfDefenceFrom(Player)) lines.Add("Killing you would be self-defence.");
       if (!Player.Faction.IsEnemyOf(actor.Faction) && Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through groups.");   // RS Alpha 10 tests against Rules::AreGroupEnemies
 #if POLICE_NO_QUESTIONS_ASKED
@@ -6901,7 +6880,7 @@ namespace djack.RogueSurvivor.Engine
         case Data.Activity.FOLLOWING:
           if (actor.TargetActor == null) return "Following.";
           // alpha10
-          if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", HisOrHer(actor));
+          if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", actor.HisOrHer);
           return string.Format("Following {0}.", actor.TargetActor.Name);
         case Data.Activity.SLEEPING: return "Sleeping.";
         case Data.Activity.FOLLOWING_ORDER: return "Following orders.";
@@ -7899,7 +7878,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Wait();
       if (ForceVisibleToPlayer(actor)) {
         if (actor.StaminaPoints < actor.MaxSTA)
-          AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), HisOrHer(actor))));
+          AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), actor.HisOrHer)));
         else
           AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
       }
@@ -9917,7 +9896,7 @@ namespace djack.RogueSurvivor.Engine
 
       // message.
       if (ForceVisibleToPlayer(actor)) {
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY), (sprayOn == actor ? HimselfOrHerself(actor) : sprayOn.Name))));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
       }
     }
 
@@ -10364,8 +10343,8 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePostMortem()
     {
       WorldTime worldTime = new WorldTime(Player.ActorScoring.TurnsSurvived);
-      string str1 = HisOrHer(Player);
-      string str2 = HimOrHer(Player);
+      string str1 = Player.HisOrHer;
+      string str2 = Player.HimOrHer;
       string name = Player.TheName.Replace("(YOU) ", "");
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
       var textFile = new TextFile();
@@ -10495,13 +10474,14 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), s_Options.MaxReincarnations));
       textFile.Append(" ");
       textFile.Append("> R.I.P");
-      textFile.Append(string.Format("May {0} soul rest in peace.", HisOrHer(Player)));
-      textFile.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(Player)));
+      string player_his = Player.HisOrHer;
+      textFile.Append(string.Format("May {0} soul rest in peace.", player_his));
+      textFile.Append(string.Format("For {0} body is now a meal for evil.", player_his));
       textFile.Append("The End.");
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      string str4 = RogueGame.GraveFilePath(GetUserNewGraveyardName());
+      string str4 = GraveFilePath(GetUserNewGraveyardName());
       if (!textFile.Save(str4)) {
         m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, BOLD_LINE_SPACING, new Color?());
       } else {
@@ -13392,7 +13372,7 @@ namespace djack.RogueSurvivor.Engine
                   if (prisoner.IsSleeping) DoWakeUp(prisoner);
                   local_6 = new string[] {    // standard message
                     "\" Psssst! Hey! You over there! \"",
-                    string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  prisoner.Name,  HisOrHer(prisoner)),
+                    string.Format("{0} is discreetly calling you from {1} cell. You listen closely...",  prisoner.Name,  prisoner.HisOrHer),
                     "\" Listen! I shouldn't be here! Just drove a bit too fast!",
                     "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                     "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
@@ -13405,7 +13385,7 @@ namespace djack.RogueSurvivor.Engine
                     "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
                     "  There are plenty of cool stuff to loot down there!",
                     "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...",  HeOrShe(prisoner))
+                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...",  prisoner.HeOrShe)
                   };
                 }
 #if FAIL

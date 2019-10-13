@@ -168,12 +168,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsProperName
     {
-      get {
-        return GetFlag(Actor.Flags.IS_PROPER_NAME);
-      }
-      set {
-        SetFlag(Actor.Flags.IS_PROPER_NAME, value);
-      }
+      get { return GetFlag(Flags.IS_PROPER_NAME); }
+      set { SetFlag(Flags.IS_PROPER_NAME, value); }
     }
 
     // while a general noun interface would have to allow detection of singular vs plural naming, this would matter only for e.g. a swarm of rats.
@@ -199,6 +195,24 @@ namespace djack.RogueSurvivor.Data
         return Name;
       }
     }
+
+    public string HisOrHer {    // 3rd person possessive pronoun; translation target
+      get { return Model.DollBody.IsMale ? "his" : "her"; }
+    }
+
+    public string HeOrShe {    // 3rd person subject pronoun; translation target
+      get { return Model.DollBody.IsMale ? "he" : "she"; }
+    }
+
+    public string HimOrHer {    // 3rd person direct object pronoun; translation target
+      get { return Model.DollBody.IsMale ? "him" : "her"; }
+    }
+
+    // alpha10
+    public string HimselfOrHerself {    // 3rd person "emphatic" pronoun e.g. "he himself"; translation target
+       get { return Model.DollBody.IsMale ? "himself" : "herself"; }
+    }
+
 
     public ActorController Controller
     {
