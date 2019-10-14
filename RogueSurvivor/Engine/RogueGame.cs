@@ -9995,9 +9995,7 @@ namespace djack.RogueSurvivor.Engine
 
       deadGuy.IsDead = true;
       var deadGuy_isUndead = new const_<bool>(deadGuy.Model.Abilities.IsUndead);
-      // we could fold next two lines into above
-      if (deadGuy.IsPlayer) deadGuy.Location.Map.Players.Recalc();
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == deadGuy.Faction.ID) deadGuy.Location.Map.Police.Recalc();
+      deadGuy.Location.Map.Recalc(deadGuy); // \todo? could fold into Killed call, below
 
       var isMurder = new const_<bool>(Rules.IsMurder(killer, deadGuy));  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);

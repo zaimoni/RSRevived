@@ -1006,6 +1006,12 @@ retry:
       return null != tmp && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
     }
 
+    public void Recalc(Actor actor)
+    {
+      if (actor.IsPlayer) Players.Recalc();
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
+    }
+
     public void PlaceAt(Actor actor, in Point position)
     {
 #if DEBUG
@@ -1044,8 +1050,7 @@ retry:
           if (!knows_on_map) actor.RemoveFromMap();
           m_ActorsList.Add(actor);
           Engine.LOS.Now(this);
-          if (actor.IsPlayer) Players.Recalc();
-          if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
+          Recalc(actor);
         }
         m_aux_ActorsByPosition.Add(position, actor);
         actor.Location = new Location(this, position);
@@ -1065,8 +1070,7 @@ retry:
       m_ActorsList.Remove(actor);
       m_ActorsList.Insert(0, actor);
       m_iCheckNextActorIndex = 0;
-      if (actor.IsPlayer) Players.Recalc();
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
+      Recalc(actor);
     }
 
     public void Remove(Actor actor)
@@ -1096,8 +1100,7 @@ retry:
 #endif
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
           m_iCheckNextActorIndex = 0;
-          if (actor.IsPlayer) Players.Recalc();
-          if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
+          Recalc(actor);
         }
 #if AUDIT_ACTOR_MOVEMENT
         foreach(var x in m_aux_ActorsByPosition) {
