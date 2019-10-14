@@ -216,9 +216,7 @@ namespace djack.RogueSurvivor.Data
 
     public ActorController Controller
     {
-      get {
-        return m_Controller;
-      }
+      get { return m_Controller; }
       set {
         int playerDelta = 0;
         if (null != m_Controller) {
@@ -230,7 +228,7 @@ namespace djack.RogueSurvivor.Data
           m_Controller.TakeControl(this);
           if (IsPlayer) playerDelta += 1;
         }
-        if (null != m_Location.Map && 0!=playerDelta) m_Location.Map.Players.Recalc();
+        if (0 != playerDelta) m_Location.Map?.Players.Recalc();
       }
     }
 

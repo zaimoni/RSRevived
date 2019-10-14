@@ -1816,10 +1816,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void FindPlayer()
     {
-       Actor tmp = CurrentMap.FindPlayer;
+       var tmp = CurrentMap.FindPlayer;
        if (null != tmp) {
-         m_Player = tmp;
-         Player.Controller.UpdateSensors();
+         (m_Player = tmp).Controller.UpdateSensors();
          SetCurrentMap(Player.Location);
          RedrawPlayScreen();
          return;
@@ -1959,11 +1958,10 @@ namespace djack.RogueSurvivor.Engine
       if (nextActorToAct == null) return;
 
       // We actually may do something.  Do a partial solution to dropped messages here in the multi-PC case
-      if (map != Player.Location.Map && 0 < map.PlayerCount && !nextActorToAct.IsPlayer) {
-        Actor tmp = map.FindPlayer;
+      if (map != Player.Location.Map && !nextActorToAct.IsPlayer) {
+        var tmp = map.FindPlayer;
         if (null != tmp) {
-          m_Player = tmp;
-          Player.Controller.UpdateSensors();
+          (m_Player = tmp).Controller.UpdateSensors();
           SetCurrentMap(Player.Location);  // multi-PC support
           RedrawPlayScreen();
         }
@@ -13035,10 +13033,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void RefreshPlayer()
     {
-      Actor tmp = CurrentMap.Players.Get.FirstOrDefault();
-      if (null == tmp) return;
-      m_Player = tmp;
-      SetCurrentMap(Player.Location);
+      var player = CurrentMap.FindPlayer;
+      if (null != player) SetCurrentMap((m_Player = player).Location);
     }
 
     private void SetCurrentMap(Location loc)

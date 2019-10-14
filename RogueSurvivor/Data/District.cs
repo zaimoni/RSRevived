@@ -358,16 +358,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Actor FindPlayer(Map already_failed) {
+#nullable enable
+    public Actor? FindPlayer(Map? already_failed) {
        foreach(Map tmp in m_Maps) {
          if (tmp == already_failed) continue;
-         Actor tmp2 = tmp.FindPlayer;
+         var tmp2 = tmp.FindPlayer;
          if (null != tmp2) return tmp2;
        }
        return null;
     }
 
-#nullable enable
     public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
 
     public List<Actor> FilterActors(Predicate<Actor> test) {

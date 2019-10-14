@@ -61,10 +61,9 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     [NonSerialized] private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
-#nullable restore
     // AI support caches, etc.
-    [NonSerialized]
-    public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
+    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
+#nullable restore
     [NonSerialized]
     public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
     [NonSerialized]
@@ -1231,9 +1230,14 @@ retry:
     }
 
     public int PlayerCount { get { return Players.Get.Count; } }
-    public Actor FindPlayer { get { return Players.Get.FirstOrDefault(); } }
-
 #nullable enable
+    public Actor? FindPlayer {
+      get {
+        var pl_list = Players.Get;
+        return (0<pl_list.Count) ? pl_list[0] : null;
+      }
+    }
+
     public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool>? pred =null)
     {
       void pan_to(Actor a) {
