@@ -2507,7 +2507,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       map.UndeadCount.Recalc();
-//    return (float)CountUndeads(map) / (float)NationalGuardForceFactor() * (s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
       return (double)(map.UndeadCount.Get* s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
     }
 

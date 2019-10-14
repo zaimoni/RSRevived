@@ -64,11 +64,9 @@ namespace djack.RogueSurvivor.Data
     // AI support caches, etc.
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
+    [NonSerialized] public readonly Dataflow<List<Actor>,int> UndeadCount;
+    [NonSerialized] public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
 #nullable restore
-    [NonSerialized]
-    public readonly Dataflow<List<Actor>,int> UndeadCount;
-    [NonSerialized]
-    public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
     [NonSerialized]
     public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
     // map geometry
@@ -1372,7 +1370,6 @@ retry:
         RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
       }
     }
-#nullable restore
 
     public double PowerRatio {
       get {
@@ -1380,7 +1377,6 @@ retry:
       }
     }
 
-#nullable enable
     public bool HasItemsAt(Point pos) { return m_GroundItemsByPosition.ContainsKey(pos); }
 
     public Inventory? GetItemsAt(Point position)

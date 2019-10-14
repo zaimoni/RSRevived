@@ -1248,16 +1248,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
     }
 
-    public ActionRechargeItemBattery RechargeWithAdjacentGenerator()
+#nullable enable
+    public ActionRechargeItemBattery? RechargeWithAdjacentGenerator()
     {
       var recharge_these = m_Actor.Inventory.GetItemsByType<ItemLight>(it => WantToRecharge(it));
       if (null == recharge_these) return null;
-      if (0 >= m_Actor.Location.Map.PowerGenerators.Get.Count) return null;
-      var generator = m_Actor.Location.Map.PowerGenerators.Get.Where(obj => obj.IsOn && Rules.IsAdjacent(m_Actor.Location,obj.Location)).FirstOrDefault();
-      if (null == generator) return null;
-      RogueForm.Game.DoEquipItem(m_Actor,recharge_these[0]);
-      return new ActionRechargeItemBattery(m_Actor, recharge_these[0]);
+      foreach(var gen in m_Actor.Location.Map.PowerGenerators.Get) {
+        // design decision to not turn on here
+        if (gen.IsOn && Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
+          var recharge = recharge_these[0];
+          RogueForm.Game.DoEquipItem(m_Actor, recharge);
+          return new ActionRechargeItemBattery(m_Actor, recharge);
+        }
+      }
+      return null;
     }
+#nullable restore
 
     private void AvoidBeingCornered()
     {
@@ -5189,21 +5195,22 @@ restart_single_exit:
       return new KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
+#nullable enable
     // arguable whether these twp should be public in Map
-    static protected IEnumerable<Engine.MapObjects.PowerGenerator> GeneratorsToTurnOn(Map m)
+    static protected IEnumerable<Engine.MapObjects.PowerGenerator>? GeneratorsToTurnOn(Map m)
     {
       if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap == m) return null; // plot consequences until Prisoner That Should Not Be is dead, does not light level.
-      if (0 >= m.PowerGenerators.Get.Count) return null;
-      if (1.0 <= m.PowerRatio) return null;
-      return m.PowerGenerators.Get.Where(obj => !obj.IsOn);
+      var gens_off = m.PowerGenerators.Get.Where(obj => !obj.IsOn);
+      return gens_off.Any() ? gens_off : null;
     }
 
-    static protected IEnumerable<Engine.MapObjects.PowerGenerator> Generators(Map m)
+    static protected IEnumerable<Engine.MapObjects.PowerGenerator>? Generators(Map m)
     {
       if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap == m) return null; // plot consequences until Prisoner That Should Not Be is dead, does not light level.
-      if (0 >= m.PowerGenerators.Get.Count) return null;
-      return m.PowerGenerators.Get;
+      var gens = m.PowerGenerators.Get;
+      return (0 >= gens.Count) ? null : gens;
     }
+#nullable restore
 
     public bool CombatUnready()
     {
