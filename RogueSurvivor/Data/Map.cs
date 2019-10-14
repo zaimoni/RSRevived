@@ -63,9 +63,8 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     // AI support caches, etc.
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
+    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
 #nullable restore
-    [NonSerialized]
-    public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
     [NonSerialized]
     public readonly Dataflow<List<Actor>,int> UndeadCount;
     [NonSerialized]

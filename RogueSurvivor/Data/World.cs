@@ -119,27 +119,28 @@ namespace djack.RogueSurvivor.Data
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }
 
+#nullable enable
     // cannot return IEnumerable<District>, but this does not error
     public void DoForAllDistricts(Action<District> op)
     {
-#if DEBUG
-      if (null == op) throw new ArgumentNullException(nameof(op));
-#endif
       foreach(District d in m_DistrictsGrid) op(d);
     }
 
-    public void DoForAllMaps(Action<Map> op,Predicate<District> ok=null)
+    public void DoForAllMaps(Action<Map> op,Predicate<District> ok)
     {
-#if DEBUG
-      if (null == op) throw new ArgumentNullException(nameof(op));
-#endif
       foreach(District d in m_DistrictsGrid) {
         if (null != ok && !ok(d)) continue;
         foreach(Map m in d.Maps) op(m);
       }
     }
 
-#nullable enable
+    public void DoForAllMaps(Action<Map> op)
+    {
+      foreach(District d in m_DistrictsGrid) {
+        foreach(Map m in d.Maps) op(m);
+      }
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
 #nullable restore
 
