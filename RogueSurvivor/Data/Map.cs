@@ -1901,12 +1901,10 @@ retry:
       return 0;
     }
 
+#nullable enable
     /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
     static public Dictionary<Location,Direction> ValidDirections(in Location loc, Predicate<Location> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var ret = new Dictionary<Location,Direction>(8);
       foreach(Direction dir in Direction.COMPASS) {
         var pt = loc+dir;
@@ -1921,7 +1919,6 @@ retry:
         pathing_exits_to_goals.Now(LocalTime.TurnCounter);
     }
 
-#nullable enable
     /// <remark>testFn has to tolerate denormalized coordinates</remark>
     public Dictionary<Point,T> FindAdjacent<T>(Point pos, Func<Map,Point,T?> testFn) where T:class
     {
@@ -1935,13 +1932,9 @@ retry:
       }
       return ret;
     }
-#nullable restore
 
-    public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
+    public List<Point>? FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-#if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-#endif
       if (!IsInBounds(position)) return null;
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
       return (tmp.Any() ? tmp.ToList() : null);
@@ -1949,9 +1942,6 @@ retry:
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-#if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-#endif
       if (!IsInBounds(position)) return false;
       return position.Adjacent().Any(p=>IsInBounds(p) && predicateFn(p));
     }
@@ -1959,15 +1949,11 @@ retry:
 #if DEAD_FUNC
     public bool HasAnyAdjacent(Point position, Predicate<Point> predicateFn)
     {
-#if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-#endif
       if (!IsValid(position)) return false;
       return position.Adjacent().Any(p=>IsValid(p) && predicateFn(p));
     }
 #endif
 
-#nullable enable
     public bool HasAnyAdjacent(Point position, Predicate<Actor> test)
     {
       if (!IsValid(position)) return false;
@@ -1978,13 +1964,9 @@ retry:
       }
       return false;
     }
-#nullable restore
 
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {
-#if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-#endif
       if (!IsInBounds(position)) return 0;
       return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
     }
@@ -1996,9 +1978,6 @@ retry:
 
     public int CountAdjacent<T>(Point pos,Predicate<T> test) where T:MapObject
     {
-#if DEBUG
-      if (null == test) throw new ArgumentNullException(nameof(test));
-#endif
       return CountAdjacentTo(pos, pt => GetMapObjectAt(pt) is T obj && test(obj));
     }
 
@@ -2014,30 +1993,19 @@ retry:
 
     public bool AnyAdjacent<T>(Point pos,Predicate<T> test) where T:MapObject
     {
-#if DEBUG
-      if (null == test) throw new ArgumentNullException(nameof(test));
-#endif
       return HasAnyAdjacentInMap(pos, pt => GetMapObjectAt(pt) is T obj && test(obj));
     }
-
 
     public void ForEachAdjacent(Point position, Action<Point> fn)
     {
 #if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
-      foreach (Point p in Direction.COMPASS.Select(d => position+d)) {
-        if (IsInBounds(p)) fn(p);
+      foreach(var dir in Direction.COMPASS) {
+        var pt = position+dir;
+        if (IsInBounds(pt)) fn(pt);
       }
     }
-
-#if DEAD_FUNC
-    public void ForEachAdjacent(int x, int y, Action<Point> fn)
-    {
-      ForEachAdjacent(new Point(x,y),fn);
-    }
-#endif
 
     // pathfinding support
     public Rectangle NavigationScope {
@@ -2047,7 +2015,9 @@ retry:
        return new Rectangle(District.WorldPosition, new Size(1, 1));
      }
     }
+#nullable restore
 
+#if PRERELEASE_MOTHBALL
     private void fuse_chokepoints(List<Point[]> candidates, Direction normal_dir, Action<Location[]> install)
     {
         var one_adjacent = new List<Point[]>(candidates.Count);
@@ -2121,7 +2091,6 @@ retry:
         }
     }
 
-#if PRERELEASE_MOTHBALL
     public void RegenerateChokepoints() {
       var working = new List<LinearChokepoint>();
 

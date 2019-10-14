@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Zaimoni.Data
 {
     class NonSerializedCache<src,T,U> where src:class where U : class, IEnumerable<T>
     {
         private readonly src m_src;
-        private U m_cache;
+        private U? m_cache;
         private readonly Func<src,U> m_bootstrap;
-        private readonly Action<src> m_invalidate;
+        private readonly Action<src>? m_invalidate;
 
-        public NonSerializedCache(src x, Func<src,U> bootstrap, Action<src> invalidate = null)
+        public NonSerializedCache(src x, Func<src,U> bootstrap, Action<src>? invalidate = null)
         {
-#if DEBUG
-            if (null == x) throw new ArgumentNullException(nameof(x));
-            if (null == bootstrap) throw new ArgumentNullException(nameof(bootstrap));
-#endif
             m_src = x;
             m_bootstrap = bootstrap;
             m_invalidate = invalidate;
@@ -33,14 +31,10 @@ namespace Zaimoni.Data
         private readonly src m_src;
         private T? m_cache;
         private readonly Func<src,T> m_bootstrap;
-        private readonly Action<src> m_invalidate;
+        private readonly Action<src>? m_invalidate;
 
-        public Dataflow(src x, Func<src,T> bootstrap, Action<src> invalidate = null)
+        public Dataflow(src x, Func<src,T> bootstrap, Action<src>? invalidate = null)
         {
-#if DEBUG
-            if (null == x) throw new ArgumentNullException(nameof(x));
-            if (null == bootstrap) throw new ArgumentNullException(nameof(bootstrap));
-#endif
             m_src = x;
             m_bootstrap = bootstrap;
             m_invalidate = invalidate;
@@ -62,16 +56,12 @@ namespace Zaimoni.Data
     public class Dataflow<src,Key,Value>
     {
         private readonly src m_src;
-        private Dictionary<Key,Value> m_cache;
+        private Dictionary<Key,Value>? m_cache;
         private readonly Func<src, Dictionary<Key, Value>> m_bootstrap;
-        private readonly Action<src> m_invalidate;
+        private readonly Action<src>? m_invalidate;
 
-        public Dataflow(src x, Func<src, Dictionary<Key, Value>> bootstrap, Action<src> invalidate = null)
+        public Dataflow(src x, Func<src, Dictionary<Key, Value>> bootstrap, Action<src>? invalidate = null)
         {
-#if DEBUG
-            if (null == x) throw new ArgumentNullException(nameof(x));
-            if (null == bootstrap) throw new ArgumentNullException(nameof(bootstrap));
-#endif
             m_src = x;
             m_bootstrap = bootstrap;
             m_invalidate = invalidate;
