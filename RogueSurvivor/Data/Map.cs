@@ -45,20 +45,15 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
     private readonly List<Zone> m_Zones = new List<Zone>(5);
-#nullable restore
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
-#nullable enable
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
-#nullable restore
     // position inverting caches
-    [NonSerialized]
-    private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-#nullable enable
+    [NonSerialized] private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized] private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     // AI support caches, etc.
@@ -114,10 +109,8 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
-#nullable restore
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
-#nullable enable
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
 #nullable restore
@@ -950,8 +943,7 @@ retry:
       foreach (var x in m_GroundItemsByPosition) ret += xform(x.Value);
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
-        if (null == inv) continue;
-        ret += xform(inv);
+        if (null != inv) ret += xform(inv);
       }
 
       return ret;
@@ -967,8 +959,7 @@ retry:
       }
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
-        if (null == inv) continue;
-        if (test(inv,actor.Location)) return true;
+        if (null != inv && test(inv,actor.Location)) return true;
       }
       return false;
     }
@@ -2730,13 +2721,12 @@ retry:
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList) {
         // XXX defensive coding: it is possible for actors to duplicate, apparently
-        if (!m_aux_ActorsByPosition.ContainsKey(mActors.Location.Position)) {
-          m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
-        } else {
-          Actor doppleganger = m_aux_ActorsByPosition[mActors.Location.Position];
+        if (m_aux_ActorsByPosition.TryGetValue(mActors.Location.Position, out var doppleganger)) {
           if (  mActors.Name != doppleganger.Name
              || mActors.SpawnTime!=doppleganger.SpawnTime)
             throw new InvalidOperationException("non-clone savefile corruption");
+        } else {
+          m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
         }
         (mActors.Controller as PlayerController)?.InstallHandlers();
       }
@@ -2747,9 +2737,7 @@ retry:
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out var corpseList))
           corpseList.Add(mCorpses);
         else
-          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) {
-            mCorpses
-          });
+          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) { mCorpses });
       }
       // Support savefile hacking.
       // Check the actors.  If any have null controllers, intent was to hand control from the player to the AI.
