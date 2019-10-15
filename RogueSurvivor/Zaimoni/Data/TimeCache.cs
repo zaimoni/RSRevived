@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Zaimoni.Data
 {
     class TimeCache<K,V>
@@ -10,7 +12,7 @@ namespace Zaimoni.Data
 
       public bool Expire(int t0) { _map.OnlyIf(t => t > t0); return 0 >= _map.Count; }
       public void Now(int t0) {
-        if (!_map.ContainsKey(t0)) _map[t0] = new Dictionary<K, V>();
+        if (!_map.ContainsKey(t0)) _map.Add(t0, new Dictionary<K, V>());
         _now = t0;
       }
 
@@ -32,11 +34,10 @@ namespace Zaimoni.Data
 
       public void Set(K key, V value)
       {
-        if (!_map.ContainsKey(_now)) _map[_now] = new Dictionary<K, V>();
-        _map[_now][key] = value;
+        if (!_map.TryGetValue(_now, out var cache)) _map.Add(_now, (cache = new Dictionary<K, V>()));
+        cache[key] = value;
         foreach(KeyValuePair<int, Dictionary<K, V> > x in _map) {
-          if (x.Key == _now) continue;
-          x.Value.Remove(key);
+          if (x.Key != _now) x.Value.Remove(key);
         }
       }
 
