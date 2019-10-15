@@ -4425,7 +4425,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
             if (mapObjectAt != null) {
               if (mapObjectAt is DoorWindow door) {
                 if (player.CanBarricade(door, out string reason)) {
@@ -4497,7 +4497,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
             if (mapObjectAt != null) {
               if (player.CanBreak(mapObjectAt, out string reason)) {
                 DoBreak(player, mapObjectAt);
@@ -4769,7 +4769,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            Actor actorAt = player.Location.Map.GetActorAt(point);
+            var actorAt = player.Location.Map.GetActorAtExt(point);
             if (actorAt != null) {
               if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
                 flag2 = true;
@@ -4801,7 +4801,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            Actor actorAt = player.Location.Map.GetActorAt(point);
+            var actorAt = player.Location.Map.GetActorAtExt(point);
             if (actorAt != null) {
               if (player.CanTakeLeadOf(actorAt, out string reason)) {
                 flag2 = true;
@@ -4856,7 +4856,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            Actor actorAt = player.Location.Map.GetActorAt(point);
+            var actorAt = player.Location.Map.GetActorAtExt(point);
             var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
             string reason;
             if (actorAt != null) {
