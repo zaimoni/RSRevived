@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Data
     private readonly int m_SpawnTime;
 #nullable enable
     private Inventory? m_Inventory;
-#nullable restore
     private Doll m_Doll;
     private int m_HitPoints;
     private int m_previousHitPoints;
@@ -106,6 +105,7 @@ namespace djack.RogueSurvivor.Data
     private int m_previousSleepPoints;
     private int m_Sanity;
     private int m_previousSanity;
+#nullable restore
     private Location m_Location;
     private int m_ActionPoints;
     private int m_LastActionTurn;

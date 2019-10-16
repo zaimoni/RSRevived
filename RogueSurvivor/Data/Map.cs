@@ -113,7 +113,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
-#nullable restore
 
     // there is a very rare multi-threading related crash due to m_ActorsList (the parameter for these) being adjusted
     // mid-enumeration
@@ -136,6 +135,7 @@ namespace djack.RogueSurvivor.Data
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList());
     }
+#nullable restore
 
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
@@ -558,7 +558,6 @@ namespace djack.RogueSurvivor.Data
           && 0 >= ret.Count)
           m_Decorations.Remove(pt);
     }
-#nullable restore
 
     public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
 
@@ -569,7 +568,6 @@ namespace djack.RogueSurvivor.Data
       return null != test && test.Value.Map.HasExitAt(test.Value.Position);
     }
 
-#nullable enable
     public Exit? GetExitAt(Point pos)
     {
       if (m_Exits.TryGetValue(pos, out var exit)) return exit;
@@ -596,7 +594,6 @@ namespace djack.RogueSurvivor.Data
       foreach(var x in m_Exits) if (x.Value.ToMap == dest) return x;
       return null;
     }
-#nullable restore
 
     public List<Point> GetEdge()    // \todo refactor to a cache variable setter
     {
@@ -623,7 +620,6 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-#nullable enable
     public void ForEachExit(Action<Point,Exit> op)
     {
        foreach(var x in m_Exits) op(x.Key,x.Value);
@@ -632,7 +628,6 @@ namespace djack.RogueSurvivor.Data
     public void SetExitAt(Point pos, Exit exit) {
       m_Exits.Add(pos, exit);
     }
-#nullable restore
 
 #if DEAD_FUNC
     public void RemoveExitAt(Point pos)
@@ -691,6 +686,7 @@ namespace djack.RogueSurvivor.Data
       }
 	  return ret;
 	}
+#nullable restore
 
     public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
     {
@@ -1206,7 +1202,6 @@ retry:
 
       return false;
     }
-#nullable restore
 
     // tracking players on map
     public int PlayerCorpseCount {
@@ -1217,7 +1212,7 @@ retry:
     }
 
     public int PlayerCount { get { return Players.Get.Count; } }
-#nullable enable
+
     public Actor? FindPlayer {
       get {
         var pl_list = Players.Get;
@@ -1263,13 +1258,9 @@ retry:
     {
       return m_aux_MapObjectsByPosition.ContainsKey(position);
     }
-#nullable restore
 
     public void PlaceAt(MapObject mapObj, Point position)
     {
-#if DEBUG
-      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
-#endif
       if (!IsInBounds(position)) {
         // cross-map push or similar
         Location? test = _Normalize(position);
@@ -1298,7 +1289,6 @@ retry:
       mapObj.Location = new Location(this, position);
     }
 
-#nullable enable
     public void RemoveMapObjectAt(Point pt)
     {
       var mapObjectAt = GetMapObjectAt(pt);
@@ -1526,7 +1516,6 @@ retry:
       dest.AddAsMuchAsPossible(it);
       return true;
     }
-#nullable restore
 
 #if DEAD_FUNC
     public void RemoveItemAtExt(Item it, Point position)
@@ -1857,7 +1846,6 @@ retry:
       if (obj.IsJumpable) return 1;
       return 2;
     }
-#nullable restore
 
 #if DEAD_FUNC
     /// <returns>0 not blocked, 1 jumping required both ways, 2 one wall one jump, 3 two walls (for livings)</returns>
@@ -1890,7 +1878,6 @@ retry:
       return 0;
     }
 
-#nullable enable
     /// <returns>non-null dictionary whose Location keys are in canonical form (in bounds)</returns>
     static public Dictionary<Location,Direction> ValidDirections(in Location loc, Predicate<Location> testFn)
     {
