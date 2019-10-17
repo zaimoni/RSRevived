@@ -1140,7 +1140,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool? HandleNewCharacterGender(DiceRoller roller)
     {
-      ActorSheet maleStats = GameActors.MaleCivilian.StartingSheet;
+      ActorSheet maleStats = GameActors.MaleCivilian.StartingSheet; // do not have to be RAM-efficient here, this is one-off UI
       ActorSheet femaleStats = GameActors.FemaleCivilian.StartingSheet;
       string[] entries = new string[3] {
         "*Random*",
@@ -6748,9 +6748,9 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(" ");
       lines.Add(actor.Model.FlavorDescription);
       lines.Add(" ");
-      if (actor.Sheet.SkillTable != null && actor.Sheet.SkillTable.CountSkills > 0) {
-        foreach (var skill in actor.Sheet.SkillTable.Skills)
-          lines.Add(string.Format("{0}-{1}", skill.Value, Skills.Name(skill.Key)));
+      var skills = actor.Sheet.SkillTable;
+      if (0 < skills.CountSkills) {
+        foreach (var sk in skills.Skills) lines.Add(string.Format("{0}-{1}", sk.Value, Skills.Name(sk.Key)));
         lines.Add(" ");
       }
 
@@ -6769,7 +6769,7 @@ namespace djack.RogueSurvivor.Engine
                                 "- Has excellent sense of smell.");
 
         // grab?
-        if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
+        if (0 < skills.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
 
         if (actor.Model.Abilities.IsUndeadMaster) lines.Add("- Other undeads follow this undead tracks.");
         else if (smell > 0) lines.Add("- This undead will follow zombie masters tracks.");
@@ -6991,9 +6991,11 @@ namespace djack.RogueSurvivor.Engine
 			return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
 	}
 
+#nullable enable
     private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
-      int skillLevel = Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
+      var skills = Player.Sheet.SkillTable;
+      int skillLevel = skills.GetSkillLevel(Skills.IDs.NECROLOGY);
       var stringList = new List<string>(10){
         c.ToString().Capitalize()+".",
         " ",
@@ -7002,7 +7004,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
         " ",
 	    DescribeCorpseLong_DescRotLevel(c.RotLevel),
-        string.Format("Revive    : {0}.", (Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
+        string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
       };
       if (isInPlayerTile) {
         stringList.Add(" ");
@@ -7016,6 +7018,7 @@ namespace djack.RogueSurvivor.Engine
       }
       return stringList.ToArray();
     }
+#nullable restore
 
     static private string DescribeItemShort(Item it)
     {
@@ -10077,18 +10080,16 @@ namespace djack.RogueSurvivor.Engine
       if (null != killer) {
         killer.RecordKill(deadGuy);
         if (Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
-          ActorModel actorModel = CheckUndeadEvolution(killer);
+          var actorModel = CheckUndeadEvolution(killer);
           if (actorModel != null) {
             // don't need value-copy here due to how the model assignment works
-            SkillTable skillTable = (null != killer.Sheet.SkillTable?.Skills) ? killer.Sheet.SkillTable : null;
+            var skills = killer.Sheet.SkillTable.Skills;
             killer.Model = actorModel;
             killer.APreset(); // to avoid triggering a debug-mode crash
             if (killer.IsPlayer) killer.PrepareForPlayerControl();
-            if (skillTable != null) {
-              foreach (var skill in skillTable.Skills) {
-                for (int index = 0; index < skill.Value; ++index) {
-                  killer.SkillUpgrade(skill.Key);
-                }
+            if (null != skills) {
+              foreach (var sk in skills) {
+                for (int index = 0; index < sk.Value; ++index) killer.SkillUpgrade(sk.Key);
               }
               killer.RecomputeStartingStats();
             }
@@ -10210,7 +10211,8 @@ namespace djack.RogueSurvivor.Engine
        return disarmIt; // done
     }
 
-    private ActorModel CheckUndeadEvolution(Actor undead)
+#nullable enable
+    private ActorModel? CheckUndeadEvolution(Actor undead)
     {
       if (!s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
 	  // anything not whitelisted to evolve, doesn't
@@ -10249,6 +10251,7 @@ namespace djack.RogueSurvivor.Engine
       GameActors.IDs index = undead.Model.ID.NextUndeadEvolution();
 	  return (index != undead.Model.ID ? GameActors[index] : null);
     }
+#nullable restore
 
     private void SplatterBlood(Map map, Point position)
     {
@@ -10389,11 +10392,11 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(compileDistrictFunFact);
       textFile.Append("");
       textFile.Append("> SKILLS");
-      if (Player.Sheet.SkillTable?.Skills == null) {
+      var p_skills = Player.Sheet.SkillTable.Skills;
+      if (null == p_skills) {
         textFile.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", str1));
       } else {
-        foreach (var skill in Player.Sheet.SkillTable.Skills)
-          textFile.Append(string.Format("{0}-{1}.", skill.Value, Skills.Name(skill.Key)));
+        foreach (var sk in p_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
       }
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
@@ -10427,10 +10430,8 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(stringBuilder.ToString());
         foreach (Actor actor in Session.Get.Scoring_fatality.FollowersWhendDied) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
-          if (actor.Sheet.SkillTable?.Skills != null) {
-            foreach (var skill in actor.Sheet.SkillTable.Skills)
-              textFile.Append(string.Format("{0}-{1}.", skill.Value, Skills.Name(skill.Key)));
-          }
+          var a_skills = actor.Sheet.SkillTable.Skills;
+          if (null != a_skills) foreach (var sk in a_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
         }
       }
       } // scoping brace
@@ -10492,10 +10493,9 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         int gy2 = BOLD_LINE_SPACING;
-        int num5 = 0;
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
         gy2 += BOLD_LINE_SPACING;
-        for (; num5 < 50 && index < textFile.FormatedLines.Count; ++num5) {
+        for (int num5 = 0; num5 < 50 && index < textFile.FormatedLines.Count; ++num5) {
           m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], 0, gy2, new Color?());
           gy2 += BOLD_LINE_SPACING;
           ++index;
@@ -10507,10 +10507,8 @@ namespace djack.RogueSurvivor.Engine
       }
       while (index < textFile.FormatedLines.Count);
       var stringBuilder1 = new StringBuilder();
-      if (Player.Sheet.SkillTable.Skills != null) {
-        foreach (var skill in Player.Sheet.SkillTable.Skills)
-          stringBuilder1.AppendFormat("{0}-{1} ", skill.Value, Skills.Name(skill.Key));
-      }
+      var skills = Player.Sheet.SkillTable.Skills;
+      if (null != skills) foreach (var sk in skills) stringBuilder1.AppendFormat("{0}-{1} ", sk.Value, Skills.Name(sk.Key));
       if (!m_HiScoreTable.Register(new HiScore(Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
@@ -10564,18 +10562,19 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
-      do {
-        OverlayPopupTitle popup = null;
+      var skills = upgradeActor.Sheet.SkillTable;
+      if (0 >= upgrade.Count) { 
+        AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
+      } else {
+        do {
+          OverlayPopupTitle popup = null;
 
-        ClearMessages();
-        if (upgrade.Count == 0) {
-          AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
-        } else {
+          ClearMessages();
           var popupLines = new List<string> { "" };
 
           for (int iChoice = 0; iChoice < upgrade.Count; iChoice++) {
             Skills.IDs sk = upgrade[iChoice];
-            int level = upgradeActor.Sheet.SkillTable.GetSkillLevel(sk);
+            int level = skills.GetSkillLevel(sk);
             string text = string.Format("{0}. {1} {2}/{3}", iChoice + 1, Skills.Name(sk), level + 1, Skills.MaxSkillLevel(sk));
 
             popupLines.Add(text);
@@ -10588,43 +10587,44 @@ namespace djack.RogueSurvivor.Engine
           if (upgradeActor != Player) {
             popupLines.Add(" ");
             popupLines.Add(upgradeActor.Name + " current skills");
-            foreach (var sk in upgradeActor.Sheet.SkillTable.Skills) {
+            foreach (var sk in skills.Skills) {
               popupLines.Add(string.Format("{0} {1}", Skills.Name(sk.Key), sk.Value));
             }
           }
 
           popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
           AddOverlay(popup);
-        }
-        RedrawPlayScreen();
-        KeyEventArgs key = m_UI.UI_WaitKey();
-        if (key.KeyCode == Keys.Escape) break;
-        if (key.KeyCode == Keys.Space) {
-          upgrade = RollSkillsToUpgrade(upgradeActor, 300);
-          if (null != popup) RemoveOverlay(popup);
-          continue;
-        }
-
-        int choiceNumber = KeyToChoiceNumber(key.KeyCode);
-        if (choiceNumber >= 1 && choiceNumber <= upgrade.Count) {
-          upgradeActor.SkillUpgrade(upgrade[choiceNumber - 1]);
-          int skill_level = upgradeActor.Sheet.SkillTable.GetSkillLevel(upgrade[choiceNumber - 1]);
-		  string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(upgrade[choiceNumber - 1]))
-					 : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(upgrade[choiceNumber - 1]), skill_level));
-          AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-          upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
-          AddMessagePressEnter();
-          if (null != popup) RemoveOverlay(popup);
           RedrawPlayScreen();
-          break;
+          KeyEventArgs key = m_UI.UI_WaitKey();
+          if (key.KeyCode == Keys.Escape) break;
+          if (key.KeyCode == Keys.Space) {
+            upgrade = RollSkillsToUpgrade(upgradeActor, 300);
+            if (null != popup) RemoveOverlay(popup);
+            continue;
+          }
+
+          int choiceNumber = KeyToChoiceNumber(key.KeyCode);
+          if (choiceNumber >= 1 && choiceNumber <= upgrade.Count) {
+            var sk = upgrade[choiceNumber - 1];
+            upgradeActor.SkillUpgrade(sk);
+            int skill_level = skills.GetSkillLevel(sk);
+		    string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk))
+			            : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk), skill_level));
+            AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+            upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
+            AddMessagePressEnter();
+            if (null != popup) RemoveOverlay(popup);
+            RedrawPlayScreen();
+            break;
+          }
         }
+        while(true);
       }
-      while(true);
       // this is the change target for becoming a cop.  The test may need extracting to an ImpersonateCop function
       // 0) must be civilian or survivor with 0 murders
       if ((GameFactions.TheCivilians == upgradeActor.Faction || GameFactions.TheSurvivors == upgradeActor.Faction)
            // 1) required skills: Firearms 1, Leadership 1
-           && 1 <= upgradeActor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= upgradeActor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)
+           && 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
            // 2) must have equipped: police radio, police armor
            && null != upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO)
            && (null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
@@ -10632,23 +10632,23 @@ namespace djack.RogueSurvivor.Engine
            && (null != upgradeActor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != upgradeActor.GetItem(GameItems.IDs.RANGED_SHOTGUN))
            // 4) must have committed no murders \todo once we have revamped the representation of crime, review this
            && 0 >= upgradeActor.MurdersCounter) {
-        // then: y/n prompt, if y become cop
-        AddMessage(MakeYesNoMessage("Become a cop"));
-        RedrawPlayScreen();
-        if (WaitYesOrNo()) {
-          upgradeActor.Faction = GameFactions.ThePolice;
-          DiscardItem(upgradeActor, upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO));    // now implicit; don't worry about efficiency here
-          upgradeActor.PrefixName("Cop"); // adjust job title
-          upgradeActor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
-          upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
-          upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
-          upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
-          upgradeActor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
-          upgradeActor.Controller = new PlayerController();
-          upgradeActor.Location.Map.Police.Recalc();
-          AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        } else
-          AddMessage(new Data.Message("Acknowledged.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+          // then: y/n prompt, if y become cop
+          AddMessage(MakeYesNoMessage("Become a cop"));
+          RedrawPlayScreen();
+          if (WaitYesOrNo()) {
+            upgradeActor.Faction = GameFactions.ThePolice;
+            DiscardItem(upgradeActor, upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO));    // now implicit; don't worry about efficiency here
+            upgradeActor.PrefixName("Cop"); // adjust job title
+            upgradeActor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
+            upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
+            upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
+            upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
+            upgradeActor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
+            upgradeActor.Controller = new PlayerController();
+            upgradeActor.Location.Map.Police.Recalc();
+            AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+          } else
+            AddMessage(new Data.Message("Acknowledged.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       }
       if (upgradeActor.IsPlayer) HandlePlayerFollowersUpgrade(upgradeActor);
     }
@@ -10813,29 +10813,30 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#nullable restore
     private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
     {
       int num = 0;
       bool isUndead = actor.Model.Abilities.IsUndead;
       Skills.IDs id;
       do {
-        ++num;
         id = isUndead ? Skills.RollUndead(Rules.DiceRoller) : Skills.RollLiving(Rules.DiceRoller);
+        if (actor.Sheet.SkillTable.GetSkillLevel(id) < Skills.MaxSkillLevel(id)) return id;
       }
-      while (actor.Sheet.SkillTable.GetSkillLevel(id) >= Skills.MaxSkillLevel(id) && num < maxTries);
-      if (num >= maxTries) return new Skills.IDs?();
-      return new Skills.IDs?(id);
+      while (++num < maxTries);
+      return null;
     }
 
     private void DoLooseRandomSkill(Actor actor)
     {
-      int[] skillsList = actor.Sheet.SkillTable.SkillsList;
+      var skills = actor.Sheet.SkillTable;
+      int[] skillsList = skills.SkillsList;
       if (skillsList == null) return;
       Skills.IDs id = (Skills.IDs) m_Rules.DiceRoller.Choose(skillsList);
-      actor.Sheet.SkillTable.DecOrRemoveSkill(id);
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
+      skills.DecOrRemoveSkill(id);
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
     }
+#nullable restore
 
     private void ChangeWeather()
     {
@@ -10869,9 +10870,9 @@ namespace djack.RogueSurvivor.Engine
         deadVictim.Location.Place(actor);
 	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
       }
-      SkillTable skillTable = deadVictim.Sheet.SkillTable;
-      if (0 < (skillTable?.CountSkills ?? 0)) {
-        int countSkills = skillTable.CountSkills;
+      var skillTable = deadVictim.Sheet.SkillTable;
+      int countSkills = skillTable.CountSkills;
+      if (0 < countSkills) {
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
           Skills.IDs? sk = ((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]).Zombify();
@@ -10946,7 +10947,7 @@ namespace djack.RogueSurvivor.Engine
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   DrawInventory(Player.Location.Items, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Map.GetCorpsesAt(Player.Location.Position), "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
-                  if (0 < (Player.Sheet.SkillTable?.CountSkills ?? 0))
+                  if (0 < Player.Sheet.SkillTable.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);
                 }
                 lock (m_Overlays) {

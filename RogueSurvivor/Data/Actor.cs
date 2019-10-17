@@ -62,15 +62,15 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 8;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
-    public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15f;
-    public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1f;
+    public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15;
+    public static double SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
-    public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
+    public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
-    public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
+    public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1;
 
     public static int SKILL_AGILE_ATK_BONUS = 2;
     public static int SKILL_BOWS_ATK_BONUS = 10;
@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 2;
     public static int SKILL_STRONG_DMG_BONUS = 2;
     public static int SKILL_ZAGILE_ATK_BONUS = 1;
-    public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
+    public static double SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1;
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     private Flags m_Flags;
@@ -287,7 +287,7 @@ namespace djack.RogueSurvivor.Data
     public int PreviousSleepPoints { get { return m_previousSleepPoints; } }
     public int Sanity { get { return m_Sanity; } }
     public int PreviousSanity { get { return m_previousSanity; } }
-    public ActorSheet Sheet { get { return m_Sheet; } }
+    public ref ActorSheet Sheet { get { return ref m_Sheet; } }
 
     public int ActionPoints { get { return m_ActionPoints; } }
     public void APreset() { m_ActionPoints = 0; }
@@ -576,27 +576,26 @@ namespace djack.RogueSurvivor.Data
       OnModelSet();
     }
 
-    public void Retype(ActorModel model)
-    {
-      m_ModelID = model.ID;
-    }
+#nullable enable
+    public void Retype(ActorModel model) { m_ModelID = model.ID; }
+#nullable restore
 
     private void OnModelSet()
     {
       ActorModel model = Model;
       _has_to_eat = model.Abilities.HasToEat;
       m_Doll = new Doll(model);
-      m_Sheet = new ActorSheet(model.StartingSheet);
+      m_Sheet = new ActorSheet(in model.StartingSheet);
       m_ActionPoints = m_Doll.Body.Speed;
       m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
       m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
       m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
       m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
       m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
-      m_Inventory = (model.Abilities.HasInventory ? new Inventory(model.StartingSheet.BaseInventoryCapacity)
+      m_Inventory = (model.Abilities.HasInventory ? new Inventory(Sheet.BaseInventoryCapacity)
                                                   : null); // any previous inventory will be irrevocably destroyed
-      m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
-      m_CurrentDefence = model.StartingSheet.BaseDefence;
+      m_CurrentMeleeAttack = Sheet.UnarmedAttack;
+      m_CurrentDefence = Sheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
@@ -850,7 +849,8 @@ namespace djack.RogueSurvivor.Data
       get {
         if (IsSleeping) return Defence.BLANK;
         Defence baseDefence = CurrentDefence;
-        int num1 = Rules.SKILL_AGILE_DEF_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+        var skills = Sheet.SkillTable;
+        int num1 = Rules.SKILL_AGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
         float num2 = (float) (baseDefence.Value + num1);
         if (IsExhausted) num2 /= 2f;
         else if (IsSleepy) num2 *= 0.75f;
@@ -860,11 +860,12 @@ namespace djack.RogueSurvivor.Data
 
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor target = null)
     {
-      Attack baseAttack = model.BaseMeleeAttack(Sheet);
-      int hitBonus = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int damageBonus = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      Attack baseAttack = model.BaseMeleeAttack(in Sheet);
+      var skills = Sheet.SkillTable;
+      int hitBonus = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int damageBonus = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (model.IsMartialArts) {
-        int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        int skill = skills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
         if (0!=skill) {
           hitBonus += SKILL_MARTIAL_ARTS_ATK_BONUS * skill;
           damageBonus += SKILL_MARTIAL_ARTS_DMG_BONUS * skill;
@@ -879,11 +880,12 @@ namespace djack.RogueSurvivor.Data
 
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, MapObject objToBreak)
     {
-      Attack baseAttack = model.BaseMeleeAttack(Sheet);
-      int hitBonus = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int damageBonus = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      Attack baseAttack = model.BaseMeleeAttack(in Sheet);
+      var skills = Sheet.SkillTable;
+      int hitBonus = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int damageBonus = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (model.IsMartialArts) {
-        int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        int skill = skills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
         if (0!=skill) {
           hitBonus += SKILL_MARTIAL_ARTS_ATK_BONUS * skill;
           damageBonus += SKILL_MARTIAL_ARTS_DMG_BONUS * skill;
@@ -891,9 +893,7 @@ namespace djack.RogueSurvivor.Data
       }
 
       // alpha10: add tool damage bonus vs map objects
-      if (null != objToBreak) {
-        if (GetEquippedWeapon() is ItemMeleeWeapon melee) damageBonus += melee.Model.ToolBashDamageBonus;
-      }
+      if (GetEquippedWeapon() is ItemMeleeWeapon melee) damageBonus += melee.Model.ToolBashDamageBonus;
 
       float hit = (float)baseAttack.HitValue + (float) hitBonus;
       if (IsExhausted) hit /= 2f;
@@ -903,17 +903,18 @@ namespace djack.RogueSurvivor.Data
 
     public Attack UnarmedMeleeAttack(Actor target=null)
     {
-      int num3 = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int num4 = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      var skills = Sheet.SkillTable;
+      int num3 = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       {
-      int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      int skill = skills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       if (0 != skill) {
         num3 += SKILL_MARTIAL_ARTS_ATK_BONUS * skill;
         num4 += SKILL_MARTIAL_ARTS_DMG_BONUS * skill;
       }
       }
       if (target?.Model.Abilities.IsUndead ?? false) num4 += DamageBonusVsUndeads;
-      Attack baseAttack = Model.StartingSheet.UnarmedAttack;
+      Attack baseAttack = Sheet.UnarmedAttack;
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (IsExhausted) num5 /= 2f;
       else if (IsSleepy) num5 *= 0.75f;
@@ -1848,13 +1849,15 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
     }
 
+#nullable enable
     public bool AbleToPush {
       get {
-        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+        if (Model.Abilities.CanPush) return true;
+        var skills = Sheet.SkillTable;
+        return 0 < skills.GetSkillLevel(Skills.IDs.STRONG) || 0 < skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       }
     }
 
-#nullable enable
     private string ReasonCantPush(MapObject mapObj)
     {
       if (!AbleToPush) return "cannot push objects";
@@ -2301,7 +2304,8 @@ namespace djack.RogueSurvivor.Data
     // health
     public int MaxHPs {
       get {
-        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TOUGH);
+        var skills = Sheet.SkillTable;
+        int num = SKILL_TOUGH_HP_BONUS * skills.GetSkillLevel(Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * skills.GetSkillLevel(Skills.IDs.Z_TOUGH);
         return Sheet.BaseHitPoints + num;
       }
     }
@@ -2333,13 +2337,6 @@ namespace djack.RogueSurvivor.Data
       if (Location.RequiresJump(in dest)) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
       return Rules.STAMINA_COST_RUNNING + NightSTApenalty;
     }
-
-#if DEAD_FUNC
-    public bool WillTireAfterRunning(Point dest)
-    {
-      return WillTireAfter(RunningStaminaCost(dest));
-    }
-#endif
 
     public int MaxSTA {
       get {
@@ -2391,9 +2388,10 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanJump {
       get {
-       return Model.Abilities.CanJump
-            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE)
-            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+       if (Model.Abilities.CanJump) return true;
+       var skills = Sheet.SkillTable;
+       return 0 < skills.GetSkillLevel(Skills.IDs.AGILE)
+           || 0 < skills.GetSkillLevel(Skills.IDs.Z_AGILE);
       }
     }
 
@@ -2598,14 +2596,14 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxFood {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
+        int num = (int) (Sheet.BaseFoodPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER) * SKILL_LIGHT_EATER_MAXFOOD_BONUS);
         return Sheet.BaseFoodPoints + num;
       }
     }
 
     public int MaxRot {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
+        int num = (int) (Sheet.BaseFoodPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) * SKILL_ZLIGHT_EATER_MAXFOOD_BONUS);
         return Sheet.BaseFoodPoints + num;
       }
     }
@@ -2716,13 +2714,13 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantRevive(corpse));
     }
-#nullable restore
 
     public int ReviveChance(Corpse corpse)
     {
       if (!CanRevive(corpse)) return 0;
       return corpse.FreshnessPercent / 4 + Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
+#nullable restore
 
     // sleep
     public int TurnsUntilSleepy {
@@ -2967,7 +2965,8 @@ namespace djack.RogueSurvivor.Data
 
     public int BiteNutritionValue(int baseValue)
     {
-      return (int) (10.0 + (double) (SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER)) + (double) (SKILL_LIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER))) * baseValue;
+      var skills = Sheet.SkillTable;
+      return (int) (10.0 + SKILL_ZLIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) + SKILL_LIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.LIGHT_EATER)) * baseValue;
     }
 
     public int CurrentNutritionOf(ItemFood food)
@@ -3323,7 +3322,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantDrop(it));
     }
-#nullable restore
 
     public void SkillUpgrade(Skills.IDs id)
     {
@@ -3363,9 +3361,10 @@ namespace djack.RogueSurvivor.Data
 #endif
     private void Clear(Flags f) { m_Flags &= ~f; }
     private void Set(Flags f) { m_Flags |= f; }
+#nullable restore
 
     // vision
-    public int DarknessFOV {
+    private int DarknessFOV {   // if this ends up on hot path consider inlining
       get {
         if (Model.Abilities.IsUndead) return Sheet.BaseViewRange;
         return MINIMAL_FOV;
@@ -3434,7 +3433,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (IsExhausted) FOV -= 2;
       else if (IsSleepy) --FOV;
-      if (Location.Map.GetMapObjectAt(Location.Position)?.StandOnFovBonus ?? false) FOV += FOV_BONUS_STANDING_ON_OBJECT;
+      if (Location.MapObject?.StandOnFovBonus ?? false) FOV += FOV_BONUS_STANDING_ON_OBJECT;
       return (short)Math.Max(MINIMAL_FOV, FOV);
     }
 
@@ -3483,7 +3482,7 @@ namespace djack.RogueSurvivor.Data
     // smell
     public double Smell {
       get {
-        return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Model.StartingSheet.BaseSmellRating;
+        return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Sheet.BaseSmellRating;
       }
     }
 
@@ -3499,15 +3498,16 @@ namespace djack.RogueSurvivor.Data
     public void Equip(Item it)
     {
       it.Equip();
-      if (it.Model is ItemMeleeWeaponModel melee) {
-        m_CurrentMeleeAttack = melee.BaseMeleeAttack(Sheet);
+      var model = it.Model;
+      if (model is ItemMeleeWeaponModel melee) {
+        m_CurrentMeleeAttack = melee.BaseMeleeAttack(in Sheet);
         return;
       }
-      if (it.Model is ItemRangedWeaponModel rw) {
+      if (model is ItemRangedWeaponModel rw) {
         m_CurrentRangedAttack = rw.Attack;   // value-copy due to struct Attack
         return;
       }
-      if (it.Model is ItemBodyArmorModel armor) {
+      if (model is ItemBodyArmorModel armor) {
         m_CurrentDefence += armor.ToDefence();
         return;
       }
@@ -3520,15 +3520,16 @@ namespace djack.RogueSurvivor.Data
 
     public void OnUnequipItem(Item it)
     {
-      if (it.Model is ItemMeleeWeaponModel) {
+      var model = it.Model;
+      if (model is ItemMeleeWeaponModel) {
         m_CurrentMeleeAttack = Sheet.UnarmedAttack;
         return;
       }
-      if (it.Model is ItemRangedWeaponModel) {
+      if (model is ItemRangedWeaponModel) {
         m_CurrentRangedAttack = Attack.BLANK;
         return;
       }
-      if (it.Model is ItemBodyArmorModel armor) {
+      if (model is ItemBodyArmorModel armor) {
         m_CurrentDefence -= armor.ToDefence();
         return;
       }
@@ -3608,17 +3609,18 @@ namespace djack.RogueSurvivor.Data
       ActorScoring.AddKill(victim, Engine.Session.Get.WorldTime.TurnCounter);
     }
 
+#nullable enable
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)
     {
+      var skills = m_Sheet.SkillTable;
       while(0< n--) {
-        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
-        Sheet.SkillTable.AddOrIncreaseSkill(skillID);
+        if (skills.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
+        skills.AddOrIncreaseSkill(skillID);
         RecomputeStartingStats();
       }
     }
 
-#nullable enable
     public void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;

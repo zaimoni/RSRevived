@@ -156,10 +156,12 @@ namespace djack.RogueSurvivor.Engine.Items
       int baseChance = Model.TriggerChance * Quantity;
       int avoidBonus = 0;
 
-      if (a.Model.Abilities.IsUndead) avoidBonus -= TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY;
-      if (a.Model.Abilities.IsSmall) avoidBonus += TRAP_SMALL_ACTOR_AVOID_BONUS;
-      avoidBonus += a.Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS;
-      avoidBonus += a.Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS;
+      var abilities = a.Model.Abilities;
+      if (abilities.IsUndead) avoidBonus -= TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY;
+      if (abilities.IsSmall) avoidBonus += TRAP_SMALL_ACTOR_AVOID_BONUS;
+      var skills = a.Sheet.SkillTable;
+      avoidBonus += skills.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS;
+      avoidBonus += skills.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS;
 
       return baseChance - avoidBonus;
     }

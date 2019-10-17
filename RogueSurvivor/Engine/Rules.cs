@@ -844,16 +844,20 @@ namespace djack.RogueSurvivor.Engine
       return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * CORPSE_ZOMBIFY_DAY_FACTOR) : (int) (num4 * CORPSE_ZOMBIFY_NIGHT_FACTOR)));
     }
 
+#nullable enable
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)
     {
       return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
     }
 
-    public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
+    public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj)
     {
-      int breakChance = trap.Model.BreakChance;
-      if (mobj != null) breakChance *= mobj.Weight;
-      return RollChance(breakChance);
+      return RollChance(trap.Model.BreakChance * mobj.Weight);
+    }
+
+    public bool CheckTrapStepOnBreaks(ItemTrap trap)
+    {
+      return RollChance(trap.Model.BreakChance);
     }
 
     public bool CheckTrapEscapeBreaks(ItemTrap trap, Actor a)
@@ -864,13 +868,15 @@ namespace djack.RogueSurvivor.Engine
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
       if (trap.IsSafeFor(a)) return true;  // alpha10
-      return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
+      var skills = a.Sheet.SkillTable;
+      return RollChance(0 + (skills.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
     }
 
     public static int ZGrabChance(Actor grabber, Actor victim)
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
     }
+#nullable restore
 
     // unsure where this should go...parking here for now
     public static Location PoliceRadioLocation(Location loc)
