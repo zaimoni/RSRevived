@@ -6,25 +6,30 @@
 
 using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal readonly struct ActorSheet
+  internal class ActorSheet
   {
-    public readonly SkillTable SkillTable;
-    public readonly int BaseHitPoints;
-    public readonly int BaseStaminaPoints;
-    public readonly int BaseFoodPoints;
-    public readonly int BaseSleepPoints;
-    public readonly int BaseSanity;
-    public readonly Attack UnarmedAttack;
-    public readonly Defence BaseDefence;
-    public readonly int BaseViewRange;
-    public readonly int BaseAudioRange;
-    public readonly float BaseSmellRating;
-    public readonly int BaseInventoryCapacity;
+    private readonly SkillTable m_SkillTable = new SkillTable();
+
+    public int BaseHitPoints { get; private set; } // July 31 2017: The Serializable attribute prevents converting these to readonly
+    public int BaseStaminaPoints { get; private set; }
+    public int BaseFoodPoints { get; private set; }
+    public int BaseSleepPoints { get; private set; }
+    public int BaseSanity { get; private set; }
+    public Attack UnarmedAttack { get; private set; }
+    public Defence BaseDefence { get; private set; }
+    public int BaseViewRange { get; private set; }
+    public int BaseAudioRange { get; private set; }
+    public float BaseSmellRating { get; private set; }
+    public int BaseInventoryCapacity { get; private set; }
+
+    public SkillTable SkillTable {
+      get {
+        return m_SkillTable;
+      }
+    }
 
     public ActorSheet(Gameplay.GameActors.ActorData src, int baseFoodPoints, int baseSleepPoints, int baseSanity, Verb unarmedAttack, int inventoryCapacity)
     {
@@ -39,11 +44,13 @@ namespace djack.RogueSurvivor.Data
       BaseAudioRange = src.AUDIO;
       BaseSmellRating = (float) src.SMELL / 100f;
       BaseInventoryCapacity = inventoryCapacity;
-      SkillTable = new SkillTable();
     }
 
-    public ActorSheet(in ActorSheet copyFrom)
+    public ActorSheet(ActorSheet copyFrom)
     {
+#if DEBUG
+      if (null == copyFrom) throw new ArgumentNullException(nameof(copyFrom));
+#endif
       BaseHitPoints = copyFrom.BaseHitPoints;
       BaseStaminaPoints = copyFrom.BaseStaminaPoints;
       BaseFoodPoints = copyFrom.BaseFoodPoints;
@@ -55,7 +62,7 @@ namespace djack.RogueSurvivor.Data
       BaseAudioRange = copyFrom.BaseAudioRange;
       BaseSmellRating = copyFrom.BaseSmellRating;
       BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
-      SkillTable = (0 < copyFrom.SkillTable.CountSkills) ? new SkillTable(copyFrom.SkillTable) : new SkillTable();
+      if (0 < copyFrom.SkillTable.CountSkills) m_SkillTable = new SkillTable(copyFrom.SkillTable);
     }
   }
 }

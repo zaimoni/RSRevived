@@ -590,7 +590,7 @@ namespace djack.RogueSurvivor.Data
       ActorModel model = Model;
       _has_to_eat = model.Abilities.HasToEat;
       m_Doll = new Doll(model);
-      m_Sheet = new ActorSheet(in model.StartingSheet);
+      m_Sheet = new ActorSheet(model.StartingSheet);
       m_ActionPoints = m_Doll.Body.Speed;
       m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
       m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
