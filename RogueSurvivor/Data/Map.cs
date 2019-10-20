@@ -165,11 +165,11 @@ namespace djack.RogueSurvivor.Data
 #region Implement ISerializable
     protected Map(SerializationInfo info, StreamingContext context)
     {
-      Seed = (int) info.GetValue("m_Seed", typeof (int));
-      District = (District) info.GetValue("m_District", typeof (District));
-      Name = (string) info.GetValue("m_Name", typeof (string));
+      Seed = info.GetInt32("m_Seed");
+      info.read(ref District, "m_District");
+      Name = info.GetString("m_Name");
       info.read(ref LocalTime, "m_LocalTime");
-      Extent = (Size) info.GetValue("m_Extent", typeof (Size));
+      info.read_s(ref Extent, "m_Extent");
       Rect = new Rectangle(Point.Empty,Extent);
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
@@ -177,13 +177,13 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_MapObjectsList, "m_MapObjectsList");
       info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
       info.read(ref m_CorpsesList, "m_CorpsesList");
-      m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
+      info.read_s(ref m_Lighting, "m_Lighting");
       info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
       info.read(ref m_Timers, "m_Timers");
       info.read(ref m_TileIDs, "m_TileIDs");
       info.read(ref m_IsInside, "m_IsInside");
       info.read(ref m_Decorations, "m_Decorations");
-      m_BgMusic = (string)info.GetValue("m_BgMusic", typeof(string));   // alpha10
+      m_BgMusic = info.GetString("m_BgMusic");   // alpha10
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);

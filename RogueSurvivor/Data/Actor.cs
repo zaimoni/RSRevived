@@ -90,7 +90,12 @@ namespace djack.RogueSurvivor.Data
     private Gameplay.GameGangs.IDs m_GangID;  // sparse field
     private string m_Name;
     private ActorController m_Controller;
-    private ActorSheet m_Sheet;
+    private ActorSheet m_Sheet;         // 2019-10-19: class ok with automatic deserialization, but (readonly) struct with readonly fields is not even
+                                        // though it automatically serializes. This is an explicit reversion of
+                                        // https://github.com/dotnet/coreclr/pull/21193  (approved merge date 2018-11-26) so even if this is fixed
+                                        // in a later version of C#, we can't count on the fix remaining.
+                                        // Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
+                                        // this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
     private readonly int m_SpawnTime;
 #nullable enable
     private Inventory? m_Inventory;

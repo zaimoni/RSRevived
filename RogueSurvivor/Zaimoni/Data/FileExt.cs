@@ -47,6 +47,13 @@ namespace Zaimoni.Data
             if (null == tmp) throw new ArgumentNullException(src);
             else dest = tmp;
         }
+
+        public static void read_s<T>(this SerializationInfo info, ref T dest, string src) where T : struct // different function name due to defective C# generic functions relative to C++ templates
+        {
+            object tmp = info.GetValue(src, typeof(T)); // should have thrown already but this function doesn't have proper annotations
+            if (null == tmp) throw new ArgumentNullException(src);
+            else dest = (T)tmp;
+        }
 #nullable restore
 	}
 }

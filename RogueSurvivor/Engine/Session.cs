@@ -77,8 +77,8 @@ namespace djack.RogueSurvivor.Engine
     // general idea is Plain Old Data before objects.
     protected Session(SerializationInfo info, StreamingContext context)
     {
-      m_Scoring = (Scoring) info.GetValue("Scoring",typeof(Scoring));
-      m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
+      info.read(ref m_Scoring, "Scoring");
+      info.read(ref m_Event_Raids, "Event_Raids");
       GameMode = (GameMode) info.GetSByte("GameMode");
       ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
       ScriptStage_PoliceCHARrelations = (int) info.GetSByte("ScriptStage_PoliceCHARrelations");
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
-      m_CommandLineOptions = (System.Collections.ObjectModel.ReadOnlyDictionary<string, string>) info.GetValue("CommandLineOptions", typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
+      info.read(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
       RogueForm.Game.Rules.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
@@ -96,9 +96,9 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
-      m_PoliceItemMemory = (Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>) info.GetValue("m_PoliceItemMemory", typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
-      m_PoliceThreatTracking = (ThreatTracking) info.GetValue("m_PoliceThreatTracking", typeof(ThreatTracking));
-      m_PoliceInvestigate = (LocationSet) info.GetValue("m_PoliceInvestigate", typeof(LocationSet));
+      info.read(ref m_PoliceItemMemory, "m_PoliceItemMemory");
+      info.read(ref m_PoliceThreatTracking, "m_PoliceThreatTracking");
+      info.read(ref m_PoliceInvestigate, "m_PoliceInvestigate");
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
