@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         else _seeActors(perceptList, normalized_FOV);
       }
       if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
-        Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
+        var items = actor.Controller.ItemMemory;
         if (null != items) _seeItems(perceptList, normalized_FOV, items);
         else _seeItems(perceptList, normalized_FOV);
       }

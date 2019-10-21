@@ -2726,12 +2726,6 @@ retry:
         else
           m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) { mCorpses });
       }
-      // Support savefile hacking.
-      // Check the actors.  If any have null controllers, intent was to hand control from the player to the AI.
-      // Give them AI controllers here.
-      foreach(Actor tmp in m_ActorsList) {
-        if (null == tmp.Controller) tmp.Controller = tmp.Model.InstanciateController();
-      }
     }
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)

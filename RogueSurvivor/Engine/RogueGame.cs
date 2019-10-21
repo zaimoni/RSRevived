@@ -3648,7 +3648,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleItemInfo()
     {
-      List<Gameplay.GameItems.IDs> item_classes = Player.Controller.WhatHaveISeen();
+      var item_classes = Player.Controller.WhatHaveISeen();
       if (0>=(item_classes?.Count ?? 0)) {
         AddMessage(new Data.Message("You have seen no memorable items.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         return;
@@ -3658,7 +3658,7 @@ namespace djack.RogueSurvivor.Engine
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, item_classes.Count, item_classes[index].ToString()); }
       bool details(int index) {
         Gameplay.GameItems.IDs item_type = item_classes[index];
-        Dictionary<Location, int> catalog = Player.Controller.WhereIs(item_type);
+        var catalog = Player.Controller.WhereIs(item_type);
 
         HashSet<Location> retrofit() {
            var ret = new HashSet<Location>();
@@ -3754,7 +3754,7 @@ namespace djack.RogueSurvivor.Engine
           }
           tmp.Add(msg);
         }
-        List<Gameplay.GameItems.IDs> items = (a.Controller as ObjectiveAI).WhatHaveISeen();
+        var items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
         HashSet<GameItems.IDs> critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
         if (null != items) critical.IntersectWith(items);

@@ -268,7 +268,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     } }
 
-    public override ActorAction ExecAryZeroBehavior(int code)
+    public override ActorAction? ExecAryZeroBehavior(int code)
     {
       switch(code) {
         case (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI: return AttackWithoutMoving();
@@ -1097,7 +1097,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from OrderableAI::BehaviorEquipWeapon
-    private ActorAction AttackWithoutMoving()
+    private ActorAction? AttackWithoutMoving()
     {
       if (null == _enemies) return null;    // XXX likely error condition
 
@@ -1207,12 +1207,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private ActorAction WaitIfSafe()
+    private ActorAction? WaitIfSafe()
     {
       return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? false) ? null : new ActionWait(m_Actor);
     }
 
-    public ActionSwitchPowerGenerator TurnOnAdjacentGenerators()
+    public ActionSwitchPowerGenerator? TurnOnAdjacentGenerators()
     {
       var generators_off = GeneratorsToTurnOn(m_Actor.Location.Map);
       if (null != generators_off) {

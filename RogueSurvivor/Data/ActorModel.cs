@@ -76,6 +76,7 @@ namespace djack.RogueSurvivor.Data
     private Actor Create(Faction faction, int spawnTime, string properName="")
     {
       ++CreatedCount;
+      // \todo? subclassing actor (e.g. on inventory existence which is an ActorModel property) would be done here
       return new Actor(this, faction, spawnTime, properName)
       {
         Controller = InstanciateController()

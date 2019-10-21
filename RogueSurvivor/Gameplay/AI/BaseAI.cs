@@ -63,11 +63,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected virtual void RecordLastAction(ActorAction act) { }    // no-op at this level
 
-    public override ActorAction GetAction(RogueGame game)
+    public override ActorAction? GetAction(RogueGame game)
     {
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
-      ActorAction actorAction = SelectAction(game);
+      var actorAction = SelectAction(game);
 #if DEBUG
       if (!(actorAction?.IsPerformable() ?? true)) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif

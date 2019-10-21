@@ -13,14 +13,16 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal abstract class ActorController
   {
-    protected Actor m_Actor;
+    protected Actor? m_Actor;
 
-    public Actor ControlledActor { get { return m_Actor; } } // alpha10
+    public Actor ControlledActor { get { return m_Actor!; } } // alpha10
 
     public virtual void TakeControl(Actor actor)
     {
@@ -29,13 +31,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     protected abstract void SensorsOwnedBy(Actor actor);
+    public virtual void LeaveControl() { m_Actor = null; }
 
-    public virtual void LeaveControl()
-    {
-      m_Actor = null;
-    }
-
-    public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
+    public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {
          if (null == m_Actor) return null;
          if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return Session.Get.PoliceItemMemory;
@@ -46,8 +44,7 @@ namespace djack.RogueSurvivor.Data
     public bool LastSeen(Location x, out int turn) {
       turn = 0;
       var memory = ItemMemory;
-      if (null == memory) return false;
-      return Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
+      return null != memory && Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
     }
 
     public bool IsKnown(Location x) {
@@ -55,13 +52,14 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void ForceKnown(Point x) {   // for world creation
-      ItemMemory?.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
+      var map = m_Actor.Location.Map;
+      ItemMemory?.Set(new Location(map, x), null, map.LocalTime.TurnCounter);
     }
 
-    public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
-    public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
+    public List<Gameplay.GameItems.IDs>? WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
+    public Dictionary<Location, int>? WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
-    public HashSet<Point> WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
+    public HashSet<Point>? WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
       var it_memory = ItemMemory;
       if (null == it_memory) return null;
       var ret = new HashSet<Point>();
@@ -73,7 +71,7 @@ namespace djack.RogueSurvivor.Data
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (0 >= tmp.Count) continue;
         if (Gameplay.GameItems.ranged.Contains(it)) {
-          Engine.Items.ItemRangedWeaponModel model = Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel;
+          Engine.Items.ItemRangedWeaponModel model = (Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel)!;
           var ammo = m_Actor.Inventory.GetItemsByType < Engine.Items.ItemAmmo >(am => am.AmmoType== model.AmmoType);
           if (null == ammo) {
             tmp.OnlyIf(loc => {
@@ -150,7 +148,7 @@ namespace djack.RogueSurvivor.Data
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
-    public virtual ActorAction ExecAryZeroBehavior(int code) { return null; }
+    public virtual ActorAction? ExecAryZeroBehavior(int code) { return null; }
 
     /// <param name="x"></param>
     private bool _CanSee(Point pos)
@@ -162,8 +160,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
-      if (null == m_Actor) return false;
-      if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
+      if (   null == m_Actor 
+          || null == x.Map)     // convince Duckman to not superheroically crash many games on turn 0
+        return false;
       if (x.Map != m_Actor.Location.Map) {
         Location? test = m_Actor.Location.Map.Denormalize(in x);
         if (null == test) return false;
@@ -177,15 +176,16 @@ namespace djack.RogueSurvivor.Data
     {
 #if DEBUG
       if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
-      if (null == map) throw new ArgumentNullException(nameof(map));
 #endif
+      var a_loc = m_Actor.Location;
       var e = map.GetExitAt(position);
-      if (null != e && e.Location==m_Actor.Location) return true;
-      if (map != m_Actor.Location.Map)
+      if (null != e && e.Location == a_loc) return true;
+      var a_map = a_loc.Map;
+      if (map != a_map)
         {
-        Location? tmp = m_Actor.Location.Map.Denormalize(new Location(map, position));
+        Location? tmp = a_map.Denormalize(new Location(map, position));
         if (null == tmp) return false;
-        return _IsVisibleTo(tmp.Value.Map,tmp.Value.Position);
+        return _IsVisibleTo(a_map, tmp.Value.Position);
         }
       if (!map.IsValid(position)) return false;
       return FOV?.Contains(position) ?? false;
@@ -198,26 +198,29 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsVisibleTo(Map map, in Point position)
     {
-      if (null == m_Actor) return false;
+#if DEBUG
+      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
+#endif
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       return _IsVisibleTo(map,position);
     }
 
     public bool IsVisibleTo(in Location loc)
     {
-      if (null == m_Actor) return false;
+#if DEBUG
+      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
+#endif
       if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       return _IsVisibleTo(in loc);
     }
 
     public bool IsVisibleTo(Actor actor)
     {
-      if (null == m_Actor) return false;
       if (actor == m_Actor) return true;
       return IsVisibleTo(actor.Location);
     }
 
-    public abstract ActorAction GetAction(RogueGame game);
+    public abstract ActorAction? GetAction(RogueGame game);
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>
     public virtual int FastestTrapKill(in Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs

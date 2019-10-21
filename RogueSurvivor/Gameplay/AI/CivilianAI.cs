@@ -441,7 +441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
       // XXX leaders should try to check what their followers use as well.
-      List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
+      var items = WhatHaveISeen();
       if (null != items) {
         HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
         // while we want to account for what our followers want, we don't want to block our followers from the items either

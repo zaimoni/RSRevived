@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory { get { return m_itemMemory; } }
+    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
 	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
 	  switch(m_Actor.Model.DefaultController.Name)
@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public override ActorAction GetAction(RogueGame game)
+    public override ActorAction? GetAction(RogueGame game)
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }

@@ -222,7 +222,7 @@ namespace djack.RogueSurvivor.Data
     public ActorController Controller
     {
       get { return m_Controller; }
-      set {
+      set { // \todo rewrite five public uses of this to be from within Actor
         int playerDelta = 0;
         if (null != m_Controller) {
           if (IsPlayer) playerDelta -= 1;
@@ -607,6 +607,10 @@ namespace djack.RogueSurvivor.Data
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       _has_to_eat = Model.Abilities.HasToEat;
+      // Support savefile hacking.
+      // If the controller is null, intent was to hand control from the player to the AI.
+      // Give them AI controllers here.
+      if (null == m_Controller) m_Controller = Model.InstanciateController();
     }
 
 	public void PrefixName(string prefix)
