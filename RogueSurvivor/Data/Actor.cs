@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Data
     private int m_FactionID;
     private Gameplay.GameGangs.IDs m_GangID;  // sparse field
     private string m_Name;
-    private ActorController m_Controller;
+    private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
     private ActorSheet m_Sheet;         // 2019-10-19: class ok with automatic deserialization, but (readonly) struct with readonly fields is not even
                                         // though it automatically serializes. This is an explicit reversion of
                                         // https://github.com/dotnet/coreclr/pull/21193  (approved merge date 2018-11-26) so even if this is fixed
@@ -134,6 +134,7 @@ namespace djack.RogueSurvivor.Data
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
     [NonSerialized] private bool _has_to_eat;
+    [NonSerialized] private string[] _force_PC_names = null;
 
 #nullable enable
     public ActorModel Model
@@ -222,7 +223,7 @@ namespace djack.RogueSurvivor.Data
     public ActorController Controller
     {
       get { return m_Controller; }
-      set { // \todo rewrite five public uses of this to be from within Actor
+      set {
         int playerDelta = 0;
         if (null != m_Controller) {
           if (IsPlayer) playerDelta -= 1;
@@ -560,6 +561,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void CommandLinePlayer() // would prefer private
+    {
+      // command-line option override
+      if (null == _force_PC_names) {
+        if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
+          _force_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
+        } else {
+          _force_PC_names = new string[0];
+        }
+      }
+      if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController();
+    }
+
     public Actor(ActorModel model, Faction faction, int spawnTime, string name="", bool isProperName=false, bool isPluralName=false)
     {
 #if DEBUG
@@ -578,6 +592,8 @@ namespace djack.RogueSurvivor.Data
       IsUnique = false;
       IsDead = false;
       ActorScoring = new Engine.ActorScoring(this);
+      m_Controller = Model.InstanciateController();
+      CommandLinePlayer();
       OnModelSet();
     }
 
@@ -607,6 +623,8 @@ namespace djack.RogueSurvivor.Data
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       _has_to_eat = Model.Abilities.HasToEat;
+
+      CommandLinePlayer();
       // Support savefile hacking.
       // If the controller is null, intent was to hand control from the player to the AI.
       // Give them AI controllers here.

@@ -378,6 +378,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.IsProperName = true;
       actor.Name = roller.Choose(firstNames) + " " + roller.Choose(lastNames);
       if (!string.IsNullOrWhiteSpace(prefix)) actor.PrefixName(prefix);
+      actor.CommandLinePlayer();
     }
 
     protected void GiveRandomSkillsToActor(Actor actor, int count)

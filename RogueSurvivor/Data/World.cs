@@ -302,16 +302,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void MakePC() {
-      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {    // could be call graph precondition, but this doesn't have to be fast
-        string[] names = Engine.Session.CommandLineOptions["PC"].Split('\0');
-
-        void make_PC(Actor a) { if (names.Contains(a.UnmodifiedName) && !a.IsPlayer) a.Controller = new PlayerController(); };
-
-        DoForAllActors(make_PC);
-      }
-    }
-
     // Simulation support
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
     // an inconsistent state

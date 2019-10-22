@@ -117,7 +117,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       : base(game)
     {
       m_Params = parameters;
-      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) m_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
 
 #if DEBUG
       if (bedroom_checksum != bedroom_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck: "+ bedroom_stock.Sum(x => x.Value));
@@ -3561,9 +3560,6 @@ restart:
         GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
       GiveRandomSkillsToActor(numberedName, skills);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
-      if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
-        numberedName.Controller = new PlayerController();
-      }
       return numberedName;
     }
 
@@ -3594,9 +3590,6 @@ restart:
         var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).instantiate();
         numberedName.Inventory.AddAll(armor);
         numberedName.Equip(armor);
-      }
-      if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
-        numberedName.Controller = new PlayerController();
       }
       return numberedName;
     }

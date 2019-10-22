@@ -77,10 +77,7 @@ namespace djack.RogueSurvivor.Data
     {
       ++CreatedCount;
       // \todo? subclassing actor (e.g. on inventory existence which is an ActorModel property) would be done here
-      return new Actor(this, faction, spawnTime, properName)
-      {
-        Controller = InstanciateController()
-      };
+      return new Actor(this, faction, spawnTime, properName);
     }
 
     // should be private, but savefile auto-repair contraindicates

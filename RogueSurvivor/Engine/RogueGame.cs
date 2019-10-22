@@ -12364,8 +12364,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       Direction_ext.Now();
-      // command line option --PC requests converting an NPC to a PC
-      if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC();
 #if OBSOLETE
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       m_Player = null;
