@@ -559,6 +559,16 @@ namespace djack.RogueSurvivor.Data
           m_Decorations.Remove(pt);
     }
 
+    public void AddTimedDecoration(Point pt, string imageId, int deltaT, Func<Map,Point,bool> test)
+    {
+      if (!HasDecorationAt(imageId, in pt) && test(this, pt)) {
+        AddDecorationAt(imageId, in pt);
+        AddTimer(new Engine.Tasks.TaskRemoveDecoration(deltaT, in pt, imageId));
+      }
+      // \todo would be nice to "extend" the duration of an existing timer (possibly by outright replacement)
+    }
+
+
     public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
 
     public bool HasExitAtExt(Point pos)

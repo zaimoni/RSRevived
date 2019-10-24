@@ -10257,16 +10257,11 @@ namespace djack.RogueSurvivor.Engine
     {
       const int BLOOD_WALL_SPLAT_CHANCE = 20;
 
-      if (map.GetTileModelAt(position).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position)) {
-        map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in position);
-        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in position, GameImages.DECO_BLOODIED_FLOOR));
-      }
-      map.ForEachAdjacent(position,(p => {
-        if (!map.GetTileModelAt(p).IsWalkable && !map.HasDecorationAt(GameImages.DECO_BLOODIED_WALL, in p) && m_Rules.RollChance(BLOOD_WALL_SPLAT_CHANCE)) {
-          map.AddDecorationAt(GameImages.DECO_BLOODIED_WALL, in p);
-          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, in p, GameImages.DECO_BLOODIED_WALL));
-        }
-      }));
+      bool is_floor(Map m, Point pt) { return m.GetTileModelAt(pt).IsWalkable; }
+      bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && m_Rules.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
+
+      map.AddTimedDecoration(position, GameImages.DECO_BLOODIED_FLOOR, WorldTime.TURNS_PER_DAY, is_floor);
+      map.ForEachAdjacent(position,p => map.AddTimedDecoration(p, GameImages.DECO_BLOODIED_WALL, WorldTime.TURNS_PER_DAY, is_wall));
     }
 
 #if DEAD_FUNC
