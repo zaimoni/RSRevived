@@ -88,6 +88,7 @@ namespace djack.RogueSurvivor.Data
     private Gameplay.GameActors.IDs m_ModelID;
     private int m_FactionID;
     private Gameplay.GameGangs.IDs m_GangID;  // sparse field
+#nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
     private ActorSheet m_Sheet;         // 2019-10-19: class ok with automatic deserialization, but (readonly) struct with readonly fields is not even
@@ -97,7 +98,6 @@ namespace djack.RogueSurvivor.Data
                                         // Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
                                         // this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
     private readonly int m_SpawnTime;
-#nullable enable
     private Inventory? m_Inventory;
     private Doll m_Doll;
     private int m_HitPoints;
@@ -110,15 +110,15 @@ namespace djack.RogueSurvivor.Data
     private int m_previousSleepPoints;
     private int m_Sanity;
     private int m_previousSanity;
-#nullable restore
     private Location m_Location;
     private int m_ActionPoints;
     private int m_LastActionTurn;
-    private Actor m_TargetActor;
+    private Actor? m_TargetActor;
     private int m_AudioRangeMod;
     private Attack m_CurrentMeleeAttack;    // dataflow candidate
     private Attack m_CurrentRangedAttack;    // dataflow candidate
     private Defence m_CurrentDefence;    // dataflow candidate
+#nullable restore
     private Actor m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
     private List<Actor> m_Followers;
     private int m_TrustInLeader;
@@ -268,7 +268,6 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
     public Inventory? Inventory { get { return m_Inventory; } }
-#nullable restore
 
     public int HitPoints {
       get { return m_HitPoints; }
@@ -279,7 +278,7 @@ namespace djack.RogueSurvivor.Data
 
     public int StaminaPoints {
       get { return m_StaminaPoints; }
-      set { m_StaminaPoints = value; }
+      set { m_StaminaPoints = value; }  // \todo only two change targets to sink to eliminate public setter, i.e. eliminate setter outright
     }
 
     public int PreviousStaminaPoints {
@@ -300,7 +299,7 @@ namespace djack.RogueSurvivor.Data
 
     public int LastActionTurn { get { return m_LastActionTurn; } }
 
-    public Location Location {
+    public Location Location { // \todo replace this with a field if setting up access controls is not worth it
       get { return m_Location; }
       set { m_Location = value; }
     }
@@ -310,10 +309,11 @@ namespace djack.RogueSurvivor.Data
     public bool IsAvailableToHelp { get { return Activity.IDLE == Activity || Activity.FOLLOWING == Activity; } }
     public bool IsEngaged { get { return Activity.CHASING == Activity || Activity.FIGHTING == Activity; } }
 
-    public Actor TargetActor {
+    public Actor? TargetActor { // \todo replace this with a field if setting up access controls is not worth it
       get { return m_TargetActor; }
       set { m_TargetActor = value; }
     }
+#nullable restore
 
     public int AudioRange { get { return m_Sheet.BaseAudioRange + m_AudioRangeMod; } }
     public int AudioRangeMod { get { return m_AudioRangeMod; } }
@@ -334,12 +334,8 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int TrustInLeader {
-      get {
-        return m_TrustInLeader;
-      }
-      set {
-        m_TrustInLeader = value;
-      }
+      get { return m_TrustInLeader; }
+      set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter
     }
 
     public bool IsTrustingLeader {
@@ -348,12 +344,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public bool HasBondWith(Actor target)
     {
       if (Leader == target)      return TRUST_BOND_THRESHOLD <= TrustInLeader;
       if (target.Leader == this) return TRUST_BOND_THRESHOLD <= target.TrustInLeader;
       return false;
     }
+#nullable restore
 
     public IEnumerable<Actor> Followers { get { return m_Followers; } }
 
@@ -580,11 +578,10 @@ namespace djack.RogueSurvivor.Data
       if (null == model) throw new ArgumentNullException(nameof(model));
       if (null == faction) throw new ArgumentNullException(nameof(faction));
 #endif
-      if (string.IsNullOrEmpty(name)) name = model.Name;
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
       m_GangID = 0;
-      m_Name = name;
+      m_Name = string.IsNullOrEmpty(name) ? model.Name : name;
       IsProperName = isProperName;
       IsPluralName = isPluralName;
       m_Location = new Location();
@@ -592,7 +589,7 @@ namespace djack.RogueSurvivor.Data
       IsUnique = false;
       IsDead = false;
       ActorScoring = new Engine.ActorScoring(this);
-      m_Controller = Model.InstanciateController();
+      Controller = Model.InstanciateController();
       CommandLinePlayer();
       OnModelSet();
     }
@@ -628,7 +625,7 @@ namespace djack.RogueSurvivor.Data
       // Support savefile hacking.
       // If the controller is null, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
-      if (null == m_Controller) m_Controller = Model.InstanciateController();
+      if (null == m_Controller) Controller = Model.InstanciateController();
     }
 
 	public void PrefixName(string prefix)
