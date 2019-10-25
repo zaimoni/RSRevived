@@ -424,6 +424,13 @@ namespace djack.RogueSurvivor.Engine
       foreach(var msg in msgs) m_MessageManager.Add(msg);
     }
 
+    public void ImportantMessage(Data.Message msg, int delay=0)
+    {
+      AddMessage(msg);
+      RedrawPlayScreen();
+      if (0 < delay) AnimDelay(delay);
+    }
+
     // allows propagating sound to NPCs, in theory (API needs extending)
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
     public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
@@ -2142,13 +2149,6 @@ namespace djack.RogueSurvivor.Engine
               if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} of infection!", Conjugate(actor, VERB_DIE))));
               KillActor(null, actor, "infection");
-              if (actor.IsPlayer) { // XXX \todo make player not specially vulnerable to infection
-                map.TryRemoveCorpseOf(actor);
-                Zombify(null, actor, false);
-                AddMessage(MakeMessage(actor, Conjugate(actor, "turn") + " into a Zombie!"));
-                RedrawPlayScreen();
-                AnimDelay(DELAY_LONG);
-              }
             }
           }
 #endregion
@@ -2279,9 +2279,7 @@ namespace djack.RogueSurvivor.Engine
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
               if (ForceVisibleToPlayer(actor)) {
-                AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", Conjugate(actor, "turn"))));
-                RedrawPlayScreen();
-                AnimDelay(DELAY_LONG);
+                ImportantMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", Conjugate(actor, "turn"))), DELAY_LONG);
               }
             }
           }
@@ -7695,10 +7693,8 @@ namespace djack.RogueSurvivor.Engine
       if (dmg > 0) {
         InflictDamage(victim, dmg);
         if (player) {
-          AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)));
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-          RedrawPlayScreen();
-          AnimDelay(victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
           RedrawPlayScreen();
         }
@@ -8170,10 +8166,8 @@ namespace djack.RogueSurvivor.Engine
           }
           if (defender.HitPoints <= 0) {
             if (isAttVisible || isDefVisible) {
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-              RedrawPlayScreen();
-              AnimDelay(DELAY_LONG);
+              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"), DELAY_LONG);
             }
             // need to know whether it's a zombifying hit or not
             bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(s_Options.ZombificationChance);
@@ -8185,40 +8179,24 @@ namespace djack.RogueSurvivor.Engine
                 defender.Location.Map.TryRemoveCorpseOf(defender);
                 Zombify(attacker, defender, false);
                 if (isDefVisible) {
-                  AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
-                  RedrawPlayScreen();
-                  AnimDelay(DELAY_LONG);
+                  ImportantMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"), DELAY_LONG);
                 }
               }
             // RS Alpha 9 had instant player zombification on kill even in infection mode.  It is still possible to play as your zombified self,
             // but the game time has to elapse like for everyone else.
-#if OBSOLETE
-            } else if (Player == defender && !defender.Model.Abilities.IsUndead && defender.Infection > 0) {  // the player is Especially Vulnerable (this may be going)
-              defender.Location.Map.TryRemoveCorpseOf(defender);
-              Zombify(null, defender, false);
-              AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
-              RedrawPlayScreen();
-              AnimDelay(DELAY_LONG);
-#endif
             }
           } else if (isAttVisible || isDefVisible) {
-            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-            RedrawPlayScreen();
-            AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (isAttVisible || isDefVisible) {
-          AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
           if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-          RedrawPlayScreen();
-          AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (isAttVisible || isDefVisible) {
-        AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-        RedrawPlayScreen();
-        AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+        ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
@@ -8228,9 +8206,7 @@ namespace djack.RogueSurvivor.Engine
         else
           attacker.Inventory.RemoveAllQuantity(itemMeleeWeapon);
         if (isAttVisible) {
-          AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)));
-          RedrawPlayScreen();
-          AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
@@ -8336,55 +8312,37 @@ namespace djack.RogueSurvivor.Engine
             InflictDamage(defender, dmg);
             if (defender.HitPoints <= 0) {
               if (see_defender) {
-                AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-                RedrawPlayScreen();
-                AnimDelay(DELAY_LONG);
+                ImportantMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"), DELAY_LONG);
               } else if (see_attacker) {
-                AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-                RedrawPlayScreen();
-                AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+                ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               }
               KillActor(attacker, defender, "shot");
             } else if (see_defender) {
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
               DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, dmg.ToString());
-              RedrawPlayScreen();
-              AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-              RedrawPlayScreen();
-              AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
           } else if (see_defender) {
-            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
             AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            RedrawPlayScreen();
-            AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else if (see_attacker) {
-            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            RedrawPlayScreen();
-            AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (see_defender) {
-          AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
           AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-          RedrawPlayScreen();
-          AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
         } else if (see_attacker) {
           if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
-            AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
             if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            RedrawPlayScreen();
-            AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else {  // otherwise, not visible
-            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."));
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            RedrawPlayScreen();
-            AnimDelay(player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
@@ -8425,9 +8383,7 @@ namespace djack.RogueSurvivor.Engine
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)));
-      RedrawPlayScreen();
-      AnimDelay(DELAY_LONG);
+      ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -8441,9 +8397,7 @@ namespace djack.RogueSurvivor.Engine
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)));
-      RedrawPlayScreen();
-      AnimDelay(DELAY_LONG);
+      ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -9616,19 +9570,13 @@ namespace djack.RogueSurvivor.Engine
           if (player1) AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
           if (player2) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
           if (flag) {
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj));
             if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
-            RedrawPlayScreen();
-            AnimDelay(DELAY_LONG);
+            ImportantMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj), DELAY_LONG);
           } else {
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj));
-            if (player1)
-              AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
-            if (player2)
-              AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
-            RedrawPlayScreen();
-            AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
+            if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
+            ImportantMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           ClearOverlays();
         }
@@ -9952,9 +9900,7 @@ namespace djack.RogueSurvivor.Engine
         actor.OnUnequipItem(equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
         if (ForceVisibleToPlayer(actor)) {
-          AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)));
-          RedrawPlayScreen();
-          AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (actor.IsSleeping) DoWakeUp(actor);
@@ -10085,9 +10031,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (ForceVisibleToPlayer(killer)) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-              AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)));
-              RedrawPlayScreen();
-              AnimDelay(DELAY_LONG);
+              ImportantMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
             }
           }
