@@ -72,7 +72,6 @@ namespace djack.RogueSurvivor.Engine
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
     public const int FIREARM_JAM_CHANCE_NO_RAIN = 1;
     public const int FIREARM_JAM_CHANCE_RAIN = 3;
-    public const int BODY_ARMOR_BREAK_CHANCE = 2;
     public const int FOOD_BASE_POINTS = 2*Actor.FOOD_HUNGRY_LEVEL;
     public const int ROT_BASE_POINTS = 2*Actor.ROT_HUNGRY_LEVEL;
     public const int SLEEP_BASE_POINTS = 2*Actor.SLEEP_SLEEPY_LEVEL;

@@ -251,9 +251,9 @@ namespace djack.RogueSurvivor.Engine
     private const int EXIT_SLOT_X = RIGHTPANEL_X+4;
     private const int EXIT_SLOT_Y0 = LOCATIONPANEL_Y-TILE_SIZE* EXIT_SLOTS;
     private const int MINI_TRACKER_OFFSET = 1;
-    private const int DELAY_SHORT = 250;
-    private const int DELAY_NORMAL = 500;
-    private const int DELAY_LONG = 1000;
+    public const int DELAY_SHORT = 250;
+    public const int DELAY_NORMAL = 500;
+    public const int DELAY_LONG = 1000;
     private const int LINE_SPACING = 12;
     private const int BOLD_LINE_SPACING = 14;
     private const int SKILL_LINE_SPACING = LINE_SPACING+4;
@@ -523,7 +523,7 @@ namespace djack.RogueSurvivor.Engine
       return IsVisibleToPlayer(mapObj) ? mapObj.TheName : "something";
     }
 
-    private static Data.Message MakeMessage(Actor actor, string doWhat)
+    public static Data.Message MakeMessage(Actor actor, string doWhat)
     {
       return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
     }
@@ -7691,7 +7691,7 @@ namespace djack.RogueSurvivor.Engine
       ItemTrapModel trapModel = trap.Model;
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0) {
-        InflictDamage(victim, dmg);
+        victim.TakeDamage(dmg);
         if (player) {
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
           ImportantMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
@@ -8156,7 +8156,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         if (dmg > 0) {
-          InflictDamage(defender, dmg);
+          defender.TakeDamage(dmg);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, dmg));
             attacker.RottingEat(attacker.BiteNutritionValue(dmg));
@@ -8309,7 +8309,7 @@ namespace djack.RogueSurvivor.Engine
         if (hitRoll > defRoll) {
           int dmg = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
-            InflictDamage(defender, dmg);
+            defender.TakeDamage(dmg);
             if (defender.HitPoints <= 0) {
               if (see_defender) {
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
@@ -8466,7 +8466,7 @@ namespace djack.RogueSurvivor.Engine
         ExplosionChainReaction(actorAt.Inventory, in location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
-          InflictDamage(actorAt, dmg);
+          actorAt.TakeDamage(dmg);
           if (ForceVisibleToPlayer(actorAt))
             AddMessage(new Data.Message(string.Format("{0} is hit for {1} damage!", actorAt.Name, dmg), map.LocalTime.TurnCounter, Color.Crimson));
           if (actorAt.HitPoints <= 0 && !actorAt.IsDead) {
@@ -9889,21 +9889,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       survey.DoForEach(loud_noise);
-    }
-
-    private void InflictDamage(Actor actor, int dmg)
-    {
-      actor.HitPoints -= dmg;
-      if (actor.Model.Abilities.CanTire) actor.StaminaPoints -= dmg;
-      Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
-      if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE)) {
-        actor.OnUnequipItem(equippedItem);
-        actor.Inventory.RemoveAllQuantity(equippedItem);
-        if (ForceVisibleToPlayer(actor)) {
-          ImportantMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
-        }
-      }
-      if (actor.IsSleeping) DoWakeUp(actor);
     }
 
     static private int ItemSurviveKillProbability(Item it, string reason)
@@ -12183,7 +12168,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private bool ForceVisibleToPlayer(Actor actor)
+    public bool ForceVisibleToPlayer(Actor actor)
     {
       if (actor == Player) return true;
       if (IsVisibleToPlayer(actor.Location)) return true;

@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Data
 
     public int StaminaPoints {
       get { return m_StaminaPoints; }
-      set { m_StaminaPoints = value; }  // \todo only one change targets to sink to eliminate public setter, i.e. eliminate setter outright
+      set { m_StaminaPoints = value; }  // \todo eliminate public setter and require updates with Interlocked functions
     }
 
     public int PreviousStaminaPoints {
@@ -2876,6 +2876,24 @@ namespace djack.RogueSurvivor.Data
       // \todo more "accurate" duration, should it make sense for other reasons
       // RS Alpha 10.1- was permanent
       Location.Map.AddTimedDecoration(Location.Position, Gameplay.GameImages.DECO_VOMIT, Location.Map== Location.Map.District.SewersMap ? 3*WorldTime.HOURS_PER_DAY*WorldTime.TURNS_PER_HOUR : 7 * WorldTime.HOURS_PER_DAY * WorldTime.TURNS_PER_HOUR, TRUE);
+    }
+
+    public void TakeDamage(int dmg)
+    {
+      const int BODY_ARMOR_BREAK_CHANCE = 2;
+
+      HitPoints -= dmg;
+      if (Model.Abilities.CanTire) StaminaPoints -= dmg;
+      var game = RogueForm.Game;
+      var equippedItem = GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
+      if (null != equippedItem && game.Rules.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+        OnUnequipItem(equippedItem);
+        Inventory.RemoveAllQuantity(equippedItem);
+        if (game.ForceVisibleToPlayer(this)) {
+          game.ImportantMessage(Engine.RogueGame.MakeMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
+        }
+      }
+      if (IsSleeping) game.DoWakeUp(this);
     }
 
     // alpha10: boring items moved to ItemEntertaimment from Actor
