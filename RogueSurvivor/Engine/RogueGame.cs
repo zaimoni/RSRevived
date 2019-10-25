@@ -2090,7 +2090,7 @@ namespace djack.RogueSurvivor.Engine
                 bool flag4 = false;
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
-                  DoVomit(actor);
+                  actor.Vomit();
                   actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
                   if (player) {
                     if (flag3) ClearMessages();
@@ -2102,7 +2102,7 @@ namespace djack.RogueSurvivor.Engine
                   }
                   if (actor.HitPoints <= 0) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
-                  DoVomit(actor);
+                  actor.Vomit();
                   if (player) {
                     if (flag3) ClearMessages();
                     AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
@@ -9376,9 +9376,8 @@ namespace djack.RogueSurvivor.Engine
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
       if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
         return;
-      DoVomit(actor);
-      if (!player) return;
-      AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
+      actor.Vomit();
+      if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
     }
 
     private void DoUseFoodItem(Actor actor, ItemFood food)
@@ -9398,18 +9397,9 @@ namespace djack.RogueSurvivor.Engine
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
         if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
-        DoVomit(actor);
-        if (!player) return;
-        AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
+        actor.Vomit();
+        if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
       }
-    }
-
-    static private void DoVomit(Actor actor)
-    {
-      actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
-      actor.Drowse(WorldTime.TURNS_PER_HOUR);
-      actor.Appetite(WorldTime.TURNS_PER_HOUR);
-      actor.Location.AddDecoration(GameImages.DECO_VOMIT);  // \todo timed removal
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)

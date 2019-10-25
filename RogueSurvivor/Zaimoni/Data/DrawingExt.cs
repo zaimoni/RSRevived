@@ -997,6 +997,7 @@ namespace Zaimoni.Data
     // trivial functors
     public static void NOP<T>(T x) { }
     public static bool TRUE<T>(T x) { return true; }
+    public static bool TRUE<T1,T2>(T1 x1, T2 x2) { return true; }
     public static bool FALSE<T>(T x) { return false; }
     public static T IDENTITY<T>(T x) { return x; }
     public static T DEFAULT<T>(T x) { return default; }

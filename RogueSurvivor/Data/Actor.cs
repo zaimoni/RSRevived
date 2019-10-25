@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using Zaimoni.Data;
+using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
@@ -278,7 +279,7 @@ namespace djack.RogueSurvivor.Data
 
     public int StaminaPoints {
       get { return m_StaminaPoints; }
-      set { m_StaminaPoints = value; }  // \todo only two change targets to sink to eliminate public setter, i.e. eliminate setter outright
+      set { m_StaminaPoints = value; }  // \todo only one change targets to sink to eliminate public setter, i.e. eliminate setter outright
     }
 
     public int PreviousStaminaPoints {
@@ -2865,6 +2866,16 @@ namespace djack.RogueSurvivor.Data
 
     public void Drowse(int s) {
       m_SleepPoints = Math.Max(0, m_SleepPoints - s);
+    }
+
+    public void Vomit()
+    {
+      StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
+      Drowse(WorldTime.TURNS_PER_HOUR);
+      Appetite(WorldTime.TURNS_PER_HOUR);
+      // \todo more "accurate" duration, should it make sense for other reasons
+      // RS Alpha 10.1- was permanent
+      Location.Map.AddTimedDecoration(Location.Position, Gameplay.GameImages.DECO_VOMIT, Location.Map== Location.Map.District.SewersMap ? 3*WorldTime.HOURS_PER_DAY*WorldTime.TURNS_PER_HOUR : 7 * WorldTime.HOURS_PER_DAY * WorldTime.TURNS_PER_HOUR, TRUE);
     }
 
     // alpha10: boring items moved to ItemEntertaimment from Actor
