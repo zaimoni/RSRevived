@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
-      Actor leader = m_Actor.LiveLeader;
+      var leader = m_Actor.LiveLeader;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;

@@ -1898,7 +1898,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
     {
-      Actor leader = m_Actor.LiveLeader;
+      var leader = m_Actor.LiveLeader;
       var ranged_target = null != leader ? (leader.Controller as ObjectiveAI)?.GetNearestTargetFor() : null;
       Actor actor = ranged_target?.Key;
       bool checkLeaderLof = null != actor;

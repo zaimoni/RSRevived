@@ -7956,7 +7956,7 @@ namespace djack.RogueSurvivor.Engine
       } else if (GameFactions.TheArmy == faction) {
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
-      Actor leader = target.LiveLeader;
+      var leader = target.LiveLeader;
       if (null != leader) {
         faction = leader.Faction;
         if (faction.IsEnemyOf(aggressor.Faction)) return;   // intercept invariant failure when aggressing a civilian follower of a cop

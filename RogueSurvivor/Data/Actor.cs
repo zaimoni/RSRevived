@@ -119,8 +119,8 @@ namespace djack.RogueSurvivor.Data
     private Attack m_CurrentMeleeAttack;    // dataflow candidate
     private Attack m_CurrentRangedAttack;    // dataflow candidate
     private Defence m_CurrentDefence;    // dataflow candidate
+    private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
 #nullable restore
-    private Actor m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
     private List<Actor> m_Followers;
     private int m_TrustInLeader;
     private Dictionary<Actor,int> m_TrustDict;
@@ -319,16 +319,12 @@ namespace djack.RogueSurvivor.Data
     public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }
     public Defence CurrentDefence { get { return m_CurrentDefence; } }
 
+#nullable enable
     // Leadership
-    public Actor Leader { get { return m_Leader; } }
-    public Actor LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead ? m_Leader : null); } }
-
-    public bool HasLeader {
-      get {
-        if (m_Leader != null) return !m_Leader.IsDead;
-        return false;
-      }
-    }
+    public Actor? Leader { get { return m_Leader; } }
+    public Actor? LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; } }
+    public bool HasLeader { get { return !(m_Leader?.IsDead ?? true); } }
+#nullable restore
 
     public int TrustInLeader {
       get { return m_TrustInLeader; }
@@ -1136,7 +1132,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
         // XXX disallow murderers under certain conditions, etc
-        Actor leader = LiveLeader;
+        var leader = LiveLeader;
         if (null != leader) return leader.HasActivePoliceRadio;
         if (0 >= CountFollowers) return false;
         foreach(Actor fo in m_Followers) {
@@ -1149,7 +1145,7 @@ namespace djack.RogueSurvivor.Data
     public bool NeedActiveCellPhone {
       get {
         if (!WantCellPhone) return false;
-        Actor leader = LiveLeader;
+        var leader = LiveLeader;
         if (null != leader) return leader.HasActiveCellPhone;
         if (0 < CountFollowers) {
           foreach(Actor fo in m_Followers) {
@@ -1166,7 +1162,7 @@ namespace djack.RogueSurvivor.Data
         bool have_cellphone = HasCellPhone;
         bool have_army = HasArmyRadio;
         if (!have_cellphone && !have_army) return true;
-        Actor leader = LiveLeader;
+        var leader = LiveLeader;
         if (null != leader) {
           if (have_cellphone && leader.HasCellPhone) return false;
           if (have_army && leader.HasArmyRadio) return false;
@@ -1188,7 +1184,7 @@ namespace djack.RogueSurvivor.Data
         bool have_police = HasPoliceRadio;
         bool have_army = HasArmyRadio;
         if (!have_police && !have_army) return true;
-        Actor leader = LiveLeader;
+        var leader = LiveLeader;
         if (null != leader) {
           if (have_police && leader.HasPoliceRadio) return false;
           if (have_army && leader.HasArmyRadio) return false;
@@ -1274,24 +1270,19 @@ namespace djack.RogueSurvivor.Data
       return (Controller.IsVisibleTo(a) ? a : null);  // inline IsVisibleToPlayer here, for generality
     }
 
+#nullable enable
     // leadership/follower handling
     public void AddFollower(Actor other)
     {
-#if DEBUG
-      if (null == other) throw new ArgumentNullException(nameof(other));
-#endif
-      if (m_Followers != null && m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
-      if (m_Followers == null) m_Followers = new List<Actor>(1);
+      if (null == m_Followers) m_Followers = new List<Actor>(1);
+      else if (m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
       m_Followers.Add(other);
-      if (other.Leader != null) other.Leader.RemoveFollower(other);
+      other.Leader?.RemoveFollower(other);
       other.m_Leader = this;
     }
 
     public void RemoveFollower(Actor other)
     {
-#if DEBUG
-      if (null == other) throw new ArgumentNullException(nameof(other));
-#endif
       if (m_Followers == null) throw new InvalidOperationException("no followers");
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
@@ -1306,14 +1297,11 @@ namespace djack.RogueSurvivor.Data
       while (m_Followers != null && m_Followers.Count > 0)
         RemoveFollower(m_Followers[0]);
     }
+#nullable restore
 
     public void SetTrustIn(Actor other, int trust)
     {
-#if DEBUG
-      if (null == other) throw new ArgumentNullException(nameof(other));
-#endif
-      if (null == m_TrustDict) m_TrustDict = new Dictionary<Actor,int>();
-      m_TrustDict[other] = trust;
+      (m_TrustDict ?? (m_TrustDict = new Dictionary<Actor, int>()))[other] = trust;
     }
 
     public int GetTrustIn(Actor other)
@@ -1452,7 +1440,8 @@ namespace djack.RogueSurvivor.Data
 
       if (HasLeader && IsEnemyOfMyLeaderOrMates(this,other)) {
         if (IsEnemyOfMyLeaderOrMates(this, other)) return true;
-        if (other.HasLeader && m_Leader.IsEnemyOf(other.Leader,false)) return true;
+        var o_Leader = other.LiveLeader;
+        if (null != o_Leader && m_Leader.IsEnemyOf(o_Leader, false)) return true;
       }
       if (0 < CountFollowers && IsEnemyOfMyFollowers(this,other)) return true;
       if (other.HasLeader) {
@@ -3723,7 +3712,7 @@ namespace djack.RogueSurvivor.Data
     // by hex-editing does work flawlessly at the Actor level.
     public void PrepareForPlayerControl()
     {
-      if (!Leader?.IsPlayer ?? false) Leader.RemoveFollower(this);   // needed if leader is NPC
+      if (!(Leader?.IsPlayer ?? false)) Leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
