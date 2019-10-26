@@ -1738,10 +1738,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == nearestEnemy) throw new ArgumentNullException(nameof(nearestEnemy));
 #endif
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
-      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
+      bool need_waking(Actor a) {
+        return a.IsSleeping && Rules.LOUD_NOISE_RADIUS >= Rules.GridDistance(a.Location, m_Actor.Location);
+      };
+
+      if (m_Actor.HasLeader && need_waking(m_Actor.Leader)) return new ActionShout(m_Actor);
       foreach (Percept friend in friends) {
         if (!(friend.Percepted is Actor actor)) throw new ArgumentException("percept not an actor");
-        if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
+        if (actor != m_Actor && need_waking(actor) && !m_Actor.IsEnemyOf(actor) && actor.IsEnemyOf(nearestEnemy)) {
           return new ActionShout(m_Actor, string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name));
         }
       }
