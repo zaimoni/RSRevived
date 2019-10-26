@@ -276,11 +276,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int PreviousHitPoints { get { return m_previousHitPoints; } }
-
-    public int StaminaPoints {
-      get { return m_StaminaPoints; }
-      set { m_StaminaPoints = value; }  // \todo eliminate public setter and require updates with Interlocked functions
-    }
+    public int StaminaPoints { get { return m_StaminaPoints; } }
 
     public int PreviousStaminaPoints {
       get { return m_previousStamina; }
@@ -2870,7 +2866,9 @@ namespace djack.RogueSurvivor.Data
 
     public void Vomit()
     {
-      StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
+      const int FOOD_VOMIT_STA_COST = 100;
+
+      m_StaminaPoints -= FOOD_VOMIT_STA_COST;
       Drowse(WorldTime.TURNS_PER_HOUR);
       Appetite(WorldTime.TURNS_PER_HOUR);
       // \todo more "accurate" duration, should it make sense for other reasons
@@ -2883,7 +2881,7 @@ namespace djack.RogueSurvivor.Data
       const int BODY_ARMOR_BREAK_CHANCE = 2;
 
       HitPoints -= dmg;
-      if (Model.Abilities.CanTire) StaminaPoints -= dmg;
+      if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueForm.Game;
       var equippedItem = GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
       if (null != equippedItem && game.Rules.RollChance(BODY_ARMOR_BREAK_CHANCE)) {

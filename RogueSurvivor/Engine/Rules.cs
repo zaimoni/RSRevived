@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Engine
     public const int SANITY_RECOVER_CHAT_OR_TRADE = 3 * WorldTime.TURNS_PER_HOUR;
     public const int FOOD_STARVING_DEATH_CHANCE = 5;
     public const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
-    public const int FOOD_VOMIT_STA_COST = 100;
     public const int ROT_STARVING_HP_CHANCE = 5;
     public const int ROT_HUNGRY_SKILL_CHANCE = 5;
     public const int SLEEP_EXHAUSTION_COLLAPSE_CHANCE = 5;

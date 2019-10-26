@@ -3,6 +3,7 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* Vomit is no longer eternal.
 * Safety from traps re-implementation, replacing RS Alpha 10's implementation, has landed
 ** It is now possible to learn how to be safe from a given trap, from overhearing explanations over the police radio.
 ** Avoiding a given trap, can also teach you how to be safe from it.
