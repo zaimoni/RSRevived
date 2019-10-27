@@ -5347,7 +5347,7 @@ restart_single_exit:
       void install_break(ObjectiveAI ai) {
         // XXX \todo message this so it's clear what's going on
         if (null == ai.Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) {
-          ai.Objectives.Insert(0, new Goal_BreakBarricade(ai.m_Actor.Location.Map.LocalTime.TurnCounter, ai.m_Actor, doorWindow));
+          ai.Objectives.Insert(0, new Goal_BreakBarricade(ai.m_Actor, doorWindow));
         }
       }
 

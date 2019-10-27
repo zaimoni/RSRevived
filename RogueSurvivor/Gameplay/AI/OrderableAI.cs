@@ -639,8 +639,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
 
 #nullable enable
-      public Goal_BreakBarricade(int t0, Actor who, DoorWindow dest)
-      : base(t0, who)
+      public Goal_BreakBarricade(Actor who, DoorWindow dest)
+      : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         _dest = dest.Location;
       }
