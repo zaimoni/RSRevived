@@ -2844,7 +2844,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewNatGuardTrooper(Actor leader)
     {
-      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(leader.Location.Map.LocalTime.TurnCounter, "Pvt", leader.Followers);
+      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
       if (m_Rules.RollChance(50))
         armyNationalGuard.Inventory.AddAll(GameItems.COMBAT_KNIFE.create());
       else
@@ -2863,7 +2863,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewBiker(Actor leader)
     {
-      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
+      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
       return (SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBikerMan : null);
@@ -2880,7 +2880,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewGangsta(Actor leader)
     {
-      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
+      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
       return (SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newGangstaMan : null);
     }
@@ -2897,7 +2897,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewBlackOpsTrooper(Actor leader)
     {
-      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(leader.Location.Map.LocalTime.TurnCounter, "Agent", leader.Followers);
+      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps("Agent", leader);
       newBlackOps.StartingSkill(Skills.IDs.AGILE);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
@@ -3253,6 +3253,7 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
+    // XXX \todo use different text than the suicide text above
     private bool HandleAbandonPC(Actor player)
     {
 #if DEBUG
@@ -3267,12 +3268,12 @@ namespace djack.RogueSurvivor.Engine
       }
       player.Controller = player.Model.InstanciateController();
       AddMessage(new Data.Message("You can't bear the horror anymore...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      if (0<player.CountFollowers) {
-        foreach(Actor fo in player.Followers.Where(a=>a.IsPlayer)) {
-          HandleAbandonPC(fo);
-          if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
-        }
-      }
+      player.DoForAllFollowers(fo => {
+          if (fo.IsPlayer) {
+              HandleAbandonPC(fo);
+              if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
+          }
+      });
       return 0>=Session.Get.World.PlayerCount;
     }
 
@@ -10021,14 +10022,12 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-        if (killer.CountFollowers > 0) {
-          foreach (Actor follower in killer.Followers) {
-            if ((follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) {
-              DoSay(follower, killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
-              ModifyActorTrustInLeader(follower, Rules.TRUST_LEADER_KILL_ENEMY, true);
+        killer.DoForAllFollowers(fo => {
+            if ((fo.TargetActor == deadGuy || fo.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(fo.Location, deadGuy.Location)) {
+              DoSay(fo, killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
+              ModifyActorTrustInLeader(fo, Rules.TRUST_LEADER_KILL_ENEMY, true);
             }
-          }
-        }
+        });
         if (isMurder.cache) {
           killer.HasMurdered(deadGuy);
           if (IsVisibleToPlayer(killer)) AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
@@ -11580,13 +11579,17 @@ namespace djack.RogueSurvivor.Engine
 
         // do not assume tracker capabilities are mutually exclusive.
         if (find_followers) {
-          foreach (Actor follower in Player.Followers) {
-            if (!Player.Location.Map.IsInViewRect(follower.Location, view)) continue;
-            if (   follower.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker tracker
-                && tracker.CanTrackFollowersOrLeader)  {
-                DrawDetected(follower, GameImages.MINI_FOLLOWER_POSITION, GameImages.TRACK_FOLLOWER_POSITION, view);
+          // VAPORWARE Cell phones are due for a major rethinking anyway.
+          // We would like the AI to be able to defend key objectives (e.g. police should want to defend any building w/generators)
+          // we then could include cell phone towers as a defensible objective and make the phones actually working depending on that.
+          Player.DoForAllFollowers(fo => {
+            if (Player.Location.Map.IsInViewRect(fo.Location, view)) {
+              if (   fo.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker tracker
+                  && tracker.CanTrackFollowersOrLeader)  {
+                  DrawDetected(fo, GameImages.MINI_FOLLOWER_POSITION, GameImages.TRACK_FOLLOWER_POSITION, view);
+              }
             }
-          }
+          });
         }
         if (find_blackops || find_police) {
           Actor actor = null;

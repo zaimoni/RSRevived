@@ -3655,12 +3655,11 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName, IEnumerable<Actor> already_here=null)
+    public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
     {
       Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
-      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
       ItemModel[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
@@ -3678,44 +3677,69 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId, IEnumerable<Actor> already_here=null)
+    public Actor CreateNewArmyNationalGuard(string rankName, Actor leader)
+    {
+      var actor = CreateNewArmyNationalGuard(leader.Location.Map.LocalTime.TurnCounter, rankName);
+      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
+      return actor;
+    }
+
+    public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = GameActors.BikerMan.CreateNumberedName(GameFactions.TheBikers, spawnTime);
       numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Inventory.AddAll(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
     }
 
-    public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId, IEnumerable<Actor> already_here = null)
+    public Actor CreateNewBikerMan(Actor leader)
+    {
+      var actor = CreateNewBikerMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID);
+      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
+      return actor;
+    }
+
+    public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = GameActors.GangstaMan.CreateNumberedName(GameFactions.TheGangstas, spawnTime);
       numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       // Gangsters don't seem very prepared: no reserve ammo
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : GameItems.BASEBALLBAT.create());
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY);
       return numberedName;
     }
 
-    public Actor CreateNewBlackOps(int spawnTime, string rankName, IEnumerable<Actor> already_here=null)
+    public Actor CreateNewGangstaMan(Actor leader)
+    {
+      var actor = CreateNewGangstaMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID);
+      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
+      return actor;
+    }
+
+    public Actor CreateNewBlackOps(int spawnTime, string rankName)
     {
       Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
-      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
       ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
       numberedName.Inventory.AddAll(GameItems.BLACKOPS_GPS.create());
       return numberedName;
+    }
+
+    public Actor CreateNewBlackOps(string rankName, Actor leader)
+    {
+      var actor = CreateNewBlackOps(leader.Location.Map.LocalTime.TurnCounter, rankName);
+      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
+      return actor;
     }
 
     public Actor CreateNewFeralDog(int spawnTime)
