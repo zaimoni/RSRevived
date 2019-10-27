@@ -120,9 +120,9 @@ namespace djack.RogueSurvivor.Data
     private Attack m_CurrentRangedAttack;    // dataflow candidate
     private Defence m_CurrentDefence;    // dataflow candidate
     private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
-#nullable restore
-    private List<Actor> m_Followers;
+    private List<Actor>? m_Followers;
     private int m_TrustInLeader;
+#nullable restore
     private Dictionary<Actor,int> m_TrustDict;
     private int m_KillsCount;
     private List<Actor> m_AggressorOf;
@@ -344,9 +344,19 @@ namespace djack.RogueSurvivor.Data
       if (target.Leader == this) return TRUST_BOND_THRESHOLD <= target.TrustInLeader;
       return false;
     }
-#nullable restore
 
-    public IEnumerable<Actor> Followers { get { return m_Followers; } }
+    public IEnumerable<Actor>? Followers { get { return m_Followers; } }
+
+    public Actor? FirstFollower(Predicate<Actor> test) {
+      if (null != m_Followers) foreach(var fo in m_Followers) if (test(fo)) return fo;
+      return null;
+    }
+
+    public void DoForAllFollowers(Action<Actor> op)
+    {
+      if (null != m_Followers) foreach(var fo in m_Followers) op(fo);
+    }
+#nullable restore
 
     public int CountFollowers {
       get {

@@ -2782,29 +2782,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var leader = m_Actor.LiveLeader;
         if (null != leader) {
           if (WantsToSprayOn(leader)) sprayOn = leader;
-          else {
-            foreach (Actor mate in leader.Followers)
-              if (mate != m_Actor && WantsToSprayOn(mate)) {
-                sprayOn = mate;
-                break;
-              }
-          }
+          else sprayOn = leader.FirstFollower(WantsToSprayOn);
         }
 
-        if (sprayOn == null && m_Actor.CountFollowers > 0) {
-          foreach (Actor follower in m_Actor.Followers)
-            if (WantsToSprayOn(follower)) {
-              sprayOn = follower;
-              break;
-            }
-        }
+        if (null == sprayOn) sprayOn = m_Actor.FirstFollower(WantsToSprayOn);
       }
 
       //  spray?
       if (sprayOn != null) {
         RogueForm.Game.DoEquipItem(m_Actor,spray);
         var sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
-        if (sprayIt.IsLegal()) return sprayIt;  // should be tautological given above
+        if (sprayIt.IsPerformable()) return sprayIt;  // should be tautological given above
       }
 
       }
