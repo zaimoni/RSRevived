@@ -254,6 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_DiceRoller = new DiceRoller();
     }
 
+#nullable enable
     static public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
@@ -356,6 +357,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.SKIN, roller.Choose(MALE_SKINS));
       actor.Doll.AddDecoration(DollPart.TORSO, GameImages.BLACKOP_SUIT);
     }
+#nullable restore
 
 #if DEAD_FUNC
     static protected string RandomSkin(DiceRoller roller, bool isMale)
@@ -365,7 +367,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 #endif
 
-    static public void GiveNameToActor(DiceRoller roller, Actor actor, string prefix=null)
+        static public void GiveNameToActor(DiceRoller roller, Actor actor, string prefix=null)
     {
       if (actor.Model.DollBody.IsMale)
         GiveNameToActor(roller, actor, MALE_FIRST_NAMES, LAST_NAMES, prefix);

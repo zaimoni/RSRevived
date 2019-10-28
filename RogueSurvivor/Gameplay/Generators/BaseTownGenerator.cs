@@ -3376,6 +3376,7 @@ restart:
       return map;
     }
 
+#nullable enable
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
       Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
@@ -3411,6 +3412,7 @@ restart:
       numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
       return numberedName;
     }
+#nullable restore
 
     private void MakeHospitalPatientRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
     {
@@ -3617,13 +3619,14 @@ restart:
       return actor;
     }
 
-    public static Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
+#nullable enable
+    public static Actor MakeZombified(Actor? zombifier, Actor deadVictim, int turn)
     {
-      string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
+      string properName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
       Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
       named.APreset();
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
-        List<string> decorations = deadVictim.Doll.GetDecorations(part);
+        var decorations = deadVictim.Doll.GetDecorations(part);
         if (null == decorations) continue;
         foreach (string imageID in decorations) named.Doll.AddDecoration(part, imageID);
       }
@@ -3748,6 +3751,7 @@ restart:
       SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }
+#nullable restore
 
     static private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID)
     {

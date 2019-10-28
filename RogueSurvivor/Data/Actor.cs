@@ -122,9 +122,9 @@ namespace djack.RogueSurvivor.Data
     private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
     private List<Actor>? m_Followers;
     private int m_TrustInLeader;
-#nullable restore
-    private Dictionary<Actor,int> m_TrustDict;
+    private Dictionary<Actor,int>? m_TrustDict;
     private int m_KillsCount;
+#nullable restore
     private List<Actor> m_AggressorOf;
     private List<Actor> m_SelfDefenceFrom;
     private int m_MurdersCounter;   // sparse field
@@ -310,10 +310,10 @@ namespace djack.RogueSurvivor.Data
       get { return m_TargetActor; }
       set { m_TargetActor = value; }
     }
-#nullable restore
 
     public int AudioRange { get { return m_Sheet.BaseAudioRange + m_AudioRangeMod; } }
     public int AudioRangeMod { get { return m_AudioRangeMod; } }
+#nullable restore
 
     public Attack CurrentMeleeAttack { get { return m_CurrentMeleeAttack; } }
     public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }
@@ -328,7 +328,7 @@ namespace djack.RogueSurvivor.Data
 
     public int TrustInLeader {
       get { return m_TrustInLeader; }
-      set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter
+      set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter; CPU cost may be excessive
     }
 
     public bool IsTrustingLeader {
@@ -356,7 +356,6 @@ namespace djack.RogueSurvivor.Data
     {
       if (null != m_Followers) foreach(var fo in m_Followers) op(fo);
     }
-#nullable restore
 
     public int CountFollowers {
       get {
@@ -369,6 +368,7 @@ namespace djack.RogueSurvivor.Data
         return SKILL_LEADERSHIP_FOLLOWER_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
       }
     }
+#nullable restore
 
     private string ReasonCantTakeLeadOf(Actor target)
     {
@@ -1307,7 +1307,6 @@ namespace djack.RogueSurvivor.Data
       while (m_Followers != null && m_Followers.Count > 0)
         RemoveFollower(m_Followers[0]);
     }
-#nullable restore
 
     public void SetTrustIn(Actor other, int trust)
     {
@@ -1321,19 +1320,20 @@ namespace djack.RogueSurvivor.Data
       return 0;
     }
 
-    public ThreatTracking Threats {
+    public ThreatTracking? Threats {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceThreatTracking;
         return null;
       }
     }
 
-    public LocationSet InterestingLocs {
+    public LocationSet? InterestingLocs {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceInvestigate;
         return null;
       }
     }
+#nullable restore
 
     public IEnumerable<Actor> Aggressing { get { return m_AggressorOf ?? new List<Actor>(); } }
     public IEnumerable<Actor> Aggressors { get { return m_SelfDefenceFrom ?? new List<Actor>(); } }
