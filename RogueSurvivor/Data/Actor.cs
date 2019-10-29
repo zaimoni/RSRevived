@@ -124,12 +124,10 @@ namespace djack.RogueSurvivor.Data
     private int m_TrustInLeader;
     private Dictionary<Actor,int>? m_TrustDict;
     private int m_KillsCount;
-#nullable restore
-    private List<Actor> m_AggressorOf;
-    private List<Actor> m_SelfDefenceFrom;
+    private List<Actor>? m_AggressorOf;
+    private List<Actor>? m_SelfDefenceFrom;
     private int m_MurdersCounter;   // sparse field
     private int m_Infection;
-#nullable enable
     private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
 #nullable restore
     public int OdorSuppressorCounter;   // sparse field
@@ -1333,10 +1331,10 @@ namespace djack.RogueSurvivor.Data
         return null;
       }
     }
-#nullable restore
 
-    public IEnumerable<Actor> Aggressing { get { return m_AggressorOf ?? new List<Actor>(); } }
-    public IEnumerable<Actor> Aggressors { get { return m_SelfDefenceFrom ?? new List<Actor>(); } }
+    public IEnumerable<Actor>? Aggressing { get { return m_AggressorOf; } }
+    public IEnumerable<Actor>? Aggressors { get { return m_SelfDefenceFrom; } }
+#nullable restore
 
     // these two are tightly integrated.
     private void MarkAsAggressorOf(Actor other)

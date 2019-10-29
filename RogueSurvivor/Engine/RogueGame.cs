@@ -3857,16 +3857,9 @@ namespace djack.RogueSurvivor.Engine
             break;
         case 1:
             {
-            IEnumerable<Actor> personal_enemies = Player.Aggressing;
-            IEnumerable<Actor> self_defense = Player.Aggressors;
-            if (personal_enemies.Any()) {
-              display.Add("Aggressed:");
-              foreach(Actor a in personal_enemies) display.Add(a.Name);
-            }
-            if (self_defense.Any()) {
-              display.Add("Defending from:");
-              foreach(Actor a in self_defense) display.Add(a.Name);
-            }
+            void name_him(Actor a) { display.Add(a.Name); }
+            Player.Aggressing.DoForEach_(name_him, () => display.Add("Aggressed:"));
+            Player.Aggressors.DoForEach_(name_him, () => display.Add("Defending from:"));
             if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
               display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
               display.Add("...");
@@ -9965,13 +9958,8 @@ namespace djack.RogueSurvivor.Engine
       // crime blotter representation).
       static bool police_wanted(Actor a) {
         if (a.Faction.IsEnemyOf(GameFactions.ThePolice)) return true;
-        foreach(var who in a.Aggressors) {
-          if (GameFactions.ThePolice == who.Faction) return true;
-        }
-        foreach(var who in a.Aggressing) {
-          if (GameFactions.ThePolice == who.Faction) return true;
-          else if (GameFactions.ThePolice == who.LiveLeader?.Faction) return true;
-        }
+        if (a.Aggressors.Any_(who => GameFactions.ThePolice == who.Faction)) return true;
+        if (a.Aggressing.Any_(who => GameFactions.ThePolice == who.Faction || GameFactions.ThePolice == who.LiveLeader?.Faction)) return true;
         return false;
       }
 

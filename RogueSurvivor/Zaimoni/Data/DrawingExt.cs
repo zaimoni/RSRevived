@@ -481,12 +481,17 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    // generic loop iteration ... probably inefficient compared to inlining
+    // don't want to name-conflict with IEnumerable::Any (use that for guaranteed non-null)
+#nullable enable
+    public static bool Any_<T>(this IEnumerable<T>? src, Predicate<T> test)
+    {
+      if (null != src) foreach(var x in src) if (test(x)) return true;
+      return false;
+    }
+
+    // generic loop iteration ... these are always inefficient compared to inlining, due to parameter passing overhead
     public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-#endif
       if (!src.Any()) return false;
       fn(src.First());
       return true;;
@@ -494,11 +499,6 @@ namespace Zaimoni.Data
 
     public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn, Func<T, bool> test)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == test) throw new ArgumentNullException(nameof(test));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       foreach (T x in src) {
         if (test(x)) {
           fn(x);
@@ -510,25 +510,25 @@ namespace Zaimoni.Data
 
     public static void DoForEach<T>(this IEnumerable<T> src, Action<T> fn, Func<T, bool> test)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == test) throw new ArgumentNullException(nameof(test));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       foreach (T x in src) {
         if (test(x)) fn(x);
+      }
+    }
+
+    public static void DoForEach_<T>(this IEnumerable<T>? src, Action<T> op, Action pre_op)
+    {
+      if (null != src && src.Any()) {
+        pre_op();
+        foreach (T x in src) op(x);
       }
     }
 
     // for efficiency
     public static void DoForEach<T>(this IEnumerable<T> src, Action<T> fn)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       foreach (T x in src) fn(x);
     }
+#nullable restore
 
     public static bool ValueEqual<T>(this HashSet<T> lhs, HashSet<T> rhs)
     {
