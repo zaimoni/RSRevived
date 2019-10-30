@@ -4123,7 +4123,7 @@ namespace djack.RogueSurvivor.Engine
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
-      int num = m_Rules.ActorDamageVsCorpses(a);
+      int num = a.DamageVsCorpses;
       if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));
       if (!c.TakeDamage(num)) return;
       a.Location.Map.Destroy(c);
@@ -4134,7 +4134,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
-      int num = m_Rules.ActorDamageVsCorpses(a);
+      int num = a.DamageVsCorpses;
       if (player) {
         AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name)));
         // alpha10 replace with sfx
@@ -7417,7 +7417,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.MEDIC:
           return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Rules.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
-          return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
+          return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Actor.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
           return string.Format("+{0} melee DMG, +{1} throw range", Actor.SKILL_STRONG_DMG_BONUS, Actor.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:

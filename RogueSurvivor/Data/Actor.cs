@@ -66,6 +66,7 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15;
     public static double SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
+    public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
@@ -129,13 +130,11 @@ namespace djack.RogueSurvivor.Data
     private int m_MurdersCounter;   // sparse field
     private int m_Infection;
     private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
-#nullable restore
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
     [NonSerialized] private bool _has_to_eat;
-    [NonSerialized] private string[] _force_PC_names = null;
+    [NonSerialized] private string[]? _force_PC_names = null;
 
-#nullable enable
     public ActorModel Model
     {
       get { return Models.Actors[(int)m_ModelID]; }
@@ -158,6 +157,7 @@ namespace djack.RogueSurvivor.Data
       set { m_FactionID = value.ID; }
     }
 
+#nullable enable
     public string Name
     {
       get {
@@ -165,11 +165,12 @@ namespace djack.RogueSurvivor.Data
         return "(YOU) " + m_Name;
       }
       set {
-        m_Name = value?.Replace("(YOU) ", "");
+        m_Name = value.Replace("(YOU) ", "");
       }
     }
 
     public string UnmodifiedName { get { return m_Name; } }
+#nullable restore
 
     public bool IsProperName
     {
@@ -192,6 +193,7 @@ namespace djack.RogueSurvivor.Data
     public readonly bool IsPluralName;
 #endif
 
+#nullable enable
     public string TheName
     {
       get {
@@ -217,7 +219,7 @@ namespace djack.RogueSurvivor.Data
     public string HimselfOrHerself {    // 3rd person "emphatic" pronoun e.g. "he himself"; translation target
        get { return Model.DollBody.IsMale ? "himself" : "herself"; }
     }
-
+#nullable restore
 
     public ActorController Controller
     {
@@ -237,6 +239,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public bool IsPlayer { get { return m_Controller is PlayerController; } }
     public int SpawnTime { get { return m_SpawnTime; } }
 
@@ -265,7 +268,6 @@ namespace djack.RogueSurvivor.Data
     public void Walk() { Clear(Flags.IS_RUNNING); }
     public void Run() { if (CanRun()) Set(Flags.IS_RUNNING); }
 
-#nullable enable
     public Inventory? Inventory { get { return m_Inventory; } }
 
     public int HitPoints {
@@ -313,7 +315,7 @@ namespace djack.RogueSurvivor.Data
     public int AudioRangeMod { get { return m_AudioRangeMod; } }
 #nullable restore
 
-    public Attack CurrentMeleeAttack { get { return m_CurrentMeleeAttack; } }
+    public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
     public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }
     public Defence CurrentDefence { get { return m_CurrentDefence; } }
 
@@ -573,18 +575,15 @@ namespace djack.RogueSurvivor.Data
       if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController();
     }
 
-    public Actor(ActorModel model, Faction faction, int spawnTime, string name="", bool isProperName=false, bool isPluralName=false)
+#nullable enable
+    public Actor(ActorModel model, Faction faction, int spawnTime, string name="")
     {
-#if DEBUG
-      if (null == model) throw new ArgumentNullException(nameof(model));
-      if (null == faction) throw new ArgumentNullException(nameof(faction));
-#endif
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
       m_GangID = 0;
       m_Name = string.IsNullOrEmpty(name) ? model.Name : name;
-      IsProperName = isProperName;
-      IsPluralName = isPluralName;
+      IsProperName = false;
+      IsPluralName = false;
       m_Location = new Location();
       m_SpawnTime = spawnTime;
       IsUnique = false;
@@ -595,9 +594,7 @@ namespace djack.RogueSurvivor.Data
       OnModelSet();
     }
 
-#nullable enable
     public void Retype(ActorModel model) { m_ModelID = model.ID; }
-#nullable restore
 
     private void OnModelSet()
     {
@@ -617,6 +614,7 @@ namespace djack.RogueSurvivor.Data
       m_CurrentDefence = Sheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
+#nullable restore
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
@@ -2739,6 +2737,10 @@ namespace djack.RogueSurvivor.Data
       return corpse.FreshnessPercent / 4 + Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 #nullable restore
+
+    public int DamageVsCorpses {
+      get { return m_CurrentMeleeAttack.DamageValue / 2 + SKILL_NECROLOGY_CORPSE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY); }
+    }
 
     // sleep
     public int TurnsUntilSleepy {

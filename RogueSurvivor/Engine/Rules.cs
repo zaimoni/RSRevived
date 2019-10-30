@@ -47,7 +47,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
     public static double SKILL_MEDIC_BONUS = 0.15;
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
-    public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public const int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
     public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
@@ -599,11 +598,6 @@ namespace djack.RogueSurvivor.Engine
 #else
       return IsPathableFor(actor, location, out string reason);
 #endif
-    }
-
-    public int ActorDamageVsCorpses(Actor a)
-    {
-      return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
     // These two somewhat counter-intuitively consider "same location" as adjacent
