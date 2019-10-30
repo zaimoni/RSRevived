@@ -316,8 +316,8 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
 
     public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
-    public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }
-    public Defence CurrentDefence { get { return m_CurrentDefence; } }
+    public ref Attack CurrentRangedAttack { get { return ref m_CurrentRangedAttack; } }
+    public ref Defence CurrentDefence { get { return ref m_CurrentDefence; } }
 
 #nullable enable
     // Leadership
@@ -695,14 +695,12 @@ namespace djack.RogueSurvivor.Data
     return (int)(100* ranged_hit);
   }
 
+#nullable enable
     // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range+1 < Rules.InteractionDistance(in m_Location, target.Location)) return "out of range";
+      if (m_CurrentRangedAttack.Range+1 < Rules.InteractionDistance(in m_Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (target.IsDead) return "already dead!";
       return "";
@@ -725,9 +723,6 @@ namespace djack.RogueSurvivor.Data
     // this one is very hypothetical -- note absence of ranged weapon validity checks
     private string ReasonCouldntFireAt(Actor target, int range)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       if (range+1 < Rules.InteractionDistance(Location, target.Location)) return "out of range";
       if (target.IsDead) return "already dead!";
       return "";
@@ -747,15 +742,13 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       LoF?.Clear();
       if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
       int dist = Rules.InteractionDistance(in m_Location, target.Location);
-      if (CurrentRangedAttack.Range < dist) return "out of range";
+      var range = m_CurrentRangedAttack.Range;
+      if (range < dist) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (1<dist && !LOS.CanTraceFireLine(in m_Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (1<dist && !LOS.CanTraceFireLine(in m_Location, target.Location, range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -779,9 +772,6 @@ namespace djack.RogueSurvivor.Data
     // very hypothetical -- lack of ranged weapon validity checks
     private string ReasonCantFireAt(Actor target, int range, List<Point> LoF)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       LoF?.Clear();
       int dist = Rules.InteractionDistance(in m_Location, target.Location);
       if (range < dist) return "out of range";
@@ -790,7 +780,7 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-#if FAIL
+#if DEAD_FUNC
     public bool CanFireAt(Actor target, int range, List<Point> LoF, out string reason)
     {
       reason = ReasonCantFireAt(target,range,LoF);
@@ -805,11 +795,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantContrafactualFireAt(Actor target, in Point p)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
-      if (CurrentRangedAttack.Range < Rules.GridDistance(in p, target.Location.Position)) return "out of range";
-      if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, CurrentRangedAttack.Range, this)) return "no line of fire";
+      var range = m_CurrentRangedAttack.Range;
+      if (range < Rules.GridDistance(in p, target.Location.Position)) return "out of range";
+      if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, range, this)) return "no line of fire";
       return "";
     }
 
@@ -821,10 +809,11 @@ namespace djack.RogueSurvivor.Data
 	}
 #endif
 
-	public bool CanContrafactualFireAt(Actor target, Point p)
+    public bool CanContrafactualFireAt(Actor target, Point p)
 	{
 	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, in p));
 	}
+#nullable restore
 
 #if B_MOVIE_MARTIAL_ARTS
     public int UsingPolearmInBMovie {
@@ -871,13 +860,12 @@ namespace djack.RogueSurvivor.Data
     public Defence Defence {
       get {
         if (IsSleeping) return Defence.BLANK;
-        Defence baseDefence = CurrentDefence;
         var skills = Sheet.SkillTable;
         int num1 = Rules.SKILL_AGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
-        float num2 = (float) (baseDefence.Value + num1);
+        float num2 = (float) (m_CurrentDefence.Value + num1);
         if (IsExhausted) num2 /= 2f;
         else if (IsSleepy) num2 *= 0.75f;
-        return new Defence((int) num2, baseDefence.Protection_Hit, baseDefence.Protection_Shot);
+        return new Defence((int) num2, m_CurrentDefence.Protection_Hit, m_CurrentDefence.Protection_Shot);
       }
     }
 
@@ -1088,7 +1076,7 @@ namespace djack.RogueSurvivor.Data
 
     public Attack RangedAttack(int distance, Actor target = null)
     {
-      return HypotheticalRangedAttack(CurrentRangedAttack, distance, target);
+      return HypotheticalRangedAttack(m_CurrentRangedAttack, distance, target);
     }
 
 #nullable enable

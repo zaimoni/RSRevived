@@ -737,26 +737,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-	protected HashSet<Point> FriendsLoF()
-	{
-      var enemies = enemies_in_FOV;
-      var friends = friends_in_FOV;
-	  if (0 >= (enemies?.Count ?? 0)) return null;
-	  if (0 >= (friends?.Count ?? 0)) return null;
-	  var tmp = new HashSet<Point>();
-	  foreach(var f in friends) {
-        if (!f.Value.HasEquipedRangedWeapon()) continue;
-	    foreach(var e in enemies) {
-		  if (!f.Value.IsEnemyOf(e.Value)) continue;
-		  if (f.Value.CurrentRangedAttack.Range<Rules.GridDistance(f.Value.Location,e.Value.Location)) continue;
-		  List<Point> line = new List<Point>();
-	      LOS.CanTraceViewLine(f.Value.Location, e.Value.Location, f.Value.CurrentRangedAttack.Range, line);
-          tmp.UnionWith(line);
-		}
-	  }
-	  return (0<tmp.Count ? tmp : null);
-	}
-
     protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other?.IsDead ?? true) return null;

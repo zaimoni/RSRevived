@@ -1592,6 +1592,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
+	protected HashSet<Point> FriendsLoF()
+	{
+      var enemies = enemies_in_FOV;
+	  if (null == enemies) return null;
+      var friends = friends_in_FOV;
+	  if (null == friends) return null;
+	  var tmp = new HashSet<Point>();
+      short range;
+	  foreach(var f in friends) {
+        if (!f.Value.HasEquipedRangedWeapon()) continue;
+        range = f.Value.CurrentRangedAttack.Range;
+        var f_loc = f.Value.Location;
+	    foreach(var e in enemies) {
+          var e_loc = e.Value.Location;
+		  if (range < Rules.GridDistance(f_loc, e_loc)) continue;
+		  List<Point> line = new List<Point>();
+	      if (LOS.CanTraceViewLine(f_loc, e_loc, range, line)) tmp.UnionWith(line);
+		}
+	  }
+	  return (0<tmp.Count ? tmp : null);
+	}
+
     protected ActorAction DecideMove(IEnumerable<Point> src)
 	{
 #if DEBUG
