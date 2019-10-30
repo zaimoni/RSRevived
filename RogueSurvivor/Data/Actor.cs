@@ -313,18 +313,15 @@ namespace djack.RogueSurvivor.Data
 
     public int AudioRange { get { return m_Sheet.BaseAudioRange + m_AudioRangeMod; } }
     public int AudioRangeMod { get { return m_AudioRangeMod; } }
-#nullable restore
 
     public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
     public ref Attack CurrentRangedAttack { get { return ref m_CurrentRangedAttack; } }
     public ref Defence CurrentDefence { get { return ref m_CurrentDefence; } }
 
-#nullable enable
     // Leadership
     public Actor? Leader { get { return m_Leader; } }
     public Actor? LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; } }
     public bool HasLeader { get { return !(m_Leader?.IsDead ?? true); } }
-#nullable restore
 
     public int TrustInLeader {
       get { return m_TrustInLeader; }
@@ -337,7 +334,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     public bool HasBondWith(Actor target)
     {
       if (Leader == target)      return TRUST_BOND_THRESHOLD <= TrustInLeader;

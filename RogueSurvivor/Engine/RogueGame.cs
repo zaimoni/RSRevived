@@ -8224,8 +8224,7 @@ namespace djack.RogueSurvivor.Engine
           if (itemRangedWeapon.Ammo <= 0) break;
           if (defender.IsDead) {
             --itemRangedWeapon.Ammo;
-            Attack currentRangedAttack = attacker.CurrentRangedAttack;
-            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, currentRangedAttack.Verb))));
+            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, attacker.CurrentRangedAttack.Verb))));
             break;
           }
           DoSingleRangedAttack(attacker, defender, LoF, 2);
@@ -8240,14 +8239,14 @@ namespace djack.RogueSurvivor.Engine
     private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
       // stamina penalty is simply copied through from the base ranged attack (calculated below)
-      attacker.SpendStaminaPoints(attacker.CurrentRangedAttack.StaminaPenalty);
-      if (attacker.CurrentRangedAttack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
+      ref var r_attack = ref attacker.CurrentRangedAttack;
+      attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
+      if (r_attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
         AddMessage(MakeMessage(attacker, " : weapon jam!"));
       } else {
         int distance = Rules.InteractionDistance(attacker.Location, defender.Location);
-        ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
-        if (itemRangedWeapon == null) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
+        if (!(attacker.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
         // RS Alpha 9 considered glass objects perfect ablative armor for the target, but didn't inform the AI accordingly
 #if OBSOLETE
