@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Data
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
     // we do not consider actors to block exits when pathfinding
-    public string ReasonIsBlocked(Actor actor=null) {
+    public string ReasonIsBlocked(Actor actor=null) {   // \todo a couple of cold-path callers would like out vars for the actor and mapObjectAt failure modes
       if (null!=actor) {
         Actor actorAt = Location.Actor;
         if (actorAt != null) return string.Format("{0} is blocking your way.", actorAt.Name);

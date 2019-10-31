@@ -12140,7 +12140,8 @@ namespace djack.RogueSurvivor.Engine
         if (player.Controller.CanSee(view)) players.Add(player);
       }
 
-      survey.DoForEach(pt => id_player(map.GetActorAtExt(pt)));
+      if (map.IsInBounds(survey.Location) && map.IsInBounds(survey.Location+survey.Size)) survey.DoForEach(pt => id_player(map.GetActorAt(pt)));
+      else survey.DoForEach(pt => id_player(map.GetActorAtExt(pt)));
       var e = map.GetExitAt(position);
       if (null != e) id_player(e.Location.Actor);
 

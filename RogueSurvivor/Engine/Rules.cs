@@ -409,6 +409,9 @@ namespace djack.RogueSurvivor.Engine
         return null;
       }
 
+      // While this is a logical point for breaking off full pathability processing, the tests are themselves surprisingly expensive
+      // 2019-10-31: both actor.Controller.CanSee(loc) and outside-of-FOV range test are profile-slow
+
       // unclear whether B_MOVIE_MARTIAL_ARTS requires pathfinding changes or not; changes would go here
       var map = loc.Map;
       var point = loc.Position;
