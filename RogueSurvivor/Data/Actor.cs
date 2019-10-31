@@ -396,11 +396,9 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
     }
 
+#nullable enable
     private string ReasonCantCancelLead(Actor target)
     {
-#if DEBUG
-      if (target == null) throw new ArgumentNullException(nameof(target));
-#endif
       if (target.Leader != this) return "not your follower";
       if (target.IsSleeping) return "sleeping";
       return "";
@@ -419,7 +417,7 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    private string ReasonCantShout()
+    private string ReasonCantShout()    // this is here because there could be equipment that blocks shouting
     {
       if (!Model.Abilities.CanTalk) return "can't talk";
       return "";
@@ -440,12 +438,8 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantChatWith(Actor target)
 	{
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       if (!Model.Abilities.CanTalk) return "can't talk";
       if (!target.Model.Abilities.CanTalk) return string.Format("{0} can't talk", target.TheName);
-      if (IsSleeping) return "sleeping";
       if (target.IsSleeping) return string.Format("{0} is sleeping", target.TheName);
       return "";
 	}
@@ -462,6 +456,7 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantChatWith(target));
     }
 #endif
+#nullable restore
 
 	private string ReasonCantSwitchPlaceWith(Actor target)
 	{
@@ -2160,7 +2155,6 @@ namespace djack.RogueSurvivor.Data
       if (null == powGen) throw new ArgumentNullException(nameof(powGen));
 #endif
       if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
-      if (IsSleeping) return "is sleeping";
       return "";
 	}
 
@@ -2399,7 +2393,6 @@ namespace djack.RogueSurvivor.Data
     {
       if (!Location.Map.HasExitAt(in exitPoint)) return "no exit there";
       if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
-      if (IsSleeping) return "is sleeping";
       return "";
     }
 
@@ -2821,7 +2814,6 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantSleep()
     {
-      if (IsSleeping) return "already sleeping";
       if (!Model.Abilities.HasToSleep) return "no ability to sleep";
       if (IsHungry || IsStarving) return "hungry";
       if (SleepPoints >= MaxSleep - WorldTime.TURNS_PER_HOUR) return "not sleepy at all";
