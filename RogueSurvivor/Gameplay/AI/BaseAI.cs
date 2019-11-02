@@ -931,15 +931,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Exit exitAt = m_Actor.Location.Exit;
       if (null == exitAt) return null;
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
-      string reason = exitAt.ReasonIsBlocked(m_Actor);
-      if (string.IsNullOrEmpty(reason)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
+      if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
       if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
-        Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & UseExitFlags.BREAK_BLOCKING_OBJECTS) != UseExitFlags.NONE) {
-        var mapObjectAt = exitAt.Location.MapObject;
         if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }

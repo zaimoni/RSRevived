@@ -1644,7 +1644,7 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
-          if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location);
+          if (tmp.IsLegal() && tmp.IsNotBlocked) ret.Add(exit.Location);
         } else {
           ret.Add(exit.Location);
           // simulate Exit::ReasonIsBlocked
@@ -1684,7 +1684,7 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
-          if (tmp.IsLegal() && !tmp.IsBlocked) ret.Add(exit.Location, tmp);
+          if (tmp.IsLegal() && tmp.IsNotBlocked) ret.Add(exit.Location, tmp);
         } else {
           ret.Add(exit.Location, tmp);
           // simulate Exit::ReasonIsBlocked

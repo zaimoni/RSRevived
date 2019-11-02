@@ -754,7 +754,7 @@ namespace djack.RogueSurvivor.Data
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
     { // disallow secret maps
 	  // should be at least one by construction
-	  exits = new HashSet<Exit>(m_Exits.Values.Where(e => string.IsNullOrEmpty(e.ReasonIsBlocked())));
+	  exits = new HashSet<Exit>(m_Exits.Values.Where(e => e.IsNotBlocked()));
 	  var exit_maps = new HashSet<Map>(destination_maps.Get);
       if (1>=exit_maps.Count) return exit_maps;
 retry:

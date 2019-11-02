@@ -25,19 +25,39 @@ namespace djack.RogueSurvivor.Data
     {
       m_Location = new Location(toMap,toPosition);
     }
-#nullable restore
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
     // we do not consider actors to block exits when pathfinding
-    public string ReasonIsBlocked(Actor actor=null) {   // \todo a couple of cold-path callers would like out vars for the actor and mapObjectAt failure modes
+    public string ReasonIsBlocked(Actor? actor=null) {
       if (null!=actor) {
-        Actor actorAt = Location.Actor;
+        var actorAt = Location.Actor;
         if (actorAt != null) return string.Format("{0} is blocking your way.", actorAt.Name);
       }
       var mapObjectAt = Location.MapObject;
       if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return string.Format("{0} is blocking your way.", mapObjectAt.AName);
       return "";
     }
+
+    public bool IsNotBlocked(Actor? actor=null) {
+      if (null!=actor) {
+        var actorAt = Location.Actor;
+        if (actorAt != null) return false; // string.Format("{0} is blocking your way.", actorAt.Name);
+      }
+      var mapObjectAt = Location.MapObject;
+      if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return false; // string.Format("{0} is blocking your way.", mapObjectAt.AName);
+      return true;
+    }
+
+
+    public bool IsNotBlocked(out Actor? actorAt, out MapObject? mapObjectAt, Actor? actor=null) {   // \todo a couple of cold-path callers would like out vars for the actor and mapObjectAt failure modes
+      mapObjectAt = null;
+      actorAt = (null != actor) ? Location.Actor : null;
+      if (actorAt != null) return true; // string.Format("{0} is blocking your way.", actorAt.Name);
+      mapObjectAt = Location.MapObject;
+      if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return true; // string.Format("{0} is blocking your way.", mapObjectAt.AName);
+      return false;
+    }
+#nullable restore
 
     public override string ToString()
     {

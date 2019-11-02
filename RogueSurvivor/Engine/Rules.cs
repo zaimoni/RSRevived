@@ -425,10 +425,8 @@ namespace djack.RogueSurvivor.Engine
           // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
           Exit exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
           if (null != exit && exit.Location==loc) {
-           if (string.IsNullOrEmpty(exit.ReasonIsBlocked(actor))) return new ActionUseExit(actor, actor.Location);
-           Actor a = exit.Location.Actor;
+           if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);
            if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
-           var obj = exit.Location.MapObject;
            if (obj != null && actor.CanBreak(obj)) return new ActionBreak(actor, obj);
            return null;
           }

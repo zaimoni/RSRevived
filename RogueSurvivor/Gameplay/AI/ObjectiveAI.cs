@@ -1690,9 +1690,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  while(0<tmp.Count) {
         var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
-        if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
-          continue;
-        };
+        if (ret is ActionUseExit use_exit && use_exit.IsNotBlocked) continue;
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            var ok_dests = ai.WantToGoHere(shove.Target.Location);
            if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
@@ -1797,7 +1795,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
         }
       }
-      if (x is ActionUseExit exit && exit.IsBlocked) return true;
+      if (x is ActionUseExit exit && !exit.IsNotBlocked) return true;
 
       return false;
     }
