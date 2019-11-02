@@ -623,6 +623,7 @@ namespace djack.RogueSurvivor.Data
 	  m_Name = prefix+" "+m_Name;
 	}
 
+#nullable enable
     public int DamageBonusVsUndeads {
       get {
         return SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
@@ -634,22 +635,25 @@ namespace djack.RogueSurvivor.Data
       return baseRange + SKILL_STRONG_THROW_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG);
     }
 
-    private string ReasonCouldntThrowTo(Point pos, List<Point> LoF)
+    private string ReasonCouldntThrowTo(ItemGrenadeModel model, Point pos, List<Point>? LoF)
     {
-      LoF?.Clear();
-      var itemGrenade = GetEquippedWeapon() as ItemGrenade;
-      var itemGrenadePrimed = GetEquippedWeapon() as ItemGrenadePrimed;
-      if (itemGrenade == null && itemGrenadePrimed == null) return "no grenade equipped";
-
-      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
-      int maxRange = MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
+      int maxRange = MaxThrowRange(model.MaxThrowDistance);
       if (Rules.GridDistance(Location.Position, in pos) > maxRange) return "out of throwing range";
       if (!LOS.CanTraceThrowLine(in m_Location, in pos, maxRange, LoF)) return "no line of throwing";
       return "";
     }
 
-    public bool CanThrowTo(Point pos, out string reason, List<Point> LoF=null)
+    private string ReasonCouldntThrowTo(Point pos, List<Point>? LoF)
     {
+      LoF?.Clear();
+      var w = GetEquippedWeapon();
+      if (w is ItemGrenade grenade) return ReasonCouldntThrowTo(grenade.Model, pos, LoF);
+      if (w is ItemGrenadePrimed primed) return ReasonCouldntThrowTo(primed.Model.GrenadeModel, pos, LoF);
+      return "no grenade equipped";
+    }
+
+    public bool CanThrowTo(Point pos, out string reason, List<Point>? LoF=null)
+    {  // 2019-11-02 release-mode IL Code size       18 (0x12)
       reason = ReasonCouldntThrowTo(pos,LoF);
       return string.IsNullOrEmpty(reason);
     }
@@ -673,7 +677,6 @@ namespace djack.RogueSurvivor.Data
   public int ComputeChancesRangedHit(Actor target, int shotCounter)
   {
 #if DEBUG
-    if (null == target) throw new ArgumentNullException(nameof(target));
     if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
 #endif
     Attack attack = RangedAttack(Rules.InteractionDistance(in m_Location,target.Location),target);
@@ -686,7 +689,6 @@ namespace djack.RogueSurvivor.Data
     return (int)(100* ranged_hit);
   }
 
-#nullable enable
     // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)
     {
@@ -804,7 +806,6 @@ namespace djack.RogueSurvivor.Data
 	{
 	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, in p));
 	}
-#nullable restore
 
 #if B_MOVIE_MARTIAL_ARTS
     public int UsingPolearmInBMovie {
@@ -821,9 +822,6 @@ namespace djack.RogueSurvivor.Data
 
     public string ReasonCantMeleeAttack(Actor target)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
 #if B_MOVIE_MARTIAL_ARTS
       bool in_range = Rules.IsAdjacent(in m_Location, target.Location);
       // even martial arts 1 unlocks extended range.
@@ -860,7 +858,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor target = null)
+    public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor? target = null)
     {
       Attack baseAttack = model.BaseMeleeAttack(in Sheet);
       var skills = Sheet.SkillTable;
@@ -903,7 +901,7 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) hit, baseAttack.DamageValue + damageBonus, baseAttack.StaminaPenalty);
     }
 
-    public Attack UnarmedMeleeAttack(Actor target=null)
+    public Attack UnarmedMeleeAttack(Actor? target=null)
     {
       var skills = Sheet.SkillTable;
       int num3 = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
@@ -923,17 +921,15 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
-#nullable enable
     public ItemMeleeWeapon? GetBestMeleeWeapon()
     {
       var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
-      int martial_arts_rating = UnarmedMeleeAttack().Rating;
-      int num1 = 0;
+      int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         int num2 = MeleeWeaponAttack(obj.Model).Rating;
-        if (num2 <= martial_arts_rating || num2 <= num1) continue;
+        if (num2 <= num1) continue;
         num1 = num2;
         itemMeleeWeapon1 = obj;
       }
@@ -944,12 +940,11 @@ namespace djack.RogueSurvivor.Data
     {
       var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
-      int martial_arts_rating = UnarmedMeleeAttack().Rating;
-      int num1 = 0;
+      int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         int num2 = MeleeWeaponAttack(obj.Model, toBreak).Rating;
-        if (num2 <= martial_arts_rating || num2 <= num1) continue;
+        if (num2 <= num1) continue;
         num1 = num2;
         itemMeleeWeapon1 = obj;
       }
@@ -970,7 +965,6 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     }
-#nullable restore
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
@@ -991,7 +985,7 @@ namespace djack.RogueSurvivor.Data
       return UnarmedMeleeAttack(target);
     }
 
-    public Attack HypotheticalRangedAttack(Attack baseAttack, int distance, Actor target = null)
+    public Attack HypotheticalRangedAttack(Attack baseAttack, int distance, Actor? target = null)
     {
       int hitMod = 0;
       int dmgBonus = 0;
@@ -1065,12 +1059,11 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) hit, baseAttack.DamageValue + dmgBonus, baseAttack.StaminaPenalty, baseAttack.Range, (int)rapidHit1, (int)rapidHit2);
     }
 
-    public Attack RangedAttack(int distance, Actor target = null)
+    public Attack RangedAttack(int distance, Actor? target = null)
     {
       return HypotheticalRangedAttack(m_CurrentRangedAttack, distance, target);
     }
 
-#nullable enable
     public bool HasActiveCellPhone {
       get {
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
@@ -1096,7 +1089,6 @@ namespace djack.RogueSurvivor.Data
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
-#nullable restore
 
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
     public bool HasActiveArmyRadio {
@@ -1118,11 +1110,8 @@ namespace djack.RogueSurvivor.Data
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
         // XXX disallow murderers under certain conditions, etc
         var leader = LiveLeader;
-        if (null != leader) return leader.HasActivePoliceRadio;
-        if (0 >= CountFollowers) return false;
-        foreach(Actor fo in m_Followers) {
-          if (fo.HasPoliceRadio) return true;
-        }
+        if (null != leader) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
+        if (null != m_Followers) foreach(Actor fo in m_Followers) if (fo.HasPoliceRadio) return true;
         return false;
       }
     }
@@ -1131,12 +1120,8 @@ namespace djack.RogueSurvivor.Data
       get {
         if (!WantCellPhone) return false;
         var leader = LiveLeader;
-        if (null != leader) return leader.HasActiveCellPhone;
-        if (0 < CountFollowers) {
-          foreach(Actor fo in m_Followers) {
-            if (fo.HasCellPhone) return true;
-          }
-        }
+        if (null != leader) return leader.HasActiveCellPhone; // XXX \todo change target: deep chain of command
+        if (null != m_Followers) foreach(Actor fo in m_Followers) if (fo.HasCellPhone) return true;
         return false;
       }
     }
@@ -1147,19 +1132,16 @@ namespace djack.RogueSurvivor.Data
         bool have_cellphone = HasCellPhone;
         bool have_army = HasArmyRadio;
         if (!have_cellphone && !have_army) return true;
-        var leader = LiveLeader;
-        if (null != leader) {
-          if (have_cellphone && leader.HasCellPhone) return false;
-          if (have_army && leader.HasArmyRadio) return false;
+
+        bool out_of_comm(Actor a) {
+          if (have_cellphone && a.HasCellPhone) return false;
+          if (have_army && a.HasArmyRadio) return false;
           return true;
         }
-        if (0 < CountFollowers) {
-          foreach(Actor fo in m_Followers) {
-            if (have_cellphone && fo.HasCellPhone) continue;
-            if (have_army && fo.HasArmyRadio) continue;
-            return true;
-          }
-        }
+
+        var leader = LiveLeader;
+        if (null != leader) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (null != m_Followers) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
         return false;
       }
     }
@@ -1169,39 +1151,27 @@ namespace djack.RogueSurvivor.Data
         bool have_police = HasPoliceRadio;
         bool have_army = HasArmyRadio;
         if (!have_police && !have_army) return true;
-        var leader = LiveLeader;
-        if (null != leader) {
-          if (have_police && leader.HasPoliceRadio) return false;
-          if (have_army && leader.HasArmyRadio) return false;
+
+        bool out_of_comm(Actor a) {
+          if (have_police && a.HasPoliceRadio) return false;
+          if (have_army && a.HasArmyRadio) return false;
           return true;
         }
-        if (0 < CountFollowers) {
-          foreach(Actor fo in m_Followers) {
-            if (have_police && fo.HasPoliceRadio) continue;
-            if (have_army && fo.HasArmyRadio) continue;
-            return true;
-          }
-        }
+
+        var leader = LiveLeader;
+        if (null != leader) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (null != m_Followers) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
         return false;
       }
     }
 
-#nullable enable
     public ItemTracker? GetEquippedCellPhone()
     {
       return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
-#nullable restore
 
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
-#if DEBUG
-      if (null == op) throw new ArgumentNullException(nameof(op));
-      if (null == test) throw new ArgumentNullException(nameof(test));
-      if (null == msg_player) throw new ArgumentNullException(nameof(msg_player));
-      if (null == defer_msg_player) throw new ArgumentNullException(nameof(msg_player));
-      if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
-#endif
       bool player_initiated = Engine.RogueGame.IsPlayer(this);
       bool simulating = Engine.RogueGame.IsSimulating;
       bool police_radio = HasActivePoliceRadio;
@@ -1247,7 +1217,7 @@ namespace djack.RogueSurvivor.Data
         },d => radio_range.Contains(d.WorldPosition));
     }
 
-    public Actor Sees(Actor a)
+    public Actor? Sees(Actor? a)
     {
       if (null == a) return null;
       if (this == a) return null;
@@ -1255,7 +1225,6 @@ namespace djack.RogueSurvivor.Data
       return (Controller.IsVisibleTo(a) ? a : null);  // inline IsVisibleToPlayer here, for generality
     }
 
-#nullable enable
     // leadership/follower handling
     public void AddFollower(Actor other)
     {
@@ -1311,7 +1280,6 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<Actor>? Aggressing { get { return m_AggressorOf; } }
     public IEnumerable<Actor>? Aggressors { get { return m_SelfDefenceFrom; } }
-#nullable restore
 
     // these two are tightly integrated.
     private void MarkAsAggressorOf(Actor other)
@@ -1340,7 +1308,7 @@ namespace djack.RogueSurvivor.Data
     public void RecordAggression(Actor other)
     {
 #if DEBUG
-       if (null==other || other.IsDead) throw new ArgumentNullException(nameof(other));
+       if (other.IsDead) throw new ArgumentNullException(nameof(other));
        if (IsDead) throw new ArgumentNullException("this.IsDead");
 #endif
        MarkAsAggressorOf(other);
@@ -1356,6 +1324,7 @@ namespace djack.RogueSurvivor.Data
     {
       return m_SelfDefenceFrom?.Contains(other) ?? false;
     }
+#nullable restore
 
     private void RemoveAggressorOf(Actor other)
     {
