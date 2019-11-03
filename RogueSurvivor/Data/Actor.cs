@@ -1324,7 +1324,6 @@ namespace djack.RogueSurvivor.Data
     {
       return m_SelfDefenceFrom?.Contains(other) ?? false;
     }
-#nullable restore
 
     private void RemoveAggressorOf(Actor other)
     {
@@ -1354,9 +1353,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsEnemyOf(Actor target, bool checkGroups = true)    // extra parameter from RS Alpha 10
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       if (Faction.IsEnemyOf(target.Faction)) return true;
       if (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
       if (ArePersonalEnemies(target)) return true;
@@ -1369,6 +1365,7 @@ namespace djack.RogueSurvivor.Data
       // following *should* be symmetric
       return (m_AggressorOf?.Contains(other) ?? false) || (m_SelfDefenceFrom?.Contains(other) ?? false) || other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this);
     }
+#nullable restore
 
     public bool AreIndirectEnemies(Actor other)
     {
@@ -1406,16 +1403,14 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+#nullable enable
     // not just our FoV.
-    public List<Actor> GetEnemiesInFov(HashSet<Point> fov)
+    public List<Actor>? GetEnemiesInFov(HashSet<Point> fov)
     {
-#if DEBUG
-      if (null == fov) throw new ArgumentNullException(nameof(fov));
-#endif
       if (1 >= fov.Count) return null;  // sleeping?
       var actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
       foreach (Point position in fov) {
-        Actor actorAt = Location.Map.GetActorAtExt(position);
+        var actorAt = Location.Map.GetActorAtExt(position);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
           actorList.Add(actorAt);
         }
@@ -1423,7 +1418,7 @@ namespace djack.RogueSurvivor.Data
       var e = Location.Exit;
       if (null!=e) {
         var a = e.Location.Actor;
-        if (null!=a) actorList.Add(a);
+        if (null!=a && IsEnemyOf(a)) actorList.Add(a);
       }
       if (2 <= actorList.Count) {
         actorList.Sort((Comparison<Actor>) ((a, b) =>
@@ -1437,7 +1432,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // stripped down from above
-#nullable enable
     public bool AnyEnemiesInFov(HashSet<Point> fov)
     {
       if (1 >= fov.Count) return false;  // sleeping?
@@ -1447,19 +1441,19 @@ namespace djack.RogueSurvivor.Data
       }
       return false;
     }
-#nullable restore
 
     // We do not handle the enemy relations here.
-    public HashSet<Actor> Allies {
+    public HashSet<Actor>? Allies {
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
-        if (HasLeader) {    // 2019-08-14: currently mutually exclusive with above for NPCs
-          ret.Add(Leader);
-          ret.UnionWith(Leader.m_Followers);
+        var leader = LiveLeader;
+        if (null != leader) { // 2019-08-14: currently mutually exclusive with above for NPCs
+          ret.Add(leader);
+          ret.UnionWith(leader.m_Followers);
           ret.Remove(this);
         }
         return (0<ret.Count ? ret : null);
@@ -1467,7 +1461,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // ignores faction alliances
-    public HashSet<Actor> ChainOfCommand {
+    public HashSet<Actor>? ChainOfCommand {
       get {
         var ret = new HashSet<Actor>();
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
@@ -1504,16 +1498,17 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public List<Actor> FilterAllies(IEnumerable<Actor> src, Predicate<Actor> test = null)
+    public List<Actor>? FilterAllies(IEnumerable<Actor>? src, Predicate<Actor>? test = null)
     {
         if (null == src || !src.Any()) return null;
-        List<Actor> ret = null;
+        List<Actor>? ret = null;
         foreach(var a in src) {
           if (!IsAlly(a)) continue;
           if (null==test || test(a)) (ret ?? (ret = new List<Actor>(src.Count()))).Add(a);
         }
         return ret;
     }
+#nullable restore
 
     // map-related, loosely
     public void RemoveFromMap()
@@ -1576,9 +1571,8 @@ namespace djack.RogueSurvivor.Data
         return Location.Map.IsInsideAt(Location.Position);
       }
     }
-#nullable restore
 
-    public List<Point> FastestStepTo(Map m,Point src,Point dest)
+    private List<Point>? FastestStepTo(Map m,Point src,Point dest)
     {
       int dist = Rules.GridDistance(in src,in dest);
       if (1==dist) return new List<Point>{ dest };
@@ -1587,15 +1581,14 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <param name="target">may be denormalized to guarantee origin.Map==target.Map</param>
-    private List<List<Point>> _MinStepPathTo(in Location origin, in Location target)
+    private List<List<Point>>? _MinStepPathTo(in Location origin, in Location target)
     {
       Map m = origin.Map;
       Point src = origin.Position;
       Point dest = target.Position;
-      var ret = new List<List<Point> >();
-      List<Point> tmp = FastestStepTo(m,src,dest);
+      var tmp = FastestStepTo(m,src,dest);
       if (null == tmp) return null;
-      ret.Add(tmp);
+      var ret = new List<List<Point>> { tmp };
       while(!tmp.Contains(dest)) {
         int dist = Rules.GridDistance(in dest,tmp[0]);
         if (1==dist) {
@@ -1603,9 +1596,8 @@ namespace djack.RogueSurvivor.Data
         } else {
           HashSet<Point> tmp2 = new HashSet<Point>();
           foreach(Point pt in tmp) {
-            List<Point> tmp3 = FastestStepTo(m,pt,dest);
-            if (null == tmp3) continue;
-            tmp2.UnionWith(tmp3);
+            var tmp3 = FastestStepTo(m,pt,dest);
+            if (null != tmp3) tmp2.UnionWith(tmp3);
           }
           if (0 >= tmp2.Count) return null;
           tmp = tmp2.ToList();
@@ -1615,7 +1607,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public List<List<Point> > MinStepPathTo(in Location origin, in Location target)
+    public List<List<Point>>? MinStepPathTo(in Location origin, in Location target)
     {
       if (origin==target) return null;
 
@@ -1626,6 +1618,7 @@ namespace djack.RogueSurvivor.Data
       }
       return _MinStepPathTo(in origin, in target);
     }
+#nullable restore
 
     public List<Location> OneStepRange(Location loc)
     {

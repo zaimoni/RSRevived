@@ -18,11 +18,13 @@ namespace djack.RogueSurvivor.Engine.Items
 
     private bool m_IsActivated;
     private bool m_IsTriggered;
-    private Actor m_Owner;  // alpha10
+#nullable enable
+    private Actor? m_Owner;  // alpha10
     // we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
     // this allows the death of the trap-setter to not affect other group mates
     // this also allows overhearing the explanation via police radio to confer ability to pass
-    private List<Actor> m_Known;    // RS Revived
+    private List<Actor>? m_Known;    // RS Revived
+#nullable restore
 
     // unclear whether current game logic allows a trap to be both activated and triggered at once.
     // leave getter/setter overhead in place in case these should be mutually exclusive.

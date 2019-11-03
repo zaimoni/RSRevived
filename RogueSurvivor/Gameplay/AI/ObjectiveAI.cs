@@ -3515,7 +3515,7 @@ restart_single_exit:
         if (!m_Actor.MayTakeFromStackAt(x.Key)) {
             if (!imStarvingOrCourageous && 1>=m_Actor.Controller.FastestTrapKill(x.Key)) continue;  // destination deathtrapped
             // check for iron gates, etc in way
-            List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
+            var path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
             if (null == path) continue;
             List<Point> test = path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt)));
             if (0 >= test.Count) continue;
