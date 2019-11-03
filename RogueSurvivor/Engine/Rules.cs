@@ -418,9 +418,8 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, in loc);
       if (loc.IsWalkableFor(actor, out reason)) {
-        reason = "";
+        var actionMoveStep = new ActionMoveStep(actor, in loc);
         if (map!=actor.Location.Map) {
           // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
           Exit exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
@@ -437,8 +436,7 @@ namespace djack.RogueSurvivor.Engine
       Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
 
       // respec of IsWalkableFor guarantees that any actor will be adjacent
-      reason = actionMoveStep.FailReason;
-      Actor actorAt = map.GetActorAt(point);
+      var actorAt = map.GetActorAt(point);
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
           return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
