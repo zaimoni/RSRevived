@@ -3517,10 +3517,7 @@ restart_single_exit:
             // check for iron gates, etc in way
             var path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
             if (null == path) continue;
-            List<Point> test = path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt)));
-            if (0 >= test.Count) continue;
-            path[0] = test;
-            if (!imStarvingOrCourageous && path[0].Any(pt=> 1>=m_Actor.Controller.FastestTrapKill(new Location(map,pt)))) continue;
+            if (0 >= path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt))).Count) continue;
         }
         ret.Add(x.Key,x.Value);
       }
