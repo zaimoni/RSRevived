@@ -2648,10 +2648,11 @@ restart:
       return navigate;
     }
 
+#nullable enable
     protected FloodfillPathfinder<Point> PathfinderFor(Dictionary<Point, int> goal_costs,Map m)
     {
 #if DEBUG
-      if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
+      if (0 >= goal_costs.Count) throw new ArgumentNullException(nameof(goal_costs));
 #endif
       var navigate = m.PathfindSteps(m_Actor);
 
@@ -2666,20 +2667,21 @@ restart:
     protected FloodfillPathfinder<Point> PathfinderFor(IEnumerable<Point> goals)
     {
 #if DEBUG
-      if (!goals?.Any() ?? true) throw new ArgumentNullException(nameof(goals));
+      if (!goals.Any()) throw new ArgumentNullException(nameof(goals));
 #endif
       var navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
 
       navigate.GoalDistance(goals, m_Actor.Location.Position);
       return navigate;
     }
+#nullable restore
 
     protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        var legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
         int current_cost = navigate.Cost(m_Actor.Location.Position);
         if (!legal_steps?.Any(pt => navigate.Cost(pt)<=current_cost) ?? true) {
           return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);

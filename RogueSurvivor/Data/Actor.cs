@@ -1618,9 +1618,8 @@ namespace djack.RogueSurvivor.Data
       }
       return _MinStepPathTo(in origin, in target);
     }
-#nullable restore
 
-    public List<Location> OneStepRange(Location loc)
+    public List<Location>? OneStepRange(Location loc)
     {
       var ret = new List<Location>();
       foreach(Direction dir in Direction.COMPASS) {
@@ -1633,7 +1632,7 @@ namespace djack.RogueSurvivor.Data
 #endif
         ret.Add(test);
       }
-      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
@@ -1653,13 +1652,13 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
-    public List<Point> OneStepRange(Map m,Point p)
+    public List<Point>? OneStepRange(Map m,Point p)
     {
       IEnumerable<Point> tmp = p.Adjacent().Where(pt=>m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Location,ActorAction> OnePathRange(in Location loc)
+    public Dictionary<Location,ActorAction>? OnePathRange(in Location loc)
     {
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
@@ -1673,7 +1672,7 @@ namespace djack.RogueSurvivor.Data
 #endif
         ret.Add(test, tmp);
       }
-      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
@@ -1693,11 +1692,12 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
-    public List<Point> OnePathRange(Map m, Point p)
+    public List<Point>? OnePathRange(Map m, Point p)
     {
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(m,pt)));
       return tmp.Any() ? tmp.ToList() : null;
     }
+#nullable restore
 
     public Dictionary<Location,ActorAction> OnePath(in Location loc, Dictionary<Location, ActorAction> already)
     {  // 2019-08-26: release-mode IL Code size       281 (0x119) [invalidated]
@@ -1763,7 +1763,8 @@ namespace djack.RogueSurvivor.Data
       return OnePath(loc.Map,loc.Position,already);
     }
 
-    public List<Point> LegalSteps { get { return OneStepRange(Location.Map, Location.Position);  } }
+#nullable enable
+    public List<Point>? LegalSteps { get { return OneStepRange(Location.Map, Location.Position);  } }
 
     public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
@@ -1772,15 +1773,16 @@ namespace djack.RogueSurvivor.Data
 #endif
       var ret = new HashSet<Point>();
       foreach(Point pt in now) {
-        List<Point> tmp = OneStepRange(m,pt);
+        var tmp = OneStepRange(m,pt);
         if (null == tmp) continue;
-        HashSet<Point> tmp2 = new HashSet<Point>(tmp);
+        var tmp2 = new HashSet<Point>(tmp);
         tmp2.ExceptWith(past);
         tmp2.ExceptWith(now);
         ret.UnionWith(tmp2);
       }
       return (0<ret.Count ? ret : null);
     }
+#nullable restore
 
     private string ReasonCantBreak(MapObject mapObj)
     {
