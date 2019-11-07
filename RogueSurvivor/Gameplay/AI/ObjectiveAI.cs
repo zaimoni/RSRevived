@@ -3265,7 +3265,7 @@ restart_single_exit:
           HashSet<Point> now = new HashSet<Point>{ a.Location.Position };
           do {
             a_turns--;
-            HashSet<Point> tmp2 = a.NextStepRange(a.Location.Map,already,now);
+            var tmp2 = a.NextStepRange(a.Location.Map,already,now);
             if (null == tmp2) break;
             foreach(Point pt2 in tmp2) {
               aFOV = LOS.ComputeFOVFor(a,new Location(a.Location.Map,pt2));

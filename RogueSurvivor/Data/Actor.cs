@@ -1697,7 +1697,6 @@ namespace djack.RogueSurvivor.Data
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(m,pt)));
       return tmp.Any() ? tmp.ToList() : null;
     }
-#nullable restore
 
     public Dictionary<Location,ActorAction> OnePath(in Location loc, Dictionary<Location, ActorAction> already)
     {  // 2019-08-26: release-mode IL Code size       281 (0x119) [invalidated]
@@ -1715,7 +1714,7 @@ namespace djack.RogueSurvivor.Data
         }
         if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
-      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
         ret.Add(exit.Location, new ActionUseExit(this, in loc));
         // simulate Exit::ReasonIsBlocked
@@ -1763,10 +1762,9 @@ namespace djack.RogueSurvivor.Data
       return OnePath(loc.Map,loc.Position,already);
     }
 
-#nullable enable
     public List<Point>? LegalSteps { get { return OneStepRange(Location.Map, Location.Position);  } }
 
-    public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
+    public HashSet<Point>? NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
 #if DEBUG
       if (!now.Any()) throw new InvalidOperationException("!now.Any() : do not step into nowhere");
@@ -1782,17 +1780,12 @@ namespace djack.RogueSurvivor.Data
       }
       return (0<ret.Count ? ret : null);
     }
-#nullable restore
 
     private string ReasonCantBreak(MapObject mapObj)
     {
-#if DEBUG
-      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
-#endif
       if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
       if (IsTired) return "tired";
-      bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
-      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
+      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !((mapObj as DoorWindow)?.IsBarricaded ?? false)) return "can't break this object";
       if (mapObj.Location.StrictHasActorAt) return "someone is there";
       return "";
     }
@@ -1808,7 +1801,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
     }
 
-#nullable enable
     public bool AbleToPush {
       get {
         if (Model.Abilities.CanPush) return true;
@@ -1858,7 +1850,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantShove(other));
     }
-#nullable restore
 
     private string ReasonCantBeShovedTo(Point toPos)
     {
@@ -1891,14 +1882,12 @@ namespace djack.RogueSurvivor.Data
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
     public bool CanBeShovedTo(in Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(in to)); }
 
-
     public Dictionary<Location, Direction> ShoveDestinations {
       get {
          return Map.ValidDirections(in m_Location, loc => CanBeShovedTo(in loc));
       }
     }
 
-#nullable enable
     // alpha10: pull support
     private string ReasonCantPull(MapObject mapObj, in Point moveToPos)
     {
@@ -2059,7 +2048,6 @@ namespace djack.RogueSurvivor.Data
     {
 	  return string.IsNullOrEmpty(ReasonCantOpen(door));
     }
-#nullable restore
 
     public int BarricadingMaterialNeedForFortification(bool isLarge)
     {
@@ -2115,9 +2103,6 @@ namespace djack.RogueSurvivor.Data
     // E.g., non-CHAR power generators might actually *need fuel*
     private string ReasonCantSwitch(PowerGenerator powGen)
 	{
-#if DEBUG
-      if (null == powGen) throw new ArgumentNullException(nameof(powGen));
-#endif
       if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
       return "";
 	}
@@ -2135,7 +2120,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-#nullable enable
 	private string ReasonCantRecharge(Item it)
 	{
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
@@ -2156,7 +2140,6 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantRecharge(it));
     }
 #endif
-#nullable restore
 
     // event timing
     public void SpendActionPoints(int actionCost)
@@ -2239,25 +2222,14 @@ namespace djack.RogueSurvivor.Data
     }
 
     // infection
-    public int InfectionHPs {
-      get {
-        return MaxHPs + MaxSTA;
-      }
-    }
+    public int InfectionHPs { get { return MaxHPs + MaxSTA; } }
+
     public void Infect(int i) {
-      if (!Engine.Session.Get.HasInfection) return;    // no-op if mode doesn't have infection
-      m_Infection = Math.Min(InfectionHPs, m_Infection + i);
+      if (Engine.Session.Get.HasInfection) m_Infection = Math.Min(InfectionHPs, m_Infection + i);    // intentional no-op if mode doesn't have infection
     }
 
-    public void Cure(int i) {
-      m_Infection = Math.Max(0, m_Infection - i);
-    }
-
-    public int InfectionPercent {
-      get {
-        return 100 * m_Infection / InfectionHPs;
-      }
-    }
+    public void Cure(int i) { m_Infection = Math.Max(0, m_Infection - i); }
+    public int InfectionPercent { get { return 100 * m_Infection / InfectionHPs; } }
 
     // health
     public int MaxHPs {
@@ -2268,10 +2240,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void RegenHitPoints(int hpRegen)
-    {
-      m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen);
-    }
+    public void RegenHitPoints(int hpRegen) { m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen); }
 
     // stamina
     public int NightSTApenalty {
@@ -2298,15 +2267,13 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSTA {
       get {
-        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
-        return Sheet.BaseStaminaPoints + num;
+        return Sheet.BaseStaminaPoints + SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
       }
     }
 
     public bool IsTired {
       get {
-        if (!Model.Abilities.CanTire) return false;
-        return m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
+        return Model.Abilities.CanTire && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
       }
     }
 
@@ -2374,7 +2341,7 @@ namespace djack.RogueSurvivor.Data
 	// Ultimately, we do plan to allow the AI to cross district boundaries
 	private string ReasonCantLeaveMap(Point dest)
 	{
-      Exit exitAt = Location.Map.GetExitAt(dest);
+      var exitAt = Location.Map.GetExitAt(dest);
       if (null == exitAt) return "no exit to leave map with";
       return exitAt.ReasonIsBlocked(this);
 	}
@@ -2448,7 +2415,6 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-#nullable enable
     // likewise inventories
     public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point>? src) {
       var ret = new HashSet<Point>();
@@ -2467,7 +2433,6 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     }
-#nullable restore
 
     public List<Location> MutuallyAdjacentFor(Location a, Location b)
     {
@@ -2507,15 +2472,14 @@ namespace djack.RogueSurvivor.Data
 
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
     {
-      if (Model.Abilities.HasSanity) {
-        if (0 > (m_Sanity -= sanCost)) m_Sanity = 0;
-      }
+      if (Model.Abilities.HasSanity && 0 > (m_Sanity -= sanCost)) m_Sanity = 0;
     }
 
     public void RegenSanity(int sanRegen)   // \todo unclear whether ok to rely on guard clause
     {
       if (Model.Abilities.HasSanity) m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
+#nullable restore
 
     public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this); } }
 
@@ -2677,7 +2641,6 @@ namespace djack.RogueSurvivor.Data
       if (!CanRevive(corpse)) return 0;
       return corpse.FreshnessPercent / 4 + Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
-#nullable restore
 
     public int DamageVsCorpses {
       get { return m_CurrentMeleeAttack.DamageValue / 2 + SKILL_NECROLOGY_CORPSE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY); }
@@ -2741,27 +2704,9 @@ namespace djack.RogueSurvivor.Data
 #endif
 
     public int HoursUntilSleepy { get { return TurnsUntilSleepy/WorldTime.TURNS_PER_HOUR; } }
-
-    public bool IsAlmostSleepy {
-      get {
-        if (!Model.Abilities.HasToSleep) return false;
-        return 3 >= HoursUntilSleepy;
-      }
-    }
-
-    public bool IsSleepy {
-      get {
-        if (Model.Abilities.HasToSleep) return SLEEP_SLEEPY_LEVEL >= SleepPoints;
-        return false;
-      }
-    }
-
-    public bool IsExhausted {
-      get {
-        if (Model.Abilities.HasToSleep) return 0 >= SleepPoints;
-        return false;
-      }
-    }
+    public bool IsAlmostSleepy { get { return Model.Abilities.HasToSleep && 3 >= HoursUntilSleepy; } }
+    public bool IsSleepy { get { return Model.Abilities.HasToSleep && SLEEP_SLEEPY_LEVEL >= SleepPoints; } }
+    public bool IsExhausted { get { return Model.Abilities.HasToSleep && 0 >= SleepPoints; } }
 
     public bool WouldLikeToSleep {
       get {
@@ -2845,7 +2790,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     public bool HasItemOfModel(ItemModel model)
     {
       return m_Inventory?.HasModel(model) ?? false;
@@ -2946,7 +2890,6 @@ namespace djack.RogueSurvivor.Data
       }
       return false;
     }
-#nullable restore
 
     public int ItemNutritionValue(int baseValue)
     {
@@ -2964,7 +2907,6 @@ namespace djack.RogueSurvivor.Data
       return ItemNutritionValue(food.NutritionAt(Location.Map.LocalTime.TurnCounter));
     }
 
-#nullable enable
     public List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
 #if DEBUG
@@ -3206,14 +3148,9 @@ namespace djack.RogueSurvivor.Data
       if (loc != Location && 2*loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
       return false;
     }
-#nullable restore
 
     private string ReasonCantGiveTo(Actor target, Item gift)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentException(nameof(target));
-      if (null == gift) throw new ArgumentException(nameof(gift));
-#endif
       if (IsEnemyOf(target)) return "enemy";
       if (gift.IsEquipped) return "equipped";
       if (target.IsSleeping) return "sleeping";
@@ -3232,11 +3169,12 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
     }
 #endif
+#nullable restore
 
     private string ReasonCantGetFromContainer(Point position)
     {
       if (!Location.Map.GetMapObjectAt(position)?.IsContainer ?? true) return "object is not a container";
-      Inventory itemsAt = Location.Map.GetItemsAt(position);
+      var itemsAt = Location.Map.GetItemsAt(position);
       if (itemsAt == null) return "nothing to take there";
 	  // XXX should be "can't get any of the items in the container"
       if (!IsPlayer && !CanGet(itemsAt.TopItem)) return "cannot take an item";
@@ -3253,7 +3191,6 @@ namespace djack.RogueSurvivor.Data
 	{
 	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
 	}
-
 
     private string ReasonCantEquip(Item it)
     {
