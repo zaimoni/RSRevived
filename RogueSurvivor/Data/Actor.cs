@@ -3169,15 +3169,15 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
     }
 #endif
-#nullable restore
 
     private string ReasonCantGetFromContainer(Point position)
     {
+#if DEBUG
+      if (!IsPlayer) throw new InvalidOperationException("only player uses the get from container action");
+#endif
       if (!Location.Map.GetMapObjectAt(position)?.IsContainer ?? true) return "object is not a container";
       var itemsAt = Location.Map.GetItemsAt(position);
-      if (itemsAt == null) return "nothing to take there";
-	  // XXX should be "can't get any of the items in the container"
-      if (!IsPlayer && !CanGet(itemsAt.TopItem)) return "cannot take an item";
+      if (itemsAt?.IsEmpty ?? true) return "nothing to take there";
       return "";
     }
 
@@ -3191,6 +3191,7 @@ namespace djack.RogueSurvivor.Data
 	{
 	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
 	}
+#nullable restore
 
     private string ReasonCantEquip(Item it)
     {
