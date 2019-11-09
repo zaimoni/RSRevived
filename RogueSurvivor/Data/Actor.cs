@@ -3191,13 +3191,9 @@ namespace djack.RogueSurvivor.Data
 	{
 	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
 	}
-#nullable restore
 
     private string ReasonCantEquip(Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (!it.Model.IsEquipable) return "this item cannot be equipped";
       return "";
@@ -3214,7 +3210,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantEquip(it));
     }
 
-#nullable enable
     private string ReasonCantUnequip(Item it)
     {
       if (!it.IsEquipped) return "not equipped";
@@ -3289,22 +3284,18 @@ namespace djack.RogueSurvivor.Data
 #endif
     private void Clear(Flags f) { m_Flags &= ~f; }
     private void Set(Flags f) { m_Flags |= f; }
-#nullable restore
 
     // vision
     private int DarknessFOV {   // if this ends up on hot path consider inlining
       get {
-        if (Model.Abilities.IsUndead) return Sheet.BaseViewRange;
-        return MINIMAL_FOV;
+        return Model.Abilities.IsUndead ? Sheet.BaseViewRange : MINIMAL_FOV;
       }
     }
 
     // alpha10
     public bool CanSeeSky {
       get {
-        if (IsDead) return false;
-        if (IsSleeping) return false;
-        return Location.Map.Lighting == Lighting.OUTSIDE;
+        return !IsDead && !IsSleeping && Location.Map.Lighting == Lighting.OUTSIDE;
       }
     }
 
@@ -3413,6 +3404,7 @@ namespace djack.RogueSurvivor.Data
         return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Sheet.BaseSmellRating;
       }
     }
+#nullable restore
 
     public int SmellThreshold {
       get {
