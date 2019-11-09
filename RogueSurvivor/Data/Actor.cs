@@ -40,8 +40,6 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_REGEN_WAIT = 2;
     public const int TRUST_BOND_THRESHOLD = Rules.TRUST_MAX;
     public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
-    private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
-    private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
 
     // most/all of these FOV modifiers should space-time scale
     private const short MINIMAL_FOV = 2;
@@ -3404,7 +3402,6 @@ namespace djack.RogueSurvivor.Data
         return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Sheet.BaseSmellRating;
       }
     }
-#nullable restore
 
     public int SmellThreshold {
       get {
@@ -3474,7 +3471,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static event EventHandler<SayArgs> Says;
+    public static event EventHandler<SayArgs>? Says;
 
     // experimental...testing an event approach to this
     public void Say(Actor target, string text, Engine.RogueGame.Sayflags flags)
@@ -3484,7 +3481,7 @@ namespace djack.RogueSurvivor.Data
       if ((flags & Engine.RogueGame.Sayflags.IS_FREE_ACTION) == Engine.RogueGame.Sayflags.NONE)
         SpendActionPoints(Engine.Rules.BASE_ACTION_COST);
 
-      EventHandler<SayArgs> handler = Says; // work around non-atomic test, etc.
+      var handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
         SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE);
         tmp.messages.Add(Engine.RogueGame.MakeMessage(this, string.Format("to {0} : ", (object) target.TheName), sayColor));
@@ -3508,10 +3505,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static event EventHandler<DieArgs> Dies;
+    public static event EventHandler<DieArgs>? Dies;
 
     public void Killed(string reason, Actor killer=null) {
-      EventHandler<DieArgs> handler = Dies; // work around non-atomic test, etc.
+      var handler = Dies; // work around non-atomic test, etc.
       if (null != handler) {
         DieArgs tmp = new DieArgs(this,killer,reason);
         handler(this,tmp);
@@ -3519,7 +3516,7 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-    public static event EventHandler Moving;
+    public static event EventHandler? Moving;
     public void Moved() { Moving?.Invoke(this, null); }
 
     // death-related administrative functions
@@ -3529,7 +3526,6 @@ namespace djack.RogueSurvivor.Data
       ActorScoring.AddKill(victim, Engine.Session.Get.WorldTime.TurnCounter);
     }
 
-#nullable enable
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)
     {
@@ -3563,20 +3559,20 @@ namespace djack.RogueSurvivor.Data
       m_previousSleepPoints = m_SleepPoints;
       m_previousSanity = m_Sanity;
     }
-#nullable restore
 
     public void DropScent()
     {
+      const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
+      const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
+
       // decay suppressor
       if (0 < OdorSuppressorCounter) {
-        OdorSuppressorCounter -= Location.OdorsDecay();
-        if (0 > OdorSuppressorCounter) OdorSuppressorCounter = 0;
+        if (0 > (OdorSuppressorCounter -= Location.OdorsDecay())) OdorSuppressorCounter = 0;
         return;
       }
 
       if (Model.Abilities.IsUndead) {
-        if (!Model.Abilities.IsUndeadMaster) return;
-        Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, UNDEAD_MASTER_SCENT_DROP, Location.Position);
+        if (Model.Abilities.IsUndeadMaster) Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, UNDEAD_MASTER_SCENT_DROP, Location.Position);
       } else
         Location.Map.RefreshScentAt(Odor.LIVING, LIVING_SCENT_DROP, Location.Position);
     }
@@ -3592,7 +3588,8 @@ namespace djack.RogueSurvivor.Data
     // by hex-editing does work flawlessly at the Actor level.
     public void PrepareForPlayerControl()
     {
-      if (!(Leader?.IsPlayer ?? false)) Leader.RemoveFollower(this);   // needed if leader is NPC
+      var leader = Leader;
+      if (!(leader?.IsPlayer ?? false)) leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
@@ -3642,8 +3639,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool Equals(object obj)
     {
-      if (!(obj is Actor tmp)) return false;
-      return Equals(tmp);
+      return obj is Actor tmp && Equals(tmp);
     }
 
     public override int GetHashCode()

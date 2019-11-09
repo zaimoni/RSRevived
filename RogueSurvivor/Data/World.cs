@@ -46,19 +46,18 @@ namespace djack.RogueSurvivor.Data
     public District At(Point pt) { return InBounds(pt) ? m_DistrictsGrid[pt.X, pt.Y] : null; }
 
 
+#nullable enable
     public District this[int x, int y]
     {
       get {
 #if DEBUG
-        if (0> x || Size <= x) throw new ArgumentOutOfRangeException(nameof(x),x, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
-        if (0> y || Size <= y) throw new ArgumentOutOfRangeException(nameof(y),y, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+        if (!InBounds(x, y)) throw new InvalidOperationException("not in bounds");
 #endif
         return m_DistrictsGrid[x, y];
       }
       set {
 #if DEBUG
-        if (0> x || Size <= x) throw new ArgumentOutOfRangeException(nameof(x),x, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
-        if (0> y || Size <= y) throw new ArgumentOutOfRangeException(nameof(y),y, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+        if (!InBounds(x, y)) throw new InvalidOperationException("not in bounds");
 #endif
         m_DistrictsGrid[x, y] = value;
       }
@@ -119,7 +118,6 @@ namespace djack.RogueSurvivor.Data
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }
 
-#nullable enable
     // cannot return IEnumerable<District>, but this does not error
     public void DoForAllDistricts(Action<District> op)
     {
