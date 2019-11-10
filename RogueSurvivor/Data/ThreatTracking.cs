@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Data
           if (0 < crossdistrict_ok.Get) {
             Point pos = map.District.WorldPosition;   // only used in denormalized cases
             var world = Engine.Session.Get.World;
-            District test = null;
+            District? test = null;
             // subway may be null
             if (0 > view.Left) {
               if (null != (test = world.At(pos + Direction.W))) {
@@ -494,7 +494,7 @@ namespace djack.RogueSurvivor.Data
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X-1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
+              HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.W].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X-map.Width,pt.Y));
             }
             view.Width += view.Left;
@@ -504,14 +504,14 @@ namespace djack.RogueSurvivor.Data
             var new_width = map.Width;
             new_width -= view.Left;
             if (Engine.Session.Get.World.Size>pos.X+1 && 0<crossdistrict_ok.Get) {
-              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X+1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
+              HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.E].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
             }
             view.Width = new_width;
           };
           if (0 > view.Top) {
             if (0<pos.Y && 0<crossdistrict_ok.Get && 3!= crossdistrict_ok.Get) {
-              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
+              HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.N].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
             }
             view.Height += view.Top;
@@ -521,7 +521,7 @@ namespace djack.RogueSurvivor.Data
             var new_height = map.Height;
             new_height -= view.Top;
             if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get && 3 != crossdistrict_ok.Get) {
-              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X,pos.Y+1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
+              HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.S].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
             }
             view.Height = new_height;

@@ -1917,9 +1917,9 @@ namespace djack.RogueSurvivor.Engine
 
       // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
       if (!Session.Get.World.Edge_N_or_E(district)) {
-        EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition+Direction.NW));
-        if (Session.Get.World.Edge_S(district)) EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition + Direction.W));
-        if (Session.Get.World.Edge_E(district)) EndTurnDistrictEvents(Session.Get.World.At(district.WorldPosition + Direction.N));
+        EndTurnDistrictEvents(Session.Get.World[district.WorldPosition+Direction.NW]);
+        if (Session.Get.World.Edge_S(district)) EndTurnDistrictEvents(Session.Get.World[district.WorldPosition + Direction.W]);
+        if (Session.Get.World.Edge_E(district)) EndTurnDistrictEvents(Session.Get.World[district.WorldPosition + Direction.N]);
         if (Session.Get.World.Last == district) EndTurnDistrictEvents(district);
       }
       district.EndTurn();
@@ -12725,7 +12725,7 @@ namespace djack.RogueSurvivor.Engine
           // subway has a different geometry than the other two canonical maps
           Map subwayMap1 = world[x1, y1].SubwayMap;
           if (null != subwayMap1) {
-            Map subway_W = (0 < x1) ? world[x1 - 1, y1].SubwayMap : null;
+            var subway_W = world.At(x1 - 1, y1)?.SubwayMap;
             if (null != subway_W) {
               for (short y2 = 0; y2 < subwayMap1.Height; ++y2) {
                 if (y2 < subway_W.Height) {
@@ -12740,7 +12740,7 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             }
-            Map subway_N = (0 < y1) ? world[x1, y1 - 1].SubwayMap : null;
+            var subway_N = world.At(x1, y1 - 1)?.SubwayMap;
             if (null != subway_N) {
               for (short x2 = 0; x2 < subwayMap1.Width; ++x2) {
                 if (x2 < subway_N.Width) {

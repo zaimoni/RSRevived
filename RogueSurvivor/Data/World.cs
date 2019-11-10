@@ -34,6 +34,7 @@ namespace djack.RogueSurvivor.Data
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
+#nullable enable
     public short Size { get { return m_Size; } }
     public short CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
@@ -43,10 +44,10 @@ namespace djack.RogueSurvivor.Data
     public bool InBounds(Point pt) {
       return 0 <= pt.X && m_Size > pt.X && 0 <= pt.Y && m_Size > pt.Y;
     }
-    public District At(Point pt) { return InBounds(pt) ? m_DistrictsGrid[pt.X, pt.Y] : null; }
+    public District? At(int x, int y) { return InBounds(x, y) ? m_DistrictsGrid[x, y] : null; }
+    public District? At(Point pt) { return InBounds(pt) ? m_DistrictsGrid[pt.X, pt.Y] : null; }
 
 
-#nullable enable
     public District this[int x, int y]
     {
       get {
@@ -60,6 +61,22 @@ namespace djack.RogueSurvivor.Data
         if (!InBounds(x, y)) throw new InvalidOperationException("not in bounds");
 #endif
         m_DistrictsGrid[x, y] = value;
+      }
+    }
+
+    public District this[Point pt]
+    {
+      get {
+#if DEBUG
+        if (!InBounds(pt)) throw new InvalidOperationException("not in bounds");
+#endif
+        return m_DistrictsGrid[pt.X, pt.Y];
+      }
+      set {
+#if DEBUG
+        if (!InBounds(pt)) throw new InvalidOperationException("not in bounds");
+#endif
+        m_DistrictsGrid[pt.X, pt.Y] = value;
       }
     }
 
@@ -349,7 +366,7 @@ retry:
       if (m_Ready.Contains(irrational_caution)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
-      District tmp = null;
+      District? tmp = null;
 
       int district_turn = irrational_caution.EntryMap.LocalTime.TurnCounter;
       // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
@@ -440,18 +457,18 @@ retry:
     public void ScheduleAdjacentForAdvancePlay(District d)
     {
       // d.WorldPosition is morally readonly
-      District tmp_E = At(d.WorldPosition + Direction.E);
-      District tmp_SW = At(d.WorldPosition + Direction.SW);
+      var tmp_E = At(d.WorldPosition + Direction.E);
+      var tmp_SW = At(d.WorldPosition + Direction.SW);
 #if FAIL
-      District tmp_NW = ...;
-      District tmp_N = ...;
-      District tmp_W = ...;
-      District tmp_S = ...;
-      District tmp_NE = ...;
-      District tmp_SE = ...;
+      District? tmp_NW = ...;
+      District? tmp_N = ...;
+      District? tmp_W = ...;
+      District? tmp_S = ...;
+      District? tmp_NE = ...;
+      District? tmp_SE = ...;
 #endif
 
-      lock(m_Ready) {
+      lock (m_Ready) {
 #if DEBUG
         if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
 #endif
