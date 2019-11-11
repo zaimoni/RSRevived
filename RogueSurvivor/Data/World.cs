@@ -13,6 +13,8 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -28,13 +30,12 @@ namespace djack.RogueSurvivor.Data
 
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
-    private District m_PlayerDistrict = null; 
-    private District m_SimDistrict = null; 
-    private readonly Queue<District> m_Ready;
+    private District? m_PlayerDistrict = null;
+    private District? m_SimDistrict = null;
+    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
-#nullable enable
     public short Size { get { return m_Size; } }
     public short CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
 
@@ -157,7 +158,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
-#nullable restore
 
     public World(short size)
     {
@@ -172,28 +172,10 @@ namespace djack.RogueSurvivor.Data
       m_Ready = new Queue<District>(size*size);
     }
 
-    // low-level utilities
-#if DEAD_FUNC
-    public Dictionary<Map, HashSet<Point>> BlankPositionDict {
-      get {
-        if (null == m_BlankPositionDict) {
-          var tmp = new Dictionary<Map, HashSet<Point>>(m_BlankPositionDict);
-          foreach(District d in m_DistrictsGrid) {
-            foreach(Map m in d.Maps) {
-              tmp[m] = new HashSet<Point>();
-            }
-          }
-          m_BlankPositionDict = tmp;
-        }
-        return new Dictionary<Map, HashSet<Point>>(m_BlankPositionDict);
-      }
-    }
-#endif
-
-    public HashSet<Actor> PoliceInRadioRange(Location loc, Predicate<Actor> test=null)
+    public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
     {
       Location radio_pos = Engine.Rules.PoliceRadioLocation(loc);
-      HashSet<Actor> ret = null;
+      HashSet<Actor>? ret = null;
       DoForAllMaps(m=> {
           foreach (var a in m.Police.Get) {
               if (a.Location == loc) continue;
@@ -205,10 +187,10 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public HashSet<Actor> EveryoneInPoliceRadioRange(Location loc, Predicate<Actor> test=null)
+    public HashSet<Actor>? EveryoneInPoliceRadioRange(Location loc, Predicate<Actor>? test=null)
     {
       Location radio_pos = Engine.Rules.PoliceRadioLocation(loc);
-      HashSet<Actor> ret = null;
+      HashSet<Actor>? ret = null;
       DoForAllMaps(m=> {
           foreach (var a in m.Actors) {
               if (a.Location == loc) continue;
@@ -357,7 +339,7 @@ namespace djack.RogueSurvivor.Data
  All of C2, A3, and A1 can be scheduled.  In "standard" we would defer A1 until after C2 had been scheduled, but that is a "global"
  constraint.  We do want A1 run twice before B2 is run twice.
  */
-    private void ScheduleForAdvancePlay(District d, District origin=null)
+    private void ScheduleForAdvancePlay(District d, District? origin=null)
     {
       District irrational_caution = d; // retain original district for debugging purposes
 retry:
@@ -459,14 +441,7 @@ retry:
       // d.WorldPosition is morally readonly
       var tmp_E = At(d.WorldPosition + Direction.E);
       var tmp_SW = At(d.WorldPosition + Direction.SW);
-#if FAIL
-      District? tmp_NW = ...;
-      District? tmp_N = ...;
-      District? tmp_W = ...;
-      District? tmp_S = ...;
-      District? tmp_NE = ...;
-      District? tmp_SE = ...;
-#endif
+      // other directions not needed.  An early protoype also used Direction.NW but this caused global vs. local time skew
 
       lock (m_Ready) {
 #if DEBUG
@@ -483,28 +458,15 @@ retry:
 #if DEBUG
         if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
 #endif
-#if OBSOLETE
-        if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);	// XXX causes global vs. local time skew
-#else
 		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0], d);
 #if DEBUG
         if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
-#endif
-#endif
-
-        // backstops
-#if FAIL
-        if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
-        if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
-        if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NE);
-        if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
-        if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SE);
 #endif
       }
     }
 
     // avoiding property idiom for these as they affect World state
-    public District CurrentPlayerDistrict()
+    public District? CurrentPlayerDistrict()
     {
       if (null != m_PlayerDistrict) return m_PlayerDistrict;
       lock (m_Ready) {
@@ -520,7 +482,7 @@ restart:
       }
     }
 
-    public District CurrentSimulationDistrict()
+    public District? CurrentSimulationDistrict()
     {
       if (null != m_SimDistrict) return m_SimDistrict;
       lock (m_Ready) {

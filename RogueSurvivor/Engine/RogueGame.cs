@@ -710,7 +710,7 @@ namespace djack.RogueSurvivor.Engine
     {
       HandleMainMenu();
       while (m_IsGameRunning && 0 < Session.Get.World.PlayerCount) {
-        District d = Session.Get.World.CurrentPlayerDistrict();
+        var d = Session.Get.World.CurrentPlayerDistrict();
         if (null == d) {
           if (null == Session.Get.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
           if (null == m_SimThread) throw new InvalidOperationException("no simulation thread");
@@ -13021,7 +13021,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool SimulateNearbyDistricts(District d)
     {
-      District d1 = Session.Get.World.CurrentSimulationDistrict();
+      var d1 = Session.Get.World.CurrentSimulationDistrict();
       if (null == d1) return false;
       AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
       Session.Get.World.ScheduleAdjacentForAdvancePlay(d1);

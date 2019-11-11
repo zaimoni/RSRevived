@@ -169,6 +169,7 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
+#nullable enable
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
     private static byte _ID_Weight(IDs x)
     {
@@ -430,6 +431,7 @@ namespace djack.RogueSurvivor.Data
       if (IDs.IRON_GATE_OPEN   == dest && IDs.IRON_GATE_CLOSED == m_ID) return true;
       return false;
     }
+#nullable restore
 
     protected void InvalidateLOS()
     {
@@ -448,26 +450,22 @@ namespace djack.RogueSurvivor.Data
       if (null != itemsAt && itemsAt.IsFull) return "container is full";
       return "";
     }
-#nullable restore
 
     public void PutItemIn(Item gift)
     {
 #if DEBUG
-      if (null == gift) throw new ArgumentNullException(nameof(gift));
       if (!IsContainer) throw new InvalidOperationException("cannot put "+gift+" into non-container "+this+" @ "+Location);
 #endif
       if (gift is Engine.Items.ItemTrap trap) trap.Desactivate();    // alpha10
       Location.Drop(gift);  // VAPORWARE: containers actually have inventory and items they contain are pushed with them
     }
 
-#nullable enable
     public Inventory? Inventory { get {
 #if DEBUG
       if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
 #endif
       return Location.Items;
     } }
-#nullable restore
 
     private string ReasonCantPushTo(Point toPos)
     {
@@ -491,7 +489,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool CanPushTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(toPos)); }
-
     public bool CanPushTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantPushTo(toPos)); }
 
 #if DEAD_FUNC
@@ -500,8 +497,8 @@ namespace djack.RogueSurvivor.Data
 #endif
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
     public bool CanPushTo(in Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(in to)); }
-
     public void PlaceAt(Map m, in Point pos) {m.PlaceAt(this, pos);} // this guaranteed non-null so non-null precondition ok
+#nullable restore
 
     public void Remove()
     {
