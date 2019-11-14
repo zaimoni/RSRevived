@@ -17,7 +17,9 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class District
   {
+#nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);
+#nullable restore
     public readonly Point WorldPosition;
     public readonly DistrictKind Kind;
     private string m_Name;
@@ -175,6 +177,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     // references no-skew scheduler; E, SW are immediately after us (and have no specific ordering with respect to each other)
     // only has to work for adjacent districts
     public bool IsBefore(District rhs)
@@ -189,6 +192,7 @@ namespace djack.RogueSurvivor.Data
       var maps = lhs.District.m_Maps;
       return maps.IndexOf(lhs)<maps.IndexOf(rhs);
     }
+#nullable restore
 
     // before cross district viewing, this was simply a PlayerCount check
     public bool RequiresUI {
@@ -337,12 +341,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public int PlayerCorpseCount {
       get {
         int ret = 0;
-        foreach(Map tmp in m_Maps) {
-          ret += tmp.PlayerCorpseCount;
-        }
+        foreach(Map tmp in m_Maps) ret += tmp.PlayerCorpseCount;
         return ret;
       }
     }
@@ -351,14 +354,11 @@ namespace djack.RogueSurvivor.Data
     public int PlayerCount {
       get {
         int ret = 0;
-        foreach(Map tmp in m_Maps) {
-          ret += tmp.PlayerCount;
-        }
+        foreach(Map tmp in m_Maps) ret += tmp.PlayerCount;
         return ret;
       }
     }
 
-#nullable enable
     public Actor? FindPlayer(Map? already_failed) {
        foreach(Map tmp in m_Maps) {
          if (tmp == already_failed) continue;
@@ -383,13 +383,9 @@ namespace djack.RogueSurvivor.Data
       foreach(Map m in m_Maps) if (m_test(m)) m.DoForAllActors(include);
       return ret;
     }
-#nullable restore
 
-    public bool MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool> pred =null)
+    public bool MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool>? pred)
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-#endif
       foreach(Map map in m_Maps) {
         if (map == already_failed) continue;
         if (map.MessagePlayerOnce(fn,pred)) return true;
@@ -413,6 +409,7 @@ namespace djack.RogueSurvivor.Data
           m.EndTurn();
         }
     }
+#nullable restore
 
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {

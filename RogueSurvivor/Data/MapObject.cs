@@ -32,9 +32,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsPlural { get { return GetFlag(Flags.IS_PLURAL); } }
 
     public IDs ID {
-      get {
-        return m_ID;
-      }
+      get { return m_ID; }
       set {
 #if DEBUG
         if (!_IDchangeIsLegal(value)) throw new ArgumentOutOfRangeException(nameof(value), "!_IDchangeIsLegal(value)");
@@ -47,10 +45,9 @@ namespace djack.RogueSurvivor.Data
     public virtual string ImageID { get { return m_ID.ImageID(); } }
     public string HiddenImageID { get { return m_ID.ImageID(); } }
 
+#nullable enable
     public Location Location {
-      get {
-        return m_Location;
-      }
+      get { return m_Location; }
       set {
         InvalidateLOS();
         m_Location = value;
@@ -75,9 +72,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
 
     public Break BreakState {
-      get {
-        return m_BreakState;
-      }
+      get { return m_BreakState; }
       protected set { // Cf IsTransparent which affects LOS calculations
         Break old = m_BreakState;
         m_BreakState = value;
@@ -97,46 +92,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsMovable {
-      get {
-        return GetFlag(Flags.IS_MOVABLE);
-      }
-    }
-
-    public bool BreaksWhenFiredThrough {
-      get {
-        return GetFlag(Flags.BREAKS_WHEN_FIRED_THROUGH);
-      }
-    }
-
-    public bool StandOnFovBonus {
-      get {
-        return GetFlag(Flags.STANDON_FOV_BONUS);
-      }
-    }
-
-    public bool IsFlammable {
-      get {
-        return m_FireState == Fire.ONFIRE || m_FireState == Fire.BURNABLE;
-      }
-    }
-
-    public bool IsOnFire {
-      get {
-        return m_FireState == Fire.ONFIRE;
-      }
-    }
-
-    public bool IsBurntToAshes {
-      get {
-        return m_FireState == Fire.ASHES;
-      }
-    }
+    public bool IsMovable { get { return GetFlag(Flags.IS_MOVABLE); } }
+    public bool BreaksWhenFiredThrough { get { return GetFlag(Flags.BREAKS_WHEN_FIRED_THROUGH); } }
+    public bool StandOnFovBonus { get { return GetFlag(Flags.STANDON_FOV_BONUS); } }
+    public bool IsFlammable { get { return m_FireState == Fire.ONFIRE || m_FireState == Fire.BURNABLE; } }
+    public bool IsOnFire { get { return m_FireState == Fire.ONFIRE; } }
+    public bool IsBurntToAshes { get { return m_FireState == Fire.ASHES; } }
 
     public Fire FireState {
-      get {
-        return m_FireState;
-      }
+      get { return m_FireState; }
       set { // cf IsTransparent which affects LOS calculations
         Fire old = m_FireState;
         m_FireState = value;
@@ -159,8 +123,8 @@ namespace djack.RogueSurvivor.Data
     /// <returns>true if and only if destroyed</returns>
     public bool Damage(int hp)
     {
-      if (0 >= hp) return false;    // insignificant damage
-      if (0 >= MaxHitPoints) return false;  // object is made of indestructible unobtainium
+      if (   0 >= hp    // insignificant damage
+          || 0 >= MaxHitPoints) return false;  // object is made of indestructible unobtainium
       if (hp < m_HitPoints) {
         m_HitPoints -= hp;
         return false;
@@ -169,7 +133,6 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-#nullable enable
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
     private static byte _ID_Weight(IDs x)
     {
