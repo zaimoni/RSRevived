@@ -27,25 +27,19 @@ namespace djack.RogueSurvivor.Data
     private Map m_SewersMap;
     private Map m_SubwayMap;
 
-    public string Name {
-      get {
-        return m_Name;
-      }
-      private set {	// XXX GenerateEntryMap updates outside of constructor
-        m_Name = value;
-      }
-    }
+    public string Name { get { return m_Name; } }
 
+#nullable enable
     public IEnumerable<Map> Maps { get { return m_Maps; } }
+#nullable restore
 
     public Map EntryMap {
-      get {
-        return m_EntryMap;
-      }
+      get { return m_EntryMap; }
       private set {
         if (m_EntryMap != null) RemoveMap(m_EntryMap);
         m_EntryMap = value;
         if (value == null) return;
+        m_Name = value.Name;    // historical identity of district name and map name
         AddMap(value);
         // the police faction knows all outside squares (map revealing effect)
         m_EntryMap.Rect.DoForEach(pt=> {
@@ -62,9 +56,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Map SewersMap {
-      get {
-        return m_SewersMap;
-      }
+      get { return m_SewersMap; }
       set { // used from BaseTownGenerator::GenerateSewersMap
         if (m_SewersMap != null) RemoveMap(m_SewersMap);
         m_SewersMap = value;
@@ -73,9 +65,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Map SubwayMap {
-      get {
-        return m_SubwayMap;
-      }
+      get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap
         if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
         m_SubwayMap = value;
@@ -83,6 +73,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
     public bool HasSubway { get { return m_SubwayMap != null; } }
 
     public District(Point worldPos, DistrictKind kind)
@@ -95,7 +86,6 @@ namespace djack.RogueSurvivor.Data
     protected void AddMap(Map map)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
       if (map.District != this) throw new InvalidOperationException("map.District != this");
 #endif
       if (!m_Maps.Contains(map)) m_Maps.Add(map);
@@ -110,7 +100,7 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
-    public void AddUniqueMap(Map map)
+    public void AddUniqueMap(Map map)   // XXX \todo do we really need a public thin wrapper for a protected function (mapgen so cold path)
     {
       AddMap(map);
     }
@@ -122,14 +112,8 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    protected void RemoveMap(Map map)
-    {
-#if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-#endif
-      m_Maps.Remove(map);
-    }
-
+    protected void RemoveMap(Map map) { m_Maps.Remove(map); }
+#nullable restore
 
     /// <summary>
     /// 
@@ -150,7 +134,8 @@ namespace djack.RogueSurvivor.Data
       return 0;
     }
 
-    public Map CrossDistrictViewing(int x)
+#nullable enable
+    public Map? CrossDistrictViewing(int x)
     {
       switch(x)
       {
@@ -161,11 +146,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    static public int UsesCrossDistrictView(Map m)
-    {
-      return m.District.CrossDistrictView_code(m);
-    }
-
+    static public int UsesCrossDistrictView(Map m) { return m.District.CrossDistrictView_code(m); }
+#nullable restore
 
     public bool HasAccessiblePowerGenerators {  // \todo 2019-03-20: currently dead; unsure whether this is reusable or not
       get {
@@ -492,7 +474,6 @@ namespace djack.RogueSurvivor.Data
 
       // done.
       EntryMap = map;
-      Name = EntryMap.Name;
     }
 
     public override int GetHashCode()
