@@ -74,6 +74,14 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
+    static public bool IsSubwayMap(Map m) {
+      return m == m.District.m_SubwayMap;
+    }
+
+    static public bool IsSubwayOrSewersMap(Map m) {
+      return m == m.District.m_SubwayMap || m == m.District.m_SewersMap;
+    }
+
     public bool HasSubway { get { return m_SubwayMap != null; } }
 
     public District(Point worldPos, DistrictKind kind)

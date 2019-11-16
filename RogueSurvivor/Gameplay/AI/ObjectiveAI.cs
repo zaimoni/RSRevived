@@ -2559,7 +2559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
         required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
       }
-      var using_subway = required_0.Where(m => m==m.District.SubwayMap);
+      var using_subway = required_0.Where(District.IsSubwayMap);
       var using_sewer = required_0.Where(m => m==m.District.SewersMap);
 
       var now = new HashSet<Map>(required);
@@ -2578,15 +2578,14 @@ restart:
           continue;
         }
         foreach(Map test in dests) {
-          if (required.Contains(test)) continue;
-          if (excluded.Contains(test)) continue;
+          if (required.Contains(test) || excluded.Contains(test)) continue;
           // dead end that is not already required, is excluded
           if (1==test.destination_maps.Get.Count) {
             excluded.Add(test);
             continue;
           }
           // do not consider entering subway or sewers if no goals there
-          if (test==test.District.SubwayMap && !using_subway.Any()) {
+          if (District.IsSubwayMap(test) && !using_subway.Any()) {
             excluded.Add(test);
             continue;
           }

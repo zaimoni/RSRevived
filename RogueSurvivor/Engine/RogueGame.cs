@@ -13346,8 +13346,9 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped && (player.Location.Map == player.Location.Map.District.SubwayMap && player.Inventory.Contains(Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem)))
-      {
+      if (   Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped
+          && District.IsSubwayMap(player.Location.Map)
+          && player.Inventory.Contains(Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem)) {
         Map map = player.Location.Map;
         if (map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
           DoTurnAllGeneratorsOn(map, player);
@@ -13632,7 +13633,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (map == map.District.SubwayMap) {
+      if (District.IsSubwayMap(map)) {
         lock (Session.Get) {
           if (1.0 <= map.PowerRatio) {
             if (map.Illuminate(true)) {

@@ -2525,8 +2525,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != item_memory) {
         // reject if the smallest zone containing this location does not have a bed
         // problems with: CHAR Underground base (bypassed), subways (doors aren't walkable but they're inside)
-        if (m_Actor.Location.Map == m_Actor.Location.Map.District.SubwayMap)
-          return BehaviorNavigateToSleep(item_memory);
+        if (District.IsSubwayMap(m_Actor.Location.Map)) return BehaviorNavigateToSleep(item_memory);
 
         Rectangle scan_this = m_Actor.Location.Map.Rect;
         var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);    // non-null check in map generation

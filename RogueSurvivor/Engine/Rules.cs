@@ -874,7 +874,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (loc.Map == loc.Map.District.EntryMap) return loc;
       // sewers and subway are 1-1 with entry map
-      if (loc.Map == loc.Map.District.SewersMap || loc.Map==loc.Map.District.SubwayMap) return new Location(loc.Map.District.EntryMap,loc.Position);
+      if (District.IsSubwayOrSewersMap(loc.Map)) return new Location(loc.Map.District.EntryMap,loc.Position);
 retry:
       var entry_e = loc.Map.FirstExitFor(loc.Map.District.EntryMap);
       if (null != entry_e) {
