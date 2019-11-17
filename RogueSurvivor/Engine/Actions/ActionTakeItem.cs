@@ -67,13 +67,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.Name + " takes " + m_Item;
     }
   } // ActionTakeItem
-#nullable restore
 
   [Serializable]
   internal class ActionTake : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Item m_Item;
+    private Item? m_Item;
     private Point? m_pos;
 
     public ActionTake(Actor actor, Gameplay.GameItems.IDs it)
@@ -84,7 +83,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Gameplay.GameItems.IDs ID { get { return m_ID; } }
 
-    private Item Item {
+    private Item? Item {
       get {
         init();
         return m_Item;
@@ -94,8 +93,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     private void init()
     {
       if (null != m_Item && (m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.Contains(m_Item) ?? false)) return;
-      Dictionary<Point,Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-      if (0 > (stacks?.Count ?? 0)) return;
+      var stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+      if (0 >= stacks.Count) return;
 
       ItemModel model = Models.Items[(int)m_ID];
 
@@ -111,7 +110,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      Item it = Item;
+      var it = Item;
       if (null == it) {
         m_FailReason = "not in reach";
         return false;
@@ -121,8 +120,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      Item it = Item;
-      RogueForm.Game.DoTakeItem(m_Actor, m_pos.Value, it);
+      Item it = Item!;  // cf IsLegal(), above
+      RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
     }
 
     public override string ToString()
@@ -130,6 +129,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.Name + " takes " + m_ID.ToString();
     }
   } // ActionTake
+#nullable restore
 
   [Serializable]
   internal class ActionGiveTo : ActorAction

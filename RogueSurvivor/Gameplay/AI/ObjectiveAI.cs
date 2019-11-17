@@ -4970,7 +4970,7 @@ restart_single_exit:
         }
       }
 
-      Dictionary<Point,Inventory> ground_inv = loc.Map.GetAccessibleInventories(loc.Position);
+      var ground_inv = loc.Map.GetAccessibleInventories(loc.Position);
       if (0 >= ground_inv.Count) return null;
 
       // set up pattern-matching for ranged weapons

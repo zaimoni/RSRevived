@@ -2120,10 +2120,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
     
-    public ActorAction WouldUseAccessibleStack(in Location dest,bool is_real=false) {
-        Dictionary<Point, Inventory> stacks = dest.Map.GetAccessibleInventories(dest.Position);
-        if (0 < (stacks?.Count ?? 0)) {
-          ActorAction tmpAction;
+#nullable enable
+    public ActorAction? WouldUseAccessibleStack(in Location dest,bool is_real=false) {
+        var stacks = dest.Map.GetAccessibleInventories(dest.Position);
+        if (0 < stacks.Count) {
+          ActorAction? tmpAction;
           var map = dest.Map;
           foreach(var x in stacks) {
             var loc = new Location(map, x.Key);
@@ -2133,7 +2134,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    public ActorAction BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
+    public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
+#nullable restore
 	protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
 
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
