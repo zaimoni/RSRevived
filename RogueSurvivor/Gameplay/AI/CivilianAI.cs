@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.Location!=PrevLocation) {
         // sewers are not a good choice for default-tourism
-        if (null!=ItemMemory && null!=m_Actor.InterestingLocs && m_Actor.Location.Map!= m_Actor.Location.Map.District.SewersMap) {
+        if (null!=ItemMemory && null!=m_Actor.InterestingLocs && !District.IsSewersMap(m_Actor.Location.Map)) {
           var _items = ItemMemory;
           var tourism = m_Actor.InterestingLocs;
           var map = m_Actor.Location.Map;
@@ -621,7 +621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
         HashSet<Point> hunt_threat(Map m) {
-          if (m == m.District.SewersMap && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable
+          if (District.IsSewersMap(m) && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable
           var ret = threats.ThreatWhere(m);
           if (0<ret.Count) update_path.StageView(m,ret);
           return ret;

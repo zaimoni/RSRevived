@@ -13491,7 +13491,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
+      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);

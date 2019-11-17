@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Data
       int decay = 1;  // base decay
 
       // sewers?
-      if (Map == Map.District.SewersMap) decay += 2;
+      if (District.IsSewersMap(Map)) decay += 2;
       // outside? = weather affected.
       else if (!Map.IsInsideAt(Position)) {   // alpha10 weather affect only outside tiles
         switch (Engine.Session.Get.World.Weather) {

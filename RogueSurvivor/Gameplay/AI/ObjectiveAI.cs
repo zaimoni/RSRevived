@@ -2560,7 +2560,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
       }
       var using_subway = required_0.Where(District.IsSubwayMap);
-      var using_sewer = required_0.Where(m => m==m.District.SewersMap);
+      var using_sewer = required_0.Where(District.IsSewersMap);
 
       var now = new HashSet<Map>(required);
 restart:
@@ -2589,7 +2589,7 @@ restart:
             excluded.Add(test);
             continue;
           }
-          if (test==test.District.SewersMap && !using_sewer.Any()) {
+          if (District.IsSewersMap(test) && !using_sewer.Any()) {
             excluded.Add(test);
             continue;
           }
@@ -2818,7 +2818,7 @@ restart:
         map_goals.Remove(src);
         excluded.Add(src);
 
-        bool ret = m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap && !goals.Any(loc => loc.Map != m_Actor.Location.Map);
+        bool ret = !District.IsSewersMap(m_Actor.Location.Map) && !goals.Any(loc => loc.Map != m_Actor.Location.Map);
         if (ret) _current_goals = goals;
         return ret;
     }
@@ -3098,8 +3098,8 @@ restart:
 #endif
 
        // remove a degenerate case from consideration
-       if (m_Actor.Location.Map != m_Actor.Location.Map.District.SewersMap
-         && !goals.Any(loc => loc.Map!= m_Actor.Location.Map)) {
+       if (   !District.IsSewersMap(m_Actor.Location.Map)
+           && !goals.Any(loc => loc.Map!= m_Actor.Location.Map)) {
          _current_goals = goals;
          return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
        }

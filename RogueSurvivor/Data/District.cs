@@ -70,6 +70,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
+    static public bool IsSewersMap(Map m) {
+      return m == m.District.m_SewersMap;
+    }
+#nullable restore
+
     public Map SubwayMap {
       get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap

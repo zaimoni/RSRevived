@@ -2755,7 +2755,7 @@ namespace djack.RogueSurvivor.Data
       Appetite(WorldTime.TURNS_PER_HOUR);
       // \todo more "accurate" duration, should it make sense for other reasons
       // RS Alpha 10.1- was permanent
-      Location.Map.AddTimedDecoration(Location.Position, Gameplay.GameImages.DECO_VOMIT, Location.Map== Location.Map.District.SewersMap ? 3*WorldTime.HOURS_PER_DAY*WorldTime.TURNS_PER_HOUR : 7 * WorldTime.HOURS_PER_DAY * WorldTime.TURNS_PER_HOUR, TRUE);
+      Location.Map.AddTimedDecoration(Location.Position, Gameplay.GameImages.DECO_VOMIT, District.IsSewersMap(Location.Map) ? 3*WorldTime.HOURS_PER_DAY*WorldTime.TURNS_PER_HOUR : 7 * WorldTime.HOURS_PER_DAY * WorldTime.TURNS_PER_HOUR, TRUE);
     }
 
     public void TakeDamage(int dmg)

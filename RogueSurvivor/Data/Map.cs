@@ -1996,7 +1996,7 @@ retry:
     // pathfinding support
     public Rectangle NavigationScope {
       get {
-       if (this == District.SewersMap) return new Rectangle(District.WorldPosition+Direction.NW,new Size(3,3)); // sewers are not well-connected...next district over may be needed
+       if (District.IsSewersMap(this)) return new Rectangle(District.WorldPosition+Direction.NW,new Size(3,3)); // sewers are not well-connected...next district over may be needed
        if (District.IsSubwayMap(this) && 0>= PowerGenerators.Get.Count) return new Rectangle(District.WorldPosition+Direction.NW,new Size(3,3)); // subway w/o generators should have an entrance "close by"
        return new Rectangle(District.WorldPosition, new Size(1, 1));
      }

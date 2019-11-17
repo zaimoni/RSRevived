@@ -3501,21 +3501,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+#nullable enable
     protected bool HaveThreatsInCurrentMap()
     {
-      ThreatTracking threats = m_Actor.Threats;
+      var threats = m_Actor.Threats;
       if (null == threats) return false;
-      if (m_Actor.Location.Map == m_Actor.Location.Map.District.SewersMap && Session.Get.HasZombiesInSewers) return false;
-      return 0< threats.ThreatWhere(m_Actor.Location.Map).Count;   // XXX could be more efficient?
+      var map = m_Actor.Location.Map;
+      if (District.IsSewersMap(map) && Session.Get.HasZombiesInSewers) return false;
+      return 0< threats.ThreatWhere(map).Count;   // XXX could be more efficient?
     }
 
     protected bool HaveTourismInCurrentMap()
     {
-      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      var sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return false;
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
       return 0<tainted.Count;   // XXX could be more efficient?
     }
+#nullable restore
 
     public bool ProposeSwitchPlaces(Location dest)
     {
@@ -3523,8 +3526,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != WouldUseAccessibleStack(in dest)) return true;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min()) return false;
-//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min()) return true;
+        if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return false;
+//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return true;
       }
       return true;
     }
