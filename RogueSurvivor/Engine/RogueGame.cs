@@ -11918,8 +11918,8 @@ namespace djack.RogueSurvivor.Engine
           if (null!=e && e.Location == m_MapView.Center) {
             // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
             int exit_slot() {
-                if (loc.Map == loc.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT;
-                if (e.Location.Map == e.Location.Map.District.EntryMap) return ENTRYMAP_EXIT_SLOT+1;
+                if (District.IsEntryMap(loc.Map)) return ENTRYMAP_EXIT_SLOT;
+                if (District.IsEntryMap(e.Location.Map)) return ENTRYMAP_EXIT_SLOT+1;
                 if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
                 if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
                 return ENTRYMAP_EXIT_SLOT + 1;    // default

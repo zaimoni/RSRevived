@@ -55,6 +55,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#nullable enable
+    static public bool IsEntryMap(Map m) {
+      return m == m.District.m_EntryMap;
+    }
+#nullable restore
+
     public Map SewersMap {
       get { return m_SewersMap; }
       set { // used from BaseTownGenerator::GenerateSewersMap

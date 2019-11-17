@@ -872,7 +872,7 @@ namespace djack.RogueSurvivor.Engine
     // unsure where this should go...parking here for now
     public static Location PoliceRadioLocation(Location loc)
     {
-      if (loc.Map == loc.Map.District.EntryMap) return loc;
+      if (District.IsEntryMap(loc.Map)) return loc;
       // sewers and subway are 1-1 with entry map
       if (District.IsSubwayOrSewersMap(loc.Map)) return new Location(loc.Map.District.EntryMap,loc.Position);
 retry:
