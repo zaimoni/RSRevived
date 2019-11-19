@@ -584,21 +584,30 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
+    public Dictionary<Point,Exit> GetExits(Predicate<Exit> test) {
       var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
-        if (fn(x.Value)) ret.Add(x.Key, x.Value);
+        if (test(x.Value)) ret.Add(x.Key, x.Value);
       }
       return ret;
     }
 
-     public Dictionary<Point,Exit> ExitsFor(Map dest) {
+    public bool AnyExits(Predicate<Exit> test) {
+      foreach(var x in m_Exits) {
+        if (test(x.Value)) return true;
+      }
+      return false;
+    }
+
+#if DEAD_FUNC
+    public Dictionary<Point,Exit> ExitsFor(Map dest) {
       var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
         if (x.Value.ToMap == dest) ret.Add(x.Key, x.Value);
       }
       return ret;
     }
+#endif
 
     public KeyValuePair<Point,Exit>? FirstExitFor(Map dest) {
       foreach(var x in m_Exits) if (x.Value.ToMap == dest) return x;

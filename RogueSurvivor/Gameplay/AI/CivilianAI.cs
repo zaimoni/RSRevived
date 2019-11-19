@@ -711,6 +711,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             view = m_Actor.Location.MiniMapView;
             d_span = view.DistrictSpan;
 
+            Predicate<Exit> exit_for_here(Map map) {
+                Map m2 = map;   // required for proper lambda-function
+                bool ret(Exit e) {
+                  return e.ToMap == m2 && view.Contains(e.Location);
+                }
+                return ret;
+            }
+
             bool prefilter_minimap(Map m) {
               if (m==m_Actor.Location.Map) return false;
               if (0 >= map_code) return true;  // large maps like the CHAR undergound base
@@ -722,9 +730,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
               // entry map cares "where" the other map's entrance is
               if (1 < other_map_code) return false;  // subway and sewer always ok
               // hospital and police station go fully into scope if the entrance is there; basements can just check directly
-              if (m.destination_maps.Get.Contains(m.District.EntryMap)) return !m.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
-              if (null!=Session.Get.UniqueMaps.NavigatePoliceStation(m)) return !Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
-              else if (null != Session.Get.UniqueMaps.NavigateHospital(m)) return !Session.Get.UniqueMaps.Hospital_Admissions.TheMap.ExitsFor(m.District.EntryMap).Any(x => view.Contains(x.Value.Location));
+              var e_map = m.District.EntryMap;
+              var e_for_surface = exit_for_here(e_map);
+              if (m.destination_maps.Get.Contains(e_map)) return !m.AnyExits(e_for_surface);
+              var unique_m = Session.Get.UniqueMaps;
+              if (null!= unique_m.NavigatePoliceStation(m)) return !unique_m.PoliceStation_OfficesLevel.TheMap.AnyExits(e_for_surface);
+              else if (null != unique_m.NavigateHospital(m)) return !unique_m.Hospital_Admissions.TheMap.AnyExits(e_for_surface);
               return true;
             }
 

@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Data
     public readonly DistrictKind Kind;
     private string m_Name;
     private Map m_EntryMap;
-    private Map m_SewersMap;
+    private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
 #nullable enable
     private Map? m_SubwayMap;
 #nullable restore
