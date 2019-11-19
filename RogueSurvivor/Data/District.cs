@@ -25,7 +25,9 @@ namespace djack.RogueSurvivor.Data
     private string m_Name;
     private Map m_EntryMap;
     private Map m_SewersMap;
-    private Map m_SubwayMap;
+#nullable enable
+    private Map? m_SubwayMap;
+#nullable restore
 
     public string Name { get { return m_Name; } }
 
@@ -74,9 +76,8 @@ namespace djack.RogueSurvivor.Data
     static public bool IsSewersMap(Map m) {
       return m == m.District.m_SewersMap;
     }
-#nullable restore
 
-    public Map SubwayMap {
+    public Map? SubwayMap {
       get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap
         if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
@@ -85,7 +86,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     static public bool IsSubwayMap(Map m) {
       return m == m.District.m_SubwayMap;
     }
@@ -93,8 +93,6 @@ namespace djack.RogueSurvivor.Data
     static public bool IsSubwayOrSewersMap(Map m) {
       return m == m.District.m_SubwayMap || m == m.District.m_SewersMap;
     }
-
-    public bool HasSubway { get { return m_SubwayMap != null; } }
 
     public District(Point worldPos, DistrictKind kind)
     {
@@ -167,7 +165,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     static public int UsesCrossDistrictView(Map m) { return m.District.CrossDistrictView_code(m); }
-#nullable restore
 
     public bool HasAccessiblePowerGenerators {  // \todo 2019-03-20: currently dead; unsure whether this is reusable or not
       get {
@@ -179,7 +176,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     // references no-skew scheduler; E, SW are immediately after us (and have no specific ordering with respect to each other)
     // only has to work for adjacent districts
     public bool IsBefore(District rhs)

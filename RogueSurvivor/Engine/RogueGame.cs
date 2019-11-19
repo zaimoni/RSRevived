@@ -12723,7 +12723,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           // subway has a different geometry than the other two canonical maps
-          Map subwayMap1 = world[x1, y1].SubwayMap;
+          var subwayMap1 = world[x1, y1].SubwayMap;
           if (null != subwayMap1) {
             var subway_W = world.At(x1 - 1, y1)?.SubwayMap;
             if (null != subway_W) {
@@ -12828,7 +12828,8 @@ namespace djack.RogueSurvivor.Engine
       // we intentionally do not take advantage of the current subway layout algorithm
       var mapList = new List<Map>();
       world.DoForAllDistricts(d=> {
-        if (d.HasSubway) mapList.Add(d.SubwayMap);
+        var subway = d.SubwayMap;
+        if (null != subway) mapList.Add(subway);
       });
       if (0 >= mapList.Count)
         return new UniqueItem{

@@ -1778,7 +1778,7 @@ retry:
     {
       // Cf. Location.OdorsDecay
       int mapOdorDecayRate = 1;
-      if (this == District.SewersMap) mapOdorDecayRate += 2;
+      if (District.IsSewersMap(this)) mapOdorDecayRate += 2;
 
       var discard = new List<OdorScent>();
       List<Point>? discard2 = null;
