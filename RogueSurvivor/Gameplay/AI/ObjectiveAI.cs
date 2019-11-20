@@ -2528,16 +2528,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
        Predicate<Location> ret = null;
 
       // map prefilter -- essentially a functional blacklist rather than an enumerated one
-      var required_0 = new HashSet<Map>();
+      var my_map = m_Actor.Location.Map;
+      var required_0 = new HashSet<Map> { my_map };
 
       // any map not containing us but containing goals, will need its distance-to-exits set
       // index is Encode(this Rectangle rect, HashSet<Point> src)
-      Rectangle district_span = m_Actor.Location.Map.NavigationScope;
+      Rectangle district_span = my_map.NavigationScope;
 
-      required_0.Add(m_Actor.Location.Map);
+      Map g_map;
       foreach(var goal in goals) {
-        required_0.Add(goal.Key.Map);
-        district_span = Rectangle.Union(district_span,goal.Key.Map.NavigationScope);
+        required_0.Add(g_map = goal.Key.Map);
+        district_span = Rectangle.Union(district_span, g_map.NavigationScope);
       }
 
       var required = new HashSet<Map>(required_0);
@@ -2546,21 +2547,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
       var police_station = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
-      if (!police_station.Value) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-      else if (!police_station.Key) excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
+      var p_offices = Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap;
+      if (!police_station.Value) excluded.Add(p_offices);
+      else if (!police_station.Key) excluded.Add(p_offices.District.EntryMap);
       else {
-        required.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-        required.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap);
+        required.Add(p_offices);
+        required.Add(p_offices.District.EntryMap);
       }
       var hospital = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigateHospital(m));
-      if (!hospital.Value) excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
-      else if (!hospital.Key) excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
+      var h_admissions = Session.Get.UniqueMaps.Hospital_Admissions.TheMap;
+      if (!hospital.Value) excluded.Add(h_admissions);
+      else if (!hospital.Key) excluded.Add(h_admissions.District.EntryMap);
       else {
-        required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
-        required.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap);
+        required.Add(h_admissions);
+        required.Add(h_admissions.District.EntryMap);
       }
-      var using_subway = required_0.Where(District.IsSubwayMap);
-      var using_sewer = required_0.Where(District.IsSewersMap);
+      bool ignore_subway = !required_0.Any(District.IsSubwayMap);
+      bool ignore_sewer = !required_0.Any(District.IsSewersMap);
 
       var now = new HashSet<Map>(required);
 restart:
@@ -2585,11 +2588,11 @@ restart:
             continue;
           }
           // do not consider entering subway or sewers if no goals there
-          if (District.IsSubwayMap(test) && !using_subway.Any()) {
+          if (ignore_subway && District.IsSubwayMap(test)) {
             excluded.Add(test);
             continue;
           }
-          if (District.IsSewersMap(test) && !using_sewer.Any()) {
+          if (ignore_sewer && District.IsSewersMap(test)) {
             excluded.Add(test);
             continue;
           }
@@ -2640,7 +2643,7 @@ restart:
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
-      Predicate<Location> blacklist = BlacklistFunction(goal_costs,excluded);
+      var blacklist = BlacklistFunction(goal_costs,excluded);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
       navigate.GoalDistance(goal_costs, m_Actor.Location);
