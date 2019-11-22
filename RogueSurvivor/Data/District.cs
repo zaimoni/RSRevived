@@ -23,7 +23,9 @@ namespace djack.RogueSurvivor.Data
     public readonly Point WorldPosition;
     public readonly DistrictKind Kind;
     private string m_Name;
-    private Map m_EntryMap;
+#nullable enable
+    private Map? m_EntryMap;
+#nullable restore
     private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
 #nullable enable
     private Map? m_SubwayMap;
@@ -33,14 +35,13 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
     public IEnumerable<Map> Maps { get { return m_Maps; } }
-#nullable restore
 
     public Map EntryMap {
-      get { return m_EntryMap; }
+      get { return m_EntryMap!; }
       private set {
         if (m_EntryMap != null) RemoveMap(m_EntryMap);
         m_EntryMap = value;
-        if (value == null) return;
+//      if (value == null) return;
         m_Name = value.Name;    // historical identity of district name and map name
         AddMap(value);
         // the police faction knows all outside squares (map revealing effect)
@@ -57,7 +58,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     static public bool IsEntryMap(Map m) {
       return m == m.District.m_EntryMap;
     }
@@ -223,7 +223,7 @@ namespace djack.RogueSurvivor.Data
         // NW/SE are dual
         var test = world.At(WorldPosition + Direction.NW);
         if (null != test && 0<test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SE)-surface_corner, surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -232,9 +232,8 @@ namespace djack.RogueSurvivor.Data
             if (map.Players.Get.Any(has_player)) return true;
           }
         }
-        test = world.At(WorldPosition + Direction.SE);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.SE)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -244,9 +243,8 @@ namespace djack.RogueSurvivor.Data
           }
         }
         // NE/SW are dual
-        test = world.At(WorldPosition + Direction.NE);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.NE)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION + 2), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -255,9 +253,8 @@ namespace djack.RogueSurvivor.Data
             if (map.Players.Get.Any(has_player)) return true;
           }
         }
-        test = world.At(WorldPosition + Direction.SW);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.SW)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE)+ new Point(-Actor.MAX_VISION + 2, 0), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -267,12 +264,12 @@ namespace djack.RogueSurvivor.Data
           }
         }
         // N/S are dual
-        surface_corner = new Point(m_EntryMap.Width, Actor.MAX_VISION+2);
-        other_corner = new Point(m_EntryMap.Width, Actor.MAX_VISION);
+        int tmp_e_map = EntryMap.Width;
+        surface_corner = new Point(tmp_e_map, Actor.MAX_VISION+2);
+        other_corner = new Point(tmp_e_map, Actor.MAX_VISION);
 
-        test = world.At(WorldPosition + Direction.N);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.N)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION + 2), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -285,9 +282,8 @@ namespace djack.RogueSurvivor.Data
             if (map.Players.Get.Any(has_player)) return true;
           }
         }
-        test = world.At(WorldPosition + Direction.S);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.S)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -301,12 +297,12 @@ namespace djack.RogueSurvivor.Data
           }
         }
         // E/W are dual
-        surface_corner = new Point(Actor.MAX_VISION+2, m_EntryMap.Height);
-        other_corner = new Point(Actor.MAX_VISION, m_EntryMap.Height);
+        int tmp_e_map_2 = EntryMap.Height;
+        surface_corner = new Point(Actor.MAX_VISION+2, tmp_e_map_2);
+        other_corner = new Point(Actor.MAX_VISION, tmp_e_map_2);
 
-        test = world.At(WorldPosition + Direction.W);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.W)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE)+ new Point(-Actor.MAX_VISION + 2, 0), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
@@ -319,9 +315,8 @@ namespace djack.RogueSurvivor.Data
             if (map.Players.Get.Any(has_player)) return true;
           }
         }
-        test = world.At(WorldPosition + Direction.E);
-        if (null != test && 0 < test.PlayerCount) {
-          if (0<(map = test.m_EntryMap).PlayerCount) {
+        if (null != (test = world.At(WorldPosition + Direction.E)) && 0 < test.PlayerCount) {
+          if (0<(map = test.EntryMap).PlayerCount) {
             test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
             if (map.Players.Get.Any(has_player)) return true;
           }
