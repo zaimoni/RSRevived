@@ -19,21 +19,17 @@ namespace djack.RogueSurvivor.Data
   {
 #nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);
-#nullable restore
     public readonly Point WorldPosition;
     public readonly DistrictKind Kind;
     private string m_Name;
-#nullable enable
     private Map? m_EntryMap;
 #nullable restore
     private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
 #nullable enable
     private Map? m_SubwayMap;
-#nullable restore
 
     public string Name { get { return m_Name; } }
 
-#nullable enable
     public IEnumerable<Map> Maps { get { return m_Maps; } }
 
     public Map EntryMap {

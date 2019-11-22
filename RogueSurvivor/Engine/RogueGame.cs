@@ -9115,10 +9115,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
+#nullable enable
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
-      if (null==gift) throw new ArgumentNullException(nameof(gift));    // invariant failure
-
       // try to trade with NPC first
       if (!target.IsPlayer) {
         var trade = PickItemsToTrade(actor, target, gift);
@@ -9158,6 +9157,7 @@ namespace djack.RogueSurvivor.Engine
       if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       DoGiveItemTo(actor,target,gift);
     }
+#nullable restore
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
     {

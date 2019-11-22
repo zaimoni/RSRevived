@@ -133,6 +133,7 @@ namespace djack.RogueSurvivor.Engine
     private const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
+#nullable enable
     private DiceRoller m_DiceRoller;
 
 #region Session save/load assistants
@@ -147,40 +148,17 @@ namespace djack.RogueSurvivor.Engine
     }
 #endregion
 
-    public DiceRoller DiceRoller {
-      get {
-        return m_DiceRoller;
-      }
-    }
+    public DiceRoller DiceRoller { get { return m_DiceRoller; } }
 
     public Rules(DiceRoller diceRoller)
     {
-#if DEBUG
-      if (null == diceRoller) throw new ArgumentNullException(nameof(diceRoller));
-#endif
       m_DiceRoller = diceRoller;
     }
 
-    public int Roll(int min, int max)
-    {
-      return m_DiceRoller.Roll(min, max);
-    }
-
-    public short Roll(int min, short max)
-    {
-      return m_DiceRoller.Roll((short)min, max);
-    }
-
-
-    public short Roll(short min, short max)
-    {
-      return m_DiceRoller.Roll(min, max);
-    }
-
-    public bool RollChance(int chance)
-    {
-      return m_DiceRoller.RollChance(chance);
-    }
+    public int Roll(int min, int max) { return m_DiceRoller.Roll(min, max); }
+    public short Roll(int min, short max) { return m_DiceRoller.Roll((short)min, max); }
+    public short Roll(short min, short max) { return m_DiceRoller.Roll(min, max); }
+    public bool RollChance(int chance) { return m_DiceRoller.RollChance(chance); }
 
 #if DEAD_FUNC
     public float RollFloat()
@@ -209,17 +187,14 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    public Direction RollDirection()
-    {
-      return m_DiceRoller.Choose(Direction.COMPASS);
-    }
+    public Direction RollDirection() { return m_DiceRoller.Choose(Direction.COMPASS); }
 
     public int RollSkill(int skillValue)
-    {
-      if (skillValue <= 0)
-        return 0;
+    {  // 2019-11-22 Release mode IL Code size       40 (0x28)
+      if (skillValue <= 0) return 0;
       return (m_DiceRoller.Roll(0, skillValue + 1) + m_DiceRoller.Roll(0, skillValue + 1)) / 2;
     }
+#nullable restore
 
     private static int _Average(int x, int y) { return x+y/2; }
 

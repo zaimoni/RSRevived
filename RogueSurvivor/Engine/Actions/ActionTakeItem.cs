@@ -6,13 +6,13 @@
 
 using djack.RogueSurvivor.Data;
 using System;
-using System.Collections.Generic;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Actions
 {
-#nullable enable
   [Serializable]
   internal class ActionTakeItem : ActorAction
   {
@@ -129,15 +129,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.Name + " takes " + m_ID.ToString();
     }
   } // ActionTake
-#nullable restore
 
   [Serializable]
   internal class ActionGiveTo : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     private Actor m_Target;
-    [NonSerialized] Item gift;
-    [NonSerialized] Item received;
+    [NonSerialized] Item? gift;
+    [NonSerialized] Item? received;
 
     public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it)
       : base(actor)
@@ -164,7 +163,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
         if (null == recover) return false;
 
-        static Item parse_recovery(ActorAction act) {
+        static Item? parse_recovery(ActorAction act) {
           if (act is ActionChain chain) return parse_recovery(chain.First);
           if (act is ActionTradeWithContainer trade) return trade.Give;
           if (act is ActionDropItem drop) return drop.Item;
@@ -185,7 +184,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift, received);
+      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
     }
 
     public override string ToString()
