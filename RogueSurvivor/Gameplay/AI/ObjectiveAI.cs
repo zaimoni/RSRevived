@@ -1784,15 +1784,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion
         if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
 
-        if (shove.Target.Controller is ObjectiveAI ai) {
+        var target = shove.Target;
+        if (target.Controller is ObjectiveAI ai) {
           if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
             // non-moving shove...would rather not spend the stamina if there is a better option
-            var ok_dests = ai.WantToGoHere(shove.Target.Location);
+            var ok_dests = ai.WantToGoHere(target.Location);
             if (null != ok_dests) return !ok_dests.Contains(shove.a_dest); // shove is to a wanted destination
           }
           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
           // target should not be sleeping; check for that anyway
-          if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
+          if (null != target.Location.Exit && !target.IsSleeping) return true;
         }
       }
       if (x is ActionUseExit exit && !exit.IsNotBlocked) return true;

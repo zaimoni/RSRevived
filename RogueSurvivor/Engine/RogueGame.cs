@@ -4458,7 +4458,7 @@ namespace djack.RogueSurvivor.Engine
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) flag1 = false;
         else if (direction == Direction.NEUTRAL) {
-          Exit exitAt = player.Location.Exit;
+          var exitAt = player.Location.Exit;
           if (exitAt == null) AddMessage(MakeErrorMessage("No exit there."));
           else {
             Actor actorAt = exitAt.Location.Actor;
@@ -11919,9 +11919,11 @@ namespace djack.RogueSurvivor.Engine
             // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
             int exit_slot() {
                 if (District.IsEntryMap(loc.Map)) return ENTRYMAP_EXIT_SLOT;
-                if (District.IsEntryMap(e.Location.Map)) return ENTRYMAP_EXIT_SLOT+1;
-                if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN,e.Location.Position)) return ENTRYMAP_EXIT_SLOT + 1;
-                if (e.Location.Map.HasDecorationAt(GameImages.DECO_STAIRS_UP,e.Location.Position)) return ENTRYMAP_EXIT_SLOT;
+                var e_map = e.Location.Map;
+                if (District.IsEntryMap(e_map)) return ENTRYMAP_EXIT_SLOT+1;
+                var e_pos = e.Location.Position;
+                if (e_map.HasDecorationAt(GameImages.DECO_STAIRS_DOWN, e_pos)) return ENTRYMAP_EXIT_SLOT + 1;
+                if (e_map.HasDecorationAt(GameImages.DECO_STAIRS_UP, e_pos)) return ENTRYMAP_EXIT_SLOT;
                 return ENTRYMAP_EXIT_SLOT + 1;    // default
             }
 

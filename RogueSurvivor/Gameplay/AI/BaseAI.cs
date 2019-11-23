@@ -286,7 +286,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // helps civs ai getting stuck in semi-infinite loop when running out of new exploration to do.
         // as a side effect, make ais with no exploration data (eg zombies) more eager to visit door/windows and exits.
         if (next.MapObject is DoorWindow) score += DOORWINDOWS;
-        if (null != next.Exit) score += (next.Exit.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
+        var e = next.Exit;
+        if (null != e) score += (e.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
 
         // alpha10.1 prefer inside when almost sleepy
         if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
@@ -743,7 +744,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int num = Rules.GridDistance(m_Actor.Location, other.Location);
       if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
-        Exit exitAt = m_Actor.Location.Exit;
+        var exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
           return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
@@ -844,7 +845,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
-              Exit exitAt = m_Actor.Location.Exit;
+              var exitAt = m_Actor.Location.Exit;
               if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
@@ -928,7 +929,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorUseExit(UseExitFlags useFlags)
     {
-      Exit exitAt = m_Actor.Location.Exit;
+      var exitAt = m_Actor.Location.Exit;
       if (null == exitAt) return null;
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location) : null);

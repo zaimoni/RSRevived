@@ -52,9 +52,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsWalkableFor(Actor actor, out string reason) { return Map.IsWalkableFor(Position, actor, out reason); }
 #nullable enable
     public Inventory? Items { get { return Map.GetItemsAt(Position); } }
-#nullable restore
-    public Exit Exit { get { return Map.GetExitAt(Position); } }
-#nullable enable
+    public Exit? Exit { get { return Map.GetExitAt(Position); } }
     public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
 #nullable restore
     public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }
@@ -71,14 +69,14 @@ namespace djack.RogueSurvivor.Data
       // exit-based
       var e = Exit;
       if (null != e) {
-        Actor a = e.Location.Actor;
+        var a = e.Location.Actor;
         if (null != a && a!=viewpoint && !a.IsEnemyOf(viewpoint)) return true;
       }
       // check map for topology-based
       foreach (var dir in Direction.COMPASS) {
         var loc = this+dir;
         if (2> Engine.Rules.GridDistance(in loc, viewpoint.Location)) continue;
-        Actor a = loc.Actor;
+        var a = loc.Actor;
         if (null == a || a.IsEnemyOf(viewpoint)) continue;
         var steps = a.LegalSteps;
         if (null == steps || 1>=steps.Count) return true;

@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -12,13 +13,18 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_ExitPoint;
 
-    public Exit Exit { get { return m_ExitPoint.Exit; } }
+#nullable enable
+
+    public Exit Exit { get { return m_ExitPoint.Exit!; } }
     public bool IsNotBlocked { get { return Exit.IsNotBlocked(m_Actor); } }
-    public Location dest { get { return m_ExitPoint.Exit.Location; } }
+    public Location dest { get { return Exit.Location; } }
 
     public ActionUseExit(Actor actor, in Location exitPoint)
       : base(actor)
     {
+#if DEBUG
+      if (null == exitPoint.Exit) throw new ArgumentNullException("exitPoint.Exit");
+#endif
       m_ExitPoint = exitPoint;
       actor.Activity = Activity.IDLE;
     }

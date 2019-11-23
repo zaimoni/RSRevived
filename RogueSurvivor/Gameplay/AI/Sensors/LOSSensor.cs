@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Actor = actor;
       var _view_map = m_Actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
-      actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);    // will have seen everything; note this
+      actor.InterestingLocs?.Seen(_view_map, m_FOV);    // will have seen everything; note this
       var e = m_Actor.Location.Exit;
       var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
       {
@@ -134,7 +134,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
       List<Percept> perceptList = new List<Percept>();
       if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
-        ThreatTracking threats = actor.Threats;
+        var threats = actor.Threats;
         if (null != threats) _seeActors(perceptList, normalized_FOV, threats);
         else _seeActors(perceptList, normalized_FOV);
       }
@@ -146,7 +146,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
         foreach (var loc in normalized_FOV) {
           var corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
-          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, actor.Location.Map.LocalTime.TurnCounter, in loc));
+          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, _view_map.LocalTime.TurnCounter, in loc));
         }
       }
       return perceptList;

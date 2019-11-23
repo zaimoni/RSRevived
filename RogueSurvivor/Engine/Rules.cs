@@ -397,7 +397,7 @@ namespace djack.RogueSurvivor.Engine
         var actionMoveStep = new ActionMoveStep(actor, in loc);
         if (map!=actor.Location.Map) {
           // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
-          Exit exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
+          var exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
           if (null != exit && exit.Location==loc) {
            if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);
            if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
@@ -580,7 +580,7 @@ namespace djack.RogueSurvivor.Engine
       if (a.Map != b.Map) {
         Location? test = a.Map.Denormalize(in b);
         if (null == test) {
-          Exit exit = a.Exit;
+          var exit = a.Exit;
           return null != exit && exit.Location == b;
         }
         IsAdjacent(a.Position, test.Value.Position);
@@ -590,9 +590,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool IsAdjacent(in Point pA, in Point pB)
     {
-      if (Math.Abs(pA.X - pB.X) < 2)
-        return Math.Abs(pA.Y - pB.Y) < 2;
-      return false;
+      return Math.Abs(pA.X - pB.X) < 2 && Math.Abs(pA.Y - pB.Y) < 2;
     }
 
     // L-infinity metric i.e. distance in moves
@@ -637,7 +635,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Location? test = from.Map.Denormalize(in to);
       if (null == test) {
-        Exit exit = from.Exit;
+        var exit = from.Exit;
         return (null != exit && exit.Location == to) ? 1.0 : double.MaxValue;
       }
       return StdDistance(test.Value.Position - from.Position);
@@ -649,7 +647,7 @@ namespace djack.RogueSurvivor.Engine
       if (a.Map != b.Map) {
         Location? test = a.Map.Denormalize(in b);
         if (null == test) {
-          Exit exit = a.Exit;
+          var exit = a.Exit;
           return (null != exit && exit.Location == b) ? 1 : int.MaxValue;
         }
         return GridDistance(a.Position, test.Value.Position);

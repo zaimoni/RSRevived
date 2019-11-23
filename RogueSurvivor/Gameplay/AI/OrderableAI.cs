@@ -1965,7 +1965,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
-              Exit exitAt = m_Actor.Location.Exit;
+              var exitAt = m_Actor.Location.Exit;
               if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {

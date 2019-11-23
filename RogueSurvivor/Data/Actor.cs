@@ -2432,7 +2432,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public List<Location> MutuallyAdjacentFor(Location a, Location b)
+    public List<Location>? MutuallyAdjacentFor(Location a, Location b)
     {
       if (3 <= Rules.InteractionDistance(in a, in b)) return null;
       var e = a.Exit;
