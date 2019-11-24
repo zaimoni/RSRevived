@@ -624,6 +624,7 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
+#nullable enable
     public static double StdDistance(in Location from, in Location to)
     {
       Location? test = from.Map.Denormalize(in to);
@@ -655,10 +656,9 @@ namespace djack.RogueSurvivor.Engine
       return GridDistance(a.Position, b.Position);
     }
 
-    public static bool IsMurder(Actor killer, Actor victim)
+    public static bool IsMurder(Actor? killer, Actor victim)
     {
       if (null == killer) return false;
-      if (null == victim) return false;
       if (victim.Model.Abilities.IsUndead) return false;
       if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersOnRecord(killer) > 0) return false;
 #if POLICE_NO_QUESTIONS_ASKED
@@ -668,23 +668,23 @@ namespace djack.RogueSurvivor.Engine
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
       var killer_leader = killer.LiveLeader;
-      if (killer_leader?.Model.Abilities.IsLawEnforcer ?? false) {
+      if (null != killer_leader && killer_leader.Model.Abilities.IsLawEnforcer) {
         if (killer_leader.IsEnemyOf(victim)) return false;
-        if (victim.IsSelfDefenceFrom(killer.Leader)) return false;  // XXX redundant?
+        if (victim.IsSelfDefenceFrom(killer_leader)) return false;  // XXX redundant?
       }
 
       // \todo National Guard is likely to have unusual handling as well.
 
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
       if (victim.Model.Abilities.IsLawEnforcer) return true;
-      if (victim.HasLeader && victim.Leader.Model.Abilities.IsLawEnforcer) return true;
+      if (victim.LiveLeader?.Model.Abilities.IsLawEnforcer ?? false) return true;
 
       // resume old definition
       if (killer.IsSelfDefenceFrom(victim)) return false;
 
       // XXX RS Alpha 9; went away in RS Alpha 10.  The important case (police leading civilian) is handled above.  May need reimplementing (cf. Actor::ChainOfCommand)
       if (killer_leader?.IsSelfDefenceFrom(victim) ?? false) return false;
-      if (killer.CountFollowers > 0 && !killer.Followers.Any(fo => fo.IsSelfDefenceFrom(victim))) return false;
+      if (null != killer.FirstFollower(fo => !fo.IsSelfDefenceFrom(victim))) return false;
 
       return true;
     }
@@ -693,6 +693,7 @@ namespace djack.RogueSurvivor.Engine
     {
       return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
+#nullable restore
 
     public static int ActorDisturbedLevel(Actor actor)
     {

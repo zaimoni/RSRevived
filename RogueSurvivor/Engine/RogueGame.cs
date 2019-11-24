@@ -2253,16 +2253,17 @@ namespace djack.RogueSurvivor.Engine
 #endregion
           }
           actor.SpendSanity(1);
-          if (actor.HasLeader) {
+          var a_leader = actor.LiveLeader;
+          if (null != a_leader) {
 #region leader trust & leader/follower bond.
-            ModifyActorTrustInLeader(actor, Rules.ActorTrustIncrease(actor.Leader), false);
-            if (actor.HasBondWith(actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
+            ModifyActorTrustInLeader(actor, Rules.ActorTrustIncrease(a_leader), false);
+            if (actor.HasBondWith(a_leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
-              actor.Leader.RegenSanity(Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
+              actor.Leader.RegenSanity(Rules.ActorSanRegenValue(a_leader, Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), actor.Leader.Name, actor.HimOrHer)));
-              if (ForceVisibleToPlayer(actor.Leader))
-                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor.Leader, VERB_FEEL), actor.Name, actor.Leader.HimOrHer)));
+                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), a_leader.Name, actor.HimOrHer)));
+              if (ForceVisibleToPlayer(a_leader))
+                AddMessage(MakeMessage(a_leader, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(a_leader, VERB_FEEL), actor.Name, a_leader.HimOrHer)));
             }
 #endregion
           }
