@@ -50,7 +50,6 @@ namespace djack.RogueSurvivor.Engine
     public const int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
     public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
-    public static double SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15;
     public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
@@ -74,8 +73,6 @@ namespace djack.RogueSurvivor.Engine
     public const int FOOD_BASE_POINTS = 2*Actor.FOOD_HUNGRY_LEVEL;
     public const int ROT_BASE_POINTS = 2*Actor.ROT_HUNGRY_LEVEL;
     public const int SLEEP_BASE_POINTS = 2*Actor.SLEEP_SLEEPY_LEVEL;
-    public const int SANITY_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
-    public const int SANITY_UNSTABLE_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SANITY_NIGHTMARE_CHANCE = 2;
     public const int SANITY_NIGHTMARE_SLP_LOSS = 2*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_NIGHTMARE_SAN_LOSS = WorldTime.TURNS_PER_HOUR;
@@ -688,17 +685,7 @@ namespace djack.RogueSurvivor.Engine
 
       return true;
     }
-
-    public static int ActorSanRegenValue(Actor actor, int baseValue)
-    {
-      return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
-    }
 #nullable restore
-
-    public static int ActorDisturbedLevel(Actor actor)
-    {
-      return (int) (SANITY_UNSTABLE_LEVEL * (1.0 - SKILL_STRONG_PSYCHE_LEVEL_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
-    }
 
     public static int ActorMedicineEffect(Actor actor, int baseEffect)
     {

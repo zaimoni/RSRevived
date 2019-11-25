@@ -66,6 +66,8 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
+    public static double SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15;
+    public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
     public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
@@ -2468,6 +2470,12 @@ namespace djack.RogueSurvivor.Data
     public bool IsInsane { get { return Model.Abilities.HasSanity && 0 >= m_Sanity; } }
     public int MaxSanity { get { return Sheet.BaseSanity; } }
 
+    public int ScaleSanRegen(int baseValue)
+    {
+      return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
+    }
+
+
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
     {
       if (Model.Abilities.HasSanity && 0 > (m_Sanity -= sanCost)) m_Sanity = 0;
@@ -2477,15 +2485,22 @@ namespace djack.RogueSurvivor.Data
     {
       if (Model.Abilities.HasSanity) m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
+
+    public int DisturbedLevel {
+      get {
+        const int SANITY_UNSTABLE_LEVEL = 2 * WorldTime.TURNS_PER_DAY;
+        return (int) (SANITY_UNSTABLE_LEVEL * (1.0 - SKILL_STRONG_PSYCHE_LEVEL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
+      }
+    }
+
 #nullable restore
 
-    public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this); } }
+    public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= DisturbedLevel; } }
 
     public int HoursUntilUnstable {
       get {
-        int num = Sanity - Engine.Rules.ActorDisturbedLevel(this);
-        if (num <= 0) return 0;
-        return num / WorldTime.TURNS_PER_HOUR;
+        int num = Sanity - DisturbedLevel;
+        return 0 < num ? num / WorldTime.TURNS_PER_HOUR : 0;
       }
     }
 

@@ -2258,8 +2258,8 @@ namespace djack.RogueSurvivor.Engine
 #region leader trust & leader/follower bond.
             ModifyActorTrustInLeader(actor, Rules.ActorTrustIncrease(a_leader), false);
             if (actor.HasBondWith(a_leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
-              actor.RegenSanity(Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
-              actor.Leader.RegenSanity(Rules.ActorSanRegenValue(a_leader, Rules.SANITY_RECOVER_BOND));
+              actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
+              actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), a_leader.Name, actor.HimOrHer)));
               if (ForceVisibleToPlayer(a_leader))
@@ -7367,7 +7367,7 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add("> entertainment");
       if (ent.IsBoringFor(Player)) stringList.Add("* BORED OF IT! *");
       int ent_value = entertainmentModel.Value;
-      int num = Player == null ? ent_value : Rules.ActorSanRegenValue(Player, ent_value);
+      int num = Player?.ScaleSanRegen(ent_value) ?? ent_value;
       if (num != ent_value)
         stringList.Add(string.Format("Sanity : +{0} (+{1})", num, ent_value));
       else
@@ -7422,7 +7422,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.STRONG:
           return string.Format("+{0} melee DMG, +{1} throw range", Actor.SKILL_STRONG_DMG_BONUS, Actor.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:
-          return string.Format("+{0}% SAN threshold, +{1}% regen", (int)(100.0 * (double)Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS), (int)(100.0 * (double)Rules.SKILL_STRONG_PSYCHE_ENT_BONUS));
+          return string.Format("+{0}% SAN threshold, +{1}% regen", (int)(100.0 * Actor.SKILL_STRONG_PSYCHE_LEVEL_BONUS), (int)(100.0 * Actor.SKILL_STRONG_PSYCHE_ENT_BONUS));
         case Skills.IDs.TOUGH:
           return string.Format("+{0} HP", Actor.SKILL_TOUGH_HP_BONUS);
         case Skills.IDs.UNSUSPICIOUS:
@@ -9401,7 +9401,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.RegenSanity(Rules.ActorSanRegenValue(actor, ent.Model.Value));
+      actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
       switch(ent.Model.ID) {
       case GameItems.IDs.ENT_CHAR_GUARD_MANUAL:
         if (Player==actor) {  // this manual is highly informative
@@ -9919,7 +9919,7 @@ namespace djack.RogueSurvivor.Engine
       DoStopDragCorpse(deadGuy);
       deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
-        killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
+        killer.RegenSanity(killer.ScaleSanRegen(Rules.SANITY_RECOVER_KILL_UNDEAD));
 
       var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
       if (null != clan) foreach(var a in clan) {
@@ -11702,7 +11702,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasSanity) {
         int maxValue2 = actor.MaxSanity;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", actor.Sanity), gx, gy, new Color?());
-        DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, Rules.ActorDisturbedLevel(actor), 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
+        DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, actor.DisturbedLevel, 100, BOLD_LINE_SPACING, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorSanityStatus(actor), gx + 126 + 100, gy);
       }

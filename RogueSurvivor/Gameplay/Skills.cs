@@ -167,8 +167,8 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_STRONG_DMG_BONUS = (int) skillData2.VALUE1;
       Actor.SKILL_STRONG_THROW_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[17];
-      Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS = skillData2.VALUE1;
-      Rules.SKILL_STRONG_PSYCHE_ENT_BONUS = skillData2.VALUE2;
+      Actor.SKILL_STRONG_PSYCHE_LEVEL_BONUS = skillData2.VALUE1;
+      Actor.SKILL_STRONG_PSYCHE_ENT_BONUS = skillData2.VALUE2;
       skillData2 = data[18];
       Actor.SKILL_TOUGH_HP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[19];
