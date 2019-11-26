@@ -3695,7 +3695,7 @@ restart_single_exit:
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
         if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+          int num4 = m_Actor.ScaleMedicineEffect(stim2.SleepBoost);
           if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
         }
       }
@@ -4063,10 +4063,10 @@ restart_single_exit:
       if (it is ItemMedicineModel) {
         int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
         if (GameItems.IDs.MEDICINE_MEDIKIT == it.ID || GameItems.IDs.MEDICINE_BANDAGES == it.ID) {
-          if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing)) return 3;    // second aid
+          if (needHP >= m_Actor.ScaleMedicineEffect(GameItems.MEDIKIT.Healing)) return 3;    // second aid
         }
 
-        if (GameItems.IDs.MEDICINE_BANDAGES == it.ID && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)) {
+        if (GameItems.IDs.MEDICINE_BANDAGES == it.ID && needHP >= m_Actor.ScaleMedicineEffect(GameItems.BANDAGE.Healing)) {
           return 2; // first aid
         }
 
@@ -4369,7 +4369,7 @@ restart_single_exit:
       { // it should be ok to devour stimulants in a glut
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID && inv.GetBestDestackable(it) is ItemMedicine stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        int num4 = m_Actor.ScaleMedicineEffect(stim.SleepBoost);
         if (num4 <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
       }
@@ -4386,7 +4386,7 @@ restart_single_exit:
       { // finisbing off stimulants to get a free slot is ok
       if (inv.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        int num4 = m_Actor.ScaleMedicineEffect(stim.SleepBoost);
         if (num4*stim.Quantity <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
       }
@@ -4462,8 +4462,8 @@ restart_single_exit:
       {
       int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
       if (0 < needHP) {
-        if (   (GameItems.MEDIKIT == it.Model && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing))
-            || (GameItems.BANDAGE == it.Model && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)))
+        if (   (GameItems.MEDIKIT == it.Model && needHP >= m_Actor.ScaleMedicineEffect(GameItems.MEDIKIT.Healing))
+            || (GameItems.BANDAGE == it.Model && needHP >= m_Actor.ScaleMedicineEffect(GameItems.BANDAGE.Healing)))
           { // same idea as reloading, only hp instead of ammo
           Item drop = inv.GetFirst<ItemFood>();
           if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
@@ -5265,7 +5265,7 @@ restart_single_exit:
     {
        ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine);
        if (null == stim) return null;
-       int threshold = m_Actor.MaxSleep-(Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost));
+       int threshold = m_Actor.MaxSleep-(m_Actor.ScaleMedicineEffect(stim.SleepBoost));
        if (m_Actor.SleepPoints > threshold) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        return new ActionUseItem(m_Actor,stim);

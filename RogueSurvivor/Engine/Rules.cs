@@ -45,7 +45,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15; // alpha10
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
-    public static double SKILL_MEDIC_BONUS = 0.15;
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
     public const int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
     public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
@@ -686,11 +685,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 #nullable restore
-
-    public static int ActorMedicineEffect(Actor actor, int baseEffect)
-    {
-      return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
-    }
 
     public static int ActorHealChanceBonus(Actor actor)
     {

@@ -63,6 +63,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15;
     public static double SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1;
+    public static double SKILL_MEDIC_BONUS = 0.15;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
@@ -2628,6 +2629,12 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantStopDrag(corpse));
     }
 #endif
+
+    public int ScaleMedicineEffect(int baseEffect)
+    {
+      return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
+    }
+
 
     private string ReasonCantRevive(Corpse corpse)
     {

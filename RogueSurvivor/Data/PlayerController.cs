@@ -205,7 +205,7 @@ namespace djack.RogueSurvivor.Data
           break;
         }
         if (null != car) {
-          int threshold = m_Actor.MaxSTA-(Rules.ActorMedicineEffect(m_Actor, stim.StaminaBoost))+2;
+          int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
           if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
           if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) ret.Add("Brace for pushing car in place");
         }
@@ -265,7 +265,7 @@ namespace djack.RogueSurvivor.Data
         {
         ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
         if (null == stim) return false; // actually invariant failure
-        int threshold = m_Actor.MaxSTA-(Rules.ActorMedicineEffect(m_Actor, stim.StaminaBoost))+2;
+        int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
         // currently all wrecked cars have weight 100
         if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
         Objectives.Insert(0,new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));

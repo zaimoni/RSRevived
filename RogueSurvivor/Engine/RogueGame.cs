@@ -7184,45 +7184,40 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeItemMedicine(ItemMedicine med)
     {
       var lines = new List<string>{ "> medicine" };
-      ItemMedicineModel itemMedicineModel = med.Model;
+      var model = med.Model;
 
       // alpha10 dont add lines for zero values
 
-      int num1 = Player == null ? itemMedicineModel.Healing : Rules.ActorMedicineEffect(Player, itemMedicineModel.Healing);
-      if (0 != num1) {
-        if (num1 == itemMedicineModel.Healing)
-          lines.Add(string.Format("Healing : +{0}", itemMedicineModel.Healing));
-        else
-          lines.Add(string.Format("Healing : +{0} (+{1})", num1, itemMedicineModel.Healing));
+      int base_effect = model.Healing;
+      int actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      if (0 != actual) {
+        lines.Add(actual == base_effect ? string.Format("Healing : +{0}", base_effect)
+                                        : string.Format("Healing : +{0} (+{1})", actual, base_effect));
       }
-      int num2 = Player == null ? itemMedicineModel.StaminaBoost : Rules.ActorMedicineEffect(Player, itemMedicineModel.StaminaBoost);
-      if (0 != num2) {
-        if (num2 == itemMedicineModel.StaminaBoost)
-          lines.Add(string.Format("Stamina : +{0}", itemMedicineModel.StaminaBoost));
-        else
-          lines.Add(string.Format("Stamina : +{0} (+{1})", num2, itemMedicineModel.StaminaBoost));
+      base_effect = model.StaminaBoost;
+      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      if (0 != actual) {
+        lines.Add(actual == base_effect ? string.Format("Stamina : +{0}", base_effect)
+                                        : string.Format("Stamina : +{0} (+{1})", actual, base_effect));
       }
-      int num3 = Player == null ? itemMedicineModel.SleepBoost : Rules.ActorMedicineEffect(Player, itemMedicineModel.SleepBoost);
-      if (0 != num3) {
-        if (num3 == itemMedicineModel.SleepBoost)
-          lines.Add(string.Format("Sleep   : +{0}", itemMedicineModel.SleepBoost));
-        else
-          lines.Add(string.Format("Sleep   : +{0} (+{1})", num3, itemMedicineModel.SleepBoost));
+      base_effect = model.SleepBoost;
+      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      if (0 != actual) {
+        lines.Add(actual == base_effect ? string.Format("Sleep   : +{0}", base_effect)
+                                        : string.Format("Sleep   : +{0} (+{1})", actual, base_effect));
       }
-      int num4 = Player == null ? itemMedicineModel.SanityCure : Rules.ActorMedicineEffect(Player, itemMedicineModel.SanityCure);
-      if (0 != num4) {
-        if (num4 == itemMedicineModel.SanityCure)
-          lines.Add(string.Format("Sanity  : +{0}", itemMedicineModel.SanityCure));
-        else
-          lines.Add(string.Format("Sanity  : +{0} (+{1})", num4, itemMedicineModel.SanityCure));
+      base_effect = model.SanityCure;
+      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      if (0 != actual) {
+        lines.Add(actual == base_effect ? string.Format("Sanity  : +{0}", base_effect)
+                                        : string.Format("Sanity  : +{0} (+{1})", actual, base_effect));
       }
       if (Session.Get.HasInfection) {
-        int num5 = Player == null ? itemMedicineModel.InfectionCure : Rules.ActorMedicineEffect(Player, itemMedicineModel.InfectionCure);
-        if (0 != num5) {
-          if (num5 == itemMedicineModel.InfectionCure)
-            lines.Add(string.Format("Cure    : +{0}", itemMedicineModel.InfectionCure));
-          else
-            lines.Add(string.Format("Cure    : +{0} (+{1})", num5, itemMedicineModel.InfectionCure));
+        base_effect = model.InfectionCure;
+        actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+        if (0 != actual) {
+          lines.Add(actual == base_effect ? string.Format("Cure    : +{0}", base_effect)
+                                          : string.Format("Cure    : +{0} (+{1})", actual, base_effect));
         }
       }
       return lines.ToArray();
@@ -7416,7 +7411,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.MARTIAL_ARTS:
           return string.Format("unarmed only +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
-          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Rules.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
+          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Actor.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
           return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Actor.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
@@ -9365,11 +9360,11 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.RegenHitPoints(Rules.ActorMedicineEffect(actor, med.Healing));
-      actor.RegenStaminaPoints(Rules.ActorMedicineEffect(actor, med.StaminaBoost));
-      actor.Rest(Rules.ActorMedicineEffect(actor, med.SleepBoost));
-      actor.Cure(Rules.ActorMedicineEffect(actor, med.InfectionCure));
-      actor.RegenSanity(Rules.ActorMedicineEffect(actor, med.SanityCure));
+      actor.RegenHitPoints(actor.ScaleMedicineEffect(med.Healing));
+      actor.RegenStaminaPoints(actor.ScaleMedicineEffect(med.StaminaBoost));
+      actor.Rest(actor.ScaleMedicineEffect(med.SleepBoost));
+      actor.Cure(actor.ScaleMedicineEffect(med.InfectionCure));
+      actor.RegenSanity(actor.ScaleMedicineEffect(med.SanityCure));
       actor.Inventory.Consume(med);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
