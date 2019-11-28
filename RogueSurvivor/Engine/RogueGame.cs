@@ -2219,7 +2219,7 @@ namespace djack.RogueSurvivor.Engine
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Data.Activity.SLEEPING;
               actor.Rest(actor.SleepRegen(isOnCouch));
-              if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + Rules.ActorHealChanceBonus(actor)))
+              if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + actor.HealChanceBonus))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
                 DoWakeUp(actor);
@@ -7224,15 +7224,13 @@ namespace djack.RogueSurvivor.Engine
     }
 
     static private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
-    {
-      var stringList = new List<string>{ "> barricade material" };
+    {   // 2019-11-27: this is cold path, so assume ok to be future-compatible and waste a dynamic allocation of a List<string>
+      var lines = new List<string>{ "> barricade material" };
       int barricade_value = bm.Model.BarricadingValue;
-      int num = Player == null ? barricade_value : Rules.ActorBarricadingPoints(Player, barricade_value);
-      if (num == barricade_value)
-        stringList.Add(string.Format("Barricading : +{0}", barricade_value));
-      else
-        stringList.Add(string.Format("Barricading : +{0} (+{1})", num, barricade_value));
-      return stringList.ToArray();
+      int num = Player?.ScaleBarricadingPoints(barricade_value) ?? barricade_value;
+      lines.Add(num == barricade_value ? string.Format("Barricading : +{0}", barricade_value)
+                                            : string.Format("Barricading : +{0} (+{1})", num, barricade_value));
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
@@ -7385,17 +7383,17 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF", Actor.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
-          return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+          return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100.0 * Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
         case Skills.IDs.BOWS:
           return string.Format("bows +{0} ATK, +{1} DMG", Actor.SKILL_BOWS_ATK_BONUS, Actor.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:
-          return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * (double)Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
+          return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * Actor.SKILL_CARPENTRY_BARRICADING_BONUS));
         case Skills.IDs.CHARISMATIC:
           return string.Format("+{0} trust per turn, +{1}% trade offers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);
         case Skills.IDs.FIREARMS:
           return string.Format("firearms +{0} ATK, +{1} DMG", Actor.SKILL_FIREARMS_ATK_BONUS, Actor.SKILL_FIREARMS_DMG_BONUS);
         case Skills.IDs.HARDY:
-          return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
+          return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Actor.SKILL_HARDY_HEAL_CHANCE_BONUS);
         case Skills.IDs.HAULER:
           return string.Format("+{0} inventory slots", Actor.SKILL_HAULER_INV_BONUS);
         case Skills.IDs.HIGH_STAMINA:
@@ -7403,7 +7401,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LEADERSHIP:
           return string.Format("+{0} max Followers", Actor.SKILL_LEADERSHIP_FOLLOWER_BONUS);
         case Skills.IDs.LIGHT_EATER:
-          return string.Format("+{0}% max FOO, +{1}% item food points", (int)(100.0 * (double)Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100.0 * (double)Actor.SKILL_LIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max FOO, +{1}% item food points", (int)(100.0 * Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100.0 * Actor.SKILL_LIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.LIGHT_FEET:
           return string.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.LIGHT_SLEEPER:
@@ -9466,7 +9464,7 @@ namespace djack.RogueSurvivor.Engine
     {
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
       actor.Inventory.Consume(barricadeMaterial);
-      door.Barricade(Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));
+      door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -9492,7 +9490,7 @@ namespace djack.RogueSurvivor.Engine
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(barricadeMaterial);
-      fort.Repair(Rules.ActorBarricadingPoints(actor, barricadeMaterial.Model.BarricadingValue));
+      fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(fort)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
     }
@@ -11232,7 +11230,7 @@ namespace djack.RogueSurvivor.Engine
           if (Player?.CanTradeWith(actor) ?? false) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
           if (actor.OdorSuppressorCounter > 0) m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx2, gy2, tint);  // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
 
-          if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
+          if (actor.IsSleeping && (actor.IsOnCouch || 0 < actor.HealChanceBonus)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
           if (!s_Options.IsCombatAssistantOn || actor == Player || (Player == null || !actor.IsEnemyOf(Player))) break;

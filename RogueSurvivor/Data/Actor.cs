@@ -57,7 +57,9 @@ namespace djack.RogueSurvivor.Data
 
     public static double SKILL_AWAKE_SLEEP_BONUS = 0.1;
     public static double SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17;    // XXX 0.17f makes this useful at L1
+    public static double SKILL_CARPENTRY_BARRICADING_BONUS = 0.15;
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
+    public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 8;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
@@ -1973,6 +1975,18 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantClose(door));
     }
 
+    public int ScaleBarricadingPoints(int baseBarricadingPoints)
+    {
+      int barBonus = (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)));    // carpentry skill
+
+      // alpha10: tool build bonus
+      if (GetEquippedWeapon() is ItemMeleeWeapon melee) {
+        float toolBonus = melee.Model.ToolBuildBonus;
+        if (0 != toolBonus) barBonus += (int)(baseBarricadingPoints * toolBonus);
+      }
+      return baseBarricadingPoints + barBonus;
+    }
+
     private string ReasonCantBarricade(DoorWindow door)
     {
       if (!door.CanBarricade(out string reason)) return reason;
@@ -2242,6 +2256,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void RegenHitPoints(int hpRegen) { m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen); }
+
+    public int HealChanceBonus {
+      get {
+        return SKILL_HARDY_HEAL_CHANCE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HARDY);
+      }
+    }
 
     // stamina
     public int NightSTApenalty {

@@ -131,7 +131,7 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_BOWS_ATK_BONUS = (int) skillData1.VALUE1;
       Actor.SKILL_BOWS_DMG_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[3];
-      Rules.SKILL_CARPENTRY_BARRICADING_BONUS = skillData1.VALUE1;
+      Actor.SKILL_CARPENTRY_BARRICADING_BONUS = skillData1.VALUE1;
       Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[4];
       Rules.SKILL_CHARISMATIC_TRUST_BONUS = (int) skillData1.VALUE1;
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_FIREARMS_ATK_BONUS = (int) skillData1.VALUE1;
       Actor.SKILL_FIREARMS_DMG_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[6];
-      Rules.SKILL_HARDY_HEAL_CHANCE_BONUS = (int) skillData1.VALUE1;
+      Actor.SKILL_HARDY_HEAL_CHANCE_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[7];
       Actor.SKILL_HAULER_INV_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[8];

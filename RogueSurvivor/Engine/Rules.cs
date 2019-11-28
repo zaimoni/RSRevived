@@ -39,10 +39,8 @@ namespace djack.RogueSurvivor.Engine
     public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
     public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
     public static int SKILL_AGILE_DEF_BONUS = 4;
-    public static double SKILL_CARPENTRY_BARRICADING_BONUS = 0.15;
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 2;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
-    public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15; // alpha10
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
     public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
@@ -685,23 +683,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 #nullable restore
-
-    public static int ActorHealChanceBonus(Actor actor)
-    {
-      return SKILL_HARDY_HEAL_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HARDY);
-    }
-
-    public static int ActorBarricadingPoints(Actor actor, int baseBarricadingPoints)
-    {
-      int barBonus = (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)));    // carpentry skill
-
-      // alpha10: tool build bonus
-      if (actor.GetEquippedWeapon() is ItemMeleeWeapon melee) {
-        float toolBonus = melee.Model.ToolBuildBonus;
-        if (0 != toolBonus) barBonus += (int)(baseBarricadingPoints * toolBonus);
-      }
-      return baseBarricadingPoints + barBonus;
-    }
 
     public static int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
     {
