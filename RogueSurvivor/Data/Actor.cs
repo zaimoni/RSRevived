@@ -65,6 +65,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.15;
     public static double SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.1;
+    public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20; // alpha10
     public static double SKILL_MEDIC_BONUS = 0.15;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
@@ -2787,6 +2788,14 @@ namespace djack.RogueSurvivor.Data
     public void Drowse(int s) {
       m_SleepPoints = Math.Max(0, m_SleepPoints - s);
     }
+
+    public int LoudNoiseWakeupChance(int noiseDistance)
+    {
+      const int LOUD_NOISE_BASE_WAKEUP_CHANCE = 10;
+      const int LOUD_NOISE_DISTANCE_BONUS = 10;
+      return LOUD_NOISE_BASE_WAKEUP_CHANCE + SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (Rules.LOUD_NOISE_RADIUS - noiseDistance) * LOUD_NOISE_DISTANCE_BONUS);
+    }
+
 
     public void Vomit()
     {

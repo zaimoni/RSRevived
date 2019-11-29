@@ -153,7 +153,7 @@ namespace djack.RogueSurvivor.Gameplay
       SkillData skillData2 = data[11];
       Rules.SKILL_LIGHT_FEET_TRAP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[12];
-      Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = (int) skillData2.VALUE1;
+      Actor.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[13];
       Actor.SKILL_MARTIAL_ARTS_ATK_BONUS = (int) skillData2.VALUE1;
       Actor.SKILL_MARTIAL_ARTS_DMG_BONUS = (int) skillData2.VALUE2;

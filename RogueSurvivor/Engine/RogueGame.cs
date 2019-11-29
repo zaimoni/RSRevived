@@ -7405,7 +7405,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LIGHT_FEET:
           return string.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.LIGHT_SLEEPER:
-          return string.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
+          return string.Format("+{0}% noise wake up chance", Actor.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
         case Skills.IDs.MARTIAL_ARTS:
           return string.Format("unarmed only +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
@@ -9863,9 +9863,8 @@ namespace djack.RogueSurvivor.Engine
       void loud_noise(Point pt) {
         var actor = map.GetActorAtExt(pt);
         if (null != actor && actor.IsSleeping) {
-          int noiseDistance = Rules.GridDistance(in noisePosition, in pt);
           // would need to test for other kinds of distance
-          if (/* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actor, noiseDistance))) {
+          if (m_Rules.RollChance(actor.LoudNoiseWakeupChance(Rules.GridDistance(in noisePosition, in pt)))) {
             DoWakeUp(actor);
             if (ForceVisibleToPlayer(actor)) {
               AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
