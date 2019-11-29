@@ -2288,7 +2288,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.RollChance(LAW_ENFORCE_CHANCE)) return null;  // \todo but should be 100% for hungry civilians attacking for food, that is in-progress
       friends = null;  // enable auto GC
       foreach(var x in murderers) {
-        if (0 >= x.Value.MurdersInProgress && game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, x.Value))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
+        if (0 >= x.Value.MurdersInProgress && game.Rules.RollChance(x.Value.UnsuspicousForChance(m_Actor))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
         else (friends ?? new Dictionary<Location, Actor>())[x.Key] = x.Value;
       }
       if (null == friends) return null;

@@ -2256,7 +2256,7 @@ namespace djack.RogueSurvivor.Engine
           var a_leader = actor.LiveLeader;
           if (null != a_leader) {
 #region leader trust & leader/follower bond.
-            ModifyActorTrustInLeader(actor, Rules.ActorTrustIncrease(a_leader), false);
+            ModifyActorTrustInLeader(actor, a_leader.TrustIncrease, false);
             if (actor.HasBondWith(a_leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
@@ -7389,7 +7389,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.CARPENTRY:
           return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * Actor.SKILL_CARPENTRY_BARRICADING_BONUS));
         case Skills.IDs.CHARISMATIC:
-          return string.Format("+{0} trust per turn, +{1}% trade offers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);
+          return string.Format("+{0} trust per turn, +{1}% trade offers", Actor.SKILL_CHARISMATIC_TRUST_BONUS, Actor.SKILL_CHARISMATIC_TRADE_BONUS);
         case Skills.IDs.FIREARMS:
           return string.Format("firearms +{0} ATK, +{1} DMG", Actor.SKILL_FIREARMS_ATK_BONUS, Actor.SKILL_FIREARMS_DMG_BONUS);
         case Skills.IDs.HARDY:
@@ -7419,7 +7419,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.TOUGH:
           return string.Format("+{0} HP", Actor.SKILL_TOUGH_HP_BONUS);
         case Skills.IDs.UNSUSPICIOUS:
-          return string.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
+          return string.Format("+{0}% unnoticed by law enforcers and gangs", Actor.SKILL_UNSUSPICIOUS_BONUS);
         case Skills.IDs.Z_AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF, can jump", Actor.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
         case Skills.IDs.Z_EATER:

@@ -59,6 +59,8 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17;    // XXX 0.17f makes this useful at L1
     public static double SKILL_CARPENTRY_BARRICADING_BONUS = 0.15;
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
+    public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
+    public static int SKILL_CHARISMATIC_TRUST_BONUS = 2;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 8;
@@ -74,6 +76,7 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
+    public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
     public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
     public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1;
@@ -505,6 +508,34 @@ namespace djack.RogueSurvivor.Data
         return ret;
       }
     }
+
+    public int UnsuspicousForChance(Actor observer)
+    {
+      const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 75;   // these two are logically independent
+      const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 75;
+      int baseChance = SKILL_UNSUSPICIOUS_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
+
+      // retain general-purpose code within the cases
+      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
+        int bonus() {
+          switch((Gameplay.GameFactions.IDs)observer.Faction.ID) {
+            case Gameplay.GameFactions.IDs.ThePolice:
+              if (armor.IsHostileForCops()) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+              else if (armor.IsFriendlyForCops()) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+              break;
+            case Gameplay.GameFactions.IDs.TheBikers:
+            case Gameplay.GameFactions.IDs.TheGangstas:
+              if (armor.IsHostileForBiker(observer.GangID)) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+              else if (armor.IsFriendlyForBiker(observer.GangID)) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+            break;
+          }
+          return 0;
+        }
+
+        baseChance += bonus();
+      }
+      return baseChance;
+    }
 #nullable restore
 
     public int MurdersCounter {
@@ -516,7 +547,7 @@ namespace djack.RogueSurvivor.Data
     public int MurdersOnRecord(Actor observer) {
       int circumstantial = MurdersInProgress;
       if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
-      if (100 <= Rules.ActorUnsuspicousChance(observer, this)) return circumstantial;
+      if (100 <= UnsuspicousForChance(observer)) return circumstantial;
       if (100 <= Rules.ActorSpotMurdererChance(observer, this)) return circumstantial;
       return m_MurdersCounter+ circumstantial;
     }
@@ -1266,6 +1297,12 @@ namespace djack.RogueSurvivor.Data
       if (null == m_TrustDict) return 0;
       if (m_TrustDict.TryGetValue(other,out int trust)) return trust;
       return 0;
+    }
+
+    public int TrustIncrease {
+      get {
+        return 1 + SKILL_CHARISMATIC_TRUST_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
+      }
     }
 
     public ThreatTracking? Threats {
@@ -2954,6 +2991,12 @@ namespace djack.RogueSurvivor.Data
     public int CurrentNutritionOf(ItemFood food)
     {
       return ItemNutritionValue(food.NutritionAt(Location.Map.LocalTime.TurnCounter));
+    }
+
+    public int CharismaticTradeChance {
+      get {
+        return SKILL_CHARISMATIC_TRADE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
+      }
     }
 
     public List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where

@@ -216,7 +216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
         {
           if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
-          if (!game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);
+          if (!game.Rules.RollChance(a.UnsuspicousForChance(m_Actor))) return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
           return false;
         });

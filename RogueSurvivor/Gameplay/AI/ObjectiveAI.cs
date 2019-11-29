@@ -4898,7 +4898,7 @@ restart_single_exit:
       if (!speaker.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(speaker)+" must be able to trade");
       if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(m_Actor)+" must be able to trade");
 #endif
-      if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
+      if (RogueForm.Game.Rules.RollChance(speaker.CharismaticTradeChance)) return true;
       return IsInterestingItem(offeredItem);
     }
 
