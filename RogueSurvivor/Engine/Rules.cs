@@ -45,7 +45,6 @@ namespace djack.RogueSurvivor.Engine
     public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
-    public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
     public static double SKILL_ZINFECTOR_BONUS = 0.15f;
@@ -106,9 +105,6 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -WorldTime.TURNS_PER_HOUR;
     public const int TRUST_LEADER_KILL_ENEMY = 3*WorldTime.TURNS_PER_HOUR;
 //  public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;  // removed in RS Alpha 10
-    public const int MURDERER_SPOTTING_BASE_CHANCE = 5;
-    public const int MURDERER_SPOTTING_DISTANCE_PENALTY = 1;
-    public const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
     private const float INFECTION_BASE_FACTOR = 1f;
     private const int CORPSE_ZOMBIFY_BASE_CHANCE = 0;
     public const int CORPSE_ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
@@ -677,21 +673,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 #nullable restore
-
-    public static int ActorSpotMurdererChance(Actor spotter, Actor murderer)
-    {
-      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * InteractionDistance(spotter.Location, murderer.Location);
-    }
-
-    public static int ActorBiteHpRegen(Actor a, int dmg)
-    {
-      return dmg + (int)(/* (double) */ SKILL_ZEATER_REGEN_BONUS * /* (int) */(a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * dmg));
-    }
-
-    public static int CorpseEatingInfectionTransmission(int infection)
-    {
-      return (int) (0.1 * (double) infection);
-    }
 
     public static int InfectionForDamage(Actor infector, int dmg)
     {

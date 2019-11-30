@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_ZAGILE_ATK_BONUS = (int) skillData2.VALUE1;
       Rules.SKILL_ZAGILE_DEF_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[21];
-      Rules.SKILL_ZEATER_REGEN_BONUS = skillData2.VALUE1;
+      Actor.SKILL_ZEATER_REGEN_BONUS = skillData2.VALUE1;
       skillData2 = data[23];
       Rules.SKILL_ZINFECTOR_BONUS = skillData2.VALUE1;
       skillData2 = data[22];

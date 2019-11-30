@@ -2295,7 +2295,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, entries in friends are murderers that have elicited suspicion
       foreach(var x in friends) {
         game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", x.Value.Name));
-        if (0 >= x.Value.MurdersInProgress && !game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, x.Value))) continue;
+        if (0 >= x.Value.MurdersInProgress && !game.Rules.RollChance(x.Value.MurdererSpottedByChance(m_Actor))) continue;
         // XXX \todo V.0.10.0 this needs a rethinking (a well-armed murderer may be of more use killing z, a weak one should be assassinated)
         game.DoMakeAggression(m_Actor, x.Value);
         m_Actor.TargetActor = x.Value;

@@ -4148,11 +4148,11 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
       if (a.Model.Abilities.IsUndead) {
-        a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
-        a.RottingEat(a.BiteNutritionValue(num));
+        a.RegenHitPoints(a.BiteHpRegen(num));
+        a.RottingEat(num);
       } else {
         a.LivingEat(a.BiteNutritionValue(num));
-        a.Infect(Rules.CorpseEatingInfectionTransmission(c.DeadGuy.Infection));
+        a.Infect(c.TransmitInfection);
       }
       SeeingCauseInsanity(a, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
     }
@@ -7409,7 +7409,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.MARTIAL_ARTS:
           return string.Format("unarmed only +{0} Atk, +{1} Dmg", Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
-          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * (double)Actor.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
+          return string.Format("+{0}% medicine effects, +{1}% revive ", (int)(100.0 * Actor.SKILL_MEDIC_BONUS), Actor.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
           return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Actor.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
@@ -7423,13 +7423,13 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF, can jump", Actor.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
         case Skills.IDs.Z_EATER:
-          return string.Format("+{0}% eating HP regen", (int)(100.0 * (double)Rules.SKILL_ZEATER_REGEN_BONUS));
+          return string.Format("+{0}% eating HP regen", (int)(100.0 * Actor.SKILL_ZEATER_REGEN_BONUS));
         case Skills.IDs.Z_GRAB:
           return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
         case Skills.IDs.Z_INFECTOR:
-          return string.Format("+{0}% infection damage", (int)(100.0 * (double)Rules.SKILL_ZINFECTOR_BONUS));
+          return string.Format("+{0}% infection damage", (int)(100.0 * Rules.SKILL_ZINFECTOR_BONUS));
         case Skills.IDs.Z_LIGHT_EATER:
-          return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100.0 * (double)Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100.0 * (double)Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100.0 * Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100.0 * Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.Z_LIGHT_FEET:
           return string.Format("+{0}% to avoid traps", Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.Z_STRONG:
@@ -7437,7 +7437,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_TOUGH:
           return string.Format("+{0} HP", Actor.SKILL_ZTOUGH_HP_BONUS);
         case Skills.IDs.Z_TRACKER:
-          return string.Format("+{0}% smell", (int)(100.0 * (double)Actor.SKILL_ZTRACKER_SMELL_BONUS));
+          return string.Format("+{0}% smell", (int)(100.0 * Actor.SKILL_ZTRACKER_SMELL_BONUS));
         default:
           throw new ArgumentOutOfRangeException("unhandled skill id");
       }
@@ -8146,8 +8146,8 @@ namespace djack.RogueSurvivor.Engine
         if (dmg > 0) {
           defender.TakeDamage(dmg);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
-            attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, dmg));
-            attacker.RottingEat(attacker.BiteNutritionValue(dmg));
+            attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
+            attacker.RottingEat(dmg);
             if (isAttVisible)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
             defender.Infect(Rules.InfectionForDamage(attacker, dmg));

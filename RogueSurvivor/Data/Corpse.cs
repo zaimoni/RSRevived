@@ -45,6 +45,8 @@ namespace djack.RogueSurvivor.Data
     // returns true if and only if destroyed
     public bool TakeDamage(float dmg) { return 0.0 >= (HitPoints -= dmg); }
 
+    public int TransmitInfection { get { return DeadGuy.Infection/10; } }
+
     public int RotLevel {
       get {
         int num = FreshnessPercent;

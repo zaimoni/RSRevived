@@ -77,6 +77,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 6;
     public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
+    public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
     public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1;
@@ -497,6 +498,15 @@ namespace djack.RogueSurvivor.Data
 #endif
 
 #nullable enable
+    public int MurdererSpottedByChance(Actor spotter)
+    {
+      const int MURDERER_SPOTTING_BASE_CHANCE = 5;
+      const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
+      const int MURDERER_SPOTTING_DISTANCE_PENALTY = 1;
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.InteractionDistance(spotter.Location, Location);
+    }
+
+
     public int MurdersInProgress {
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
@@ -548,7 +558,7 @@ namespace djack.RogueSurvivor.Data
       int circumstantial = MurdersInProgress;
       if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
       if (100 <= UnsuspicousForChance(observer)) return circumstantial;
-      if (100 <= Rules.ActorSpotMurdererChance(observer, this)) return circumstantial;
+      if (100 <= MurdererSpottedByChance(observer)) return circumstantial;
       return m_MurdersCounter+ circumstantial;
     }
 
@@ -2301,6 +2311,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int BiteHpRegen(int dmg) // only for undead, however
+    {
+      return dmg + (int)(/* (double) */ SKILL_ZEATER_REGEN_BONUS * /* (int) */(Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * dmg));
+    }
+
     // stamina
     public int NightSTApenalty {
       get {
@@ -2609,8 +2624,8 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Min(m_FoodPoints + f, MaxFood);
     }
 
-    public void RottingEat(int f) {
-      m_FoodPoints = Math.Min(m_FoodPoints + f, MaxRot);
+    public void RottingEat(int f) { // intentionally not including healing-on-eating-flesh effect here
+      m_FoodPoints = Math.Min(m_FoodPoints + BiteNutritionValue(f), MaxRot);
     }
 
     private string ReasonCantEatCorpse()
