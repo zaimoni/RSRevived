@@ -1226,7 +1226,7 @@ retry:
     public int PlayerCorpseCount {
       get {
         int now = Engine.Session.Get.WorldTime.TurnCounter;
-        return m_CorpsesList.Count(c => c.DeadGuy.IsPlayer && Engine.Rules.CORPSE_ZOMBIFY_DELAY<= now - c.Turn);    // align with Rules::CorpseZombifyChance
+        return m_CorpsesList.Count(c => c.DeadGuy.IsPlayer && Corpse.ZOMBIFY_DELAY<= now - c.Turn);    // align with Corpse::ZombifyChance
       }
     }
 

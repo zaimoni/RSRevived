@@ -35,7 +35,6 @@ namespace djack.RogueSurvivor.Engine
     public const int INFECTION_LEVEL_2_TIRED_STA = 24;
     public const int INFECTION_LEVEL_2_TIRED_SLP = 90;
     public const int INFECTION_LEVEL_4_BLEED_HP = 6;
-    public const int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
     public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
     public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
     public static int SKILL_AGILE_DEF_BONUS = 4;
@@ -47,7 +46,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
-    public static double SKILL_ZINFECTOR_BONUS = 0.15f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
     public const int STAMINA_COST_RUNNING = 4;
@@ -106,15 +104,7 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_LEADER_KILL_ENEMY = 3*WorldTime.TURNS_PER_HOUR;
 //  public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;  // removed in RS Alpha 10
     private const float INFECTION_BASE_FACTOR = 1f;
-    private const int CORPSE_ZOMBIFY_BASE_CHANCE = 0;
-    public const int CORPSE_ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
-    private const float CORPSE_ZOMBIFY_INFECTIONP_FACTOR = 1f;
-    private const float CORPSE_ZOMBIFY_NIGHT_FACTOR = 2f;
-    private const float CORPSE_ZOMBIFY_DAY_FACTOR = 0.01f;
     private const float CORPSE_ZOMBIFY_TIME_FACTOR = 0.001388889f;
-    private const float CORPSE_EATING_NUTRITION_FACTOR = 10f;
-    private const float CORPSE_EATING_INFECTION_FACTOR = 0.1f;
-    private const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
 #nullable enable
@@ -600,6 +590,7 @@ namespace djack.RogueSurvivor.Engine
       return GridDistance(in locA, in locB);
     }
 
+#nullable enable
     // Euclidean plane distance
     public static double StdDistance(in Point from, in Point to) { return StdDistance(to - from); }
 
@@ -608,7 +599,6 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-#nullable enable
     public static double StdDistance(in Location from, in Location to)
     {
       Location? test = from.Map.Denormalize(in to);
@@ -672,38 +662,13 @@ namespace djack.RogueSurvivor.Engine
 
       return true;
     }
-#nullable restore
-
-    public static int InfectionForDamage(Actor infector, int dmg)
-    {
-      return dmg + (int) (SKILL_ZINFECTOR_BONUS * /* (int) */ (infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
-    }
 
     public static int InfectionEffectTriggerChance1000(int infectionPercent)
     {
+      const int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
       return INFECTION_EFFECT_TRIGGER_CHANCE_1000 + infectionPercent / 5;
     }
 
-    public static float CorpseDecayPerTurn(Corpse c)
-    {
-      return CORPSE_DECAY_PER_TURN;
-    }
-
-    public static int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
-    {
-      int num1 = timeNow.TurnCounter - c.Turn;
-      if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY) return 0;
-      int num2 = c.DeadGuy.InfectionPercent;
-      if (checkDelay) {
-        int num3 = num2 >= 100 ? 1 : 100 / (1 + num2);
-        if (timeNow.TurnCounter % num3 != 0)
-          return 0;
-      }
-      float num4 = 0.0f + 1f * (float) num2 - (float) (int) ((double) num1 / (double) WorldTime.TURNS_PER_DAY);
-      return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * CORPSE_ZOMBIFY_DAY_FACTOR) : (int) (num4 * CORPSE_ZOMBIFY_NIGHT_FACTOR)));
-    }
-
-#nullable enable
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)
     {
       return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);

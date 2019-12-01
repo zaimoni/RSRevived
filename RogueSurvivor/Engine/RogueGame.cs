@@ -2055,9 +2055,9 @@ namespace djack.RogueSurvivor.Engine
           var corpseList1 = new List<Corpse>(map.CountCorpses);
           var corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
-            if (m_Rules.RollChance(Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
+            if (m_Rules.RollChance(corpse.ZombifyChance(map.LocalTime, true))) {
               corpseList1.Add(corpse);
-            } else if (corpse.TakeDamage(Rules.CorpseDecayPerTurn(corpse))) {
+            } else if (corpse.TakeDamage(Corpse.DecayPerTurn())) {
               corpseList2.Add(corpse);
             }
           }
@@ -6994,7 +6994,7 @@ namespace djack.RogueSurvivor.Engine
         " ",
         string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")),
         string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")),
-        string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
+        string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * c.ZombifyChance(c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
         " ",
 	    DescribeCorpseLong_DescRotLevel(c.RotLevel),
         string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
@@ -7427,7 +7427,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_GRAB:
           return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
         case Skills.IDs.Z_INFECTOR:
-          return string.Format("+{0}% infection damage", (int)(100.0 * Rules.SKILL_ZINFECTOR_BONUS));
+          return string.Format("+{0}% infection damage", (int)(100.0 * Actor.SKILL_ZINFECTOR_BONUS));
         case Skills.IDs.Z_LIGHT_EATER:
           return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100.0 * Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100.0 * Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.Z_LIGHT_FEET:
@@ -8150,7 +8150,7 @@ namespace djack.RogueSurvivor.Engine
             attacker.RottingEat(dmg);
             if (isAttVisible)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
-            defender.Infect(Rules.InfectionForDamage(attacker, dmg));
+            defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (defender.HitPoints <= 0) {
             if (isAttVisible || isDefVisible) {

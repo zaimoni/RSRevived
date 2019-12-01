@@ -78,6 +78,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_TOUGH_HP_BONUS = 6;
     public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
+    public static double SKILL_ZINFECTOR_BONUS = 0.15f;
     public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
     public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1;
@@ -2294,6 +2295,11 @@ namespace djack.RogueSurvivor.Data
     public void Cure(int i) { m_Infection = Math.Max(0, m_Infection - i); }
     public int InfectionPercent { get { return 100 * m_Infection / InfectionHPs; } }
 
+    public int InfectionForDamage(int dmg)
+    {
+      return dmg + (int) (SKILL_ZINFECTOR_BONUS * /* (int) */ (Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
+    }
+
     // health
     public int MaxHPs {
       get {
@@ -2999,8 +3005,10 @@ namespace djack.RogueSurvivor.Data
 
     public int BiteNutritionValue(int baseValue)
     {
+      const float CORPSE_EATING_NUTRITION_FACTOR = 10f;
+
       var skills = Sheet.SkillTable;
-      return (int) (10.0 + SKILL_ZLIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) + SKILL_LIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.LIGHT_EATER)) * baseValue;
+      return (int) (CORPSE_EATING_NUTRITION_FACTOR + SKILL_ZLIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) + SKILL_LIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.LIGHT_EATER)) * baseValue;
     }
 
     public int CurrentNutritionOf(ItemFood food)

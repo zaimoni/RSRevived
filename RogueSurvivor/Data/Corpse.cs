@@ -15,6 +15,8 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Corpse
   {
+    public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
+
     public readonly Actor DeadGuy;
     public readonly int Turn;
     public Point Position;
@@ -42,10 +44,35 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int ZombifyChance(WorldTime timeNow, bool checkDelay = true) // hypothetical AI would want the explicit parameter
+    {
+      const float CORPSE_ZOMBIFY_NIGHT_FACTOR = 2f;
+      const float CORPSE_ZOMBIFY_DAY_FACTOR = 0.01f;
+      const float CORPSE_ZOMBIFY_INFECTIONP_FACTOR = 1f;
+      const int CORPSE_ZOMBIFY_BASE_CHANCE = 0;
+
+      int num1 = timeNow.TurnCounter - Turn;
+      if (checkDelay && num1 < ZOMBIFY_DELAY) return 0;
+      int num2 = DeadGuy.InfectionPercent;
+      if (checkDelay) {
+        int num3 = num2 >= 100 ? 1 : 100 / (1 + num2);
+        if (timeNow.TurnCounter % num3 != 0)
+          return 0;
+      }
+      float num4 = CORPSE_ZOMBIFY_BASE_CHANCE + CORPSE_ZOMBIFY_INFECTIONP_FACTOR * (float) num2 - (float) (int) ((double) num1 / (double) WorldTime.TURNS_PER_DAY);
+      return Math.Max(0, Math.Min(100, (int)(num4 * (timeNow.IsNight ? CORPSE_ZOMBIFY_NIGHT_FACTOR : CORPSE_ZOMBIFY_DAY_FACTOR))));
+    }
+
+    public static float DecayPerTurn()
+    {
+      const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
+      return CORPSE_DECAY_PER_TURN;
+    }
+
     // returns true if and only if destroyed
     public bool TakeDamage(float dmg) { return 0.0 >= (HitPoints -= dmg); }
 
-    public int TransmitInfection { get { return DeadGuy.Infection/10; } }
+    public int TransmitInfection { get { return DeadGuy.Infection/10; } }   // due to eating
 
     public int RotLevel {
       get {
