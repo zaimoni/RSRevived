@@ -17,7 +17,6 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
-using djack.RogueSurvivor.Engine.Tasks;
 using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.Generators;
@@ -307,6 +306,7 @@ namespace djack.RogueSurvivor.Engine
     private const int PLAYER_HEAR_EXPLOSION_CHANCE = 100;
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
 
+#nullable enable
 #if DEBUG
     public static bool IsDebugging;
     public static readonly Dictionary<long,long> TimingCache = new Dictionary<long, long>();
@@ -314,8 +314,11 @@ namespace djack.RogueSurvivor.Engine
     private static readonly Stopwatch play_timer = new Stopwatch();
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
+#nullable restore
     private HiScoreTable m_HiScoreTable;
+#nullable enable
     private readonly MessageManager m_MessageManager;
+#nullable restore
     private bool m_HasLoadedGame;
 
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
@@ -324,6 +327,7 @@ namespace djack.RogueSurvivor.Engine
     private static string m_Status = null; // suppressed by m_PlayerInTurn mismatch
     private static ZoneLoc m_MapView;
 
+#nullable enable
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
     private static GameHintsStatus s_Hints = new GameHintsStatus();
@@ -331,11 +335,14 @@ namespace djack.RogueSurvivor.Engine
     private readonly BaseTownGenerator m_TownGenerator;
     private static bool m_PlayedIntro = false;
     private readonly IMusicManager m_MusicManager;
+#nullable restore
     private CharGen m_CharGen;
-    private TextFile m_Manual;
-    private int m_ManualLine;
+#nullable enable
+    private TextFile? m_Manual;
+    private int m_ManualLine = 0;
     private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
+#nullable restore
     private Thread m_SimThread;
 
     private static Actor Player { get { return m_Player; } }  // too dangerous to allow anything other than public
@@ -403,7 +410,7 @@ namespace djack.RogueSurvivor.Engine
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));  // possibly no-op; triggers World constructor which requires options to be loaded
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = MAP_MAX_WIDTH;
-      parameters.MapHeight = RogueGame.MAP_MAX_HEIGHT;
+      parameters.MapHeight = MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
       m_TownGenerator = new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating keys, hints.");
@@ -411,6 +418,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
       m_GameActors = new GameActors(m_UI);
       m_GameItems = new GameItems(m_UI);
+      m_Manual = LoadManual();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -697,7 +705,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      LoadManual();
+      m_ManualLine = 0; // reset line just in case
       LoadHiScoreTable();
       while (m_IsGameRunning)
         GameLoop();
@@ -1314,31 +1322,31 @@ namespace djack.RogueSurvivor.Engine
       return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
-    private void LoadManual()
+    private TextFile? LoadManual()
     {
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
-      m_Manual = new TextFile();
-      m_ManualLine = 0;
-      if (!m_Manual.Load(GetUserManualFilePath())) {
+      var ret = new TextFile();
+      if (!ret.Load(GetUserManualFilePath())) {
         m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy1, new Color?());
         m_UI.UI_Repaint();
         DrawFootnote(Color.White, "press ENTER");
         WaitEnter();
-        m_Manual = null;
+        return null;
       } else {
         m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_Repaint();
-        m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
+        ret.FormatLines(TEXTFILE_CHARS_PER_LINE);
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy1, new Color?());
         m_UI.UI_Repaint();
       }
+      return ret;
     }
 
     private void HandleHiScores(bool saveToTextfile)
