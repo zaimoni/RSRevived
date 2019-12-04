@@ -422,6 +422,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
+#nullable enable
     public void AddMessage(Data.Message msg)    // intentionally not sinking this validation into MessageManager::Add
     {
       m_MessageManager.Add(msg);
@@ -446,8 +447,9 @@ namespace djack.RogueSurvivor.Engine
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO, (Point)(2 * GameActors.HUMAN_AUDIO + 1));
       survey.DoForEach(pt => {
           var a = loc.Map.GetActorAtExt(pt);
-          if (a?.IsSleeping ?? true) return;    // XXX \todo integrate loud noise wakeup here
-          if (a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange) return;
+          if (   null == a || a.IsSleeping    // XXX \todo integrate loud noise wakeup here
+              || a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange)
+              return;
           if (a.Controller is PlayerController player) {
             if (player_knows(a)) return;
             var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
@@ -463,6 +465,7 @@ namespace djack.RogueSurvivor.Engine
           doFn(a);
       });
     }
+#nullable restore
 
     // XXX just about everything that rates this is probable cause for police investigation
     [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
