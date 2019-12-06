@@ -43,7 +43,6 @@ namespace djack.RogueSurvivor.Engine
     public int LastTurnPlayerActed;
     public bool PlayerKnows_CHARUndergroundFacilityLocation;
     public bool PlayerKnows_TheSewersThingLocation;
-    public bool CHARUndergroundFacility_Activated;
     public int ScriptStage_PoliceStationPrisoner;
     public int ScriptStage_PoliceCHARrelations;
     public int ScriptStage_HospitalPowerup;
@@ -87,7 +86,6 @@ namespace djack.RogueSurvivor.Engine
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
-      CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
       info.read(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
       RogueForm.Game.Rules.Load(info,context);
@@ -114,7 +112,6 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
       info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
-      info.AddValue("CHARUndergroundFacility_Activated",CHARUndergroundFacility_Activated);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
       RogueForm.Game.Rules.Save(info,context);
@@ -154,7 +151,6 @@ namespace djack.RogueSurvivor.Engine
             m_Event_Raids[index1, index2, index3] = -1;
         }
       }
-      CHARUndergroundFacility_Activated = false;
       PlayerKnows_CHARUndergroundFacilityLocation = false;
       PlayerKnows_TheSewersThingLocation = false;
       ScriptStage_PoliceStationPrisoner = 0;

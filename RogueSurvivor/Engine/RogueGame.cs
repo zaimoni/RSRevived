@@ -13230,7 +13230,6 @@ namespace djack.RogueSurvivor.Engine
         if (p_map == CHARmap) {
           ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, player);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
-          Session.Get.CHARUndergroundFacility_Activated = true;
           Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
         }
       }
