@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string DeathReason {
       get { return m_DeathReason; }
-      set { if (string.IsNullOrEmpty(m_DeathReason)) m_DeathReason = value; }
+      set { if (!string.IsNullOrEmpty(m_DeathReason)) m_DeathReason = value; }
     }
 
     public ActorScoring(Actor src)

@@ -2002,7 +2002,7 @@ namespace djack.RogueSurvivor.Engine
       else if (nextActorToAct.IsPlayer) {
         HandlePlayerActor(nextActorToAct);
         if (!m_IsGameRunning || m_HasLoadedGame || 0>=Session.Get.World.PlayerCount) return;
-        CheckSpecialPlayerEventsAfterAction(nextActorToAct);
+        if (!nextActorToAct.IsDead) CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       } else {
 #if PROTOTYPE
         // alpha10 ai loop bug detection; not multi-thread aware.  \todo fix this
@@ -13222,59 +13222,38 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
       // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
-      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
+      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && IsInCHAROffice(player.Location)))
         ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, player);
-      if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
-        lock (Session.Get) {
+      var p_map = player.Location.Map;
+      if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY)) {
+        Map CHARmap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
+        if (p_map == CHARmap) {
           ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, player);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
           Session.Get.CHARUndergroundFacility_Activated = true;
-          Map CHARmap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
-
-          CHARmap.Expose();
-          Map surfaceMap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
-		  // XXX reduced to integrity checking by Exit constructor adjustment
-          if (!surfaceMap.Rect.Any(pt => {
-              Exit exitAt = surfaceMap.GetExitAt(pt);
-              if (exitAt == null) return false;
-              return exitAt.ToMap == CHARmap;
-            }))
-            throw new InvalidOperationException("could not find exit to CUF in surface map");
-          if (!Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Rect.Any(pt =>
-            {
-              Exit exitAt = CHARmap.GetExitAt(pt);
-              if (exitAt == null) return false;
-              return exitAt.ToMap == surfaceMap;
-            }))
-            throw new InvalidOperationException("could not find exit to surface in CUF map");
+          Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
         }
       }
-      Actor vip = player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor);
-      if (null != vip && !Session.Get.PlayerKnows_TheSewersThingLocation) {
-        lock (Session.Get) {
+      Actor vip = null;
+      if (!Session.Get.PlayerKnows_TheSewersThingLocation && null != (vip = player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor))) {
           Session.Get.PlayerKnows_TheSewersThingLocation = true;
           m_MusicManager.Stop();
           m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
           ClearMessages();
           AddMessage(new Data.Message("Hey! What's that THING!?", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           AddMessagePressEnter();
-        }
       }
       // The Prisoner Who Should Not Be should only respond to civilian players; other factions should either be hostile, or colluding on
       // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
       // Acceptable factions are civilians and survivors.
       // Even if the player is of an unacceptable faction, he will be thanked if not an enemy.
-      if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.IsDead)
-      {
+      if (p_map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 2 > Session.Get.ScriptStage_PoliceStationPrisoner && 0 <= Session.Get.ScriptStage_PoliceStationPrisoner) {
         Actor prisoner = Session.Get.UniqueActors.PoliceStationPrisoner.TheActor;
-        Map map = player.Location.Map;
-        switch (Session.Get.ScriptStage_PoliceStationPrisoner)
-        {
+        if (prisoner.IsDead) Session.Get.ScriptStage_PoliceStationPrisoner = -1;    // disable processing; police will never realize the framing w/o other evidence
+        else {
+          switch(Session.Get.ScriptStage_PoliceStationPrisoner) {
           case 0:
-            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(prisoner))  // alpha10 fix: and visible!)
-            {
-              lock (Session.Get)
-              {
+            if (p_map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(prisoner)) {  // alpha10 fix: and visible!)
                 string[] local_6 = null;
                 if (player.Faction == GameFactions.TheCivilians || player.Faction == GameFactions.TheSurvivors) {
                   if (prisoner.IsSleeping) DoWakeUp(prisoner);
@@ -13307,14 +13286,10 @@ namespace djack.RogueSurvivor.Engine
                   player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", prisoner.Name));
                 }
                 Session.Get.ScriptStage_PoliceStationPrisoner = 1;
-                break;
-              }
             }
-            else
-              break;
+            break;
           case 1:
-            if (!map.HasZonePartiallyNamedAt(prisoner.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
-              lock (Session.Get) {
+            if (!p_map.HasZonePartiallyNamedAt(prisoner.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
                 string[] local_7 = new string[8]
                 {
                   "\" Thank you! Thank you so much!",
@@ -13331,48 +13306,45 @@ namespace djack.RogueSurvivor.Engine
                 Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
                 KillActor(null, prisoner, "transformation");
-                map.TryRemoveCorpseOf(prisoner);
+                p_map.TryRemoveCorpseOf(prisoner);
                 Actor local_8 = Zombify(null, prisoner, false);
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.APreset();   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, local_8.Model.Name));
                 m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
-                break;
-              }
             }
-            else
-              break;
-          case 2: break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
-        }
-      }
-      if (!player.ActorScoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
-        if (null != player.Sees(Session.Get.UniqueActors.JasonMyers.TheActor)) {
-          lock (Session.Get) {
-            ClearMessages();
-            AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-            AddMessagePressEnter();
+            break;
+          default: throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
           }
         }
       }
-      if (   Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped
-          && District.IsSubwayMap(player.Location.Map)
-          && player.Inventory.Contains(Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem)) {
-        Map map = player.Location.Map;
-        if (map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
-          DoTurnAllGeneratorsOn(map, player);
+
+      vip = Session.Get.UniqueActors.JasonMyers.TheActor;
+      if (!player.ActorScoring.HasSighted(vip.Model.ID) && null != player.Sees(vip)) {
+            ClearMessages();
+            AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+            AddMessagePressEnter();
+      }
+      if (District.IsSubwayMap(p_map)) {
+        var badge = Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem;
+        if (   badge.IsEquipped
+            && player.Inventory.Contains(badge)
+            && p_map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
+          DoTurnAllGeneratorsOn(p_map, player);
           AddMessage(new Data.Message("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));
         }
       }
-      if (!player.ActorScoring.HasVisited(player.Location.Map)) {
-        player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
-        player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
+      if (!player.ActorScoring.HasVisited(p_map)) {
+        player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, p_map);
+        player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", p_map.Name));
       }
       // XXX \todo should be for all actors
-      if (null != Player.Controller.friends_in_FOV) foreach(var x in Player.Controller.friends_in_FOV) Player.ActorScoring.AddSighting(x.Value.Model.ID);
-      if (null != Player.Controller.enemies_in_FOV) foreach(var x in Player.Controller.enemies_in_FOV) Player.ActorScoring.AddSighting(x.Value.Model.ID);
+      void update_sightings(Dictionary<Location,Actor> src) {
+        if (null != src) foreach (var x in src) player.ActorScoring.AddSighting(x.Value.Model.ID);
+      }
+      update_sightings(player.Controller.friends_in_FOV);
+      update_sightings(player.Controller.enemies_in_FOV);
     }
 
     private void HandleReincarnation()
