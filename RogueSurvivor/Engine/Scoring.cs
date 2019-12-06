@@ -54,11 +54,10 @@ namespace djack.RogueSurvivor.Engine
       }, GameMusics.HEYTHERE, 1000));
     }
 
-    public void StartNewLife(int gameTurn)
+    public int StartNewLife()
     {
-      ++m_ReincarnationNumber;
-      foreach (Achievement achievement in Achievements)
-        achievement.IsDone = false;
+      foreach (var achievement in Achievements) achievement.IsDone = false;
+      return ++m_ReincarnationNumber;
     }
 
     public void UseReincarnation()

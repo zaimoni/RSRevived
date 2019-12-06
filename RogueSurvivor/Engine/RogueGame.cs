@@ -318,13 +318,13 @@ namespace djack.RogueSurvivor.Engine
     private HiScoreTable m_HiScoreTable;
 #nullable enable
     private readonly MessageManager m_MessageManager;
-#nullable restore
     private bool m_HasLoadedGame;
 
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
-    private static Actor m_Player;
-    private static Actor m_PlayerInTurn;
-    private static string m_Status = null; // suppressed by m_PlayerInTurn mismatch
+    private static Actor? m_Player;
+    private static Actor? m_PlayerInTurn;
+    private static string? m_Status = null; // suppressed by m_PlayerInTurn mismatch
+#nullable restore
     private static ZoneLoc m_MapView;
 
 #nullable enable
@@ -345,7 +345,9 @@ namespace djack.RogueSurvivor.Engine
 #nullable restore
     private Thread m_SimThread;
 
-    private static Actor Player { get { return m_Player; } }  // too dangerous to allow anything other than public
+#nullable enable
+    private static Actor Player { get { return m_Player!; } }  // too dangerous to allow anything other than public
+#nullable restore
     public static bool IsPlayer(Actor a) { return a == m_Player; }
     public static Map CurrentMap { get { return m_MapView.m; } }
     private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
@@ -1445,7 +1447,7 @@ namespace djack.RogueSurvivor.Engine
       if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
-        if (m_Player.Model.Abilities.IsUndead) {    // alpha10
+        if (Player.Model.Abilities.IsUndead) {    // alpha10
           AddMessage(new Data.Message("The Advisor is enabled but you will get no hint when playing undead.", 0, Color.Red));
         } else {
           AddMessage(new Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
@@ -11994,11 +11996,13 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
+#nullable enable
     public void PanViewportTo(Actor player)
     {
       m_Player = player;
       PanViewportTo(player.Location);
     }
+#nullable restore
 
     /// <returns>The final location looked at if confirmed; null if cancelled</returns>
     private Location? DoPlayerFarLook()
@@ -13439,9 +13443,7 @@ namespace djack.RogueSurvivor.Engine
       newPlayerAvatar.Controller = new PlayerController();
       if (newPlayerAvatar.Activity != Data.Activity.SLEEPING) newPlayerAvatar.Activity = Data.Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
-      m_Player = newPlayerAvatar;
-      Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
+      (m_Player = newPlayerAvatar).ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.StartNewLife()));
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.Stop();
@@ -13957,16 +13959,13 @@ namespace djack.RogueSurvivor.Engine
 #region Background music
     private void UpdateBgMusic()
     {
-       if (!s_Options.PlayMusic) return;
-       if (null == Player) return;
-
-       // don't interrupt music that has higher priority than bg
-       if (m_MusicManager.IsPlaying && m_MusicManager.Priority > MusicPriority.PRIORITY_BGM) return;
+       if (   !s_Options.PlayMusic || null == m_Player
+           || (m_MusicManager.IsPlaying && m_MusicManager.Priority > MusicPriority.PRIORITY_BGM))  // don't interrupt music that has higher priority than bg
+         return;
 
        // get current map music and play it if not already playing it
        string mapMusic = CurrentMap.BgMusic;
-       if (string.IsNullOrEmpty(mapMusic)) return;
-       m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
+       if (!string.IsNullOrEmpty(mapMusic))m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
 
