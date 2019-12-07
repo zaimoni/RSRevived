@@ -346,7 +346,7 @@ namespace djack.RogueSurvivor.Engine
     private Thread m_SimThread;
 
 #nullable enable
-    private static Actor Player { get { return m_Player!; } }  // too dangerous to allow anything other than public
+    public static Actor Player { get { return m_Player!; } }
 #nullable restore
     public static bool IsPlayer(Actor a) { return a == m_Player; }
     public static Map CurrentMap { get { return m_MapView.m; } }
@@ -11738,24 +11738,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string TrapStatusIcon(ItemTrap trap)
-    {
-      if (null == trap) return "";
-      if (trap.IsTriggered) {
-        if (trap.Owner == Player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
-        else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
-        else if (trap.WouldLearnHowToBypass(Player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
-        return GameImages.ICON_TRAP_TRIGGERED;
-      }
-      if (trap.IsActivated) {
-        if (trap.Owner == Player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
-        else if (trap.IsSafeFor(Player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
-        else if (trap.WouldLearnHowToBypass(Player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
-        return GameImages.ICON_TRAP_ACTIVATED;
-      }
-      return "";
-    }
-
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING, new Color?());
@@ -11796,8 +11778,8 @@ namespace djack.RogueSurvivor.Engine
           else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, gx2, gy2);
         } else if (it is ItemTrap trap) {
-          string trap_status = TrapStatusIcon(trap);
-          if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx2, gy2);
+          var trap_status = trap?.StatusIcon();
+          if (null != trap_status) m_UI.UI_DrawImage(trap_status, gx2, gy2);
         } else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
         DrawItem(it, gx2, gy2);
@@ -11822,6 +11804,7 @@ namespace djack.RogueSurvivor.Engine
       DrawItem(it, gx, gy, Color.White);
     }
 
+#nullable enable
     public void DrawItem(Item it, int gx, int gy, Color tint)
     {
       m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
@@ -11833,9 +11816,10 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
         m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
-      string trap_status = TrapStatusIcon(it as ItemTrap);
-      if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx, gy);
+      var trap_status = (it as ItemTrap)?.StatusIcon();
+      if (null != trap_status) m_UI.UI_DrawImage(trap_status, gx, gy);
     }
+#nullable restore
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
@@ -11972,23 +11956,25 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool IsVisibleToPlayer(in Location location)
     {
-      return Player?.Controller.IsVisibleTo(in location) ?? false;
+      return Player.Controller.IsVisibleTo(in location);
     }
 
+#nullable enable
     private static bool IsVisibleToPlayer(Map map, in Point position)
     {
-      return Player?.Controller.IsVisibleTo(map, in position) ?? false;
+      return Player.Controller.IsVisibleTo(map, in position);
     }
 
     private static bool IsVisibleToPlayer(Actor actor)
     {
-      return Player?.Controller.IsVisibleTo(actor) ?? false;
+      return Player.Controller.IsVisibleTo(actor);
     }
 
     private static bool IsVisibleToPlayer(MapObject mapObj)
     {
-      return Player?.Controller.IsVisibleTo(mapObj.Location) ?? false;
+      return Player.Controller.IsVisibleTo(mapObj.Location);
     }
+#nullable restore
 
     public void PanViewportTo(in Location loc)
     {
@@ -12200,7 +12186,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsPlayerSleeping()
     {
-      return Player?.IsSleeping ?? false;
+      return m_Player?.IsSleeping ?? false;
     }
 
     static private int FindLongestLine(string[] lines)
@@ -13124,10 +13110,10 @@ namespace djack.RogueSurvivor.Engine
 
          lock (m_SimMutex) {
 #if DEBUG
-           have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
+           have_simulated = SimulateNearbyDistricts(Player.Location.Map.District);
 #else
            try {
-             have_simulated = (Player != null ? SimulateNearbyDistricts(Player.Location.Map.District) : false);
+             have_simulated = SimulateNearbyDistricts(Player.Location.Map.District);
            } catch (Exception e) {
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: exception while running sim thread!");
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: " + e.Message);
@@ -14164,4 +14150,26 @@ namespace djack.RogueSurvivor.Engine
       EXCLUDE_SECRET_MAPS = 1,
     }
   }
+
+#nullable enable
+  static internal class RogueGame_ext {
+    static public string? StatusIcon(this ItemTrap trap)
+    {
+      var player = RogueGame.Player;
+      if (trap.IsTriggered) {
+        if (trap.Owner == player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
+        else if (trap.IsSafeFor(player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
+        else if (trap.WouldLearnHowToBypass(player)) return GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP;
+        return GameImages.ICON_TRAP_TRIGGERED;
+      }
+      if (trap.IsActivated) {
+        if (trap.Owner == player) return GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER;
+        else if (trap.IsSafeFor(player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
+        else if (trap.WouldLearnHowToBypass(player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
+        return GameImages.ICON_TRAP_ACTIVATED;
+      }
+      return null;
+    }
+  }
+#nullable restore
 }
