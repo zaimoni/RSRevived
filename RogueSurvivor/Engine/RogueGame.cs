@@ -11507,7 +11507,7 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] private void DrawMiniMap(Rectangle view)
     {
-      if (null == Player) return;   // fail-safe.
+      if (null == m_Player) return;   // fail-safe.
       Map map = CurrentMap;
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
@@ -11552,17 +11552,24 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!Player.IsSleeping) {
 	    // normal detectors/lights
-        ItemTracker itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
+        var itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
         bool find_followers = (null != itemTracker1 && Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //      bool find_leader = (null != itemTracker1 && m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
         bool find_undead = (null != itemTracker1 && itemTracker1.CanTrackUndeads);
         bool find_blackops = (null != itemTracker1 && itemTracker1.CanTrackBlackOps);
         bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || GameFactions.ThePolice == Player.Faction;
+        if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
+          find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
+//        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
+          find_undead = itemTracker1.CanTrackUndeads;
+          find_blackops = itemTracker1.CanTrackBlackOps;
+          if (!find_police) find_police = itemTracker1.CanTrackPolice;
+        }
+
         // the police radio
         itemTracker1 = Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-        if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
-        if (null != itemTracker1) {
+        if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
           if (!find_followers) find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        if (!find_leader) find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
           if (!find_undead) find_undead = itemTracker1.CanTrackUndeads;
@@ -11584,26 +11591,23 @@ namespace djack.RogueSurvivor.Engine
             }
           });
         }
+        Actor? actor = null;
+        bool non_self(Point pt) {
+          actor = map.GetActorAtExt(pt);
+          return null != actor && actor != Player;
+        }
         if (find_blackops || find_police) {
-          Actor actor = null;
           view.DoForEach(pt => {
               if (find_undead && actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
               if (find_blackops && actor.Faction == GameFactions.TheBlackOps) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
               if (find_police && actor.Faction == GameFactions.ThePolice) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
 //            if (find_police && actor.Faction == GameFactions.ThePolice) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
-          },pt => {
-              actor = map.GetActorAtExt(pt);
-              return null != actor && actor != Player;
-          });
+          }, non_self);
         } else if (find_undead) {
-          Actor actor = null;
-          Rectangle z_view = new Rectangle(Player.Location.Position.X, Player.Location.Position.Y, 1+2*Rules.ZTRACKINGRADIUS, 1+2*Rules.ZTRACKINGRADIUS);
+          Rectangle z_view = new Rectangle(Player.Location.Position, 1+2*Rules.ZTRACKINGRADIUS, 1+2*Rules.ZTRACKINGRADIUS);
           z_view.DoForEach(pt => {
               DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
-          }, pt => {
-              actor = map.GetActorAtExt(pt);
-              return null != actor && actor != Player;
-          });
+          }, non_self);
         }
       }	// end if (!Player.IsSleeping)
       Point position = Player.Location.Position;
