@@ -10963,11 +10963,7 @@ namespace djack.RogueSurvivor.Engine
         } else {
           overlays[i] = null;
           if (tainted.Contains(point)) {
-            if (tourism.Contains(point)) {
-              overlays[i] = GameImages.THREAT_AND_TOURISM_OVERLAY;
-            } else {
-              overlays[i] = GameImages.THREAT_OVERLAY;
-            }
+            overlays[i] = tourism.Contains(point) ? GameImages.THREAT_AND_TOURISM_OVERLAY : GameImages.THREAT_OVERLAY;
           } else if (tourism.Contains(point)) {
             overlays[i] = GameImages.TOURISM_OVERLAY;
           }
@@ -11183,14 +11179,11 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-      int x = screen.X;
-      int y = screen.Y;
-      if (actor.Leader != null && actor.Leader == Player) {
-        m_UI.UI_DrawImage(FollowerIcon(actor), x, y, tint);
-      }
-      int gx1 = x;
-      int gy1 = y;
-      if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
+      int gx2 = screen.X;
+      int gy2 = screen.Y;
+      if (actor.Leader == Player) m_UI.UI_DrawImage(FollowerIcon(actor), gx2, gy2, tint);
+
+      if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx2, gy2, tint);
       else {
         // XXX would check sprite cache here
         DrawActorDecoration(actor, DollPart.SKIN, tint);
@@ -11202,18 +11195,13 @@ namespace djack.RogueSurvivor.Engine
         DrawActorDecoration(actor, DollPart.HEAD, tint);
         DrawActorEquipment(actor, DollPart.LEFT_HAND, tint);
         DrawActorEquipment(actor, DollPart.RIGHT_HAND, tint);
-        m_UI.DrawTile(gx1, gy1);    // would hand off to sprite cache here
+        m_UI.DrawTile(gx2, gy2);    // would hand off to sprite cache here
       }
-      int gx2 = gx1;
-      int gy2 = gy1;
-      if (Player != null) {
-        if (Player.IsSelfDefenceFrom(actor))
-          m_UI.UI_DrawImage(GameImages.ICON_SELF_DEFENCE, gx2, gy2, tint);
-        else if (Player.IsAggressorOf(actor))
-          m_UI.UI_DrawImage(GameImages.ICON_AGGRESSOR, gx2, gy2, tint);
-        else if (Player.AreIndirectEnemies(actor))
-          m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx2, gy2, tint);
-      }
+
+      if (Player.IsSelfDefenceFrom(actor)) m_UI.UI_DrawImage(GameImages.ICON_SELF_DEFENCE, gx2, gy2, tint);
+      else if (Player.IsAggressorOf(actor)) m_UI.UI_DrawImage(GameImages.ICON_AGGRESSOR, gx2, gy2, tint);
+      else if (Player.AreIndirectEnemies(actor)) m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx2, gy2, tint);
+
       switch (actor.Activity) {
         case Data.Activity.IDLE:
           int maxHitPoints = actor.MaxHPs;
@@ -11245,7 +11233,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.IsSleeping && (actor.IsOnCouch || 0 < actor.HealChanceBonus)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
-          if (!s_Options.IsCombatAssistantOn || actor == Player || (Player == null || !actor.IsEnemyOf(Player))) break;
+          if (!s_Options.IsCombatAssistantOn || actor == Player || !actor.IsEnemyOf(Player)) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
         case Data.Activity.CHASING:
@@ -11255,14 +11243,10 @@ namespace djack.RogueSurvivor.Engine
           }
           goto case Data.Activity.IDLE;
         case Data.Activity.TRACKING:
-          if (!actor.IsPlayer) {
-            m_UI.UI_DrawImage(GameImages.ACTIVITY_TRACKING, gx2, gy2, tint);
-          }
+          if (!actor.IsPlayer) m_UI.UI_DrawImage(GameImages.ACTIVITY_TRACKING, gx2, gy2, tint);
           goto case Data.Activity.IDLE;
         case Data.Activity.FLEEING:
-          if (!actor.IsPlayer) {
-            m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx2, gy2, tint);
-          }
+          if (!actor.IsPlayer) m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx2, gy2, tint);
           goto case Data.Activity.IDLE;
         case Data.Activity.FOLLOWING:
           if (!actor.IsPlayer && null != actor.TargetActor) {
@@ -11276,9 +11260,7 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_ORDER, gx2, gy2);
           goto case Data.Activity.IDLE;
         case Data.Activity.FLEEING_FROM_EXPLOSIVE:
-          if (!actor.IsPlayer) {
-            m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx2, gy2, tint);
-          }
+          if (!actor.IsPlayer) m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx2, gy2, tint);
           goto case Data.Activity.IDLE;
         default:
           throw new InvalidOperationException("unhandled activity " + actor.Activity);
@@ -11341,25 +11323,17 @@ namespace djack.RogueSurvivor.Engine
     public void DrawCorpsesList(List<Corpse> list, string title, int slots, int gx, int gy)
     {
       int num2 = list == null ? 0 : list.Count;
-      if (num2 > 0) title = title + " : " + num2;
-      gy -= BOLD_LINE_SPACING;
-      m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
-      gy += BOLD_LINE_SPACING;
+      if (num2 > 0) title += " : " + num2;
+      m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING, new Color?());
       int gx1 = gx;
-      int gy1 = gy;
       for (int index = 0; index < slots; ++index) {
-        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy1);
+        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy);
+        if (index < num2) {
+          var c = list[index];
+          if (c.IsDragged) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx1, gy);
+          DrawCorpse(c, gx1, gy, Color.White);
+        }
         gx1 += TILE_SIZE;
-      }
-      if (list == null) return;
-      int gx2 = gx;
-      int gy2 = gy;
-      int num3 = 0;
-      foreach (Corpse c in list) {
-        if (c.IsDragged) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx2, gy2);
-        DrawCorpse(c, gx2, gy2, Color.White);
-        if (++num3 >= slots) break;
-        gx2 += TILE_SIZE;
       }
     }
 
@@ -11374,8 +11348,9 @@ namespace djack.RogueSurvivor.Engine
     private void DrawActorRelations(Actor actor)
     {
       // target of this actor
-      if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-        AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+      var a_target = actor.TargetActor;
+      if (null != a_target && !a_target.IsDead && IsVisibleToPlayer(a_target))
+        AddOverlay(new OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
 
       // actors targeting this actor or in same group
       bool isTargettedHighlighted = false;
@@ -11827,9 +11802,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
-      gy -= BOLD_LINE_SPACING;
-      m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
-      gy += BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy - BOLD_LINE_SPACING, new Color?());
       var skills = actor.Sheet.SkillTable.Skills;
       if (skills == null) return;
       int num = 0;
@@ -11852,10 +11825,8 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
 
-        m_UI.UI_DrawString(skColor, String.Format("{0}-", skill.Value), gx1, gy1);
-        gx1 += SKILL_LINE_SPACING;
-        m_UI.UI_DrawString(skColor, Skills.Name(skill.Key), gx1, gy1);
-        gx1 -= SKILL_LINE_SPACING;
+        m_UI.UI_DrawString(skColor, String.Format("{0}-", skill.Value), gx1, gy1);  // depends on skill.Value being one character to work
+        m_UI.UI_DrawString(skColor, Skills.Name(skill.Key), gx1 + SKILL_LINE_SPACING, gy1);
 
         if (++num >= SKILLTABLE_LINES) {
           num = 0;
