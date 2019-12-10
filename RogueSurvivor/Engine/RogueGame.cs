@@ -11137,8 +11137,13 @@ namespace djack.RogueSurvivor.Engine
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }
+      void draw(MapObject obj, GDI_Point scr, string imageID, Action<string, int, int> drawFn) { 
+        drawFn(imageID, scr.X, scr.Y);
+        if (obj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, scr.X, scr.Y);
+      }
+
       if (tile.IsInView) {
-        DrawMapObject(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
+        draw(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
@@ -11146,17 +11151,8 @@ namespace djack.RogueSurvivor.Engine
         DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else if (tile.IsVisited && !IsPlayerSleeping()) {
-        DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
+        draw(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
       }
-    }
-
-    static private void DrawMapObject(MapObject mapObj, GDI_Point screen, string imageID, Action<string, int, int> drawFn)
-    {
-#if DEBUG
-      if (null == drawFn) throw new ArgumentNullException(nameof(drawFn));
-#endif
-      drawFn(imageID, screen.X, screen.Y);
-      if (mapObj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
     }
 
     static private string FollowerIcon(Actor actor)
