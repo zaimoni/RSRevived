@@ -10972,6 +10972,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool isUndead = Player.Model.Abilities.IsUndead;
       bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
+      bool p_is_awake = !Player.IsSleeping;
       for (var x = num1; x < num2; ++x) {
         point.X = x;
         for (var y = num3; y < num4; ++y) {
@@ -10992,14 +10993,14 @@ namespace djack.RogueSurvivor.Engine
             var corpsesAt = map.GetCorpsesAtExt(point);
             if (corpsesAt != null) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
           }
-          if (s_Options.ShowPlayerTargets && !Player.IsSleeping && Player.Location.Position == point)
+          if (s_Options.ShowPlayerTargets && p_is_awake && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
           var mapObjectAt = map.GetMapObjectAtExt(point);
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
           }
-          if (!Player.IsSleeping && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
+          if (p_is_awake && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
             if (isUndead) {
               if (flag1) {
                 int num5 = Player.SmellThreshold;
