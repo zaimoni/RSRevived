@@ -11088,30 +11088,22 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string MovingWaterImage(TileModel model, int turnCount)
-    {
-      if (model != GameTiles.FLOOR_SEWER_WATER) return null;
-      switch (turnCount % 3) {
-        case 0: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM1;
-        case 1: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM2;
-        default: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM3;
-      }
-    }
+    static private readonly string[] _movingWaterImage = new string[]{
+        GameImages.TILE_FLOOR_SEWER_WATER_ANIM1,
+        GameImages.TILE_FLOOR_SEWER_WATER_ANIM2,
+        GameImages.TILE_FLOOR_SEWER_WATER_ANIM3
+    };
 
     public void DrawTile(Tile tile, GDI_Point screen, Color tint)
     {
       if (tile.IsInView) {
         m_UI.UI_DrawImage(tile.Model.ImageID, screen.X, screen.Y, tint);
-        string imageID = MovingWaterImage(tile.Model, Session.Get.WorldTime.TurnCounter);
-        if (imageID != null)
-          m_UI.UI_DrawImage(imageID, screen.X, screen.Y, tint);
+        if (GameTiles.FLOOR_SEWER_WATER == tile.Model) m_UI.UI_DrawImage(_movingWaterImage[Session.Get.WorldTime.TurnCounter % _movingWaterImage.Length], screen.X, screen.Y, tint);
         tile.DoForAllDecorations(decoration => m_UI.UI_DrawImage(decoration, screen.X, screen.Y));
       } else {
         if (!tile.IsVisited || IsPlayerSleeping()) return;
         m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
-        string imageID = MovingWaterImage(tile.Model, Session.Get.WorldTime.TurnCounter);
-        if (imageID != null)
-          m_UI.UI_DrawGrayLevelImage(imageID, screen.X, screen.Y);
+        if (GameTiles.FLOOR_SEWER_WATER == tile.Model) m_UI.UI_DrawGrayLevelImage(_movingWaterImage[Session.Get.WorldTime.TurnCounter % _movingWaterImage.Length], screen.X, screen.Y);
         tile.DoForAllDecorations(decoration => m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y));
       }
     }
