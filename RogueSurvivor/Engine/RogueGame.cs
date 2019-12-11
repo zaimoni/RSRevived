@@ -10742,17 +10742,20 @@ namespace djack.RogueSurvivor.Engine
       skills.DecOrRemoveSkill(id);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
     }
-#nullable restore
 
     private void ChangeWeather()
     {
-      bool canSeeWeather = Player.CanSeeSky; // alpha10
-
-      string msg = Session.Get.World.WeatherChanges();
-      if (canSeeWeather) AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.White));
+      var s = Session.Get;
+      var world = s.World;
+      var turn = s.WorldTime.TurnCounter;
+      string msg = world.WeatherChanges();
+      // XXX \todo should be "first PC who sees sky gets message
+      if (Player.CanSeeSky) // alpha10
+        AddMessage(new Data.Message(msg, turn, Color.White));
       // XXX \todo global event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(Session.Get.World.Weather)));
+      Player.ActorScoring.AddEvent(turn, string.Format("The weather changed to {0}.", DescribeWeather(world.Weather)));
     }
+#nullable restore
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
@@ -10864,16 +10867,16 @@ namespace djack.RogueSurvivor.Engine
             };  // lock (m_UI)
     }
 
+#nullable enable
     private static string LocationText()
     {
-      Location loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
-      StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
-      List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
-      if (null == zonesAt) return stringBuilder.ToString();
-      foreach (Zone zone in zonesAt)
-        stringBuilder.Append(string.Format("{0} ", zone.Name));
+      var loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
+      var stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
+      var zonesAt = loc.Map.GetZonesAt(loc.Position);
+      if (null != zonesAt) foreach (var z in zonesAt) stringBuilder.Append(string.Format("{0} ", z.Name));
       return stringBuilder.ToString();
     }
+#nullable restore
 
  /*
   * Intentionally disabled function in RS alpha 9
