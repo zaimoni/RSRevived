@@ -10491,10 +10491,13 @@ namespace djack.RogueSurvivor.Engine
           popupLines.Add("ESC. don't upgrade; SPACE to get wiser skills.");
 
           if (upgradeActor != Player) {
-            popupLines.Add(" ");
-            popupLines.Add(upgradeActor.Name + " current skills");
-            foreach (var sk in skills.Skills) {
-              popupLines.Add(string.Format("{0} {1}", Skills.Name(sk.Key), sk.Value));
+            var current_skills = skills.Skills;
+            if (null != current_skills) {
+              popupLines.Add(" ");
+              popupLines.Add(upgradeActor.Name + " current skills");
+              foreach (var sk in current_skills) {
+                popupLines.Add(string.Format("{0} {1}", Skills.Name(sk.Key), sk.Value));
+              }
             }
           }
 
@@ -10719,7 +10722,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#nullable restore
     private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
     {
       int num = 0;
@@ -10733,12 +10735,13 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
+#nullable enable
     private void DoLooseRandomSkill(Actor actor)
     {
       var skills = actor.Sheet.SkillTable;
-      int[] skillsList = skills.SkillsList;
+      var skillsList = skills.SkillsList;
       if (skillsList == null) return;
-      Skills.IDs id = (Skills.IDs) m_Rules.DiceRoller.Choose(skillsList);
+      var id = m_Rules.DiceRoller.Choose(skillsList);
       skills.DecOrRemoveSkill(id);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
     }
@@ -10780,11 +10783,13 @@ namespace djack.RogueSurvivor.Engine
 	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
       }
       var skillTable = deadVictim.Sheet.SkillTable;
-      int countSkills = skillTable.CountSkills;
-      if (0 < countSkills) {
+      var skills = skillTable.SkillsList;
+      if (null != skills) {
+        var roller = m_Rules.DiceRoller;
+        int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
-          Skills.IDs? sk = ((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]).Zombify();
+          Skills.IDs? sk = roller.Choose(skills).Zombify();
           if (null != sk) actor.SkillUpgrade(sk.Value);
         }
         actor.RecomputeStartingStats();

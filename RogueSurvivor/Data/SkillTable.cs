@@ -7,22 +7,26 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class SkillTable
   {
-    private Dictionary<Gameplay.Skills.IDs, sbyte> m_Table;
+    private Dictionary<Gameplay.Skills.IDs, sbyte>? m_Table;
 
-    public IEnumerable<KeyValuePair<Gameplay.Skills.IDs,sbyte>> Skills { get { return m_Table; } }
+    public IEnumerable<KeyValuePair<Gameplay.Skills.IDs,sbyte>>? Skills { get { return m_Table; } }
 
-    public int[] SkillsList
+    public Gameplay.Skills.IDs[]? SkillsList
     {
       get {
-        if (0 >= CountSkills) return null;
-        var ret = new List<int>();
-        foreach(var x in m_Table) ret.Add((int)x.Key);
-        return ret.ToArray();
+        int ub = CountSkills;
+        if (0 >= ub) return null;
+        var ret = new Gameplay.Skills.IDs[ub];
+        ub = 0;
+        foreach(var x in m_Table!) ret[ub++] = x.Key;
+        return ret;
       }
     }
 
@@ -32,7 +36,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if (0 >= CountSkills) return 0;
         int num = 0;
-        foreach(var x in m_Table) num += x.Value;
+        foreach(var x in m_Table!) num += x.Value;
         return num;
       }
     }
@@ -43,9 +47,6 @@ namespace djack.RogueSurvivor.Data
 
     public SkillTable(SkillTable src)
     {
-#if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       if (0<src.CountSkills) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(src.m_Table);
     }
 
@@ -65,8 +66,7 @@ namespace djack.RogueSurvivor.Data
 
     public void DecOrRemoveSkill(Gameplay.Skills.IDs id)
     {
-      if (!m_Table?.ContainsKey(id) ?? true) return;
-      if (0 < --m_Table[id]) return;
+      if (null == m_Table || !m_Table.ContainsKey(id) || 0 < --m_Table[id]) return;
       m_Table.Remove(id);
       if (0 >= m_Table.Count) m_Table = null;
     }
