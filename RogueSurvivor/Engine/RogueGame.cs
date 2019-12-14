@@ -10598,8 +10598,7 @@ namespace djack.RogueSurvivor.Engine
           HandlePlayerDecideUpgrade(actor);
           continue;
         }
-        List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, RollSkillsToUpgrade(actor, 300));
         if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
       }
     }
@@ -10612,11 +10611,10 @@ namespace djack.RogueSurvivor.Engine
         int num = 0;
         Skills.IDs? upgrade;
         do {
-          ++num;
           upgrade = RollRandomSkillToUpgrade(actor, maxTries);
           if (null == upgrade) return idsList;
         }
-        while (idsList.Contains(upgrade.Value) && num < maxTries);
+        while (idsList.Contains(upgrade.Value) && ++num < maxTries);
         idsList.Add(upgrade.Value);
       }
       return idsList;
@@ -10624,21 +10622,24 @@ namespace djack.RogueSurvivor.Engine
 
     private Skills.IDs? NPCPickSkillToUpgrade(Actor npc, List<Skills.IDs> chooseFrom)
     {
-      if (chooseFrom == null || chooseFrom.Count == 0) return null;
+      if (null == chooseFrom) return null;
       int count = chooseFrom.Count;
-      int[] numArray = new int[count];
-      int num = -1;
-      for (int index = 0; index < count; ++index) {
-        numArray[index] = NPCSkillUtility(npc, chooseFrom[index]);
-        if (numArray[index] > num) num = numArray[index];
-      }
+      if (0 == count) return null;
       var idsList = new List<Skills.IDs>(count);
-      for (int index = 0; index < count; ++index) {
-        if (numArray[index] == num) idsList.Add(chooseFrom[index]);
+      int num = -1;
+      foreach (var id in chooseFrom) {
+        var test = NPCSkillUtility(npc, id);
+        if (num > test) continue;
+        if (num < test) {
+          idsList.Clear();
+          test = num;
+        }
+        idsList.Add(id);
       }
-      return new Skills.IDs?(m_Rules.DiceRoller.Choose(idsList));
+      return m_Rules.DiceRoller.Choose(idsList);
     }
 
+#nullable enable
     static private int NPCSkillUtility(Actor actor, Skills.IDs skID)
     {
       const int USELESS_UTIL = 0;
@@ -10646,53 +10647,34 @@ namespace djack.RogueSurvivor.Engine
       const int AVG_UTIL = 2;
       const int HI_UTIL = 3;
 
-      if (actor.Model.Abilities.IsUndead)
-      {
-        switch (skID)
-        {
+      if (actor.Model.Abilities.IsUndead) {
+        switch (skID) {
           case Skills.IDs.Z_AGILE:
           case Skills.IDs.Z_STRONG:
           case Skills.IDs.Z_TOUGH:
           case Skills.IDs.Z_TRACKER:
-            return 2;
+            return AVG_UTIL;
           case Skills.IDs.Z_EATER:
           case Skills.IDs.Z_LIGHT_FEET:
-            return 1;
+            return LOW_UTIL;
           case Skills.IDs.Z_GRAB:
           case Skills.IDs.Z_INFECTOR:
           case Skills.IDs.Z_LIGHT_EATER:
-            return 3;
-          default:
-            return 0;
+            return HI_UTIL;
+          default: return USELESS_UTIL;
         }
-      }
-      else
-      {
-        switch (skID)
-        {
+      } else {
+        Inventory? inv;
+        switch (skID) {
           case Skills.IDs.AGILE: return 2;
           case Skills.IDs.AWAKE: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.BOWS:
-            if (actor.Inventory != null)
-            {
-              foreach (Item obj in actor.Inventory.Items)
-              {
-                if (obj is ItemRangedWeapon && (obj.Model as ItemRangedWeaponModel).IsBow)
-                  return 3;
-              }
-            }
+            if (null != (inv = actor.Inventory) && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
             return 0;
           case Skills.IDs.CARPENTRY: return 1;
           case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;    // ???
           case Skills.IDs.FIREARMS:
-            if (actor.Inventory != null)
-            {
-              foreach (Item obj in actor.Inventory.Items)
-              {
-                if (obj is ItemRangedWeapon && (obj.Model as ItemRangedWeaponModel).IsFireArm)
-                  return 3;
-              }
-            }
+            if (null != (inv = actor.Inventory) && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
             return 0;
           case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.HAULER: return 3;
@@ -10702,14 +10684,7 @@ namespace djack.RogueSurvivor.Engine
           case Skills.IDs.LIGHT_FEET: return 2;
           case Skills.IDs.LIGHT_SLEEPER: return !actor.Model.Abilities.HasToSleep ? 0 : 2;
           case Skills.IDs.MARTIAL_ARTS:
-            if (actor.Inventory != null)
-            {
-              foreach (Item obj in actor.Inventory.Items)
-              {
-                if (obj is ItemWeapon)
-                  return 1;
-              }
-            }
+            if (null != (inv = actor.Inventory) && inv.Has<ItemWeapon>()) return 1;
             return 2;
           case Skills.IDs.MEDIC: return 1;
           case Skills.IDs.NECROLOGY: return 1;  // alpha10; previously 0
@@ -10717,10 +10692,11 @@ namespace djack.RogueSurvivor.Engine
           case Skills.IDs.STRONG_PSYCHE: return !actor.Model.Abilities.HasSanity ? 0 : 3;
           case Skills.IDs.TOUGH: return 3;
           case Skills.IDs.UNSUSPICIOUS: return actor.MurdersCounter <= 0 || actor.Model.Abilities.IsLawEnforcer ? 0 : 1;
-          default: return 0;
+          default: return USELESS_UTIL;
         }
       }
     }
+#nullable restore
 
     private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
     {

@@ -324,6 +324,12 @@ namespace djack.RogueSurvivor.Data
       return null != GetFirst<_T_>();
     }
 
+    public bool Has<_T_>(Predicate<_T_> ok) where _T_ : Item
+    {
+      return null != GetFirst<_T_>(ok);
+    }
+
+
     public _T_? GetFirst<_T_>() where _T_ : Item
     {
       foreach (Item it in m_Items) if (it is _T_ obj) return obj;
