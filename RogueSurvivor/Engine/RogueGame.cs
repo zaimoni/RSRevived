@@ -10246,51 +10246,47 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePostMortem()
     {
-      WorldTime worldTime = new WorldTime(Player.ActorScoring.TurnsSurvived);
       string str1 = Player.HisOrHer;
       string str2 = Player.HimOrHer;
-      string name = Player.TheName.Replace("(YOU) ", "");
-      string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
+      string name = Player.UnmodifiedName;
+      var g_scoring = Session.Get.Scoring;
+      var p_scoring = Player.ActorScoring;
       var textFile = new TextFile();
+      int test;
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
       textFile.Append(string.Format("{0} was {1} and {2}.", name, Player.Model.Name.PrefixIndefiniteSingularArticle(), Player.Faction.MemberName.PrefixIndefiniteSingularArticle()));
-      textFile.Append(string.Format("{0} survived to see {1}.", str1, worldTime.ToString()));
-      textFile.Append(string.Format("{0}'s spirit guided {1} for {2}.", name, str2, @string));
-      if (Session.Get.Scoring.ReincarnationNumber > 0)
-        textFile.Append(string.Format("{0} was reincarnation {1}.", str1, Session.Get.Scoring.ReincarnationNumber));
+      textFile.Append(string.Format("{0} survived to see {1}.", str1, (new WorldTime(p_scoring.TurnsSurvived)).ToString()));
+      textFile.Append(string.Format("{0}'s spirit guided {1} for {2}.", name, str2, TimeSpanToString(g_scoring.RealLifePlayingTime)));
+      if (0 < (test = g_scoring.ReincarnationNumber)) textFile.Append(string.Format("{0} was reincarnation {1}.", str1, test));
       textFile.Append(" ");
       textFile.Append("> SCORING");
-      textFile.Append(string.Format("{0} scored a total of {1} points.", str1, Player.ActorScoring.TotalPoints));
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
-      textFile.Append(string.Format("- {0} base points for survival.", Player.ActorScoring.SurvivalPoints));
-      textFile.Append(string.Format("- {0} base points for kills.", Player.ActorScoring.KillPoints));
-      textFile.Append(string.Format("- {0} base points for achievements.", Player.ActorScoring.AchievementPoints));
+      textFile.Append(string.Format("{0} scored a total of {1} points.", str1, p_scoring.TotalPoints));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * p_scoring.DifficultyRating)));
+      textFile.Append(string.Format("- {0} base points for survival.", p_scoring.SurvivalPoints));
+      textFile.Append(string.Format("- {0} base points for kills.", p_scoring.KillPoints));
+      textFile.Append(string.Format("- {0} base points for achievements.", p_scoring.AchievementPoints));
       textFile.Append(" ");
       textFile.Append("> ACHIEVEMENTS");
-      Player.ActorScoring.DescribeAchievements(textFile);
-      { // scoping brace: a_count
-      int a_count = Player.ActorScoring.CompletedAchievementsCount;
-      if (0 >= a_count) {
+      p_scoring.DescribeAchievements(textFile);
+      if (0 >= (test = p_scoring.CompletedAchievementsCount)) {
         textFile.Append("Didn't achieve anything notable. And then died.");
         textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", 8));
       } else {
-        textFile.Append(string.Format("Total : {0}/{1}.", a_count, (int)Achievement.IDs._COUNT));
-        if ((int)Achievement.IDs._COUNT <= a_count)
-          textFile.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
-        else
-          textFile.Append("(unlock all the achievements to win this game version)");
+        textFile.Append(string.Format("Total : {0}/{1}.", test, (int)Achievement.IDs._COUNT));
+        textFile.Append(((int)Achievement.IDs._COUNT <= test)
+            ? "*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***"
+            : "(unlock all the achievements to win this game version)");
         textFile.Append("(later versions of the game will feature real winning conditions and multiple endings...)");
       }
-      } // end scoping brace: a_count
       textFile.Append(" ");
       textFile.Append("> DEATH");
-      textFile.Append(string.Format("{0} in {1}.", Player.ActorScoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
+      textFile.Append(string.Format("{0} in {1}.", p_scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
-      Player.ActorScoring.DescribeKills(textFile, str1);
-      if (!Player.Model.Abilities.IsUndead && Player.MurdersCounter > 0)
-        textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(Player.MurdersCounter)));
+      p_scoring.DescribeKills(textFile, str1);
+      if (!Player.Model.Abilities.IsUndead && 0 < (test = Player.MurdersCounter))
+        textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(test)));
       textFile.Append(" ");
       textFile.Append("> FUN FACTS!");
       textFile.Append(string.Format("While {0} has died, others are still having fun!", name));
@@ -10306,24 +10302,28 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
-      if (Player.Inventory?.IsEmpty ?? true) {
+      {
+      var inv = Player.Inventory;
+      if (null == inv || inv.IsEmpty) {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", str1));
       } else {
-        foreach (Item it in Player.Inventory.Items) {
+        foreach (Item it in inv.Items) {
           textFile.Append(string.Format((it.IsEquipped ? "- {0} (equipped)." : "- {0}."), DescribeItemShort(it)));
         }
+      }
       }
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
       { // scoping brace
-      int count_followers = Session.Get.Scoring_fatality.FollowersWhendDied?.Count ?? 0;
-      if (0 >= count_followers) {
+      var followers = Session.Get.Scoring_fatality.FollowersWhendDied;
+      if (null == followers) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
+        int count_followers = followers.Count;  // greater than 0 by construction
         var stringBuilder = new StringBuilder(string.Format("{0} was leading", str1));
         bool flag = true;
         int num = 0;
-        foreach (Actor actor in Session.Get.Scoring_fatality.FollowersWhendDied) {
+        foreach (Actor actor in followers) {
           if (flag) stringBuilder.Append(" ");
           else if (num == count_followers) stringBuilder.Append(".");
           else if (num == count_followers - 1) stringBuilder.Append(" and ");
@@ -10334,7 +10334,7 @@ namespace djack.RogueSurvivor.Engine
         }
         stringBuilder.Append(".");
         textFile.Append(stringBuilder.ToString());
-        foreach (Actor actor in Session.Get.Scoring_fatality.FollowersWhendDied) {
+        foreach (Actor actor in followers) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
           var a_skills = actor.Sheet.SkillTable.Skills;
           if (null != a_skills) foreach (var sk in a_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
@@ -10343,10 +10343,10 @@ namespace djack.RogueSurvivor.Engine
       } // scoping brace
       textFile.Append(" ");
       textFile.Append("> EVENTS");
-      Player.ActorScoring.DescribeEvents(textFile, str1);
+      p_scoring.DescribeEvents(textFile, str1);
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * (double)Player.ActorScoring.DifficultyRating)));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (int)(100.0 * p_scoring.DifficultyRating)));
       if (s_Options.IsPermadeathOn)
         textFile.Append(string.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
       if (!s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution)
@@ -10415,7 +10415,7 @@ namespace djack.RogueSurvivor.Engine
       var stringBuilder1 = new StringBuilder();
       var skills = Player.Sheet.SkillTable.Skills;
       if (null != skills) foreach (var sk in skills) stringBuilder1.AppendFormat("{0}-{1} ", sk.Value, Skills.Name(sk.Key));
-      if (!m_HiScoreTable.Register(new HiScore(Session.Get.Scoring, Player.ActorScoring, stringBuilder1.ToString()))) return;
+      if (!m_HiScoreTable.Register(new HiScore(g_scoring, p_scoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
     }
@@ -10429,8 +10429,9 @@ namespace djack.RogueSurvivor.Engine
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(victor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(victor.Model)) return;
       if (victor.IsPlayer) {
-        var msg_alive = new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green);
-        var msg_welcome = new Data.Message("Welcome to the night.", Session.Get.WorldTime.TurnCounter, Color.White);
+        int turn = Session.Get.WorldTime.TurnCounter;
+        var msg_alive = new Data.Message("You will hunt another day!", turn, Color.Green);  // \todo cache these in multi-PC case (could only have 2 message objects rather than 2n)
+        var msg_welcome = new Data.Message("Welcome to the night.", turn, Color.White);
         if (IsSimulating || victor!=Player) {
           var player = victor.Controller as PlayerController;
           player.DeferMessage(msg_alive);
@@ -10467,6 +10468,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
+      bool is_UI_viewpoint = upgradeActor == Player;
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
       var skills = upgradeActor.Sheet.SkillTable;
       if (0 >= upgrade.Count) { 

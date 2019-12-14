@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Engine
       m_Actor = src;
     }
 
-    public string Name { get { return m_Actor.TheName.Replace("(YOU) ", ""); } }
+    public string Name { get { return m_Actor.UnmodifiedName; } }
     public int TurnsSurvived { get { return m_Actor.Location.Map.LocalTime.TurnCounter-m_Actor.SpawnTime; } }
     public int SurvivalPoints { get { return 2*TurnsSurvived; } }
 
