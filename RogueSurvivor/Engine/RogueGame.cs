@@ -3292,21 +3292,24 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
+#nullable enable
     private void HandleScreenshot()
     {
-      AddMessage(new Data.Message("Taking screenshot...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      int turn = Session.Get.WorldTime.TurnCounter;
+      AddMessage(new Data.Message("Taking screenshot...", turn, Color.Yellow));
       RedrawPlayScreen();
-      string screenshot = DoTakeScreenshot();
-      AddMessage(null == screenshot ? new Data.Message("Could not save screenshot.", Session.Get.WorldTime.TurnCounter, Color.Red)
-                                    : new Data.Message(string.Format("screenshot {0} saved.", screenshot), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      var screenshot = DoTakeScreenshot();
+      AddMessage(null == screenshot ? new Data.Message("Could not save screenshot.", turn, Color.Red)
+                                    : new Data.Message(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
       RedrawPlayScreen();
     }
 
-    private string DoTakeScreenshot()
+    private string? DoTakeScreenshot()
     {
       string newScreenshotName = GetUserNewScreenshotName();
       return null != m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) ? newScreenshotName : null;
     }
+#nullable restore
 
     private void HandleHelpMode()
     {
@@ -10185,6 +10188,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
+#nullable enable
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
@@ -10192,6 +10196,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_Rules.RollChance(50)) rotation = -rotation;
       deadGuy.Location.Map.AddAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
     }
+#nullable restore
 
     private void PlayerDied(Actor killer, string reason)
     {
@@ -10200,12 +10205,14 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Stop();
       m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
 
-      List<Zone> zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
+      var zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
 
       Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
 
-      Player.ActorScoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
+      Player.ActorScoring.DeathReason = killer == null ? string.Format("Death by {0}", reason)
+                                                       : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
+      int turn = Session.Get.WorldTime.TurnCounter;
+      Player.ActorScoring.AddEvent(turn, "Died.");
 
       AddOverlay(new OverlayPopup(new string[3] {
         "TIP OF THE DEAD",
@@ -10213,21 +10220,17 @@ namespace djack.RogueSurvivor.Engine
         m_Rules.DiceRoller.Choose(GameTips.TIPS)
       }, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
       ClearMessages();
-      AddMessage(new Data.Message("**** YOU DIED! ****", Session.Get.WorldTime.TurnCounter, Color.Red));
-      if (killer != null) AddMessage(new Data.Message(string.Format("Killer : {0}.", killer.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
-      AddMessage(new Data.Message(string.Format("Reason : {0}.", reason), Session.Get.WorldTime.TurnCounter, Color.Red));
-      if (Player.Model.Abilities.IsUndead)
-        AddMessage(new Data.Message("You die one last time... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
-      else
-        AddMessage(new Data.Message("You join the realm of the undeads... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
+      AddMessage(new Data.Message("**** YOU DIED! ****", turn, Color.Red));
+      if (killer != null) AddMessage(new Data.Message(string.Format("Killer : {0}.", killer.TheName), turn, Color.Red));
+      AddMessage(new Data.Message(string.Format("Reason : {0}.", reason), turn, Color.Red));
+      AddMessage(new Data.Message(Player.Model.Abilities.IsUndead ? "You die one last time... Game over!"
+                                                                  : "You join the realm of the undeads... Game over!", turn, Color.Red));
       if (s_Options.IsPermadeathOn) DeleteSavedGame(GetUserSave());
       if (s_Options.IsDeathScreenshotOn) {
         RedrawPlayScreen();
-        string screenshot = DoTakeScreenshot();
-        if (screenshot == null)
-          AddMessage(MakeErrorMessage("could not save death screenshot."));
-        else
-          AddMessage(new Data.Message(string.Format("Death screenshot saved : {0}.", screenshot), Session.Get.WorldTime.TurnCounter, Color.Red));
+        var screenshot = DoTakeScreenshot();
+        AddMessage((null == screenshot) ? MakeErrorMessage("could not save death screenshot.")
+                                        : new Data.Message(string.Format("Death screenshot saved : {0}.", screenshot), turn, Color.Red));
       }
       AddMessagePressEnter();
       HandlePostMortem();
