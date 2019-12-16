@@ -9814,7 +9814,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
       if (ForceVisibleToPlayer(actor))
-      AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
+        AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
       // stop sleep music if player.
       if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
@@ -9828,6 +9828,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, string.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
     }
 
+#nullable enable
     // alpha10 new way to use spray scent
     public void DoSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
     {
@@ -9836,9 +9837,8 @@ namespace djack.RogueSurvivor.Engine
       sprayOn.OdorSuppressorCounter += suppressor.Model.Strength; // add odor suppressor on spray target
 
       // message.
-      if (ForceVisibleToPlayer(actor)) {
+      if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
-      }
     }
 
     private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
@@ -9849,22 +9849,20 @@ namespace djack.RogueSurvivor.Engine
       else if (!slave.IsTrustingLeader) {
         DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
       } else {
-        OrderableAI aiController = slave.Controller as OrderableAI;
-        if (aiController == null) return;
-        aiController.SetOrder(order);
-        if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
-        AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", order.ToString())));
+        if (!(slave.Controller is OrderableAI ai)) return;
+        ai.SetOrder(order);
+        if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
+          AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", order.ToString())));
       }
     }
 
     private void DoCancelOrder(Actor master, Actor slave)
     {
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
-      OrderableAI aiController = slave.Controller as OrderableAI;
-      if (aiController == null) return;
-      aiController.SetOrder(null);
-      if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
-      AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
+      if (!(slave.Controller is OrderableAI ai)) return;
+      ai.SetOrder(null);
+      if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
+        AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
     }
 
     public void OnLoudNoise(in Location loc, string noiseName)
@@ -9908,6 +9906,7 @@ namespace djack.RogueSurvivor.Engine
       default: return (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
       };
     }
+#nullable restore
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
@@ -9941,9 +9940,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
+      int turn = deadGuy.Location.Map.LocalTime.TurnCounter;
       if (deadGuy.IsUnique) {
         // XXX \todo global event
-        m_Player_bak.ActorScoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
+        m_Player_bak.ActorScoring.AddEvent(turn,
             (killer != null
            ? string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName)
            : string.Format("* {0} died by {1}! *", deadGuy.TheName, reason)));
@@ -9953,10 +9953,13 @@ namespace djack.RogueSurvivor.Engine
         if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
       }
       deadGuy.RemoveAllFollowers();
-      if (deadGuy.Leader != null) {
-        string text = killer == null ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason) : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName);
-        deadGuy.Leader.ActorScoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
-        deadGuy.Leader.RemoveFollower(deadGuy);
+      var leader = deadGuy.Leader;
+      if (null != leader) {
+        leader.ActorScoring.AddEvent(turn,
+            (killer == null
+           ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason)
+           : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName)));
+        leader.RemoveFollower(deadGuy);
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.RemoveFromMap();
@@ -10165,7 +10168,6 @@ namespace djack.RogueSurvivor.Engine
       GameActors.IDs index = undead.Model.ID.NextUndeadEvolution();
 	  return (index != undead.Model.ID ? GameActors[index] : null);
     }
-#nullable restore
 
     private void SplatterBlood(Map map, Point position)
     {
@@ -10188,7 +10190,6 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-#nullable enable
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
