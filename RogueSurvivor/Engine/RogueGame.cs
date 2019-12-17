@@ -9514,10 +9514,16 @@ namespace djack.RogueSurvivor.Engine
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      powGen.TogglePower();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
+      bool have_messaged = false;
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
-      OnMapPowerGeneratorSwitch(actor.Location, actor);
+        have_messaged = true;
+      }
+      powGen.TogglePower(actor);
+      if (!have_messaged) { 
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
+          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
+      }
       RedrawPlayScreen();
     }
 
@@ -13528,9 +13534,8 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
-    private void OnMapPowerGeneratorSwitch(Location location, Actor victor)
+    public void OnMapPowerGeneratorSwitch(Map map, Actor victor)
     {
-      Map map = location.Map;
       if (map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
         lock (Session.Get) {
           if (1.0 <= map.PowerRatio) {
@@ -13724,8 +13729,7 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (var powGen in map.PowerGenerators.Get) {
         if (powGen.IsOn) continue;
-        powGen.TogglePower();
-        OnMapPowerGeneratorSwitch(powGen.Location, victor);
+        powGen.TogglePower(victor);
       }
     }
 

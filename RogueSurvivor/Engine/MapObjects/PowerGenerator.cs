@@ -51,5 +51,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       SetState(State == STATE_OFF ? STATE_ON : STATE_OFF);
     }
+
+    public void TogglePower(Actor a)
+    {
+      SetState(State == STATE_OFF ? STATE_ON : STATE_OFF);
+      RogueForm.Game.OnMapPowerGeneratorSwitch(Location.Map, a);
+    }
   }
 }
