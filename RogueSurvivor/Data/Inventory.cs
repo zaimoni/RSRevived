@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public _T_? GetSmallestStackOf<_T_>() where _T_ : Item   // alpha10 equivalent: GetSmallestStackByType
+    public _T_ GetSmallestStackOf<_T_>() where _T_ : Item   // alpha10 equivalent: GetSmallestStackByType
     {
       _T_? smallest = null;
 
@@ -170,6 +170,7 @@ namespace djack.RogueSurvivor.Data
           }
         }
       }
+      if (null == smallest) throw new InvalidOperationException("not found");
       return smallest;
     }
 

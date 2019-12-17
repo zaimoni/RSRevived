@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
@@ -57,5 +59,5 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       SetState(State == STATE_OFF ? STATE_ON : STATE_OFF);
       RogueForm.Game.OnMapPowerGeneratorSwitch(Location.Map, a);
     }
-  }
+    }
 }

@@ -9476,10 +9476,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#nullable enable
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
     {
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
-      actor.Inventory.Consume(barricadeMaterial);
+      var inv = actor.Inventory!;
+      var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
+      inv.Consume(barricadeMaterial);
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
@@ -9489,26 +9491,27 @@ namespace djack.RogueSurvivor.Engine
     public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      var inv = actor.Inventory!;
       int num = actor.BarricadingMaterialNeedForFortification(isLarge);
       for (int index = 0; index < num; ++index) {
-        actor.Inventory.Consume(actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>());
+        inv.Consume(inv.GetSmallestStackOf<ItemBarricadeMaterial>());
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, in buildPos);
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
     {
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>();
-      if (barricadeMaterial == null) throw new InvalidOperationException("no material");
+      var inv = actor.Inventory!;
+      var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
+      inv.Consume(barricadeMaterial);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.Inventory.Consume(barricadeMaterial);
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(fort)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
@@ -9526,6 +9529,7 @@ namespace djack.RogueSurvivor.Engine
       }
       RedrawPlayScreen();
     }
+#nullable restore
 
     [SecurityCritical] public void DoBreak(Actor actor, MapObject mapObj)
     {
