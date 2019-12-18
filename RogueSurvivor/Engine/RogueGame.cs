@@ -9384,17 +9384,18 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
     }
 
+#nullable enable
     private void DoUseAmmoItem(Actor actor, ItemAmmo ammoItem)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
+      var itemRangedWeapon = (actor.GetEquippedWeapon() as ItemRangedWeapon)!;
       sbyte num = (sbyte)Math.Min(itemRangedWeapon.Model.MaxAmmo - itemRangedWeapon.Ammo, ammoItem.Quantity);
       itemRangedWeapon.Ammo += num;
-      ammoItem.Quantity -= num;
-      if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
-      else actor.Inventory.IncrementalDefrag(ammoItem);
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
+      var inv = actor.Inventory!;
+      if (0 >= (ammoItem.Quantity -= num)) inv.RemoveAllQuantity(ammoItem);
+      else inv.IncrementalDefrag(ammoItem);
+      if (ForceVisibleToPlayer(actor))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
     }
 
     private void DoUseTrapItem(Actor actor, ItemTrap trap)
@@ -9402,8 +9403,8 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (trap.IsActivated) trap.Desactivate();
       else trap.Activate(actor);
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
+      if (ForceVisibleToPlayer(actor))
+        AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
     }
 
     private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
@@ -9439,7 +9440,7 @@ namespace djack.RogueSurvivor.Engine
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {
-        actor.Inventory.Consume(ent);
+        actor.Inventory!.Consume(ent);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
       } else if (m_Rules.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
@@ -9451,9 +9452,10 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       (it as BatteryPowered).Recharge();
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
-      if (actor.IsPlayer) RedrawPlayScreen();
+      if (ForceVisibleToPlayer(actor)) {
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
+        if (actor.IsPlayer) RedrawPlayScreen();
+      }
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
@@ -9476,7 +9478,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#nullable enable
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
     {
       var inv = actor.Inventory!;
