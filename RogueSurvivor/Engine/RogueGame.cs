@@ -9128,12 +9128,12 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
+      bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       // try to trade with NPC first
       if (!target.IsPlayer) {
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
-          // but if it's the *target's* turn, bundle that in to prevent a hard crash
-          if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
+          if (do_not_crash_on_target_turn) DoWait(target);
           DoTrade(actor, trade, target, false);
           return;
         }
@@ -9143,28 +9143,22 @@ namespace djack.RogueSurvivor.Engine
       // If cannot trade, outright give
       if (target.Inventory.IsFull && !target.CanGet(gift)) {
         if (null == received) { // \todo refactor this -- repeat block from ActionGiveItem
-          var recover = (target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,actor.Location.Position); // unsure if this works cross-map
-          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) {
-            // ammo can get confused, evidently
-            recover = (target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift);
-          }
+          var ai = (target.Controller as Gameplay.AI.ObjectiveAI)!;
+          var recover = ai.BehaviorMakeRoomFor(gift,actor.Location.Position); // unsure if this works cross-map
+          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = ai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
           if (recover is ActionTradeWithContainer trade) received = trade.Give;
           else if (recover is ActionChain chain) {
             if (chain.First is ActionDropItem drop) received = drop.Item;
-          } else if (recover is ActionUseItem use) {
-            received = use.Item;
-          }
+          } else if (recover is ActionUseItem use) received = use.Item;
         }
 
         if (null != received) {
-          // but if it's the *target's* turn, bundle that in to prevent a hard crash
-          if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
+          if (do_not_crash_on_target_turn) DoWait(target);
           DoTrade(actor, new KeyValuePair<Item,Item>(gift,received), target, false);
           return;
         }
       }
-      // but if it's the *target's* turn, bundle that in to prevent a hard crash
-      if (0<target.ActionPoints && target.Location.Map.NextActorToAct==target) DoWait(target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
+      if (do_not_crash_on_target_turn) DoWait(target);
       DoGiveItemTo(actor,target,gift);
     }
 #nullable restore
@@ -9174,13 +9168,10 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (target.Leader == actor) {
         bool flag = (target.Controller as ObjectiveAI).IsInterestingItem(gift);
-        if (flag)
-          DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
-        else
-          DoSay(target, actor, "Thanks I guess...", RogueGame.Sayflags.IS_FREE_ACTION);
+        DoSay(target, actor, flag ? "Thank you, I really needed that!" : "Thanks I guess...", Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(target, flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
       } else if (actor.Leader == target) {
-        DoSay(target, actor, "Well, here it is...", RogueGame.Sayflags.IS_FREE_ACTION);
+        DoSay(target, actor, "Well, here it is...", Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
@@ -9190,8 +9181,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0 >= quantityAdded) throw new InvalidOperationException(actor.Name+" made a no-op gift to "+target.Name);
 #endif
-      if (quantityAdded==quantity)
-        actor.Inventory.RemoveAllQuantity(gift);
+      if (quantityAdded==quantity) actor.Inventory.RemoveAllQuantity(gift);
 
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
@@ -9200,8 +9190,8 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (target.Inventory.Items.Intersect(actor.Inventory.Items).Any()) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + target.Name + "'s inventory: " + target.Inventory.ToString());
 #endif
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(target)) return;
-      AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target))
+        AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
     }
 
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
@@ -9214,8 +9204,8 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0< (container.Inventory?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + container.Inventory.ToString());
 #endif
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(container)) return;
-      AddMessage(MakeMessage(actor, string.Format("{0} {1} away", Conjugate(actor, VERB_PUT), gift.TheName)));
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
+        AddMessage(MakeMessage(actor, string.Format("{0} {1} away", Conjugate(actor, VERB_PUT), gift.TheName)));
     }
 
     public void DoEquipItem(Actor actor, Item it)
@@ -9224,15 +9214,14 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
 #endif
       if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
-      Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
+      var equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       actor.Equip(it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
 #endif
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
     }
 
     public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
