@@ -7736,9 +7736,12 @@ namespace djack.RogueSurvivor.Engine
     public bool DoLeaveMap(Actor actor, in Point exitPoint, bool askForConfirmation)
     {
       bool isPlayer = actor.IsPlayer;
-      Exit exitAt = actor.Location.Map.GetExitAt(exitPoint);
+      var exitAt = actor.Location.Map.GetExitAt(exitPoint);
       if (exitAt == null) {
         if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
+#if DEBUG
+        else throw new ArgumentNullException(nameof(exitAt));   // going to crash out anyway on the free move trap
+#endif
         return true;
       }
       Location origin = actor.Location;
@@ -7755,7 +7758,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        RedrawPlayScreen();
+        if (Player==actor) RedrawPlayScreen();
         return false;
       }
 #if OBSOLETE
@@ -7765,6 +7768,9 @@ namespace djack.RogueSurvivor.Engine
       string reason = exitAt.ReasonIsBlocked(actor);
       if (!string.IsNullOrEmpty(reason)) {
         if (isPlayer) AddMessage(MakeErrorMessage(reason));
+#if DEBUG
+        else throw new InvalidOperationException(reason);   // going to crash out anyway on the free move trap
+#endif
         return true;
       }
       if (actor.Location.Map.District != exitAt.ToMap.District) {   // check for movement speed artifacts
@@ -9092,6 +9098,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(inv));
       if (1 != Rules.GridDistance(actor.Location.Position,in position)) throw new ArgumentOutOfRangeException(nameof(position), "("+ position.X.ToString()+", "+ position.Y.ToString()+") not adjacent");
+      if (!actor.IsPlayer) throw new InvalidOperationException("NPC trying to take from container");    // \todo measure whether this is an invariant
 #endif
       if (actor.IsPlayer && 2 <= inv.CountItems) {
         HandlePlayerTakeItemFromContainer(actor, inv, position);
@@ -9101,7 +9108,6 @@ namespace djack.RogueSurvivor.Engine
       Item topItem = inv.TopItem!;
       DoTakeItem(actor, in position, topItem);
     }
-#nullable restore
 
     public void DoTakeItem(Actor actor, in Point position, Item it)
     {
@@ -9125,7 +9131,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-#nullable enable
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
       bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway

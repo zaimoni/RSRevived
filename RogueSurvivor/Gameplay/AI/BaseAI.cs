@@ -745,7 +745,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
         var exitAt = m_Actor.Location.Exit;
-        if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
+        if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit())
           return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
@@ -932,7 +932,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var exitAt = m_Actor.Location.Exit;
       if (null == exitAt) return null;
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
-      if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
+      if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit() ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
       if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);

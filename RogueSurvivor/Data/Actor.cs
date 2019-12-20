@@ -1688,7 +1688,7 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
-          if (tmp.IsLegal() && tmp.IsNotBlocked) ret.Add(exit.Location);
+          if (tmp.IsPerformable()) ret.Add(exit.Location);
         } else {
           ret.Add(exit.Location);
           // simulate Exit::ReasonIsBlocked
@@ -1728,7 +1728,7 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
-          if (tmp.IsLegal() && tmp.IsNotBlocked) ret.Add(exit.Location, tmp);
+          if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
         } else {
           ret.Add(exit.Location, tmp);
           // simulate Exit::ReasonIsBlocked
@@ -1768,14 +1768,19 @@ namespace djack.RogueSurvivor.Data
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ret.Add(exit.Location, new ActionUseExit(this, in loc));
-        // simulate Exit::ReasonIsBlocked
-        switch(exit.Location.IsBlockedForPathing) {
-        case 0: break;
-        case 1: if (!CanJump) ret.Remove(exit.Location);
-          break;
-        default: ret.Remove(exit.Location);
-          break;
+        var tmp = new ActionUseExit(this, in loc);
+        if (loc == Location) {
+          if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
+        } else {
+          ret.Add(exit.Location, new ActionUseExit(this, in loc));
+          // simulate Exit::ReasonIsBlocked
+          switch(exit.Location.IsBlockedForPathing) {
+          case 0: break;
+          case 1: if (!CanJump) ret.Remove(exit.Location);
+            break;
+          default: ret.Remove(exit.Location);
+            break;
+          }
         }
       }
       return ret;
@@ -2400,21 +2405,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    private string ReasonCantUseExit(in Point exitPoint)
+    private string ReasonCantUseExit()
     {
-      if (!Location.Map.HasExitAt(in exitPoint)) return "no exit there";
       if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
       return "";
     }
 
-    public bool CanUseExit(Point exitPoint)
+    public bool CanUseExit()
     {
-      return string.IsNullOrEmpty(ReasonCantUseExit(in exitPoint));
+      return string.IsNullOrEmpty(ReasonCantUseExit());
     }
 
-    public bool CanUseExit(Point exitPoint, out string reason)
+    public bool CanUseExit(out string reason)
     {
-      reason = ReasonCantUseExit(in exitPoint);
+      reason = ReasonCantUseExit();
       return string.IsNullOrEmpty(reason);
     }
 

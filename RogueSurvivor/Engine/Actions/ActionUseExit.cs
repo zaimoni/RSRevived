@@ -31,8 +31,16 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.Location.Map==m_ExitPoint.Map && m_Actor.CanUseExit(m_ExitPoint.Position, out m_FailReason);
+      return m_Actor.CanUseExit(out m_FailReason);
     }
+
+    public override bool IsPerformable()
+    {
+      if (!Exit.IsNotBlocked(m_Actor)) return false;
+      if (m_Actor.Location != m_ExitPoint) return false;
+      return base.IsPerformable();
+    }
+
 
     public override void Perform()
     {
