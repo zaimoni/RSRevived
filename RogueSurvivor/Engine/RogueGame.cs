@@ -4279,7 +4279,8 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool HandlePlayerShout(Actor player, string text)
+#nullable enable
+    private bool HandlePlayerShout(Actor player, string? text)
     {
       if (!player.CanShout(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", reason)));
@@ -4288,6 +4289,7 @@ namespace djack.RogueSurvivor.Engine
       DoShout(player, text);
       return true;
     }
+#nullable restore
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
@@ -8765,7 +8767,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
 
-      Item trade = PickItemToTrade(target, speaker, itSpeaker);
+      var trade = PickItemToTrade(target, speaker, itSpeaker);
       if (null == trade) return;
 
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
@@ -9018,10 +9020,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private Item PickItemToTrade(Inventory speaker, Actor buyer, Item itSpeaker)
+#nullable enable
+    private Item? PickItemToTrade(Inventory speaker, Actor buyer, Item itSpeaker)
     {
 #if DEBUG
-      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+//    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
       if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
 #endif
       List<Item> objList = speaker.Items.ToList(); // inventory has no mentality, trivialize
@@ -9031,7 +9034,7 @@ namespace djack.RogueSurvivor.Engine
 #else
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); };
 
-      Item ret = null;
+      Item? ret = null;
       bool details(int index) {
         ret = objList[index];
         return true;
@@ -9041,13 +9044,15 @@ namespace djack.RogueSurvivor.Engine
       return ret;
 #endif
     }
+#nullable restore
 
-    [SecurityCritical] static public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
+    [SecurityCritical] static public void DoSay(Actor speaker, Actor target, string text, Sayflags flags)
     {
       speaker.Say(target,text,flags);
     }
 
-    public void DoShout(Actor speaker, string text)
+#nullable enable
+    public void DoShout(Actor speaker, string? text)
     {
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       OnLoudNoise(speaker.Location, "A SHOUT");
@@ -9056,24 +9061,25 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddOverlay((new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
         AddMessage(MakeMessage(speaker, string.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
-        if (text != null) DoEmote(speaker, text, true);
+        if (null != text) DoEmote(speaker, text, true);
         AddMessagePressEnter();
         ClearOverlays();
         RemoveLastMessage();
+      } else {
+        var verb = Conjugate(speaker, VERB_SHOUT);
+        if (null == text)
+          AddMessage(MakeMessage(speaker, string.Format("{0}!", verb)));
+        else
+          DoEmote(speaker, string.Format("{0} \"{1}\"", verb, text), true);
       }
-      else if (text == null)
-        AddMessage(MakeMessage(speaker, string.Format("{0}!", Conjugate(speaker, VERB_SHOUT))));
-      else
-        DoEmote(speaker, string.Format("{0} \"{1}\"", Conjugate(speaker, VERB_SHOUT), text), true);
     }
 
     public void DoEmote(Actor actor, string text, bool isDanger = false)
     {
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
+      if (ForceVisibleToPlayer(actor))
+        AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-#nullable enable
     private void HandlePlayerTakeItemFromContainer(Actor player, Inventory inv, Point src)
     {
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }

@@ -113,7 +113,7 @@ namespace djack.RogueSurvivor.Engine
 #region Session save/load assistants
     public void Load(SerializationInfo info, StreamingContext context)
     {
-      m_DiceRoller = (DiceRoller) info.GetValue("m_DiceRoller", typeof(DiceRoller));
+      info.read(ref m_DiceRoller, "m_DiceRoller");
     }
 
     public void Save(SerializationInfo info, StreamingContext context)
