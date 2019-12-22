@@ -8716,7 +8716,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       };
 
-      Item trade = PickItemToTrade(target, speaker, itSpeaker); // XX rewrite target
+      var trade = PickItemToTrade(target, speaker, itSpeaker); // XX rewrite target
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return false;
@@ -8816,7 +8816,6 @@ namespace djack.RogueSurvivor.Engine
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       actor.Inventory.AddAsMuchAsPossible(take);
     }
-#nullable restore
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
     private void DoTrade(Actor speaker, KeyValuePair<Item, Item>? trade, Actor target, bool doesTargetCheckForInterestInOffer)
@@ -8847,6 +8846,7 @@ namespace djack.RogueSurvivor.Engine
       if (flag1)
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", Conjugate(target, VERB_OFFER), trade.Value.Value.AName, trade.Value.Key.AName)));
 
+      var leader = target.LiveLeader;
 #if SPEAKER_IS_PLAYER_OK
       bool isPlayer = speaker.IsPlayer;
       bool acceptDeal = true;
@@ -8858,7 +8858,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       else
-        acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
+        acceptDeal = null == leader || (target.Controller as OrderableAI).Directives.CanTrade;
 
       if (!acceptDeal) {
         if (!flag1) return;
@@ -8872,7 +8872,7 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayer) RedrawPlayScreen();
       }
 #else
-      bool acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
+      bool acceptDeal = null == leader || (target.Controller as OrderableAI).Directives.CanTrade;
 
       if (!acceptDeal) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
@@ -8882,14 +8882,18 @@ namespace djack.RogueSurvivor.Engine
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
 #endif
 
-      if (target.Leader == speaker && flag3)
-        DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
-      if (trade.Value.Key.IsEquipped) DoUnequipItem(speaker, trade.Value.Key);
-      if (trade.Value.Value.IsEquipped) DoUnequipItem(target, trade.Value.Value);
-      speaker.Inventory.RemoveAllQuantity(trade.Value.Key);
-      target.Inventory.RemoveAllQuantity(trade.Value.Value);
-      speaker.Inventory.AddAll(trade.Value.Value);
-      target.Inventory.AddAll(trade.Value.Key);
+      if (leader == speaker && flag3)
+        DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
+      Item donate = trade.Value.Key;
+      if (donate.IsEquipped) DoUnequipItem(speaker, donate);
+      Item take = trade.Value.Value;
+      if (take.IsEquipped) DoUnequipItem(target, take);
+      var donor_inv = speaker.Inventory!;
+      donor_inv.RemoveAllQuantity(donate);
+      var src_inv = speaker.Inventory!;
+      src_inv.RemoveAllQuantity(take);
+      donor_inv.AddAll(take);
+      src_inv.AddAll(donate);
     }
 
     public void DoTrade(Actor speaker, Actor target)
@@ -8899,8 +8903,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsPlayer) throw new InvalidOperationException(speaker.Name+" cannot initiate trade with a player");
       if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
-      KeyValuePair<Item,Item>? trade = PickItemsToTrade(speaker, target);
-      DoTrade(speaker, trade, target, false);
+      DoTrade(speaker, PickItemsToTrade(speaker, target), target, false);
     }
 
     private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
@@ -8912,8 +8915,8 @@ namespace djack.RogueSurvivor.Engine
 
     public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
     {
-      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
-      if (0>=(buyer_offers?.Count ?? 0)) return null;
+      var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
+      if (null == buyer_offers || 0 >= buyer_offers.Count) return null;
       var negotiate = new List<KeyValuePair<Item,Item>>(buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
       foreach(var b_item in buyer_offers) {
         if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
@@ -8927,8 +8930,8 @@ namespace djack.RogueSurvivor.Engine
 
     static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
     {
-      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
-      if (0>=(buyer_offers?.Count ?? 0)) return false;
+      var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
+      if (null == buyer_offers || 0 >=buyer_offers.Count) return false;
       foreach(var b_item in buyer_offers) {
         if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
         if (ObjectiveAI.TradeVeto(b_item,gift)) continue;
@@ -8938,16 +8941,16 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
+    private Item? PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
     {
 #if OBSOLETE
       if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker) +".IsPlayer"); // valid for RS 9 Alpha; will go away
 #endif
 #if DEBUG
-      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+//    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
       if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
 #endif
-      List<Item> objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
+      var objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
       if (objList == null || 0>=objList.Count) return null;
       // following is AI-only
       IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.Model.ID != it.Model.ID));
@@ -9020,7 +9023,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-#nullable enable
     private Item? PickItemToTrade(Inventory speaker, Actor buyer, Item itSpeaker)
     {
 #if DEBUG
