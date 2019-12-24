@@ -8611,6 +8611,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#nullable enable
     public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
@@ -8636,37 +8637,31 @@ namespace djack.RogueSurvivor.Engine
         return ret;
       }
 
+      var s_PC = speaker.Controller as PlayerController;
+      var t_PC = target.Controller as PlayerController;
       var msg_question = format_msg(string.Format("(police radio, {0}) {1}", speaker.Name, speaker_text));
       var msg_answer = format_msg(string.Format("(police radio, {0}) {1}", target.Name, target_text));
-      var send_question = speaker.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : null;
-      var send_answer = target.IsPlayer ? format_msg(string.Format("({0} using police radio) {1}", target.Name, target_text)) : null;
 
       void heard_question(Actor a) { audience.Add(a); }
       void heard_answer(Actor a) { audience2.Add(a); }
-      static void PC_message(Actor a, List<Data.Message> msgs) {
-        (a.Controller as PlayerController).DeferMessages(msgs);
+      static void PC_message(PlayerController PC, List<Data.Message> msgs) {
+        PC.DeferMessages(msgs);
       }
 
-      void PC_hear_question(Actor a) {
-        if (a==speaker) PC_message(a,send_question);
-        else PC_message(a,msg_question);
-      }
+      void PC_hear_question(PlayerController PC) { PC_message(PC, PC.ControlledActor == speaker ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : msg_question); }
       void PC_heard_question(Actor a) {
-        PC_hear_question(a);
+        PC_hear_question(a.Controller as PlayerController);
         heard_question(a);
       }
-      void PC_hear_answer(Actor a) {
-        if (a==target) PC_message(a,send_answer);
-        else PC_message(a, msg_answer);
-      }
+      void PC_hear_answer(PlayerController PC) { PC_message(PC, PC.ControlledActor == target ? format_msg(string.Format("({0} using police radio) {1}", target.Name, target_text)) : msg_answer); }
       void PC_heard_answer(Actor a) {
-        PC_hear_answer(a);
+        PC_hear_answer(a.Controller as PlayerController);
         heard_answer(a);
       }
 
-      if (speaker.IsPlayer) PC_hear_question(speaker);
+      if (null != s_PC) PC_hear_question(s_PC);
       speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, TRUE);
-      if (target.IsPlayer) PC_hear_answer(target);
+      if (null != t_PC) PC_hear_answer(t_PC);
       target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, TRUE);
 
       // not nearly as sanity-restoring as proper chat, but worth something
@@ -8678,21 +8673,22 @@ namespace djack.RogueSurvivor.Engine
         if (overhear!=speaker && overhear!=target && audience2.Contains(overhear)) op(overhear);
       }
       // flush deferred reply now
-      void flush_messages(Actor pc) {
-        var deferredMessages = (pc.Controller as PlayerController).ReleaseMessages();
+      void flush_messages(PlayerController PC) {
+        var deferredMessages = PC.ReleaseMessages();
         if (null != deferredMessages) { // should be non-null by construction
-          SetCurrentMap(pc.Location);
+          SetCurrentMap(PC.ControlledActor.Location);
           AddMessages(deferredMessages);
           RedrawPlayScreen();
         }
       }
 
-      if (speaker.IsPlayer && !IsSimulating) flush_messages(speaker);
-      if (target.IsPlayer && !IsSimulating) flush_messages(target);
+      if (!IsSimulating) {
+        if (null != s_PC) flush_messages(s_PC);
+        if (null != t_PC) flush_messages(t_PC);
+      }
       return true;
     }
 
-#nullable enable
     private bool DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
 #if OBSOLETE
