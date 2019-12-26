@@ -8522,7 +8522,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void ExplosionChainReaction(Inventory inv, in Location location)
     {
-      if (inv?.IsEmpty ?? true) return;
+      if (null == inv || inv.IsEmpty) return;
       List<ItemExplosive> itemExplosiveList = null;
       List<ItemPrimedExplosive> itemPrimedExplosiveList = null;
       foreach (Item obj in inv.Items) {
@@ -8540,13 +8540,8 @@ namespace djack.RogueSurvivor.Engine
             });
         }
       }
-      if (itemExplosiveList != null) {
-        foreach (Item it in itemExplosiveList)
-          inv.RemoveAllQuantity(it);
-      }
-      if (itemPrimedExplosiveList == null) return;
-      foreach (Item it in itemPrimedExplosiveList)
-        location.Map.DropItemAtExt(it, location.Position);
+      if (null != itemExplosiveList) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
+      if (null != itemPrimedExplosiveList) foreach (var it in itemPrimedExplosiveList) location.Map.DropItemAtExt(it, location.Position);
     }
 
     public void DoChat(Actor speaker, Actor target)
@@ -8571,6 +8566,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#nullable enable
     // intended to be a side-effecting free action.  We intentionally do not support null op here
     public bool DoBackgroundChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
@@ -8584,7 +8580,7 @@ namespace djack.RogueSurvivor.Engine
       bool see_speaker = ForceVisibleToPlayer(speaker);
       bool see_target = see_speaker ? IsVisibleToPlayer(target) : ForceVisibleToPlayer(target);
       bool speaker_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
-      bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
+      bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,target.Location);
       flags |= Sayflags.IS_FREE_ACTION;
 
       if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
@@ -8603,7 +8599,7 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(pt => {
           if (pt == speaker.Location.Position) return;
           Location loc = new Location(speaker.Location.Map, pt);
-          if (Map.Canonical(ref loc) && Rules.CHAT_RADIUS >= Rules.InteractionDistance(target.Location, in loc)) {
+          if (Map.Canonical(ref loc)) {
               var overhear = loc.Actor;
               if (null != overhear && target != overhear) op(overhear);
           }
@@ -8611,7 +8607,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
