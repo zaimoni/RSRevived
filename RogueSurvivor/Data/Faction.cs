@@ -7,6 +7,8 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   internal sealed class Faction
@@ -37,9 +39,6 @@ namespace djack.RogueSurvivor.Data
     // In practice, we launch-block and fail during construction of GameFactions
     public void AddEnemy(Faction other)
     {
-#if DEBUG
-      if (null == other) throw new ArgumentNullException(nameof(other));
-#endif
       if (!m_Enemies.Contains(other)) m_Enemies.Add(other);
       if (!other.m_Enemies.Contains(this)) other.m_Enemies.Add(this);
     }
