@@ -8413,6 +8413,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
+#nullable enable
     private void ShowBlastImage(GDI_Point screenPos, BlastAttack attack, int damage)
     {
       float alpha = (float) (0.1 + damage / (double)attack.Damage[0]);
@@ -8429,7 +8430,6 @@ namespace djack.RogueSurvivor.Engine
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
-        RedrawPlayScreen();
       } else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
         AddMessageIfAudibleForPlayer(location, "You hear an explosion");
       ApplyExplosionDamage(in location, 0, blastAttack);
@@ -8463,6 +8463,7 @@ namespace djack.RogueSurvivor.Engine
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
+#nullable restore
 
     private int ApplyExplosionDamage(in Location location, int distanceFromBlast, BlastAttack blast)
     {
@@ -8472,7 +8473,8 @@ namespace djack.RogueSurvivor.Engine
       int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
-      var actorAt =  location.Map.GetActorAtExt(location.Position);
+      Point pos = location.Position;
+      var actorAt = map.GetActorAtExt(pos);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, in location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
@@ -8488,11 +8490,11 @@ namespace djack.RogueSurvivor.Engine
         } else
           AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
-      Inventory itemsAt = location.Map.GetItemsAtExt(location.Position);
+      var itemsAt = map.GetItemsAtExt(pos);
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
-        var objList = new List<Item>(itemsAt.CountItems);
+        var objList = new List<Item>(itemsAt.CountItems);   // \todo? trade CPU for GC loading
         foreach (Item obj in itemsAt.Items) {
           if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
             objList.Add(obj);
@@ -8500,7 +8502,7 @@ namespace djack.RogueSurvivor.Engine
         map.RemoveAtExt(objList, location.Position);
       }
       if (blast.CanDamageObjects) {
-        var mapObjectAt = map.GetMapObjectAtExt(location.Position);
+        var mapObjectAt = map.GetMapObjectAtExt(pos);
         if (mapObjectAt != null) {
           DoorWindow doorWindow = mapObjectAt as DoorWindow;
           if (mapObjectAt.IsBreakable || doorWindow != null && doorWindow.IsBarricaded) {
@@ -8514,7 +8516,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      var corpsesAt = map.GetCorpsesAt(location.Position);
+      var corpsesAt = map.GetCorpsesAt(pos);
       if (corpsesAt != null) foreach (var c in corpsesAt) c.TakeDamage(num1);
       // XXX implementation of blast.CanDestroyWalls goes here
       return num1;
