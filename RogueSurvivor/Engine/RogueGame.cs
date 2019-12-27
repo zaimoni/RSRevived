@@ -455,7 +455,7 @@ namespace djack.RogueSurvivor.Engine
           if (a.Controller is PlayerController player) {
             if (player_knows(a)) return;
             var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
-            if (null != Player && Player == a) {
+            if (Player == a) {
               AddMessage(msg);
               RedrawPlayScreen();
               return;
@@ -467,28 +467,25 @@ namespace djack.RogueSurvivor.Engine
           doFn(a);
       });
     }
-#nullable restore
 
     // XXX just about everything that rates this is probable cause for police investigation
     [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
-      if (null != Player && !Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
+      if (!Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
         RedrawPlayScreen();
       }
       if (1>=Session.Get.World.PlayerCount) return;
 
-      Actor a = null;
       var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO,(Point)(2*GameActors.HUMAN_AUDIO+1));
-      survey.DoForEach(pt=>{
-        if (a.Controller is PlayerController player) {
-          player.DeferMessage(player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
-        }
-      },pt=>{
-        a = loc.Map.GetActorAtExt(pt);
-        return null!=a && !a.IsSleeping && Player!=a && !a.Controller.CanSee(loc) && Rules.StdDistance(a.Location, loc) <= a.AudioRange;
+      survey.DoForEach(pt => {
+          var a = loc.Map.GetActorAtExt(pt);
+          if (   null != a && !a.IsSleeping && Player != a && !a.Controller.CanSee(loc) && Rules.StdDistance(a.Location, loc) <= a.AudioRange
+              && a.Controller is PlayerController player)
+              player.DeferMessage(player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
       });
     }
+#nullable restore
 
     // more sophisticated variants would handle player-varying messages
     public void PropagateSight(Location loc, Data.Message msg, Action<Actor> doFn, Predicate<Actor> player_knows)
@@ -8390,8 +8387,9 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.Consume(itemGrenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
-      actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), in targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
+      Map map = actor.Location.Map;
+      map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), in targetPos);
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)), DELAY_LONG);
@@ -8404,8 +8402,9 @@ namespace djack.RogueSurvivor.Engine
       if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
-      actor.Location.Map.DropItemAtExt(itemGrenadePrimed, in targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, in targetPos)) return;
+      Map map = actor.Location.Map;
+      map.DropItemAtExt(itemGrenadePrimed, in targetPos);
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
