@@ -485,17 +485,16 @@ namespace djack.RogueSurvivor.Engine
               player.DeferMessage(player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
       });
     }
-#nullable restore
 
     // more sophisticated variants would handle player-varying messages
     public void PropagateSight(Location loc, Data.Message msg, Action<Actor> doFn, Predicate<Actor> player_knows)
     {
-      void process_sight(Actor a) {
-        if (a?.IsDead ?? true) return;
-        if (!a.Controller.CanSee(loc)) return;
-        if (a.Controller is PlayerController player) {
+      void process_sight(Actor? a) {
+        ActorController ac;
+        if (null == a || a.IsDead || !(ac = a.Controller).CanSee(loc)) return;
+        if (ac is PlayerController player) {
           if (player_knows(a)) return;
-          if (null != Player && Player == a) {
+          if (Player == a) {
             AddMessage(msg);
             RedrawPlayScreen();
             return;
@@ -512,6 +511,7 @@ namespace djack.RogueSurvivor.Engine
       var e = loc.Exit;
       if (null != e) process_sight(e.Location.Actor);
     }
+#nullable restore
 
     private static Data.Message MakeErrorMessage(string text)
     {
@@ -8053,11 +8053,11 @@ namespace djack.RogueSurvivor.Engine
       if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) return;
 #endif
       if (!wasAlreadyEnemy)
-        DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       var player_msgs = new List<Data.Message> {
         new Data.Message("You get a message from your army radio.", turnCounter),
-        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter),
+        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => {
@@ -8073,13 +8073,9 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
+#nullable enable
     private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test)
     {
-#if DEBUG
-      if (null == msg_player) throw new ArgumentNullException(nameof(msg_player));
-      if (null == defer_msg_player) throw new ArgumentNullException(nameof(defer_msg_player));
-      if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
-#endif
       // XXX this should actually be based on radio range
       // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
       // so first choice is grid distance vs. euclidean distance (noise and vision are on euclidean distance)
@@ -8095,6 +8091,7 @@ namespace djack.RogueSurvivor.Engine
 
       target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, defer_msg_player, msg_player_test);
     }
+#nullable restore
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
     {
@@ -8222,6 +8219,7 @@ namespace djack.RogueSurvivor.Engine
       if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
     }
 
+#nullable enable
     public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
       attacker.Aggress(defender);
@@ -8249,6 +8247,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!defender.IsDead) ai?.RecruitHelp(defender);
     }
+#nullable restore
 
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
     private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
