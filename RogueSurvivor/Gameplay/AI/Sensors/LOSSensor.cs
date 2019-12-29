@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       _enemies = null;
       _friends = null;
       foreach (var loc in normalized_FOV) {
-        Actor actorAt = loc.Actor;
+        var actorAt = loc.Actor;
         if (null==actorAt) continue;
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         _friends = null;
         HashSet<Point> has_threat = new HashSet<Point>();
         foreach (var loc in normalized_FOV) {
-          Actor actorAt = loc.Actor;
+          var actorAt = loc.Actor;
           var test = m_Actor.Location.Map.Denormalize(in loc);
           if (   null==actorAt
               || actorAt== m_Actor

@@ -4477,7 +4477,7 @@ namespace djack.RogueSurvivor.Engine
           var exitAt = player.Location.Exit;
           if (exitAt == null) AddMessage(MakeErrorMessage("No exit there."));
           else {
-            Actor actorAt = exitAt.Location.Actor;
+            var actorAt = exitAt.Location.Actor;
             string reason;
             if (actorAt != null) {
               if (player.IsEnemyOf(actorAt)) {
@@ -11078,7 +11078,7 @@ namespace djack.RogueSurvivor.Engine
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            Actor actorAt = e.Location.Actor;
+            var actorAt = e.Location.Actor;
             if (actorAt != null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;

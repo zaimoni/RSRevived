@@ -1199,9 +1199,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
     {
-      Actor actorAt = loc.Actor;
-      if (actorAt != null) return actorAt != m_Actor;
-      return false;
+      var actorAt = loc.Actor;
+      return null != actorAt && actorAt != m_Actor;
     }
 
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
