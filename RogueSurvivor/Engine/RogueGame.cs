@@ -511,7 +511,6 @@ namespace djack.RogueSurvivor.Engine
       var e = loc.Exit;
       if (null != e) process_sight(e.Location.Actor);
     }
-#nullable restore
 
     private static Data.Message MakeErrorMessage(string text)
     {
@@ -540,17 +539,15 @@ namespace djack.RogueSurvivor.Engine
 
     public static Data.Message MakeMessage(Actor actor, string doWhat, Color color)
     {
-      var stringBuilder = new StringBuilder();
-      stringBuilder.Append(ActorVisibleIdentity(actor));
-      stringBuilder.Append(" ");
-      stringBuilder.Append(doWhat);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
+      var msg = new string[] { ActorVisibleIdentity(actor), doWhat };
+      return new Data.Message(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
+#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
     {
@@ -8015,11 +8012,11 @@ namespace djack.RogueSurvivor.Engine
       if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) return;
 #endif
       if (!wasAlreadyEnemy)
-        DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       var player_msgs = new List<Data.Message> {
         new Data.Message("You get a message from your police radio.", turnCounter),
-        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter),
+        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
 
