@@ -547,24 +547,18 @@ namespace djack.RogueSurvivor.Engine
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
-#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
     {
-      var stringBuilder = new StringBuilder();
-      stringBuilder.Append(ActorVisibleIdentity(actor));
-      stringBuilder.Append(" ");
-      stringBuilder.Append(doWhat);
-      stringBuilder.Append(" ");
-      stringBuilder.Append(ActorVisibleIdentity(target));
-      stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, ActorVisibleIdentity(target)+phraseEnd };
+      return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
+#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
@@ -7850,17 +7844,18 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
     }
 
+#nullable restore
     public void DoTakeLead(Actor actor, Actor other)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.AddFollower(other);
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(other)) return;
-      if (Player == actor) ClearMessages();
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, " to join."));
-      if (trustIn == 0) return;
-      DoSay(other, actor, "Ah yes I remember you.", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(other)) {
+        if (Player == actor) ClearMessages();
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, " to join."));
+        if (0 != trustIn) DoSay(other, actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
+      }
     }
 
     public void DoCancelLead(Actor actor, Actor follower)
@@ -7879,14 +7874,14 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.Wait();
       if (ForceVisibleToPlayer(actor)) {
-        if (actor.StaminaPoints < actor.MaxSTA)
-          AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), actor.HisOrHer)));
-        else
-          AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
+        AddMessage(MakeMessage(actor, (actor.StaminaPoints < actor.MaxSTA)
+                                    ? string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), actor.HisOrHer)
+                                    : string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
       }
       actor.RegenStaminaPoints(Actor.STAMINA_REGEN_WAIT);
       if (Player == actor) RedrawPlayScreen();
     }
+#nullable restore
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
