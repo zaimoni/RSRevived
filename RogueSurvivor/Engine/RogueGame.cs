@@ -1925,7 +1925,7 @@ namespace djack.RogueSurvivor.Engine
       }
       district.EndTurn();
       } // end lock (district)
-
+      RedrawPlayScreen();   // \todo this is to update the time elapsed and minimap (doesn't need to try to run if minimap not in scope)
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
 #endif
@@ -7810,7 +7810,6 @@ namespace djack.RogueSurvivor.Engine
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, in origin);
       if (isPlayer) PanViewportTo(actor.Location);
-      else RedrawPlayScreen();
       return true;
     }
 
