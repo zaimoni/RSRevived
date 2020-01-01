@@ -7726,7 +7726,9 @@ namespace djack.RogueSurvivor.Engine
     public bool DoLeaveMap(Actor actor, in Point exitPoint, bool askForConfirmation)
     {
       bool isPlayer = actor.IsPlayer;
-      var exitAt = actor.Location.Map.GetExitAt(exitPoint);
+      Location origin = actor.Location;
+      Map map = origin.Map;
+      var exitAt = map.GetExitAt(exitPoint);
       if (exitAt == null) {
         if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
 #if DEBUG
@@ -7734,8 +7736,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
         return true;
       }
-      Location origin = actor.Location;
-      Map map = actor.Location.Map;
       if (isPlayer && askForConfirmation) {
         ClearMessages();
         AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", map.Name)));
@@ -7763,25 +7763,26 @@ namespace djack.RogueSurvivor.Engine
 #endif
         return true;
       }
-      if (actor.Location.Map.District != exitAt.ToMap.District) {   // check for movement speed artifacts
-        if (actor.Location.Map.District.WorldPosition.IsScheduledBefore(in exitAt.ToMap.District.WorldPosition)) {
+      Map exit_map = exitAt.ToMap;
+      bool is_cross_district = map.District != exit_map.District;
+      bool run_is_free_move = actor.RunIsFreeMove;
+      if (   is_cross_district && run_is_free_move && actor.IsRunning
+          && map.District.WorldPosition.IsScheduledBefore(in exit_map.District.WorldPosition)) {   // check for movement speed artifacts
           // the move itself is a free move; do not want to burn a run-is-free move on this
           // XXX \todo but if the free move denies an attack from a known attacker in the destination we'd want it anyway; it just won't do so for the source district.
           // Consider delegating to ObjectiveAI.
-          if (actor.IsRunning && actor.RunIsFreeMove) {
+          // Objective::RunIfAdvisable handles the stamina cutoff recalculation checks.
             actor.Walk();    // cancel wasted running
             if (isPlayer) AddMessage(new Data.Message("It doesn't feel worth running right now.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-//        } else if (!actor.IsRunning && !actor.RunIsFreeMove && actor.CanRun() && false) { // Objective::RunIfAdvisable will get this right, so don't need to redo its stamina cutoff that is the proper fourth test here.
-          }
-        }
       }
-      bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
-      bool need_stamina_regen = (actor.IsRunning ? !actor.RunIsFreeMove : !actor.WalkIsFreeMove) && null!=exitAt.Location.Map.NextActorToAct;
-      actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
-      if (actor.IsRunning) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
+      bool is_running = actor.IsRunning;
+      bool run_was_free_move = run_is_free_move && is_running;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
+      bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && null!=exit_map.NextActorToAct;
+      actor.SpendActionPoints(is_running ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
+      if (is_running) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       bool origin_seen = ForceVisibleToPlayer(actor);
       var mapObjectAt = exitAt.Location.MapObject;
-      if (mapObjectAt?.IsJumpable ?? false) {
+      if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (origin_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));   // XXX not quite right, cf. other jump usage
         if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
@@ -7791,20 +7792,20 @@ namespace djack.RogueSurvivor.Engine
       }
       if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       actor.RemoveFromMap();
-      if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
+      var dragged_corpse = actor.DraggedCorpse;
+      if (null != dragged_corpse) map.Remove(dragged_corpse);
 #if OBSOLETE
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
 #endif
       exitAt.Location.Place(actor); // Adds at last position by default
-      if (   exitAt.ToMap.District == map.District // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
+      if (   !is_cross_district // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
           || run_was_free_move)
-        exitAt.ToMap.MoveActorToFirstPosition(actor);
+        exit_map.MoveActorToFirstPosition(actor);
 
-      if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
-      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
-      if (map.District != exitAt.ToMap.District) {
-        actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-      }
+      if (null != dragged_corpse) exitAt.Location.Add(dragged_corpse);
+      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exit_map.Name)));
+      if (is_cross_district)
+        actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, in origin);
@@ -7813,13 +7814,15 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#nullable enable
     [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, in Location from)
     {
       var map = to.Map;
-      List<Point> pointList;
+      List<Point>? pointList;    // \todo? candidate for GC micro-optimization, but cold path
       foreach(Actor fo in leader.Followers) {
-        if (fo.Location.Map==map) continue;  // already in destination, ok
-        if (fo.Location.Map.District != map.District) continue;  // cross-district change
+        var fo_map = fo.Location.Map;
+        if (fo_map == map) continue;  // already in destination, ok
+        if (fo_map.District != map.District) continue;  // cross-district change
         pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
                                                         : null;
         if (null != pointList && 0 < pointList.Count && TryActorLeaveTile(fo)) {
@@ -7840,11 +7843,10 @@ namespace djack.RogueSurvivor.Engine
       other.RemoveFromMap();
       o_loc.Place(actor);
       a_loc.Place(other);
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(other))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
     }
 
-#nullable restore
     public void DoTakeLead(Actor actor, Actor other)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
