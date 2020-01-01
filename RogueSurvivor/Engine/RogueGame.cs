@@ -7578,7 +7578,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    private bool TryActorLeaveTile(Actor actor)
+    public bool TryActorLeaveTile(Actor actor)
     {
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
@@ -7808,30 +7808,12 @@ namespace djack.RogueSurvivor.Engine
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
       OnActorEnterTile(actor);
-      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, in origin);
+      actor.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
       if (isPlayer) PanViewportTo(actor.Location);
       return true;
     }
 
 #nullable enable
-    [SecurityCritical] private void DoFollowersEnterMap(Actor leader, Location to, in Location from)
-    {
-      var map = to.Map;
-      List<Point>? pointList;    // \todo? candidate for GC micro-optimization, but cold path
-      foreach(Actor fo in leader.Followers) {
-        var fo_map = fo.Location.Map;
-        if (fo_map == map) continue;  // already in destination, ok
-        if (fo_map.District != map.District) continue;  // cross-district change
-        pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
-                                                        : null;
-        if (null != pointList && 0 < pointList.Count && TryActorLeaveTile(fo)) {
-          map.PlaceAt(fo, m_Rules.DiceRoller.Choose(pointList));
-          map.MoveActorToFirstPosition(fo);
-          OnActorEnterTile(fo);
-        }
-      }
-    }
-
     public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint, false); }
 
     public void DoSwitchPlace(Actor actor, Actor other)
@@ -14128,6 +14110,26 @@ namespace djack.RogueSurvivor.Engine
       }
       return null;
     }
+
+    static public void DoTheyEnterMap(this IEnumerable<Actor> followers, Location to, in Location from)
+    {
+      var map = to.Map;
+      List<Point>? pointList;    // \todo? candidate for GC micro-optimization, but cold path
+      foreach(Actor fo in followers) {
+        var fo_map = fo.Location.Map;
+        if (fo_map == map) continue;  // already in destination, ok
+        if (fo_map.District != map.District) continue;  // cross-district change
+        pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
+                                                        : null;
+        var game = RogueForm.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase
+        if (null != pointList && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
+          map.PlaceAt(fo, game.Rules.DiceRoller.Choose(pointList));
+          map.MoveActorToFirstPosition(fo);
+          game.OnActorEnterTile(fo);
+        }
+      }
+    }
+
   }
 #nullable restore
 }
