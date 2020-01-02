@@ -558,24 +558,18 @@ namespace djack.RogueSurvivor.Engine
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
-#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
-      var stringBuilder = new StringBuilder();
-      stringBuilder.Append(ActorVisibleIdentity(actor));
-      stringBuilder.Append(" ");
-      stringBuilder.Append(doWhat);
-      stringBuilder.Append(" ");
-      stringBuilder.Append(ObjectVisibleIdentity(target));
-      stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, ObjectVisibleIdentity(target)+phraseEnd };
+      return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Item target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
+#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
     {
@@ -7665,21 +7659,18 @@ namespace djack.RogueSurvivor.Engine
       }
       map.RemoveAt(objList, in pos);
     }
-#nullable restore
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
     {
-      if (!IsInViewRect(defender.Location)) return;
-      var screenPos = MapToScreen(defender.Location);
-      AddOverlay(new OverlayImage(screenPos, icon));
-      AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
+      if (IsInViewRect(defender.Location)) {
+        var screenPos = MapToScreen(defender.Location);
+        AddOverlay(new OverlayImage(screenPos, icon));
+        AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
+      }
     }
 
     private void DoTriggerTrap(ItemTrap trap, Actor victim)
     {
-#if DEBUG
-      if (null==victim) throw new ArgumentNullException(nameof(victim));
-#endif
       bool player = ForceVisibleToPlayer(victim);
       trap.IsTriggered = true;
       ItemTrapModel trapModel = trap.Model;
@@ -7706,9 +7697,6 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTriggerTrap(ItemTrap trap, Map map, in Point pos, MapObject mobj)
     {
-#if DEBUG
-      if (null==mobj) throw new ArgumentNullException(nameof(mobj));
-#endif
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(map, in pos);
       trap.IsTriggered = true;
@@ -7813,7 +7801,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint, false); }
 
     public void DoSwitchPlace(Actor actor, Actor other)

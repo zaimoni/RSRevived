@@ -14,30 +14,29 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemTrap : Item
   {
-    new public ItemTrapModel Model { get { return base.Model as ItemTrapModel; } }
+#nullable enable
+    new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
 
     private bool m_IsActivated;
     private bool m_IsTriggered;
-#nullable enable
     private Actor? m_Owner;  // alpha10
     // we actually should be tracking who knows how to disarm a trap explicitly (anyone who overhears the explanation should be able to pass)
     // this allows the death of the trap-setter to not affect other group mates
     // this also allows overhearing the explanation via police radio to confer ability to pass
     private List<Actor>? m_Known;    // RS Revived
-#nullable restore
 
     // unclear whether current game logic allows a trap to be both activated and triggered at once.
     // leave getter/setter overhead in place in case these should be mutually exclusive.
     public bool IsActivated { get { return m_IsActivated; } }
 
-    public bool IsTriggered {
+    public bool IsTriggered {   // savefile break \todo convert to member variable, or actually use access control in the setter
       get { return m_IsTriggered; }
       set { m_IsTriggered = value; }
     }
 
 
     // alpha10
-    public Actor Owner {
+    public Actor? Owner {
       get {
         // cleanup dead owner reference
         if (m_Owner?.IsDead ?? false) m_Owner = null;
@@ -45,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public IEnumerable<Actor> KnownBy {
+    public IEnumerable<Actor>? KnownBy {
       get {
         if (null != m_Known) {
           int i = m_Known.Count;
@@ -95,6 +94,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       return false;
     }
+#nullable restore
 
     public bool WouldLearnHowToBypass(Actor a, Location? is_real = null)
     {
