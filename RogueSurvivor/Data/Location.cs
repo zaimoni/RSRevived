@@ -65,6 +65,18 @@ namespace djack.RogueSurvivor.Data
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) { return !loc_x.Key.MapObject?.IsJumpable ?? true; }
 #nullable restore
 
+    // Map version is not cross-district
+    public void ForEachAdjacent(Action<Location> op)
+    {
+      if (null == Map) return;
+      foreach(var pt in Position.Adjacent()) {
+        var test = new Location(Map,pt);
+        if (Map.Canonical(ref test)) op(test);
+      }
+      var e = Exit;
+      if (null != e) op(e.Location);
+    }
+
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based
       var e = Exit;

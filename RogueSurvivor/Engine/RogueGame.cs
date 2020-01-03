@@ -7596,15 +7596,17 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       bool visible = ForceVisibleToPlayer(actor);
-      map.ForEachAdjacent(position, adj => {
-        Actor actorAt = map.GetActorAt(adj);
-        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !m_Rules.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
-        if (visible) AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
-        canLeave = false;
+      // 2020-01-03: Z-grab extended to cross-exit
+      actor.Location.ForEachAdjacent(loc => {
+          var actorAt = loc.Actor;
+          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !m_Rules.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
+          if (visible) AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
+          canLeave = false;
       });
       return canLeave;
     }
 
+#nullable enable
     private bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
       // \todo possible micro-optimization from common tests behind these function calls
@@ -7623,10 +7625,9 @@ namespace djack.RogueSurvivor.Engine
       isDestroyed = false;
       if (trap.Model.BlockChance <= 0) return true;
       bool player = ForceVisibleToPlayer(victim);
-      bool flag = false;
-      if (m_Rules.CheckTrapEscape(trap, victim)) {
+      bool flag = m_Rules.CheckTrapEscape(trap, victim);
+      if (flag) {
         trap.IsTriggered = false;
-        flag = true;
         if (player)
           AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_ESCAPE), trap.TheName)));
         if (m_Rules.CheckTrapEscapeBreaks(trap, victim)) {
@@ -7641,7 +7642,6 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-#nullable enable
     private void CheckMapObjectTriggersTraps(Map map, in Point pos)
     {
       var mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
@@ -10152,7 +10152,7 @@ namespace djack.RogueSurvivor.Engine
       bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && m_Rules.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
 
       map.AddTimedDecoration(position, GameImages.DECO_BLOODIED_FLOOR, WorldTime.TURNS_PER_DAY, is_floor);
-      map.ForEachAdjacent(position,p => map.AddTimedDecoration(p, GameImages.DECO_BLOODIED_WALL, WorldTime.TURNS_PER_DAY, is_wall));
+      map.ForEachAdjacent(position,p => map.AddTimedDecoration(p, GameImages.DECO_BLOODIED_WALL, WorldTime.TURNS_PER_DAY, is_wall));    // no cross-district walls so ok
     }
 
 #if DEAD_FUNC
