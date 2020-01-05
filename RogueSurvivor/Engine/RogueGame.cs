@@ -7552,23 +7552,23 @@ namespace djack.RogueSurvivor.Engine
     public void OnActorEnterTile(Actor actor)
     {
       Map map = actor.Location.Map;
-      Point position = actor.Location.Position;
+      Point pos = actor.Location.Position;
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
       (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
-      if (map.IsTrapCoveringMapObjectAt(position)) return;
-      var trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
-      if (null == trapsAt) return;
-      List<ItemTrap>? trapList = null;
+      if (map.IsTrapCoveringMapObjectAt(pos)) return;
       List<Actor>? trap_owners = null;
-      foreach (ItemTrap trap in trapsAt) {
-        var owner = trap.Owner;
-        if (TryTriggerTrap(trap, actor)) {
-          if (null != owner) (trap_owners ?? (trap_owners = new List<Actor>())).Add(owner);
-          (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
-        }
-      }
-      map.RemoveAt(trapList, in position);
-      if (0 >= actor.HitPoints) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
+      int cur_hp = actor.HitPoints;
+      map.RemoveAt<ItemTrap>(trap => {
+          bool trap_gone = TryTriggerTrap(trap, actor);
+          int new_hp = actor.HitPoints;
+          if (cur_hp > new_hp) {
+              var owner = trap.Owner;
+              if (null != owner) (trap_owners ?? (trap_owners = new List<Actor>())).Add(owner);
+              cur_hp = new_hp;
+          }
+          return trap_gone;
+      }, pos);
+      if (0 >= cur_hp) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
     }
 #nullable restore
 
@@ -7578,22 +7578,15 @@ namespace djack.RogueSurvivor.Engine
       Point position = actor.Location.Position;
       bool canLeave = true;
       if (!map.IsTrapCoveringMapObjectAt(position)) {
-        var itemsAt = map.GetItemsAt(position);
-        if (itemsAt != null) {
-          List<Item> objList = null;
-          bool flag = false;
-          foreach (Item obj in itemsAt.Items) {
-            if (obj is ItemTrap trap && trap.IsTriggered) {
-              flag = true;
-              if (!TryEscapeTrap(trap, actor, out bool isDestroyed)) canLeave = false;
-              else if (isDestroyed) {
-                (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
-              }
-            }
-          }
-          map.RemoveAt(objList, in position);
-          if (canLeave && flag) actor.Location.Items?.UntriggerAllTraps();
-        }
+        bool live_trap = false;
+        map.RemoveAt<ItemTrap>(trap => {
+            if (!trap.IsTriggered) return false;
+            live_trap = true;
+            if (!TryEscapeTrap(trap, actor, out bool isDestroyed)) canLeave = false;
+            else if (isDestroyed) return true;
+            return false;
+        }, in position);
+        if (canLeave && live_trap) actor.Location.Items?.UntriggerAllTraps();
       }
       bool visible = ForceVisibleToPlayer(actor);
       // 2020-01-03: Z-grab extended to cross-exit
@@ -7642,22 +7635,15 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-    private void CheckMapObjectTriggersTraps(Map map, in Point pos)
+    private void CheckMapObjectTriggersTraps(Map map, Point pos)
     {
       var mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
       if (null == mapObjectAt) return;
-      var itemsAt = map.GetItemsAt(pos);
-      if (itemsAt == null) return;
-      List<Item>? objList = null;
-      foreach (var obj in itemsAt.Items) {
-        if (obj is ItemTrap trap && trap.IsActivated) {
-          DoTriggerTrap(trap, map, in pos, mapObjectAt);
-          if (trap.Quantity <= 0) {
-            (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
-          }
-        }
-      }
-      map.RemoveAt(objList, in pos);
+      map.RemoveAt<ItemTrap>(trap => {
+          if (!trap.IsActivated) return false;
+          DoTriggerTrap(trap, map, pos, mapObjectAt);
+          return 0 >= trap.Quantity;
+      }, pos);
     }
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
@@ -7695,7 +7681,7 @@ namespace djack.RogueSurvivor.Engine
       --trap.Quantity;
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Map map, in Point pos, MapObject mobj)
+    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, MapObject mobj)
     {
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(map, in pos);
@@ -8454,12 +8440,9 @@ namespace djack.RogueSurvivor.Engine
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
-        var objList = new List<Item>(itemsAt.CountItems);   // \todo? trade CPU for GC loading
-        foreach (Item obj in itemsAt.Items) {
-          if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
-            objList.Add(obj);
-        }
-        map.RemoveAtExt(objList, location.Position);
+        map.RemoveAtExt<Item>(obj => {
+            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance);
+        }, location.Position);
       }
       if (blast.CanDamageObjects) {
         var mapObjectAt = map.GetMapObjectAtExt(pos);
@@ -9465,7 +9448,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
-      CheckMapObjectTriggersTraps(actor.Location.Map, in buildPos);
+      CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
@@ -9641,7 +9624,7 @@ namespace djack.RogueSurvivor.Engine
         // \todo: get away from the fighting
       }
       PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
-      CheckMapObjectTriggersTraps(o_loc.Map, in toPos);
+      CheckMapObjectTriggersTraps(o_loc.Map, toPos);
     }
 
     public void DoShove(Actor actor, Actor target, in Point toPos)

@@ -1485,23 +1485,28 @@ retry:
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
-    public void RemoveAt<T>(IEnumerable<T>? src, in Point position) where T:Item
+    public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item
     {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
-      if (null==src) return;
-      var itemsAt = GetItemsAt(position);
-#if DEBUG
-      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt));
-#endif
-      foreach(T it in src) {
-#if DEBUG
-        if (!itemsAt.Contains(it)) throw new InvalidOperationException("item not at this position");
-#endif
-        itemsAt.RemoveAllQuantity(it);
+      var itemsAt = GetItemsAt(pos);
+      if (null == itemsAt) return false;
+      var doomed = itemsAt.GetItemsByType(test);
+      if (null == doomed) return false;
+      foreach(T it in doomed) itemsAt.RemoveAllQuantity(it);
+      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
+      return true;
+    }
+
+    public void RemoveAtExt<T>(Predicate<T> test, Point position) where T:Item
+    {
+      if (IsInBounds(position)) {
+        RemoveAt(test, in position);
+        return;
       }
-      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
+      Location? remap = _Normalize(position);
+      if (null != remap) remap.Value.Map.RemoveAt(test, remap.Value.Position);
     }
 
     // Clairvoyant.
@@ -1549,20 +1554,7 @@ retry:
       Location? test = _Normalize(position);
       if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
     }
-#endif
 
-    public void RemoveAtExt<T>(IEnumerable<T> src, Point position) where T:Item
-    {
-      if (null == src) return;
-      if (IsInBounds(position)) {
-        RemoveAt(src, in position);
-        return;
-      }
-      Location? test = _Normalize(position);
-      if (null != test) test.Value.Map.RemoveAt(src, test.Value.Position);
-    }
-
-#if DEAD_FUNC
     public void RemoveItemAt(Item it, int x, int y)
     {
       RemoveItemAt(it, new Point(x, y));
