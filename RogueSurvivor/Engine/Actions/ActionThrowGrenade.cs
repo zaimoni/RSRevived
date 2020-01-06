@@ -9,6 +9,8 @@ using djack.RogueSurvivor.Engine.Items;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionThrowGrenade : ActorAction
@@ -23,7 +25,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanThrowTo(m_ThrowPos, out m_FailReason);
+      return m_Actor.CanThrowTo(m_ThrowPos, out m_FailReason);  // XXX \todo arguably should be some sort of inventory check
+      // note that Actor::CanThrowTo currently tests whether a grenade is being held
     }
 
     public override void Perform()

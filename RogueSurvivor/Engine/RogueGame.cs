@@ -7524,7 +7524,7 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
       var mapObjectAt = newLocation.MapObject;
-      if (mapObjectAt?.IsJumpable ?? false) {
+      if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (dest_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
