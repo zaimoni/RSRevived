@@ -7296,24 +7296,20 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
-    static private string[] DescribeItemLight(ItemLight lt)
+    static private string[] DescribeItemLight(ItemLight light)
     {
-      var stringList = new List<string>{ "> light" };
-      stringList.Add(DescribeBatteries(lt));
-      stringList.Add(string.Format("FOV       : +{0}", lt.FovBonus));
-      return stringList.ToArray();
+      var lines = new List<string>{ "> light" };
+      lines.Add(light.DescribeBatteries());
+      lines.Add(string.Format("FOV       : +{0}", light.FovBonus));
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemTracker(ItemTracker tr)
     {
+      var range_desc = tr.Model.RangeDesc;  // alpha10 range if applicable
       var lines = new List<string>{ "> tracker" };
-      lines.Add(DescribeBatteries(tr));
-      // alpha10 range if applicable
-      // TODO -- should be an tracker item property, hardcoding is baaaad -_-
-      if (tr.CanTrackUndeads)
-        lines.Add("Range: " + Rules.ZTRACKINGRADIUS.ToString());
-      else
-        lines.Add("Range: " + MINIMAP_RADIUS.ToString());
+      lines.Add(tr.DescribeBatteries());
+      if (null != range_desc) lines.Add("Range: " + range_desc);    // This is a translation target so do not hardcode the prefix
       return lines.ToArray();
     }
 
@@ -7367,14 +7363,6 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("Sanity : +{0}", ent_value));
       stringList.Add(string.Format("Boring : {0}%", entertainmentModel.BoreChance));
       return stringList.ToArray();
-    }
-
-    static private string DescribeBatteries(BatteryPowered it)
-    {
-      int hours = it.Batteries/WorldTime.TURNS_PER_HOUR;
-      if (it.Batteries < it.MaxBatteries)
-        return string.Format("Batteries : {0}/{1} ({2}h)", it.Batteries, it.MaxBatteries, hours);
-      return string.Format("Batteries : {0} MAX ({1}h)", it.Batteries, hours);
     }
 
     static private string DescribeSkillShort(Skills.IDs id)
@@ -14079,6 +14067,15 @@ namespace djack.RogueSurvivor.Engine
         return GameImages.ICON_TRAP_ACTIVATED;
       }
       return null;
+    }
+
+    static public string DescribeBatteries(this BatteryPowered it)
+    {
+      int charge = it.Batteries;
+      int hours = charge / WorldTime.TURNS_PER_HOUR;
+      int max;
+      return (charge < (max = it.MaxBatteries)) ? string.Format("Batteries : {0}/{1} ({2}h)", charge, max, hours)
+                                                : string.Format("Batteries : {0} MAX ({1}h)", charge, hours);
     }
 
     static public void DoTheyEnterMap(this IEnumerable<Actor> followers, Location to, in Location from)

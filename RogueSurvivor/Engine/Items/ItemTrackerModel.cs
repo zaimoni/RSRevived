@@ -4,7 +4,10 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -13,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly TrackingFlags Tracking;
     public readonly int MaxBatteries;
 
-    public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
+    public ItemTrackerModel(string aName, string theNames, string imageID, TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
       : base(aName, theNames, imageID, flavor, part)
     {
        Tracking = tracking;
@@ -21,15 +24,21 @@ namespace djack.RogueSurvivor.Engine.Items
        DontAutoEquip = true;
     }
 
-    public override Item create()
-    {
-      return new ItemTracker(this);
+    // work around lack of const strings
+    private static string _track_undead_only = Rules.ZTRACKINGRADIUS.ToString();
+    private static string _track_non_undead_only = RogueGame.MINIMAP_RADIUS.ToString();
+    private static string _track_both = Rules.ZTRACKINGRADIUS.ToString() + "/" + RogueGame.MINIMAP_RADIUS.ToString();
+
+    public string? RangeDesc { get {
+        if (TrackingFlags.UNDEADS == Tracking) return _track_undead_only;
+        if (TrackingFlags.NONE == Tracking) return null;
+        if (TrackingFlags.NONE == (TrackingFlags.UNDEADS & Tracking)) return _track_non_undead_only;
+        return _track_both;
+      }
     }
 
-    public ItemTracker instantiate()
-    {
-      return new ItemTracker(this);
-    }
+    public override Item create() { return new ItemTracker(this); }
+    public ItemTracker instantiate() { return new ItemTracker(this); }
 
     [System.Flags]
     public enum TrackingFlags
