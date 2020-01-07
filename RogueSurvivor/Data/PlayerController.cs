@@ -322,19 +322,17 @@ namespace djack.RogueSurvivor.Data
         if (m_Actor!= e._target && e._target.IsPlayer) return;
         e.shown = true;
       }
-      RogueForm.Game.PanViewportTo(m_Actor);
+      var game = RogueForm.Game;
+      game.PanViewportTo(m_Actor);
 
-      if (e._important) RogueForm.Game.ClearMessages();
-      foreach(Data.Message tmp in e.messages) {
-        RogueForm.Game.AddMessage(tmp);
-      }
+      if (e._important) game.ClearMessages();
+      game.AddMessages(e.messages);
       if (!e._important) return;
 
-      RogueForm.Game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
-      RogueForm.Game.AddMessagePressEnter();
-      RogueForm.Game.ClearOverlays();
-//    RogueForm.Game.RemoveLastMessage();
-      RogueForm.Game.RedrawPlayScreen();
+      game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
+      game.AddMessagePressEnter();
+      game.ClearOverlays();
+      game.RedrawPlayScreen();
     }
   }
 }

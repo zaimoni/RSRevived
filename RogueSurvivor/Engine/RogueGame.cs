@@ -569,39 +569,22 @@ namespace djack.RogueSurvivor.Engine
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
-#nullable restore
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
     {
-      var stringBuilder = new StringBuilder();
-      stringBuilder.Append(ActorVisibleIdentity(actor));
-      stringBuilder.Append(" ");
-      stringBuilder.Append(doWhat);
-      stringBuilder.Append(" ");
-      stringBuilder.Append(target.TheName);
-      stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, target.TheName + phraseEnd };
+      return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    public void ClearMessages()
-    {
-      m_MessageManager.Clear();
-    }
-
-    private void ClearMessagesHistory()
-    {
-      m_MessageManager.ClearHistory();
-    }
-
-    public void RemoveLastMessage()
-    {
-      m_MessageManager.RemoveLastMessage();
-    }
+    public void ClearMessages() { m_MessageManager.Clear(); }
+    private void ClearMessagesHistory() { m_MessageManager.ClearHistory(); }
+    private void RemoveLastMessage() { m_MessageManager.RemoveLastMessage(); }
 
     private void DrawMessages()
     {
       m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
+#nullable restore
 
     [SecurityCritical] public void AddMessagePressEnter()
     {
@@ -7349,21 +7332,21 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
-    static private string[] DescribeItemEntertainment(ItemEntertainment ent)
+#nullable enable
+    static private List<string> DescribeItemEntertainment(ItemEntertainment ent)
     {
-      var stringList = new List<string>();
+      var lines = new List<string>();
+      lines.Add("> entertainment");
+      if (ent.IsBoringFor(Player)) lines.Add("* BORED OF IT! *");
       ItemEntertainmentModel entertainmentModel = ent.Model;
-      stringList.Add("> entertainment");
-      if (ent.IsBoringFor(Player)) stringList.Add("* BORED OF IT! *");
       int ent_value = entertainmentModel.Value;
-      int num = Player?.ScaleSanRegen(ent_value) ?? ent_value;
-      if (num != ent_value)
-        stringList.Add(string.Format("Sanity : +{0} (+{1})", num, ent_value));
-      else
-        stringList.Add(string.Format("Sanity : +{0}", ent_value));
-      stringList.Add(string.Format("Boring : {0}%", entertainmentModel.BoreChance));
-      return stringList.ToArray();
+      int num = Player.ScaleSanRegen(ent_value);
+      lines.Add((num != ent_value) ? string.Format("Sanity : +{0} (+{1})", num, ent_value)
+                                   : string.Format("Sanity : +{0}", ent_value));
+      lines.Add(string.Format("Boring : {0}%", entertainmentModel.BoreChance));
+      return lines;
     }
+#nullable restore
 
     static private string DescribeSkillShort(Skills.IDs id)
     {
