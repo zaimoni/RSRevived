@@ -7262,41 +7262,34 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
+#nullable enable
     static private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
-      var lines = new List<string>{ "> spray scent" };
       var model = sp.Model;
       int max_spray = model.MaxSprayQuantity;
-      if (sp.SprayQuantity < max_spray)
-        lines.Add(string.Format("Spray : {0}/{1}", sp.SprayQuantity, max_spray));
-      else
-        lines.Add(string.Format("Spray : {0} MAX", sp.SprayQuantity));
-
-      // alpha10
-      lines.Add(string.Format("Odor     : {0}", model.Odor.ToString().ToLower().Capitalize()));
-      lines.Add(string.Format("Strength : {0}h", model.Strength / WorldTime.TURNS_PER_HOUR));
-
-      return lines.ToArray();
+      int qty = sp.SprayQuantity;
+      return new string[]{ "> spray scent",
+                           ((qty < max_spray) ? string.Format("Spray : {0}/{1}", qty, max_spray)
+                                              : string.Format("Spray : {0} MAX", qty)), string.Format("Odor     : {0}",
+                           model.Odor.ToString().ToLower().Capitalize()),
+                           string.Format("Strength : {0}h", model.Strength / WorldTime.TURNS_PER_HOUR) };
     }
 
     static private string[] DescribeItemLight(ItemLight light)
     {
-      var lines = new List<string>{ "> light" };
-      lines.Add(light.DescribeBatteries());
-      lines.Add(string.Format("FOV       : +{0}", light.FovBonus));
-      return lines.ToArray();
+      return new string[]{ "> light", light.DescribeBatteries(), string.Format("FOV       : +{0}", light.FovBonus) };
     }
 
-    static private string[] DescribeItemTracker(ItemTracker tr)
+    static private List<string> DescribeItemTracker(ItemTracker tr)
     {
       var range_desc = tr.Model.RangeDesc;  // alpha10 range if applicable
       var lines = new List<string>{ "> tracker" };
       lines.Add(tr.DescribeBatteries());
       if (null != range_desc) lines.Add("Range: " + range_desc);    // This is a translation target so do not hardcode the prefix
-      return lines.ToArray();
+      return lines;
     }
 
-    static private string[] DescribeItemTrap(ItemTrap tr)
+    static private List<string> DescribeItemTrap(ItemTrap tr)
     {
       var lines = new List<string> { "> trap" };
 
@@ -7329,10 +7322,9 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("Break   : {0}%", itemTrapModel.BreakChance));
       if (itemTrapModel.BlockChance > 0) lines.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
       if (itemTrapModel.BreakChanceWhenEscape > 0) lines.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
-      return lines.ToArray();
+      return lines;
     }
 
-#nullable enable
     static private List<string> DescribeItemEntertainment(ItemEntertainment ent)
     {
       var lines = new List<string>();
