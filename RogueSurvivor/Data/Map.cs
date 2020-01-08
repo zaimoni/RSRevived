@@ -1471,6 +1471,7 @@ retry:
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
     }
 
+#if DEAD_FUNC
     public void RemoveItemAt(Item it, in Point position)
     {
 #if DEBUG
@@ -1483,6 +1484,24 @@ retry:
 #endif
       itemsAt.RemoveAllQuantity(it);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
+    }
+#endif
+
+    public void TransferFrom(Item it, in Point position, Inventory dest) {
+#if DEBUG
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
+      var itemsAt = GetItemsAt(position);
+#if DEBUG
+      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
+      if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
+#endif
+      int quantity = it.Quantity;
+      int quantityAdded = dest.AddAsMuchAsPossible(it);
+      if (quantityAdded == quantity) {
+        itemsAt.RemoveAllQuantity(it);
+        if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
+      }
     }
 
     public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item

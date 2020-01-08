@@ -9034,9 +9034,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
-      int quantity = it.Quantity;
-      int quantityAdded = actor.Inventory.AddAsMuchAsPossible(it);
-      if (quantityAdded == quantity) map.RemoveItemAt(it, in position);
+      map.TransferFrom(it, in position, actor.Inventory);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
