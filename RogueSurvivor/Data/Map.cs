@@ -1507,7 +1507,7 @@ retry:
     public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item
     {
 #if DEBUG
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+      if (!IsInBounds(pos)) throw new ArgumentOutOfRangeException(nameof(pos), pos, "!IsInBounds(pos)");
 #endif
       var itemsAt = GetItemsAt(pos);
       if (null == itemsAt) return false;

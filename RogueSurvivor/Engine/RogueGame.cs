@@ -584,10 +584,14 @@ namespace djack.RogueSurvivor.Engine
     {
       m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
-#nullable restore
 
     [SecurityCritical] public void AddMessagePressEnter()
     {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
+#else
+      if (IsSimulating) return;   // visual no-op
+#endif
       AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       WaitEnter();
@@ -597,12 +601,18 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] public void AddMessagePressEnter(Action<KeyEventArgs> filter)
     {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
+#else
+      if (IsSimulating) return;   // visual no-op
+#endif
       AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
-      if (null==filter) WaitEnter(); else WaitEnter(filter);
+      WaitEnter(filter);
       RemoveLastMessage();
       RedrawPlayScreen();
     }
+#nullable restore
 
     // These two are assumed to be working w/actor.VisibleIdentity
     private string Conjugate(Actor actor, string verb)
@@ -7206,17 +7216,17 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
+#nullable enable
     static private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
-    {   // 2019-11-27: this is cold path, so assume ok to be future-compatible and waste a dynamic allocation of a List<string>
-      var lines = new List<string>{ "> barricade material" };
+    {
       int barricade_value = bm.Model.BarricadingValue;
-      int num = Player?.ScaleBarricadingPoints(barricade_value) ?? barricade_value;
-      lines.Add(num == barricade_value ? string.Format("Barricading : +{0}", barricade_value)
-                                            : string.Format("Barricading : +{0} (+{1})", num, barricade_value));
-      return lines.ToArray();
+      int num = Player.ScaleBarricadingPoints(barricade_value);
+      return new string[]{ "> barricade material",
+                           (num == barricade_value) ? string.Format("Barricading : +{0}", barricade_value)
+                                                    : string.Format("Barricading : +{0} (+{1})", num, barricade_value)};
     }
 
-    static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
+    static private List<string> DescribeItemBodyArmor(ItemBodyArmor b)
     {
       var lines = new List<string>{
         "> body armor",
@@ -7225,7 +7235,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Encumbrance         : -{0} DEF", b.Encumbrance),
         string.Format("Weight              : -{0:F2} SPD", b.Weight/100.0f)
       };
-      if (b.IsNeutral) return lines.ToArray();
+      if (b.IsNeutral) return lines;
 
       // following general code is to be retained as-is; this is not a CPU-critical path.
       var unsuspicious = new List<string>(1);
@@ -7248,21 +7258,18 @@ namespace djack.RogueSurvivor.Engine
         lines.Add("Suspicious to:");
         foreach (string str in suspicious) lines.Add("- " + str);
       }
-      return lines.ToArray();
+      return lines;
     }
 
     static private string[] DescribeItemSprayPaint(ItemSprayPaint sp)
     {
-      var stringList = new List<string>{ "> spray paint" };
       int max_paint = sp.Model.MaxPaintQuantity;
-      if (sp.PaintQuantity < max_paint)
-        stringList.Add(string.Format("Paint : {0}/{1}", sp.PaintQuantity, max_paint));
-      else
-        stringList.Add(string.Format("Paint : {0} MAX", sp.PaintQuantity));
-      return stringList.ToArray();
+      int qty = sp.PaintQuantity;
+      return new string[]{ "> spray paint",
+                           (qty < max_paint) ? string.Format("Paint : {0}/{1}", qty, max_paint)
+                                  : string.Format("Paint : {0} MAX", qty) };
     }
 
-#nullable enable
     static private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
       var model = sp.Model;
@@ -13065,8 +13072,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#nullable enable
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
-    private void ShowSpecialDialogue(Actor speaker, string[] text, Action<KeyEventArgs> filter=null)
+    private void ShowSpecialDialogue(Actor speaker, string[] text, Action<KeyEventArgs>? filter=null)
     {
       m_MusicManager.Stop();
       m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
@@ -13077,6 +13085,7 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();  // alpha10 fix
       m_MusicManager.Stop();
     }
+#nullable restore
 
     [SecurityCritical] private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
