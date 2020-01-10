@@ -612,7 +612,6 @@ namespace djack.RogueSurvivor.Engine
       RemoveLastMessage();
       RedrawPlayScreen();
     }
-#nullable restore
 
     // These two are assumed to be working w/actor.VisibleIdentity
     private string Conjugate(Actor actor, string verb)
@@ -630,6 +629,7 @@ namespace djack.RogueSurvivor.Engine
       if (s.Length > maxLength) return s.Substring(0, maxLength);
       return s;
     }
+#nullable restore
 
     private void AnimDelay(int msecs)
     {
@@ -7147,34 +7147,31 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
+#nullable enable
     static private string[] DescribeItemAmmo(ItemAmmo am)
     {
-      return new List<string>{
-        "> ammo",
-        string.Format("Type : {0}", am.AmmoType.Describe(true))
-      }.ToArray();
+      return new string[] { "> ammo", string.Format("Type : {0}", am.AmmoType.Describe(true)) };
     }
 
-    static private string[] DescribeItemFood(ItemFood f)
+    static private List<string> DescribeItemFood(ItemFood f)
     {
-      var stringList = new List<string>{ "> food" };
+      var lines = new List<string>{ "> food" };
+      int turn = Session.Get.WorldTime.TurnCounter;
       if (f.IsPerishable) {
-        if (f.IsStillFreshAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("Fresh.");
-        else if (f.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("*Expired*");
-        else if (f.IsSpoiledAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("**SPOILED**");
-        stringList.Add(string.Format("Best-Before : {0}", f.BestBefore.ToString()));
+        if (f.IsStillFreshAt(turn)) lines.Add("Fresh.");
+        else if (f.IsExpiredAt(turn)) lines.Add("*Expired*");
+        else if (f.IsSpoiledAt(turn)) lines.Add("**SPOILED**");
+        lines.Add(string.Format("Best-Before : {0}", f.BestBefore.ToString()));
       } else
-        stringList.Add("Always fresh.");
-      int baseValue = f.NutritionAt(Session.Get.WorldTime.TurnCounter);
-      int num = Player == null ? baseValue : Player.ItemNutritionValue(baseValue);
-      if (num == f.Model.Nutrition)
-        stringList.Add(string.Format("Nutrition   : +{0}", baseValue));
-      else
-        stringList.Add(string.Format("Nutrition   : +{0} (+{1})", num, baseValue));
-      return stringList.ToArray();
+        lines.Add("Always fresh.");
+      int baseValue = f.NutritionAt(turn);
+      int num = Player.ItemNutritionValue(baseValue);
+      lines.Add(num == baseValue ? string.Format("Nutrition   : +{0}", baseValue)
+                                 : string.Format("Nutrition   : +{0} (+{1})", num, baseValue));
+      return lines;
     }
 
-    static private string[] DescribeItemMedicine(ItemMedicine med)
+    static private List<string> DescribeItemMedicine(ItemMedicine med)
     {
       var lines = new List<string>{ "> medicine" };
       var model = med.Model;
@@ -7182,41 +7179,40 @@ namespace djack.RogueSurvivor.Engine
       // alpha10 dont add lines for zero values
 
       int base_effect = model.Healing;
-      int actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      int actual = Player.ScaleMedicineEffect(base_effect);
       if (0 != actual) {
         lines.Add(actual == base_effect ? string.Format("Healing : +{0}", base_effect)
                                         : string.Format("Healing : +{0} (+{1})", actual, base_effect));
       }
       base_effect = model.StaminaBoost;
-      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      actual = Player.ScaleMedicineEffect(base_effect);
       if (0 != actual) {
         lines.Add(actual == base_effect ? string.Format("Stamina : +{0}", base_effect)
                                         : string.Format("Stamina : +{0} (+{1})", actual, base_effect));
       }
       base_effect = model.SleepBoost;
-      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      actual = Player.ScaleMedicineEffect(base_effect);
       if (0 != actual) {
         lines.Add(actual == base_effect ? string.Format("Sleep   : +{0}", base_effect)
                                         : string.Format("Sleep   : +{0} (+{1})", actual, base_effect));
       }
       base_effect = model.SanityCure;
-      actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+      actual = Player.ScaleMedicineEffect(base_effect);
       if (0 != actual) {
         lines.Add(actual == base_effect ? string.Format("Sanity  : +{0}", base_effect)
                                         : string.Format("Sanity  : +{0} (+{1})", actual, base_effect));
       }
       if (Session.Get.HasInfection) {
         base_effect = model.InfectionCure;
-        actual = Player?.ScaleMedicineEffect(base_effect) ?? base_effect;
+        actual = Player.ScaleMedicineEffect(base_effect);
         if (0 != actual) {
           lines.Add(actual == base_effect ? string.Format("Cure    : +{0}", base_effect)
                                           : string.Format("Cure    : +{0} (+{1})", actual, base_effect));
         }
       }
-      return lines.ToArray();
+      return lines;
     }
 
-#nullable enable
     static private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
     {
       int barricade_value = bm.Model.BarricadingValue;
@@ -8374,7 +8370,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(in blastCenter, pt, waveDistance)) return false;
       var center = new Location(blastCenter.Map, pt);
-      int damage = ApplyExplosionDamage(in center, waveDistance, blast);
+      int damage = ApplyExplosionDamage(in center, waveDistance, blast);    // \todo adjust this to assume the location is in canonical form to micro-optimize CPU
       if (!ForceVisibleToPlayer(in center)) return false;
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
