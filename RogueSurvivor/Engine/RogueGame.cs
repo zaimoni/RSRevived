@@ -629,7 +629,6 @@ namespace djack.RogueSurvivor.Engine
       if (s.Length > maxLength) return s.Substring(0, maxLength);
       return s;
     }
-#nullable restore
 
     private void AnimDelay(int msecs)
     {
@@ -697,20 +696,21 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] private void GameLoop()
     {
       HandleMainMenu();
-      while (m_IsGameRunning && 0 < Session.Get.World.PlayerCount) {
-        var d = Session.Get.World.CurrentPlayerDistrict();
+      var world = Session.Get.World;
+      while (m_IsGameRunning && 0 < world.PlayerCount) {
+        var d = world.CurrentPlayerDistrict();
         if (null == d) {
-          if (null == Session.Get.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
+          if (null == world.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
           if (null == m_SimThread) throw new InvalidOperationException("no simulation thread");
           Thread.Sleep(100);
           continue;
         }
         m_HasLoadedGame = false;
         DateTime now = DateTime.Now;
-        AdvancePlay(d, RogueGame.SimFlags.NOT_SIMULATING);
+        AdvancePlay(d, SimFlags.NOT_SIMULATING);
         if (!m_IsGameRunning) break;
         Session.Get.Scoring.RealLifePlayingTime = Session.Get.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
-        Session.Get.World.ScheduleAdjacentForAdvancePlay(d);
+        world.ScheduleAdjacentForAdvancePlay(d);
       }
     }
 
@@ -736,6 +736,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
       WaitEnter();
     }
+#nullable restore
 
 #if FAIL
 // minimum demo code fragment
@@ -7104,50 +7105,47 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    static private string[] DescribeItemWeapon(ItemWeapon w)
+#nullable enable
+    static private List<string> DescribeItemWeapon(ItemWeapon w)
     {
-      ItemWeaponModel itemWeaponModel = w.Model;
+      var itemWeaponModel = w.Model;
       var lines = new List<string>{
         "> weapon",
         string.Format("Atk : +{0}", itemWeaponModel.Attack.HitValue),
         string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue)
       };
       // alpha10
-      if (0 != itemWeaponModel.Attack.StaminaPenalty) lines.Add(String.Format("Sta : -{0}", itemWeaponModel.Attack.StaminaPenalty));
-      if (0 != itemWeaponModel.Attack.DisarmChance) lines.Add(String.Format("Disarm : +{0}%", itemWeaponModel.Attack.DisarmChance));
+      int tmp_i;
+      if (0 != (tmp_i = itemWeaponModel.Attack.StaminaPenalty)) lines.Add(string.Format("Sta : -{0}", tmp_i));
+      if (0 != (tmp_i = itemWeaponModel.Attack.DisarmChance)) lines.Add(string.Format("Disarm : +{0}%", tmp_i));
 
       if (w is ItemMeleeWeapon melee) {
         if (melee.IsFragile) lines.Add("Breaks easily.");
-        if (melee.Model.IsMartialArts) lines.Add("Uses martial arts.");
+        var model = melee.Model;
+        if (model.IsMartialArts) lines.Add("Uses martial arts.");
         // alpha10 tool
-        if (melee.Model.IsTool) {
+        if (model.IsTool) {
           lines.Add("Is a tool.");
-          int toolBashDmg = melee.Model.ToolBashDamageBonus;
-          if (0 != toolBashDmg) lines.Add(string.Format("Tool Dmg   : +{0} = +{1}", toolBashDmg, toolBashDmg + melee.Model.Attack.DamageValue));
-          float toolBuild = melee.Model.ToolBuildBonus;
+          if (0 != (tmp_i = model.ToolBashDamageBonus)) lines.Add(string.Format("Tool Dmg   : +{0} = +{1}", tmp_i, tmp_i + model.Attack.DamageValue));
+          float toolBuild = model.ToolBuildBonus;
           if (0 != toolBuild) lines.Add(string.Format("Tool Build : +{0}%", (int)(100 * toolBuild)));
         }
       } else if (w is ItemRangedWeapon rw) {
-        ItemRangedWeaponModel rangedWeaponModel = rw.Model;
-        if (rangedWeaponModel.IsFireArm)
-          lines.Add("> firearm");
-        else if (rangedWeaponModel.IsBow)
-          lines.Add("> bow");
-        else
-          lines.Add("> ranged weapon");
+        var model = rw.Model;
+        lines.Add(model.IsFireArm ? "> firearm"
+                                  : (model.IsBow ? "> bow"
+                                                 : "> ranged weapon"));
 
-        lines.Add(string.Format("Rapid Fire Atk: {0} {1}", rangedWeaponModel.RapidFireHit1Value, rangedWeaponModel.RapidFireHit2Value));  // alpha10
-        lines.Add(string.Format("Rng  : {0}-{1}", rangedWeaponModel.Attack.Range, rangedWeaponModel.Attack.EfficientRange));
-        if (rw.Ammo < rangedWeaponModel.MaxAmmo)
-          lines.Add(string.Format("Amo  : {0}/{1}", rw.Ammo, rangedWeaponModel.MaxAmmo));
-        else
-          lines.Add(string.Format("Amo  : {0} MAX", rw.Ammo));
-        lines.Add(string.Format("Type : {0}", rangedWeaponModel.AmmoType.Describe(true)));
+        lines.Add(string.Format("Rapid Fire Atk: {0} {1}", model.RapidFireHit1Value, model.RapidFireHit2Value));  // alpha10
+        lines.Add(string.Format("Rng  : {0}-{1}", model.Attack.Range, model.Attack.EfficientRange));
+        var ammo = rw.Ammo;
+        lines.Add((ammo < (tmp_i = model.MaxAmmo)) ? string.Format("Ammo : {0}/{1}", ammo, tmp_i)
+                                                   : string.Format("Ammo : {0} MAX", ammo));
+        lines.Add(string.Format("Type : {0}", model.AmmoType.Describe(true)));
       }
-      return lines.ToArray();
+      return lines;
     }
 
-#nullable enable
     static private string[] DescribeItemAmmo(ItemAmmo am)
     {
       return new string[] { "> ammo", string.Format("Type : {0}", am.AmmoType.Describe(true)) };
