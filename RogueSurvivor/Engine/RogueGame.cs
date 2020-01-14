@@ -3948,9 +3948,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X, itemPos.Y, TILE_SIZE, TILE_SIZE)));
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
       if (inventoryItem != null) {
-        string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
-        GDI_Point top_left = new GDI_Point(itemPos.X, itemPos.Y+TILE_SIZE);
-        AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, top_left));
+        AddOverlay(new OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE)));
         if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
           else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
@@ -4034,8 +4032,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(corpsePos.X, corpsePos.Y, TILE_SIZE, TILE_SIZE)));
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(corpsePos.X + 1, corpsePos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
 
-      string[] lines = DescribeCorpseLong(corpse, true);
-      AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(DescribeCorpseLong(corpse, true), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(corpsePos.X, corpsePos.Y + TILE_SIZE)));
       if (mouseButtons.HasValue) {
         if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBCorpse(corpse);
         else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBCorpse(corpse);
@@ -6975,7 +6972,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var skills = Player.Sheet.SkillTable;
       int skillLevel = skills.GetSkillLevel(Skills.IDs.NECROLOGY);
-      var stringList = new List<string>(10){
+      var lines = new List<string>(10){
         c.ToString().Capitalize()+".",
         " ",
         string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")),
@@ -6986,18 +6983,18 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
       };
       if (isInPlayerTile) {
-        stringList.Add(" ");
-        stringList.Add("----");
-        stringList.Add("LBM to start/stop dragging.");
-        stringList.Add(string.Format("RBM to {0}.", Player.Model.Abilities.IsUndead ? "eat" : "butcher"));
-        if (!Player.Model.Abilities.IsUndead) {
-          stringList.Add(string.Format("to eat: <{0}>", RogueGame.s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString()));
-          stringList.Add(string.Format("to revive : <{0}>", RogueGame.s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()));
+        lines.Add(" ");
+        lines.Add("----");
+        lines.Add("LBM to start/stop dragging.");
+        bool is_undead = Player.Model.Abilities.IsUndead;
+        lines.Add(string.Format("RBM to {0}.", is_undead ? "eat" : "butcher"));
+        if (!is_undead) {
+          lines.Add(string.Format("to eat: <{0}>", s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString()));
+          lines.Add(string.Format("to revive : <{0}>", s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()));
         }
       }
-      return stringList.ToArray();
+      return lines.ToArray();
     }
-#nullable restore
 
     static private string DescribeItemShort(Item it)
     {
@@ -7014,35 +7011,33 @@ namespace djack.RogueSurvivor.Engine
         if (trap.WouldLearnHowToBypass(Player)) str += "(need mentoring)";
         if (trap.IsSafeFor(Player)) str += "(safe)";
       }
-      if (it.Quantity > 1) return string.Format("{0} {1}", it.Quantity, str);
-      return str;
+      return (1 < it.Quantity) ? string.Format("{0} {1}", it.Quantity, str) : str;
     }
 
     static private string[] DescribeItemLong(Item it, bool isPlayerInventory)
     {
       var lines = new List<string>();
-      if (it.Model.IsStackable)
-        lines.Add(string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
-      else
-        lines.Add(DescribeItemShort(it));
-      if (it.Model.IsUnbreakable) lines.Add("Unbreakable.");
-      string inInvAdditionalDesc = null;
+      var model = it.Model;
+      lines.Add(model.IsStackable ? string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, model.StackingLimit)
+                                  : DescribeItemShort(it));
+      if (model.IsUnbreakable) lines.Add("Unbreakable.");
+      string? inInvAdditionalDesc = null;
       if (it is ItemWeapon w) {
         lines.AddRange(DescribeItemWeapon(w));
-        if (it is ItemRangedWeapon) inInvAdditionalDesc = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+        if (it is ItemRangedWeapon) inInvAdditionalDesc = string.Format("to fire : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
       else if (it is ItemFood food) lines.AddRange(DescribeItemFood(food));
       else if (it is ItemMedicine med) lines.AddRange(DescribeItemMedicine(med));
       else if (it is ItemBarricadeMaterial bar) {
         lines.AddRange(DescribeItemBarricadeMaterial(bar));
-        inInvAdditionalDesc = string.Format("to build : <{0}>/<{1}>/<{2}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
+        inInvAdditionalDesc = string.Format("to build : <{0}>/<{1}>/<{2}>.", s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
       } else if (it is ItemBodyArmor armor) lines.AddRange(DescribeItemBodyArmor(armor));
       else if (it is ItemSprayPaint spray) {
         lines.AddRange(DescribeItemSprayPaint(spray));
-        inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+        inInvAdditionalDesc = string.Format("to spray : <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
       } else if (it is ItemSprayScent sscent) {
         lines.AddRange(DescribeItemSprayScent(sscent));
-        inInvAdditionalDesc = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+        inInvAdditionalDesc = string.Format("to spray : <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
       } else if (it is ItemLight light) lines.AddRange(DescribeItemLight(light));
       else if (it is ItemTracker track) lines.AddRange(DescribeItemTracker(track));
       else if (it is ItemAmmo ammo) {
@@ -7050,25 +7045,23 @@ namespace djack.RogueSurvivor.Engine
         inInvAdditionalDesc = "to reload : left-click.";
       } else if (it is ItemExplosive ex) {
         lines.AddRange(DescribeItemExplosive(ex));
-        inInvAdditionalDesc = string.Format("to throw : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
-      }
-      else if (it is ItemTrap trap) {
+        inInvAdditionalDesc = string.Format("to throw : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+      } else if (it is ItemTrap trap) {
         lines.AddRange(DescribeItemTrap(trap));
         inInvAdditionalDesc = (trap.Model.ActivatesWhenDropped ? "to activate trap : drop it" : "to activate trap : use it");   // alpha10
       } else if (it is ItemEntertainment ent) lines.AddRange(DescribeItemEntertainment(ent));
       lines.Add(" ");
-      lines.Add(it.Model.FlavorDescription);
+      lines.Add(model.FlavorDescription);
       if (isPlayerInventory) {
         lines.Add(" ");
         lines.Add("----");
-        lines.Add(string.Format("to give : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
-        lines.Add(string.Format("to trade : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
+        lines.Add(string.Format("to give : <{0}>.", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
+        lines.Add(string.Format("to trade : <{0}>.", s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
         if (inInvAdditionalDesc != null) lines.Add(inInvAdditionalDesc);
       }
       return lines.ToArray();
     }
 
-#nullable enable
     static private List<string> DescribeItemExplosive(ItemExplosive ex)
     {
       ItemExplosiveModel itemExplosiveModel = ex.Model;
