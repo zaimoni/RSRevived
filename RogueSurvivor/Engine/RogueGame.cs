@@ -736,7 +736,6 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
       WaitEnter();
     }
-#nullable restore
 
 #if FAIL
 // minimum demo code fragment
@@ -754,12 +753,8 @@ namespace djack.RogueSurvivor.Engine
     // this is a UI function so we can afford to be an inefficient monolithic function
     // return values of handlers: null is continue, true/false are the return values
     // Compiler error to mix this with out/ref parameters
-    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?> failover_handler=null)
+    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?>? failover_handler=null)
     {
-#if DEBUG
-      if (null == choice_handler) throw new ArgumentNullException(nameof(choice_handler));
-      if (null == setup_handler) throw new ArgumentNullException(nameof(setup_handler));
-#endif
       int currentChoice = 0;
       do {
         bool? ret = setup_handler(currentChoice);
@@ -794,12 +789,8 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // boxed value type return value version of ChoiceMenu
-    private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,int,T?> failover_handler=null) where T:struct
+    private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,int,T?>? failover_handler=null) where T:struct
     {
-#if DEBUG
-      if (null == choice_handler) throw new ArgumentNullException(nameof(choice_handler));
-      if (null == setup_handler) throw new ArgumentNullException(nameof(setup_handler));
-#endif
       int currentChoice = 0;
       do {
         T? ret = setup_handler(currentChoice);
@@ -922,7 +913,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacter()
     {
-      DiceRoller roller = new DiceRoller();
+      DiceRoller roller = new DiceRoller(); // We must not influence map generation.
       if (!HandleNewGameMode()) return false;
       if (Session.CommandLineOptions.ContainsKey("no-spawn")) return true;
       bool? isUndead = HandleNewCharacterRace(roller);
@@ -948,6 +939,7 @@ namespace djack.RogueSurvivor.Engine
       }
       return true;
     }
+#nullable restore
 
     private bool HandleNewGameMode()
     {
@@ -7076,36 +7068,32 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
-    static private string[] DescribeItemExplosive(ItemExplosive ex)
+#nullable enable
+    static private List<string> DescribeItemExplosive(ItemExplosive ex)
     {
       ItemExplosiveModel itemExplosiveModel = ex.Model;
-      var stringList = new List<string>{ "> explosive" };
-      if (itemExplosiveModel.BlastAttack.CanDamageObjects) stringList.Add("Can damage objects.");
-      if (itemExplosiveModel.BlastAttack.CanDestroyWalls) stringList.Add("Can destroy walls.");
+      var lines = new List<string>{ "> explosive" };
+      if (itemExplosiveModel.BlastAttack.CanDamageObjects) lines.Add("Can damage objects.");
+      if (itemExplosiveModel.BlastAttack.CanDestroyWalls) lines.Add("Can destroy walls.");
       ItemPrimedExplosive primed = ex as ItemPrimedExplosive;
-      if (null != primed)
-        stringList.Add(string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft));
-      else
-        stringList.Add(string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
-      stringList.Add(string.Format("Blast radius  : {0}", itemExplosiveModel.BlastAttack.Radius));
+      lines.Add((null != primed) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
+                                 : string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
+      int tmp_i = itemExplosiveModel.BlastAttack.Radius;
+      lines.Add(string.Format("Blast radius  : {0}", tmp_i));
       var stringBuilder = new StringBuilder();
-      for (int distance = 0; distance <= itemExplosiveModel.BlastAttack.Radius; ++distance)
+      for (int distance = 0; distance <= tmp_i; ++distance)
         stringBuilder.Append(string.Format("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance)));
-      stringList.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
+      lines.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
       if (ex is ItemGrenade grenade) {
-        stringList.Add("> grenade");
-        int max_throw_distance = grenade.Model.MaxThrowDistance;
-        int num = Player.MaxThrowRange(max_throw_distance);
-        if (num != max_throw_distance)
-          stringList.Add(string.Format("Throwing rng  : {0} ({1})", num, max_throw_distance));
-        else
-          stringList.Add(string.Format("Throwing rng  : {0}", num));
+        lines.Add("> grenade");
+        int range = Player.MaxThrowRange((tmp_i = grenade.Model.MaxThrowDistance));
+        lines.Add((range != tmp_i) ? string.Format("Throwing rng  : {0} ({1})", range, tmp_i)
+                                   : string.Format("Throwing rng  : {0}", range));
       }
-      if (null != primed) stringList.Add("PRIMED AND READY TO EXPLODE!");
-      return stringList.ToArray();
+      if (null != primed) lines.Add("PRIMED AND READY TO EXPLODE!");
+      return lines;
     }
 
-#nullable enable
     static private List<string> DescribeItemWeapon(ItemWeapon w)
     {
       var itemWeaponModel = w.Model;
