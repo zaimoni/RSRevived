@@ -6619,101 +6619,100 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeActor(Actor actor)
     {
       var lines = new List<string>(10);
-      if (null != actor.Faction) {
-        lines.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name())
-                                       : string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
-      } else lines.Add(string.Format("{0}.", actor.Name.Capitalize()));
+      var a_name = actor.Name.Capitalize();
+      var a_faction = actor.Faction;
+      if (null != a_faction) {
+        lines.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", a_name, a_faction.MemberName, actor.GangID.Name())   // 2020-01-15 IL ok with explicit a_faction.MemberName
+                                  : string.Format("{0}, {1}.", a_name, a_faction.MemberName));
+      } else lines.Add(string.Format("{0}.", a_name));
 
-      lines.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
-      lines.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
+      var a_model = actor.Model;
+      lines.Add(string.Format("{0}.", a_model.Name.Capitalize()));
+      lines.Add(string.Format("{0} since {1}.", a_model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
-      if (aiController?.Order != null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
-      if (actor.HasLeader) {
-        if (actor.Leader.IsPlayer) {
+      if (aiController?.Order != null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
+      var leader = actor.LiveLeader;
+      if (null != leader) {
+        if (leader.IsPlayer) {  // \todo should this test be leader == Player ?
           if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD) lines.Add("Trust : BOND.");
           else if (actor.TrustInLeader >= Rules.TRUST_MAX) lines.Add("Trust : MAX.");
           else lines.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
 
-          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader) lines.Add("Ordered to not follow you.");
+          if (null != aiController && aiController.DontFollowLeader) lines.Add("Ordered to not follow you.");
           lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
           lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
           lines.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
           lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
         } else
-          lines.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
+          lines.Add(string.Format("Leader : {0}.", leader.Name.Capitalize()));
       }
-      if (Player.Model.Abilities.IsLawEnforcer && 0 < actor.MurdersOnRecord(Player)) {
+      int murders = actor.MurdersOnRecord(Player);
+      if (Player.Model.Abilities.IsLawEnforcer && 0 < murders) {
         lines.Add("WANTED FOR MURDER!");
-        lines.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersOnRecord(Player))));
-      } else if (actor.HasLeader && actor.Leader.IsPlayer && actor.IsTrustingLeader) {
-        lines.Add(actor.MurdersCounter > 0
-                     ? string.Format("* Confess {0}! *", "murder".QtyDesc(actor.MurdersCounter))
+        lines.Add(string.Format("{0}!", "murder".QtyDesc(murders)));
+      } else if (null != leader && leader.IsPlayer && actor.IsTrustingLeader) {
+        lines.Add(0 < (murders = actor.MurdersCounter)
+                     ? string.Format("* Confess {0}! *", "murder".QtyDesc(murders))
                      : "Has committed no murders.");
       }
       if (actor.IsAggressorOf(Player)) lines.Add("Aggressed you.");
       if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", actor.HimOrHer));
       if (Player.IsAggressorOf(actor)) lines.Add(string.Format("You aggressed {0}.", actor.HimOrHer));
       if (actor.IsSelfDefenceFrom(Player)) lines.Add("Killing you would be self-defence.");
-      if (!Player.Faction.IsEnemyOf(actor.Faction) && Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through groups.");   // RS Alpha 10 tests against Rules::AreGroupEnemies
+      if (!Player.Faction.IsEnemyOf(a_faction) && Player.AreIndirectEnemies(actor)) lines.Add("You are enemies through groups.");   // RS Alpha 10 tests against Rules::AreGroupEnemies
 #if POLICE_NO_QUESTIONS_ASKED
       if (Player.Model.Abilities.IsLawEnforcer && Player.Threats.IsThreat(actor)) {
         stringList.Add("Is wanted for unspecified violent crimes.");
       }
 #endif
       lines.Add("");
-      string str = DescribeActorActivity(actor);
-      lines.Add(str ?? " ");
-      if (actor.Model.Abilities.HasToSleep) {
+      lines.Add(DescribeActorActivity(actor) ?? " ");
+      if (a_model.Abilities.HasToSleep) {
         if (actor.IsExhausted) lines.Add("Exhausted!");
         else if (actor.IsSleepy) lines.Add("Sleepy.");
       }
-      if (actor.Model.Abilities.HasToEat) {
+      if (a_model.Abilities.HasToEat) {
         if (actor.IsStarving) lines.Add("Starving!");
         else if (actor.IsHungry) lines.Add("Hungry.");
       }
-      else if (actor.Model.Abilities.IsRotting) {
+      else if (a_model.Abilities.IsRotting) {
         if (actor.IsRotStarving) lines.Add("Starving!");
         else if (actor.IsRotHungry) lines.Add("Hungry.");
       }
-      if (actor.Model.Abilities.HasSanity) {
+      if (a_model.Abilities.HasSanity) {
         if (actor.IsInsane) lines.Add("Insane!");
         else if (actor.IsDisturbed) lines.Add("Disturbed.");
       }
 
       if (Player.IsEnemyOf(actor)) {
-      Attack m_p_attack = Player.MeleeAttack(actor);
-      Defence a_defense = actor.Defence;
-      float melee_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
-      lines.Add("% hit: "+melee_p_hit.ToString());
-      Attack m_a_attack = actor.MeleeAttack(Player);
-      Defence p_defense = Player.Defence;
-      float melee_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
-      lines.Add("% be hit: "+melee_a_hit.ToString());
-//       Attack attack = attacker.RangedAttack(distance, defender);
+      var a_defense_dist = Rules.SkillProbabilityDistribution(actor.Defence.Value);
+      float melee_p_hit = a_defense_dist.LessThan(Rules.SkillProbabilityDistribution(Player.MeleeAttack(actor).HitValue));
+      lines.Add("% hit: " + melee_p_hit);   // 2020-01-20 IL optimizer is eliminating this temporary
+      var p_defense_dist = Rules.SkillProbabilityDistribution(Player.Defence.Value);
+      float melee_a_hit = p_defense_dist.LessThan(Rules.SkillProbabilityDistribution(actor.MeleeAttack(Player).HitValue));
+      lines.Add("% be hit: " + melee_a_hit);
       if (0<Player.CurrentRangedAttack.Range) {
-        Attack r_p_attack = Player.RangedAttack(Rules.InteractionDistance(Player.Location,actor.Location), actor);
-        float ranged_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
-        lines.Add("% shot: "+ranged_p_hit.ToString());
+        float ranged_p_hit = a_defense_dist.LessThan(Rules.SkillProbabilityDistribution(Player.RangedAttack(Rules.InteractionDistance(Player.Location, actor.Location), actor).HitValue));
+        lines.Add("% shot: " + ranged_p_hit);
       }
       if (0<actor.CurrentRangedAttack.Range) {
-        Attack r_a_attack = actor.RangedAttack(Rules.InteractionDistance(Player.Location,actor.Location), Player);
-        float ranged_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
-        lines.Add("% be shot: "+ranged_a_hit.ToString());
+        float ranged_a_hit = p_defense_dist.LessThan(Rules.SkillProbabilityDistribution(actor.RangedAttack(Rules.InteractionDistance(Player.Location, actor.Location), Player).HitValue));
+        lines.Add("% be shot: " + ranged_a_hit);
       }
       } // m_Player.IsEnemyOf(actor)
 
       // main stat block
       lines.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
       var stringBuilder = new StringBuilder();
-      int num1 = actor.MaxHPs;
-      stringBuilder.Append(actor.HitPoints != num1
-                         ? string.Format("HP  : {0:D2}/{1:D2}", actor.HitPoints, num1)
-                         : string.Format("HP  : {0:D2} MAX", actor.HitPoints));
-      if (actor.Model.Abilities.CanTire) {
-        int num2 = actor.MaxSTA;
-        stringBuilder.Append(actor.StaminaPoints != num2
-                           ? string.Format("   STA : {0}/{1}", actor.StaminaPoints, num2)
-                           : string.Format("   STA : {0} MAX", actor.StaminaPoints));
+      int max;
+      int tmp_i;
+      stringBuilder.Append((tmp_i = actor.HitPoints) != (max = actor.MaxHPs)
+                         ? string.Format("HP  : {0:D2}/{1:D2}", tmp_i, max)
+                         : string.Format("HP  : {0:D2} MAX", tmp_i));
+      if (a_model.Abilities.CanTire) {
+        stringBuilder.Append((tmp_i = actor.StaminaPoints) != (max = actor.MaxSTA)
+                           ? string.Format("   STA : {0}/{1}", tmp_i, max)
+                           : string.Format("   STA : {0} MAX", tmp_i));
       }
       lines.Add(stringBuilder.ToString());
       Attack attack = actor.MeleeAttack();
@@ -6722,7 +6721,7 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("Def : {0:D2}", defence.Value));
       lines.Add(string.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
       lines.Add(" ");
-      lines.Add(actor.Model.FlavorDescription);
+      lines.Add(a_model.FlavorDescription);
       lines.Add(" ");
       var skills = actor.Sheet.SkillTable;
       if (0 < skills.CountSkills) {
@@ -6733,9 +6732,9 @@ namespace djack.RogueSurvivor.Engine
       // alpha10
       // 8. Unusual abilities
       // unusual abilities for undeads
-      if (actor.Model.Abilities.IsUndead) {
+      if (a_model.Abilities.IsUndead) {
         // fov
-        lines.Add(string.Format("- FOV : {0}.", actor.Model.StartingSheet.BaseViewRange));
+        lines.Add(string.Format("- FOV : {0}.", a_model.StartingSheet.BaseViewRange));
 
         // smell rating
         int smell = (int)(100 * actor.Smell);  // applies z-tracker skill
@@ -6747,32 +6746,33 @@ namespace djack.RogueSurvivor.Engine
         // grab?
         if (0 < skills.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
 
-        if (actor.Model.Abilities.IsUndeadMaster) lines.Add("- Other undeads follow this undead tracks.");
+        if (a_model.Abilities.IsUndeadMaster) lines.Add("- Other undeads follow this undead tracks.");
         else if (smell > 0) lines.Add("- This undead will follow zombie masters tracks.");
-        if (actor.Model.Abilities.IsIntelligent) lines.Add("- This undead is intelligent.");
-        if (actor.Model.Abilities.CanDisarm) lines.Add("- This undead can disarm.");
-        if (actor.Model.Abilities.CanJump) {
-          if (actor.Model.Abilities.CanJumpStumble) lines.Add("- This undead can jump but may stumble.");
-          else lines.Add("- This undead can jump.");
+        if (a_model.Abilities.IsIntelligent) lines.Add("- This undead is intelligent.");
+        if (a_model.Abilities.CanDisarm) lines.Add("- This undead can disarm.");
+        if (a_model.Abilities.CanJump) {
+          lines.Add(actor.Model.Abilities.CanJumpStumble ? "- This undead can jump but may stumble."
+                                                         : "- This undead can jump.");
         }
         if (actor.AbleToPush) lines.Add("- This undead can push.");
-        if (actor.Model.Abilities.ZombieAI_Explore) lines.Add("- This undead will explore.");
+        if (a_model.Abilities.ZombieAI_Explore) lines.Add("- This undead will explore.");
 
         // things some of them cannot do
-        if (!actor.Model.Abilities.IsRotting) lines.Add("- This undead will not rot.");
-        if (!actor.Model.Abilities.CanBashDoors) lines.Add("- This undead cannot bash doors.");
-        if (!actor.Model.Abilities.CanBreakObjects) lines.Add("- This undead cannot break objects.");
-        if (!actor.Model.Abilities.CanZombifyKilled) lines.Add("- This undead cannot infect livings.");
-        if (!actor.Model.Abilities.AI_CanUseAIExits) lines.Add("- This undead live in this map.");
+        if (!a_model.Abilities.IsRotting) lines.Add("- This undead will not rot.");
+        if (!a_model.Abilities.CanBashDoors) lines.Add("- This undead cannot bash doors.");
+        if (!a_model.Abilities.CanBreakObjects) lines.Add("- This undead cannot break objects.");
+        if (!a_model.Abilities.CanZombifyKilled) lines.Add("- This undead cannot infect livings.");
+        if (!a_model.Abilities.AI_CanUseAIExits) lines.Add("- This undead live in this map.");
       }
       // misc unusual abilities
-      if (actor.Model.Abilities.IsLawEnforcer) lines.Add("- Is a law enforcer.");
-      if (actor.Model.Abilities.IsSmall) lines.Add("- Is small and can sneak through things.");
+      if (a_model.Abilities.IsLawEnforcer) lines.Add("- Is a law enforcer.");
+      if (a_model.Abilities.IsSmall) lines.Add("- Is small and can sneak through things.");
 
       // 9. Inventory.
-      if (!actor.Inventory?.IsEmpty ?? false) {
-        lines.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, actor.MaxInv));
-        lines.AddRange(DescribeInventory(actor.Inventory));
+      var inv = actor.Inventory;
+      if (null != inv && !inv.IsEmpty) {
+        lines.Add(string.Format("Items {0}/{1} : ", inv.CountItems, actor.MaxInv));
+        lines.AddRange(DescribeInventory(inv));
       }
 
 #if DEBUG
@@ -6835,7 +6835,8 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
-    static private string DescribeActorActivity(Actor actor)
+#nullable enable
+    static private string? DescribeActorActivity(Actor actor)
     {
       if (actor.IsPlayer) return null;
       switch (actor.Activity) {
@@ -6869,10 +6870,11 @@ namespace djack.RogueSurvivor.Engine
 
     static private string DescribePlayerFollowerStatus(Actor follower)
     {
+      string desc = string.Format("(trust:{0})", follower.TrustInLeader);
       if (follower.Controller is OrderableAI ai) {
-        return (null != ai.Order ? ai.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", follower.TrustInLeader);
+        return (ai?.Order.ToString() ?? "(no orders)") + desc;
       } else {
-        return ("(is player)") + string.Format("(trust:{0})", follower.TrustInLeader);
+        return "(is player)" + desc;
       }
     }
 
@@ -6896,17 +6898,19 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("The text reads : ");
         stringList.AddRange(bb.Text);
       }
-      if (obj.MaxHitPoints > 0) {
-        stringList.Add(obj.HitPoints < obj.MaxHitPoints
-                     ? string.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints)
-                     : string.Format("HP        : {0} MAX", obj.HitPoints));
+      int tmp_i = obj.MaxHitPoints;
+      if (tmp_i > 0) {
+        int tmp_hp;
+        stringList.Add((tmp_hp = obj.HitPoints) < tmp_i
+                     ? string.Format("HP        : {0}/{1}", tmp_hp, tmp_i)
+                     : string.Format("HP        : {0} MAX", tmp_hp));
         if (obj is DoorWindow doorWindow) {
-          stringList.Add(doorWindow.BarricadePoints < Rules.BARRICADING_MAX
-                       ? string.Format("Barricades: {0}/{1}", doorWindow.BarricadePoints, Rules.BARRICADING_MAX)
-                       : string.Format("Barricades: {0} MAX", doorWindow.BarricadePoints));
+          stringList.Add((tmp_hp = doorWindow.BarricadePoints) < Rules.BARRICADING_MAX
+                       ? string.Format("Barricades: {0}/{1}", tmp_hp, Rules.BARRICADING_MAX)
+                       : string.Format("Barricades: {0} MAX", tmp_hp));
         }
       }
-      if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", obj.Weight));
+      if (0 < (tmp_i = obj.Weight)) stringList.Add(string.Format("Weight    : {0}", tmp_i));
       var itemsAt = obj.Location.Items;
       if (itemsAt != null) stringList.AddRange(DescribeInventory(itemsAt));
       return stringList.ToArray();
@@ -6914,12 +6918,11 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeInventory(Inventory inv)
     {
-      var stringList = new List<string>(inv.CountItems);
-      foreach (Item it in inv.Items) {
-        stringList.Add(string.Format(it.IsEquipped ? "- {0} (equipped)"
-                                                   : "- {0}", DescribeItemShort(it)));
-      }
-      return stringList.ToArray();
+      var lines = new string[inv.CountItems];
+      int n = 0;
+      foreach(var it in inv.Items) lines[n++] = string.Format(it.IsEquipped ? "- {0} (equipped)"
+                                                                            : "- {0}", DescribeItemShort(it));
+      return lines;
     }
 
     static private string[] DescribeCorpses(List<Corpse> corpses)
@@ -6967,7 +6970,6 @@ namespace djack.RogueSurvivor.Engine
 			return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
 	}
 
-#nullable enable
     private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
       var skills = Player.Sheet.SkillTable;
