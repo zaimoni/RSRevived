@@ -6612,8 +6612,7 @@ namespace djack.RogueSurvivor.Engine
       var itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null) return DescribeInventory(itemsAt);
       var corpsesAt = map.GetCorpsesAt(mapPos);
-      if (corpsesAt != null) return DescribeCorpses(corpsesAt);
-      return null;
+      return corpsesAt?.Describe();
     }
 
     static private string[] DescribeActor(Actor actor)
@@ -6923,16 +6922,6 @@ namespace djack.RogueSurvivor.Engine
       foreach(var it in inv.Items) lines[n++] = string.Format(it.IsEquipped ? "- {0} (equipped)"
                                                                             : "- {0}", DescribeItemShort(it));
       return lines;
-    }
-
-    static private string[] DescribeCorpses(List<Corpse> corpses)
-    {
-      var stringList = new List<string>(corpses.Count + 2);
-      stringList.Add(1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.");
-      stringList.Add(" ");
-      foreach (Corpse corpse in corpses)
-        stringList.Add("- "+corpse.ToString().Capitalize()+".");
-      return stringList.ToArray();
     }
 
 	// UI functions ... do not belong in Corpse class for now
@@ -14035,6 +14024,16 @@ namespace djack.RogueSurvivor.Engine
       int max;
       return (charge < (max = it.MaxBatteries)) ? string.Format("Batteries : {0}/{1} ({2}h)", charge, max, hours)
                                                 : string.Format("Batteries : {0} MAX ({1}h)", charge, hours);
+    }
+
+    static public string[] Describe(this List<Corpse> corpses)
+    {
+      var lines = new List<string>(corpses.Count + 2);
+      lines.Add(1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.");
+      lines.Add(" ");
+      foreach (Corpse corpse in corpses)
+        lines.Add("- "+corpse.ToString().Capitalize()+".");
+      return lines.ToArray();
     }
 
     static public void DoTheyEnterMap(this IEnumerable<Actor> followers, Location to, in Location from)
