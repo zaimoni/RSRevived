@@ -5663,31 +5663,31 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+#nullable enable
     private bool HandlePlayerOrderFollowerToDropAllItems(Actor player, Actor follower)
     {
-      if (follower.Inventory.IsEmpty)
-        return false;
-            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
-            DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (follower.Inventory.IsEmpty) return false;
+      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
+      DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
       ModifyActorTrustInLeader(follower, follower.Inventory.CountItems * Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToReport(Actor player, Actor follower)
     {
-            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
+      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToSleep(Actor player, Actor follower)
     {
-            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
+      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToToggleFollow(Actor player, Actor follower)
     {
-            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
+      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
       return true;
     }
 
@@ -5696,6 +5696,7 @@ namespace djack.RogueSurvivor.Engine
       DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
       return true;
     }
+#nullable restore
 
     private bool HandlePlayerOrderFollowerToGiveItems(Actor player, Actor follower)
     {
@@ -5752,13 +5753,13 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+#nullable enable
     private void HandleAiActor(Actor aiActor)
     {
 #if DEBUG
-      if (null == aiActor) throw new ArgumentNullException(nameof(aiActor));
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
-#endif
       if (aiActor.IsDebuggingTarget) Session.Get.World.DaimonMap(); // so we have a completely correct map when things go wrong
+#endif
 #if TIME_TURNS
       Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": timing");
       Stopwatch timer = Stopwatch.StartNew();
@@ -5767,18 +5768,17 @@ namespace djack.RogueSurvivor.Engine
       int AP_checkpoint = aiActor.ActionPoints;
       Location loc_checkpoint = aiActor.Location;
 #endif
-      ActorAction actorAction = aiActor.Controller.GetAction(this);
+      var actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
-        ActorAction insaneAction = GenerateInsaneAction(aiActor);
-        if (insaneAction?.IsPerformable() ?? false) actorAction = insaneAction;
+        var insaneAction = GenerateInsaneAction(aiActor);
+        if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;
       }
       // we need to know if this got past internal testing.
 #if DEBUG
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
-#else
-      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
-      if (!actorAction.IsLegal()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
 #endif
+      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
+      if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
       actorAction.Perform();
 #if TIME_TURNS
       timer.Stop();
@@ -5799,9 +5799,9 @@ namespace djack.RogueSurvivor.Engine
           "You can disable the advisor in the options.",
           "Read the manual or discover the rest of the game by yourself.",
           "Good luck and have fun!",
-          string.Format("To REDEFINE THE KEYS : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
-          string.Format("To CHANGE OPTIONS    : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
-          string.Format("To READ THE MANUAL   : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
+          string.Format("To REDEFINE THE KEYS : <{0}>.",  s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
+          string.Format("To CHANGE OPTIONS    : <{0}>.",  s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
+          string.Format("To READ THE MANUAL   : <{0}>.",  s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
         });
       } else {
         for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
@@ -5811,11 +5811,11 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         ShowAdvisorMessage("No hint available.", new string[5]{
-          "The Advisor has now new hint for you in this situation.",
+          "The Advisor has no new hint for you in this situation.",
           "You will see a popup when he has something to say.",
-          string.Format("To REDEFINE THE KEYS : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
-          string.Format("To CHANGE OPTIONS    : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
-          string.Format("To READ THE MANUAL   : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
+          string.Format("To REDEFINE THE KEYS : <{0}>.",  s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
+          string.Format("To CHANGE OPTIONS    : <{0}>.",  s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
+          string.Format("To READ THE MANUAL   : <{0}>.",  s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
         });
       }
     }
@@ -5838,6 +5838,7 @@ namespace djack.RogueSurvivor.Engine
       SaveHints();
       ShowAdvisorHint(hint);
     }
+#nullable restore
 
     private bool IsAdvisorHintAppliable(AdvisorHint hint)
     {
@@ -13357,19 +13358,18 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private ActorAction GenerateInsaneAction(Actor actor)
+#nullable enable
+    private ActorAction? GenerateInsaneAction(Actor actor)
     {
       switch (m_Rules.Roll(0, 5)) {
         case 0: return new ActionShout(actor, "AAAAAAAAAAA!!!");
         case 1: return new ActionBump(actor, m_Rules.RollDirection());
         case 2:
-          Direction direction = m_Rules.RollDirection();
-          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
-          if (mapObjectAt == null) return null;
-          return new ActionBreak(actor, mapObjectAt);
+          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + m_Rules.RollDirection());
+          return null == mapObjectAt ? null : new ActionBreak(actor, mapObjectAt);
         case 3:
-          Inventory inventory = actor.Inventory;
-          if (inventory?.IsEmpty ?? true) return null;
+          var inventory = actor.Inventory;
+          if (null == inventory || inventory.IsEmpty) return null;
           Item it = m_Rules.DiceRoller.Choose(inventory.Items);
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsPerformable()) return actionUseItem;
@@ -13379,11 +13379,13 @@ namespace djack.RogueSurvivor.Engine
           }
           return new ActionDropItem(actor, it);
         case 4:
-          if (null == actor.Controller.friends_in_FOV) return null;
-          foreach(var x in actor.Controller.friends_in_FOV) {
+          var f_in_fov = actor.Controller.friends_in_FOV;
+          if (null == f_in_fov) return null;
+          foreach(var x in f_in_fov) {
             if (!m_Rules.RollChance(50)) continue;
-            if (actor.HasLeader) {
-              actor.Leader.RemoveFollower(actor);
+            var leader = actor.LiveLeader;
+            if (null != leader) {
+              leader.RemoveFollower(actor);
               actor.TrustInLeader = 0;
             }
             DoMakeAggression(actor, x.Value);
@@ -13393,6 +13395,7 @@ namespace djack.RogueSurvivor.Engine
         default: return null;
       }
     }
+#nullable restore
 
     private void SeeingCauseInsanity(Actor whoDoesTheAction, int sanCost, string what)
     {
