@@ -5012,40 +5012,49 @@ namespace djack.RogueSurvivor.Engine
        return actionDone;  // return if we did an action.
     }
 
-    bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
+#nullable enable
+    private bool DirectionCommand<T>(Func<Direction,T> select, Predicate<T> execute)
     {
-      bool actionDone = false;
-
-      ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location.Position), SIZE_OF_TILE)));
-
       do {
         ///////////////////
         // 1. Redraw
         // 2. Get input.
         // 3. Handle input
         ///////////////////
-        RedrawPlayScreen(); // 1. Redraw
-        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
+        RedrawPlayScreen();
+        var dir = WaitDirectionOrCancel();
+        if (null == dir) return false;
+        T target = select(dir);
+        if (execute(target)) return true;
+      } while (true);
+    }
+#nullable restore
 
-        // 3. Handle input
-        if (dir == null) break;
-        else if (dir != Direction.NEUTRAL) {
-          Point moveToPos = player.Location.Position + dir;
-          if (player.Location.Map.IsInBounds(moveToPos)) {
-            if (player.CanPull(other, in moveToPos, out string reason)) {
-              DoPullActor(player, other, in moveToPos);
-              actionDone = true;
-              break;
-            } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
-          }
+#nullable enable
+    bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
+    {
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location.Position), SIZE_OF_TILE)));
+
+      Point? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool pull(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsInBounds(pos.Value)) return false;   // \todo this is not cross-district
+        if (player.CanPull(other, pos.Value, out string reason)) {
+          DoPullActor(player, other, pos.Value);
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+          return false;
         }
-      } while(true);
+      }
 
+      bool actionDone = DirectionCommand(pull_where, pull);
       ClearOverlays();    // cleanup.
       return actionDone;  // return if we did an action.
     }
+#nullable restore
 
     private bool HandlePlayerUseSpray(Actor player)
     {
@@ -5065,9 +5074,10 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+#nullable enable
     private bool HandlePlayerTag(Actor player)
     {
-      ItemSprayPaint spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
+      var spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
       if (spray == null) {
         AddMessage(MakeErrorMessage("No spray paint equipped."));
         RedrawPlayScreen();
@@ -5081,29 +5091,25 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
-            if (CanTag(player.Location.Map, point, out string reason)) {
-              DoTag(player, spray, point);
-              flag2 = true;
-              break;
-            } else {
-              AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", reason)));
-              RedrawPlayScreen();
-            }
-          }
+      // \todo This is not cross-district, but we're rethinking spray paint anyway)
+      Point? spray_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool spray_on(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsInBounds(pos.Value)) return false;
+        if (CanTag(player.Location.Map, pos.Value, out string reason)) {
+          DoTag(player, spray, pos.Value);
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", reason)));
+          return false;
         }
       }
-      while(true);
+
+      bool flag2 = DirectionCommand(spray_where,spray_on);
       ClearOverlays();
       return flag2;
     }
+#nullable restore
 
     private bool CanTag(Map map, Point pos, out string reason)
     {
@@ -5123,11 +5129,12 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#nullable enable
     // alpha10 new way to use stench killer
     private bool HandlePlayerSprayOdorSuppressor(Actor player)
     {
       // Check if has odor suppressor.
-      ItemSprayScent spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
+      var spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (null == spray) {
         AddMessage(MakeErrorMessage("No spray equipped."));
         RedrawPlayScreen();
@@ -5141,36 +5148,27 @@ namespace djack.RogueSurvivor.Engine
       bool actionDone = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(SPRAY_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        ///////////////////
-        // 1. Redraw
-        // 2. Get input.
-        // 3. Handle input
-        ///////////////////
-        RedrawPlayScreen();
-        Direction dir = WaitDirectionOrCancel();
 
-        if (dir == null) break;
-        var sprayOn = (dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir));
-
-        if (sprayOn == null) {
+      Actor? spray_who(Direction dir) { return dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir); }
+      bool spray_on(Actor? who) {
+        if (null == who) {
           AddMessage(MakeErrorMessage("No one to spray on here."));
-          RedrawPlayScreen();
+          return false;
+        } else if (player.CanSprayOdorSuppressor(spray, who, out string reason)) {
+          DoSprayOdorSuppressor(player, spray, who);
+          return true;
         } else {
-          if (player.CanSprayOdorSuppressor(spray, sprayOn, out string reason)) {
-            DoSprayOdorSuppressor(player, spray, sprayOn);
-            actionDone = true;
-            break;
-          } else {
-            AddMessage(MakeErrorMessage(String.Format("Can't spray here : {0}.", reason)));
-            RedrawPlayScreen();
-          }
+          AddMessage(MakeErrorMessage(string.Format("Can't spray here : {0}.", reason)));
+          return false;
         }
-      } while (true);
+      }
+
+      actionDone = DirectionCommand(spray_who, spray_on);
 
       ClearOverlays();
       return actionDone;
     }
+#nullable restore
 
     private bool HandlePlayerOrderPCMode(Actor player) {
       // check for meaningful tasks to automate
@@ -6510,17 +6508,19 @@ namespace djack.RogueSurvivor.Engine
       key = null;
     }
 
-    private Direction WaitDirectionOrCancel()
+#nullable enable
+    private Direction? WaitDirectionOrCancel()
     {
-      Direction direction;
+      Direction? direction;
       do {
         KeyEventArgs key = m_UI.UI_WaitKey();
-        PlayerCommand command = InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape) return null;
+        PlayerCommand command = InputTranslator.KeyToCommand(key);
         direction = CommandToDirection(command);
       } while (null == direction);
       return direction;
     }
+#nullable restore
 
     private void WaitEnter()
     {
@@ -7417,7 +7417,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public static Direction CommandToDirection(PlayerCommand cmd)
+#nullable enable
+    public static Direction? CommandToDirection(PlayerCommand cmd)
     {
       switch (cmd) {
         case PlayerCommand.MOVE_N: return Direction.N;
@@ -7432,6 +7433,7 @@ namespace djack.RogueSurvivor.Engine
         default: return null;
       }
     }
+#nullable restore
 
     public void DoMoveActor(Actor actor, in Location newLocation)
     {
