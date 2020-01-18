@@ -4976,43 +4976,32 @@ namespace djack.RogueSurvivor.Engine
       return actionDone; // return if we did an action.
     }
 
+#nullable enable
     bool HandlePlayerPullObject(Actor player, MapObject mapObj) // alpha10
     {
-      bool actionDone = false;
-
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(mapObj.Location.Position), SIZE_OF_TILE)));
 
-      do {
-        ///////////////////
-        // 1. Redraw
-        // 2. Get input.
-        // 3. Handle input
-        ///////////////////
-
-        RedrawPlayScreen(); // 1. Redraw
-        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
-
-        // 3. Handle input
-        if (dir == null) break;
-        else if (dir != Direction.NEUTRAL) {
-          Point moveToPos = player.Location.Position + dir;
-          if (player.Location.Map.IsInBounds(moveToPos)) {
-            if (player.CanPull(mapObj, moveToPos, out string reason)) {
-              DoPull(player, mapObj, in moveToPos);
-              actionDone = true;
-              break;
-            } else AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
-          }
+      Point? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool pull(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsInBounds(pos.Value)) return false;   // \todo this is not cross-district
+        if (player.CanPull(mapObj, pos.Value, out string reason)) {
+          DoPull(player, mapObj, pos.Value);
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
+          return false;
         }
-       } while(true);
+      }
+
+      bool actionDone = DirectionCommand(pull_where, pull);
 
        ClearOverlays();    // cleanup.
        return actionDone;  // return if we did an action.
     }
 
-#nullable enable
     private bool DirectionCommand<T>(Func<Direction,T> select, Predicate<T> execute)
     {
       do {
@@ -5028,9 +5017,7 @@ namespace djack.RogueSurvivor.Engine
         if (execute(target)) return true;
       } while (true);
     }
-#nullable restore
 
-#nullable enable
     bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
     {
       ClearOverlays();
@@ -5054,35 +5041,24 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();    // cleanup.
       return actionDone;  // return if we did an action.
     }
-#nullable restore
 
     private bool HandlePlayerUseSpray(Actor player)
     {
-      Item equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
-      if (equippedItem == null) {
-        AddMessage(MakeErrorMessage("No spray equipped."));
-        RedrawPlayScreen();
-        return false;
-      }
-      if (equippedItem is ItemSprayPaint) return HandlePlayerTag(player);
-      if (equippedItem is ItemSprayScent spray) {
-        // alpha10 new way to use stench killer
-        return HandlePlayerSprayOdorSuppressor(player);
+      var equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
+      if (null != equippedItem) {
+        if (equippedItem is ItemSprayPaint s_paint) return HandlePlayerTag(player, s_paint);
+        if (equippedItem is ItemSprayScent spray) {
+          // alpha10 new way to use stench killer
+          return HandlePlayerSprayOdorSuppressor(player, spray);
+        }
       }
       AddMessage(MakeErrorMessage("No spray equipped."));
       RedrawPlayScreen();
       return false;
     }
 
-#nullable enable
-    private bool HandlePlayerTag(Actor player)
+    private bool HandlePlayerTag(Actor player, ItemSprayPaint spray)
     {
-      var spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
-      if (spray == null) {
-        AddMessage(MakeErrorMessage("No spray paint equipped."));
-        RedrawPlayScreen();
-        return false;
-      }
       if (spray.PaintQuantity <= 0) {
         AddMessage(MakeErrorMessage("No paint left."));
         RedrawPlayScreen();
@@ -5131,15 +5107,10 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     // alpha10 new way to use stench killer
-    private bool HandlePlayerSprayOdorSuppressor(Actor player)
+    private bool HandlePlayerSprayOdorSuppressor(Actor player, ItemSprayScent spray)
     {
       // Check if has odor suppressor.
-      var spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
-      if (null == spray) {
-        AddMessage(MakeErrorMessage("No spray equipped."));
-        RedrawPlayScreen();
-        return false;
-      } else if (0 >= spray.SprayQuantity) {
+      if (0 >= spray.SprayQuantity) {
         AddMessage(MakeErrorMessage("No spray left."));
         RedrawPlayScreen();
         return false;
