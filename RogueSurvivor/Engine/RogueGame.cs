@@ -4813,6 +4813,7 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+#nullable enable
     private bool HandlePlayerPush(Actor player)
     {
       string err = player.ReasonCantPush();
@@ -4824,41 +4825,37 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            var actorAt = player.Location.Map.GetActorAtExt(point);
-            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
-            string reason;
-            if (actorAt != null) {
-              if (player.CanShove(actorAt, out reason)) {
-                if (HandlePlayerShoveActor(player, actorAt)) {
-                  flag2 = true;
-                  break;
-                }
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", actorAt.TheName, reason)));
-            } else if (mapObjectAt != null) {
-              if (player.CanPush(mapObjectAt, out reason)) {
-                if (HandlePlayerPushObject(player, mapObjectAt)) {
-                  flag2 = true;
-                  break;
-                }
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObjectAt.TheName, reason)));
-            } else
-              AddMessage(MakeErrorMessage("Nothing to push there."));
+      Point? push_from(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool push(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        string reason;
+        MapObject? mapObj;
+        var other = player.Location.Map.GetActorAtExt(pos.Value);
+        if (other != null) {
+          if (player.CanShove(other,out reason)) {
+            return HandlePlayerShoveActor(player, other);
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", other.TheName, reason)));
+            return false;
           }
+        } else if (null != (mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value))) {
+          if (player.CanPush(mapObj, out reason)) {
+            return HandlePlayerPushObject(player, mapObj);
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+            return false;
+          }
+        } else {
+          AddMessage(MakeErrorMessage("Nothing to push there."));
+          return false;
         }
       }
-      while(true);
+
+      bool actionDone = DirectionCommand(push_from, push);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerPushObject(Actor player, MapObject mapObj)
@@ -4867,26 +4864,23 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(new string[1] { string.Format(PUSH_OBJECT_MODE_TEXT,  mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = mapObj.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            if (mapObj.CanPushTo(point, out string reason)) {
-              DoPush(player, mapObj, in point);
-              flag2 = true;
-              break;
-            } else
-              AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
-          }
+      Point? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(mapObj.Location.Position + dir); }
+      bool push(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        if (mapObj.CanPushTo(pos.Value, out string reason)) {
+          DoPush(player, mapObj, pos.Value);
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
+          return false;
         }
       }
-      while(true);
+
+      bool actionDone = DirectionCommand(push_to, push);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerShoveActor(Actor player, Actor other)
@@ -4899,26 +4893,23 @@ namespace djack.RogueSurvivor.Engine
         if (null != dests) foreach(var loc in dests) AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = other.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            if (other.CanBeShovedTo(point, out string reason)) {
-              DoShove(player, other, in point);
-              flag2 = true;
-              break;
-            } else
-              AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
-          }
+      Point? shove_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(other.Location.Position + dir); }
+      bool shove(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        if (other.CanBeShovedTo(pos.Value, out string reason)) {
+          DoShove(player, other, pos.Value);
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
+          return false;
         }
       }
-      while(true);
+
+      bool actionDone = DirectionCommand(shove_to, shove);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerPull(Actor player) // alpha10
@@ -4930,53 +4921,43 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      bool actionDone = false;
-
       ClearOverlays();
       AddOverlay(new OverlayPopup(PULL_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      do {
-        ///////////////////
-        // 1. Redraw
-        // 2. Get input.
-        // 3. Handle input
-        ///////////////////
-        RedrawPlayScreen(); // 1. Redraw
-        Direction dir = WaitDirectionOrCancel();    // 2. Get input.
-
-        // 3. Handle input
-        if (dir == null) break;
-        else if (dir != Direction.NEUTRAL) {
-          Point pos = player.Location.Position + dir;
-          if (player.Location.Map.IsValid(pos)) {
-            var mapObj = player.Location.Map.GetMapObjectAtExt(pos);
-            var other = player.Location.Map.GetActorAtExt(pos);
-            string reason;
-            if (other != null) {
-              // pull-shove.
-              if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
-                if (HandlePlayerPullActor(player, other)) {
-                  actionDone = true;
-                  break;
-                }
-              } else AddMessage(MakeErrorMessage(String.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
-            } else if (mapObj != null) { // pull.
-              if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
-                if (HandlePlayerPullObject(player, mapObj)) {
-                  actionDone = true;
-                  break;
-                }
-              } else AddMessage(MakeErrorMessage(String.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
-            } else AddMessage(MakeErrorMessage("Nothing to pull there.")); // nothing to pull.
+      Point? pull_from(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool pull(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        string reason;
+        MapObject? mapObj;
+        var other = player.Location.Map.GetActorAtExt(pos.Value);
+        if (other != null) {
+          // pull-shove.
+          if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
+            return HandlePlayerPullActor(player, other);
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
+            return false;
           }
+        } else if (null != (mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value))) { // pull.
+          if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
+            return HandlePlayerPullObject(player, mapObj);
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+            return false;
+          }
+        } else {
+          AddMessage(MakeErrorMessage("Nothing to pull there.")); // nothing to pull.
+          return false;
         }
-      } while(true);
+      }
+
+      bool actionDone = DirectionCommand(pull_from, pull);
 
       ClearOverlays(); // cleanup.
       return actionDone; // return if we did an action.
     }
 
-#nullable enable
     bool HandlePlayerPullObject(Actor player, MapObject mapObj) // alpha10
     {
       ClearOverlays();
@@ -4998,8 +4979,8 @@ namespace djack.RogueSurvivor.Engine
 
       bool actionDone = DirectionCommand(pull_where, pull);
 
-       ClearOverlays();    // cleanup.
-       return actionDone;  // return if we did an action.
+      ClearOverlays();    // cleanup.
+      return actionDone;  // return if we did an action.
     }
 
     private bool DirectionCommand<T>(Func<Direction,T> select, Predicate<T> execute)
