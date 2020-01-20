@@ -4712,6 +4712,7 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+#nullable enable
     private bool HandlePlayerSleep(Actor player)
     {
       if (!player.CanSleep(out string reason)) {
@@ -4720,15 +4721,14 @@ namespace djack.RogueSurvivor.Engine
       }
       AddMessage(MakeYesNoMessage("Really sleep there"));
       RedrawPlayScreen();
-      if (!WaitYesOrNo()) {
-        AddMessage(new Data.Message("Good, keep those eyes wide open.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        return false;
-      }
-      AddMessage(new Data.Message("Goodnight, happy nightmares!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      bool yes = WaitYesOrNo();
+      var sess = Session.Get;
+      AddMessage(new Data.Message(yes ? "Goodnight, happy nightmares!" : "Good, keep those eyes wide open.", sess.WorldTime.TurnCounter, Color.Yellow));
+      if (!yes) return false;
       DoStartSleeping(player);
       RedrawPlayScreen();
       // check music.
-      m_MusicManager.PlayLooping(GameMusics.SLEEP, 1==Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
+      m_MusicManager.PlayLooping(GameMusics.SLEEP, 1== sess.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
       return true;
     }
 
@@ -4737,31 +4737,29 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            var actorAt = player.Location.Map.GetActorAtExt(point);
-            if (actorAt != null) {
-              if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
-                flag2 = true;
-                DoSwitchPlace(player, actorAt);
-                break;
-              }
-              else
-                AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", reason)));
-            } else
-              AddMessage(MakeErrorMessage("Noone there."));
+      Point? swap_whom(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool swap(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
+        if (actorAt != null) {
+          if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
+            DoSwitchPlace(player, actorAt);
+            return true;
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", reason)));
+            return false;
           }
+        } else {
+          AddMessage(MakeErrorMessage("Noone there."));
+          return false;
         }
       }
-      while(true);
+
+      bool actionDone = DirectionCommand(swap_whom, swap);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerTakeLead(Actor player)
@@ -4769,51 +4767,54 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      bool flag2 = false;
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            var actorAt = player.Location.Map.GetActorAtExt(point);
-            if (actorAt != null) {
-              if (player.CanTakeLeadOf(actorAt, out string reason)) {
-                flag2 = true;
-                DoTakeLead(player, actorAt);
-                player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", actorAt.TheName));
-                actorAt.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited by {0}.", player.TheName));
-                AddMessage(new Data.Message("(you can now set directives and orders for your new follower).", Session.Get.WorldTime.TurnCounter, Color.White));
-                AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
-                break;
-              } else if (actorAt.Leader == player) {
-                if (player.CanCancelLead(actorAt, out reason)) {
-                  AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", actorAt.TheName)));
-                  RedrawPlayScreen();
-                  if (WaitYesOrNo()) {
-                    flag2 = true;
-                    DoCancelLead(player, actorAt);
-                    player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired {0}.", actorAt.TheName));
-                    actorAt.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired by {0}.", player.TheName));
-                    break;
-                  } else
-                    AddMessage(new Data.Message("Good, together you are strong.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-                } else
-                  AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", actorAt.TheName, reason)));
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", actorAt.TheName, reason)));
-            } else
-              AddMessage(MakeErrorMessage("Noone there."));
+      Point? lead_whom(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool lead(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
+        if (actorAt != null) {
+          if (player.CanTakeLeadOf(actorAt, out string reason)) {
+            DoTakeLead(player, actorAt);
+            int turn = Session.Get.WorldTime.TurnCounter;
+            player.ActorScoring.AddEvent(turn, string.Format("Recruited {0}.", actorAt.TheName));
+            actorAt.ActorScoring.AddEvent(turn, string.Format("Recruited by {0}.", player.TheName));
+            AddMessage(new Data.Message("(you can now set directives and orders for your new follower).", turn, Color.White));
+            AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), turn, Color.White));
+            return true;
+          } else if (actorAt.Leader == player) {
+            if (player.CanCancelLead(actorAt, out reason)) {
+              AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", actorAt.TheName)));
+              RedrawPlayScreen();
+              int turn = Session.Get.WorldTime.TurnCounter;
+              if (WaitYesOrNo()) {
+                DoCancelLead(player, actorAt);
+                player.ActorScoring.AddEvent(turn, string.Format("Fired {0}.", actorAt.TheName));
+                actorAt.ActorScoring.AddEvent(turn, string.Format("Fired by {0}.", player.TheName));
+                return true;
+              } else {
+                AddMessage(new Data.Message("Good, together you are strong.", turn, Color.Yellow));
+                return false;
+              }
+            } else {
+              AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", actorAt.TheName, reason)));
+              return false;
+            }
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", actorAt.TheName, reason)));
+            return false;
           }
+        } else {
+          AddMessage(MakeErrorMessage("Noone there."));
+          return false;
         }
       }
-      while(true);
+
+      bool actionDone = DirectionCommand(lead_whom, lead);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
-#nullable enable
     private bool HandlePlayerPush(Actor player)
     {
       string err = player.ReasonCantPush();
