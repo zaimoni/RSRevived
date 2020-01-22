@@ -4431,65 +4431,77 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
+#nullable enable
     private bool HandlePlayerBreak(Actor player)
     {
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction == Direction.NEUTRAL) {
+
+      Point break_where(Direction dir) { return player.Location.Position + dir; }
+      bool _break(Point pos) {
+        string reason;
+        MapObject? obj;
+        if (pos == player.Location.Position) {
           var exitAt = player.Location.Exit;
-          if (exitAt == null) AddMessage(MakeErrorMessage("No exit there."));
-          else {
-            var actorAt = exitAt.Location.Actor;
-            string reason;
-            if (actorAt != null) {
-              if (player.IsEnemyOf(actorAt)) {
-                if (player.CanMeleeAttack(actorAt, out reason)) {
-                  DoMeleeAttack(player, actorAt);
-                  flag1 = false;
-                  flag2 = true;
-                } else
-                  AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", actorAt.Name, reason)));
-              } else
-                AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", actorAt.Name)));
+          if (exitAt == null) {
+            AddMessage(MakeErrorMessage("No exit there."));
+            return false;
+          }
+          var actorAt = exitAt.Location.Actor;
+          if (actorAt != null) {
+            if (player.IsEnemyOf(actorAt)) {
+              if (player.CanMeleeAttack(actorAt, out reason)) {
+                DoMeleeAttack(player, actorAt);
+                return true;
+              } else {
+                AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", actorAt.Name, reason)));
+                return false;
+              }
             } else {
-              var mapObjectAt = exitAt.Location.MapObject;
-              if (mapObjectAt != null) {
-                if (player.CanBreak(mapObjectAt, out reason)) {
-                  DoBreak(player, mapObjectAt);
-                  flag1 = false;
-                  flag2 = true;
-                } else
-                  AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", mapObjectAt.TheName, reason)));
-              } else
-                AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
+              AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", actorAt.Name)));
+              return false;
+            }
+          } else {
+            obj = exitAt.Location.MapObject;
+            if (null != obj) {
+              if (player.CanBreak(obj, out reason)) {
+                DoBreak(player, obj);
+                return true;
+              } else {
+                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", obj.TheName, reason)));
+                return false;
+              }
+            } else {
+              AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
+              return false;
             }
           }
-        } else {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
-            if (mapObjectAt != null) {
-              if (player.CanBreak(mapObjectAt, out string reason)) {
-                DoBreak(player, mapObjectAt);
-                RedrawPlayScreen();
-                flag1 = false;
-                flag2 = true;
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", mapObjectAt.TheName, reason)));
-            } else
-              AddMessage(MakeErrorMessage("Nothing to break there."));
+        }   // end NEUTRAL special case
+
+        if (!player.Location.Map.IsValid(pos)) return false;
+
+        obj = player.Location.Map.GetMapObjectAtExt(pos);
+        if (null != obj) {
+          if (player.CanBreak(obj, out reason)) {
+            DoBreak(player, obj);
+            RedrawPlayScreen();
+            return true;
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", obj.TheName, reason)));
+            return false;
           }
+        } else {
+          AddMessage(MakeErrorMessage("Nothing to break there."));
+          return false;
         }
       }
-      while (flag1);
+
+      bool actionDone = DirectionCommand(break_where, _break);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
@@ -4503,31 +4515,29 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", num)));
         return false;
       }
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            if (player.CanBuildFortification(point, isLarge, out string reason)) {
-              DoBuildFortification(player, in point, isLarge);
-              RedrawPlayScreen();
-              flag1 = false;
-              flag2 = true;
-            } else
-              AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", reason)));
-          }
+
+      Point? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool build(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        if (player.CanBuildFortification(pos.Value, isLarge, out string reason)) {
+          DoBuildFortification(player, pos.Value, isLarge);
+          RedrawPlayScreen();
+          return true;
+        } else {
+          AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", reason)));
+          return false;
         }
       }
-      while (flag1);
+
+      bool actionDone = DirectionCommand(build_where, build);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
+#nullable restore
 
     private bool HandlePlayerFireMode(Actor player)
     {
@@ -4545,8 +4555,8 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         return false;
       }
-      List<Actor> enemiesInFov = player.GetEnemiesInFov(player.Controller.FOV);
-      if (0 >= (enemiesInFov?.Count ?? 0)) {
+      var enemiesInFov = player.GetEnemiesInFov(player.Controller.FOV);
+      if (null == enemiesInFov || 0 >= enemiesInFov.Count) {
         AddMessage(MakeErrorMessage("No targets to fire at."));
         RedrawPlayScreen();
         return false;
