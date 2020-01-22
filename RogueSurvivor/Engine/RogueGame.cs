@@ -4254,45 +4254,58 @@ namespace djack.RogueSurvivor.Engine
       DoShout(player, text);
       return true;
     }
-#nullable restore
+
+    private bool DirectionCommand<T>(Func<Direction,T> select, Predicate<T> execute)
+    {
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+        RedrawPlayScreen();
+        var dir = WaitDirectionOrCancel();
+        if (null == dir) return false;
+        T target = select(dir);
+        if (execute(target)) return true;
+      } while (true);
+    }
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
       Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        AddMessage(new Data.Message(string.Format("Giving {0} to...", inventoryItem.TheName), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (null == direction) break;
-        if (Direction.NEUTRAL == direction) continue;
-        Point point = player.Location.Position + direction;
-        if (!player.Location.Map.IsValid(point)) continue;
-        var actorAt = player.Location.Map.GetActorAtExt(point);
+
+      Point? give_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool give(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+
+        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
         if (actorAt != null) {
           if (player.CanGiveTo(actorAt, inventoryItem, out string reason)) {
-            flag2 = true;
             DoGiveItemTo(player, actorAt, inventoryItem);
-            break;
+            return true;
           }
           AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason)));
-          continue;
+          return false;
         } else {
-          var container = Rules.CanActorPutItemIntoContainer(player, in point);
+          var container = Rules.CanActorPutItemIntoContainer(player, pos.Value);
           if (null != container) {
-            flag2 = true;
             DoPutItemInContainer(player, container, inventoryItem);
-            break;
+            return true;
           }
         }
         AddMessage(MakeErrorMessage("Noone there."));
+        return false;
       }
-      while (true);
+
+      bool actionDone = DirectionCommand(give_where, give);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerInitiateTrade(Actor player, GDI_Point screen)
@@ -4302,44 +4315,47 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        AddMessage(new Data.Message(string.Format("Trading {0} with...", inventoryItem.TheName), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) break;
-        Point point = player.Location.Position + direction;
-        if (!player.Location.Map.IsValid(point)) continue;
-        if (direction != Direction.NEUTRAL) {
-          var actorAt = player.Location.Map.GetActorAtExt(point);
+
+      Point trade_where(Direction dir) { return player.Location.Position + dir; }
+      bool trade(Point pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos)) return false;
+        bool next_to = (player.Location.Position != pos);
+        if (next_to) {
+          var actorAt = player.Location.Map.GetActorAtExt(pos);
           if (actorAt != null) {
             if (player.CanTradeWith(actorAt, out string reason)) {
-              flag2 = true;
               ClearOverlays();
               RedrawPlayScreen();
               if (DoTrade(player, inventoryItem, actorAt, true)) player.SpendActionPoints(Rules.BASE_ACTION_COST);
-              break;
+              return true;
             } else {
               AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
-              continue;
+              return false;
             }
           }
         }
         // RS revived: Trading with inventory.
-        Inventory ground_inv = player.Location.Map.GetItemsAtExt(point);
-        if (inv?.IsEmpty ?? true) ground_inv = null;
-        else if (direction != Direction.NEUTRAL) {
-          var obj = player.Location.Map.GetMapObjectAtExt(point);
-          if (!obj?.IsContainer ?? true) ground_inv = null;
+        var ground_inv = player.Location.Map.GetItemsAtExt(pos);
+        if (null != ground_inv) {
+          if (ground_inv.IsEmpty) ground_inv = null;
+          else if (next_to) {
+            var obj = player.Location.Map.GetMapObjectAtExt(pos);
+            if (null == obj || !obj.IsContainer) ground_inv = null;
+          }
         }
         if (null != ground_inv) {
           DoTrade(player, inventoryItem, ground_inv);
-          flag2 = true;
-          break;
+          return true;
         }
         AddMessage(MakeErrorMessage("Noone there."));
-      } while (true);
+        return false;
+      }
+
+      bool actionDone = DirectionCommand(trade_where, trade);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private void HandlePlayerRunToggle(Actor player)
@@ -4354,88 +4370,84 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerCloseDoor(Actor player)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {  // doors never generate on map edges so IsInBounds ok
-            var mapObjectAt = player.Location.Map.GetMapObjectAt(point);
-            if (mapObjectAt is DoorWindow door) {
-              if (player.CanClose(door, out string reason)) {
-#if PROTOTYPE
-                DoCloseDoor(player, door, point==(player.Controller as BaseAI).PrevLocation.Position);
-#else
-                DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
-#endif
-                RedrawPlayScreen();
-                flag1 = false;
-                flag2 = true;
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
-            } else
-              AddMessage(MakeErrorMessage("Nothing to close there."));
+
+      Point? close_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool close(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsInBounds(pos.Value)) return false;  // doors never generate on map edges so IsInBounds ok
+
+        var mapObjectAt = player.Location.Map.GetMapObjectAt(pos.Value);
+        if (mapObjectAt is DoorWindow door) {
+          if (player.CanClose(door, out string reason)) {
+            DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
+            RedrawPlayScreen();
+            return true;
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
+            return false;
           }
+        } else {
+          AddMessage(MakeErrorMessage("Nothing to close there."));
+          return false;
         }
       }
-      while (flag1);
+
+      bool actionDone = DirectionCommand(close_where, close);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
     private bool HandlePlayerBarricade(Actor player)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
-        RedrawPlayScreen();
-        Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            var mapObjectAt = player.Location.Map.GetMapObjectAtExt(point);
-            if (mapObjectAt != null) {
-              if (mapObjectAt is DoorWindow door) {
-                if (player.CanBarricade(door, out string reason)) {
-                  DoBarricadeDoor(player, door);
-                  RedrawPlayScreen();
-                  flag1 = false;
-                  flag2 = true;
-                } else
-                  AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
-              } else if (mapObjectAt is Fortification fort) {
-                if (player.CanRepairFortification(fort, out string reason)) {
-                  DoRepairFortification(player, fort);
-                  RedrawPlayScreen();
-                  flag1 = false;
-                  flag2 = true;
-                } else
-                  AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
-              } else
-                AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", mapObjectAt.TheName)));
-            } else
-              AddMessage(MakeErrorMessage("Nothing to barricade there."));
+
+      Point? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
+      bool build(Point? pos) {
+        if (null == pos) return false;
+        if (!player.Location.Map.IsValid(pos.Value)) return false;
+
+        var mapObjectAt = player.Location.Map.GetMapObjectAtExt(pos.Value);
+        if (null != mapObjectAt) {
+          if (mapObjectAt is DoorWindow door) {
+            if (player.CanBarricade(door, out string reason)) {
+              DoBarricadeDoor(player, door);
+              RedrawPlayScreen();
+              return true;
+            } else {
+              AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
+              return false;
+            }
+          } else if (mapObjectAt is Fortification fort) {
+            if (player.CanRepairFortification(fort, out string reason)) {
+              DoRepairFortification(player, fort);
+              RedrawPlayScreen();
+              return true;
+            } else {
+              AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
+              return false;
+            }
+          } else {
+            AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", mapObjectAt.TheName)));
+            return false;
           }
+        } else {
+          AddMessage(MakeErrorMessage("Nothing to barricade there."));
+          return false;
         }
       }
-      while (flag1);
+
+      bool actionDone = DirectionCommand(build_where, build);
+
       ClearOverlays();
-      return flag2;
+      return actionDone;
     }
 
-#nullable enable
     private bool HandlePlayerBreak(Actor player)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -4992,22 +5004,6 @@ namespace djack.RogueSurvivor.Engine
 
       ClearOverlays();    // cleanup.
       return actionDone;  // return if we did an action.
-    }
-
-    private bool DirectionCommand<T>(Func<Direction,T> select, Predicate<T> execute)
-    {
-      do {
-        ///////////////////
-        // 1. Redraw
-        // 2. Get input.
-        // 3. Handle input
-        ///////////////////
-        RedrawPlayScreen();
-        var dir = WaitDirectionOrCancel();
-        if (null == dir) return false;
-        T target = select(dir);
-        if (execute(target)) return true;
-      } while (true);
     }
 
     bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
