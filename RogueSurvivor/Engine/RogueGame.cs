@@ -1828,9 +1828,12 @@ namespace djack.RogueSurvivor.Engine
        }
     }
 
-    [SecurityCritical] private void AdvancePlay(District district, RogueGame.SimFlags sim)
+#nullable enable
+    [SecurityCritical] private void AdvancePlay(District district, SimFlags sim)
     {
-      DayPhase phase1 = Session.Get.WorldTime.Phase;
+      var sess = Session.Get;
+      var world = sess.World;
+      DayPhase phase1 = sess.WorldTime.Phase;
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
@@ -1844,9 +1847,9 @@ namespace djack.RogueSurvivor.Engine
         while(!current.IsSecret && null != current.NextActorToAct) {
           AdvancePlay(current, sim);
           if (district == CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
-            if (0>=Session.Get.World.PlayerCount) HandleReincarnation();
+            if (0>= world.PlayerCount) HandleReincarnation();
           }
-          if (!m_IsGameRunning || m_HasLoadedGame || (IsPCdistrict && 0>=Session.Get.World.PlayerCount)) return;
+          if (!m_IsGameRunning || m_HasLoadedGame || (IsPCdistrict && 0>= world.PlayerCount)) return;
         }
       }
       } while(!district.ReadyForNextTurn);  // do-while prevents time skew at world level
@@ -1856,25 +1859,24 @@ namespace djack.RogueSurvivor.Engine
       // XXX message generation wrappers do not have access to map time, only world time
       // XXX this set of messages must execute only once
       // XXX the displayed turn on the message must agree with the displayed turn on the screen
-      if (Session.Get.World.Last == district) {
+      if (world.Last == district) {
         bool canSeeSky = Player.CanSeeSky;  // alpha10 message ony if can see sky
+        int turn = sess.WorldTime.TurnCounter;
 
-        DayPhase phase2 = Session.Get.WorldTime.Phase;
-        if (Session.Get.WorldTime.IsDawn) {
-          if (canSeeSky) AddMessage(new Data.Message("The sun is rising again for you...", Session.Get.WorldTime.TurnCounter, DAY_COLOR));
+        DayPhase phase2 = sess.WorldTime.Phase;
+        if (sess.WorldTime.IsDawn) {
+          if (canSeeSky) AddMessage(new Data.Message("The sun is rising again for you...", turn, DAY_COLOR));
           OnNewDay();
-        } else if (Session.Get.WorldTime.IsDusk) {
-          if (canSeeSky) AddMessage(new Data.Message("Night is falling upon you...", Session.Get.WorldTime.TurnCounter, NIGHT_COLOR));
+        } else if (sess.WorldTime.IsDusk) {
+          if (canSeeSky) AddMessage(new Data.Message("Night is falling upon you...", turn, NIGHT_COLOR));
           OnNewNight();
         } else if (phase1 != phase2) {
-          if (canSeeSky) AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), Session.Get.WorldTime.TurnCounter, Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
+          if (canSeeSky) AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), turn, sess.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
         }
 
         // alpha10
         // if time to change weather do it and roll next change time.
-        if (Session.Get.WorldTime.TurnCounter >= Session.Get.World.NextWeatherCheckTurn) {
-          ChangeWeather();
-        }
+        if (turn >= world.NextWeatherCheckTurn) ChangeWeather();
 
         // handle unconditional time caches here
         Direction_ext.Now();
@@ -1897,11 +1899,11 @@ namespace djack.RogueSurvivor.Engine
       //   arrive by road (i.e. arrive on the outer edge of the outer districts)
 
       // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
-      if (!Session.Get.World.Edge_N_or_E(district)) {
-        EndTurnDistrictEvents(Session.Get.World[district.WorldPosition+Direction.NW]);
-        if (Session.Get.World.Edge_S(district)) EndTurnDistrictEvents(Session.Get.World[district.WorldPosition + Direction.W]);
-        if (Session.Get.World.Edge_E(district)) EndTurnDistrictEvents(Session.Get.World[district.WorldPosition + Direction.N]);
-        if (Session.Get.World.Last == district) EndTurnDistrictEvents(district);
+      if (!world.Edge_N_or_E(district)) {
+        EndTurnDistrictEvents(world[district.WorldPosition+Direction.NW]);
+        if (world.Edge_S(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.W]);
+        if (world.Edge_E(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.N]);
+        if (world.Last == district) EndTurnDistrictEvents(district);
       }
       district.EndTurn();
       } // end lock (district)
@@ -1910,6 +1912,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
 #endif
     }
+#nullable restore
 
     private void EndTurnDistrictEvents(District d)
     { // historically, all districts were within city limits so they all could use the same event specifications.
