@@ -4089,16 +4089,15 @@ namespace djack.RogueSurvivor.Engine
     public void DoStartDragCorpse(Actor a, Corpse c)
     {
       a.Drag(c);
-      if (!ForceVisibleToPlayer(a)) return;
-      AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
+      if (ForceVisibleToPlayer(a))
+        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
     }
 
     public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
     {
       var c = a.StopDraggingCorpse();
-      if (null == c) return;
-      if (!ForceVisibleToPlayer(a)) return;
-      AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
+      if (null != c && ForceVisibleToPlayer(a))
+        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
     }
 #nullable restore
 
@@ -4146,30 +4145,29 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
+      var pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
+      var revive = corpse.DeadGuy;
       if (pointList == null) {
-        if (!player) return;
-        AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
-      } else {
-        int chance = actor.ReviveChance(corpse);
-        Item firstMatching = actor.Inventory.GetFirstByModel(GameItems.MEDIKIT);
-        actor.Inventory.Consume(firstMatching);
-        if (m_Rules.RollChance(chance)) {
-          corpse.DeadGuy.IsDead = false;
-          corpse.DeadGuy.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
-          corpse.DeadGuy.Doll.RemoveDecoration(GameImages.BLOODIED);
-          corpse.DeadGuy.Activity = djack.RogueSurvivor.Data.Activity.IDLE;
-          corpse.DeadGuy.TargetActor = null;
+        if (player) AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), revive.Name)));
+        return;
+      }
+
+      var inv = actor.Inventory;
+      Item firstMatching = inv.GetFirstByModel(GameItems.MEDIKIT);
+      inv.Consume(firstMatching);
+      if (m_Rules.RollChance(actor.ReviveChance(corpse))) {
+          revive.IsDead = false;
+          revive.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
+          revive.Doll.RemoveDecoration(GameImages.BLOODIED);
+          revive.Activity = djack.RogueSurvivor.Data.Activity.IDLE;
+          revive.TargetActor = null;
           map.Remove(corpse);
-          map.PlaceAt(corpse.DeadGuy, m_Rules.DiceRoller.Choose(pointList));
-          if (player)
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
-          if (actor.IsEnemyOf(corpse.DeadGuy)) return;
-          DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
-        } else {
-          if (!player) return;
-          AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
-        }
+          map.PlaceAt(revive, m_Rules.DiceRoller.Choose(pointList));
+          if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), revive));
+          if (actor.IsEnemyOf(revive)) return;
+          DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
+      } else {
+          if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), revive));
       }
     }
 
@@ -4234,7 +4232,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlotDrop(Actor player, int slot)
     {
-      Item it = player.Inventory[slot];
+      var it = player.Inventory[slot];
       if (it == null) {
         AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
         return false;
