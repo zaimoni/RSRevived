@@ -3231,10 +3231,8 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeYesNoMessage("REALLY KILL YOURSELF"));
       RedrawPlayScreen();
       bool flag = WaitYesOrNo();
-      if (!flag)
-        AddMessage(new Data.Message("Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      else
-        AddMessage(new Data.Message("You can't bear the horror anymore...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      AddMessage(new Data.Message(flag ? "You can't bear the horror anymore..."
+                                       : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       return flag;
     }
 
@@ -3246,13 +3244,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
       AddMessage(MakeYesNoMessage("REALLY ABANDON "+player.UnmodifiedName+" TO FATE"));
       RedrawPlayScreen();
-      bool flag = WaitYesOrNo();
-      if (!flag) {
-        AddMessage(new Data.Message("Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        return false;
-      }
+      bool confirm = WaitYesOrNo();
+      AddMessage(new Data.Message(confirm ? "You can't bear the horror anymore..."
+                                          : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      if (!confirm) return false;
       player.Controller = player.Model.InstanciateController();
-      AddMessage(new Data.Message("You can't bear the horror anymore...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       player.DoForAllFollowers(fo => {
           if (fo.IsPlayer) {
               HandleAbandonPC(fo);
@@ -3597,26 +3593,23 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
     }
 
+#nullable enable
     private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
     {
-#if DEBUG
-      if (null == label) throw new ArgumentNullException(nameof(label));
-      if (null == details) throw new ArgumentNullException(nameof(details));
-#endif
       bool flag1 = true;
+      int turn = Session.Get.WorldTime.TurnCounter;
       int num1 = 0;
       do {
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
-        AddMessage(new Data.Message(header, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        AddMessage(new Data.Message(header, turn, Color.Yellow));
         int num2;
         for (num2 = 0; num2 < MAX_MESSAGES-2 && num1 + num2 < strict_ub; ++num2) {
           int index = num1 + num2;
-          AddMessage(new Data.Message((1+num2).ToString()+" "+label(index), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+          AddMessage(new Data.Message((1+num2).ToString()+" "+label(index), turn, Color.LightGreen));
         }
-        if (num2 < strict_ub)
-          AddMessage(new Data.Message("9. next", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        if (num2 < strict_ub) AddMessage(new Data.Message("9. next", turn, Color.LightGreen));
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
@@ -3632,6 +3625,7 @@ namespace djack.RogueSurvivor.Engine
       while (flag1);
       ClearOverlays();
     }
+#nullable restore
 
     private void HandleItemInfo()
     {
@@ -3866,10 +3860,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleDaimonMap()
     {
-      if (!Session.Get.CMDoptionExists("socrates-daimon")) return;
-      AddMessage(new Data.Message("You pray for wisdom.", Session.Get.WorldTime.TurnCounter, Color.Green));
-      Session.Get.World.DaimonMap();
-      AddMessage(new Data.Message("Your prayers are unclearly answered.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      var sess = Session.Get;
+      if (!sess.CMDoptionExists("socrates-daimon")) return;
+      var turn = sess.WorldTime.TurnCounter;
+      AddMessage(new Data.Message("You pray for wisdom.", turn, Color.Green));
+      sess.World.DaimonMap();
+      AddMessage(new Data.Message("Your prayers are unclearly answered.", turn, Color.Yellow));
     }
 
     private bool HandleMouseLook(GDI_Point mousePos)
@@ -3879,15 +3875,13 @@ namespace djack.RogueSurvivor.Engine
       if (!CurrentMap.IsValid(pt)) return true;
       ClearOverlays();
       if (IsVisibleToPlayer(CurrentMap, in pt)) {
-        var screen = MapToScreen(pt);
         string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (lines != null) {
-          var screenPos = new GDI_Point(screen.X + TILE_SIZE, screen.Y);
-          AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
+          var screen = MapToScreen(pt);
+          AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y)));
           if (s_Options.ShowTargets) {
-            Actor actorAt = CurrentMap.GetActorAt(pt);
-            if (actorAt != null)
-              DrawActorRelations(actorAt);
+            var actorAt = CurrentMap.GetActorAt(pt);
+            if (actorAt != null) DrawActorRelations(actorAt);
           }
         }
       }
@@ -3897,7 +3891,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleMouseInventory(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
-      Item inventoryItem = MouseToInventoryItem(mousePos, out Inventory inv, out var itemPos);
+      var inventoryItem = MouseToInventoryItem(mousePos, out var inv, out var itemPos);
       if (null == inv) return false;
       bool isPlayerInventory = inv == Player.Inventory;
 
@@ -3960,11 +3954,11 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private Item MouseToInventoryItem(GDI_Point screen, out Inventory inv, out GDI_Point itemPos)
+#nullable enable
+    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv, out GDI_Point itemPos)
     {
       inv = null;
       itemPos = GDI_Point.Empty;
-      if (Player == null) return null;
       var inventory = Player.Inventory;
       if (null == inventory) return null;
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
@@ -3984,15 +3978,16 @@ namespace djack.RogueSurvivor.Engine
       return itemsAt[index2];
     }
 
-    private Item MouseToInventoryItem(GDI_Point screen, out Inventory inv)
+    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv)
     {
       return MouseToInventoryItem(screen, out inv, out var itemPos);
     }
+#nullable restore
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
-      Corpse corpse = MouseToCorpse(mousePos, out var corpsePos);
+      var corpse = MouseToCorpse(mousePos, out var corpsePos);
       if (null == corpse)  return false;
 
       bool OnRMBCorpse(Corpse c)
@@ -4040,10 +4035,11 @@ namespace djack.RogueSurvivor.Engine
         if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBCorpse(corpse);
         else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBCorpse(corpse);
       }
-      return true;
+      return true;  // \todo test behavior when returning hasDoneAction
     }
 
-    private Corpse MouseToCorpse(GDI_Point screen, out GDI_Point corpsePos)
+#nullable enable
+    private Corpse? MouseToCorpse(GDI_Point screen, out GDI_Point corpsePos)
     {
       corpsePos = GDI_Point.Empty;
       if (Player == null) return null;
@@ -4056,14 +4052,14 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    private Corpse MouseToCorpse(GDI_Point screen)
+    private Corpse? MouseToCorpse(GDI_Point screen)
     {
       return MouseToCorpse(screen, out var corpsePos);
     }
 
     private bool HandlePlayerEatCorpse(Actor player, GDI_Point mousePos)
     {
-      Corpse corpse = MouseToCorpse(mousePos);
+      var corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanEatCorpse(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
@@ -4075,7 +4071,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerReviveCorpse(Actor player, GDI_Point mousePos)
     {
-      Corpse corpse = MouseToCorpse(mousePos);
+      var corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanRevive(corpse, out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
@@ -4085,7 +4081,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     public void DoStartDragCorpse(Actor a, Corpse c)
     {
       a.Drag(c);
@@ -4274,7 +4269,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
-      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv);
+      var inventoryItem = MouseToInventoryItem(screen, out var inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
@@ -4311,9 +4306,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerInitiateTrade(Actor player, GDI_Point screen)
     {
-      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv);
+      var inventoryItem = MouseToInventoryItem(screen, out var inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
-      bool flag2 = false;
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
