@@ -3731,10 +3731,9 @@ restart:
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
-      ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL };
+      ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
-      numberedName.Inventory.AddAll(GameItems.BLACKOPS_GPS.create());
       return numberedName;
     }
 

@@ -2671,10 +2671,10 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_BlackOpsRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.BLACKOPS, map.District, map.LocalTime.TurnCounter);
-      Actor actor = SpawnNewBlackOpsLeader(map);
+      var actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewBlackOpsTrooper(actor);
+        var other = SpawnNewBlackOpsTrooper(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.BLACKOPS, actor.Location);
@@ -2870,7 +2870,8 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newGangstaMan : null);
     }
 
-    private Actor SpawnNewBlackOpsLeader(Map map)
+#nullable enable
+    private Actor? SpawnNewBlackOpsLeader(Map map)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
       newBlackOps.StartingSkill(Skills.IDs.LEADERSHIP);
@@ -2880,7 +2881,7 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER) ? newBlackOps : null);
     }
 
-    private Actor SpawnNewBlackOpsTrooper(Actor leader)
+    private Actor? SpawnNewBlackOpsTrooper(Actor leader)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps("Agent", leader);
       newBlackOps.StartingSkill(Skills.IDs.AGILE);
@@ -2895,6 +2896,7 @@ namespace djack.RogueSurvivor.Engine
       m_IsGameRunning = false;
       m_MusicManager.Stop();
     }
+#nullable restore
 
     private void HandlePlayerActor(Actor player)
     {
@@ -2928,7 +2930,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_SetCursor(null);
         // hint available?
         // alpha10 no hint if undead
-        if (Player != null && !Player.IsDead && !Player.Model.Abilities.IsUndead) {
+        if (!Player.IsDead && !Player.Model.Abilities.IsUndead) {
           // alpha10 fix properly handle hint overlay
           int availableHint = -1;
           if (s_Options.IsAdvisorEnabled && (availableHint = GetAdvisorFirstAvailableHint()) != -1) {
@@ -3202,11 +3204,12 @@ namespace djack.RogueSurvivor.Engine
       play_timer.Restart();
     }
 
+#nullable enable
     private bool TryPlayerInsanity()
     {
       if (!Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
-      ActorAction insaneAction = GenerateInsaneAction(Player);
-      if (!insaneAction?.IsPerformable() ?? true) return false;
+      var insaneAction = GenerateInsaneAction(Player);
+      if (null == insaneAction || !insaneAction.IsPerformable()) return false;
       ClearMessages();
       AddMessage(new Data.Message("(your insanity takes over)", Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
       AddMessagePressEnter();
@@ -3219,10 +3222,8 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeYesNoMessage("REALLY QUIT GAME"));
       RedrawPlayScreen();
       bool flag = WaitYesOrNo();
-      if (!flag)
-        AddMessage(new Data.Message("Good. Keep roguing!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      else
-        AddMessage(new Data.Message("Bye!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      AddMessage(new Data.Message(flag ? "Bye!"
+                                       : "Good. Keep roguing!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       return flag;
     }
 
@@ -3259,7 +3260,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-#nullable enable
     private void HandleScreenshot()
     {
       int turn = Session.Get.WorldTime.TurnCounter;
