@@ -2746,7 +2746,8 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private bool SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
+#nullable enable
+    private Actor? SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
     {
       Map map = near.Map;
       Point nearPoint = near.Position;
@@ -2761,12 +2762,13 @@ namespace djack.RogueSurvivor.Engine
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceAt(actorToSpawn, in p);
-          return true;
+          return actorToSpawn;
         }
       }
       while (num2 <= num1);
-      return false;
+      return null;
     }
+#nullable restore
 
     private void SpawnNewUndead(Map map, int day)
     {
@@ -2816,7 +2818,7 @@ namespace djack.RogueSurvivor.Engine
     private Actor? SpawnNewSurvivor(Location near)
     {
       Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(near.Map.LocalTime.TurnCounter);
-      return (SpawnActorNear(near, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, 3) ? newSurvivor : null);
+      return SpawnActorNear(near, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
     private Actor? SpawnNewNatGuardLeader(Map map)
@@ -2833,7 +2835,7 @@ namespace djack.RogueSurvivor.Engine
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
       armyNationalGuard.Inventory.AddAll(m_Rules.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
                                                                 : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
-      return (SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3) ? armyNationalGuard : null);
+      return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
     private Actor? SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
@@ -2850,7 +2852,7 @@ namespace djack.RogueSurvivor.Engine
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
-      return (SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBikerMan : null);
+      return SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
     private Actor? SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
@@ -2866,7 +2868,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
-      return (SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newGangstaMan : null);
+      return SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
     private Actor? SpawnNewBlackOpsLeader(Map map)
@@ -2885,7 +2887,7 @@ namespace djack.RogueSurvivor.Engine
       newBlackOps.StartingSkill(Skills.IDs.AGILE);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
-      return (SpawnActorNear(leader.Location, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBlackOps : null);
+      return SpawnActorNear(leader.Location, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
     public void StopTheWorld()
