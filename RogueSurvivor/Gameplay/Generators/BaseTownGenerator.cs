@@ -3528,19 +3528,17 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
-      numberedName.Inventory.AddAll(MakeItemCannedFood());
-      numberedName.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());
+      var inv = numberedName.Inventory!;
+      inv.AddAll(MakeItemCannedFood());
+      inv.AddAll(GameItems.ARMY_RATION.instantiate());
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
-      numberedName.Inventory.AddAll(rw);
-      if (m_DiceRoller.RollChance(50))
-        numberedName.Inventory.AddAll(MakeAmmo(rw.Model.ID));
-      else
-        numberedName.Inventory.AddAll(MakeItemGrenade());
+      inv.AddAll(rw);
+      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeAmmo(rw.Model.ID) : MakeItemGrenade());
       }
-      numberedName.Inventory.AddAll(GameItems.MEDIKIT.instantiate());
-      numberedName.Inventory.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
-      numberedName.Inventory.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
+      inv.AddAll(GameItems.MEDIKIT.instantiate());
+      inv.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
+      inv.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       return numberedName;

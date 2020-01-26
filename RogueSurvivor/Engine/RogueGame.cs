@@ -2495,11 +2495,11 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_NationalGuard(Map map)
     {
-      Actor actor = SpawnNewNatGuardLeader(map);
+      var actor = SpawnNewNatGuardLeader(map);
       if (actor == null) return;
 
       for (int index = 0; index < NATGUARD_SQUAD_SIZE-1; ++index) {
-        Actor other = SpawnNewNatGuardTrooper(actor);
+        var other = SpawnNewNatGuardTrooper(actor);
         if (other != null) actor.AddFollower(other);
       }
 
@@ -2613,10 +2613,10 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_BikersRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
-      Actor actor = SpawnNewBikerLeader(map, m_Rules.DiceRoller.Choose(GameGangs.BIKERS));
+      var actor = SpawnNewBikerLeader(map, m_Rules.DiceRoller.Choose(GameGangs.BIKERS));
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewBiker(actor);
+        var other = SpawnNewBiker(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.BIKERS, actor.Location);
@@ -2642,10 +2642,10 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_GangstasRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
-      Actor actor = SpawnNewGangstaLeader(map, m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS));
+      var actor = SpawnNewGangstaLeader(map, m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS));
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewGangsta(actor);
+        var other = SpawnNewGangsta(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.GANGSTA, actor.Location);
@@ -2700,7 +2700,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_BandOfSurvivors(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
-      Actor actor = SpawnNewSurvivor(map);
+      var actor = SpawnNewSurvivor(map);
       if (actor == null) return;
       for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
         SpawnNewSurvivor(actor.Location);
@@ -2787,6 +2787,7 @@ namespace djack.RogueSurvivor.Engine
       SpawnActorOnMapBorder(map, newUndead, 1);
     }
 
+#nullable enable
     private void SpawnNewSewersUndead(Map map)
     {
       Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
@@ -2806,19 +2807,19 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // The bands remain PC spawn radius shielded, for now.
-    private Actor SpawnNewSurvivor(Map map)
+    private Actor? SpawnNewSurvivor(Map map)
     {
       Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
       return (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER) ? newSurvivor : null);
     }
 
-    private Actor SpawnNewSurvivor(Location near)
+    private Actor? SpawnNewSurvivor(Location near)
     {
       Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(near.Map.LocalTime.TurnCounter);
       return (SpawnActorNear(near, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, 3) ? newSurvivor : null);
     }
 
-    private Actor SpawnNewNatGuardLeader(Map map)
+    private Actor? SpawnNewNatGuardLeader(Map map)
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");   // \todo look up some example rank systems -- some would expect Cpl here)
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
@@ -2827,17 +2828,15 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
-    private Actor SpawnNewNatGuardTrooper(Actor leader)
+    private Actor? SpawnNewNatGuardTrooper(Actor leader)
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
-      if (m_Rules.RollChance(50))
-        armyNationalGuard.Inventory.AddAll(GameItems.COMBAT_KNIFE.create());
-      else
-        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
+      armyNationalGuard.Inventory.AddAll(m_Rules.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
+                                                                : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
       return (SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3) ? armyNationalGuard : null);
     }
 
-    private Actor SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
+    private Actor? SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
     {
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
       newBikerMan.StartingSkill(Skills.IDs.LEADERSHIP);
@@ -2846,7 +2845,7 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER) ? newBikerMan : null);
     }
 
-    private Actor SpawnNewBiker(Actor leader)
+    private Actor? SpawnNewBiker(Actor leader)
     {
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
@@ -2854,7 +2853,7 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newBikerMan : null);
     }
 
-    private Actor SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
+    private Actor? SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
       newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
@@ -2863,14 +2862,13 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER) ? newGangstaMan : null);
     }
 
-    private Actor SpawnNewGangsta(Actor leader)
+    private Actor? SpawnNewGangsta(Actor leader)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
       return (SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3) ? newGangstaMan : null);
     }
 
-#nullable enable
     private Actor? SpawnNewBlackOpsLeader(Map map)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");

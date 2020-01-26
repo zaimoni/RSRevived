@@ -1281,6 +1281,8 @@ namespace djack.RogueSurvivor.Data
       other.m_Leader = this;
     }
 
+    // 2020-01-26 public void AddLeader(Actor leader) didn't work out in release mode IL: operator ?. doesn't actually reduce bytecode for the caller
+
     public void RemoveFollower(Actor other)
     {
       if (m_Followers == null) throw new InvalidOperationException("no followers");
