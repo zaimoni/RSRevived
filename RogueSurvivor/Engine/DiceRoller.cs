@@ -112,6 +112,14 @@ namespace djack.RogueSurvivor.Engine
       throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
     }
 
+    public T Choose<T>(Zaimoni.Data.Stack<T> src) {
+      int n = src.Count;
+#if DEBUG
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+#endif
+      return src[Roll(0, n)];
+    }
+
     public Point Choose(Rectangle r) {  // \todo evaluate stack-based version
       return new Point(Roll(r.Left, r.Right), Roll(r.Top, r.Bottom));
     }

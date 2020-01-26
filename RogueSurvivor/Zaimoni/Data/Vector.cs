@@ -385,11 +385,9 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D_int src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_int src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
 
+#nullable enable
     public Vector2D_int? FirstOrDefault(Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_int point = new Vector2D_int();
       for (point.X = Left; point.X < Right; ++point.X) {
         for (point.Y = Top; point.Y < Bottom; ++point.Y) {
@@ -401,18 +399,11 @@ namespace Zaimoni.Data
 
     public bool Any(Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       return  null != FirstOrDefault(testFn);
     }
 
     public void DoForEach(Action<Vector2D_int> doFn, Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_int point = new Vector2D_int();
       for (point.X = Left; point.X < Right; ++point.X) {
         for (point.Y = Top; point.Y < Bottom; ++point.Y) {
@@ -423,9 +414,6 @@ namespace Zaimoni.Data
 
     public void DoForEach(Action<Vector2D_int> doFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
       Vector2D_int point = new Vector2D_int();
       for (point.X = Left; point.X < Right; ++point.X) {
         for (point.Y = Top; point.Y < Bottom; ++point.Y) {
@@ -436,10 +424,6 @@ namespace Zaimoni.Data
 
     public void DoForEachOnEdge(Action<Vector2D_int> doFn, Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var point = new Vector2D_int();
       for (point.X = Left; point.X < Right; ++point.X) {
         point.Y = Top;
@@ -458,9 +442,6 @@ namespace Zaimoni.Data
 
     public List<Vector2D_int> Where(Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       List<Vector2D_int> ret = new List<Vector2D_int>();
       DoForEach(pt => ret.Add(pt),testFn);
       return ret;
@@ -468,13 +449,29 @@ namespace Zaimoni.Data
 
     public List<Vector2D_int> WhereOnEdge(Predicate<Vector2D_int> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var ret = new List<Vector2D_int>();
       DoForEachOnEdge(pt => ret.Add(pt),testFn);
       return ret;
     }
+
+    public void WhereOnEdge(ref Stack<Vector2D_int> dest, Predicate<Vector2D_int> testFn)
+    {
+      var poshort = new Vector2D_int();   // inline DoForEachOnEdge
+      for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
+        poshort.Y = Top;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.Y = (short)(Bottom -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+      }
+      if (2 >= Height) return;
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+        poshort.X = Left;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.X = (short)(Right -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+      }
+    }
+#nullable restore
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Box2D_int other)
@@ -907,11 +904,9 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D_short src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_short src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
 
+#nullable enable
     public Vector2D_short? FirstOrDefault(Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_short poshort = new Vector2D_short();
       for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
         for (poshort.Y = Top; poshort.Y < Bottom; ++poshort.Y) {
@@ -923,18 +918,11 @@ namespace Zaimoni.Data
 
     public bool Any(Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       return  null != FirstOrDefault(testFn);
     }
 
     public void DoForEach(Action<Vector2D_short> doFn, Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_short poshort = new Vector2D_short();
       for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
         for (poshort.Y = Top; poshort.Y < Bottom; ++poshort.Y) {
@@ -945,9 +933,6 @@ namespace Zaimoni.Data
 
     public void DoForEach(Action<Vector2D_short> doFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
       Vector2D_short poshort = new Vector2D_short();
       for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
         for (poshort.Y = Top; poshort.Y < Bottom; ++poshort.Y) {
@@ -958,10 +943,6 @@ namespace Zaimoni.Data
 
     public void DoForEachOnEdge(Action<Vector2D_short> doFn, Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var poshort = new Vector2D_short();
       for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
         poshort.Y = Top;
@@ -980,9 +961,6 @@ namespace Zaimoni.Data
 
     public List<Vector2D_short> Where(Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       List<Vector2D_short> ret = new List<Vector2D_short>();
       DoForEach(pt => ret.Add(pt),testFn);
       return ret;
@@ -990,13 +968,29 @@ namespace Zaimoni.Data
 
     public List<Vector2D_short> WhereOnEdge(Predicate<Vector2D_short> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var ret = new List<Vector2D_short>();
       DoForEachOnEdge(pt => ret.Add(pt),testFn);
       return ret;
     }
+
+    public void WhereOnEdge(ref Stack<Vector2D_short> dest, Predicate<Vector2D_short> testFn)
+    {
+      var poshort = new Vector2D_short();   // inline DoForEachOnEdge
+      for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
+        poshort.Y = Top;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.Y = (short)(Bottom -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+            }
+      if (2 >= Height) return;
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+        poshort.X = Left;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.X = (short)(Right -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+      }
+    }
+#nullable restore
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Box2D_short other)
@@ -1398,11 +1392,9 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D_long src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_long src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
 
+#nullable enable
     public Vector2D_long? FirstOrDefault(Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_long polong = new Vector2D_long();
       for (polong.X = Left; polong.X < Right; ++polong.X) {
         for (polong.Y = Top; polong.Y < Bottom; ++polong.Y) {
@@ -1414,18 +1406,11 @@ namespace Zaimoni.Data
 
     public bool Any(Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       return  null != FirstOrDefault(testFn);
     }
 
     public void DoForEach(Action<Vector2D_long> doFn, Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       Vector2D_long polong = new Vector2D_long();
       for (polong.X = Left; polong.X < Right; ++polong.X) {
         for (polong.Y = Top; polong.Y < Bottom; ++polong.Y) {
@@ -1436,9 +1421,6 @@ namespace Zaimoni.Data
 
     public void DoForEach(Action<Vector2D_long> doFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
       Vector2D_long polong = new Vector2D_long();
       for (polong.X = Left; polong.X < Right; ++polong.X) {
         for (polong.Y = Top; polong.Y < Bottom; ++polong.Y) {
@@ -1449,10 +1431,6 @@ namespace Zaimoni.Data
 
     public void DoForEachOnEdge(Action<Vector2D_long> doFn, Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var polong = new Vector2D_long();
       for (polong.X = Left; polong.X < Right; ++polong.X) {
         polong.Y = Top;
@@ -1471,9 +1449,6 @@ namespace Zaimoni.Data
 
     public List<Vector2D_long> Where(Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       List<Vector2D_long> ret = new List<Vector2D_long>();
       DoForEach(pt => ret.Add(pt),testFn);
       return ret;
@@ -1481,13 +1456,29 @@ namespace Zaimoni.Data
 
     public List<Vector2D_long> WhereOnEdge(Predicate<Vector2D_long> testFn)
     {
-#if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
-#endif
       var ret = new List<Vector2D_long>();
       DoForEachOnEdge(pt => ret.Add(pt),testFn);
       return ret;
     }
+
+    public void WhereOnEdge(ref Stack<Vector2D_long> dest, Predicate<Vector2D_long> testFn)
+    {
+      var poshort = new Vector2D_long();   // inline DoForEachOnEdge
+      for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
+        poshort.Y = Top;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.Y = (short)(Bottom -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+      }
+      if (2 >= Height) return;
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+        poshort.X = Left;
+        if (testFn(poshort)) dest.push(ref poshort);
+        poshort.X = (short)(Right -1);
+        if (testFn(poshort)) dest.push(ref poshort);
+      }
+    }
+#nullable restore
 
         // lexicographic sort; IComparable<>
         public int CompareTo(Box2D_long other)

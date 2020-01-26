@@ -2732,9 +2732,11 @@ namespace djack.RogueSurvivor.Engine
         return !exclude.Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
     }
 
+#nullable enable
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
     {
-      List<Point> tmp = map.Rect.WhereOnEdge(pt => {
+      var tmp = new Zaimoni.Data.Stack<Point>(stackalloc Point[2 * (map.Rect.Width + map.Rect.Height - 2)]);
+      map.Rect.WhereOnEdge(ref tmp, pt => {
          if (!map.IsWalkableFor(pt, actorToSpawn)) return false;
          if (!NoPlayersNearerThan(map, in pt, minDistToPlayer)) return false;
          if (actorToSpawn.WouldBeAdjacentToEnemy(map, pt)) return false;
@@ -2746,7 +2748,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     private Actor? SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
     {
       Map map = near.Map;
