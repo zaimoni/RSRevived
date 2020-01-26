@@ -207,4 +207,45 @@ namespace djack.RogueSurvivor.Data
       return Map.Name+"@"+Position.X.ToString()+","+Position.Y.ToString();
     }
   }
+
+#if FAKE_ECS
+    internal readonly ref struct Location_stack_r
+    {
+        public readonly int Map_code;
+        public readonly Point Position;
+
+        public Location_stack_r(Map m, Point pos)
+        {
+            Map_code = m.encode();
+            Position = pos;
+        }
+
+        static public bool operator ==(in Location_stack_r lhs, in Location_stack_r rhs) { return lhs.Equals(in rhs); }
+        static public bool operator !=(in Location_stack_r lhs, in Location_stack_r rhs) { return !lhs.Equals(in rhs); }
+        static public bool operator <(in Location_stack_r lhs, in Location_stack_r rhs) { return 0 > lhs.CompareTo(in rhs); }
+        static public bool operator >(in Location_stack_r lhs, in Location_stack_r rhs) { return 0 < lhs.CompareTo(in rhs); }
+        static public bool operator <=(in Location_stack_r lhs, in Location_stack_r rhs) { return 0 >= lhs.CompareTo(in rhs); }
+        static public bool operator >=(in Location_stack_r lhs, in Location_stack_r rhs) { return 0 <= lhs.CompareTo(in rhs); }
+
+        public string to_s() => Map.decode(Map_code).Name + "@" + Position.X.ToString() + "," + Position.Y.ToString();
+
+        // lexicographic sort; IComparable<>
+        public int CompareTo(in Location_stack_r other)
+        {
+            int ret = Map_code.CompareTo(other.Map_code);
+            if (0 != ret) return ret;
+            return Position.CompareTo(other.Position);
+        }
+
+        // IEquatable<>
+        public bool Equals(in Location_stack_r other)
+        {
+            return Map_code == other.Map_code && Position == other.Position;
+        }
+
+        public override bool Equals(object obj) => throw new NotSupportedException();
+        public override int GetHashCode() => throw new NotSupportedException();
+        public override string ToString() => throw new NotSupportedException();
+    };
+#endif
 }
