@@ -2605,6 +2605,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+#nullable enable
     private bool CheckForEvent_BikersRaid(Map map)
     {
       return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY && (!HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BIKERS_RAID_CHANCE_PER_TURN));
@@ -2722,17 +2723,15 @@ namespace djack.RogueSurvivor.Engine
     static private int DistanceToPlayer(Map map, Point pos)
     {
 	  var players = map.Players.Get;
-	  if (0 >= players.Count) return int.MaxValue;
-	  return players.Select(p=> Rules.GridDistance(p.Location.Position, pos)).Min();
+	  if (0 >= players.Count) return int.MaxValue;  // 2020-01-27 optimizer is catching this
+	  return players.Min(p=> Rules.GridDistance(p.Location.Position, pos));
     }
 
     static private bool NoPlayersNearerThan(Map map, in Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
     {
-        var exclude = new Rectangle(pos - (Point)(min_distance-1), (Point)(-1+2* min_distance));
-        return !exclude.Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
+        return !(new Rectangle(pos - (Point)(min_distance - 1), (Point)(-1 + 2 * min_distance))).Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
     }
 
-#nullable enable
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
     {
       var tmp = new Zaimoni.Data.Stack<Point>(stackalloc Point[2 * (map.Rect.Width + map.Rect.Height - 2)]);
