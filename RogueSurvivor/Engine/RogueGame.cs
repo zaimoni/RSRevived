@@ -2518,12 +2518,10 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
 
+#nullable enable
     private bool CheckForEvent_ArmySupplies(Map map)
     {
-#if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-#endif
-      if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
+      if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE))
         return false;
       int num = 1 + map.Actors.Count(a => {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
@@ -2535,15 +2533,16 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_ArmySupplies(Map map)
     {
-      if (!FindDropSuppliesPoint(map, out Point dropPoint)) return;
-      Rectangle survey = new Rectangle(dropPoint - (Point)ARMY_SUPPLIES_SCATTER, (Point)(2 * ARMY_SUPPLIES_SCATTER + 1));
+      var dropPoint = FindDropSuppliesPoint(map);
+      if (null == dropPoint) return;
+      Rectangle survey = new Rectangle(dropPoint.Value - (Point)ARMY_SUPPLIES_SCATTER, (Point)(2 * ARMY_SUPPLIES_SCATTER + 1));
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
           map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), in pt);
           Session.Get.PoliceInvestigate.Record(map, in pt);
           Location loc = new Location(map, pt);
-          // inaccurate, but ensures propor prioritzation
+          // inaccurate, but ensures proper prioritzation
           var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc);
           (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
           already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
@@ -2551,14 +2550,15 @@ namespace djack.RogueSurvivor.Engine
         },pt => AirdropWithoutIncident(map, in pt));
 
       // \todo this should alert the ais to potential food/medikits if they hear it
-      NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map,dropPoint));
+      var anchor = new Location(map,dropPoint.Value);
+      NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, anchor);
       if (map != Player.Location.Map) return;
       if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         m_MusicManager.Stop();
         m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
         ClearMessages();
         AddMessage(new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", new Location(map,dropPoint)));
+        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", anchor));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2589,23 +2589,21 @@ namespace djack.RogueSurvivor.Engine
       return false; // tree, or z-level issue (e.g., large fortifications)
     }
 
-    private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
+    private Point? FindDropSuppliesPoint(Map map)
     {
-      dropPoint = default;
       var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, in pt));
-      if (0 >= pts.Count) return false;
-      dropPoint = m_Rules.DiceRoller.Choose(pts);
-      return true;
+      if (0 >= pts.Count) return null;
+      return m_Rules.DiceRoller.Choose(pts);
     }
 
     static private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
     {
-      if (Session.Get.HasRaidHappened(raid, district))
-        return mapTime.TurnCounter - Session.Get.LastRaidTime(raid, district) < sinceNTurns;
+      var sess = Session.Get;
+      if (sess.HasRaidHappened(raid, district))
+        return mapTime.TurnCounter - sess.LastRaidTime(raid, district) < sinceNTurns;
       return false;
     }
 
-#nullable enable
     private bool CheckForEvent_BikersRaid(Map map)
     {
       return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY && (!HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BIKERS_RAID_CHANCE_PER_TURN));
