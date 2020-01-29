@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Data
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {
          if (null == m_Actor) return null;
-         if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return Session.Get.PoliceItemMemory;
+         if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.PoliceItemMemory;
          return null;
        }
     }

@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Data
 
     private static ReadOnlyCollection<Actor> _findPolice(List<Actor> src)
     {
-      return new ReadOnlyCollection<Actor>(src.FindAll(a => (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead));
+      return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsFaction(Gameplay.GameFactions.IDs.ThePolice) && !a.IsDead));
     }
 
     private static int _countUndead(IEnumerable<Actor> src)
@@ -1014,7 +1014,7 @@ retry:
     public void Recalc(Actor actor)
     {
       if (actor.IsPlayer) Players.Recalc();
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
+      if (actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) Police.Recalc();
     }
 
     public void PlaceAt(Actor actor, in Point position)

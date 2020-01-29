@@ -76,7 +76,7 @@ namespace djack.RogueSurvivor.Data
     {
       base.TakeControl(actor);
       Actor.Says += HandleSay;
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) {
+      if (actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) {
         // use police item memory rather than ours
         m_itemMemory = Session.Get.PoliceItemMemory;
       }
@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Data
     // i.e. a full migration of legacy code merely ends up relocating the complexity; rationale needed to proceed
     public override string AggressedBy(Actor aggressor)
     {
-      if (Gameplay.GameFactions.ThePolice == aggressor.Faction && Gameplay.GameFactions.TheCHARCorporation==m_Actor.Faction && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+      if (aggressor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) && m_Actor.IsFaction(Gameplay.GameFactions.IDs.TheCHARCorporation) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
         // same technical issues as DoMakeEnemyOfCop
         Session.Get.ScriptStage_PoliceCHARrelations = 1;
 //      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
@@ -289,7 +289,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
-      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.Faction==Gameplay.GameFactions.ThePolice) return false; // very selective extraction from ItIsUseleess
+      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
       return true;
     }
 

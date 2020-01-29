@@ -1265,7 +1265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsFriendOf(Actor other)
     {
-      if (!m_Actor.IsEnemyOf(other)) return m_Actor.Faction == other.Faction;
+      if (!m_Actor.IsEnemyOf(other)) return m_Actor.IsFaction(other);
       return false;
     }
 

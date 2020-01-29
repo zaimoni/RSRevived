@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override string AggressedBy(Actor aggressor)
     {
-      if (GameFactions.ThePolice == aggressor.Faction && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+      if (aggressor.IsFaction(GameFactions.IDs.ThePolice) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
         // same technical issues as DoMakeEnemyOfCop
         Session.Get.ScriptStage_PoliceCHARrelations = 1;
 //      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
@@ -179,7 +179,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts3 = friends.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
-          return actor.Faction != GameFactions.TheCHARCorporation &&  RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
+          return !actor.IsFaction(GameFactions.IDs.TheCHARCorporation) && RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
         });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;

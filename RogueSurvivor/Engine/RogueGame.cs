@@ -2484,7 +2484,7 @@ namespace djack.RogueSurvivor.Engine
         int ret = 0;
         foreach(Actor a in map.Actors) {
           if (a.Model.Abilities.IsUndead) continue;
-          ret += GameFactions.TheArmy == a.Faction ? 2 : 1;
+          ret += a.IsFaction(GameFactions.IDs.TheArmy) ? 2 : 1;
         }
         return ret;
       }
@@ -2525,7 +2525,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       int num = 1 + map.Actors.Count(a => {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
-          return a.Faction == GameFactions.TheCivilians;
+          return a.IsFaction(GameFactions.IDs.TheCivilians);
         return false;
       });
       return (float)(1 + CountFoodItemsNutrition(map)) / (float)num < s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
@@ -3782,7 +3782,7 @@ namespace djack.RogueSurvivor.Engine
         switch(index)
         {
         case 0:
-            if (GameFactions.ThePolice==Player.Faction) {
+            if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
               // full knowledge: police storyline
               if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should have NPC start-of-game district chief
@@ -7875,7 +7875,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       });
       // XXX this should be a more evident message to PC police
-      if (aggressor.Faction == GameFactions.TheCHARCorporation && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+      if (aggressor.IsFaction(GameFactions.IDs.TheCHARCorporation) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
         // Operation Dead Hand orders do not exclude police
         // XXX should require a policeman to read the CHAR Guard Manual for this effect?
         // XXX alternately: if a policeman reads the CHAR Guard Manual before contact w/CHAR HQ is re-established this becomes irreversible?
@@ -9817,8 +9817,8 @@ namespace djack.RogueSurvivor.Engine
       // crime blotter representation).
       static bool police_wanted(Actor a) {
         if (a.Faction.IsEnemyOf(GameFactions.ThePolice)) return true;
-        if (a.Aggressors.Any_(who => GameFactions.ThePolice == who.Faction)) return true;
-        if (a.Aggressing.Any_(who => GameFactions.ThePolice == who.Faction || GameFactions.ThePolice == who.LiveLeader?.Faction)) return true;
+        if (a.Aggressors.Any_(who => who.IsFaction(GameFactions.IDs.ThePolice))) return true;
+        if (a.Aggressing.Any_(who => who.IsFaction(GameFactions.IDs.ThePolice) || GameFactions.ThePolice == who.LiveLeader?.Faction)) return true;
         return false;
       }
 
@@ -9826,7 +9826,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
-        if (GameFactions.ThePolice == deadGuy.Faction) {
+        if (deadGuy.IsFaction(GameFactions.IDs.ThePolice)) {
           var it = GameItems.POLICE_RADIO.instantiate();
           if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
         }
@@ -11360,7 +11360,7 @@ namespace djack.RogueSurvivor.Engine
 //      bool find_leader = (null != itemTracker1 && m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
         bool find_undead = (null != itemTracker1 && itemTracker1.CanTrackUndeads);
         bool find_blackops = (null != itemTracker1 && itemTracker1.CanTrackBlackOps);
-        bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || GameFactions.ThePolice == Player.Faction;
+        bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || Player.IsFaction(GameFactions.IDs.ThePolice);
         if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
           find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
@@ -11401,9 +11401,9 @@ namespace djack.RogueSurvivor.Engine
         if (find_blackops || find_police) {
           view.DoForEach(pt => {
               if (find_undead && actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
-              if (find_blackops && actor.Faction == GameFactions.TheBlackOps) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
-              if (find_police && actor.Faction == GameFactions.ThePolice) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
-//            if (find_police && actor.Faction == GameFactions.ThePolice) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
+              if (find_blackops && actor.IsFaction(GameFactions.IDs.TheBlackOps)) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
+              if (find_police && actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
+//            if (find_police && actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
           }, non_self);
         } else if (find_undead) {
           Rectangle z_view = new Rectangle(Player.Location.Position, 1+2*Rules.ZTRACKINGRADIUS, 1+2*Rules.ZTRACKINGRADIUS);
@@ -13012,7 +13012,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
       // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
-      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && IsInCHAROffice(player.Location)))
+      if (!player.Model.Abilities.IsUndead && !player.IsFaction(GameFactions.IDs.TheCHARCorporation) && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && IsInCHAROffice(player.Location)))
         ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, player);
       var p_map = player.Location.Map;
       if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY)) {
@@ -13264,7 +13264,7 @@ namespace djack.RogueSurvivor.Engine
       if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
         return false;
       if (asLiving)
-        return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
+        return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.IsFaction(GameFactions.IDs.TheCivilians));
       return a.Model.Abilities.IsUndead && (s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
     }
 

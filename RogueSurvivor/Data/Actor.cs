@@ -166,6 +166,9 @@ namespace djack.RogueSurvivor.Data
       set { m_FactionID = value.ID; }
     }
 
+    public bool IsFaction(Gameplay.GameFactions.IDs f) { return m_FactionID == (int)f; }
+    public bool IsFaction(Actor other) { return m_FactionID == other.m_FactionID; }
+
 #nullable enable
     public string Name
     {
@@ -1320,14 +1323,14 @@ namespace djack.RogueSurvivor.Data
 
     public ThreatTracking? Threats {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceThreatTracking;
+        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Engine.Session.Get.PoliceThreatTracking;
         return null;
       }
     }
 
     public LocationSet? InterestingLocs {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceInvestigate;
+        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Engine.Session.Get.PoliceInvestigate;
         return null;
       }
     }
@@ -1408,7 +1411,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsEnemyOf(Actor target, bool checkGroups = true)    // extra parameter from RS Alpha 10
     {
       if (Faction.IsEnemyOf(target.Faction)) return true;
-      if (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
+      if (IsFaction(target) && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
       if (ArePersonalEnemies(target)) return true;
       return checkGroups && AreIndirectEnemies(target);
     }
@@ -1501,7 +1504,7 @@ namespace djack.RogueSurvivor.Data
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
+        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
         var leader = LiveLeader;
@@ -1548,7 +1551,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsAlly(Actor other)
     {
       if (IsInGroupWith(other)) return true;
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return (int)Gameplay.GameFactions.IDs.ThePolice == other.Faction.ID;
+      if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return other.IsFaction(Gameplay.GameFactions.IDs.ThePolice);
       return false;
     }
 
