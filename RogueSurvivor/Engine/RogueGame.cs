@@ -2059,7 +2059,7 @@ namespace djack.RogueSurvivor.Engine
             }
             foreach (Corpse c in corpseList3) map.Destroy(c);
           }
-          if (null != Player && Player.Location.Map == map) {
+          if (Player.Location.Map == map) {
             foreach (Corpse c in corpseList2) {
               map.Destroy(c);
               if (ForceVisibleToPlayer(map, c.Position))
@@ -10681,7 +10681,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Player.ActorScoring.TotalPoints, (int)(100.0 * (double)s_Options.DifficultyRating((GameFactions.IDs)Player.Faction.ID)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
-                if (null != Player) {
+                if (null != m_Player) {
                   if (Player.MurdersCounter > 0)
                     m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", Player.MurdersCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
@@ -11353,12 +11353,11 @@ namespace djack.RogueSurvivor.Engine
       if (!Player.IsSleeping) {
 	    // normal detectors/lights
         var itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
-        bool find_followers = (null != itemTracker1 && Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
-//      bool find_leader = (null != itemTracker1 && m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
-        bool find_undead = (null != itemTracker1 && itemTracker1.CanTrackUndeads);
-        bool find_blackops = (null != itemTracker1 && itemTracker1.CanTrackBlackOps);
-        bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || Player.IsFaction(GameFactions.IDs.ThePolice);
+        bool find_followers = false;
+//      bool find_leader = false; // may need this, but not for single PC
+        bool find_undead = false;
+        bool find_blackops = false;
+        bool find_police = Player.IsFaction(GameFactions.IDs.ThePolice);
         if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
           find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
