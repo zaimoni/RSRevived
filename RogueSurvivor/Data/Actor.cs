@@ -342,14 +342,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsTrustingLeader {
       get {
-        return HasLeader && TRUST_TRUSTING_THRESHOLD <= TrustInLeader;
+        return HasLeader && TRUST_TRUSTING_THRESHOLD <= m_TrustInLeader;
       }
     }
 
     public bool HasBondWith(Actor target)
     {
-      if (Leader == target)      return TRUST_BOND_THRESHOLD <= TrustInLeader;
-      if (target.Leader == this) return TRUST_BOND_THRESHOLD <= target.TrustInLeader;
+      if (m_Leader == target)      return TRUST_BOND_THRESHOLD <= m_TrustInLeader;
+      if (target.m_Leader == this) return TRUST_BOND_THRESHOLD <= target.m_TrustInLeader;
       return false;
     }
 

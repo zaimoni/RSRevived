@@ -2338,6 +2338,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // object orientation (Actor) and UI lockdown (RogueGame) heuristics are different locations
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
     {
       a.TrustInLeader += mod;
@@ -2347,6 +2348,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
+#nullable enable
     static private int CountFoodItemsNutrition(Map map)
     {
       int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
@@ -2377,7 +2379,7 @@ namespace djack.RogueSurvivor.Engine
     private bool CheckForEvent_SewersInvasion(Map map)
     {
       map.UndeadCount.Recalc();
-      return Session.Get.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && map.UndeadCount.Get < s_Options.MaxUndeads/2;
+      return Session.Get.HasZombiesInSewers && map.UndeadCount.Get < s_Options.MaxUndeads / 2 && m_Rules.RollChance(SEWERS_INVASION_CHANCE);
     }
 
     private void FireEvent_SewersInvasion(Map map)
@@ -2473,9 +2475,6 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
-#if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-#endif
       if (0 == s_Options.NatGuardFactor || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
       // yes, each national guardsman is double-counted
@@ -2518,7 +2517,6 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
 
-#nullable enable
     private bool CheckForEvent_ArmySupplies(Map map)
     {
       if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE))
