@@ -10610,7 +10610,10 @@ namespace djack.RogueSurvivor.Engine
       switch(CurrentMap.Lighting)
       {
         case Lighting.DARKNESS: return new ColorString(Color.Blue,"Darkness");
-        case Lighting.OUTSIDE: return new ColorString(WeatherColor(Session.Get.World.Weather),DescribeWeather(Session.Get.World.Weather));
+        case Lighting.OUTSIDE: {
+          var weather = Session.Get.World.Weather;
+          return new ColorString(WeatherColor(weather),DescribeWeather(weather));
+        }
         case Lighting.LIT: return new ColorString(Color.Yellow,"Lit");
         default: throw new ArgumentOutOfRangeException("unhandled lighting");
       }
@@ -13269,7 +13272,7 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.ReincMode.RANDOM_LIVING:
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
-          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
+          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || (reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50));
           // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
           var actorList2 = CurrentMap.District.FilterActors(actor => IsSuitableReincarnation(actor, asLiving));
           matchingActors = actorList2.Count;
