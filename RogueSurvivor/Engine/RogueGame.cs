@@ -2083,46 +2083,18 @@ namespace djack.RogueSurvivor.Engine
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
                   actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
-                  if (player) {
-                    if (flag3) ClearMessages();
-                    AddMessage(MakeMessage(actor, string.Format("{0} blood.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
-                    if (flag3) {
-                      AddMessagePressEnter();
-                      ClearMessages();
-                    }
-                  }
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
                   if (actor.HitPoints <= 0) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (player) {
-                    if (flag3) ClearMessages();
-                    AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
-                    if (flag3) {
-                      AddMessagePressEnter();
-                      ClearMessages();
-                    }
-                  }
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (player) {
-                    if (flag3) ClearMessages();
-                    AddMessage(MakeMessage(actor, string.Format("{0} sick and tired.", Conjugate(actor, VERB_FEEL)), Color.Purple));
-                    if (flag3) {
-                      AddMessagePressEnter();
-                      ClearMessages();
-                    }
-                  }
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", Conjugate(actor, VERB_FEEL)), Color.Purple));
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (player) {
-                    if (flag3) ClearMessages();
-                    AddMessage(MakeMessage(actor, string.Format("{0} sick and weak.", Conjugate(actor, VERB_FEEL)), Color.Purple));
-                    if (flag3) {
-                      AddMessagePressEnter();
-                      ClearMessages();
-                    }
-                  }
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", Conjugate(actor, VERB_FEEL)), Color.Purple));
                 }
                 if (flag4) (actorList ?? (actorList = new List<Actor>())).Add(actor);
               }
@@ -6434,7 +6406,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(lines1, Color.White, Color.White, Color.Black, GDI_Point.Empty));
       ClearMessages();
       AddMessage(new Data.Message("You can disable the advisor in the options screen.", Session.Get.WorldTime.TurnCounter, Color.White));
-      AddMessage(new Data.Message(string.Format("To show the options screen : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
+      AddMessage(new Data.Message(string.Format("To show the options screen : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
       AddMessagePressEnter();
       ClearMessages();
       ClearOverlays();
@@ -9778,11 +9750,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != clan) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (ForceVisibleToPlayer(a)) {
-            if (a.IsPlayer) ClearMessages();
-            AddMessage(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(a, VERB_BE), deadGuy.Name)));
-            if (a.IsPlayer) AddMessagePressEnter();
-          }
+          if (ForceVisibleToPlayer(a)) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(a, VERB_BE), deadGuy.Name)));
         }
       }
 

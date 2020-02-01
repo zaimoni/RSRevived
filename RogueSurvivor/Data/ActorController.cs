@@ -33,6 +33,11 @@ namespace djack.RogueSurvivor.Data
     protected abstract void SensorsOwnedBy(Actor actor);
     public virtual void LeaveControl() { m_Actor = null; }
 
+    // forwarder system for to RogueGame::AddMessage
+    public virtual void AddMessage(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
+    public virtual void AddMessageForceRead(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
+    public virtual void AddMessageForceReadClear(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
+
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {
          if (null == m_Actor) return null;

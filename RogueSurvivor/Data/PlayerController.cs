@@ -44,6 +44,31 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    // forwarder system for to RogueGame::AddMessage
+    public override void AddMessage(Data.Message msg) {
+      if (RogueGame.IsPlayer(m_Actor)) RogueForm.Game.AddMessage(msg);
+      else DeferMessage(msg);
+    }
+
+    public override void AddMessageForceRead(Data.Message msg) {
+      if (RogueGame.IsPlayer(m_Actor)) {
+        var game = RogueForm.Game;
+        game.ClearMessages();
+        game.AddMessage(msg);
+        game.AddMessagePressEnter();
+      } else DeferMessage(msg);
+    }
+
+    public override void AddMessageForceReadClear(Data.Message msg) {
+      if (RogueGame.IsPlayer(m_Actor)) {
+        var game = RogueForm.Game;
+        game.ClearMessages();
+        game.AddMessage(msg);
+        game.AddMessagePressEnter();
+        game.ClearMessages();
+      } else DeferMessage(msg);
+    }
+
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
 	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
