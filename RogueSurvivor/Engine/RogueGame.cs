@@ -11307,7 +11307,8 @@ namespace djack.RogueSurvivor.Engine
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }
-      m_UI.UI_DrawRect(Color.White, new GDI_Rectangle(MINIMAP_X + (MapViewRect.Left-view.Left) * MINITILE_SIZE, MINIMAP_Y + (MapViewRect.Top-view.Top) * MINITILE_SIZE, MapViewRect.Width * MINITILE_SIZE, MapViewRect.Height * MINITILE_SIZE));
+      var minimap_delta = (MapViewRect.Location-view.Location)*MINITILE_SIZE;
+      m_UI.UI_DrawRect(Color.White, new GDI_Rectangle(MINIMAP_X + minimap_delta.X, MINIMAP_Y + minimap_delta.Y, MapViewRect.Width * MINITILE_SIZE, MapViewRect.Height * MINITILE_SIZE));
       if (s_Options.ShowPlayerTagsOnMinimap) {
         view.DoForEach(pt => {
             string imageID = null;
@@ -11380,10 +11381,8 @@ namespace djack.RogueSurvivor.Engine
           }, non_self);
         }
       }	// end if (!Player.IsSleeping)
-      Point position = Player.Location.Position;
-      int x1 = MINIMAP_X + (position.X-view.Left) * 2;
-      int y1 = MINIMAP_Y + (position.Y-view.Top) * 2;
-      m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, x1 - 1, y1 - 1);
+      minimap_delta = (Player.Location.Position - view.Location)*MINITILE_SIZE;
+      m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);
     }
 
     static private ColorString ActorHungerStatus(Actor actor)
