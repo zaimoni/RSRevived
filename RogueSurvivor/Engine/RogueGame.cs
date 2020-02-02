@@ -11362,13 +11362,13 @@ namespace djack.RogueSurvivor.Engine
             }
           });
         }
-        Actor? actor = null;
-        bool non_self(Point pt) {
-          actor = map.GetActorAtExt(pt);
-          return null != actor && actor != Player;
+        Actor? non_self(Point pt) {
+          var actor = map.GetActorAtExt(pt);
+          if (IsPlayer(actor)) return null;
+          return actor;
         }
         if (find_blackops || find_police) {
-          view.DoForEach(pt => {
+          view.DoForEach(actor => {
               if (find_undead && actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
               if (find_blackops && actor.IsFaction(GameFactions.IDs.TheBlackOps)) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
               if (find_police && actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
@@ -11376,7 +11376,7 @@ namespace djack.RogueSurvivor.Engine
           }, non_self);
         } else if (find_undead) {
           Rectangle z_view = new Rectangle(Player.Location.Position, 1+2*Rules.ZTRACKINGRADIUS, 1+2*Rules.ZTRACKINGRADIUS);
-          z_view.DoForEach(pt => {
+          z_view.DoForEach(actor => {
               DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
           }, non_self);
         }
@@ -13324,8 +13324,7 @@ namespace djack.RogueSurvivor.Engine
       Location loc = whoDoesTheAction.Location;
       int maxLivingFOV = Actor.MaxLivingFOV(whoDoesTheAction.Location.Map);
       Rectangle rect = new Rectangle(loc.Position-(Point)maxLivingFOV,(Point)(2*maxLivingFOV+1));
-      Actor actor = null;
-      rect.DoForEach(pt=>{
+      rect.DoForEach(actor=>{
         actor.SpendSanity(sanCost);
         if (whoDoesTheAction == actor) {
           if (actor.IsPlayer)
@@ -13338,12 +13337,12 @@ namespace djack.RogueSurvivor.Engine
         else if (ForceVisibleToPlayer(actor))
           AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", Conjugate(actor, VERB_SEE))));
       },pt=>{
-        actor = loc.Map.GetActorAtExt(pt);
-        if (null == actor) return false;
-        if (!actor.Model.Abilities.HasSanity) return false;
-        if (actor.IsSleeping) return false;
-        if (!LOS.CanTraceViewLine(in loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return false;
-        return true;
+        var actor = loc.Map.GetActorAtExt(pt);
+        if (null == actor) return null;
+        if (!actor.Model.Abilities.HasSanity) return null;
+        if (actor.IsSleeping) return null;
+        if (!LOS.CanTraceViewLine(in loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return null;
+        return actor;
       });
     }
 

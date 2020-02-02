@@ -412,6 +412,17 @@ namespace Zaimoni.Data
       }
     }
 
+    public void DoForEach<T>(Action<T> doFn, Func<Vector2D_int,T?> testFn) where T:class
+    {
+      Vector2D_int pt = new Vector2D_int();
+      for (pt.X = Left; pt.X < Right; ++pt.X) {
+        for (pt.Y = Top; pt.Y < Bottom; ++pt.Y) {
+          var test = testFn(pt);
+          if (null != test) doFn(test);
+        }
+      }
+    }
+
     public void DoForEach(Action<Vector2D_int> doFn)
     {
       Vector2D_int point = new Vector2D_int();
@@ -931,6 +942,17 @@ namespace Zaimoni.Data
       }
     }
 
+    public void DoForEach<T>(Action<T> doFn, Func<Vector2D_short,T?> testFn) where T:class
+    {
+      Vector2D_short pt = new Vector2D_short();
+      for (pt.X = Left; pt.X < Right; ++pt.X) {
+        for (pt.Y = Top; pt.Y < Bottom; ++pt.Y) {
+          var test = testFn(pt);
+          if (null != test) doFn(test);
+        }
+      }
+    }
+
     public void DoForEach(Action<Vector2D_short> doFn)
     {
       Vector2D_short poshort = new Vector2D_short();
@@ -1415,6 +1437,17 @@ namespace Zaimoni.Data
       for (polong.X = Left; polong.X < Right; ++polong.X) {
         for (polong.Y = Top; polong.Y < Bottom; ++polong.Y) {
           if (testFn(polong)) doFn(polong);
+        }
+      }
+    }
+
+    public void DoForEach<T>(Action<T> doFn, Func<Vector2D_long,T?> testFn) where T:class
+    {
+      Vector2D_long pt = new Vector2D_long();
+      for (pt.X = Left; pt.X < Right; ++pt.X) {
+        for (pt.Y = Top; pt.Y < Bottom; ++pt.Y) {
+          var test = testFn(pt);
+          if (null != test) doFn(test);
         }
       }
     }
