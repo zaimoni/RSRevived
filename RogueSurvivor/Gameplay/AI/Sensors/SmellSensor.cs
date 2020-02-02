@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       int num = actor.SmellThreshold;  // floors at 1
       Rectangle survey = new Rectangle(actor.Location.Position+Direction.NW, 3, 3);
       Map map = actor.Location.Map;
-      int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
+      int turnCounter = map.LocalTime.TurnCounter;
       int scentByOdorAt = 0;
       survey.DoForEach(pt => { 
         m_List.Add(new Percept_<AIScent>(new AIScent(scentByOdorAt), turnCounter, new Location(map, pt)));

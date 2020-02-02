@@ -11317,7 +11317,8 @@ namespace djack.RogueSurvivor.Engine
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, in pt)) imageID = GameImages.MINI_PLAYER_TAG3;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG4, in pt)) imageID = GameImages.MINI_PLAYER_TAG4;
             if (imageID != null) {
-              m_UI.UI_DrawImage(imageID, MINIMAP_X + (pt.X - view.Left) * MINITILE_SIZE - 1, MINIMAP_Y + (pt.Y - view.Top) * MINITILE_SIZE - 1);
+              var delta = (pt - view.Location)* MINITILE_SIZE;
+              m_UI.UI_DrawImage(imageID, MINIMAP_X + delta.X - 1, MINIMAP_Y + delta.Y - 1);
             }
         },
         pt => { return Player.Controller.IsKnown(new Location(map, pt)); });
@@ -12553,8 +12554,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (s_Options.RevealStartingDistrict) {
         foreach(Actor player in entryMap.Players.Get) {
-          Point pos = player.Location.Position;
-          List<Zone> zonesAt1 = entryMap.GetZonesAt(pos);
+          var zonesAt1 = entryMap.GetZonesAt(player.Location.Position);
           if (null == zonesAt1) continue;
           Zone zone = zonesAt1[0];
           entryMap.Rect.DoForEach((pt => {
