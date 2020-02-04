@@ -1925,7 +1925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
-    private ActorAction BehaviorFlee(Actor enemy, HashSet<Point> LoF_reserve, bool doRun, string[] emotes)
+    private ActorAction BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
       ActorAction tmpAction = null;
@@ -1937,31 +1937,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // however, we do not want to obstruct line of fire of allies
         {
         bool could_barricade = m_Actor.CouldBarricade();
-        var close_doors = new Dictionary<Point,DoorWindow>();
-        var barricade_doors = new Dictionary<Point,DoorWindow>();
+        // historically was Dictionary<Point,DoorWindow> but we don't actually use the Point
+        List<DoorWindow>? close_doors = null;
+        List<DoorWindow>? barricade_doors = null;
         foreach(var dir in Direction.COMPASS) {
           var pt = m_Actor.Location.Position + dir;
           if (LoF_reserve?.Contains(pt) ?? false) continue;
           if (!(m_Actor.Location.Map.GetMapObjectAt(pt) is DoorWindow door)) continue;
-          if (!IsBetween(m_Actor.Location.Position, in pt, enemy.Location.Position)) continue;
+          if (m_Actor.Location.Map!=enemy.Location.Map || !IsBetween(m_Actor.Location.Position, in pt, enemy.Location.Position)) continue;
+          // magic constant 4 is the maximum number of doors that may reasonably be adjacent to a point with our map generation
           if (m_Actor.CanClose(door)) {
-            if ((!Rules.IsAdjacent(in pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
+            if ((!Rules.IsAdjacent(in pt, enemy.Location.Position) || !enemy.CanClose(door))) (close_doors ?? (close_doors = new List<DoorWindow>(4))).Add(door);
           } else if (could_barricade && door.CanBarricade()) {
-            barricade_doors[pt] = door;
+            (barricade_doors ?? (barricade_doors = new List<DoorWindow>(4))).Add(door);
           }
         }
-        if (0 < close_doors.Count) {
+        if (null != close_doors) {
           var dest = game.Rules.DiceRoller.Choose(close_doors);
-          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Value.Location));
-          return new ActionCloseDoor(m_Actor, dest.Value, m_Actor.Location == PrevLocation);
-        } else if (0 < barricade_doors.Count) {
+          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
+          return new ActionCloseDoor(m_Actor, dest, m_Actor.Location == PrevLocation);
+        } else if (null != barricade_doors) {
           var dest = game.Rules.DiceRoller.Choose(barricade_doors);
-          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Value.Location));
-          return new ActionBarricadeDoor(m_Actor, dest.Value);
+          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
+          return new ActionBarricadeDoor(m_Actor, dest);
         }
         }   // enable automatic GC
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
-          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
+          tmpAction = BehaviorUseExit(UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
@@ -1975,7 +1977,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here ...
-        if (!_damage_field?.ContainsKey(m_Actor.Location.Position) ?? true) {
+        if (null == _damage_field || _damage_field.ContainsKey(m_Actor.Location.Position)) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
