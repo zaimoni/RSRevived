@@ -1614,7 +1614,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
-    protected ActorAction DecideMove(IEnumerable<Point> src)
+    protected ActorAction? DecideMove(IEnumerable<Point> src)
 	{
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));

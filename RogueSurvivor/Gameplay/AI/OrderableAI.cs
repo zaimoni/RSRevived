@@ -1008,18 +1008,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == _legal_steps) return null;
       List<Point> legal_steps = (2 <= _legal_steps.Count) ? DecideMove_WaryOfTraps(_legal_steps) : _legal_steps;    // need working copy here
       if (2 <= legal_steps.Count) {
-        int min_dist = goals.Values.Min();
+        int min_dist = int.MaxValue;
         // this breaks down if 2+ goals equidistant.
         {
-        var nearest = new List<Point>(goals.Count);
+        var near = new Zaimoni.Data.Stack<Point>(stackalloc Point[goals.Count]);
         foreach(var x in goals) {
-          if (x.Value>min_dist) continue;
-          nearest.Add(x.Key);
+          if (x.Value > min_dist) continue;
+          if (x.Value < min_dist) {
+            min_dist = x.Value;
+            near.Clear();
+          }
+          near.push(x.Key);
         }
-        if (1<nearest.Count) {
-           int i = RogueForm.Game.Rules.DiceRoller.Roll(0,nearest.Count);
-           nearest.RemoveAt(i);
-           foreach(Point pt in nearest) goals.Remove(pt);
+        int ub = near.Count;
+        if (1 < ub) {
+          var ok = RogueForm.Game.Rules.DiceRoller.Roll(0, ub);
+          while (0 <= --ub) if (ok != ub) goals.Remove(near[ub]);
         }
         }
         // exactly one minimum-cost goal now
@@ -1041,7 +1045,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         legal_steps = new List<Point>(efficiency.Keys);
       }
 
-	  ActorAction tmpAction = DecideMove(legal_steps);
+	  var tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
@@ -1392,7 +1396,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (null == targets) tmpAction = null;  // shove is tactically contra-indicated
                 else {
                   var choice = RogueForm.Game.Rules.DiceRoller.Choose(targets);
-                  return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key.X-shove.Target.Location.Position.X, choice.Key.Y - shove.Target.Location.Position.Y));
+                  return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key-shove.Target.Location.Position));
                 }
               } else tmpAction = null;  // shove is tactically contra-indicated
             } else tmpAction = null;  // shove is tactically contra-indicated
