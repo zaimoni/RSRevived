@@ -669,16 +669,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!m_Actor.IsTired) throw new InvalidOperationException("!m_Actor.IsTired");
 #endif
           // check for helpers that are ready and politely back off for them
-          var escape = new List<Point>(8);
-          var motive = new List<Point>(8);
+          var escape = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
+          var motive = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
           foreach(Point pt in m_Actor.Location.Position.Adjacent()) {
             if (Rules.IsAdjacent(in pt, _dest.Position)) continue;
-            if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.Add(pt);
+            if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.push(pt);
             else {
               Actor helper = m_Actor.Location.Map.GetActorAt(pt);
               if (null == helper) continue;
               if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == door)) {
-                motive.Add(pt);
+                motive.push(pt);
               }
             }
           }

@@ -1714,43 +1714,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
-    private ActorAction _finalDecideMove(Dictionary<Location,ActorAction> src)
+#nullable enable
+    private ActorAction? _finalDecideMove(Dictionary<Location,ActorAction>? src)
     {
       if (null==src || 0==src.Count) return null;
-      if (1==src.Count) return src.First().Value;
-
-	  var secondary = new List<ActorAction>();
-      bool prefer_cardinal(Location loc) {
-        if (m_Actor.Location.Position.X == loc.Position.X) return true;
-        if (m_Actor.Location.Position.Y == loc.Position.Y) return true;
-        return false;
-      }
-      var tmp = src.Keys.ToList();
-	  while(0<tmp.Count) {
-        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
-        var ret = src[dest];    // sole caller guarantees exists and is performable
-        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           var ok_dests = ai.WantToGoHere(shove.Target.Location);
-           if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
-             // non-moving shove...would rather not spend the stamina if there is a better option
-             if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
-             continue;
-           }
-           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
-           // target should not be sleeping; check for that anyway
-           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
-
-           if (   null == ok_dests // shove is rude
-               || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
-                {
-                secondary.Add(ret);
-                continue;
-                }
-        }
-		return ret;
-	  }
-      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
+      if (1==src.Count) return src.First().Value;   // intentionally allow non-moving shove through to simulate panic
+      return _finalDecideMove(src.Keys.ToList(), src);
     }
+#nullable restore
 
     // \todo timing test: handle Resolvable before or after ActorDest?
     public bool VetoAction(ActorAction x)
@@ -1992,16 +1963,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _finalDecideMove(src);
 	}
 
+#nullable enable
     // direct move cost adapter; note reference copy of parameter
-    protected ActorAction DecideMove(Dictionary<Point,int> dests)
+    protected ActorAction? DecideMove(Dictionary<Point,int> dests)
 	{
-#if DEBUG
-      if (null == dests) throw new ArgumentNullException(nameof(dests));
-#endif
       if (0 >= dests.Count) return null;
       dests.OnlyIfMinimal();
       return DecideMove(dests.Keys);
 	}
+#nullable restore
 
     private ActionMoveStep _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
     {
@@ -3688,7 +3658,7 @@ restart_single_exit:
         return false;
     }
 
-    private ActorAction _PrefilterDrop(Item it, bool use_ok=true)
+    private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
       if (use_ok) {
       // use stimulants before dropping them
@@ -3717,13 +3687,13 @@ restart_single_exit:
       return null;
     }
 
-    protected ActorAction BehaviorDropItem(Item it)
+    protected ActorAction? BehaviorDropItem(Item? it)
     {
       if (it == null) return null;
-      ActorAction tmp = _PrefilterDrop(it);
+      var tmp = _PrefilterDrop(it);
       if (null != tmp) return tmp;
 
-      List<Point> has_container = new List<Point>();
+      var has_container = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
       foreach(var dir in Direction.COMPASS) {
         var pos = m_Actor.Location.Position + dir;
         var container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
@@ -3736,7 +3706,7 @@ restart_single_exit:
           if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
 #endif
           }
-        has_container.Add(pos);
+        has_container.push(pos);
       }
       if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, RogueForm.Game.Rules.DiceRoller.Choose(has_container));
 
