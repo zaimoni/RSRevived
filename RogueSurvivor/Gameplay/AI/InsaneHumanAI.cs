@@ -99,10 +99,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor> enemies_in_FOV { get { return m_LOSSensor.enemies; } }
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
-    protected override ActorAction SelectAction(RogueGame game)
+#nullable enable
+    protected override ActorAction? SelectAction(RogueGame game)
     {
       m_Actor.Walk();    // alpha 10: don't run by default
-      ActorAction tmpAction = BehaviorEquipWeapon();
+      var tmpAction = BehaviorEquipWeapon();
       if (null != tmpAction) return tmpAction;
 
       /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
@@ -111,15 +112,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
-      if (game.Rules.RollChance(SHOUT_CHANCE)) {
+      var rules = game.Rules;
+      if (rules.RollChance(SHOUT_CHANCE)) {
         m_Actor.Activity = Activity.IDLE;
-        game.DoEmote(m_Actor, game.Rules.DiceRoller.Choose(INSANITIES),true);
+        game.DoEmote(m_Actor, rules.DiceRoller.Choose(INSANITIES),true);
       }
-      if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
+      if (rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
         if (null != tmpAction) return tmpAction;
       }
       return BehaviorWander();
     }
+#nullable restore
   }
 }

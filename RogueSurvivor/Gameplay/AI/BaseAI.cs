@@ -329,12 +329,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return cost;
         }
 
-    protected ActorAction BehaviorBumpToward(Point goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
+    protected ActorAction? BehaviorBumpToward(Point goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
     {
 #if DEBUG
       if (null == distanceFn) throw new ArgumentNullException(nameof(distanceFn));
 #endif
-      ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir => {
+      var choiceEval = ChooseExtended(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
         ActorAction a = Rules.IsBumpableFor(m_Actor, in next);
         if (a == null) {
@@ -382,15 +382,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
+#nullable enable
+    protected ActorAction? BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
     {
-      if (m_Actor.Location.Map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
-      Location? test = m_Actor.Location.Map.Denormalize(in goal);
+      var map = m_Actor.Location.Map;
+      if (map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
+      Location? test = map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorBumpToward(test.Value.Position, canCheckBreak, canCheckPush, distanceFn);
     }
 
-    protected ActorAction BehaviorStupidBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction? BehaviorStupidBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) => {
         if (ptA == ptB) return 0.0f;
@@ -399,6 +401,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return num;
       });
     }
+#nullable restore
 
     protected ActorAction BehaviorStupidBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
@@ -408,7 +411,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
-    protected ActorAction BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
+#nullable enable
+    protected ActorAction? BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, in goal);
       Func<Point,Point,float> close_in = (ptA,ptB) => {
@@ -430,6 +434,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
        
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, close_in);
     }
+#nullable restore
 
     protected ActorAction BehaviorIntelligentBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
@@ -538,16 +543,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
        return new ActionRangedAttack(m_Actor, target, fireMode);
     }
 
+#nullable enable
     /// <returns>null, or a non-free action</returns>
-    protected ActorAction BehaviorEquipWeapon()
+    protected ActorAction? BehaviorEquipWeapon()
     {
       // One of our callers is InsaneHumanAI::SelectAction.  As this AI is always insane, it does not trigger
       // random insane actions which could pick up ranged weapons.
       // Thus, no AI that calls this function has a usable firearm in inventory.
 
       var tmp_a = m_Actor;
-      Item equippedWeapon = tmp_a.GetEquippedWeapon();
-      ItemMeleeWeapon bestMeleeWeapon = tmp_a.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
+      var equippedWeapon = tmp_a.GetEquippedWeapon();
+      var bestMeleeWeapon = tmp_a.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
 
       if (bestMeleeWeapon == null) {
         if (null != equippedWeapon) RogueForm.Game.DoUnequipItem(tmp_a, equippedWeapon);    // unusable ranged weapon
@@ -556,6 +562,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (equippedWeapon != bestMeleeWeapon) RogueForm.Game.DoEquipItem(tmp_a, bestMeleeWeapon);
       return null;
     }
+#nullable restore
 
     protected ActorAction BehaviorBuildTrap(RogueGame game)
     {
@@ -1128,15 +1135,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
     }
 
+#nullable enable
     // isBetterThanEvalFn will never see NaN
-    static protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, _DATA_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_DATA_>? ChooseExtended<_T_, _DATA_>(IEnumerable<_T_>? listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, _DATA_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-#if DEBUG
-      if (null == isChoiceValidFn) throw new ArgumentNullException(nameof(isChoiceValidFn));
-      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
-      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
-#endif
-      if (!listOfChoices?.Any() ?? true) return null;
+      if (null == listOfChoices || !listOfChoices.Any()) return null;
 
       Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
 
@@ -1161,6 +1164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;
       return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
+#nullable restore
 
     protected bool IsValidFleeingAction(ActorAction a)
     {

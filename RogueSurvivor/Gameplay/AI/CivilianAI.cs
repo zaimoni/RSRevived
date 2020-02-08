@@ -559,7 +559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) {
         if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
-          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
+          tmpAction = BehaviorUseExit(UseExitFlags.DONT_BACKTRACK);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
 #endif
@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Percept percept1 = current.FilterFirst(p =>
       {
-        Actor actor = p.Percepted as Actor;
+        var actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;
         return actor.Controller is SoldierAI;
       });

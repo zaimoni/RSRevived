@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
