@@ -1779,7 +1779,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathToAdjacent(target.Location);
     }
 
-    protected ActorAction BehaviorLeadActor(Percept target)
+    protected ActorAction? BehaviorLeadActor(Percept target)
     {
       Actor target1 = target.Percepted as Actor;
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
@@ -3404,7 +3404,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    private ActorAction BehaviorFindTrade()
+    private ActorAction? BehaviorFindTrade()
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");   // \todo technically redundant now
@@ -3421,7 +3421,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
           return new ActionTrade(m_Actor, near.Value);
         }
-        ActorAction tmpAction = BehaviorIntelligentBumpToward(near.Key, false, false);
+        var tmpAction = BehaviorIntelligentBumpToward(near.Key, false, false);
         if (null == tmpAction) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.

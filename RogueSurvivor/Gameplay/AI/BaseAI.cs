@@ -401,17 +401,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return num;
       });
     }
-#nullable restore
 
-    protected ActorAction BehaviorStupidBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction? BehaviorStupidBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
-      if (m_Actor.Location.Map == goal.Map) return BehaviorStupidBumpToward(goal.Position, canCheckBreak, canCheckPush);
-      Location? test = m_Actor.Location.Map.Denormalize(in goal);
+      var map = m_Actor.Location.Map;
+      if (map == goal.Map) return BehaviorStupidBumpToward(goal.Position, canCheckBreak, canCheckPush);
+      Location? test = map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorStupidBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
-#nullable enable
     protected ActorAction? BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, in goal);
@@ -434,31 +433,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
        
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, close_in);
     }
-#nullable restore
 
-    protected ActorAction BehaviorIntelligentBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction? BehaviorIntelligentBumpToward(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
-      if (m_Actor.Location.Map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position, canCheckBreak, canCheckPush);
-      Location? test = m_Actor.Location.Map.Denormalize(in goal);
+      var map = m_Actor.Location.Map;
+      if (map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position, canCheckBreak, canCheckPush);
+      Location? test = map.Denormalize(in goal);
       if (null == test) return null;
       return BehaviorIntelligentBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
-    protected ActorAction BehaviorHeadFor(in Location goal, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction? BehaviorHeadFor(in Location goal, bool canCheckBreak, bool canCheckPush)
     {
       if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(in goal, canCheckBreak, canCheckPush);
       return BehaviorStupidBumpToward(in goal, canCheckBreak, canCheckPush);
     }
 
-    protected ActorAction BehaviorHeadFor(IEnumerable<Location> goals, bool canCheckBreak, bool canCheckPush)
+    protected ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
     {
-      if (!goals?.Any() ?? true) return null;
+      if (null == goals || !goals.Any()) return null;
+      ActorAction? tmp;
       int dist = int.MaxValue;
-      ActorAction ret = null;
+      ActorAction? ret = null;
       foreach(Location goal in goals) {
         int new_dist = Rules.GridDistance(m_Actor.Location, in goal);
         if (dist <= new_dist) continue;
-        ActorAction tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
+        tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
         if (null == tmp) continue;
         dist = new_dist;
         ret = tmp;
@@ -469,11 +469,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // A number of the melee enemy targeting sequences not only work on grid distance,
     // they need to return a coordinated action/target pair.
     // We assume the list is sorted in increasing order of grid distance
-    protected ActorAction TargetGridMelee(List<Percept> perceptList)
+    protected ActorAction? TargetGridMelee(List<Percept>? perceptList)
     {
       if (null == perceptList) return null; // inefficient, but reduces lines of code elsewhere
       foreach (Percept percept in perceptList) {
-        ActorAction tmp = BehaviorStupidBumpToward(percept.Location, true, true);
+        var tmp = BehaviorStupidBumpToward(percept.Location, true, true);
         if (null != tmp) {
           m_Actor.Activity = Activity.CHASING;
           m_Actor.TargetActor = percept.Percepted as Actor;
@@ -482,6 +482,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
+#nullable restore
 
     protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
@@ -745,9 +746,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
+    protected virtual ActorAction? BehaviorFollowActor(Actor other, int maxDist)
     {
-      if (other?.IsDead ?? true) return null;
+      if (null == other || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location, other.Location);
       if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
@@ -755,18 +756,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit())
           return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
-      ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
+      var actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
       if (actorAction == null || !actorAction.IsPerformable()) return null;
       if (other.IsRunning) m_Actor.Run();
       return actorAction;
     }
 
-    protected ActorAction BehaviorTrackScent(List<Percept_<AIScent>> scents)
+    protected ActorAction? BehaviorTrackScent(List<Percept_<AIScent>> scents)
     {
-      if (0 >= (scents?.Count ?? 0)) return null;
+      if (null == scents || 0 >= scents.Count) return null;
       Percept_<AIScent> percept = FilterStrongestScent(scents);
       if (m_Actor.Location != percept.Location) {
-        ActorAction tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
+        var tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
         if (null!=tmpAction) return tmpAction;
         var dir = Direction.FromVector(percept.Location.Position-m_Actor.Location.Position);
         // Cf. Angband.
@@ -951,7 +952,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
+    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
       List<Percept> percepts = stacksPercepts.Filter(p => (p.Percepted as Inventory).Has<ItemFood>());
