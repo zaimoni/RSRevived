@@ -250,7 +250,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <param name="exploration">can be null for ais with no exploration</param>
     protected ActorAction BehaviorWander(ExplorationData exploration=null, Predicate<Location> goodWanderLocFn=null)
     {
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+      var choiceEval = Choose(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
         if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
         if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, in next))) return float.NaN;
@@ -487,7 +487,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
       var leader = m_Actor.LiveLeader;
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+      var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
@@ -602,8 +602,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Map map = m_Actor.Location.Map;
       Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
-        DoorWindow? doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
-        return ((doorWindow?.IsBarricaded ?? false) ? doorWindow : null);
+        var doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
+        return (null != doorWindow && doorWindow.IsBarricaded) ? doorWindow : null;
       });
       if (0 >= doors.Count) return null;
       DoorWindow doorWindow1 = RogueForm.Game.Rules.DiceRoller.Choose(doors).Value;
@@ -642,8 +642,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
-      return (tmp.IsLegal() ? tmp : null);
+      var tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
+      return (tmp.IsPerformable() ? tmp : null);
     }
 #nullable restore
 
@@ -823,7 +823,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction? BehaviorFightOrFlee(RogueGame game, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
       Percept target = FilterNearest(_enemies);
@@ -841,7 +841,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         decideToFlee = true;    // but do not run as otherwise we won't build up stamina
       }
 
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
 
       if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
@@ -901,7 +901,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected virtual ActorAction BehaviorExplore(ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+      var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
@@ -1078,15 +1078,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (float)(avgDistance * heuristicFactorBonus);
     }
 
+#nullable enable
     // isBetterThanEvalFn will never see NaN
-    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-#if DEBUG
-      if (null == isChoiceValidFn) throw new ArgumentNullException(nameof(isChoiceValidFn));
-      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
-      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
-#endif
-      if (!listOfChoices?.Any() ?? true) return null;
+      if (null == listOfChoices || !listOfChoices.Any()) return null;
 
       Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
 
@@ -1112,13 +1108,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
 
-    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-#if DEBUG
-      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
-      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
-#endif
-      if (!listOfChoices?.Any() ?? true) return null;
+      if (null == listOfChoices || !listOfChoices.Any()) return null;
 
       float num = float.NaN;
       List<ChoiceEval<_T_>> candidates = new List<ChoiceEval<_T_>>();
@@ -1136,7 +1128,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
     }
 
-#nullable enable
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_DATA_>? ChooseExtended<_T_, _DATA_>(IEnumerable<_T_>? listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, _DATA_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {

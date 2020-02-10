@@ -1808,7 +1808,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < m_Actor.MaxSanity/4;   // in immediate danger of losing control
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
       // XXX \todo following does not handle bandaids vs. medikit properly at low hp deficits
-      ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it =>
+      var choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it =>
       {
         int num = 0;
         if (needHP) num += factorHealing * it.Healing;
@@ -1915,7 +1915,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         leaderLoF = new List<Point>(1);
         LOS.CanTraceFireLine(leader.Location, actor.Location, ranged_target.Value.Value.Model.Attack.Range, leaderLoF);
       }
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+      var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
         float num = SafetyFrom(in location, goals);
@@ -2316,7 +2316,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(true)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
+      var choiceEval = Choose(Direction.COMPASS, dir =>
       {
         Point pt = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt) || map.IsInsideAt(pt))
@@ -2363,7 +2363,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(false)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
+      var choiceEval = Choose(Direction.COMPASS, dir =>
       {
         Point pt = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt))
@@ -2644,7 +2644,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorCourage courage = Directives.Courage;
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - PrevLocation.Position.X, m_Actor.Location.Position.Y - PrevLocation.Position.Y);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+      var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
