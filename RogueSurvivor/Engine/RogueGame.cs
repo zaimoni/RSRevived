@@ -8379,7 +8379,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var chat_competent = targets.FindAll(actor => Rules.CHAT_RADIUS >= Rules.InteractionDistance(speaker.Location, actor.Location));
       if (0 >= chat_competent.Count) return false;
-      var target = Rules.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
+      var target = m_Rules.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
 
       if (speaker.IsPlayer && Player!=speaker) PanViewportTo(speaker);
       else if (target.IsPlayer && Player!=target) PanViewportTo(target);
@@ -8418,7 +8418,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
       if (0 >= radio_competent.Count) return false;
-      var target = Rules.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
+      var target = m_Rules.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
       var audience = new HashSet<Actor>();
       var audience2 = new HashSet<Actor>(); 
 
@@ -8717,7 +8717,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var negotiate = (speaker.Controller as ObjectiveAI).TradeOptions(buyer);
       if (null == negotiate) return null;
-      return Rules.DiceRoller.Choose(negotiate);
+      return m_Rules.DiceRoller.Choose(negotiate);
     }
 
     public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
@@ -8732,7 +8732,7 @@ namespace djack.RogueSurvivor.Engine
         negotiate.Add(new KeyValuePair<Item,Item>(gift,b_item));
       }
       if (0 >= negotiate.Count) return null;
-      return Rules.DiceRoller.Choose(negotiate);
+      return m_Rules.DiceRoller.Choose(negotiate);
     }
 
     static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
@@ -10522,12 +10522,11 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = 0;
       bool isUndead = actor.Model.Abilities.IsUndead;
-      Skills.IDs id;
-      do {
-        id = isUndead ? Skills.RollUndead(Rules.DiceRoller) : Skills.RollLiving(Rules.DiceRoller);
+      var dr = m_Rules.DiceRoller;
+      do {  // could unroll this loop, etc -- but this is profile-cold so ok to minimize IL size
+        var id = isUndead ? Skills.RollUndead(dr) : Skills.RollLiving(dr);
         if (actor.Sheet.SkillTable.GetSkillLevel(id) < Skills.MaxSkillLevel(id)) return id;
-      }
-      while (++num < maxTries);
+      } while (++num < maxTries);
       return null;
     }
 
