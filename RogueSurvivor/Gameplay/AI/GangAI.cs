@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight()) {}
       // end item juggling check
 
-      List<Percept> _all = FilterSameMap(UpdateSensors());
+      _all = FilterSameMap(UpdateSensors());
       List<Percept> current = FilterCurrent(_all);    // this tests fast
 
       m_Actor.Walk();    // alpha 10: don't run by default
