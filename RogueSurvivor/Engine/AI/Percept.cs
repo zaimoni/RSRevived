@@ -65,10 +65,10 @@ namespace djack.RogueSurvivor.Engine.AI
   internal static class ext_Percept
   {
 #nullable enable
-    internal static List<Percept_<_T_>>? Filter<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Func<Percept_<_T_>,bool> predicateFn) where _T_:class
+    internal static List<_T_>? Filter<_T_>(this IEnumerable<_T_>? percepts, Func<_T_,bool> predicateFn) where _T_:WhereWhen
     {
       if (null == percepts || !percepts.Any()) return null;
-      IEnumerable<Percept_<_T_>> tmp = percepts.Where(predicateFn);
+      IEnumerable<_T_> tmp = percepts.Where(predicateFn);
       return tmp.Any() ? tmp.ToList() : null;
     }
 
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Engine.AI
 	  return ret;
 	}
 
-    internal static Percept_<_T_>? FilterFirst<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
+    internal static _T_? FilterFirst<_T_>(this IEnumerable<_T_>? percepts, Predicate<_T_> predicateFn) where _T_:WhereWhen
     {
       if (null == percepts || !percepts.Any()) return null;
       foreach(var percept in percepts) if (predicateFn(percept)) return percept;
