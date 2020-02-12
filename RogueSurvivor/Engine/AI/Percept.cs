@@ -107,12 +107,5 @@ namespace djack.RogueSurvivor.Engine.AI
       return null;
     }
 #nullable restore
-
-#if DEAD_FUNC
-    internal static List<Percept_<_T_>> FilterOut<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> rejectPredicateFn) where _T_:class
-    {
-      return percepts.Filter(p => !rejectPredicateFn(p));
-    }
-#endif
   }
 }

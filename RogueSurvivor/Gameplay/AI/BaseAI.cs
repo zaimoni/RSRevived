@@ -968,10 +968,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (!Session.Get.HasCorpses) return null;
       if (!m_Actor.CanEatCorpse()) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
-	  List<Percept> corpsesPercepts = percepts.FilterT<List<Corpse>>();
+	  var corpsesPercepts = percepts.FilterT<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
-      Percept percept = FilterNearest(corpsesPercepts);
+      var percept = FilterNearest(corpsesPercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
 	  }

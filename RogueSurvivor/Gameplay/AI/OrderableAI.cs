@@ -2816,7 +2816,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
-      List<Percept> corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
+      var corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
           if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
@@ -2825,7 +2825,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       });
       if (null == corpsePercepts) return null;
-      Percept percept = FilterNearest(corpsePercepts);
+      var percept = FilterNearest(corpsePercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         foreach (Corpse corpse in (percept.Percepted as List<Corpse>)) {
           if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
