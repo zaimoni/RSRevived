@@ -567,7 +567,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      Percept percept1 = current.FilterFirst(p =>
+      var percept1 = current.FilterFirst(p =>
       {
         var actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;

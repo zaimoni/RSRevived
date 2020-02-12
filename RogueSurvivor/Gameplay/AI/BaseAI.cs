@@ -955,7 +955,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
-      List<Percept> percepts = stacksPercepts.Filter(p => (p.Percepted as Inventory).Has<ItemFood>());
+      List<Percept> percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
       if (percepts == null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);

@@ -64,46 +64,55 @@ namespace djack.RogueSurvivor.Engine.AI
   // in general, the tmp.Any() ? tmp.ToList() : null construct requires that the Any() call be de facto deterministic; RNG can easily break things
   internal static class ext_Percept
   {
-    internal static List<Percept_<_T_>> Filter<_T_>(this IEnumerable<Percept_<_T_>> percepts, Func<Percept_<_T_>,bool> predicateFn) where _T_:class
+#nullable enable
+    internal static List<Percept_<_T_>>? Filter<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Func<Percept_<_T_>,bool> predicateFn) where _T_:class
     {
-      if (!percepts?.Any() ?? true) return null;
+      if (null == percepts || !percepts.Any()) return null;
       IEnumerable<Percept_<_T_>> tmp = percepts.Where(predicateFn);
       return tmp.Any() ? tmp.ToList() : null;
     }
-	internal static List<Percept_<object>> FilterT<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn=null) where _T_:class
+
+	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts) where _T_:class
 	{
-      if (!percepts?.Any() ?? true) return null;
-      IEnumerable<Percept_<object>> tmp = percepts.Where(p=>p.Percepted is _T_);
-	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
-	  return (tmp.Any() ? tmp.ToList() : null);
+      if (null == percepts || !percepts.Any()) return null;
+      List<Percept_<object>>? ret = null;
+      foreach(var p in percepts) if (p.Percepted is _T_) (ret ?? (ret = new List<Percept_<object>>())).Add(p);
+      return ret;
+	}
+
+	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
+	{
+      if (null == percepts || !percepts.Any()) return null;
+      List<Percept_<object>>? ret = null;
+      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) (ret ?? (ret = new List<Percept_<object>>())).Add(p);
+      return ret;
 	}
 
     // for completeness
-	internal static List<Percept_<_T_>> FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn=null) where _T_:class
+	internal static List<Percept_<_T_>>? FilterCast<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
 	{
-      if (!percepts?.Any() ?? true) return null;
-      IEnumerable<Percept_<object>> tmp = percepts.Where(p=>p.Percepted is _T_);
-	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
-	  if (!tmp.Any()) return null;
-	  List<Percept_<_T_>> ret = new List<Percept_<_T_>>();  // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
-	  foreach(Percept_<object> p in tmp) {
-	    ret.Add(new Percept_<_T_>(p.Percepted as _T_, p.Turn, p.Location));
-	  }
+      if (null == percepts || !percepts.Any()) return null;
+      List<Percept_<_T_>>? ret = null;
+      foreach(var p in percepts) {
+        // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
+        if (p.Percepted is _T_ test && fn(test)) (ret ?? (ret = new List<Percept_<_T_>>())).Add(new Percept_<_T_>(test, p.Turn, p.Location));
+      }
 	  return ret;
 	}
 
-    internal static Percept_<_T_> FilterFirst<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
+    internal static Percept_<_T_>? FilterFirst<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
-      if (!percepts?.Any() ?? true) return null;
-      foreach (Percept_<_T_> percept in percepts) {
-        if (predicateFn(percept)) return percept;
-      }
+      if (null == percepts || !percepts.Any()) return null;
+      foreach(var percept in percepts) if (predicateFn(percept)) return percept;
       return null;
     }
+#nullable restore
 
+#if DEAD_FUNC
     internal static List<Percept_<_T_>> FilterOut<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> rejectPredicateFn) where _T_:class
     {
       return percepts.Filter(p => !rejectPredicateFn(p));
     }
+#endif
   }
 }

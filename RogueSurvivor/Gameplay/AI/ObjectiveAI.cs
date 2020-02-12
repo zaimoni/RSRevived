@@ -3302,7 +3302,7 @@ restart_single_exit:
 
     private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
     {
-      List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
+      var goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
       if (null == goals) return;
       foreach(Percept p in goals) {
         if (p.Location==m_Actor.Location) continue; // trap has already triggered, or not: safe
