@@ -1879,9 +1879,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private HashSet<Point> AlliesNeedLoFvs(Actor enemy)
+    private HashSet<Point>? AlliesNeedLoFvs(Actor enemy)
     {
-      var friends = m_Actor.Controller.friends_in_FOV;
+      var friends = friends_in_FOV;
       if (null == friends) return null;
       var ret = new HashSet<Point>();
       var LoF = new List<Point>();
