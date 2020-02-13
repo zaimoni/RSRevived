@@ -45,8 +45,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
-    public override Dictionary<Location, Actor> friends_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).friends; } }
-    public override Dictionary<Location, Actor> enemies_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).enemies; } }
+#nullable restore
+    public override Dictionary<Location, Actor>? friends_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).friends; } }
+    public override Dictionary<Location, Actor>? enemies_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).enemies; } }
+#nullable restore
     protected override void SensorsOwnedBy(Actor actor) { (m_MemLOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
 
     protected override ActorAction SelectAction(RogueGame game)

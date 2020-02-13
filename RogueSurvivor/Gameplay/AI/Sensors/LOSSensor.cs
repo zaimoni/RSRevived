@@ -22,14 +22,18 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI purposes
-    private Dictionary<Location, Actor> _friends;
-    private Dictionary<Location, Actor> _enemies;
-    private Dictionary<Location,Inventory> _items;
+#nullable enable
+    private Dictionary<Location, Actor>? _friends;
+    private Dictionary<Location, Actor>? _enemies;
+    private Dictionary<Location,Inventory>? _items;
+#nullable restore
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
-    public Dictionary<Location,Actor> friends { get { return _friends; } } // reference-return
-    public Dictionary<Location, Actor> enemies { get { return _enemies; } } // reference-return
-    public Dictionary<Location, Inventory> items { get { return _items; } } // reference-return
+#nullable enable
+    public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
+    public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
+    public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
+#nullable restore
 
     public LOSSensor(SensingFilter filters)
     {
