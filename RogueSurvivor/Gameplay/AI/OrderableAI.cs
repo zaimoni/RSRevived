@@ -1929,10 +1929,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
-    private ActorAction BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
+    private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
         // All OrderableAI instances currently can both use map objects, and barricade
@@ -1981,7 +1981,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here ...
-        if (null == _damage_field || _damage_field.ContainsKey(m_Actor.Location.Position)) {
+        if (null == _damage_field || !_damage_field.ContainsKey(m_Actor.Location.Position)) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
@@ -1990,7 +1990,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // XXX or run for the exit here
         {
-        var enemies_FOV = m_Actor.Controller.enemies_in_FOV;
+        var enemies_FOV = enemies_in_FOV;
         if (null != enemies_FOV) {
           tmpAction = BehaviorWalkAwayFrom(enemies_FOV.Keys, LoF_reserve);
           if (null != tmpAction) {
