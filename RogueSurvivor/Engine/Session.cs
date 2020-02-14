@@ -142,12 +142,13 @@ namespace djack.RogueSurvivor.Engine
 #endif
       RogueGame.Reset();
       m_Scoring = new Scoring();
-      World = new World(RogueGame.Options.CitySize);
+      var city_size = RogueGame.Options.CitySize;
+      World = new World(city_size);
       LastTurnPlayerActed = 0;
-      m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
+      m_Event_Raids = new int[(int) RaidType._COUNT, city_size, city_size];
       for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1) {
-        for (int index2 = 0; index2 < RogueGame.Options.CitySize; ++index2) {
-          for (int index3 = 0; index3 < RogueGame.Options.CitySize; ++index3)
+        for (int index2 = 0; index2 < city_size; ++index2) {
+          for (int index3 = 0; index3 < city_size; ++index3)
             m_Event_Raids[index1, index2, index3] = -1;
         }
       }

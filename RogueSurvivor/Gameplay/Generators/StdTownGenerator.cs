@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 {
   internal class StdTownGenerator : BaseTownGenerator
   {
-    public StdTownGenerator(RogueGame game, BaseTownGenerator.Parameters parameters)
+    public StdTownGenerator(RogueGame game, Parameters parameters)
       : base(game, parameters)
     {
     }
@@ -151,17 +151,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
-      for (int index = 0; index < RogueGame.Options.MaxDogs; ++index) {
-        Actor newFeralDog = CreateNewFeralDog(0);
-        ActorPlace(m_DiceRoller, map, newFeralDog, outside_test);
-      }
-      int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
-      var threats = new List<Actor>(num);
-      for (int index = 0; index < num; ++index) {
-        Actor newUndead = CreateNewUndead(0);
-        ActorPlace(m_DiceRoller, map, newUndead, outside_test);
-        threats.Add(newUndead);
-      }
+      int num = RogueGame.Options.MaxDogs;
+      while(0 < num--) ActorPlace(m_DiceRoller, map, CreateNewFeralDog(0), outside_test);
+      num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
+      while(0 < num--) ActorPlace(m_DiceRoller, map, CreateNewUndead(0), outside_test);
       Session.Get.PoliceThreatTracking.Rebuild(map);   // prune back RAM cost
       map.OnMapGenerated(); // remove deadwood that should not hit the savefile
       return map;
@@ -172,9 +165,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map sewersMap = base.GenerateSewersMap(seed, district);
       if (Session.Get.HasZombiesInSewers) {
         int num = (int) (0.5 * (double) (RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent) / 100.0);
-        for (int index = 0; index < num; ++index) {
-          ActorPlace(m_DiceRoller, sewersMap, CreateNewSewersUndead(0));
-        }
+        while(0 < num--) ActorPlace(m_DiceRoller, sewersMap, CreateNewSewersUndead(0));
       }
       Session.Get.PoliceThreatTracking.Rebuild(sewersMap);   // prune back RAM cost
       return sewersMap;
