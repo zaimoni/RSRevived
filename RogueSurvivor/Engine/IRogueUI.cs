@@ -17,6 +17,11 @@ namespace djack.RogueSurvivor.Engine
   /// </summary>
   internal interface IRogueUI
   {
+#if CORE_ONLY
+    // C# 8.0: cooperative almost-singleton now possible for interfaces
+    static private IRogueUI _singleton;
+#endif
+
     EnumerableString Mods { get; }
 
 #region Input

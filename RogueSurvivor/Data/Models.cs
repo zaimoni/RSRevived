@@ -6,6 +6,9 @@
 
 #nullable enable
 
+// 2020-02-15, historical design issue: the intent of this class appears to be to provide a game engine API
+// that isolates game-specific models from outside code, *BUT* it is useful to enforce type-checking
+// by allowing the array access operator [] to have an overload for the game-specific ID enumeration
 namespace djack.RogueSurvivor.Data
 {
   internal static class Models

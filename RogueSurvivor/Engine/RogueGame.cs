@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Engine
 #region Session save/load assistants
     static public void Load(SerializationInfo info, StreamingContext context)
     {
-      m_Player = (Actor) info.GetValue("m_Player",typeof(Actor));
+      info.read(ref m_Player, "m_Player");
     }
 
     static public void AfterLoad()

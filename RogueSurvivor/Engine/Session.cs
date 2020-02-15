@@ -47,12 +47,7 @@ namespace djack.RogueSurvivor.Engine
     public int ScriptStage_PoliceCHARrelations;
     public int ScriptStage_HospitalPowerup;
 
-    public static Session Get {
-      get {
-        if (s_TheSession == null) s_TheSession = new Session();
-        return s_TheSession;
-      }
-    }
+    public static Session Get { get { return s_TheSession ?? (s_TheSession = new Session()); } }
 
     // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
     // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
