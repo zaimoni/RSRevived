@@ -56,10 +56,13 @@ namespace djack.RogueSurvivor.Data
       if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new InvalidOperationException("(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
       if (abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)) throw new InvalidOperationException("abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)");
       if (abilities.HasSanity ^ (0 < startingSheet.BaseSanity)) throw new InvalidOperationException("abilities.HasSanity ^ (0 < startingSheet.BaseSanity)");
+      // OrderableAI should implement all of STD_LIVING, STD_HUMAN, and STD_SANE flags
+      // InsaneHumanAI currently implements all of STD_LIVING and STD_HUMAN flags, but not STD_SANE flags
       if (abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
       if (!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
       if (!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
       if (!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.CanTalk && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanTalk && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
 #endif
       ID = id;
       ImageID = imageID;

@@ -293,7 +293,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
 
         // alpha10.1 add random factor
-        score += RogueForm.Game.Rules.Roll(0, WANDER_RANDOM);
+        score += Rules.Get.Roll(0, WANDER_RANDOM);
 
         return (float) score;
       }, (a, b) => a > b);
@@ -341,7 +341,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             var mapObjectAt = next.MapObject;
             if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
-              Direction pushDir = RogueForm.Game.Rules.RollDirection();
+              Direction pushDir = Rules.Get.RollDirection();
               if (mapObjectAt.CanPushTo(mapObjectAt.Location.Position + pushDir))
                 return new ActionPush(m_Actor, mapObjectAt, pushDir);
             }
@@ -362,7 +362,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (obj.Location.Map.IsInBounds(dest) && obj.Location.Map.HasExitAt(in dest)) continue;  // constructor crash
                   if (obj.CanPushTo(dest)) validPushes.Add(pushDir);
                 }
-                if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, RogueForm.Game.Rules.DiceRoller.Choose(validPushes));
+                if (validPushes.Count > 0) return new ActionPush(m_Actor, obj, Rules.Get.DiceRoller.Choose(validPushes));
             }
           }
 
@@ -606,7 +606,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (null != doorWindow && doorWindow.IsBarricaded) ? doorWindow : null;
       });
       if (0 >= doors.Count) return null;
-      DoorWindow doorWindow1 = RogueForm.Game.Rules.DiceRoller.Choose(doors).Value;
+      DoorWindow doorWindow1 = Rules.Get.DiceRoller.Choose(doors).Value;
       return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
 #nullable restore
@@ -642,7 +642,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      var tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
+      var rules = Rules.Get;
+      var tmp = new ActionPush(m_Actor, rules.DiceRoller.Choose(objs).Value, rules.RollDirection());
       return (tmp.IsPerformable() ? tmp : null);
     }
 #nullable restore
@@ -730,7 +731,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
-      if (0 < pushes.Count) return RogueForm.Game.Rules.DiceRoller.Choose(pushes);
+      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
 
       foreach(var x in unclear) {
         foreach(var dir in Direction.COMPASS) {
@@ -741,7 +742,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
-      if (0 < pushes.Count) return RogueForm.Game.Rules.DiceRoller.Choose(pushes);
+      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
 
       return null;
     }
@@ -772,7 +773,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var dir = Direction.FromVector(percept.Location.Position-m_Actor.Location.Position);
         // Cf. Angband.
         if (null!=dir) {
-          if (RogueForm.Game.Rules.DiceRoller.RollChance(50)) { // anti-clockwise bias
+          if (Rules.Get.DiceRoller.RollChance(50)) { // anti-clockwise bias
             tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Left, false, false);
             if (null!=tmpAction) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Right, false, false);
@@ -844,11 +845,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction? tmpAction = null;
 
       if (decideToFlee) {
-        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
+        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
         // using map objects goes here
         // barricading goes here
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || Rules.Get.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
@@ -870,7 +871,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
-          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
+          if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
             game.DoEmote(m_Actor, emotes[1], true);
           return BehaviorMeleeAttack(target.Percepted as Actor);
         }
@@ -890,7 +891,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // charge
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
-        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
+        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;
       }
@@ -929,7 +930,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
-        return (float) (num + RogueForm.Game.Rules.Roll(0, EXPLORE_RANDOM));
+        return (float) (num + Rules.Get.Roll(0, EXPLORE_RANDOM));
       }, (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
@@ -1105,7 +1106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
       if (1 == ret_from.Count) return ret_from[0];
-      return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
+      return Rules.Get.DiceRoller.Choose(ret_from);
     }
 
     static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
@@ -1125,7 +1126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         candidates.Add(new ChoiceEval<_T_>(tmp, f));
       }
       if (0 >= candidates.Count) return null;
-      return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
+      return Rules.Get.DiceRoller.Choose(candidates);
     }
 
     // isBetterThanEvalFn will never see NaN
@@ -1154,7 +1155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;
-      return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
+      return Rules.Get.DiceRoller.Choose(ret_from);
     }
 #nullable restore
 

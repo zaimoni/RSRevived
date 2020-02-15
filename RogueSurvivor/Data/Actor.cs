@@ -550,6 +550,8 @@ namespace djack.RogueSurvivor.Data
       }
       return baseChance;
     }
+
+    public bool IsUnsuspiciousFor(Actor observer) { return Rules.Get.RollChance(UnsuspicousForChance(observer)); }
 #nullable restore
 
     public int MurdersCounter {
@@ -2884,7 +2886,7 @@ namespace djack.RogueSurvivor.Data
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueForm.Game;
       var equippedItem = GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (null != equippedItem && game.Rules.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+      if (null != equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         OnUnequipItem(equippedItem);
         Inventory.RemoveAllQuantity(equippedItem);
         if (game.ForceVisibleToPlayer(this)) {
@@ -3673,9 +3675,10 @@ namespace djack.RogueSurvivor.Data
       if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
     }
 
-    public void CreateCivilianDeductFoodSleep(Rules r) {
-      m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
-      m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
+    public void CreateCivilianDeductFoodSleep() {
+      var rules = Rules.Get;
+      m_FoodPoints -= rules.Roll(0, m_FoodPoints / 4);
+      m_SleepPoints -= rules.Roll(0, m_SleepPoints / 4);
     }
 
     public void AfterAction()

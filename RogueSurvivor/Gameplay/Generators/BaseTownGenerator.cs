@@ -187,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       });
       // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
-      var dr = RogueForm.Game.Rules.DiceRoller;
+      var dr = Rules.Get.DiceRoller;
       PoliceStationWorldPos = dr.ChooseWithoutReplacement(pointList);
       HospitalWorldPos = dr.ChooseWithoutReplacement(pointList);
     }
@@ -3540,7 +3540,7 @@ restart:
       inv.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
       inv.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
-      numberedName.CreateCivilianDeductFoodSleep(m_Rules);
+      numberedName.CreateCivilianDeductFoodSleep();
       return numberedName;
     }
 
@@ -3559,7 +3559,7 @@ restart:
       for (int index = 0; index < itemsToCarry; ++index)
         GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
       GiveRandomSkillsToActor(numberedName, skills);
-      numberedName.CreateCivilianDeductFoodSleep(m_Rules);
+      numberedName.CreateCivilianDeductFoodSleep();
       return numberedName;
     }
 

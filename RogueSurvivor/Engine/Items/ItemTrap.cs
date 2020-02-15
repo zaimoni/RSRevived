@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Engine.Items
       void overheard_trap_instructions(Actor overhear) {
         // The complexity of the instructions is roughly comparable to the plausibility of triggering the trap without help
         // cf. Rules::CheckTrapTriggers (we intentionally allow a low plausibility even for 100% trigger chance)
-        if ((null== m_Known || !m_Known.Contains(overhear)) && !RogueForm.Game.Rules.RollChance(TriggerChanceFor(overhear) + 1)) {
+        if ((null== m_Known || !m_Known.Contains(overhear)) && !Rules.Get.RollChance(TriggerChanceFor(overhear) + 1)) {
           (m_Known ?? (m_Known = new List<Actor>(1))).Add(overhear);
           if (overhear.Model.Abilities.HasSanity) overhear.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE / 15);
         }
@@ -171,12 +171,24 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool TriggeredBy(Actor a)
     {
       var chance = TriggerChanceFor(a);
-      if (RogueForm.Game.Rules.RollChance(chance)) return true;
+      var rules = Rules.Get;
+      if (rules.RollChance(chance)) return true;
       if (0 < chance && a.Controller is Gameplay.AI.ObjectiveAI && a.Model.Abilities.CanUseItems) {
-        if (!RogueForm.Game.Rules.RollChance(chance)) (m_Known ?? (m_Known = new List<Actor>())).Add(a);   // learned, now safe
+        if (!rules.RollChance(chance)) (m_Known ?? (m_Known = new List<Actor>())).Add(a);   // learned, now safe
       }
       return false;
     }
+
+    public bool CheckStepOnBreaks(MapObject mobj)
+    {
+      return Rules.Get.RollChance(Model.BreakChance * mobj.Weight);
+    }
+
+    public bool CheckStepOnBreaks()
+    {
+      return Rules.Get.RollChance(Model.BreakChance);
+    }
+
 
     // alpha10
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)

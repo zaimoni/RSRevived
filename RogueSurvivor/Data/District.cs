@@ -427,7 +427,7 @@ namespace djack.RogueSurvivor.Data
       ///////////////////////////
 
       // 1. Compute unique seed.
-      int seed = Engine.Session.Get.Seed + y * world.Size + x;
+      int seed = Engine.Session.Seed + y * world.Size + x;
 
 #region 2. Set gen params.
       // this must be a value copy or else: BaseTownGenerator.Parameters must be a struct, not a class

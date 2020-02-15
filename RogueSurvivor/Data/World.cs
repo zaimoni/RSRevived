@@ -167,8 +167,9 @@ namespace djack.RogueSurvivor.Data
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
 //    Weather = Weather.CLEAR;
-      Weather = (Weather)(RogueForm.Game?.Rules.Roll(0, (int)Weather._COUNT) ?? 0);
-      NextWeatherCheckTurn = (RogueForm.Game?.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION) ?? 0);  // alpha10
+      var rules = Engine.Rules.Get;
+      Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
+      NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
       m_Ready = new Queue<District>(size*size);
     }
 
@@ -243,20 +244,21 @@ namespace djack.RogueSurvivor.Data
 
     public string WeatherChanges()
     {
-      NextWeatherCheckTurn = Engine.Session.Get.WorldTime.TurnCounter + RogueForm.Game.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);
+      var rules = Engine.Rules.Get;
+      NextWeatherCheckTurn = Engine.Session.Get.WorldTime.TurnCounter + rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);
       switch (Weather) {
         case Weather.CLEAR:
           Weather = Weather.CLOUDY;
           return "Clouds are hiding the sky.";
         case Weather.CLOUDY:
-          if (RogueForm.Game.Rules.RollChance(50)) {
+          if (rules.RollChance(50)) {
             Weather = Weather.CLEAR;
             return "The sky is clear again.";
           }
           Weather = Weather.RAIN;
           return "Rain is starting to fall.";
         case Weather.RAIN:
-          if (RogueForm.Game.Rules.RollChance(50)) {
+          if (rules.RollChance(50)) {
             Weather = Weather.CLOUDY;
             return "The rain has stopped.";
           }

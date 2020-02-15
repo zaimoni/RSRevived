@@ -313,7 +313,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
     private static readonly Stopwatch play_timer = new Stopwatch();
     private readonly IRogueUI m_UI; // this cannot be static.
-    private Rules m_Rules;
 #nullable restore
     private HiScoreTable m_HiScoreTable;
 #nullable enable
@@ -351,7 +350,6 @@ namespace djack.RogueSurvivor.Engine
     public static bool IsPlayer(Actor a) { return a == m_Player; }
     public static Map CurrentMap { get { return m_MapView.m; } }
     private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
-    public Rules Rules { get { return m_Rules; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
@@ -409,7 +407,6 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
       s_Options.ResetToDefaultValues();
-      m_Rules = new Rules(new DiceRoller(Session.Get.Seed));  // possibly no-op; triggers World constructor which requires options to be loaded
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = MAP_MAX_HEIGHT;
@@ -858,18 +855,19 @@ namespace djack.RogueSurvivor.Engine
         DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1);
         DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
+        var rules = Rules.Get;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26) {
           for (int index = 0; index < 10; ++index) {
-            int gx2 = m_Rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
-            int gy2 = m_Rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
+            int gx2 = rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
+            int gy2 = rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
             m_UI.UI_DrawImage(GameImages.ACTOR_SANTAMAN, gx2, gy2);
             m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
         if ((now.Month == 12 && now.Day >= 31) || (now.Month==1 && now.Day <= 2)) {
           for (int index = 0; index < 10; ++index) {
-            int gx2 = m_Rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
-            int gy2 = m_Rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
+            int gx2 = rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
+            int gy2 = rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
             m_UI.UI_DrawImage(GameImages.ACTOR_FATHER_TIME, gx2, gy2);
             m_UI.UI_DrawStringBold(Color.Snow, "* Happy New Year *", gx2 - 60, gy2 - 10, new Color?());
           }
@@ -2033,13 +2031,14 @@ namespace djack.RogueSurvivor.Engine
             // - Check for NPC upgrade.
             ////////////////////////////////////////
 
+      var rules = Rules.Get;
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
         if (Session.Get.HasCorpses && map.CountCorpses > 0) {
 #region corpses: decide who zombify or rots.
           var corpseList1 = new List<Corpse>(map.CountCorpses);
           var corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
-            if (m_Rules.RollChance(corpse.ZombifyChance(map.LocalTime, true))) {
+            if (rules.RollChance(corpse.ZombifyChance(map.LocalTime, true))) {
               corpseList1.Add(corpse);
             } else if (corpse.TakeDamage(Corpse.DecayPerTurn())) {
               corpseList2.Add(corpse);
@@ -2074,7 +2073,7 @@ namespace djack.RogueSurvivor.Engine
           foreach (Actor actor in map.Actors) {
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
               int infectionPercent = actor.InfectionPercent;
-              if (m_Rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
+              if (rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
                 bool player = ForceVisibleToPlayer(actor);
                 bool flag3 = Player == actor;
                 if (actor.IsSleeping) DoWakeUp(actor);
@@ -2136,23 +2135,23 @@ namespace djack.RogueSurvivor.Engine
 #region hunger & rot
           if (actor.Model.Abilities.HasToEat) {
             actor.Appetite(1);
-            if (actor.IsStarving && (actor.IsPlayer || s_Options.NPCCanStarveToDeath) && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE)) {
+            if (actor.IsStarving && (actor.IsPlayer || s_Options.NPCCanStarveToDeath) && rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE)) {
               (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
             }
           } else if (actor.Model.Abilities.IsRotting) {
             actor.Appetite(1);
-            if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
+            if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
               if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, "is rotting away."));
               if (--actor.HitPoints <= 0) (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
             }
-            else if (actor.IsRotHungry && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
+            else if (actor.IsRotHungry && rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
           }
 #endregion
           if (actor.Model.Abilities.HasToSleep) {
 #region sleep.
             if (actor.IsSleeping) {
-              if (actor.IsDisturbed && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
+              if (actor.IsDisturbed && rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
                 DoWakeUp(actor);
                 DoShout(actor, "NO! LEAVE ME ALONE!");
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
@@ -2175,7 +2174,7 @@ namespace djack.RogueSurvivor.Engine
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Data.Activity.SLEEPING;
               actor.Rest(actor.SleepRegen(isOnCouch));
-              if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + actor.HealChanceBonus))
+              if (actor.HitPoints < actor.MaxHPs && rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + actor.HealChanceBonus))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
                 DoWakeUp(actor);
@@ -2186,13 +2185,13 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 RedrawPlayScreen();
                 Thread.Sleep(10);
-              } else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
+              } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_SNORE))));
                 RedrawPlayScreen();
               }
 #endregion
             }
-            if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
+            if (actor.IsExhausted && rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
 #region 4.3 Exhausted actors might collapse.
               DoStartSleeping(actor);
               if (ForceVisibleToPlayer(actor)) {
@@ -2213,7 +2212,7 @@ namespace djack.RogueSurvivor.Engine
           if (null != a_leader) {
 #region leader trust & leader/follower bond.
             ModifyActorTrustInLeader(actor, a_leader.TrustIncrease, false);
-            if (actor.HasBondWith(a_leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
+            if (actor.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
@@ -2232,7 +2231,7 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
             }
             KillActor(null, actor, "starvation");
-            if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && m_Rules.RollChance(s_Options.StarvedZombificationChance)) {
+            if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
               if (ForceVisibleToPlayer(actor)) {
@@ -2283,9 +2282,9 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 7. Check fires.
         // \todo implement per-map weather, then use it here
-        if (Session.Get.World.Weather.IsRain() && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
+        if (Session.Get.World.Weather.IsRain() && rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
           foreach (MapObject mapObject in map.MapObjects) {
-            if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
+            if (mapObject.IsOnFire && rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
               mapObject.Extinguish();
               if (ForceVisibleToPlayer(mapObject))
                 AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
@@ -2351,7 +2350,7 @@ namespace djack.RogueSurvivor.Engine
     private bool CheckForEvent_SewersInvasion(Map map)
     {
       map.UndeadCount.Recalc();
-      return Session.Get.HasZombiesInSewers && map.UndeadCount.Get < s_Options.MaxUndeads / 2 && m_Rules.RollChance(SEWERS_INVASION_CHANCE);
+      return Session.Get.HasZombiesInSewers && map.UndeadCount.Get < s_Options.MaxUndeads / 2 && Rules.Get.RollChance(SEWERS_INVASION_CHANCE);
     }
 
     private void FireEvent_SewersInvasion(Map map)
@@ -2398,17 +2397,18 @@ namespace djack.RogueSurvivor.Engine
       }
       int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
+      var rules = Rules.Get;
       for (int index = 0; index < num2; ++index)
 #if REFUGEES_IN_SUBWAY
         SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
 #else
-        SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
+        SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
 #endif
-      if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
+      if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
       lock (Session.Get) {
         UniqueActor[] local_6 = Array.FindAll(Session.Get.UniqueActors.ToArray(), a => a.IsWithRefugees && !a.IsSpawned && !a.TheActor.IsDead);
         if (0 >= local_6.Length) return;
-        FireEvent_UniqueActorArrive(district.EntryMap, m_Rules.DiceRoller.Choose(local_6));
+        FireEvent_UniqueActorArrive(district.EntryMap, Rules.Get.DiceRoller.Choose(local_6));
       }
     }
 
@@ -2447,7 +2447,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
-      if (0 == s_Options.NatGuardFactor || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
+      if (0 == s_Options.NatGuardFactor || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !Rules.Get.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
       // yes, each national guardsman is double-counted
       int NationalGuardForceFactor()
@@ -2491,7 +2491,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_ArmySupplies(Map map)
     {
-      if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE))
+      if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || map.LocalTime.Day < ARMY_SUPPLIES_DAY || !Rules.Get.RollChance(ARMY_SUPPLIES_CHANCE))
         return false;
       int num = 1 + map.Actors.Count(a => {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
@@ -2509,7 +2509,7 @@ namespace djack.RogueSurvivor.Engine
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
-          map.DropItemAt((m_Rules.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), in pt);
+          map.DropItemAt((Rules.Get.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), in pt);
           Session.Get.PoliceInvestigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures proper prioritzation
@@ -2563,7 +2563,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, in pt));
       if (0 >= pts.Count) return null;
-      return m_Rules.DiceRoller.Choose(pts);
+      return Rules.Get.DiceRoller.Choose(pts);
     }
 
     static private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
@@ -2576,13 +2576,15 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BikersRaid(Map map)
     {
-      return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY && (!HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BIKERS_RAID_CHANCE_PER_TURN));
+      return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY
+         && !HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY)
+         &&  Rules.Get.RollChance(BIKERS_RAID_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BikersRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
-      var actor = SpawnNewBikerLeader(map, m_Rules.DiceRoller.Choose(GameGangs.BIKERS));
+      var actor = SpawnNewBikerLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
         var other = SpawnNewBiker(actor);
@@ -2605,13 +2607,15 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_GangstasRaid(Map map)
     {
-      return map.LocalTime.Day >= GANGSTAS_RAID_DAY && map.LocalTime.Day < GANGSTAS_END_DAY && (!HasRaidHappenedSince(RaidType.GANGSTA, map.District, map.LocalTime, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(GANGSTAS_RAID_CHANCE_PER_TURN));
+      return map.LocalTime.Day >= GANGSTAS_RAID_DAY && map.LocalTime.Day < GANGSTAS_END_DAY
+         && !HasRaidHappenedSince(RaidType.GANGSTA, map.District, map.LocalTime, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY)
+         &&  Rules.Get.RollChance(GANGSTAS_RAID_CHANCE_PER_TURN);
     }
 
     private void FireEvent_GangstasRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
-      var actor = SpawnNewGangstaLeader(map, m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS));
+      var actor = SpawnNewGangstaLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
         var other = SpawnNewGangsta(actor);
@@ -2634,7 +2638,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BlackOpsRaid(Map map)
     {
-      return map.LocalTime.Day >= BLACKOPS_RAID_DAY && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
+      return map.LocalTime.Day >= BLACKOPS_RAID_DAY
+         && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY)
+         &&  Rules.Get.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BlackOpsRaid(Map map)
@@ -2663,7 +2669,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
-      return map.LocalTime.Day >= SURVIVORS_BAND_DAY && !HasRaidHappenedSince(RaidType.SURVIVORS, map.District, map.LocalTime, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
+      return map.LocalTime.Day >= SURVIVORS_BAND_DAY
+         && !HasRaidHappenedSince(RaidType.SURVIVORS, map.District, map.LocalTime, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY)
+         &&  Rules.Get.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BandOfSurvivors(Map map)
@@ -2710,7 +2718,7 @@ namespace djack.RogueSurvivor.Engine
          return true;
       });
       if (0 >= tmp.Count) return false;
-      map.PlaceAt(actorToSpawn, m_Rules.DiceRoller.Choose(tmp));
+      map.PlaceAt(actorToSpawn, Rules.Get.DiceRoller.Choose(tmp));
       OnActorEnterTile(actorToSpawn);
       return true;
     }
@@ -2723,10 +2731,11 @@ namespace djack.RogueSurvivor.Engine
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
       var range = new Rectangle((Point)1,(Point)maxDistToPoint);
+      var rules = Rules.Get;
       Point p = new Point();
       do {
         ++num2;
-        p = nearPoint + m_Rules.DiceRoller.Choose(range) - m_Rules.DiceRoller.Choose(range);
+        p = nearPoint + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceAt(actorToSpawn, in p);
@@ -2744,11 +2753,11 @@ namespace djack.RogueSurvivor.Engine
       if (s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
         GameActors.IDs fromModelID = newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) {
+          var rules = Rules.Get;
           int chance = Math.Min(75, day * 2);
-          if (m_Rules.RollChance(chance)) {
+          if (rules.RollChance(chance)) {
             fromModelID = fromModelID.NextUndeadEvolution();
-            if (m_Rules.RollChance(chance))
-              fromModelID = fromModelID.NextUndeadEvolution();
+            if (rules.RollChance(chance)) fromModelID = fromModelID.NextUndeadEvolution();
             newUndead.Model = GameActors[fromModelID];
           }
         }
@@ -2801,8 +2810,8 @@ namespace djack.RogueSurvivor.Engine
     private Actor? SpawnNewNatGuardTrooper(Actor leader)
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
-      armyNationalGuard.Inventory.AddAll(m_Rules.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
-                                                                : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
+      armyNationalGuard.Inventory.AddAll(Rules.Get.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
+                                                                  : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
       return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
@@ -3175,7 +3184,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private bool TryPlayerInsanity()
     {
-      if (!Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
+      if (!Player.IsInsane || !Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
       var insaneAction = GenerateInsaneAction(Player);
       if (null == insaneAction || !insaneAction.IsPerformable()) return false;
       ClearMessages();
@@ -3444,7 +3453,7 @@ namespace djack.RogueSurvivor.Engine
       int gx = 0;
       int gy = 0;
       m_UI.UI_Clear(Color.Black);
-      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Get.Seed.ToString(), gx, gy, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Seed.ToString(), gx, gy, new Color?());
       gy = 2* BOLD_LINE_SPACING;
       if (Player.Model.Abilities.IsUndead) {
         m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy, new Color?());
@@ -4118,14 +4127,15 @@ namespace djack.RogueSurvivor.Engine
       var inv = actor.Inventory;
       Item firstMatching = inv.GetFirstByModel(GameItems.MEDIKIT);
       inv.Consume(firstMatching);
-      if (m_Rules.RollChance(actor.ReviveChance(corpse))) {
+      var rules = Rules.Get;
+      if (rules.RollChance(actor.ReviveChance(corpse))) {
           revive.IsDead = false;
           revive.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
           revive.Doll.RemoveDecoration(GameImages.BLOODIED);
           revive.Activity = djack.RogueSurvivor.Data.Activity.IDLE;
           revive.TargetActor = null;
           map.Remove(corpse);
-          map.PlaceAt(revive, m_Rules.DiceRoller.Choose(pointList));
+          map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
           if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), revive));
           if (actor.IsEnemyOf(revive)) return;
           DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
@@ -5690,7 +5700,7 @@ namespace djack.RogueSurvivor.Engine
       Location loc_checkpoint = aiActor.Location;
 #endif
       var actorAction = aiActor.Controller.GetAction(this);
-      if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
+      if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);
         if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;
       }
@@ -7389,7 +7399,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (dest_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
-        if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
+        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
           if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
         }
@@ -7403,7 +7413,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer && (actor.Activity == Data.Activity.FLEEING || actor.Activity == Data.Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
         OnLoudNoise(in newLocation, "A loud SCREAM");
-        if (!dest_seen && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
+        if (!dest_seen && Rules.Get.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
@@ -7454,7 +7464,7 @@ namespace djack.RogueSurvivor.Engine
       // 2020-01-03: Z-grab extended to cross-exit
       actor.Location.ForEachAdjacent(loc => {
           var actorAt = loc.Actor;
-          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !m_Rules.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
+          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
           if (visible) AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
           canLeave = false;
       });
@@ -7480,12 +7490,13 @@ namespace djack.RogueSurvivor.Engine
       isDestroyed = false;
       if (trap.Model.BlockChance <= 0) return true;
       bool player = ForceVisibleToPlayer(victim);
-      bool flag = m_Rules.CheckTrapEscape(trap, victim);
+      var rules = Rules.Get;
+      bool flag = rules.CheckTrapEscape(trap, victim);
       if (flag) {
         trap.IsTriggered = false;
         if (player)
           AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_ESCAPE), trap.TheName)));
-        if (m_Rules.CheckTrapEscapeBreaks(trap, victim)) {
+        if (rules.CheckTrapEscapeBreaks(trap, victim)) {
           if (player)
             AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_BREAK), trap.TheName)));
           --trap.Quantity;
@@ -7538,7 +7549,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
-      if (!m_Rules.CheckTrapStepOnBreaks(trap)) return;
+      if (!trap.CheckStepOnBreaks()) return;
       if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
       --trap.Quantity;
     }
@@ -7554,7 +7565,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
-      if (!m_Rules.CheckTrapStepOnBreaks(trap, mobj)) return;
+      if (!trap.CheckStepOnBreaks(mobj)) return;
       if (player) AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));   // XXX \todo remove risk of the the
       --trap.Quantity;
     }
@@ -7621,7 +7632,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (origin_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));   // XXX not quite right, cf. other jump usage
-        if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
+        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actor.SpendActionPoints(Rules.JUMP_STUMBLE_ACTION_COST);
           if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
         }
@@ -7910,10 +7921,11 @@ namespace djack.RogueSurvivor.Engine
       Defence defence = defender.Defence;
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
-      int hitRoll = m_Rules.RollSkill(attack.HitValue);
-      int defRoll = m_Rules.RollSkill(defence.Value);
+      var rules = Rules.Get;
+      int hitRoll = rules.RollSkill(attack.HitValue);
+      int defRoll = rules.RollSkill(defence.Value);
       // 2x damage against sleeping targets
-      int dmg = (hitRoll > defRoll ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
+      int dmg = (hitRoll > defRoll ? rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location, "Nearby fighting");
       bool isDefVisible = ForceVisibleToPlayer(defender);
@@ -7923,7 +7935,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
-               && !m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE);  // not clear enough; no message
+               && !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE);  // not clear enough; no message
       }
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
@@ -7934,7 +7946,7 @@ namespace djack.RogueSurvivor.Engine
 
         if (!attacker_relevant && !defender_relevant) return;   // not relevant
         if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-            || !m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE))  // not clear enough
+            || !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE))  // not clear enough
           return;
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
@@ -7953,7 +7965,7 @@ namespace djack.RogueSurvivor.Engine
       if (hitRoll > defRoll) {
         // alpha10
         // roll for attacker disarming defender
-        if (attacker.Model.Abilities.CanDisarm && m_Rules.RollChance(attack.DisarmChance)) {
+        if (attacker.Model.Abilities.CanDisarm && rules.RollChance(attack.DisarmChance)) {
           Item disarmIt = Disarm(defender);
           if (null != disarmIt) {
             // show
@@ -7986,7 +7998,8 @@ namespace djack.RogueSurvivor.Engine
               ImportantMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"), DELAY_LONG);
             }
             // need to know whether it's a zombifying hit or not
-            bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(s_Options.ZombificationChance);
+            bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled
+                                      && !defender.Model.Abilities.IsUndead && Rules.Get.RollChance(s_Options.ZombificationChance);
             KillActor(attacker, defender, (to_immediately_zombify ? "hit" : "hit"));
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
@@ -8014,7 +8027,7 @@ namespace djack.RogueSurvivor.Engine
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
-      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
+      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
         attacker.OnUnequipItem(itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
@@ -8065,7 +8078,8 @@ namespace djack.RogueSurvivor.Engine
       // stamina penalty is simply copied through from the base ranged attack (calculated below)
       ref var r_attack = ref attacker.CurrentRangedAttack;
       attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
-      if (r_attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
+      var rules = Rules.Get;
+      if (r_attack.Kind == AttackKind.FIREARM && (rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
         AddMessage(MakeMessage(attacker, " : weapon jam!"));
       } else {
@@ -8073,21 +8087,14 @@ namespace djack.RogueSurvivor.Engine
         if (!(attacker.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
         // RS Alpha 9 considered glass objects perfect ablative armor for the target, but didn't inform the AI accordingly
-#if OBSOLETE
-        if (DoCheckFireThrough(attacker, LoF)) return;
-#else
         if (DoCheckFireThrough(attacker, LoF)) ++distance;  // XXX \todo distance penalty should be worse the further the object is from the target
-#endif
+
         Attack attack = attacker.RangedAttack(distance, defender);
         Defence defence = defender.Defence;
-#if OBSOLETE
-        int hitRoll = m_Rules.RollSkill((int)(accuracyFactor * attack.HitValue));
-#else
         // resolve attack: alpha10
         int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
-        int hitRoll = m_Rules.RollSkill(hitValue);
-#endif
-        int defRoll = m_Rules.RollSkill(defence.Value);
+        int hitRoll = rules.RollSkill(hitValue);
+        int defRoll = rules.RollSkill(defence.Value);
 
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
@@ -8096,7 +8103,7 @@ namespace djack.RogueSurvivor.Engine
 
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
-                 && !m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE);  // not clear enough; no message
+                 && !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE);  // not clear enough; no message
         }
         void react(Actor a) {
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
@@ -8107,7 +8114,7 @@ namespace djack.RogueSurvivor.Engine
 
           if (!attacker_relevant && !defender_relevant) return;   // not relevant
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-              || !m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE))
+              || !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE))
             return;
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
@@ -8124,7 +8131,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
         if (hitRoll > defRoll) {
-          int dmg = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
+          int dmg = rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
             defender.TakeDamage(dmg);
             if (defender.HitPoints <= 0) {
@@ -8238,7 +8245,7 @@ namespace djack.RogueSurvivor.Engine
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
-      } else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
+      } else if (Rules.Get.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
         AddMessageIfAudibleForPlayer(location, "You hear an explosion");
       ApplyExplosionDamage(in location, 0, blastAttack);
       for (short waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance) {
@@ -8303,7 +8310,8 @@ namespace djack.RogueSurvivor.Engine
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
         map.RemoveAtExt<Item>(obj => {
-            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance);
+            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0)
+                && Rules.Get.RollChance(chance);
         }, location.Position);
       }
       if (blast.CanDamageObjects) {
@@ -8379,7 +8387,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var chat_competent = targets.FindAll(actor => Rules.CHAT_RADIUS >= Rules.InteractionDistance(speaker.Location, actor.Location));
       if (0 >= chat_competent.Count) return false;
-      var target = m_Rules.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
+      var target = Rules.Get.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
 
       if (speaker.IsPlayer && Player!=speaker) PanViewportTo(speaker);
       else if (target.IsPlayer && Player!=target) PanViewportTo(target);
@@ -8418,7 +8426,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
       if (0 >= radio_competent.Count) return false;
-      var target = m_Rules.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
+      var target = Rules.Get.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
       var audience = new HashSet<Actor>();
       var audience2 = new HashSet<Actor>(); 
 
@@ -8717,7 +8725,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var negotiate = (speaker.Controller as ObjectiveAI).TradeOptions(buyer);
       if (null == negotiate) return null;
-      return m_Rules.DiceRoller.Choose(negotiate);
+      return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
     public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
@@ -8732,7 +8740,7 @@ namespace djack.RogueSurvivor.Engine
         negotiate.Add(new KeyValuePair<Item,Item>(gift,b_item));
       }
       if (0 >= negotiate.Count) return null;
-      return m_Rules.DiceRoller.Choose(negotiate);
+      return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
     static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
@@ -9138,8 +9146,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.Items.Consume(food);
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
-      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
-        return;
+      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE)) return;
       actor.Vomit();
       if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
     }
@@ -9159,7 +9166,7 @@ namespace djack.RogueSurvivor.Engine
         }
         bool player = ForceVisibleToPlayer(actor);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
-        if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
+        if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
         actor.Vomit();
         if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
@@ -9249,7 +9256,7 @@ namespace djack.RogueSurvivor.Engine
       if (boreChance == 100) {
         actor.Inventory!.Consume(ent);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
-      } else if (m_Rules.RollChance(boreChance)) {
+      } else if (Rules.Get.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
         if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", Conjugate(actor, VERB_BE), ent.TheName)));
       }
@@ -9359,14 +9366,14 @@ namespace djack.RogueSurvivor.Engine
         }
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(actor.Location) // we already checked the door/window visibility, it's the sound origin
-                 && !m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE);  // not clear enough; no message
+                 && !Rules.Get.RollChance(PLAYER_HEAR_BASH_CHANCE);  // not clear enough; no message
         }
         void react(Actor a) {
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant \todo Civilian vs. GangAI may disagree with this, but would want to retreat
           if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-              || !m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))  // not clear enough
+              || !Rules.Get.RollChance(PLAYER_HEAR_BASH_CHANCE))  // not clear enough
             return;
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             /* if (a.IsEnemyOf(actor)) */ ai.Terminate(actor);
@@ -9404,14 +9411,14 @@ namespace djack.RogueSurvivor.Engine
 
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(actor.Location) // we already checked the object visibility, it's the sound origin
-                 && !m_Rules.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE);  // not clear enough; no message
+                 && !Rules.Get.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE);  // not clear enough; no message
         }
         void react(Actor a) {
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant
           if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-              || !m_Rules.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE))  // not clear enough
+              || !Rules.Get.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE))  // not clear enough
             return;
           if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
             ai.Terminate(actor);
@@ -9468,14 +9475,14 @@ namespace djack.RogueSurvivor.Engine
       OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(actor.Location) // we already checked the attacker visibility, he's the sound origin
-               && !m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE);  // not clear enough; no message
+               && !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE);  // not clear enough; no message
       }
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
         if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
         if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-            || !m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
+            || !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
           return;
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           ai.Terminate(actor);
@@ -9559,14 +9566,14 @@ namespace djack.RogueSurvivor.Engine
 
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(actor.Location) // we already checked the attacker visibility, he's the sound origin
-               && !m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE);  // not clear enough; no message
+               && !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE);  // not clear enough; no message
       }
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
         if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-        if (   ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
-            || !m_Rules.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
+        if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
+            || !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
           return;
         if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
           ai.Terminate(actor);
@@ -9696,7 +9703,7 @@ namespace djack.RogueSurvivor.Engine
         var actor = map.GetActorAtExt(pt);
         if (null != actor && actor.IsSleeping) {
           // would need to test for other kinds of distance
-          if (m_Rules.RollChance(actor.LoudNoiseWakeupChance(Rules.GridDistance(in noisePosition, in pt)))) {
+          if (Rules.Get.RollChance(actor.LoudNoiseWakeupChance(Rules.GridDistance(in noisePosition, in pt)))) {
             DoWakeUp(actor);
             if (ForceVisibleToPlayer(actor)) {
               AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
@@ -9794,11 +9801,11 @@ namespace djack.RogueSurvivor.Engine
         // the implicit police radio goes explicit on death, as a generic item
         if (deadGuy.IsFaction(GameFactions.IDs.ThePolice)) {
           var it = GameItems.POLICE_RADIO.instantiate();
-          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
+          if (Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
         }
         foreach (Item it in deadGuy.Inventory.Items.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
-          if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(ItemSurviveKillProbability(it, reason)))
+          if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }
         Session.Get.PoliceInvestigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
@@ -9935,7 +9942,7 @@ namespace djack.RogueSurvivor.Engine
          if (!actor.Location.Map.IsBlockingThrow(pt)) dropTiles.Add(pt);
        });
        Point dropOnTile;
-       if (dropTiles.Count > 0) dropOnTile = m_Rules.DiceRoller.Choose(dropTiles);
+       if (dropTiles.Count > 0) dropOnTile = Rules.Get.DiceRoller.Choose(dropTiles);
        else dropOnTile = actor.Location.Position;
        actor.Location.Map.DropItemAt(disarmIt, in dropOnTile);
 
@@ -9988,7 +9995,7 @@ namespace djack.RogueSurvivor.Engine
       const int BLOOD_WALL_SPLAT_CHANCE = 20;
 
       bool is_floor(Map m, Point pt) { return m.GetTileModelAt(pt).IsWalkable; }
-      bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && m_Rules.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
+      bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && Rules.Get.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
 
       map.AddTimedDecoration(position, GameImages.DECO_BLOODIED_FLOOR, WorldTime.TURNS_PER_DAY, is_floor);
       map.ForEachAdjacent(position,p => map.AddTimedDecoration(p, GameImages.DECO_BLOODIED_WALL, WorldTime.TURNS_PER_DAY, is_wall));    // no cross-district walls so ok
@@ -10007,8 +10014,9 @@ namespace djack.RogueSurvivor.Engine
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
-      float rotation = m_Rules.Roll(30, 60);
-      if (m_Rules.RollChance(50)) rotation = -rotation;
+      var rules = Rules.Get;
+      float rotation = rules.Roll(30, 60);
+      if (rules.RollChance(50)) rotation = -rotation;
       deadGuy.Location.Map.AddAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
     }
 #nullable restore
@@ -10032,7 +10040,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(new string[3] {
         "TIP OF THE DEAD",
         "Did you know that...",
-        m_Rules.DiceRoller.Choose(GameTips.TIPS)
+        Rules.Get.DiceRoller.Choose(GameTips.TIPS)
       }, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
       ClearMessages();
       AddMessage(new Data.Message("**** YOU DIED! ****", turn, Color.Red));
@@ -10456,7 +10464,7 @@ namespace djack.RogueSurvivor.Engine
         }
         idsList.Add(id);
       }
-      return m_Rules.DiceRoller.Choose(idsList);
+      return Rules.Get.DiceRoller.Choose(idsList);
     }
 
 #nullable enable
@@ -10522,7 +10530,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = 0;
       bool isUndead = actor.Model.Abilities.IsUndead;
-      var dr = m_Rules.DiceRoller;
+      var dr = Rules.Get.DiceRoller;
       do {  // could unroll this loop, etc -- but this is profile-cold so ok to minimize IL size
         var id = isUndead ? Skills.RollUndead(dr) : Skills.RollLiving(dr);
         if (actor.Sheet.SkillTable.GetSkillLevel(id) < Skills.MaxSkillLevel(id)) return id;
@@ -10536,7 +10544,7 @@ namespace djack.RogueSurvivor.Engine
       var skills = actor.Sheet.SkillTable;
       var skillsList = skills.SkillsList;
       if (skillsList == null) return;
-      var id = m_Rules.DiceRoller.Choose(skillsList);
+      var id = Rules.Get.DiceRoller.Choose(skillsList);
       skills.DecOrRemoveSkill(id);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
     }
@@ -10580,7 +10588,7 @@ namespace djack.RogueSurvivor.Engine
       var skillTable = deadVictim.Sheet.SkillTable;
       var skills = skillTable.SkillsList;
       if (null != skills) {
-        var roller = m_Rules.DiceRoller;
+        var roller = Rules.Get.DiceRoller;
         int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
@@ -12335,8 +12343,8 @@ namespace djack.RogueSurvivor.Engine
       _validateSpawn(); // prepare to use the --spawn option
 
       Session.Get.Reset();
+      Rules.Reset();
       Direction_ext.Now();
-      m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;
       for (short index1 = 0; index1 < world.Size; ++index1) {
@@ -12600,9 +12608,10 @@ namespace djack.RogueSurvivor.Engine
           TheItem = it,
           IsSpawned = false
         };
-      Map map = m_Rules.DiceRoller.Choose(mapList);
+      var rules = Rules.Get;
+      Map map = rules.DiceRoller.Choose(mapList);
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
-      Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
+      Point point = new Point(rules.Roll(bounds.Left, bounds.Right), rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, in point);
       map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in point);
       return new UniqueItem{
@@ -12623,12 +12632,13 @@ namespace djack.RogueSurvivor.Engine
         }
       });
       if (0 >= districtList.Count) throw new InvalidOperationException("world has no business districts with offices");
-      District district = m_Rules.DiceRoller.Choose(districtList);
+      var rules = Rules.Get;
+      District district = rules.DiceRoller.Choose(districtList);
       var zoneList = new List<Zone>();
       foreach (var zone in district.EntryMap.Zones) {
         if (zone.HasGameAttribute("CHAR Office")) zoneList.Add(zone);
       }
-      Zone officeZone = m_Rules.DiceRoller.Choose(zoneList);
+      Zone officeZone = rules.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);
@@ -12637,7 +12647,7 @@ namespace djack.RogueSurvivor.Engine
     private DistrictKind GenerateDistrictKind(int gridX, int gridY)
     {
       if (gridX == 0 && gridY == 0) return DistrictKind.BUSINESS;
-      return (DistrictKind) m_Rules.Roll(0, (int) DistrictKind._COUNT);
+      return (DistrictKind) Rules.Get.Roll(0, (int) DistrictKind._COUNT);
     }
 
     private void GenerateDistrictSewersMap(District district)
@@ -12677,7 +12687,7 @@ namespace djack.RogueSurvivor.Engine
         BaseMapGenerator.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
         actor.RecomputeStartingStats();
-        actor.CreateCivilianDeductFoodSleep(m_Rules);
+        actor.CreateCivilianDeductFoodSleep();
       }
       actor.Controller = new PlayerController();
       if (   MapGenerator.ActorPlace(roller, map, actor, pt => {
@@ -13249,7 +13259,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
-          return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList1);
+          return 0 >= matchingActors ? null : Rules.Get.DiceRoller.Choose(actorList1);
           } // scoping brace
         case GameOptions.ReincMode.KILLER:
           Actor killer = Session.Get.Scoring_fatality.Killer;
@@ -13270,11 +13280,11 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.ReincMode.RANDOM_LIVING:
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
-          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || (reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50));
+          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || (reincMode == GameOptions.ReincMode.RANDOM_ACTOR && Rules.Get.RollChance(50));
           // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
           var actorList2 = CurrentMap.District.FilterActors(actor => IsSuitableReincarnation(actor, asLiving));
           matchingActors = actorList2.Count;
-          return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList2);
+          return 0 >= matchingActors ? null : Rules.Get.DiceRoller.Choose(actorList2);
         default: throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
       }
     }
@@ -13282,16 +13292,17 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private ActorAction? GenerateInsaneAction(Actor actor)
     {
-      switch (m_Rules.Roll(0, 5)) {
+      var rules = Rules.Get;
+      switch (rules.Roll(0, 5)) {
         case 0: return new ActionShout(actor, "AAAAAAAAAAA!!!");
-        case 1: return new ActionBump(actor, m_Rules.RollDirection());
+        case 1: return new ActionBump(actor, rules.RollDirection());
         case 2:
-          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + m_Rules.RollDirection());
+          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + rules.RollDirection());
           return null == mapObjectAt ? null : new ActionBreak(actor, mapObjectAt);
         case 3:
           var inventory = actor.Inventory;
           if (null == inventory || inventory.IsEmpty) return null;
-          Item it = m_Rules.DiceRoller.Choose(inventory.Items);
+          Item it = rules.DiceRoller.Choose(inventory.Items);
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsPerformable()) return actionUseItem;
           if (it.IsEquipped) {
@@ -13303,14 +13314,14 @@ namespace djack.RogueSurvivor.Engine
           var f_in_fov = actor.Controller.friends_in_FOV;
           if (null == f_in_fov) return null;
           foreach(var x in f_in_fov) {
-            if (!m_Rules.RollChance(50)) continue;
+            if (!rules.RollChance(50)) continue;
             var leader = actor.LiveLeader;
             if (null != leader) {
               leader.RemoveFollower(actor);
               actor.TrustInLeader = 0;
             }
             DoMakeAggression(actor, x.Value);
-            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
+            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
           }
           return null;
         default: return null;
@@ -13971,7 +13982,7 @@ namespace djack.RogueSurvivor.Engine
                                                         : null;
         var game = RogueForm.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase
         if (null != pointList && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
-          map.PlaceAt(fo, game.Rules.DiceRoller.Choose(pointList));
+          map.PlaceAt(fo, Rules.Get.DiceRoller.Choose(pointList));
           map.MoveActorToFirstPosition(fo);
           game.OnActorEnterTile(fo);
         }

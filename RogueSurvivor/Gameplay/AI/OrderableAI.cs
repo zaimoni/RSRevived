@@ -683,7 +683,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
           if (0 < motive.Count && 0<escape.Count) {
-            ret = new ActionMoveStep(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(escape));
+            ret = new ActionMoveStep(m_Actor,Rules.Get.DiceRoller.Choose(escape));
             return true;
           }
 
@@ -1022,7 +1022,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         int ub = near.Count;
         if (1 < ub) {
-          var ok = RogueForm.Game.Rules.DiceRoller.Roll(0, ub);
+          var ok = Rules.Get.Roll(0, ub);
           while (0 <= --ub) if (ok != ub) goals.Remove(near[ub]);
         }
         }
@@ -1395,7 +1395,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
                 if (null == targets) tmpAction = null;  // shove is tactically contra-indicated
                 else {
-                  var choice = RogueForm.Game.Rules.DiceRoller.Choose(targets);
+                  var choice = Rules.Get.DiceRoller.Choose(targets);
                   return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key-shove.Target.Location.Position));
                 }
               } else tmpAction = null;  // shove is tactically contra-indicated
@@ -1674,7 +1674,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (percept.Percepted is Actor old_a) return string.Format("I saw {0} {1} {2}.", old_a.Name, str1, str2);
       else if (percept.Percepted is Inventory inventory) {
         if (inventory.IsEmpty) return null;
-        Item it = RogueForm.Game.Rules.DiceRoller.Choose(inventory.Items);
+        Item it = Rules.Get.DiceRoller.Choose(inventory.Items);
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = audience.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
         if ((double) Rules.StdDistance(percept.Location, audience.Location) <= (double) (2 + num)) return null;
@@ -1698,8 +1698,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (0 >= _adjacent_friends.Count) return null;
-      if (!RogueForm.Game.Rules.RollChance(chance)) return null;
-      Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(_adjacent_friends);
+      var rules = Rules.Get;
+      if (!rules.RollChance(chance)) return null;
+      Actor actorAt1 = rules.DiceRoller.Choose(_adjacent_friends);
       string text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
@@ -1932,8 +1933,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
+      var rules = Rules.Get;
       ActorAction? tmpAction = null;
-      if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
+      if (rules.RollChance(EMOTE_FLEE_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
         // All OrderableAI instances currently can both use map objects, and barricade
         // there is an inventory check requirement on barricading as well
@@ -1957,16 +1959,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (null != close_doors) {
-          var dest = game.Rules.DiceRoller.Choose(close_doors);
+          var dest = rules.DiceRoller.Choose(close_doors);
           Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
           return new ActionCloseDoor(m_Actor, dest, m_Actor.Location == PrevLocation);
         } else if (null != barricade_doors) {
-          var dest = game.Rules.DiceRoller.Choose(barricade_doors);
+          var dest = rules.DiceRoller.Choose(barricade_doors);
           Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
           return new ActionBarricadeDoor(m_Actor, dest);
         }
         }   // enable automatic GC
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
@@ -2001,15 +2003,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         }
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
-          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
-            game.DoEmote(m_Actor, emotes[1], true);
+          if (rules.RollChance(EMOTE_FLEE_TRAPPED_CHANCE)) game.DoEmote(m_Actor, emotes[1], true);
           return BehaviorMeleeAttack(enemy);
         }
         return null;
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction? BehaviorFightOrFlee(RogueGame game, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) {
         // oops.  Panic.  Wasn't able to flee explosives and will likely die, either immediately or by sudden vulnerability.
@@ -2112,14 +2113,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
             m_Actor.IsRunning = true;
-            return dash_attack[game.Rules.DiceRoller.Choose(attack_possible)];
+            return dash_attack[Rules.Get.DiceRoller.Choose(attack_possible)];
           }
       }
 
       // charge
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (null != tmpAction) {
-        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
+        if (Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;
       }
@@ -2222,7 +2223,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 
       // \todo replace this with some form of formation management
-      var rules = RogueForm.Game.Rules;
+      var rules = Rules.Get;
       var range = new Rectangle((Point)minDist, (Point)(maxDist - minDist));
 
       Point otherPosition = other.Location.Position;
@@ -2290,18 +2291,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         (murderers ?? (murderers = new Dictionary<Location, Actor>()))[x.Key] = x.Value;
       }
       if (null == murderers) return null;
-      RogueGame game = RogueForm.Game;
-      if (!game.Rules.RollChance(LAW_ENFORCE_CHANCE)) return null;  // \todo but should be 100% for hungry civilians attacking for food, that is in-progress
+      var rules = Rules.Get;
+      if (!rules.RollChance(LAW_ENFORCE_CHANCE)) return null;  // \todo but should be 100% for hungry civilians attacking for food, that is in-progress
       friends = null;  // enable auto GC
+      var game = RogueForm.Game;
       foreach(var x in murderers) {
-        if (0 >= x.Value.MurdersInProgress && game.Rules.RollChance(x.Value.UnsuspicousForChance(m_Actor))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
+        if (0 >= x.Value.MurdersInProgress && x.Value.IsUnsuspiciousFor(m_Actor)) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
         else (friends ?? new Dictionary<Location, Actor>())[x.Key] = x.Value;
       }
       if (null == friends) return null;
       // at this point, entries in friends are murderers that have elicited suspicion
       foreach(var x in friends) {
         game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", x.Value.Name));
-        if (0 >= x.Value.MurdersInProgress && !game.Rules.RollChance(x.Value.MurdererSpottedByChance(m_Actor))) continue;
+        if (0 >= x.Value.MurdersInProgress && !rules.RollChance(x.Value.MurdererSpottedByChance(m_Actor))) continue;
         // XXX \todo V.0.10.0 this needs a rethinking (a well-armed murderer may be of more use killing z, a weak one should be assassinated)
         game.DoMakeAggression(m_Actor, x.Value);
         m_Actor.TargetActor = x.Value;
@@ -2311,7 +2313,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
+    protected ActorAction BehaviorBuildLargeFortification(int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(true)) return null;
@@ -2325,8 +2327,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != inv && !inv.IsEmpty && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
         int num1 = map.CountAdjacentTo(pt, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
         int num2 = map.CountAdjacent<Fortification>(pt, fortification => !fortification.IsTransparent);
-        return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
-      }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
+        return (num1 == 3 && num2 == 0 && Rules.Get.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
+      }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!m_Actor.CanBuildFortification(in pt1, true)) return null;
@@ -2358,7 +2360,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (flag_n && flag_s && !flag_e && !flag_w) || (flag_e && flag_w && !flag_n && !flag_s);
     }
 
-    protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
+    protected ActorAction BehaviorBuildSmallFortification()
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(false)) return null;
@@ -2369,7 +2371,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt))
           return false;
         return IsDoorwayOrCorridor(map, in pt); // this allows using IsInBounds rather than IsValid
-      }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
+      }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!m_Actor.CanBuildFortification(in pt1, false)) return null;
@@ -2677,7 +2679,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
-        return (float) (num + RogueForm.Game.Rules.Roll(0, EXPLORE_RANDOM));
+        return (float) (num + Rules.Get.Roll(0, EXPLORE_RANDOM));
       }, (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
@@ -2757,7 +2759,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == spray) return null;
 
       const int USE_STENCH_KILLER_CHANCE = 75;
-      if (RogueForm.Game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {  // compromise between burning RNG and very high false negative rate
+      if (Rules.Get.RollChance(USE_STENCH_KILLER_CHANCE)) {  // compromise between burning RNG and very high false negative rate
       // first check if want to use it on self, then check on adj leader/follower
       Actor sprayOn = null;
 
@@ -2880,7 +2882,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return WouldGrabFromAccessibleStack(in loc,stack)?.IsLegal() ?? false;
     }
 
-    private ActorAction _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
+    private ActorAction? _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
     {
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
         if (obj is ItemBodyArmor armor) {
@@ -2938,15 +2940,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = _takeThis(in loc, obj, recover, is_real);
+      var tmp = _takeThis(in loc, obj, recover, is_real);
       if (null == tmp) return null;
 #if DEBUG
       if (is_real) {
          if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
       }
 #endif
-      if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+      if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
       return tmp;
     }
 
@@ -3000,7 +3002,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
          if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
       }
 #endif
-        if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
       }
@@ -3044,7 +3046,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
-        if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return tmpAction;
       }
@@ -3052,7 +3054,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
-        if (is_real && RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return tmpAction;
       }

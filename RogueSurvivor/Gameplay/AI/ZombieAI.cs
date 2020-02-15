@@ -81,8 +81,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorGoEatCorpse(_all);
       if (null != tmpAction) return tmpAction;
 
-      var tmp_rules = game.Rules;
-      if (tmp_abilities.AI_CanUseAIExits && tmp_rules.RollChance(USE_EXIT_CHANCE)) {
+      var rules = Rules.Get;
+      if (tmp_abilities.AI_CanUseAIExits && rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         if (null != tmpAction) {
           m_MemLOSSensor.Clear();
@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!tmp_abilities.IsUndeadMaster) {
         Percept percept = FilterNearest(_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept != null) {
-          tmpAction = BehaviorStupidBumpToward(RandomPositionNear(tmp_rules, percept.Location, 3), true, true);
+          tmpAction = BehaviorStupidBumpToward(RandomPositionNear(rules, percept.Location, 3), true, true);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FOLLOWING;
             m_Actor.TargetActor = percept.Percepted as Actor;
@@ -112,7 +112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.TRACKING;
         return tmpAction;
       }
-      if (m_Actor.AbleToPush && tmp_rules.RollChance(PUSH_OBJECT_CHANCE)) {
+      if (m_Actor.AbleToPush && rules.RollChance(PUSH_OBJECT_CHANCE)) {
         tmpAction = BehaviorPushNonWalkableObject();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;

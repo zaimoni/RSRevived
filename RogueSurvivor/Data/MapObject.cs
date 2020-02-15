@@ -483,8 +483,9 @@ namespace djack.RogueSurvivor.Data
           val2 -= barricadeMaterial.Quantity;
           Location.Drop(barricadeMaterial);
         }
-        if (RogueForm.Game.Rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          Location.Drop((RogueForm.Game.Rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
+        var rules = Engine.Rules.Get;
+        if (rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
+          Location.Drop((rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
         }
       }
       _destroy();

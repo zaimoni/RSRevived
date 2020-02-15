@@ -236,7 +236,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (InCombat) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
-      if (null != _enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(_enemies);
+      if (null != _enemies) m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
 
@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  List<Percept> friends = FilterNonEnemies(current);
       if (null != _enemies) {
-        if (null != friends && game.Rules.RollChance(50)) {
+        if (null != friends && Rules.Get.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
@@ -412,7 +412,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
 #endif
-            if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
+            if (Rules.Get.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
             if (!m_Actor.TargetActor.IsSleeping) {
               if (m_Actor.TargetActor.Faction.ID.ExtortionIsAggression()) {
@@ -461,8 +461,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-
-      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
+      var rules = Rules.Get;
+      if (rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
@@ -470,8 +470,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
-        tmpAction = BehaviorBuildLargeFortification(game, 1);
+      if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
+        tmpAction = BehaviorBuildLargeFortification(1);
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
@@ -480,8 +480,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
-        tmpAction = BehaviorBuildSmallFortification(game);
+      if (rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildSmallFortification();
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
@@ -539,7 +539,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!", true);
           return tmpAction;
         }
-        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
+        if (rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
           tmpAction = BehaviorPushNonWalkableObjectForFood();
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
@@ -560,7 +560,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) {
-        if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
+        if (rules.RollChance(USE_EXIT_CHANCE)) {
           tmpAction = BehaviorUseExit(UseExitFlags.DONT_BACKTRACK);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
@@ -826,7 +826,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");
 #endif
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+          if (rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
             game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

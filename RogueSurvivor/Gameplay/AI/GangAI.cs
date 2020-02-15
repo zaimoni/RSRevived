@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  List<Percept> friends = FilterNonEnemies(_all);
       if (null != _enemies) {
-        if (null != friends && game.Rules.RollChance(50)) {
+        if (null != friends && Rules.Get.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
           if (null != tmpAction) return tmpAction;
         }
@@ -218,8 +218,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
         {
           if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
-          if (!game.Rules.RollChance(a.UnsuspicousForChance(m_Actor))) return HasAnyInterestingItem(a.Inventory);
-          game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
+          if (!a.IsUnsuspiciousFor(m_Actor)) return HasAnyInterestingItem(a.Inventory);
+          game.DoEmote(a, string.Format("moves unnoticed by {0}.", m_Actor.Name));
           return false;
         });
         if (null!= mayStealFrom) {
@@ -266,7 +266,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.CountFollowers > 0) {
         tmpAction = BehaviorDontLeaveFollowersBehind(3, out Actor target);
         if (null != tmpAction) {
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+          if (Rules.Get.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
             game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

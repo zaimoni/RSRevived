@@ -114,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
-      var rules = game.Rules;
+      var rules = Rules.Get;
       if (rules.RollChance(SHOUT_CHANCE)) {
         m_Actor.Activity = Activity.IDLE;
         game.DoEmote(m_Actor, rules.DiceRoller.Choose(INSANITIES),true);

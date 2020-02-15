@@ -108,7 +108,11 @@ namespace djack.RogueSurvivor.Engine
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
 #nullable enable
+    private static Rules? s_Rules;
     private DiceRoller m_DiceRoller;
+
+    public static Rules Get { get { return s_Rules ?? (s_Rules = new Rules()); } }
+    public static void Reset() { s_Rules = null; }
 
 #region Session save/load assistants
     public void Load(SerializationInfo info, StreamingContext context)
@@ -124,10 +128,7 @@ namespace djack.RogueSurvivor.Engine
 
     public DiceRoller DiceRoller { get { return m_DiceRoller; } }
 
-    public Rules(DiceRoller diceRoller)
-    {
-      m_DiceRoller = diceRoller;
-    }
+    private Rules() { m_DiceRoller = new DiceRoller(Session.Seed); }
 
     public int Roll(int min, int max) { return m_DiceRoller.Roll(min, max); }
     public short Roll(int min, short max) { return m_DiceRoller.Roll((short)min, max); }
@@ -201,7 +202,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
+    static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
 #if DEBUG
       if (actor == null) throw new ArgumentNullException("actor");
@@ -432,7 +433,7 @@ namespace djack.RogueSurvivor.Engine
                var considering = actor.MutuallyAdjacentFor(actor.Location,actorAt.Location);
                if (null != considering) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(actor));
-                 if (0 < considering.Count) return new ActionMoveStep(actor, RogueForm.Game.Rules.DiceRoller.Choose(considering));
+                 if (0 < considering.Count) return new ActionMoveStep(actor, Get.DiceRoller.Choose(considering));
                }
              }
 
@@ -441,7 +442,7 @@ namespace djack.RogueSurvivor.Engine
              if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
 
-             if (null != candidates) return new ActionShove(actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+             if (null != candidates) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
            }
         }
 
@@ -503,13 +504,13 @@ namespace djack.RogueSurvivor.Engine
                if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
                // end function target
 
-               if (null != candidates) return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+               if (null != candidates) return new ActionPush(actor,mapObjectAt, Get.DiceRoller.Choose(candidates).Value);
              } else {
                // proceed with pull if we can't push safely
                var possible = mapObjectAt.Location.Position.Adjacent();
                var pull_dests = possible.Where(pt => 1==Rules.GridDistance(actor.Location,new Location(mapObjectAt.Location.Map,pt)));
                if (pull_dests.Any()) {
-                 return new ActionPull(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(pull_dests));
+                 return new ActionPull(actor,mapObjectAt, Get.DiceRoller.Choose(pull_dests));
                }
              }
            }
@@ -672,16 +673,6 @@ namespace djack.RogueSurvivor.Engine
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)
     {
       return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
-    }
-
-    public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj)
-    {
-      return RollChance(trap.Model.BreakChance * mobj.Weight);
-    }
-
-    public bool CheckTrapStepOnBreaks(ItemTrap trap)
-    {
-      return RollChance(trap.Model.BreakChance);
     }
 
     public bool CheckTrapEscapeBreaks(ItemTrap trap, Actor a)

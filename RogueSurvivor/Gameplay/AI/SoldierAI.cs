@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  List<Percept> friends = FilterNonEnemies(_all);
       if (null != _enemies) {
-        if (null != friends && game.Rules.RollChance(50)) {
+        if (null != friends && Rules.Get.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
@@ -248,15 +248,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorRangedInventory();
       if (null != tmpAction) return tmpAction;
 
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
-        tmpAction = BehaviorBuildLargeFortification(game, START_FORT_LINE_CHANCE);
+      var rules = Rules.Get;
+      if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildLargeFortification(START_FORT_LINE_CHANCE);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
-        tmpAction = BehaviorBuildSmallFortification(game);
+      if (rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildSmallFortification();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
@@ -294,7 +295,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.CountFollowers > 0) {
         tmpAction = BehaviorDontLeaveFollowersBehind(4, out Actor target);
         if (null != tmpAction) {
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+          if (rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
             game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

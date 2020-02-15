@@ -6,7 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
-using System;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -14,18 +15,14 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly ItemFood m_Item;
 
-    public ActionEatFoodOnGround(Actor actor, ItemFood it)
-      : base(actor)
+    public ActionEatFoodOnGround(Actor actor, ItemFood it) : base(actor)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
       m_Item = it;
     }
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorEatFoodOnGround(m_Actor, m_Item, out m_FailReason);
+      return Rules.CanActorEatFoodOnGround(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()

@@ -33,7 +33,12 @@ namespace djack.RogueSurvivor.Engine
     private readonly ThreatTracking m_PoliceThreatTracking = new ThreatTracking();
     private readonly LocationSet m_PoliceInvestigate = new LocationSet();
 
-    public int Seed { get; private set; }
+    [NonSerialized] private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
+
+    static public int Seed {
+            get { return s_seed; }
+    }
+
     public World World { get; private set; }
     public UniqueActors UniqueActors { get; private set; }
     public UniqueItems UniqueItems { get; private set; }
@@ -77,13 +82,13 @@ namespace djack.RogueSurvivor.Engine
       ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
       ScriptStage_PoliceCHARrelations = (int) info.GetSByte("ScriptStage_PoliceCHARrelations");
       ScriptStage_HospitalPowerup = (int) info.GetSByte("ScriptStage_HospitalPowerup");
-      Seed = info.GetInt32("Seed");
+      s_seed = info.GetInt32("Seed");
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       info.read(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
-      RogueForm.Game.Rules.Load(info,context);
+      Rules.Get.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
       RogueGame.Load(info, context);
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
@@ -103,13 +108,13 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisoner);
       info.AddValue("ScriptStage_PoliceCHARrelations", (SByte)ScriptStage_PoliceCHARrelations);
       info.AddValue("ScriptStage_HospitalPowerup", (SByte)ScriptStage_HospitalPowerup);
-      info.AddValue("Seed",Seed);
+      info.AddValue("Seed",s_seed);
       info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
       info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
-      RogueForm.Game.Rules.Save(info,context);
+      Rules.Get.Save(info,context);
       info.AddValue("World",World,typeof(World));
       RogueGame.Save(info, context);
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
@@ -131,9 +136,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void Reset()
     {
-      Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+      s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+Seed.ToString());
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString());
 #endif
       RogueGame.Reset();
       m_Scoring = new Scoring();

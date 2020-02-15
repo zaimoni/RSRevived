@@ -248,7 +248,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected DiceRoller m_DiceRoller;
 
     protected BaseMapGenerator(RogueGame game)
-      : base(game.Rules)
     {
       m_Game = game;
       m_DiceRoller = new DiceRoller();
@@ -607,8 +606,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // * VAPORWARE: a working gas station to be needed for Bikers/Gangsters to stage raids
     // * VAPORWARE: a working national guard base to be needed for one or both of patrols and supply drops
     public District RandomDistrictInCity() {
+      var rules = Rules.Get;
       World world = Session.Get.World;
-      return world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)];
+      return world[rules.Roll(0, world.Size), rules.Roll(0, world.Size)];
     }
   }
 }

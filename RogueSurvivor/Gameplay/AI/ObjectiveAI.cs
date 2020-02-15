@@ -747,7 +747,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (1 != Rules.InteractionDistance(x.Key, in loc)) continue;
                 candidates.Add(x.Value);
             }
-            if (0 < candidates.Count) return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
+            if (0 < candidates.Count) return Rules.Get.DiceRoller.Choose(candidates);
         }
         return null;
     }
@@ -1568,7 +1568,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we can prefer cardinal directions to diagonal directions safely at this point (all tactical considerations were supposed to have
       // been applied first)
 	  while(0<tmp.Count) {
-		ActorAction ret = legal_steps[RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
+		ActorAction ret = legal_steps[Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            var ok_dests = ai.WantToGoHere(shove.Target.Location);
            if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
@@ -1589,7 +1589,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 		return ret;
 	  }
-      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
+      return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
 	protected HashSet<Point> FriendsLoF()
@@ -1688,7 +1688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 	  while(0<tmp.Count) {
-        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
+        var dest = Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
         if (ret is ActionUseExit use_exit && use_exit.IsNotBlocked) continue;
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
@@ -1711,7 +1711,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 		return ret;
 	  }
-      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
+      return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
 #nullable enable
@@ -1990,7 +1990,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var next = range.Keys.ToList();
       while(0 < next.Count) {
-        var x = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(next, prefer_cardinal);
+        var x = Rules.Get.DiceRoller.ChooseWithoutReplacement(next, prefer_cardinal);
         var act = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, x));
         if (act is ActionMoveStep step && step.IsLegal()) {
           m_Actor.Run();
@@ -2006,7 +2006,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (0 >= final_act.Count) continue;
           // \todo: something that decides which escape destination to use, (i.e. actually can react to newly visible threat, etc.)
-          var schedule = RogueForm.Game.Rules.DiceRoller.Choose(final_act);
+          var schedule = Rules.Get.DiceRoller.Choose(final_act);
           Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, schedule.Value, schedule.Value));
           return step;
         }
@@ -3708,7 +3708,7 @@ restart_single_exit:
           }
         has_container.push(pos);
       }
-      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, RogueForm.Game.Rules.DiceRoller.Choose(has_container));
+      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, Rules.Get.DiceRoller.Choose(has_container));
 
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
@@ -4868,7 +4868,7 @@ restart_single_exit:
       if (!speaker.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(speaker)+" must be able to trade");
       if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(m_Actor)+" must be able to trade");
 #endif
-      if (RogueForm.Game.Rules.RollChance(speaker.CharismaticTradeChance)) return true;
+      if (Rules.Get.RollChance(speaker.CharismaticTradeChance)) return true;
       return IsInterestingItem(offeredItem);
     }
 

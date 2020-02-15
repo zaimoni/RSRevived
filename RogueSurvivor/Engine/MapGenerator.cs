@@ -16,15 +16,7 @@ namespace djack.RogueSurvivor.Engine
 {
   internal abstract class MapGenerator
   {
-    protected readonly Rules m_Rules;   // all uses of this alias of the global Rules object RogueForm.Game.Rules are legitimate
-
-    protected MapGenerator(Rules rules)
-    {
-#if DEBUG
-      if (null == rules) throw new ArgumentNullException(nameof(rules));
-#endif
-      m_Rules = rules;
-    }
+    protected MapGenerator() {}
 
     public abstract Map Generate(int seed, string name);
 

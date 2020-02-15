@@ -132,6 +132,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                i_can_help = help_him.Contains(push_dest.First().Key);
              }
 
+             var rules = Rules.Get;
              // function target
              var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
              var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
@@ -142,7 +143,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                var considering = m_Actor.MutuallyAdjacentFor(m_Actor.Location,actorAt.Location);
                if (null != considering) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(m_Actor));
-                 if (0 < considering.Count) return new ActionMoveStep(m_Actor,RogueForm.Game.Rules.DiceRoller.Choose(considering));
+                 if (0 < considering.Count) return new ActionMoveStep(m_Actor, rules.DiceRoller.Choose(considering));
                }
              }
 
@@ -151,7 +152,7 @@ namespace djack.RogueSurvivor.Engine.Actions
              if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
 
-             if (null != candidates) return new ActionShove(m_Actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+             if (null != candidates) return new ActionShove(m_Actor,actorAt, rules.DiceRoller.Choose(candidates).Value);
            }
         }
         // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
@@ -187,6 +188,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                return !loc.Map.PushCreatesSokobanPuzzle(loc.Position, m_Actor);
            });   // does not trivially create a Sokoban puzzle (can happen in police station)
 
+           var rules = Rules.Get;
            bool push_legal = (1 <= push_dest.Count); // always adjacent
            if (push_legal) {
                var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(m_Actor.Location);
@@ -200,13 +202,13 @@ namespace djack.RogueSurvivor.Engine.Actions
                if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
                // end function target
 
-               if (null != candidates) return new ActionPush(m_Actor,obj,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
+               if (null != candidates) return new ActionPush(m_Actor,obj, rules.DiceRoller.Choose(candidates).Value);
            }
            // proceed with pull if we can't push safely
            var possible = obj.Location.Position.Adjacent();
            var pull_dests = possible.Where(pt => 1==Rules.GridDistance(m_Actor.Location,new Location(obj.Location.Map,pt)));
            if (pull_dests.Any()) {
-             return new ActionPull(m_Actor,obj,RogueForm.Game.Rules.DiceRoller.Choose(pull_dests));
+             return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
            }
          }
          return null;
