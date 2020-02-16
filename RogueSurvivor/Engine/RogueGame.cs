@@ -346,8 +346,8 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     public static Actor Player { get { return m_Player!; } }
+    public static bool IsPlayer(Actor? a) { return a == m_Player; }
 #nullable restore
-    public static bool IsPlayer(Actor a) { return a == m_Player; }
     public static Map CurrentMap { get { return m_MapView.m; } }
     private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
@@ -6453,7 +6453,6 @@ namespace djack.RogueSurvivor.Engine
       } while (null == direction);
       return direction;
     }
-#nullable restore
 
     private void WaitEnter()
     {
@@ -6480,6 +6479,7 @@ namespace djack.RogueSurvivor.Engine
         ;
       while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
     }
+#nullable restore
 
     static private int KeyToChoiceNumber(Keys key)
     {
@@ -10254,14 +10254,13 @@ namespace djack.RogueSurvivor.Engine
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(victor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(victor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(victor.Model)) return;
-      if (victor.IsPlayer) {
+      if (victor.Controller is PlayerController pc) {
         int turn = Session.Get.WorldTime.TurnCounter;
         var msg_alive = new Data.Message("You will hunt another day!", turn, Color.Green);  // \todo cache these in multi-PC case (could only have 2 message objects rather than 2n)
         var msg_welcome = new Data.Message("Welcome to the night.", turn, Color.White);
         if (IsSimulating || victor!=Player) {
-          var player = victor.Controller as PlayerController;
-          player.DeferMessage(msg_alive);
-          player.DeferMessage(msg_welcome);
+          pc.DeferMessage(msg_alive);
+          pc.DeferMessage(msg_welcome);
         } else {
           ClearOverlays();
           AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
@@ -10269,7 +10268,7 @@ namespace djack.RogueSurvivor.Engine
           m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
           ClearMessages();
           AddMessage(msg_alive);
-          Player.Controller.UpdateSensors();
+          pc.UpdateSensors();
           AddMessagePressEnter();
 //        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
           ClearMessages();
@@ -12905,27 +12904,27 @@ namespace djack.RogueSurvivor.Engine
 
     private void ShowNewAchievement(Achievement.IDs id, Actor victor)
     {
-      victor.ActorScoring.SetCompletedAchievement(id);
+      var score = victor.ActorScoring;
+      score.SetCompletedAchievement(id);
       Achievement achievement = Session.Get.Scoring.GetAchievement(id);
       string name = achievement.Name;
-      victor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
-      if (!victor.IsPlayer) return;
+      score.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
+      if (!(victor.Controller is PlayerController pc)) return;
       string[] text = achievement.Text;
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
-      var stringList = new List<string>(text.Length + 3 + 2){
+      var lines = new List<string>(text.Length + 3 + 2){
         str,
         string.Format("ACHIEVEMENT : {0}", name),
         "CONGRATULATIONS!"
       };
-      stringList.AddRange(text);
-      stringList.Add(string.Format("Achievements : {0}/{1}.", victor.ActorScoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
-      stringList.Add(str);
+      lines.AddRange(text);
+      lines.Add(string.Format("Achievements : {0}/{1}.", score.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
+      lines.Add(str);
       if (IsSimulating || victor!=Player) {
-        var player = victor.Controller as PlayerController;
-        foreach(var msg in stringList) player.DeferMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Gold));
+        foreach(var msg in lines) pc.DeferMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Gold));
       } else {
         m_MusicManager.PlayLooping(achievement.MusicID, MusicPriority.PRIORITY_EVENT);
-        AddOverlay(new OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
+        AddOverlay(new OverlayPopup(lines.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
         ClearMessages();
         AddMessagePressEnter();
         ClearOverlays();
@@ -12934,13 +12933,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void StayingAliveAchievements(Actor victor) {
       if (victor.Model.Abilities.IsUndead) return;
-      if (victor.IsPlayer) {
-        var msg_alive = new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green);
-        var msg_welcome = new Data.Message("Welcome to tomorrow.", Session.Get.WorldTime.TurnCounter, Color.White);
+      if (victor.Controller is PlayerController pc) {
+        var turn = Session.Get.WorldTime.TurnCounter;
+        var msg_alive = new Data.Message("You survived another night!", turn, Color.Green);
+        var msg_welcome = new Data.Message("Welcome to tomorrow.", turn, Color.White);
         if (IsSimulating || victor!=Player) {
-          var player = victor.Controller as PlayerController;
-          player.DeferMessage(msg_alive);
-          player.DeferMessage(msg_welcome);
+          pc.DeferMessage(msg_alive);
+          pc.DeferMessage(msg_welcome);
         } else {
           ClearOverlays();
           AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
@@ -12948,7 +12947,7 @@ namespace djack.RogueSurvivor.Engine
           m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
           ClearMessages();
           AddMessage(msg_alive);
-          victor.Controller.UpdateSensors();
+          pc.UpdateSensors();
           AddMessagePressEnter();
 //        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
           ClearMessages();
@@ -12958,10 +12957,8 @@ namespace djack.RogueSurvivor.Engine
           m_MusicManager.Stop();
         }
       }
-      int origin = new WorldTime(victor.SpawnTime).Day;
-      int now = Session.Get.WorldTime.Day;
       // XXX \todo these are notable achievements
-      switch(now-origin) {
+      switch(Session.Get.WorldTime.Day - new WorldTime(victor.SpawnTime).Day) {
         case 7:  ShowNewAchievement(Achievement.IDs.REACHED_DAY_07, victor); return;
         case 14: ShowNewAchievement(Achievement.IDs.REACHED_DAY_14, victor); return;
         case 21: ShowNewAchievement(Achievement.IDs.REACHED_DAY_21, victor); return;
