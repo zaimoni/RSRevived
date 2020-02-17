@@ -10408,7 +10408,7 @@ namespace djack.RogueSurvivor.Engine
           HandlePlayerDecideUpgrade(actor);
           continue;
         }
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, RollSkillsToUpgrade(actor, 300));
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
         if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
       }
     }
@@ -10425,7 +10425,7 @@ namespace djack.RogueSurvivor.Engine
           HandlePlayerDecideUpgrade(actor);
           continue;
         }
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, RollSkillsToUpgrade(actor, 300));
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
         if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
       }
     }
@@ -10447,14 +10447,31 @@ namespace djack.RogueSurvivor.Engine
       return idsList;
     }
 
-    private Skills.IDs? NPCPickSkillToUpgrade(Actor npc, List<Skills.IDs> chooseFrom)
+    private void RollSkillsToUpgrade(Actor actor, int maxTries, Zaimoni.Data.Stack<Skills.IDs> idsList, int capacity)
     {
-      if (null == chooseFrom) return null;
+      for (int index = 0; index < capacity; ++index) {
+        int num = 0;
+        Skills.IDs? upgrade;
+        do {
+          upgrade = RollRandomSkillToUpgrade(actor, maxTries);
+          if (null == upgrade) return;
+        }
+        while (idsList.Contains(upgrade.Value) && ++num < maxTries);
+        idsList.push(upgrade.Value);
+      }
+    }
+
+    private Skills.IDs? NPCPickSkillToUpgrade(Actor npc)
+    {
+      int capacity = npc.Model.Abilities.IsUndead ? Rules.UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM : Rules.UPGRADE_SKILLS_TO_CHOOSE_FROM;
+      var chooseFrom = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[capacity]);
+      RollSkillsToUpgrade(npc, 300, chooseFrom, capacity);
       int count = chooseFrom.Count;
       if (0 == count) return null;
       var idsList = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[count]);
       int num = -1;
-      foreach (var id in chooseFrom) {
+      while(0 < count--) {
+        var id = idsList[count];
         var test = NPCSkillUtility(npc, id);
         if (num > test) continue;
         if (num < test) {
