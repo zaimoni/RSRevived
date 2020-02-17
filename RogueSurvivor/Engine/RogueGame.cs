@@ -10452,7 +10452,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == chooseFrom) return null;
       int count = chooseFrom.Count;
       if (0 == count) return null;
-      var idsList = new List<Skills.IDs>(count);
+      var idsList = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[count]);
       int num = -1;
       foreach (var id in chooseFrom) {
         var test = NPCSkillUtility(npc, id);
@@ -10461,7 +10461,7 @@ namespace djack.RogueSurvivor.Engine
           idsList.Clear();
           test = num;
         }
-        idsList.Add(id);
+        idsList.push(id);
       }
       return Rules.Get.DiceRoller.Choose(idsList);
     }

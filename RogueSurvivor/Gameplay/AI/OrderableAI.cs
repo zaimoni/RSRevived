@@ -2074,7 +2074,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var LoF_reserve = AlliesNeedLoFvs(enemy);
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       if (decideToFlee) {
         tmpAction = BehaviorFlee(enemy, LoF_reserve, doRun, emotes);
         if (null != tmpAction) return tmpAction;
@@ -2105,10 +2105,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // cannot close at normal speed safely; run-hit may be ok
             var dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
-            List<Point> attack_possible = legal_steps.FindAll(pt => Rules.IsAdjacent(in pt, e_loc.Position)
-              && !(LoF_reserve?.Contains(pt) ?? false)
-              && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep step
-              && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest)));
+            var attack_possible = new Zaimoni.Data.Stack<Point>(stackalloc Point[legal_steps.Count]);
+            foreach(var pt in legal_steps) {
+                if (    Rules.IsAdjacent(in pt, e_loc.Position)
+                    && (null == LoF_reserve || LoF_reserve.Contains(pt))
+                    && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))) is ActionMoveStep step
+                    && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest)))
+                     attack_possible.push(pt);
+            }
             ReserveSTA(0,0,0,0);  // baseline
             if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
