@@ -12613,23 +12613,16 @@ namespace djack.RogueSurvivor.Engine
       var mapList = new List<Map>();
       world.DoForAllDistricts(d=> {
         var subway = d.SubwayMap;
-        if (null != subway && BaseTownGenerator.CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(d.WorldPosition))) mapList.Add(subway);
+        if (null != subway && BaseTownGenerator.CanHaveSubwayStationBlocks(world.SubwayLayout(d.WorldPosition))) mapList.Add(subway);
       });
-      if (0 >= mapList.Count)
-        return new UniqueItem{
-          TheItem = it,
-          IsSpawned = false
-        };
+      if (0 >= mapList.Count) return new UniqueItem(it, false);
       var rules = Rules.Get;
       Map map = rules.DiceRoller.Choose(mapList);
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
       Point point = new Point(rules.Roll(bounds.Left, bounds.Right), rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, in point);
       map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, in point);
-      return new UniqueItem{
-        TheItem = it,
-        IsSpawned = true
-      };
+      return new UniqueItem(it);
     }
 
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
