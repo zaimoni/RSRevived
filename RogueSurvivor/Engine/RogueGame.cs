@@ -10557,12 +10557,8 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private void DoLooseRandomSkill(Actor actor)
     {
-      var skills = actor.Sheet.SkillTable;
-      var skillsList = skills.SkillsList;
-      if (skillsList == null) return;
-      var id = Rules.Get.DiceRoller.Choose(skillsList);
-      skills.DecOrRemoveSkill(id);
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
+      var lost = actor.Sheet.SkillTable.LoseRandomSkill();
+      if (null != lost && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
     }
 
     private void ChangeWeather()
@@ -10602,13 +10598,13 @@ namespace djack.RogueSurvivor.Engine
 	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
       }
       var skillTable = deadVictim.Sheet.SkillTable;
-      var skills = skillTable.SkillsList;
-      if (null != skills) {
+      var skill_count = skillTable.CountSkills;
+      if (0 < skill_count) {
         var roller = Rules.Get.DiceRoller;
-        int countSkills = skillTable.CountSkills;
-        int num = skillTable.CountTotalSkillLevels / 2;
-        for (int index = 0; index < num; ++index) {
-          Skills.IDs? sk = roller.Choose(skills).Zombify();
+        var sks = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[skill_count]);
+        int n = skillTable.GetSkills(sks)/2;
+        while(0 < n--) {
+          Skills.IDs? sk = roller.Choose(sks).Zombify();
           if (null != sk) actor.SkillUpgrade(sk.Value);
         }
         actor.RecomputeStartingStats();

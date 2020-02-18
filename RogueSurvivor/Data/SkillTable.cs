@@ -18,28 +18,7 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<KeyValuePair<Gameplay.Skills.IDs,sbyte>>? Skills { get { return m_Table; } }
 
-    public Gameplay.Skills.IDs[]? SkillsList
-    {
-      get {
-        int ub = CountSkills;
-        if (0 >= ub) return null;
-        var ret = new Gameplay.Skills.IDs[ub];
-        ub = 0;
-        foreach(var x in m_Table!) ret[ub++] = x.Key;
-        return ret;
-      }
-    }
-
     public int CountSkills { get { return m_Table?.Count ?? 0; } }
-
-    public int CountTotalSkillLevels {
-      get {
-        if (0 >= CountSkills) return 0;
-        int num = 0;
-        foreach(var x in m_Table!) num += x.Value;
-        return num;
-      }
-    }
 
     public SkillTable()
     {
@@ -48,6 +27,18 @@ namespace djack.RogueSurvivor.Data
     public SkillTable(SkillTable src)
     {
       if (0<src.CountSkills) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(src.m_Table);
+    }
+
+    /// <returns>sum of skill levels</returns>
+    public int GetSkills(Zaimoni.Data.Stack<Gameplay.Skills.IDs> dest)
+    {
+      if (null == m_Table) return 0;
+      int ret = 0;
+      foreach(var x in m_Table) {
+        dest.push(x.Key);
+        ret += x.Value;
+      }
+      return ret;
     }
 
     public int GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs id)
@@ -69,6 +60,14 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Table || !m_Table.ContainsKey(id) || 0 < --m_Table[id]) return;
       m_Table.Remove(id);
       if (0 >= m_Table.Count) m_Table = null;
+    }
+
+    public Gameplay.Skills.IDs? LoseRandomSkill()
+    {
+      if (null == m_Table || 0 >= m_Table.Count) return null;   // inline CountSkills
+      var ret = Engine.Rules.Get.DiceRoller.Choose(m_Table);
+      DecOrRemoveSkill(ret.Key);
+      return ret.Key;
     }
   }
 }
