@@ -2400,7 +2400,7 @@ namespace djack.RogueSurvivor.Engine
       var rules = Rules.Get;
       for (int index = 0; index < num2; ++index)
 #if REFUGEES_IN_SUBWAY
-        SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
+        SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
 #else
         SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
 #endif

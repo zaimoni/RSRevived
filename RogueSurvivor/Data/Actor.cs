@@ -631,9 +631,9 @@ namespace djack.RogueSurvivor.Data
       IsUnique = false;
       IsDead = false;
       ActorScoring = new Engine.ActorScoring(this);
-      Controller = Model.InstanciateController();
       CommandLinePlayer();
       OnModelSet();
+      Controller = Model.InstanciateController();
     }
 
     public void Retype(ActorModel model) { m_ModelID = model.ID; }
