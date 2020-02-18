@@ -12613,7 +12613,7 @@ namespace djack.RogueSurvivor.Engine
       var mapList = new List<Map>();
       world.DoForAllDistricts(d=> {
         var subway = d.SubwayMap;
-        if (null != subway) mapList.Add(subway);
+        if (null != subway && BaseTownGenerator.CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(d.WorldPosition))) mapList.Add(subway);
       });
       if (0 >= mapList.Count)
         return new UniqueItem{

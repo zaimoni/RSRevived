@@ -174,14 +174,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       world_bounds.DoForEach(pt => {
         pointList.Add(pt);
         if (0<world.SubwayLayout(pt)) {
-          var working = new List<Point> { pt };
+          var working = new List<Point>();
+          if (CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(pt))) working.Add(pt);
           foreach(var dir in Direction.COMPASS_4) {
             Point pt2 = pt+dir;
             if (!world_bounds.Contains(pt2)) continue;
-            if (0 < world.SubwayLayout(pt2)) working.Add(pt2);
+            if (0 < world.SubwayLayout(pt2) && CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(pt2))) working.Add(pt2);
           }
 #if DEBUG
-          if (1==working.Count) throw new InvalidOperationException("isolated node in subway network");
+          if (0>=working.Count) throw new InvalidOperationException("isolated node in subway network");
 #endif
           SubwayElectrifyPlans.Add(working);
         }
@@ -515,6 +516,21 @@ restart:
       }
         
       return mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+    }
+
+    static public bool CanHaveSubwayStationBlocks(uint geometry)
+    {
+      const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+      var layout = new Compass.LineGraph(geometry);
+
+      if (layout.ContainsLineSegment(E_NEUTRAL)) return true;
+      if (layout.ContainsLineSegment(W_NEUTRAL)) return true;
+      if (layout.ContainsLineSegment(N_NEUTRAL)) return true;
+      if (layout.ContainsLineSegment(S_NEUTRAL)) return true;
+      return false;
     }
 
     // geometry is a Godel-encoded series of compass-point line segments
