@@ -1914,7 +1914,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void EndTurnDistrictEvents(District d)
     { // historically, all districts were within city limits so they all could use the same event specifications.
-      if (CheckForEvent_ZombieInvasion(d.EntryMap)) FireEvent_ZombieInvasion(d.EntryMap);
+      CheckFor_Fire_ZombieInvasion(d.EntryMap);
       if (CheckForEvent_RefugeesWave(d.EntryMap)) FireEvent_RefugeesWave(d);
       if (CheckForEvent_NationalGuard(d.EntryMap)) FireEvent_NationalGuard(d.EntryMap);
       if (CheckForEvent_ArmySupplies(d.EntryMap)) FireEvent_ArmySupplies(d.EntryMap);
@@ -2320,31 +2320,22 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    static private int CountFoodItemsNutrition(Map map)
+    private void CheckFor_Fire_ZombieInvasion(Map map)
     {
-      int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
-
-      return map.SumOverAllInventory(inv => { 
-        var tmp = inv.GetItemsByType<ItemFood>();
-        return null!=tmp ? tmp.Sum(nutrition) : 0;
-      });
-    }
-
-    static private bool CheckForEvent_ZombieInvasion(Map map)
-    {
-      map.UndeadCount.Recalc();
-      return map.LocalTime.IsStrikeOfMidnight && map.UndeadCount.Get < s_Options.MaxUndeads;
-    }
-
-    private void FireEvent_ZombieInvasion(Map map)
-    {
-      if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        AddMessage(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
-        RedrawPlayScreen();
+      if (map.LocalTime.IsStrikeOfMidnight) {
+        map.UndeadCount.Recalc();
+        var uc = map.UndeadCount.Get;
+        int max_un = s_Options.MaxUndeads;
+        if (uc < max_un) {
+          if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
+            AddMessage(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
+            RedrawPlayScreen();
+          }
+          var day = map.LocalTime.Day;
+          int num2 = 1 + (int)(Math.Min(1f, (float)(day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)max_un) - uc;
+          while(0 < num2--) SpawnNewUndead(map, day);
+        }
       }
-      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)s_Options.MaxUndeads) - map.UndeadCount.Get;
-      for (int index = 0; index < num2; ++index)
-        SpawnNewUndead(map, map.LocalTime.Day);
     }
 
     private bool CheckForEvent_SewersInvasion(Map map)
@@ -2487,6 +2478,16 @@ namespace djack.RogueSurvivor.Engine
       }
       // XXX \todo district event
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
+    }
+
+    static private int CountFoodItemsNutrition(Map map)
+    {
+      int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
+
+      return map.SumOverAllInventory(inv => {
+        var tmp = inv.GetItemsByType<ItemFood>();
+        return null!=tmp ? tmp.Sum(nutrition) : 0;
+      });
     }
 
     private bool CheckForEvent_ArmySupplies(Map map)
