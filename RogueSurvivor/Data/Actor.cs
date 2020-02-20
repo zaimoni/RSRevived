@@ -3789,4 +3789,11 @@ namespace djack.RogueSurvivor.Data
       IS_SLEEPING = 32,
     }
   }
+
+  static internal class Actor_ext {
+    public static int CountUndead(this IEnumerable<Actor> src)
+    {
+      return src.Count(a => a.Model.Abilities.IsUndead);
+    }
+  }
 }

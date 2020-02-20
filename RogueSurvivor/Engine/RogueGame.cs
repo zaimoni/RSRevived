@@ -2323,8 +2323,7 @@ namespace djack.RogueSurvivor.Engine
     private void CheckFor_Fire_ZombieInvasion(Map map)
     {
       if (map.LocalTime.IsStrikeOfMidnight) {
-        map.UndeadCount.Recalc();
-        var uc = map.UndeadCount.Get;
+        var uc = map.Actors.CountUndead();
         var max_un = s_Options.MaxUndeads;
         if (uc < max_un) {
           if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
@@ -2341,8 +2340,7 @@ namespace djack.RogueSurvivor.Engine
     private void CheckFor_Fire_SewersInvasion(Map map)
     {
       if (Session.Get.HasZombiesInSewers) {
-        map.UndeadCount.Recalc();
-        var uc = map.UndeadCount.Get;
+        var uc = map.Actors.CountUndead();
         var max_un = s_Options.MaxUndeads / 2;
         if (uc < max_un && Rules.Get.RollChance(SEWERS_INVASION_CHANCE)) {
           int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * max_un) - uc;
@@ -2451,8 +2449,7 @@ namespace djack.RogueSurvivor.Engine
         return ret;
       }
 
-      map.UndeadCount.Recalc();
-      return (double)(map.UndeadCount.Get* s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
+      return (double)(map.Actors.CountUndead() * s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)
