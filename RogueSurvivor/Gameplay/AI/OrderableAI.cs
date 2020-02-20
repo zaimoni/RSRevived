@@ -1095,11 +1095,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public void OnRaid(RaidType raid, in Location location)
+    protected override void _onRaid(RaidType raid, in Location location)
     {
-      if (m_Actor.IsSleeping) return;
-
-      string text() {
+      static string text(RaidType raid) {
         switch (raid) {
           case RaidType.BIKERS: return "motorcycles coming";
           case RaidType.GANGSTA: return "cars coming";
@@ -1111,12 +1109,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       };
 
-      m_LastRaidHeard = new Percept(text(), location.Map.LocalTime.TurnCounter, in location);
+      m_LastRaidHeard = new Percept(text(raid), location.Map.LocalTime.TurnCounter, in location);
     }
 
     // Behaviors and support functions
     // but all body armors are equipped to the torso slot(?)
-    private ItemBodyArmor GetEquippedBodyArmor()
+    private ItemBodyArmor? GetEquippedBodyArmor()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
@@ -1125,12 +1123,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+#nullable enable
     protected void BehaviorEquipBestBodyArmor()
     {
-      ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor();
+      var bestBodyArmor = m_Actor.GetBestBodyArmor();
       if (bestBodyArmor == null) return;
       if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
+#nullable restore
 
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {

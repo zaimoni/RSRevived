@@ -300,6 +300,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
+    public void OnRaid(RaidType raid, in Location loc)
+    {
+      if (m_Actor.IsSleeping) return;
+      _onRaid(raid, loc);
+    }
+
+    protected abstract void _onRaid(RaidType raid, in Location loc);
+
     /// <summary>
     /// should maintain any cache data that is location-based; incomplete implementation 2019-08-23
     /// </summary>

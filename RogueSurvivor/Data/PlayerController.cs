@@ -314,6 +314,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    protected override void _onRaid(RaidType raid, in Location loc)
+    {
+      if (!m_Actor.Model.DefaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) return;
+    }
+
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
       if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
