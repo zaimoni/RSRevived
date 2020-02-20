@@ -317,6 +317,28 @@ namespace djack.RogueSurvivor.Data
     protected override void _onRaid(RaidType raid, in Location loc)
     {
       if (!m_Actor.Model.DefaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) return;
+      switch (raid)
+      {
+      case RaidType.SURVIVORS:
+        {
+        var desc_msg = new Data.Message("You hear shooting and honking in the distance.", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
+        var where_msg = MakeCentricMessage("A van has stopped", loc);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueForm.Game.PlayEventMusic(Gameplay.GameMusics.SURVIVORS);
+          RogueForm.Game.ClearMessages();
+          AddMessage(desc_msg);
+          AddMessage(where_msg);
+          RogueForm.Game.AddMessagePressEnter();
+          RogueForm.Game.ClearMessages();
+        } else {
+          DeferMessage(desc_msg);
+          DeferMessage(where_msg);
+        }
+        }
+        // XXX should be district event
+        m_Actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered "+loc.Map.District.ToString()+".");
+        break;
+      }
     }
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)

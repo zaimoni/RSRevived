@@ -2000,6 +2000,14 @@ namespace djack.RogueSurvivor.Engine
       nextActorToAct.AfterAction();
     }
 
+#nullable enable
+    public void PlayEventMusic(string music)
+    {
+      m_MusicManager.Stop();
+      m_MusicManager.Play(music, MusicPriority.PRIORITY_EVENT);
+    }
+#nullable restore
+
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
 #if DATAFLOW_TRACE
@@ -2667,6 +2675,9 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "BlackOps raided the district.");
     }
 
+    // Post-apocalyptic survivors do *NOT* need gas stations to arrive, unlike bikers and gangsters.
+    // Their vans are assumed to be retrofitted to use biodiesel or ethanol (and they may well be
+    // carrying the means to synthesize either or both).
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
       return map.LocalTime.Day >= SURVIVORS_BAND_DAY
@@ -2679,21 +2690,9 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
       var actor = SpawnNewSurvivor(map);
       if (actor == null) return;
-      for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
-        SpawnNewSurvivor(actor.Location);
-      NotifyOrderablesAI(RaidType.SURVIVORS, actor.Location);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.SURVIVORS, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("You hear shooting and honking in the distance.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("A van has stopped", actor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
+      var origin = actor.Location;
+      for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index) SpawnNewSurvivor(origin);
+      NotifyOrderablesAI(RaidType.SURVIVORS, origin);
     }
 
     static private int DistanceToPlayer(Map map, Point pos)
