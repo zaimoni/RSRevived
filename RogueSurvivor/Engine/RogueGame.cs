@@ -1927,9 +1927,11 @@ namespace djack.RogueSurvivor.Engine
 
     static private void NotifyOrderablesAI(RaidType raid, Location loc)
     {
+      OrderableAI.BeforeRaid(raid, in loc);
       foreach (Actor actor in loc.Map.Actors) {
-        (actor.Controller as OrderableAI)?.OnRaid(raid, in loc);
+        (actor.Controller as ObjectiveAI)?.OnRaid(raid, in loc);
       }
+      OrderableAI.AfterRaid();
     }
 
     [SecurityCritical] private void AdvancePlay(Map map, RogueGame.SimFlags sim)

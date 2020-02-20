@@ -752,6 +752,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
     protected Percept m_LastRaidHeard;
+#nullable enable
+    [NonSerialized] static private Percept? _lastRaidHeard; // staging for m_LastRaidHeard
+#nullable restore
     [NonSerialized] protected List<Actor> _adjacent_friends;    // cache variable for above four
     protected bool m_ReachedPatrolPoint;
     protected int m_ReportStage;
@@ -1095,7 +1098,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    protected override void _onRaid(RaidType raid, in Location location)
+#nullable enable
+    static public void BeforeRaid(RaidType raid, in Location location)
     {
       static string text(RaidType raid) {
         switch (raid) {
@@ -1109,8 +1113,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       };
 
-      m_LastRaidHeard = new Percept(text(raid), location.Map.LocalTime.TurnCounter, in location);
+      _lastRaidHeard = new Percept(text(raid), location.Map.LocalTime.TurnCounter, in location);
     }
+
+    protected override void _onRaid(RaidType raid, in Location location)
+    {
+      m_LastRaidHeard = _lastRaidHeard!;
+    }
+
+    static public void AfterRaid() { _lastRaidHeard = null; }
+#nullable restore
 
     // Behaviors and support functions
     // but all body armors are equipped to the torso slot(?)
