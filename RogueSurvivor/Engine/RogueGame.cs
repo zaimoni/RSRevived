@@ -1922,7 +1922,7 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_GangstasRaid(d.EntryMap)) FireEvent_GangstasRaid(d.EntryMap);
       if (CheckForEvent_BlackOpsRaid(d.EntryMap)) FireEvent_BlackOpsRaid(d.EntryMap);
       if (CheckForEvent_BandOfSurvivors(d.EntryMap)) FireEvent_BandOfSurvivors(d.EntryMap);
-      if (CheckForEvent_SewersInvasion(d.SewersMap)) FireEvent_SewersInvasion(d.SewersMap);
+      CheckFor_Fire_SewersInvasion(d.SewersMap);
     }
 
     static private void NotifyOrderablesAI(RaidType raid, Location loc)
@@ -2325,30 +2325,30 @@ namespace djack.RogueSurvivor.Engine
       if (map.LocalTime.IsStrikeOfMidnight) {
         map.UndeadCount.Recalc();
         var uc = map.UndeadCount.Get;
-        int max_un = s_Options.MaxUndeads;
+        var max_un = s_Options.MaxUndeads;
         if (uc < max_un) {
           if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
             AddMessage(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
             RedrawPlayScreen();
           }
           var day = map.LocalTime.Day;
-          int num2 = 1 + (int)(Math.Min(1f, (float)(day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)max_un) - uc;
+          int num2 = 1 + (int)(Math.Min(1f, (float)(day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * max_un) - uc;
           while(0 < num2--) SpawnNewUndead(map, day);
         }
       }
     }
 
-    private bool CheckForEvent_SewersInvasion(Map map)
+    private void CheckFor_Fire_SewersInvasion(Map map)
     {
-      map.UndeadCount.Recalc();
-      return Session.Get.HasZombiesInSewers && map.UndeadCount.Get < s_Options.MaxUndeads / 2 && Rules.Get.RollChance(SEWERS_INVASION_CHANCE);
-    }
-
-    private void FireEvent_SewersInvasion(Map map)
-    {
-      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)(s_Options.MaxUndeads / 2)) - map.UndeadCount.Get;
-      for (int index = 0; index < num2; ++index)
-        SpawnNewSewersUndead(map);
+      if (Session.Get.HasZombiesInSewers) {
+        map.UndeadCount.Recalc();
+        var uc = map.UndeadCount.Get;
+        var max_un = s_Options.MaxUndeads / 2;
+        if (uc < max_un && Rules.Get.RollChance(SEWERS_INVASION_CHANCE)) {
+          int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * max_un) - uc;
+          while(0 < num2--) SpawnNewSewersUndead(map);
+        }
+      }
     }
 
     static private bool CheckForEvent_RefugeesWave(Map map)
