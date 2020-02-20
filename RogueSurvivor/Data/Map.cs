@@ -1848,7 +1848,7 @@ retry:
     public bool UnconditionallyBlockingFire(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsTransparent ?? true) return false;
+      if (!tile_loc.Key?.IsTransparent ?? true) return true;
       var obj = tile_loc.Value.MapObject;
       return null != obj && !obj.IsMovable && !obj.IsTransparent;
     }
@@ -1856,7 +1856,7 @@ retry:
     public bool IsBlockingFire(Point pt)
     { // 2019-08-29 release mode IL Code size       75 (0x4b)
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsTransparent ?? true) return false;
+      if (!tile_loc.Key?.IsTransparent ?? true) return true;
       var loc = tile_loc.Value;
       if (loc.StrictHasActorAt) return true;
       return !loc.MapObject?.IsTransparent ?? false;
