@@ -2661,18 +2661,6 @@ namespace djack.RogueSurvivor.Engine
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.BLACKOPS, actor.Location);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("You hear a chopper flying over the city!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The chopper has dropped something", actor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "BlackOps raided the district.");
     }
 
     // Post-apocalyptic survivors do *NOT* need gas stations to arrive, unlike bikers and gangsters.
