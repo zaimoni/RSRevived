@@ -2473,18 +2473,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       NotifyOrderablesAI(RaidType.NATGUARD, actor.Location);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("A National Guard squad has arrived!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Soldiers seem to come from", actor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
 
     static private int CountFoodItemsNutrition(Map map)
@@ -2527,21 +2515,7 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
         },pt => AirdropWithoutIncident(map, in pt));
 
-      // \todo this should alert the ais to potential food/medikits if they hear it
-      var anchor = new Location(map,dropPoint.Value);
-      NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, anchor);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", anchor));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
+      NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map, dropPoint.Value));
     }
 
     static private bool IsSuitableDropSuppliesPoint(Map map, in Point pt)  // XXX should be able to partially precalculate
@@ -2599,18 +2573,6 @@ namespace djack.RogueSurvivor.Engine
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.BIKERS, actor.Location);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.BIKER, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("You hear the sound of roaring engines!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Motorbikes seem to come from", actor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Bikers raided the district.");
     }
 
     private bool CheckForEvent_GangstasRaid(Map map)
@@ -2630,18 +2592,6 @@ namespace djack.RogueSurvivor.Engine
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(RaidType.GANGSTA, actor.Location);
-      if (map != Player.Location.Map) return;
-      if (!Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.GANGSTA, MusicPriority.PRIORITY_EVENT);
-        ClearMessages();
-        AddMessage(new Data.Message("You hear obnoxious loud music!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Cars seem to come from", actor.Location));
-        AddMessagePressEnter();
-        ClearMessages();
-      }
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Gangstas raided the district.");
     }
 
     private bool CheckForEvent_BlackOpsRaid(Map map)

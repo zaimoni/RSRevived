@@ -319,6 +319,82 @@ namespace djack.RogueSurvivor.Data
       if (!m_Actor.Model.DefaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) return;
       switch (raid)
       {
+      case RaidType.NATGUARD:
+        {
+        var desc_msg = new Data.Message("A National Guard squad has arrived!", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
+        var where_msg = MakeCentricMessage("Soldiers seem to come from", loc);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueForm.Game.PlayEventMusic(Gameplay.GameMusics.ARMY);
+          RogueForm.Game.ClearMessages();
+          AddMessage(desc_msg);
+          AddMessage(where_msg);
+          RogueForm.Game.AddMessagePressEnter();
+          RogueForm.Game.ClearMessages();
+        } else {
+          DeferMessage(desc_msg);
+          DeferMessage(where_msg);
+        }
+        }
+        // XXX should be district event
+        m_Actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A National Guard squad arrived at " + loc.Map.District.ToString()+".");
+        break;
+      case RaidType.ARMY_SUPLLIES:
+        {
+        var desc_msg = new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
+        var where_msg = MakeCentricMessage("The drop point seems to be", loc);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueForm.Game.PlayEventMusic(Gameplay.GameMusics.ARMY);
+          RogueForm.Game.ClearMessages();
+          AddMessage(desc_msg);
+          AddMessage(where_msg);
+          RogueForm.Game.AddMessagePressEnter();
+          RogueForm.Game.ClearMessages();
+        } else {
+          DeferMessage(desc_msg);
+          DeferMessage(where_msg);
+        }
+        }
+        // XXX should be district event
+        m_Actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies in " + loc.Map.District.ToString()+".");
+        break;
+      case RaidType.BIKERS:
+        {
+        var desc_msg = new Data.Message("You hear the sound of roaring engines!", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
+        var where_msg = MakeCentricMessage("Motorbikes seem to come from", loc);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueForm.Game.PlayEventMusic(Gameplay.GameMusics.BIKER);
+          RogueForm.Game.ClearMessages();
+          AddMessage(desc_msg);
+          AddMessage(where_msg);
+          RogueForm.Game.AddMessagePressEnter();
+          RogueForm.Game.ClearMessages();
+        } else {
+          DeferMessage(desc_msg);
+          DeferMessage(where_msg);
+        }
+        }
+        // XXX should be district event
+        m_Actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Bikers raided " + loc.Map.District.ToString()+".");
+        break;
+      case RaidType.GANGSTA:
+        {
+        var desc_msg = new Data.Message("You hear obnoxious loud music!", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
+        var where_msg = MakeCentricMessage("Cars seem to come from", loc);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueForm.Game.PlayEventMusic(Gameplay.GameMusics.GANGSTA);
+          RogueForm.Game.ClearMessages();
+          AddMessage(desc_msg);
+          AddMessage(where_msg);
+          RogueForm.Game.AddMessagePressEnter();
+          RogueForm.Game.ClearMessages();
+        } else {
+          DeferMessage(desc_msg);
+          DeferMessage(where_msg);
+        }
+        }
+        // XXX should be district event
+        m_Actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Gangstas raided " + loc.Map.District.ToString()+".");
+        break;
       case RaidType.BLACKOPS:
         {
         var desc_msg = new Data.Message("You hear a chopper flying over the city!", Session.Get.WorldTime.TurnCounter, Color.LightGreen);
