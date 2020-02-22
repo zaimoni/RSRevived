@@ -1925,6 +1925,7 @@ namespace djack.RogueSurvivor.Engine
       CheckFor_Fire_SewersInvasion(d.SewersMap);
     }
 
+    // we would prefer to notify in a radius.  Blocked by rewriting raids to not have ley-line behavior
     static private void NotifyOrderablesAI(RaidType raid, Location loc)
     {
       OrderableAI.BeforeRaid(raid, in loc);
@@ -2063,17 +2064,17 @@ namespace djack.RogueSurvivor.Engine
                 if (ForceVisibleToPlayer(map, corpse.Position)) {
                   AddMessage(new Data.Message("The "+corpse.ToString()+" rises again!!", map.LocalTime.TurnCounter, Color.Red));
                   m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
-                                }
+                }
               }
             }
             foreach (Corpse c in corpseList3) map.Destroy(c);
           }
-          if (Player.Location.Map == map) {
-            foreach (Corpse c in corpseList2) {
-              map.Destroy(c);
-              if (ForceVisibleToPlayer(map, c.Position))
-                AddMessage(new Data.Message("The "+c.ToString()+" turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
-            }
+          // RS Alpha 10.1-: players are special, corpses wait for players to turn into dust
+          // don't really have the RAM to do anything complex, like inanimate skeletons.
+          foreach (Corpse c in corpseList2) {
+            map.Destroy(c);
+            if (ForceVisibleToPlayer(map, c.Position))
+              AddMessage(new Data.Message("The "+c.ToString()+" turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
           }
 #endregion
         }
@@ -2085,7 +2086,6 @@ namespace djack.RogueSurvivor.Engine
               int infectionPercent = actor.InfectionPercent;
               if (rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
                 bool player = ForceVisibleToPlayer(actor);
-                bool flag3 = Player == actor;
                 if (actor.IsSleeping) DoWakeUp(actor);
                 bool flag4 = false;
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
@@ -2608,7 +2608,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
         var other = SpawnNewBlackOpsTrooper(actor);
-        if (other != null) actor.AddFollower(other);
+        if (other != null) actor.AddFollower(other);    // do not sink this into the above function: black op refugees are not a logic paradox
       }
       NotifyOrderablesAI(RaidType.BLACKOPS, actor.Location);
     }
