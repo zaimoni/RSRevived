@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_AVOID = new Verb("avoid");
     private readonly Verb VERB_BARRICADE = new Verb("barricade");
     public static readonly Verb VERB_BASH = new Verb("bash", "bashes");
-    private readonly Verb VERB_BE = new Verb("are", "is");
+    public static readonly Verb VERB_BE = new Verb("are", "is");
     private readonly Verb VERB_BUILD = new Verb("build");
     private readonly Verb VERB_BREAK = new Verb("break");
     private readonly Verb VERB_BUTCHER = new Verb("butcher");
@@ -608,17 +608,6 @@ namespace djack.RogueSurvivor.Engine
       WaitEnter(filter);
       RemoveLastMessage();
       RedrawPlayScreen();
-    }
-
-    // These two are assumed to be working w/actor.VisibleIdentity
-    private string Conjugate(Actor actor, string verb)
-    {
-      return verb.Conjugate((Player == actor && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
-    }
-
-    private string Conjugate(Actor actor, Verb verb)
-    {
-      return verb.Conjugate((Player == actor && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     private string TruncateString(string s, int maxLength)
@@ -2092,18 +2081,18 @@ namespace djack.RogueSurvivor.Engine
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
                   actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
                   if (actor.HitPoints <= 0) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_VOMIT)), Color.Purple));
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", Conjugate(actor, VERB_FEEL)), Color.Purple));
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple));
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", Conjugate(actor, VERB_FEEL)), Color.Purple));
+                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple));
                 }
                 if (flag4) (actorList ?? (actorList = new List<Actor>())).Add(actor);
               }
@@ -2112,7 +2101,7 @@ namespace djack.RogueSurvivor.Engine
           if (actorList != null) {
             foreach (Actor actor in actorList) {
               if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} of infection!", Conjugate(actor, VERB_DIE))));
+                AddMessage(MakeMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
               KillActor(null, actor, "infection");
             }
           }
@@ -2128,7 +2117,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
             actor.Walk();
             if (Player == actor) {
-              AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", Conjugate(actor, VERB_BE))));
+              AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", VERB_BE.Conjugate(actor))));
               RedrawPlayScreen();
             }
           }
@@ -2163,7 +2152,7 @@ namespace djack.RogueSurvivor.Engine
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 actor.SpendStaminaPoints(Rules.SANITY_NIGHTMARE_STA_LOSS);
                 if (ForceVisibleToPlayer(actor))
-                  AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", Conjugate(actor, VERB_WAKE_UP))));
+                  AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
                 if (actor.IsPlayer) {
                    // FIXME replace with sfx
                    // alpha10 
@@ -2191,7 +2180,7 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen();
                 Thread.Sleep(10);
               } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
-                AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_SNORE))));
+                AddMessage(MakeMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
                 RedrawPlayScreen();
               }
 #endregion
@@ -2200,7 +2189,7 @@ namespace djack.RogueSurvivor.Engine
 #region 4.3 Exhausted actors might collapse.
               DoStartSleeping(actor);
               if (ForceVisibleToPlayer(actor)) {
-                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", Conjugate(actor, VERB_COLLAPSE))));
+                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
                 RedrawPlayScreen();
               }
               if (actor == Player) {
@@ -2221,9 +2210,9 @@ namespace djack.RogueSurvivor.Engine
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(actor, VERB_FEEL), a_leader.Name, actor.HimOrHer)));
+                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", VERB_FEEL.Conjugate(actor), a_leader.Name, actor.HimOrHer)));
               if (ForceVisibleToPlayer(a_leader))
-                AddMessage(MakeMessage(a_leader, string.Format("{0} reassured knowing {1} is with {2}.", Conjugate(a_leader, VERB_FEEL), actor.Name, a_leader.HimOrHer)));
+                AddMessage(MakeMessage(a_leader, string.Format("{0} reassured knowing {1} is with {2}.", VERB_FEEL.Conjugate(a_leader), actor.Name, a_leader.HimOrHer)));
             }
 #endregion
           }
@@ -2232,7 +2221,7 @@ namespace djack.RogueSurvivor.Engine
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
             if (ForceVisibleToPlayer(actor)) {
-              AddMessage(MakeMessage(actor, string.Format("{0} !!", Conjugate(actor, VERB_DIE_FROM_STARVATION))));
+              AddMessage(MakeMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
               RedrawPlayScreen();
             }
             KillActor(null, actor, "starvation");
@@ -2240,7 +2229,7 @@ namespace djack.RogueSurvivor.Engine
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
               if (ForceVisibleToPlayer(actor)) {
-                ImportantMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", Conjugate(actor, "turn"))), DELAY_LONG);
+                ImportantMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
               }
             }
           }
@@ -3994,14 +3983,14 @@ namespace djack.RogueSurvivor.Engine
     {
       a.Drag(c);
       if (ForceVisibleToPlayer(a))
-        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
+        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", VERB_START.Conjugate(a), c.DeadGuy.Name)));
     }
 
     public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
     {
       var c = a.StopDraggingCorpse();
       if (null != c && ForceVisibleToPlayer(a))
-        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
+        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", VERB_STOP.Conjugate(a), c.DeadGuy.Name)));
     }
 #nullable restore
 
@@ -4012,7 +4001,7 @@ namespace djack.RogueSurvivor.Engine
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = a.DamageVsCorpses;
-      if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));
+      if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
       if (!c.TakeDamage(num)) return;
       a.Location.Map.Destroy(c);
       if (player) AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
@@ -4024,7 +4013,7 @@ namespace djack.RogueSurvivor.Engine
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = a.DamageVsCorpses;
       if (player) {
-        AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name)));
+        AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", VERB_FEAST_ON.Conjugate(a), c.DeadGuy.Name)));
         // alpha10 replace with sfx
         m_MusicManager.Stop();
         m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
@@ -4052,7 +4041,7 @@ namespace djack.RogueSurvivor.Engine
       var pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
       var revive = corpse.DeadGuy;
       if (pointList == null) {
-        if (player) AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), revive.Name)));
+        if (player) AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", VERB_HAVE.Conjugate(actor), revive.Name)));
         return;
       }
 
@@ -4068,11 +4057,11 @@ namespace djack.RogueSurvivor.Engine
           revive.TargetActor = null;
           map.Remove(corpse);
           map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
-          if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), revive));
+          if (player) AddMessage(MakeMessage(actor, VERB_REVIVE.Conjugate(actor), revive));
           if (actor.IsEnemyOf(revive)) return;
           DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
       } else {
-          if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), revive));
+          if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", VERB_FAIL.Conjugate(actor)), revive));
       }
     }
 
@@ -4270,7 +4259,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", reason)));
       } else {
         player.IsRunning = !player.IsRunning;
-        AddMessage(MakeMessage(player, string.Format("{0} running.", Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
+        AddMessage(MakeMessage(player, string.Format("{0} running.", (player.IsRunning ? VERB_START : VERB_STOP).Conjugate(player))));
       }
     }
 
@@ -7320,7 +7309,7 @@ namespace djack.RogueSurvivor.Engine
       if (draggedCorpse != null) {
         location.Map.MoveTo(draggedCorpse, newLocation.Position);
         if (dest_seen || ForceVisibleToPlayer(in location))
-          AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
+          AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName)));
       }
       int actionCost = Rules.BASE_ACTION_COST;
       if (actor.IsRunning) {
@@ -7330,10 +7319,10 @@ namespace djack.RogueSurvivor.Engine
       var mapObjectAt = newLocation.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (dest_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+        if (dest_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
-          if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+          if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
       if (draggedCorpse != null) actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
@@ -7397,7 +7386,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.ForEachAdjacent(loc => {
           var actorAt = loc.Actor;
           if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
-          if (visible) AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
+          if (visible) AddMessage(MakeMessage(actorAt, VERB_GRAB.Conjugate(actorAt), actor));
           canLeave = false;
       });
       return canLeave;
@@ -7410,10 +7399,9 @@ namespace djack.RogueSurvivor.Engine
       // sole caller has trap at victim's location
       if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
 
-      if (trap.TriggeredBy(victim))
-        DoTriggerTrap(trap, victim);
+      if (trap.TriggeredBy(victim)) DoTriggerTrap(trap, victim);
       else if (IsVisibleToPlayer(victim))
-        AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
+        AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", VERB_AVOID.Conjugate(victim), trap.TheName)));
       return trap.Quantity == 0;
     }
 
@@ -7426,17 +7414,14 @@ namespace djack.RogueSurvivor.Engine
       bool flag = rules.CheckTrapEscape(trap, victim);
       if (flag) {
         trap.IsTriggered = false;
-        if (player)
-          AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_ESCAPE), trap.TheName)));
+        if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_ESCAPE.Conjugate(victim), trap.TheName)));
         if (rules.CheckTrapEscapeBreaks(trap, victim)) {
-          if (player)
-            AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_BREAK), trap.TheName)));
+          if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_BREAK.Conjugate(victim), trap.TheName)));
           --trap.Quantity;
           isDestroyed = trap.Quantity <= 0;
         }
       }
-      else if (player)
-        AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", trap.TheName)));
+      else if (player) AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", trap.TheName)));
       return flag;
     }
 
@@ -7482,7 +7467,7 @@ namespace djack.RogueSurvivor.Engine
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
       if (!trap.CheckStepOnBreaks()) return;
-      if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
+      if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
       --trap.Quantity;
     }
 
@@ -7563,13 +7548,13 @@ namespace djack.RogueSurvivor.Engine
       var mapObjectAt = exitAt.Location.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (origin_seen) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));   // XXX not quite right, cf. other jump usage
+        if (origin_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));   // XXX not quite right, cf. other jump usage
         if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actor.SpendActionPoints(Rules.JUMP_STUMBLE_ACTION_COST);
-          if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+          if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
-      if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
+      if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_LEAVE.Conjugate(actor), map.Name)));
       actor.RemoveFromMap();
       var dragged_corpse = actor.DraggedCorpse;
       if (null != dragged_corpse) map.Remove(dragged_corpse);
@@ -7582,7 +7567,7 @@ namespace djack.RogueSurvivor.Engine
         exit_map.MoveActorToFirstPosition(actor);
 
       if (null != dragged_corpse) exitAt.Location.Add(dragged_corpse);
-      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exit_map.Name)));
+      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_ENTER.Conjugate(actor), exit_map.Name)));
       if (is_cross_district)
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
@@ -7603,7 +7588,7 @@ namespace djack.RogueSurvivor.Engine
       o_loc.Place(actor);
       a_loc.Place(other);
       if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(other))
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
+        AddMessage(MakeMessage(actor, VERB_SWITCH_PLACE_WITH.Conjugate(actor), other));
     }
 
     public void DoTakeLead(Actor actor, Actor other)
@@ -7614,7 +7599,7 @@ namespace djack.RogueSurvivor.Engine
       other.TrustInLeader = trustIn;
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(other)) {
         if (Player == actor) ClearMessages();
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, " to join."));
+        AddMessage(MakeMessage(actor, VERB_PERSUADE.Conjugate(actor), other, " to join."));
         if (0 != trustIn) DoSay(other, actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
       }
     }
@@ -7627,7 +7612,7 @@ namespace djack.RogueSurvivor.Engine
       follower.TrustInLeader = 0;
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(follower)) return;
       if (Player == actor) ClearMessages();
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), follower, " to leave."));
+      AddMessage(MakeMessage(actor, VERB_PERSUADE.Conjugate(actor), follower, " to leave."));
     }
 
     // It breaks immersion to have to run, rather than wait, to adjust the energy level above 50
@@ -7636,8 +7621,8 @@ namespace djack.RogueSurvivor.Engine
       actor.Wait();
       if (ForceVisibleToPlayer(actor)) {
         AddMessage(MakeMessage(actor, (actor.StaminaPoints < actor.MaxSTA)
-                                    ? string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), actor.HisOrHer)
-                                    : string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
+                                    ? string.Format("{0} {1} breath.", VERB_CATCH.Conjugate(actor), actor.HisOrHer)
+                                    : string.Format("{0}.", VERB_WAIT.Conjugate(actor))));
       }
       actor.RegenStaminaPoints(Actor.STAMINA_REGEN_WAIT);
       if (Player == actor) RedrawPlayScreen();
@@ -7903,7 +7888,7 @@ namespace djack.RogueSurvivor.Engine
             // show
             if (isDefVisible) {
               if (isPlayer) ClearMessages();
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_DISARM), defender));
+              AddMessage(MakeMessage(attacker, VERB_DISARM.Conjugate(attacker), defender));
               AddMessage(new Data.Message(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter));
               if (isPlayer) {
                 AddMessagePressEnter();
@@ -7920,14 +7905,13 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
-            if (isAttVisible)
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
+            if (isAttVisible) AddMessage(MakeMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (defender.HitPoints <= 0) {
             if (isAttVisible || isDefVisible) {
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"), DELAY_LONG);
+              ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
             }
             // need to know whether it's a zombifying hit or not
             bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled
@@ -7940,7 +7924,7 @@ namespace djack.RogueSurvivor.Engine
                 defender.Location.Map.TryRemoveCorpseOf(defender);
                 Zombify(attacker, defender, false);
                 if (isDefVisible) {
-                  ImportantMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"), DELAY_LONG);
+                  ImportantMessage(MakeMessage(attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
                 }
               }
             // RS Alpha 9 had instant player zombification on kill even in infection mode.  It is still possible to play as your zombified self,
@@ -7948,16 +7932,16 @@ namespace djack.RogueSurvivor.Engine
             }
           } else if (isAttVisible || isDefVisible) {
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (isAttVisible || isDefVisible) {
           if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-          ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (isAttVisible || isDefVisible) {
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-        ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+        ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
@@ -7992,7 +7976,7 @@ namespace djack.RogueSurvivor.Engine
           if (itemRangedWeapon.Ammo <= 0) break;
           if (defender.IsDead) {
             --itemRangedWeapon.Ammo;
-            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, attacker.CurrentRangedAttack.Verb))));
+            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", attacker.CurrentRangedAttack.Verb.Conjugate(attacker))));
             break;
           }
           DoSingleRangedAttack(attacker, defender, LoF, 2);
@@ -8069,36 +8053,36 @@ namespace djack.RogueSurvivor.Engine
             if (defender.HitPoints <= 0) {
               if (see_defender) {
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-                ImportantMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"), DELAY_LONG);
+                ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
               } else if (see_attacker) {
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-                ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+                ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               }
               KillActor(attacker, defender, "shot");
             } else if (see_defender) {
               DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, dmg.ToString());
-              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-              ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
           } else if (see_defender) {
             AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else if (see_attacker) {
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (see_defender) {
           AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-          ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
         } else if (see_attacker) {
           if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
             if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else {  // otherwise, not visible
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            ImportantMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
@@ -8140,7 +8124,7 @@ namespace djack.RogueSurvivor.Engine
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)), DELAY_LONG);
+      ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -8155,7 +8139,7 @@ namespace djack.RogueSurvivor.Engine
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
+      ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -8294,7 +8278,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoChat(Actor speaker, Actor target)
     {
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
-        AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
+        AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
       if (speaker.IsPlayer || !speaker.CanTradeWith(target)) {
         speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
         return;
@@ -8304,12 +8288,12 @@ namespace djack.RogueSurvivor.Engine
       // alpha10 recover san after "normal" chat or fast trade
       if (speaker.Model.Abilities.HasSanity) {
         speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE);
-        if (IsVisibleToPlayer(speaker)) AddMessage(MakeMessage(speaker, string.Format("{0} better after chatting with", Conjugate(speaker, VERB_FEEL)), target));
+        if (IsVisibleToPlayer(speaker)) AddMessage(MakeMessage(speaker, string.Format("{0} better after chatting with", VERB_FEEL.Conjugate(speaker)), target));
       }
 
       if (target.Model.Abilities.HasSanity) {
         target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE);
-        if (IsVisibleToPlayer(target)) AddMessage(MakeMessage(target, string.Format("{0} better after chatting with", Conjugate(speaker, VERB_FEEL)), speaker));
+        if (IsVisibleToPlayer(target)) AddMessage(MakeMessage(target, string.Format("{0} better after chatting with", VERB_FEEL.Conjugate(speaker)), speaker));
       }
     }
 
@@ -8333,8 +8317,8 @@ namespace djack.RogueSurvivor.Engine
       if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
       if (see_target && target_heard_clearly) DoSay(target, speaker, target_text, flags);
       if (!speaker_heard_clearly && !target_heard_clearly) {
-        if (see_speaker) AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
-        else if (see_target) AddMessage(MakeMessage(target, Conjugate(target, VERB_CHAT_WITH), speaker));
+        if (see_speaker) AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
+        else if (see_target) AddMessage(MakeMessage(target, VERB_CHAT_WITH.Conjugate(target), speaker));
       }
 
       // not nearly as sanity-restoring as proper chat, but worth something
@@ -8465,7 +8449,7 @@ namespace djack.RogueSurvivor.Engine
 //    bool isPlayer = speaker.IsPlayer; // now constant
       const bool isPlayer = true;
       if (flag1)
-        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", Conjugate(target, VERB_OFFER), trade.AName, itSpeaker.AName)));
+        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.AName, itSpeaker.AName)));
 
       bool acceptDeal = true;
       if (isPlayer) {
@@ -8480,14 +8464,14 @@ namespace djack.RogueSurvivor.Engine
 
       if (!acceptDeal) {
         if (flag1) {
-          AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+          AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
           if (isPlayer) RedrawPlayScreen();
         }
         return false;
       }
 
       if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         if (isPlayer) RedrawPlayScreen();
       }
       if (target.Leader == speaker && flag3)
@@ -8525,7 +8509,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (!acceptDeal) {
         if (flag1) {
-          AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+          AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
           RedrawPlayScreen();
         }
         return;
@@ -8533,7 +8517,7 @@ namespace djack.RogueSurvivor.Engine
 
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         RedrawPlayScreen();
       }
       if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
@@ -8591,7 +8575,7 @@ namespace djack.RogueSurvivor.Engine
       };
 
       if (flag1)
-        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", Conjugate(target, VERB_OFFER), trade.Value.Value.AName, trade.Value.Key.AName)));
+        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
 
       var leader = target.LiveLeader;
 #if SPEAKER_IS_PLAYER_OK
@@ -8609,24 +8593,24 @@ namespace djack.RogueSurvivor.Engine
 
       if (!acceptDeal) {
         if (!flag1) return;
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         if (isPlayer) RedrawPlayScreen();
         return;
       }
 
       if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         if (isPlayer) RedrawPlayScreen();
       }
 #else
       bool acceptDeal = null == leader || (target.Controller as OrderableAI).Directives.CanTrade;
 
       if (!acceptDeal) {
-        if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+        if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         return;
       }
 
-      if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+      if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 #endif
 
       if (leader == speaker && flag3)
@@ -8809,13 +8793,13 @@ namespace djack.RogueSurvivor.Engine
       if (Player == speaker.Leader) {
         ClearMessages();
         AddOverlay((new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
-        AddMessage(MakeMessage(speaker, string.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}!!", VERB_RAISE_ALARM.Conjugate(speaker))));
         if (null != text) DoEmote(speaker, text, true);
         AddMessagePressEnter();
         ClearOverlays();
         RemoveLastMessage();
       } else {
-        var verb = Conjugate(speaker, VERB_SHOUT);
+        var verb = VERB_SHOUT.Conjugate(speaker);
         if (null == text)
           AddMessage(MakeMessage(speaker, string.Format("{0}!", verb)));
         else
@@ -8875,7 +8859,7 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       map.TransferFrom(it, in position, actor.Inventory);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
+        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         DoEquipItem(actor, it);
       if (Player==actor) RedrawPlayScreen();
@@ -8949,7 +8933,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.Inventory.Items.Intersect(actor.Inventory.Items).Any()) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + target.Name + "'s inventory: " + target.Inventory.ToString());
 #endif
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1} to", VERB_GIVE.Conjugate(actor), gift.TheName), target));
     }
 
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
@@ -8963,7 +8947,7 @@ namespace djack.RogueSurvivor.Engine
       if (0< (container.Inventory?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + container.Inventory.ToString());
 #endif
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1} away", Conjugate(actor, VERB_PUT), gift.TheName)));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
     }
 
     public void DoEquipItem(Actor actor, Item it)
@@ -8979,7 +8963,7 @@ namespace djack.RogueSurvivor.Engine
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
 #endif
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_EQUIP.Conjugate(actor), it));
     }
 
     public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
@@ -8990,7 +8974,7 @@ namespace djack.RogueSurvivor.Engine
       if (it.IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
         it.Unequip();
         actor.OnUnequipItem(it);
-        if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
+        if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_UNEQUIP.Conjugate(actor), it));
       }
     }
 
@@ -9011,13 +8995,13 @@ namespace djack.RogueSurvivor.Engine
       };
       if (it.IsUseless) {
         DiscardItem(actor, it);
-        if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), it));
+        if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
       // XXX using containers can go here, but we may want a different action anyway
       if (obj == it) DropItem(actor, it);
       else DropCloneItem(actor, it, obj);
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DROP.Conjugate(actor), obj));
       if (Player==actor) RedrawPlayScreen();
 #if DEBUG
       if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
@@ -9071,38 +9055,31 @@ namespace djack.RogueSurvivor.Engine
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
-    public void DoEatFoodFromGround(Actor actor, ItemFood food)
+    // disallowing dogs from eating canned food should be done at their level
+    private void DoEat(Actor actor, ItemFood food, Inventory inv)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.LivingEat(actor.CurrentNutritionOf(food));
-      actor.Location.Items.Consume(food);
+      inv.Consume(food);
+      if (food.Model == GameItems.CANNED_FOOD) {
+        ItemTrap emptyCan = new ItemTrap(GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
+        emptyCan.Activate(actor);  // alpha10
+        actor.Location.Drop(emptyCan);
+      }
       bool player = ForceVisibleToPlayer(actor);
-      if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
-      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE)) return;
+      if (player) AddMessage(MakeMessage(actor, VERB_EAT.Conjugate(actor), food));
+      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
+        return;
       actor.Vomit();
-      if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
+      if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", VERB_VOMIT.Conjugate(actor))));
     }
+
+    public void DoEatFoodFromGround(Actor actor, ItemFood food) { DoEat(actor, food, actor.Location.Items); }
 
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
-      if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) {
-        AddMessage(MakeErrorMessage("Don't waste food!"));
-      } else {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        actor.LivingEat(actor.CurrentNutritionOf(food));
-        actor.Inventory.Consume(food);
-        if (food.Model == GameItems.CANNED_FOOD) {
-          ItemTrap emptyCan = new ItemTrap(GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
-          emptyCan.Activate(actor);  // alpha10
-          actor.Location.Drop(emptyCan);
-        }
-        bool player = ForceVisibleToPlayer(actor);
-        if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
-        if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
-          return;
-        actor.Vomit();
-        if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
-      }
+      if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) AddMessage(MakeErrorMessage("Don't waste food!"));
+      else DoEat(actor, food, actor.Inventory);
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)
@@ -9127,7 +9104,7 @@ namespace djack.RogueSurvivor.Engine
       actor.RegenSanity(actor.ScaleMedicineEffect(med.SanityCure));
       actor.Inventory.Consume(med);
       if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
+      AddMessage(MakeMessage(actor, VERB_HEAL_WITH.Conjugate(actor), med));
     }
 
 #nullable enable
@@ -9141,7 +9118,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= (ammoItem.Quantity -= num)) inv.RemoveAllQuantity(ammoItem);
       else inv.IncrementalDefrag(ammoItem);
       if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
+        AddMessage(MakeMessage(actor, VERB_RELOAD.Conjugate(actor), itemRangedWeapon));
     }
 
     private void DoUseTrapItem(Actor actor, ItemTrap trap)
@@ -9150,7 +9127,7 @@ namespace djack.RogueSurvivor.Engine
       if (trap.IsActivated) trap.Desactivate();
       else trap.Activate(actor);
       if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
+        AddMessage(MakeMessage(actor, (trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE).Conjugate(actor), trap));
     }
 
     private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
@@ -9183,14 +9160,14 @@ namespace djack.RogueSurvivor.Engine
 #endif
         break;
       }
-      if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
+      if (player) AddMessage(MakeMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {
         actor.Inventory!.Consume(ent);
-        if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
+        if (player) AddMessage(MakeMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
       } else if (Rules.Get.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
-        if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", Conjugate(actor, VERB_BE), ent.TheName)));
+        if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
       }
     }
 
@@ -9199,7 +9176,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       (it as BatteryPowered).Recharge();
       if (ForceVisibleToPlayer(actor)) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
+        AddMessage(MakeMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
         if (actor.IsPlayer) RedrawPlayScreen();
       }
     }
@@ -9209,7 +9186,7 @@ namespace djack.RogueSurvivor.Engine
       door.SetState(DoorWindow.STATE_OPEN);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_OPEN), door));
+        AddMessage(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
         RedrawPlayScreen();
       }
     }
@@ -9219,7 +9196,7 @@ namespace djack.RogueSurvivor.Engine
       door.SetState(DoorWindow.STATE_CLOSED);
       if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
+        AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
         RedrawPlayScreen();
       }
     }
@@ -9231,7 +9208,7 @@ namespace djack.RogueSurvivor.Engine
       inv.Consume(barricadeMaterial);
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
+        AddMessage(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
@@ -9246,7 +9223,7 @@ namespace djack.RogueSurvivor.Engine
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
     }
 
@@ -9258,7 +9235,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort))
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
+        AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
@@ -9266,13 +9243,13 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       bool have_messaged = false;
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen)) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
+        AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " on." : " off."));
         have_messaged = true;
       }
       powGen.TogglePower(actor);
       if (!have_messaged) { 
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
-          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
+          AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " on." : " off."));
       }
       RedrawPlayScreen();
     }
@@ -9294,7 +9271,7 @@ namespace djack.RogueSurvivor.Engine
         doorWindow.Barricade(-attack.DamageValue);
         OnLoudNoise(doorWindow.Location, "A loud *BASH*");
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
-          AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH))));
+          AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", VERB_BASH.Conjugate(actor))));
         }
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(actor.Location) // we already checked the door/window visibility, it's the sound origin
@@ -9325,18 +9302,17 @@ namespace djack.RogueSurvivor.Engine
         if (!flag) OnLoudNoise(mapObj.Location, "A loud *CRASH*");
         bool player1 = ForceVisibleToPlayer(actor);
         bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
-        bool isPlayer = actor.IsPlayer;
         if (player1 || player2) {
           if (player1) AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
           if (player2) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
           if (flag) {
             if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
-            ImportantMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj), DELAY_LONG);
+            ImportantMessage(MakeMessage(actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
           } else {
             if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
-            ImportantMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(MakeMessage(actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           ClearOverlays();
         }
@@ -9380,7 +9356,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor h in helpers) {
           h.SpendActionPoints(Rules.BASE_ACTION_COST);
           h.SpendStaminaPoints(staCost);
-          if (isVisibleMobj || IsVisibleToPlayer(h)) AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", Conjugate(h, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+          if (isVisibleMobj || IsVisibleToPlayer(h)) AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
         }
       }
     }
@@ -9401,7 +9377,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (flag) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
+        AddMessage(MakeMessage(actor, VERB_PUSH.Conjugate(actor), mapObj));
         RedrawPlayScreen();
       }
       OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
@@ -9450,7 +9426,7 @@ namespace djack.RogueSurvivor.Engine
           };
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, in toPos)) {
-          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
+          AddMessage(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
           RedrawPlayScreen();
         }
         if (target.IsSleeping) DoWakeUp(target);
@@ -9490,7 +9466,7 @@ namespace djack.RogueSurvivor.Engine
 
       // noise/message.
       if (isVisible) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PULL), mapObj));
+        AddMessage(MakeMessage(actor, VERB_PULL.Conjugate(actor), mapObj));
         RedrawPlayScreen();
       }
       // loud noise.
@@ -9549,7 +9525,7 @@ namespace djack.RogueSurvivor.Engine
 
       // message
       if (isVisible) {
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PULL), target));
+        AddMessage(MakeMessage(actor, VERB_PULL.Conjugate(actor), target));
         RedrawPlayScreen();
       }
 
@@ -9571,7 +9547,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
       if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
+        AddMessage(MakeMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))));
       // stop sleep music if player.
       if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
@@ -9582,7 +9558,7 @@ namespace djack.RogueSurvivor.Engine
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, string.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
+      AddMessage(MakeMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
     }
 
 #nullable enable
@@ -9595,21 +9571,19 @@ namespace djack.RogueSurvivor.Engine
 
       // message.
       if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_SPRAY.Conjugate(actor), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
     }
 
     private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
     {
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (master != slave.Leader)
-        DoSay(slave, master, "Who are you to give me orders?", RogueGame.Sayflags.IS_FREE_ACTION);
-      else if (!slave.IsTrustingLeader) {
-        DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
-      } else {
+      if (master != slave.Leader) DoSay(slave, master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
+      else if (!slave.IsTrustingLeader) DoSay(slave, master, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+      else {
         if (!(slave.Controller is OrderableAI ai)) return;
         ai.SetOrder(order);
         if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
-          AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", order.ToString())));
+          AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, string.Format(" to {0}.", order.ToString())));
       }
     }
 
@@ -9619,7 +9593,7 @@ namespace djack.RogueSurvivor.Engine
       if (!(slave.Controller is OrderableAI ai)) return;
       ai.SetOrder(null);
       if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
-        AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
+        AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, " to forget its orders."));
     }
 
     public void OnLoudNoise(in Location loc, string noiseName)
@@ -9689,7 +9663,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != clan) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (ForceVisibleToPlayer(a)) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(a, VERB_BE), deadGuy.Name)));
+          if (ForceVisibleToPlayer(a)) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)));
         }
       }
 
@@ -9769,7 +9743,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (ForceVisibleToPlayer(killer)) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-              ImportantMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)), DELAY_LONG);
+              ImportantMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
             }
           }
@@ -13269,12 +13243,12 @@ namespace djack.RogueSurvivor.Engine
           if (actor.IsPlayer)
             AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
           else if (ForceVisibleToPlayer(actor))
-            AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", Conjugate(actor, VERB_HAVE))));
+            AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor))));
         }
         else if (actor.IsPlayer)
           AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
         else if (ForceVisibleToPlayer(actor))
-          AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", Conjugate(actor, VERB_SEE))));
+          AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor))));
       },pt=>{
         var actor = loc.Map.GetActorAtExt(pt);
         if (null == actor) return null;
@@ -13433,8 +13407,8 @@ namespace djack.RogueSurvivor.Engine
         Actor actorAt = map.GetActorAt(obj.Location.Position);
         if (null == actorAt) continue;
         KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
-        if (0<map.PlayerCount) {
-          AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", Conjugate(actorAt, VERB_BE))));
+        if (0<map.PlayerCount) {    // XXX \todo should be visibility check on top of this
+          AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
           RedrawPlayScreen();
         }
       }
@@ -13862,6 +13836,18 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
   static internal class RogueGame_ext {
+    // These two are assumed to be working w/actor.VisibleIdentity
+    // Using an extension function for the Verb class is intentional (same API as for raw strings)
+    static public string Conjugate(this string verb, Actor actor)
+    {
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+    }
+
+    static public string Conjugate(this Verb verb, Actor actor)
+    {
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+    }
+
     static public string? StatusIcon(this ItemTrap trap)
     {
       var player = RogueGame.Player;
