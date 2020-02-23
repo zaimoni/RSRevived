@@ -2743,9 +2743,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // with the new scent-suppressor mechaniics, the cutpoints are somewhat reasonable but extra distance/LoS breaking is needed
     private bool IsGoodStenchKillerSpot(Location loc)
     {
-#if OBSOLETE
-      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
-#endif
       // 2. Spray in a good position:
       //    2.1 entering or leaving a building.
       if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != loc.Map.IsInsideAt(loc.Position)) return true;

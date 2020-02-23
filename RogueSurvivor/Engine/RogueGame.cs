@@ -2119,13 +2119,8 @@ namespace djack.RogueSurvivor.Engine
 #endregion
         }
 
-#region 1. Update odors.
-#if OBSOLETE
-        map.ApplyArtificialStench();
-#endif
+        map.DecayScents();  // 1. Update odors.
 
-        map.DecayScents();
-#endregion
         // 2. Regen actors AP & STA
         map.PreTurnStart();
 #region 3. Stop tired actors from running.
@@ -10778,12 +10773,6 @@ namespace djack.RogueSurvivor.Engine
                   m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_ZOMBIEMASTER, screen.X, screen.Y);
                 }
               }
-#if OBSOLETE
-            } else {
-              int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
-              if (scentByOdorAt > 0)
-                m_UI.UI_DrawTransparentImage((float) (0.9 * scentByOdorAt / OdorScent.MAX_STRENGTH), GameImages.ICON_SCENT_LIVING_SUPRESSOR, screen.X, screen.Y);
-#endif
             }
           }
           if (player) {

@@ -1758,39 +1758,6 @@ retry:
     }
 #endif
 
-#if OBSOLETE
-    public void ApplyArtificialStench()
-    {
-        var living_suppress = new Dictionary<Point,int>();
-        var living_generate = new Dictionary<Point,int>();
-        foreach(var tmp in m_ScentsByPosition) {
-          living_suppress[tmp.Key] = 0;
-          living_generate[tmp.Key] = 0;
-          foreach(OdorScent scent in tmp.Value) {
-            switch (scent.Odor) {
-              case Odor.PERFUME_LIVING_SUPRESSOR:
-                living_suppress[tmp.Key] += scent.Strength;
-                continue;
-              case Odor.PERFUME_LIVING_GENERATOR:
-                living_generate[tmp.Key] += scent.Strength;
-                continue;
-              default:
-                continue;
-            }
-          }
-          if (0 < living_suppress[tmp.Key] && 0 < living_generate[tmp.Key]) {
-            int tmp2 = Math.Min(living_suppress[tmp.Key],living_generate[tmp.Key]);
-            living_suppress[tmp.Key] -= tmp2;
-            living_generate[tmp.Key] -= tmp2;
-          }
-          if (0 >= living_suppress[tmp.Key]) living_suppress.Remove(tmp.Key);
-          if (0 >= living_generate[tmp.Key]) living_generate.Remove(tmp.Key);
-        }
-        foreach(var x in living_generate) ModifyScentAt(Odor.LIVING, x.Value, x.Key);
-        foreach(var x2 in living_suppress) ModifyScentAt(Odor.LIVING, -x2.Value, x2.Key);
-    }
-#endif
-
 #nullable enable
     public void DecayScents()
     {
