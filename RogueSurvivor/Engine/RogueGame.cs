@@ -2898,10 +2898,10 @@ namespace djack.RogueSurvivor.Engine
                 HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
-                HandleSaveGame();
+                DoSaveGame(GetUserSave());
                 break;
               case PlayerCommand.LOAD_GAME:
-                HandleLoadGame();
+                DoLoadGame(GetUserSave());
                 player = Player;
                 flag1 = false;
                 m_HasLoadedGame = true;
@@ -10979,7 +10979,6 @@ namespace djack.RogueSurvivor.Engine
         DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
         DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
         DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-        DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
         DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
         DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
       }
@@ -11819,15 +11818,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private bool ForceVisibleToPlayer(MapObject mapObj)
-    {
-      return ForceVisibleToPlayer(mapObj.Location);
-    }
-
-    private bool ForceVisibleToPlayer(in Location location)
-    {
-      return ForceVisibleToPlayer(location.Map, location.Position);
-    }
+    private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }
+    private bool ForceVisibleToPlayer(in Location location) { return ForceVisibleToPlayer(location.Map, location.Position); }
 
     private bool IsPlayerSleeping()
     {
@@ -11839,20 +11831,9 @@ namespace djack.RogueSurvivor.Engine
       if (lines == null || lines.Length == 0) return 0;
       int num = int.MinValue;
       foreach (string line in lines) {
-        if (line != null && line.Length > num)
-          num = line.Length;
+        if (line != null && line.Length > num) num = line.Length;
       }
       return num;
-    }
-
-    private void HandleSaveGame()
-    {
-      DoSaveGame(RogueGame.GetUserSave());
-    }
-
-    private void HandleLoadGame()
-    {
-      DoLoadGame(RogueGame.GetUserSave());
     }
 
     // alpha10.1 start & stop sim thread here instead of caller
