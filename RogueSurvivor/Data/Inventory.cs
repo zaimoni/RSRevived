@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Data
     /// <returns>true if and only if the source inventory is now empty</returns>
     public bool Transfer(Item it, Inventory dest) {
 #if DEBUG
-      if (!Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not here");
+      if (!Contains(it)) throw new InvalidOperationException("item not here");
 #endif
       int quantity = it.Quantity;   // need initial value
       if (quantity != dest.AddAsMuchAsPossible(it)) return false;

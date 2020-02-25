@@ -309,7 +309,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
 #if DEBUG
     public static bool IsDebugging;
-    public static readonly Dictionary<long,long> TimingCache = new Dictionary<long, long>();
 #endif
     private static readonly Stopwatch play_timer = new Stopwatch();
     private readonly IRogueUI m_UI; // this cannot be static.
@@ -1960,8 +1959,8 @@ namespace djack.RogueSurvivor.Engine
 #else
         nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
 #endif
-      else if (nextActorToAct.IsPlayer) {
-        HandlePlayerActor(nextActorToAct);
+      else if (nextActorToAct.Controller is PlayerController pc) {
+        HandlePlayerActor(pc);
         if (!m_IsGameRunning || m_HasLoadedGame || 0>=Session.Get.World.PlayerCount) return;
         if (!nextActorToAct.IsDead) CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       } else {
@@ -2791,21 +2790,17 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    private void HandlePlayerActor(Actor player)
+    private void HandlePlayerActor(PlayerController pc)
     {
 #if DEBUG
-      if (null == player) throw new ArgumentNullException(nameof(player));
-      if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
-      if (0< TimingCache.Count) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Timing Cache: " + TimingCache.to_s());
-        long acc = 0;
-        foreach(var x in TimingCache) acc += x.Key*x.Value;
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Total: " + acc.ToString());
-        TimingCache.Clear();
-      }
+      if (null == pc) throw new ArgumentNullException(nameof(pc));
 #endif
-      (player.Controller as ObjectiveAI).SparseReset();
-      player.Controller.UpdateSensors();
+      var player = pc.ControlledActor;
+#if DEBUG
+      if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
+#endif
+      pc.SparseReset();
+      pc.UpdateSensors();
       m_Player = player;
       m_PlayerInTurn = player;
       SetCurrentMap(player.Location);  // multi-PC support
@@ -2853,7 +2848,7 @@ namespace djack.RogueSurvivor.Engine
         }
 #endregion
 
-        var deferredMessages = (player.Controller as PlayerController)?.ReleaseMessages();
+        var deferredMessages = pc.ReleaseMessages();
         if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
 
@@ -2862,9 +2857,9 @@ namespace djack.RogueSurvivor.Engine
           play_timer.Start();
           tmpAction.Perform();
           // XXX following is duplicated code
-          player.Controller.UpdateSensors();
+          pc.UpdateSensors();
           SetCurrentMap(player.Location);
-          (player.Controller as PlayerController).UpdatePrevLocation();
+          pc.UpdatePrevLocation();
           Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
           m_PlayerInTurn = null;
           return;
@@ -3089,9 +3084,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-      player.Controller.UpdateSensors();
+      pc.UpdateSensors();
       SetCurrentMap(player.Location);
-      (player.Controller as PlayerController)?.UpdatePrevLocation();    // abandon PC results in null here
+      pc.UpdatePrevLocation();    // abandon PC results in null here
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
       m_PlayerInTurn = null;
       play_timer.Restart();
@@ -3818,7 +3813,7 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
             return false;
           }
-          // Above strictly implies that an equippable item that also can ube used, is not used by mouse click
+          // Above strictly implies that an equippable item that also can be used, is not used by mouse click
           if (Player.CanUse(it, out string reason1)) {
             DoUseItem(Player, it);
             return true;
