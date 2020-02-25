@@ -8284,7 +8284,7 @@ namespace djack.RogueSurvivor.Engine
         speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
         return;
       }
-      DoTrade(speaker, target);
+      DoTrade(speaker.Controller as OrderableAI, target.Controller as OrderableAI);
 
       // alpha10 recover san after "normal" chat or fast trade
       if (speaker.Model.Abilities.HasSanity) {
@@ -8600,19 +8600,18 @@ namespace djack.RogueSurvivor.Engine
       src_inv.AddAll(donate);
     }
 
-    public void DoTrade(Actor speaker, Actor target)
+    public void DoTrade(OrderableAI speaker_c, OrderableAI target_c)
     {   // precondition: !speaker.IsPlayer (need different implementation)
+      var target = target_c.ControlledActor;
 #if DEBUG
-      if (speaker.IsPlayer) throw new InvalidOperationException("player should use a supported pathway to trade with "+target.Name);
-      if (target.IsPlayer) throw new InvalidOperationException(speaker.Name+" cannot initiate trade with a player");
-      if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
+      if (!speaker_c.ControlledActor.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
-      DoTrade(speaker.Controller as OrderableAI, PickItemsToTrade(speaker, target), target.Controller as OrderableAI, false);
+      DoTrade(speaker_c, PickItemsToTrade(speaker_c, target), target_c, false);
     }
 
-    private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
+    private KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
     {
-      var negotiate = (speaker.Controller as ObjectiveAI).TradeOptions(buyer);
+      var negotiate = speaker_c.TradeOptions(buyer);
       if (null == negotiate) return null;
       return Rules.Get.DiceRoller.Choose(negotiate);
     }
