@@ -2992,7 +2992,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(player);
                 break;
               case PlayerCommand.ORDER_PC_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(pc);
                 break;
               case PlayerCommand.PULL_MODE: // alpha10
                 flag1 = !TryPlayerInsanity() && !HandlePlayerPull(player);
@@ -4557,11 +4557,9 @@ namespace djack.RogueSurvivor.Engine
     {
       var itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
       var itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
-      if (itemGrenade == null && itemGrenadePrimed == null) {
-        AddMessage(MakeErrorMessage("No grenade to throw."));
-        RedrawPlayScreen();
-        return false;
-      }
+#if DEBUG
+      if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
+#endif
       bool flag1 = true;
       bool flag2 = false;
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
@@ -5013,19 +5011,19 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    private bool HandlePlayerOrderPCMode(Actor player) {
+    private bool HandlePlayerOrderPCMode(PlayerController pc) {
       // check for meaningful tasks to automate
-      var orders = (player.Controller as PlayerController).GetValidSelfOrders();
+      var orders = pc.GetValidSelfOrders();
       if (0 >= orders.Count) {
         AddMessage(MakeErrorMessage("No applicable orders for yourself."));
         return false;
       }
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]); };
-      bool details(int index) { return (player.Controller as PlayerController).InterpretSelfOrder(index, orders); };
+      bool details(int index) { return pc.InterpretSelfOrder(index, orders); };
 
       PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
-      return (player.Controller as PlayerController).AutoPilotIsOn;
+      return pc.AutoPilotIsOn;
     }
 
     private bool HandlePlayerOrderMode(Actor player)
