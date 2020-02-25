@@ -2378,10 +2378,9 @@ namespace djack.RogueSurvivor.Engine
         SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
 #endif
       if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
-      lock (Session.Get) {
-        UniqueActor[] local_6 = Array.FindAll(Session.Get.UniqueActors.ToArray(), a => a.IsWithRefugees && !a.IsSpawned && !a.TheActor.IsDead);
-        if (0 >= local_6.Length) return;
-        FireEvent_UniqueActorArrive(district.EntryMap, Rules.Get.DiceRoller.Choose(local_6));
+      lock (Session.Get.UniqueActors) {
+        var candidates = Session.Get.UniqueActors.DraftPool(a => a.IsWithRefugees && !a.IsSpawned /* && !a.TheActor.IsDead */);
+        if (0 < candidates.Count) FireEvent_UniqueActorArrive(district.EntryMap, Rules.Get.DiceRoller.Choose(candidates));
       }
     }
 

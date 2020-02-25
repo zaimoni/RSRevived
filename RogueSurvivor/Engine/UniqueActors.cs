@@ -51,6 +51,22 @@ namespace djack.RogueSurvivor.Engine
       };
     }
 
+    public Zaimoni.Data.Stack<UniqueActor> DraftPool(Predicate<UniqueActor> test) {
+      var ret = new Zaimoni.Data.Stack<UniqueActor>(new UniqueActor[10]);
+      // \todo this warrants a linear data structure
+      if (test(BigBear)) ret.push(BigBear);
+      if (test(Duckman)) ret.push(Duckman);
+      if (test(FamuFataru)) ret.push(FamuFataru);
+      if (test(FatherTime)) ret.push(FatherTime);
+      if (test(HansVonHanz)) ret.push(HansVonHanz);
+      if (test(PoliceStationPrisoner)) ret.push(PoliceStationPrisoner);
+      if (test(Roguedjack)) ret.push(Roguedjack);
+      if (test(Santaman)) ret.push(Santaman);
+      if (test(TheSewersThing)) ret.push(TheSewersThing);
+      if (test(JasonMyers)) ret.push(JasonMyers);
+      return ret;
+    }
+
     // Bound uniques.  These uniques are generated at the same time as their map.
     public void init_Prisoner(Actor newCivilian)
     {
