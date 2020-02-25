@@ -2298,8 +2298,8 @@ namespace djack.RogueSurvivor.Engine
       a.TrustInLeader += mod;
       if (a.TrustInLeader > Rules.TRUST_MAX) a.TrustInLeader = Rules.TRUST_MAX;
       else if (a.TrustInLeader < Rules.TRUST_MIN) a.TrustInLeader = Rules.TRUST_MIN;
-      if (!addMessage || !a.Leader.IsPlayer) return;
-      AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
+      if (addMessage && a.Leader.IsPlayer)
+        AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
 #nullable enable
@@ -6459,6 +6459,14 @@ namespace djack.RogueSurvivor.Engine
       return corpsesAt?.Describe();
     }
 
+    // unclear where this goes; parking here as this is UI and I'd like code locality
+    static private string TrustInLeaderText(int trust)
+    {
+      if (Actor.TRUST_BOND_THRESHOLD <= trust) return "Trust : BOND.";
+      else if (Rules.TRUST_MAX <= trust) return "Trust : MAX.";
+      else return string.Format("Trust : {0}/T:{1}-B:{2}.", trust, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX);
+    }
+
     static private string[] DescribeActor(Actor actor)
     {
       var lines = new List<string>(10);
@@ -6477,9 +6485,7 @@ namespace djack.RogueSurvivor.Engine
       var leader = actor.LiveLeader;
       if (null != leader) {
         if (leader.IsPlayer) {  // \todo should this test be leader == Player ?
-          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD) lines.Add("Trust : BOND.");
-          else if (actor.TrustInLeader >= Rules.TRUST_MAX) lines.Add("Trust : MAX.");
-          else lines.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
+          lines.Add(TrustInLeaderText(actor.TrustInLeader));
 
           if (null != aiController && aiController.DontFollowLeader) lines.Add("Ordered to not follow you.");
           lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
