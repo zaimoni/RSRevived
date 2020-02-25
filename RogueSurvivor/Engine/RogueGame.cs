@@ -2112,17 +2112,6 @@ namespace djack.RogueSurvivor.Engine
 
         // 2. Regen actors AP & STA
         map.PreTurnStart();
-#region 3. Stop tired actors from running.
-        foreach (Actor actor in map.Actors) {
-          if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
-            actor.Walk();
-            if (Player == actor) {
-              AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", VERB_BE.Conjugate(actor))));
-              RedrawPlayScreen();
-            }
-          }
-        }
-#endregion
 #region 4. Actor gauges & states
         List<Actor> actorList1 = null;
         foreach (Actor actor in map.Actors) {

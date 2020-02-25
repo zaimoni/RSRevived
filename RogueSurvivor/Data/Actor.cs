@@ -6,6 +6,7 @@
 
 #define B_MOVIE_MARTIAL_ARTS
 
+using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
@@ -3711,6 +3712,19 @@ namespace djack.RogueSurvivor.Data
        DropScent();
        if (!IsSleeping) Interlocked.Add(ref m_ActionPoints, Speed);
        if (m_StaminaPoints < MaxSTA) RegenStaminaPoints(STAMINA_REGEN_WAIT);
+       // Stop tired actors from running.
+       if (IsRunning && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) {
+         Walk();
+         if (Controller is PlayerController pc) {
+           var msg = Engine.RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this)));
+           if (Engine.RogueGame.IsPlayer(this)) {
+             RogueForm.Game.AddMessage(msg);
+             RogueForm.Game.RedrawPlayScreen();
+           } else {
+             pc.DeferMessage(msg);
+           }
+         }
+       }
     }
 
     // This prepares an actor for being a PC.  Note that hacking the player controller in
