@@ -46,7 +46,8 @@ namespace djack.RogueSurvivor.Data
       PluralName = theNames;
       ImageID = imageID;
       FlavorDescription = flavor;
-      EquipmentPart = part;
+      // if we are not equippable, then there is no operational difference whether we auto-equip or not.
+      if (DollPart.NONE == (EquipmentPart = part)) DontAutoEquip = true;
     }
 
     public virtual Item create()
