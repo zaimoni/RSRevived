@@ -124,6 +124,17 @@ namespace djack.RogueSurvivor.Data
     public void RemoveAllQuantity(Item it) { m_Items.Remove(it); }
     public void Consume(Item it) { if (0 >= --it.Quantity) m_Items.Remove(it); }
 
+    /// <returns>true if and only if the source inventory is now empty</returns>
+    public bool Transfer(Item it, Inventory dest) {
+#if DEBUG
+      if (!Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not here");
+#endif
+      int quantity = it.Quantity;   // need initial value
+      if (quantity != dest.AddAsMuchAsPossible(it)) return false;
+      RemoveAllQuantity(it);
+      return IsEmpty;
+    }
+
     static private int AddToStack(Item from, int addThis, Item to)
     {
       int num = 0;

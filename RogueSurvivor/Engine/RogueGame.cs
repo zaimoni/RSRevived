@@ -8918,13 +8918,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (gift is ItemTrap trap) trap.Desactivate();
-      int quantity = gift.Quantity;
-      int quantityAdded = target.Inventory.AddAsMuchAsPossible(gift);
-#if DEBUG
-      if (0 >= quantityAdded) throw new InvalidOperationException(actor.Name+" made a no-op gift to "+target.Name);
-#endif
-      if (quantityAdded==quantity) actor.Inventory.RemoveAllQuantity(gift);
-
+      actor.Inventory.Transfer(gift, target.Inventory);
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);

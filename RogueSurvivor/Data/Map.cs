@@ -1494,12 +1494,7 @@ retry:
       if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
       if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
 #endif
-      int quantity = it.Quantity;
-      int quantityAdded = dest.AddAsMuchAsPossible(it);
-      if (quantityAdded == quantity) {
-        itemsAt.RemoveAllQuantity(it);
-        if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
-      }
+      if (itemsAt.Transfer(it, dest)) m_GroundItemsByPosition.Remove(position);
     }
 
     public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item
@@ -1533,9 +1528,7 @@ retry:
       if (null == src) return false;
       var it = src.Value.Value.GetFirst(id);
       if (null == it) return false;
-      src.Value.Value.RemoveAllQuantity(it);
-      dest.AddAsMuchAsPossible(it);
-      if (src.Value.Value.IsEmpty) m_GroundItemsByPosition.Remove(src.Value.Key);
+      if (src.Value.Value.Transfer(it, dest)) m_GroundItemsByPosition.Remove(src.Value.Key);
       return true;
     }
 
