@@ -2341,10 +2341,11 @@ namespace djack.RogueSurvivor.Engine
     {
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
+      if (x == 0 || y == 0) return 2f;
       int num1 = Session.Get.World.Size - 1;
-      int num2 = num1 / 2;
-      if (x == 0 || y == 0 || (x == num1 || y == num1)) return 2f;
-      return x != num2 || y != num2 ? 1f : 0.5f;
+      if (x == num1 || y == num1) return 2f;
+      num1 /= 2;
+      return x != num1 || y != num1 ? 1f : 0.5f;
     }
 
     // Refugees are up for a rethinking anyway (i.e., how do they get there)
