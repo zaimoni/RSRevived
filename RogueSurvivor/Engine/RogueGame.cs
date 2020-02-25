@@ -2397,7 +2397,7 @@ namespace djack.RogueSurvivor.Engine
         private void PlayUniqueActorMusicAndMessage(UniqueActor unique, bool hasArrived)    // alpha10: uses parameter to signal arrival (true) or first sighting (false).  \todo: implement first sighting
         {
             if (unique.EventMessage != null) {
-                Overlay highlightOverlay = null;
+                Overlay? highlightOverlay = null;
 
                 if (unique.EventThemeMusic != null) {
                     m_MusicManager.Stop();
@@ -2470,6 +2470,13 @@ namespace djack.RogueSurvivor.Engine
       return (float)(1 + CountFoodItemsNutrition(map)) / (float)num < s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
     }
 
+    private const int army_supply_drop_checksum = 100;
+    private static KeyValuePair<GameItems.IDs, int>[] army_supply_drop_stock = {
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.FOOD_ARMY_RATION,80),
+        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,20)
+    };
+    private static GameItems.IDs[] army_supply_drop_stock_domain = army_supply_drop_stock.Select(x => x.Key).ToArray();
+
     private void FireEvent_ArmySupplies(Map map)
     {
       var dropPoint = FindDropSuppliesPoint(map);
@@ -2478,13 +2485,12 @@ namespace djack.RogueSurvivor.Engine
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
-          map.DropItemAt((Rules.Get.RollChance(80) ? GameItems.ARMY_RATION : (ItemModel)GameItems.MEDIKIT).create(), in pt);
+          map.DropItemAt(Models.Items[(int)army_supply_drop_stock.UseRarityTable(Rules.Get.DiceRoller.Roll(0, army_supply_drop_checksum))].create(), in pt);
           Session.Get.PoliceInvestigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures proper prioritzation
-          var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc);
-          (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
-          already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
+          var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc) ?? new HashSet<GameItems.IDs>();
+          already_known.UnionWith(army_supply_drop_stock_domain);
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
         },pt => AirdropWithoutIncident(map, in pt));
 
