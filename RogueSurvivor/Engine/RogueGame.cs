@@ -7851,8 +7851,12 @@ namespace djack.RogueSurvivor.Engine
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         bool attacker_relevant = a.IsEnemyOf(attacker);
         bool defender_relevant = a.IsEnemyOf(defender);
-        if (a.Controller is CHARGuardAI && !IsInCHAROffice(attacker.Location)) attacker_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-        if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (a.Controller is CHARGuardAI) {
+          // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          // \todo should be much more concerned about threats in *our* CHAR office
+          if (!IsInCHAROffice(attacker.Location)) attacker_relevant = false;
+          if (!IsInCHAROffice(defender.Location)) defender_relevant = false;
+        }
 
         if (!attacker_relevant && !defender_relevant) return;   // not relevant
         if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
@@ -8018,8 +8022,12 @@ namespace djack.RogueSurvivor.Engine
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           bool attacker_relevant = a.IsEnemyOf(attacker);
           bool defender_relevant = a.IsEnemyOf(defender);
-          if (a.Controller is CHARGuardAI && !IsInCHAROffice(attacker.Location)) attacker_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
-          if (a.Controller is CHARGuardAI && !IsInCHAROffice(defender.Location)) defender_relevant = false; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (a.Controller is CHARGuardAI) {
+            // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+            // \todo should be much more concerned about threats in *our* CHAR office
+            if (!IsInCHAROffice(attacker.Location)) attacker_relevant = false;
+            if (!IsInCHAROffice(defender.Location)) defender_relevant = false;
+          }
 
           if (!attacker_relevant && !defender_relevant) return;   // not relevant
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
@@ -8542,12 +8550,10 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
-    private void DoTrade(Actor speaker, KeyValuePair<Item, Item>? trade, Actor target, bool doesTargetCheckForInterestInOffer)
+    private void DoTrade(OrderableAI speaker_c, KeyValuePair<Item, Item>? trade, OrderableAI target_c, bool doesTargetCheckForInterestInOffer)
     {
-#if DEBUG
-      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer");
-      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
-#endif
+      var speaker = speaker_c.ControlledActor;
+      var target = target_c.ControlledActor;
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);    // prevent hyper-active player trades
       
@@ -8558,7 +8564,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool wantedItem = true;
-      bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, trade.Value.Key);
+      bool flag3 = target_c.IsInterestingTradeItem(speaker, trade.Value.Key);
       if (target.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
 
       if (!wantedItem)
@@ -8571,32 +8577,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
 
       var leader = target.LiveLeader;
-#if SPEAKER_IS_PLAYER_OK
-      bool isPlayer = speaker.IsPlayer;
-      bool acceptDeal = true;
-      if (isPlayer) {
-        AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
-        RedrawPlayScreen();
-        acceptDeal = WaitYesOrNo();
-        ClearOverlays();
-        RedrawPlayScreen();
-      }
-      else
-        acceptDeal = null == leader || (target.Controller as OrderableAI).Directives.CanTrade;
-
-      if (!acceptDeal) {
-        if (!flag1) return;
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
-        if (isPlayer) RedrawPlayScreen();
-        return;
-      }
-
-      if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-        if (isPlayer) RedrawPlayScreen();
-      }
-#else
-      bool acceptDeal = null == leader || (target.Controller as OrderableAI).Directives.CanTrade;
+      bool acceptDeal = null == leader || target_c.Directives.CanTrade;
 
       if (!acceptDeal) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
@@ -8604,7 +8585,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-#endif
 
       if (leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
@@ -8627,7 +8607,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsPlayer) throw new InvalidOperationException(speaker.Name+" cannot initiate trade with a player");
       if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
-      DoTrade(speaker, PickItemsToTrade(speaker, target), target, false);
+      DoTrade(speaker.Controller as OrderableAI, PickItemsToTrade(speaker, target), target.Controller as OrderableAI, false);
     }
 
     private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
@@ -8869,7 +8849,7 @@ namespace djack.RogueSurvivor.Engine
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
           if (do_not_crash_on_target_turn) DoWait(target);
-          DoTrade(actor, trade, target, false);
+          DoTrade(actor.Controller as OrderableAI, trade, target.Controller as OrderableAI, false);
           return;
         }
       }
@@ -8889,7 +8869,7 @@ namespace djack.RogueSurvivor.Engine
 
         if (null != received) {
           if (do_not_crash_on_target_turn) DoWait(target);
-          DoTrade(actor, new KeyValuePair<Item,Item>(gift,received), target, false);
+          DoTrade(actor.Controller as OrderableAI, new KeyValuePair<Item,Item>(gift,received), target.Controller as OrderableAI, false);
           return;
         }
       }
