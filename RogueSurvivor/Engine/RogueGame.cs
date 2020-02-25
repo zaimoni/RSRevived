@@ -2975,7 +2975,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerGiveItem(player, point);
                 break;
               case PlayerCommand.INITIATE_TRADE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerInitiateTrade(player, point);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerInitiateTrade(pc, point);
                 break;
               case PlayerCommand.LEAD_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
@@ -4192,8 +4192,9 @@ namespace djack.RogueSurvivor.Engine
       return actionDone;
     }
 
-    private bool HandlePlayerInitiateTrade(Actor player, GDI_Point screen)
+    private bool HandlePlayerInitiateTrade(PlayerController pc, GDI_Point screen)
     {
+      var player = pc.ControlledActor;
       var inventoryItem = MouseToInventoryItem(screen, out var inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
 
@@ -4211,7 +4212,7 @@ namespace djack.RogueSurvivor.Engine
             if (player.CanTradeWith(actorAt, out string reason)) {
               ClearOverlays();
               RedrawPlayScreen();
-              if (DoTrade(player, inventoryItem, actorAt, true)) player.SpendActionPoints(Rules.BASE_ACTION_COST);
+              if (DoTrade(pc, inventoryItem, actorAt, true)) player.SpendActionPoints(Rules.BASE_ACTION_COST);
               return true;
             } else {
               AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
@@ -4229,7 +4230,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         if (null != ground_inv) {
-          DoTrade(player, inventoryItem, ground_inv);
+          DoTrade(pc, inventoryItem, ground_inv);
           return true;
         }
         AddMessage(MakeErrorMessage("Noone there."));
@@ -8416,14 +8417,14 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private bool DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
+    private bool DoTrade(PlayerController pc, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
+      var speaker = pc.ControlledActor;
 #if OBSOLETE
       if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer"); // valid for RS 9 Alpha; will go away
 #endif
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
-      if (!speaker.IsPlayer) throw new InvalidOperationException("!"+nameof(speaker)+".IsPlayer");  // not valid for RS 9 Alpha
 #endif
 //    bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);   // now constant true but wouldn't be for AI trades/RS 9 Alpha
       const bool flag1 = true;
@@ -8441,7 +8442,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       };
 
-      var trade = PickItemToTrade(target, speaker, itSpeaker); // XX rewrite target
+      var trade = PickItemToTrade(target, pc, itSpeaker); // XX rewrite target
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return false;
@@ -8488,16 +8489,16 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private void DoTrade(Actor speaker, Item itSpeaker, Inventory target)
+    private void DoTrade(PlayerController pc, Item itSpeaker, Inventory target)
     {
+      var speaker = pc.ControlledActor;
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
-      if (!speaker.IsPlayer) throw new InvalidOperationException("!"+nameof(speaker)+".IsPlayer");  // not valid for RS 9 Alpha
 #endif
 //    bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
       const bool flag1 = true;
 
-      var trade = PickItemToTrade(target, speaker, itSpeaker);
+      var trade = PickItemToTrade(target, pc, itSpeaker);
       if (null == trade) return;
 
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
@@ -8644,14 +8645,11 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private Item? PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
+    private Item? PickItemToTrade(Actor speaker, PlayerController buyer_c, Item itSpeaker)
     {
-#if OBSOLETE
-      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker) +".IsPlayer"); // valid for RS 9 Alpha; will go away
-#endif
+      var buyer = buyer_c.ControlledActor;
 #if DEBUG
 //    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
-      if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
 #endif
       var objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
       if (objList == null || 0>=objList.Count) return null;
@@ -8710,9 +8708,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!tmp.Any()) return null;
       objList = tmp.ToList();
-#if OBSOLETE
-      return objList[m_Rules.Roll(0, objList.Count)];
-#else
+
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
 
       Item ret = null;
@@ -8723,20 +8719,17 @@ namespace djack.RogueSurvivor.Engine
 
       PagedMenu("Trading for ...", objList.Count, label, details);
       return ret;
-#endif
     }
 
-    private Item? PickItemToTrade(Inventory speaker, Actor buyer, Item itSpeaker)
+    private Item? PickItemToTrade(Inventory speaker, PlayerController buyer_c, Item itSpeaker)
     {
+      var buyer = buyer_c.ControlledActor;
 #if DEBUG
 //    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
-      if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
 #endif
       List<Item> objList = speaker.Items.ToList(); // inventory has no mentality, trivialize
       if (objList == null || 0>=objList.Count) return null;
-#if OBSOLETE
-      return objList[m_Rules.Roll(0, objList.Count)];
-#else
+
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); };
 
       Item? ret = null;
@@ -8747,7 +8740,6 @@ namespace djack.RogueSurvivor.Engine
 
       PagedMenu("Trading for ...", objList.Count, label, details);
       return ret;
-#endif
     }
 #nullable restore
 
@@ -9070,8 +9062,8 @@ namespace djack.RogueSurvivor.Engine
       actor.Cure(actor.ScaleMedicineEffect(med.InfectionCure));
       actor.RegenSanity(actor.ScaleMedicineEffect(med.SanityCure));
       actor.Inventory.Consume(med);
-      if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, VERB_HEAL_WITH.Conjugate(actor), med));
+      if (ForceVisibleToPlayer(actor))
+        AddMessage(MakeMessage(actor, VERB_HEAL_WITH.Conjugate(actor), med));
     }
 
 #nullable enable
@@ -9563,10 +9555,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, " to forget its orders."));
     }
 
-    public void OnLoudNoise(in Location loc, string noiseName)
-    {
-      OnLoudNoise(loc.Map,loc.Position,noiseName);
-    }
+    public void OnLoudNoise(in Location loc, string noiseName) { OnLoudNoise(loc.Map,loc.Position,noiseName); }
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
     {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
