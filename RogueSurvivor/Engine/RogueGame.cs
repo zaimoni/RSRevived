@@ -3606,7 +3606,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleAlliesInfo()
     {
-      HashSet<Actor> player_allies = Player.Allies;
+      var player_allies = Player.Allies;
       if (null == player_allies) {
         AddMessage(new Data.Message("You have no nearby allies.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         return;
@@ -4053,8 +4053,7 @@ namespace djack.RogueSurvivor.Engine
           map.Remove(corpse);
           map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
           if (player) AddMessage(MakeMessage(actor, VERB_REVIVE.Conjugate(actor), revive));
-          if (actor.IsEnemyOf(revive)) return;
-          DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
+          if (!actor.IsEnemyOf(revive)) DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
       } else {
           if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", VERB_FAIL.Conjugate(actor)), revive));
       }
@@ -4070,7 +4069,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlotUse(Actor player, int slot)
     {
-      Item it = player.Inventory[slot];
+      var it = player.Inventory[slot];
       if (it == null) {
         AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
         return false;
@@ -9040,6 +9039,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+    // At low time resolutions, it would make sense to allow using from adjacent reachable inventories
     public void DoUseItem(Actor actor, Item it)
     {
       // alpha10 defrag ai inventories
