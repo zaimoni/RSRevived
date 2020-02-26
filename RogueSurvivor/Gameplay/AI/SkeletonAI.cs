@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       const int IDLE_CHANCE = 80;
 
-      ActorAction tmpAction = TargetGridMelee(_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))));
+      var tmpAction = TargetGridMelee(_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))));
       if (null != tmpAction) return tmpAction;
 
       if (Rules.Get.RollChance(IDLE_CHANCE)) return new ActionWait(m_Actor);

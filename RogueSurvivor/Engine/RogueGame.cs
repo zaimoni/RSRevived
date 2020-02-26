@@ -1490,7 +1490,7 @@ namespace djack.RogueSurvivor.Engine
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawString(Color.White, "forum post : http://smf.cataclysmdda.com/index.php?topic=12463.0", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      m_UI.UI_DrawString(Color.White, "source code: https://bitbucket.org/zaimoni/roguesurvivor-revived", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "source code: https://github.com/zaimoni/RSRevived", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
       DrawFootnote(Color.White, "ESC to leave");

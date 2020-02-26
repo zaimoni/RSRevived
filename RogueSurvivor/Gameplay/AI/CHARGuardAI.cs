@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Secure CHAR property
 	  List<Percept> friends = FilterNonEnemies(_all);
       if (null != friends) {
-        List<Percept> percepts3 = friends.Filter(p =>
+        var percepts3 = friends.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
           return !actor.IsFaction(GameFactions.IDs.TheCHARCorporation) && RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
@@ -283,7 +283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX \todo CHAR Guard leading civilian would get ugly quickly; either disallow, or ignore trespassing when CHAR guard is leader
         var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
         FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
-        Percept target = FilterNearest(want_leader);
+        var target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {

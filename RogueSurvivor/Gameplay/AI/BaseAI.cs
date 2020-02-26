@@ -95,7 +95,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     The only realistic mitigation is to pro-rate the capacity request.
  */
     // April 22, 2016: testing indicates this does not need micro-optimization
-    protected List<Percept_<_T_>> FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+#nullable enable
+    protected List<Percept_<_T_>>? FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
       Func< Percept_ < _T_ >,bool> same_map = p => null != map.Denormalize(p.Location);
@@ -103,6 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != e) same_map = same_map.Or(p => e.Location==p.Location);
       return percepts.Filter(same_map);
     }
+#nullable restore
 
 #if DEAD_FUNC
     // actually deploying this is time-intensive
@@ -118,7 +120,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected List<Percept> FilterEnemies(List<Percept> percepts)
+        protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
       return percepts.FilterT<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
@@ -128,13 +130,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.FilterT<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
     }
 
-    protected List<Percept_<_T_>> FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+#nullable enable
+    protected List<Percept_<_T_>>? FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       return percepts.Filter(p => p.Turn == turnCounter);
     }
 
-    protected List<Percept_<_T_>> FilterOld<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected List<Percept_<_T_>>? FilterOld<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       return percepts.Filter(p => p.Turn < turnCounter);
@@ -144,11 +147,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
     // the outside (Contracts saw a non-null return)
-    protected Percept_<_T_> FilterNearest<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected Percept_<_T_>? FilterNearest<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
       return percepts.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
     }
+#nullable restore
 
     public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T> src)
     {
@@ -187,20 +191,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected List<Percept> FilterFireTargets(List<Percept> percepts, int range)
+#nullable enable
+    protected List<Percept>? FilterFireTargets(List<Percept>? percepts, int range)
     {
       return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target,range));
     }
 
-    protected List<Percept> FilterPossibleFireTargets(List<Percept> percepts)
+    protected List<Percept>? FilterPossibleFireTargets(List<Percept>? percepts)
     {
       return percepts.FilterT<Actor>(target => m_Actor.CouldFireAt(target));
     }
 
-    protected List<Percept> FilterContrafactualFireTargets(List<Percept> percepts, Point p)
+    protected List<Percept>? FilterContrafactualFireTargets(List<Percept> percepts, Point p)
     {
       return percepts.FilterT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
     }
+#nullable restore
 
 #if DEAD_FUNC
     protected List<Percept_<_T_>> SortByDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
@@ -956,7 +962,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
-      List<Percept> percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
+      var percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
       if (percepts == null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
@@ -972,7 +978,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  var corpsesPercepts = percepts.FilterT<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
-      var percept = FilterNearest(corpsesPercepts);
+      Percept percept = FilterNearest(corpsesPercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
 	  }

@@ -1339,7 +1339,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // also, damage field should be non-null because enemies is non-null
 
       int best_range = available_ranged_weapons.Select(rw => rw.Model.Attack.Range).Max();
-      List<Percept> en_in_range = FilterFireTargets(_enemies,best_range);
+      var en_in_range = FilterFireTargets(_enemies,best_range);
 
       // if no enemies in range, or just one available ranged weapon, use the best one
       if (null == en_in_range || 1==available_ranged_weapons.Count) {

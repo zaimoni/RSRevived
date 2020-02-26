@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end extraction target: BehaviorEquipBestItems
       // end item juggling check
       _all = FilterSameMap(UpdateSensors());
-      List<Percept> current = FilterCurrent(_all);    // this tests fast
+      var current = FilterCurrent(_all);    // this tests fast
       ReviewItemRatings();  // XXX highly inefficient when called here; should "update on demand"
 
 #if TRACE_SELECTACTION
@@ -399,7 +399,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           && !m_Actor.Model.Abilities.IsLawEnforcer
           && (m_Actor.IsHungry
           && !m_Actor.Has<ItemFood>())) {
-        Percept target = FilterNearest(current.FilterT<Actor>(a =>
+        var target = FilterNearest(current.FilterT<Actor>(a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
@@ -509,7 +509,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
         FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         // \todo release block; next savegame; do not allow police to lead murderers
-        Percept target = FilterNearest(want_leader);
+        var target = FilterNearest(want_leader);
         if (target != null) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorLeadActor");
@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      var percept1 = current.FilterFirst(p =>
+      var percept1 = current?.FilterFirst(p =>
       {
         var actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;

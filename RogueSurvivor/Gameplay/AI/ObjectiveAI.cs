@@ -1150,7 +1150,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
 
-      List<Percept> en_in_range = FilterFireTargets(_enemies,rw.Model.Attack.Range);
+      var en_in_range = FilterFireTargets(_enemies,rw.Model.Attack.Range);
       if (null == en_in_range) return null; // XXX likely error condition
       if (1 == en_in_range.Count) return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
 
@@ -3303,10 +3303,12 @@ restart_single_exit:
       }
     }
 
-    private void AddExplosivesToDamageField(List<Percept> percepts)
+#nullable enable
+    private void AddExplosivesToDamageField(List<Percept>? percepts)
     {
-      AddExplosivesToDamageField(percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
+      AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
+#nullable restore
 
     private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
     {

@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
 
       _all = FilterSameMap(UpdateSensors());
-      List<Percept> current = FilterCurrent(_all);    // this tests fast
+      var current = FilterCurrent(_all);    // this tests fast
 
       m_Actor.Walk();    // alpha 10: don't run by default
 

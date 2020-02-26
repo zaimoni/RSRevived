@@ -89,9 +89,9 @@ namespace djack.RogueSurvivor.Engine.AI
 	}
 
     // for completeness
-	internal static List<Percept_<_T_>>? FilterCast<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
+	internal static List<Percept_<_T_>>? FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn) where _T_:class
 	{
-      if (null == percepts || !percepts.Any()) return null;
+      if (!percepts.Any()) return null;
       List<Percept_<_T_>>? ret = null;
       foreach(var p in percepts) {
         // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
@@ -100,9 +100,9 @@ namespace djack.RogueSurvivor.Engine.AI
 	  return ret;
 	}
 
-    internal static _T_? FilterFirst<_T_>(this IEnumerable<_T_>? percepts, Predicate<_T_> predicateFn) where _T_:WhereWhen
+    internal static _T_? FilterFirst<_T_>(this IEnumerable<_T_> percepts, Predicate<_T_> predicateFn) where _T_:WhereWhen
     {
-      if (null == percepts || !percepts.Any()) return null;
+      if (!percepts.Any()) return null;
       foreach(var percept in percepts) if (predicateFn(percept)) return percept;
       return null;
     }
