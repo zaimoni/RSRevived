@@ -1393,22 +1393,22 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityCritical] private void StartNewGame()
     {
-      bool isUndead = m_CharGen.IsUndead;
       GenerateWorld(true);
+      bool isUndead = Player.Model.Abilities.IsUndead;
       // XXX \todo should do this for all actors
       Player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
       if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
-        if (Player.Model.Abilities.IsUndead) {    // alpha10
+        if (isUndead) {    // alpha10
           AddMessage(new Data.Message("The Advisor is enabled but you will get no hint when playing undead.", 0, Color.Red));
         } else {
           AddMessage(new Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
           AddMessage(new Data.Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
           AddMessage(new Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
         }
-        AddMessage(new Data.Message(string.Format("Press {0} during the game to change the options.", RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
         AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
         RedrawPlayScreen();
         WaitEnter();
@@ -1432,8 +1432,8 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("* " + msg1 + " *", 0, Color.LightGreen));
       AddMessage(new Data.Message("* " + msg2 + " *", 0, Color.LightGreen));
       AddMessage(new Data.Message(header, 0, Color.LightGreen));
-      AddMessage(new Data.Message(string.Format("Press {0} for help", RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
-      AddMessage(new Data.Message(string.Format("Press {0} to redefine keys", RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
+      AddMessage(new Data.Message(string.Format("Press {0} for help", s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
+      AddMessage(new Data.Message(string.Format("Press {0} to redefine keys", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
       AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
       RefreshPlayer();
       RedrawPlayScreen();
