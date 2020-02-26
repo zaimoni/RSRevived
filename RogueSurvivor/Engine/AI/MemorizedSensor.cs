@@ -15,16 +15,16 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Engine.AI
 {
   [Serializable]
-  internal class MemorizedSensor : Sensor
+  internal class MemorizedSensor<T> : Sensor where T:Sensor
   {
 #nullable enable
     private List<Percept> m_Percepts = new List<Percept>();
-    private readonly Sensor m_Sensor;
+    private readonly T m_Sensor;
     private readonly int m_Persistance;
 
-    public Sensor Sensor { get { return m_Sensor; } }
+    public T Sensor { get { return m_Sensor; } }
 
-    public MemorizedSensor(Sensor noMemorySensor, int persistance)
+    public MemorizedSensor(T noMemorySensor, int persistance)
     {
 #if DEBUG
       if (null == noMemorySensor) throw new ArgumentNullException(nameof(noMemorySensor));

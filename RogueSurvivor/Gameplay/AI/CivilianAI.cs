@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES), LOS_MEMORY);
     private int m_SafeTurns;
     private readonly ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
@@ -120,13 +120,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_MemLOSSensor.Sense(m_Actor);
     }
 
-    public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
+    public override HashSet<Point> FOV { get { return m_MemLOSSensor.Sensor.FOV; } }
 #nullable enable
-    public override Dictionary<Location, Actor>? friends_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).friends; } }
-    public override Dictionary<Location, Actor>? enemies_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).enemies; } }
-    public override Dictionary<Location, Inventory>? items_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).items; } }
+    public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
+    public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
+    public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_MemLOSSensor.Sensor.items; } }
 #nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { (m_MemLOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
+    protected override void SensorsOwnedBy(Actor actor) { m_MemLOSSensor.Sensor.OwnedBy(actor); }
 
     // return value must contain a {0} placeholder for the target name
     private string LeaderText_NotLeavingBehind(Actor target)
