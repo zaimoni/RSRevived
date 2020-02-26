@@ -40,10 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       Filters = filters;
     }
 
-    public void OwnedBy(Actor actor)
-    {
-      m_Actor = actor;
-    }
+    public void OwnedBy(Actor actor) { m_Actor = actor; }
 
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
@@ -116,6 +113,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
+#nullable enable
     public List<Percept> Sense(Actor actor)
     {
       m_Actor = actor;
@@ -155,6 +153,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
       return perceptList;
     }
+#nullable restore
 
     [System.Flags]
     public enum SensingFilter
