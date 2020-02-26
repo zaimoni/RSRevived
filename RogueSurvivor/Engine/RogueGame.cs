@@ -7855,8 +7855,8 @@ namespace djack.RogueSurvivor.Engine
         if (a.Controller is CHARGuardAI) {
           // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
           // \todo should be much more concerned about threats in *our* CHAR office
-          if (!IsInCHAROffice(attacker.Location)) attacker_relevant = false;
-          if (!IsInCHAROffice(defender.Location)) defender_relevant = false;
+          if (!IsInCHARProperty(attacker.Location)) attacker_relevant = false;
+          if (!IsInCHARProperty(defender.Location)) defender_relevant = false;
         }
 
         if (!attacker_relevant && !defender_relevant) return;   // not relevant
@@ -8026,8 +8026,8 @@ namespace djack.RogueSurvivor.Engine
           if (a.Controller is CHARGuardAI) {
             // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
             // \todo should be much more concerned about threats in *our* CHAR office
-            if (!IsInCHAROffice(attacker.Location)) attacker_relevant = false;
-            if (!IsInCHAROffice(defender.Location)) defender_relevant = false;
+            if (!IsInCHARProperty(attacker.Location)) attacker_relevant = false;
+            if (!IsInCHARProperty(defender.Location)) defender_relevant = false;
           }
 
           if (!attacker_relevant && !defender_relevant) return;   // not relevant
@@ -9239,7 +9239,7 @@ namespace djack.RogueSurvivor.Engine
         void react(Actor a) {
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant \todo Civilian vs. GangAI may disagree with this, but would want to retreat
-          if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (a.Controller is CHARGuardAI && !IsInCHARProperty(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
               || !Rules.Get.RollChance(PLAYER_HEAR_BASH_CHANCE))  // not clear enough
             return;
@@ -9283,7 +9283,7 @@ namespace djack.RogueSurvivor.Engine
         void react(Actor a) {
           if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
           if (!a.IsEnemyOf(actor)) return;   // not relevant
-          if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+          if (a.Controller is CHARGuardAI && !IsInCHARProperty(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
           if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
               || !Rules.Get.RollChance(flag ? PLAYER_HEAR_BREAK_CHANCE : PLAYER_HEAR_BASH_CHANCE))  // not clear enough
             return;
@@ -9347,7 +9347,7 @@ namespace djack.RogueSurvivor.Engine
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
-        if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (a.Controller is CHARGuardAI && !IsInCHARProperty(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
         if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
             || !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
           return;
@@ -9438,7 +9438,7 @@ namespace djack.RogueSurvivor.Engine
       void react(Actor a) {
         if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
         if (!a.IsEnemyOf(actor)) return;   // not relevant
-        if (a.Controller is CHARGuardAI && !IsInCHAROffice(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+        if (a.Controller is CHARGuardAI && !IsInCHARProperty(actor.Location)) return; // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
         if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
             || !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE))  // not clear enough
           return;
@@ -11930,7 +11930,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      RogueGame.s_KeyBindings = Keybindings.Load(RogueGame.GetUserConfigPath() + "keys.dat");
+      s_KeyBindings = Keybindings.Load(GetUserConfigPath() + "keys.dat");
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -11941,7 +11941,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      Keybindings.Save(RogueGame.s_KeyBindings, RogueGame.GetUserConfigPath() + "keys.dat");
+      Keybindings.Save(s_KeyBindings, GetUserConfigPath() + "keys.dat");
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -11952,7 +11952,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      RogueGame.s_Hints = GameHintsStatus.Load(RogueGame.GetUserConfigPath() + "hints.dat");
+      s_Hints = GameHintsStatus.Load(GetUserConfigPath() + "hints.dat");
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -11960,7 +11960,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void SaveHints()
     {
-      GameHintsStatus.Save(RogueGame.s_Hints, RogueGame.GetUserConfigPath() + "hints.dat");
+      GameHintsStatus.Save(s_Hints, GetUserConfigPath() + "hints.dat");
     }
 
     private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
@@ -11995,75 +11995,37 @@ namespace djack.RogueSurvivor.Engine
     private void DrawFootnote(Color color, string text)
     {
       Color color1 = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
-      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, 754, new Color?(color1));
+      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, 754, color1);
     }
 
-    public static string GetUserBasePath()
-    {
-      return SetupConfig.DirPath;
-    }
-
-    public static string GetUserSavesPath()
-    {
-      return RogueGame.GetUserBasePath() + "Saves\\";
-    }
-
-    public static string GetUserSave()
-    {
-      return RogueGame.GetUserSavesPath() + "save.dat";
-    }
+    public static string GetUserBasePath() { return SetupConfig.DirPath; }
+    public static string GetUserSavesPath() { return GetUserBasePath() + "Saves\\"; }
+    public static string GetUserSave() { return GetUserSavesPath() + "save.dat"; }
 
 #if DEBUG
     public static string GetUserSaveBackup()
     {
-      return RogueGame.GetUserSavesPath() + "save." + Session.Get.WorldTime.TurnCounter.ToString();
+      return GetUserSavesPath() + "save." + Session.Get.WorldTime.TurnCounter.ToString();
     }
 #endif
 
-    public static string GetUserDocsPath()
-    {
-      return RogueGame.GetUserBasePath() + "Docs\\";
-    }
-
-    public static string GetUserGraveyardPath()
-    {
-      return RogueGame.GetUserBasePath() + "Graveyard\\";
-    }
+    public static string GetUserDocsPath() { return GetUserBasePath() + "Docs\\"; }
+    public static string GetUserGraveyardPath() { return GetUserBasePath() + "Graveyard\\"; }
 
     static private string GetUserNewGraveyardName()
     {
       int num = 0;
       string graveName;
-      bool flag;
-      do
-      {
-        graveName = string.Format("grave_{0:D3}", num);
-        flag = !File.Exists(RogueGame.GraveFilePath(graveName));
-        ++num;
-      }
-      while (!flag);
+      do {
+        graveName = string.Format("grave_{0:D3}", num++);
+      } while (File.Exists(GraveFilePath(graveName)));
       return graveName;
     }
 
-    public static string GraveFilePath(string graveName)
-    {
-      return RogueGame.GetUserGraveyardPath() + graveName + ".txt";
-    }
-
-    public static string GetUserConfigPath()
-    {
-      return RogueGame.GetUserBasePath() + "Config\\";
-    }
-
-    public static string GetUserOptionsFilePath()
-    {
-      return RogueGame.GetUserConfigPath() + "options.dat";
-    }
-
-    public static string GetUserScreenshotsPath()
-    {
-      return RogueGame.GetUserBasePath() + "Screenshots\\";
-    }
+    public static string GraveFilePath(string graveName) { return GetUserGraveyardPath() + graveName + ".txt"; }
+    public static string GetUserConfigPath() { return GetUserBasePath() + "Config\\"; }
+    public static string GetUserOptionsFilePath() { return GetUserConfigPath() + "options.dat"; }
+    public static string GetUserScreenshotsPath() { return GetUserBasePath() + "Screenshots\\"; }
 
     public string GetUserNewScreenshotName()
     {
@@ -12079,10 +12041,7 @@ namespace djack.RogueSurvivor.Engine
       return shotname;
     }
 
-    public string ScreenshotFilePath(string shotname)
-    {
-      return RogueGame.GetUserScreenshotsPath() + shotname + "." + m_UI.UI_ScreenshotExtension();
-    }
+    public string ScreenshotFilePath(string shotname) { return GetUserScreenshotsPath() + shotname + "." + m_UI.UI_ScreenshotExtension(); }
 
     private static bool CreateDirectory(string path)
     {
@@ -12109,6 +12068,8 @@ namespace djack.RogueSurvivor.Engine
       return directory;
     }
 
+    const string _manualFile = "RS Manual.txt";
+
     static private bool CheckCopyOfManual()
     {
       const string str1 = "Resources\\Manual\\";
@@ -12116,35 +12077,20 @@ namespace djack.RogueSurvivor.Engine
       const string str2 = "RS Manual.txt";
       bool flag = false;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual...");
-      if (!File.Exists(userDocsPath + str2)) {
+      if (!File.Exists(userDocsPath + _manualFile)) {
         Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual...");
         flag = true;
-        File.Copy(str1 + str2, userDocsPath + str2);
+        File.Copy(str1 + str2, userDocsPath + _manualFile);
         Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual... done!");
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual... done!");
       return flag;
     }
 
-    static private string GetUserManualFilePath()
-    {
-      return GetUserDocsPath() + "RS Manual.txt";
-    }
-
-    static private string GetUserHiScorePath()
-    {
-      return GetUserSavesPath();
-    }
-
-    static private string GetUserHiScoreFilePath()
-    {
-      return GetUserHiScorePath() + "hiscores.dat";
-    }
-
-    static private string GetUserHiScoreTextFilePath()
-    {
-      return GetUserHiScorePath() + "hiscores.txt";
-    }
+    static private string GetUserManualFilePath() { return GetUserDocsPath() + _manualFile; }
+    static private string GetUserHiScorePath() { return GetUserSavesPath(); }
+    static private string GetUserHiScoreFilePath() { return GetUserHiScorePath() + "hiscores.dat"; }
+    static private string GetUserHiScoreTextFilePath() { return GetUserHiScorePath() + "hiscores.txt"; }
 
     private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content
     {
@@ -13402,9 +13348,7 @@ namespace djack.RogueSurvivor.Engine
 
     static public bool IsInCHARProperty(Location location)
     {
-      if (location.Map != Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap)
-        return IsInCHAROffice(location);
-      return true;
+      return location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || IsInCHAROffice(location);
     }
 
     private bool AreLinkedByPhone(Actor speaker, Actor target)
