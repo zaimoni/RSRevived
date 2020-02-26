@@ -27,11 +27,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
+#nullable enable
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
       return m_LOSSensor.Sense(m_Actor);
     }
+#nullable restore
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
 #nullable enable

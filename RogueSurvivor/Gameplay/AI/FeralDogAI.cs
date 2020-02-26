@@ -45,11 +45,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
+#nullable enable
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
       return m_LOSSensor.Sense(m_Actor);
     }
+#nullable restore
 
     protected override ActorAction SelectAction(RogueGame game)
     {

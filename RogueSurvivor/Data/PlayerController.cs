@@ -116,12 +116,14 @@ namespace djack.RogueSurvivor.Data
       Actor.Says -= HandleSay;
     }
 
+#nullable enable
     public override List<Percept> UpdateSensors()
     {
       var ret = m_LOSSensor.Sense(m_Actor);
       if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
       return ret;
     }
+#nullable restore
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
 #nullable enable

@@ -28,10 +28,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LOSSensor = new LOSSensor(VISION_SEES);
     }
 
+#nullable enable
     public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense(m_Actor);
     }
+#nullable restore
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
 #nullable enable
