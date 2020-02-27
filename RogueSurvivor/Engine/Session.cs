@@ -88,6 +88,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       info.read(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
+      Actor.Load(info,context);
       Rules.Get.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
       RogueGame.Load(info, context);
@@ -114,6 +115,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
+      Actor.Save(info, context);
       Rules.Get.Save(info,context);
       info.AddValue("World",World,typeof(World));
       RogueGame.Save(info, context);

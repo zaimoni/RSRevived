@@ -157,6 +157,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool Any(Predicate<Map> test)
+    {
+      foreach(District d in m_DistrictsGrid) {
+        foreach(Map m in d.Maps) if (test(m)) return true;
+      }
+      return false;
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
 
     public World(short size)

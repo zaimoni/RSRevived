@@ -137,11 +137,11 @@ namespace djack.RogueSurvivor.Data
     private int m_KillsCount;
     private List<Actor>? m_AggressorOf;
     private List<Actor>? m_SelfDefenceFrom;
-    private int m_MurdersCounter;   // sparse field
     private int m_Infection;
     private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
+    static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
     [NonSerialized] private bool _has_to_eat;
     [NonSerialized] private string[]? _force_PC_names = null;
 
@@ -557,7 +557,8 @@ namespace djack.RogueSurvivor.Data
 
     public int MurdersCounter {
       get {
-        return m_MurdersCounter + MurdersInProgress;
+        s_MurdersCounter.TryGetValue(this, out var murders);
+        return murders + MurdersInProgress;
       }
     }
 
@@ -566,12 +567,14 @@ namespace djack.RogueSurvivor.Data
       if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
       if (100 <= UnsuspicousForChance(observer)) return circumstantial;
       if (100 <= MurdererSpottedByChance(observer)) return circumstantial;
-      return m_MurdersCounter+ circumstantial;
+      s_MurdersCounter.TryGetValue(this, out var murders);
+      return murders+ circumstantial;
     }
 
     public void HasMurdered(Actor victim)
     {
-        ++m_MurdersCounter; // bypasses hungry civilian adjustment
+        if (s_MurdersCounter.ContainsKey(this)) s_MurdersCounter[this]++; // bypasses hungry civilian adjustment
+        else s_MurdersCounter.Add(this,1);
         ActorScoring.AddEvent(Engine.Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", victim.TheName, victim.Model.Name));
     }
 
@@ -657,7 +660,28 @@ namespace djack.RogueSurvivor.Data
       m_CurrentDefence = Sheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
+
+#region Session save/load assistants
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+      info.read(ref s_MurdersCounter, "s_MurdersCounter");
+    }
+
+    static public void Save(SerializationInfo info, StreamingContext context)
+    {
+      s_MurdersCounter.OnlyIf(PossiblyAlive);   // backstop
+      info.AddValue("s_MurdersCounter", s_MurdersCounter);
+    }
+#endregion
 #nullable restore
+
+    // don't worry about CPU cost as long as this is profile-cold
+    static private bool PossiblyAlive(Actor a)
+    {
+      if (!a.IsDead) return true;
+      if (!Session.Get.HasCorpses) return false;
+      return !Session.Get.World.Any(m => m.HasCorpseOf(a));
+    }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {

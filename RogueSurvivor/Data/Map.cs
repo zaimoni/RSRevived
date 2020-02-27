@@ -1632,6 +1632,12 @@ retry:
       return false;
     }
 
+    public bool HasCorpseOf(Actor a)
+    {
+      foreach (var c in m_CorpsesList) if (c.DeadGuy == a) return true;
+      return false;
+    }
+
     private void RemoveFromPos(Corpse c)
     {
       if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out var corpseList)) return;
