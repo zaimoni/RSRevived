@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
 	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts) where _T_:class
 	{
-      if (null == percepts || !percepts.Any()) return null;
+      if (!percepts.Any()) return null;
       List<Percept_<object>>? ret = null;
       foreach(var p in percepts) if (p.Percepted is _T_) (ret ?? (ret = new List<Percept_<object>>())).Add(p);
       return ret;

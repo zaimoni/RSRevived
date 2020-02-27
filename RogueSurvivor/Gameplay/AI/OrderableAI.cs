@@ -2826,12 +2826,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-    protected ActorAction BehaviorGoReviveCorpse(List<Percept> percepts)
+#nullable enable
+    protected ActorAction? BehaviorGoReviveCorpse(List<Percept>? percepts)
     {
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
-      var corpsePercepts = percepts.FilterT<List<Corpse>>()?.Filter(p =>
+      var corpsePercepts = percepts?.FilterT<List<Corpse>>()?.Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
           if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
@@ -2849,6 +2850,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
       return BehaviorHeadFor(percept.Location,false,false);
     }
+#nullable restore
 
 #region ground inventory stacks
     private List<Item> InterestingItems(IEnumerable<Item> Items)

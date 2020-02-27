@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-        protected List<Percept> FilterEnemies(List<Percept> percepts)
+    protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
       return percepts.FilterT<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
@@ -972,12 +972,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }
 
-    protected ActorAction BehaviorGoEatCorpse(List<Percept> percepts)
+#nullable enable
+    protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 	  if (!Session.Get.HasCorpses) return null;
       if (!m_Actor.CanEatCorpse()) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
-	  var corpsesPercepts = percepts.FilterT<List<Corpse>>();
+	  var corpsesPercepts = percepts?.FilterT<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
       Percept percept = FilterNearest(corpsesPercepts);
@@ -986,6 +987,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
       return BehaviorHeadFor(percept.Location,true,true);
     }
+#nullable restore
 
     /// <summary>
     /// Compute safety from a list of dangers at a given position.

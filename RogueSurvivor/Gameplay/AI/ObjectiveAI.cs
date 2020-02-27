@@ -3308,23 +3308,25 @@ restart_single_exit:
     {
       AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
-#nullable restore
 
-    private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept>? percepts)
     {
-      var goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
+      var goals = percepts?.FilterCast<Inventory>(inv => inv.Has<ItemTrap>());
       if (null == goals) return;
-      foreach(Percept p in goals) {
+      foreach(var p in goals) {
         if (p.Location==m_Actor.Location) continue; // trap has already triggered, or not: safe
         if (p.Location.Map!=m_Actor.Location.Map) continue; // XXX will be misrecorded
-        List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
-        if (null == tmp) continue;
+        var tmp = p.Percepted.GetItemsByType<ItemTrap>();
+#if DEBUG
+        if (null == tmp) throw new InvalidProgramException("inventory thought to have trap, didn't");
+#endif
         int damage = tmp.Sum(trap => ((trap.IsActivated && !trap.IsSafeFor(m_Actor)) ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
         if (0 >= damage) continue;
         if (damage_field.ContainsKey(p.Location.Position)) damage_field[p.Location.Position] += damage;
         else damage_field[p.Location.Position] = damage;
       }
     }
+#nullable restore
 #endregion
 
     public void Terminate(Actor a)
