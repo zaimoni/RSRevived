@@ -2831,7 +2831,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
-      var corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
+      var corpsePercepts = percepts.FilterT<List<Corpse>>()?.Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
           if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))

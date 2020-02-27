@@ -133,16 +133,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
-    protected List<Percept_<_T_>>? FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected List<Percept_<_T_>>? FilterCurrent<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      return percepts.Filter(p => p.Turn == turnCounter);
+      return percepts?.FilterCurrent(m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
     protected List<Percept_<_T_>>? FilterOld<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      return percepts.Filter(p => p.Turn < turnCounter);
+      return percepts.FilterOld(m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
     // GangAI's mugging target selection triggered a race condition

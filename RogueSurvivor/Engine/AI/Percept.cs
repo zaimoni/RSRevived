@@ -65,11 +65,27 @@ namespace djack.RogueSurvivor.Engine.AI
   internal static class ext_Percept
   {
 #nullable enable
-    internal static List<_T_>? Filter<_T_>(this IEnumerable<_T_>? percepts, Func<_T_,bool> predicateFn) where _T_:WhereWhen
+    internal static List<_T_>? Filter<_T_>(this IEnumerable<_T_> percepts, Func<_T_,bool> predicateFn) where _T_:WhereWhen
     {
-      if (null == percepts || !percepts.Any()) return null;
+      if (!percepts.Any()) return null;
       IEnumerable<_T_> tmp = percepts.Where(predicateFn);
       return tmp.Any() ? tmp.ToList() : null;
+    }
+
+    internal static List<_T_>? FilterCurrent<_T_>(this IEnumerable<_T_> percepts, int turn) where _T_:WhereWhen
+    {
+      if (!percepts.Any()) return null;
+      List<_T_>? ret = null;
+      foreach(var p in percepts) if (turn == p.Turn) (ret ?? (ret = new List<_T_>())).Add(p);
+      return ret;
+    }
+
+    internal static List<_T_>? FilterOld<_T_>(this IEnumerable<_T_> percepts, int turn) where _T_:WhereWhen
+    {
+      if (!percepts.Any()) return null;
+      List<_T_>? ret = null;
+      foreach(var p in percepts) if (turn > p.Turn) (ret ?? (ret = new List<_T_>())).Add(p);
+      return ret;
     }
 
 	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts) where _T_:class
