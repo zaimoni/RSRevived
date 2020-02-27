@@ -36,8 +36,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private Location m_prevLocation;
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
-    [NonSerialized] protected List<Percept> _all;           // cache variables of use to all AI subclasses
-    [NonSerialized] protected List<Percept> _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
+#nullable enable
+    [NonSerialized] protected List<Percept>? _all;           // cache variables of use to all AI subclasses
+    [NonSerialized] protected List<Percept>? _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
+#nullable restore
     [NonSerialized] private bool _processing;
 
     protected BaseAI()
@@ -224,10 +226,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+#nullable enable
     // firearms use grid i.e. L-infinity distance
-    protected List<Percept_<_T_>> SortByGridDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected List<Percept_<_T_>>? SortByGridDistance<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
-      if (0 >= (percepts?.Count ?? 0)) return null;
+      if (null == percepts || 0 >= percepts.Count) return null;
       if (1==percepts.Count) return percepts;
 
       List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
@@ -239,6 +242,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
       return perceptList;
     }
+#nullable restore
 
 #if DEAD_FUNC
     protected List<Percept> SortByDate(List<Percept> percepts)
