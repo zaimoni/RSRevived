@@ -7,6 +7,8 @@ by zaimoni
    --PC "name"
    --seed=[int]   
    --socrates-daimon
+   --spawn
+   --spawn-district
    --subway-cop
 
 2. Joining the thin blue line
@@ -49,6 +51,11 @@ S: Shambler
 Z: Zombie master
 
 For livings, the starting skill is requested as a string representation of the Skills.IDs enumeration, starting at the fourth character.
+
+--spawn-district=...
+Allows overriding the starting location of the default player character.  Best used with --seed=... and --socrates-daimon (to know where you want to start)
+
+usage is something like: --spawn-district=C2@10,6 , i.e. --spawn-district=[district]@[position] .  @[position] may be omitted; [district] is required
 
 --no-spawn
 

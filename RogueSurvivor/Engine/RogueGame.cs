@@ -12340,10 +12340,17 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
 
-      Map entryMap;
+      Map? entryMap = null;
       if (!Session.Get.CMDoptionExists("no-spawn")) {
-        int index = world.Size / 2;
-        entryMap = world[index, index].EntryMap;
+        if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
+          var x = Convert.ToInt32(district_spec[0]) - Convert.ToInt32('A'); // breaks down at 27 N-S extent
+          var y = Convert.ToInt32(district_spec[1]) - Convert.ToInt32('0'); // breaks down at 11 E-W extent
+          entryMap = world[x, y].EntryMap;
+        }
+        if (null == entryMap) {
+          int index = world.Size / 2;
+          entryMap = world[index, index].EntryMap;
+        }
         GeneratePlayerOnMap(entryMap);
       } else {
         if (0 >= world.PlayerCount) throw new InvalidOperationException("hard to start a game with zero PCs");
@@ -12478,6 +12485,28 @@ namespace djack.RogueSurvivor.Engine
         actor.CreateCivilianDeductFoodSleep();
       }
       actor.Controller = new PlayerController();
+      if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
+        var prune = district_spec.IndexOf('@');
+        if (-1 < prune) district_spec = district_spec.Substring(prune+1);
+        if (!string.IsNullOrEmpty(district_spec)) {
+          prune = district_spec.IndexOf(',');
+          if (-1 < prune) {
+            var x_src = district_spec.Substring(0, prune);
+            if (!string.IsNullOrEmpty(x_src)) {
+              var y_src = district_spec.Substring(prune+1);
+              if (!string.IsNullOrEmpty(y_src)) {
+                try {
+                  var x = Convert.ToInt16(x_src);
+                  var y = Convert.ToInt16(y_src);
+                  MapGenerator.ActorPlace(actor, new Location(map, new Point(x, y)));
+                  return;
+                } catch (Exception e) {}    // intentional no-op on failure
+              }
+            }
+          }
+        }
+      }
+
       if (   MapGenerator.ActorPlace(roller, map, actor, pt => {
                if (map.IsInsideAt(pt)) {
                  if (m_CharGen.IsUndead) return false;

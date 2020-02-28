@@ -179,6 +179,18 @@ namespace djack.RogueSurvivor.Engine
         Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
       return true;
     }
+
+    public static bool ActorPlace(Actor actor, Location dest)
+    {
+#if DEBUG
+      if (null == dest.Map) throw new ArgumentNullException(nameof(dest.Map));
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (!Map.Canonical(ref dest)) throw new InvalidOperationException("location cannot be made canonical");
+#endif
+      dest.Map.PlaceAt(actor, dest.Position);
+      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) Session.Get.PoliceThreatTracking.RecordTaint(actor, dest);
+      return true;
+    }
 #endregion
 
 #region Map Objects
