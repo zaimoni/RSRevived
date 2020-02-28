@@ -11205,7 +11205,7 @@ namespace djack.RogueSurvivor.Engine
         bool find_undead = false;
         bool find_blackops = false;
         bool find_police = Player.IsFaction(GameFactions.IDs.ThePolice);
-        if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
+        if (null != itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
           find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
           find_undead = itemTracker1.CanTrackUndeads;
@@ -11215,7 +11215,7 @@ namespace djack.RogueSurvivor.Engine
 
         // the police radio
         itemTracker1 = Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-        if (null != itemTracker1 && itemTracker1.IsUseless) {    // require batteries > 0
+        if (null != itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
           if (!find_followers) find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        if (!find_leader) find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
           if (!find_undead) find_undead = itemTracker1.CanTrackUndeads;
