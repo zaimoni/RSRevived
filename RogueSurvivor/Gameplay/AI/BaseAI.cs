@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.TargetActor = null;
       var actorAction = SelectAction(game);
 #if DEBUG
-      if (!(actorAction?.IsPerformable() ?? true)) throw new InvalidOperationException("illegal action returned from SelectAction");
+      if (null != actorAction && !actorAction.IsPerformable()) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ResetAICache();
       RecordLastAction(actorAction);
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
-      return actorAction ?? new ActionWait(m_Actor);    // likely redundant
+      return actorAction ?? new ActionWait(m_Actor);
     }
 
     /// <returns>non-null, action x for which x.IsPerformable() is true</returns>
