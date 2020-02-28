@@ -52,10 +52,10 @@ namespace djack.RogueSurvivor.Data
     public bool IsNotBlocked(out Actor? actorAt, out MapObject? mapObjectAt, Actor? actor=null) {   // \todo a couple of cold-path callers would like out vars for the actor and mapObjectAt failure modes
       mapObjectAt = null;
       actorAt = (null != actor) ? Location.Actor : null;
-      if (actorAt != null) return true; // string.Format("{0} is blocking your way.", actorAt.Name);
+      if (actorAt != null) return false; // string.Format("{0} is blocking your way.", actorAt.Name);
       mapObjectAt = Location.MapObject;
-      if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return true; // string.Format("{0} is blocking your way.", mapObjectAt.AName);
-      return false;
+      if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return false; // string.Format("{0} is blocking your way.", mapObjectAt.AName);
+      return true;
     }
 #nullable restore
 

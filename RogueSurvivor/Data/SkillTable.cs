@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <returns>sum of skill levels</returns>
-    public int GetSkills(Zaimoni.Data.Stack<Gameplay.Skills.IDs> dest)
+    public int GetSkills(ref Zaimoni.Data.Stack<Gameplay.Skills.IDs> dest)
     {
       if (null == m_Table) return 0;
       int ret = 0;

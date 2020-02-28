@@ -10464,7 +10464,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < skill_count) {
         var roller = Rules.Get.DiceRoller;
         var sks = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[skill_count]);
-        int n = skillTable.GetSkills(sks)/2;
+        int n = skillTable.GetSkills(ref sks)/2;
         while(0 < n--) {
           Skills.IDs? sk = roller.Choose(sks).Zombify();
           if (null != sk) actor.SkillUpgrade(sk.Value);
