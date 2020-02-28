@@ -3849,15 +3849,17 @@ restart_single_exit:
     {
       int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
       if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-      int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
-      if (null == best_rating) return 2;  // martial arts invalidates starting baton for police
+      var best = m_Actor.GetBestMeleeWeapon();
+      if (null == best) return 2;  // martial arts invalidates starting baton for police
+      int best_rating = m_Actor.MeleeWeaponAttack(best.Model).Rating;    // rely on OrderableAI doing the right thing
       if (best_rating < rating) return 2;
       if (best_rating > rating) return 1;
-      if (melee == m_Actor.GetBestMeleeWeapon()) return 2;
+      if (melee == best) return 2;
       int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
       if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
-        ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+        var worst = m_Actor.GetWorstMeleeWeapon();
+        int worst_rating = m_Actor.MeleeWeaponAttack(worst.Model).Rating;
         return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
       }
       return 1;
@@ -4857,9 +4859,10 @@ restart_single_exit:
       bool ret = _IsInterestingItem(it);
       int item_rating = ItemRatingCode(it);
       if (ret && 1>item_rating) throw new InvalidOperationException("interesting item thought to have no use");
-      if (!ret && 1<item_rating) {
+      if (!ret && 1<item_rating && !m_Actor.Inventory.Has(it.Model.ID)) {
         // check inventory for less-interesting item.  Force high visibility in debugger.
         foreach(Item obj in m_Actor.Inventory.Items) {
+          if (it.Model == obj.Model) continue;
           int test_rating = ItemRatingCode(obj);
           if (test_rating < item_rating) throw new InvalidOperationException("uninteresting item thought to have a clear use");
         }
