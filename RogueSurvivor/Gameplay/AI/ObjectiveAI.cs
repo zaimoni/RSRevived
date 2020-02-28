@@ -4887,9 +4887,9 @@ restart_single_exit:
       return IsInterestingItem(offeredItem);
     }
 
-    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, in Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
+    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
     {
-        if (!rws?.Any() ?? true) return;
+        if (null == rws || !rws.Any()) return;
 
         best_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
         reload_empty_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
@@ -4900,29 +4900,28 @@ restart_single_exit:
 
         foreach(var rw in rws) {
           // note that "better" ranged weapons taking the same ammo have larger clips
+          int am_type = (int)rw.AmmoType;
+          ItemRangedWeapon rw_am_type;
           if (0==rw.Ammo) {
-            if (null == reload_empty_rw[pt][(int)rw.AmmoType]) reload_empty_rw[pt][(int)rw.AmmoType] = rw;
-            else if (reload_empty_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) reload_empty_rw[pt][(int)rw.AmmoType] = rw;
-            if (null == discard_empty_rw[pt][(int)rw.AmmoType]) discard_empty_rw[pt][(int)rw.AmmoType] = rw;
-            else if (discard_empty_rw[pt][(int)rw.AmmoType].Model.MaxAmmo > rw.Model.MaxAmmo) discard_empty_rw[pt][(int)rw.AmmoType] = rw;
+            if (   null == (rw_am_type = reload_empty_rw[pt][am_type])
+                || rw_am_type.Model.MaxAmmo < rw.Model.MaxAmmo)
+              reload_empty_rw[pt][am_type] = rw;
+            if (   null == (rw_am_type = discard_empty_rw[pt][am_type])
+                || rw_am_type.Model.MaxAmmo > rw.Model.MaxAmmo)
+              discard_empty_rw[pt][am_type] = rw;
             keep_empty = true;
           }
           if (rw.Model.MaxAmmo > rw.Ammo) {
-            if (null == reload_rw[pt][(int)rw.AmmoType]) reload_rw[pt][(int)rw.AmmoType] = rw;
-            else if (reload_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) reload_rw[pt][(int)rw.AmmoType] = rw;
-            else if ((reload_rw[pt][(int)rw.AmmoType].Model.MaxAmmo - reload_rw[pt][(int)rw.AmmoType].Ammo) < (rw.Model.MaxAmmo-rw.Ammo)) reload_rw[pt][(int)rw.AmmoType] = rw;
+            if (    null == (rw_am_type = reload_rw[pt][am_type])
+                ||  rw_am_type.Model.MaxAmmo < rw.Model.MaxAmmo
+                || (rw_am_type.Model.MaxAmmo - rw_am_type.Ammo) < (rw.Model.MaxAmmo - rw.Ammo))
+              reload_rw[pt][am_type] = rw;
             keep_reload = true;
           }
-          if (null == best_rw[pt][(int)rw.AmmoType]) {
-            best_rw[pt][(int)rw.AmmoType] = rw;
-            continue;
-          }
-          if (best_rw[pt][(int)rw.AmmoType].Ammo < rw.Ammo) {
-            best_rw[pt][(int)rw.AmmoType] = rw;
-            continue;
-          }
-          if (best_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) {
-            best_rw[pt][(int)rw.AmmoType] = rw;
+          if (   null == (rw_am_type = best_rw[pt][am_type])
+              || rw_am_type.Ammo < rw.Ammo
+              || rw_am_type.Model.MaxAmmo < rw.Model.MaxAmmo) {
+            best_rw[pt][am_type] = rw;
             continue;
           }
         }
