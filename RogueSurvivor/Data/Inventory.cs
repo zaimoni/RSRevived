@@ -72,6 +72,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool AddAll(Item it)
     {
+#if DEBUG
+      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
+#endif
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
       if (null != itemsStackableWith) { // also have 0<stackedQuantity
         int quantity = stackedQuantity;
@@ -128,6 +131,7 @@ namespace djack.RogueSurvivor.Data
     public bool Transfer(Item it, Inventory dest) {
 #if DEBUG
       if (!Contains(it)) throw new InvalidOperationException("item not here");
+      if (dest.Contains(it)) throw new InvalidProgramException("item already there: "+it.ToString());
 #endif
       int quantity = it.Quantity;   // need initial value
       if (quantity != dest.AddAsMuchAsPossible(it)) return false;

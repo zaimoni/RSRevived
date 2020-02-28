@@ -8887,9 +8887,6 @@ namespace djack.RogueSurvivor.Engine
       if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);
 
-#if DEBUG
-      if (target.Inventory.Items.Intersect(actor.Inventory.Items).Any()) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + target.Name + "'s inventory: " + target.Inventory.ToString());
-#endif
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} to", VERB_GIVE.Conjugate(actor), gift.TheName), target));
     }
@@ -8901,9 +8898,6 @@ namespace djack.RogueSurvivor.Engine
       container.PutItemIn(gift);
       actor.Inventory.RemoveAllQuantity(gift);
 
-#if DEBUG
-      if (0< (container.Inventory?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + container.Inventory.ToString());
-#endif
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
     }

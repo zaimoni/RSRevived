@@ -1424,6 +1424,9 @@ retry:
       if (!GetTileModelAt(position).IsWalkable) throw new InvalidOperationException("tried to drop "+it+" on a wall at "+(new Location(this,position)));
 #endif
       var itemsAt = GetItemsAt(position);
+#if DEBUG
+      if (null != itemsAt && itemsAt.Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
+#endif
       if (itemsAt == null) {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
         m_GroundItemsByPosition.Add(position, inventory);
