@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsDusk { get { return IsStrikeOfHour(HOUR_SUNSET); } }
 
     /// <remark>only has to work for 0...23</remark>
-    static private bool is_night(int hour) { return 6 >= hour || 18 <= hour; }
+    static private bool is_night(int hour) { return 6 > hour || 18 <= hour; }
     /// <remark>only has to work for 0...23</remark>
     static private DayPhase phase(int hour) {
       switch(hour)
