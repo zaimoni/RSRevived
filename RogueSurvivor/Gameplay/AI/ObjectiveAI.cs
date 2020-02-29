@@ -1639,24 +1639,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
-	  if (null != threats || null != sights_to_see) want_LOS_heuristics = true;
+      Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      HashSet<Point>? new_los = null;
 
-	  var hypothetical_los = (want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>>() : null);
-      var new_los = new HashSet<Point>();
-	  if (null != hypothetical_los) {
+      if (null != threats || null != sights_to_see) {
+        hypothetical_los = new Dictionary<Point, HashSet<Point>>();
+        new_los = new HashSet<Point>();
 	    // only need points newly in FOV that aren't currently
 	    foreach(Point pt in tmp) {
 	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
 	    }
-	  }
-      // only need to check if new locations seen
-      if (0 >= new_los.Count) {
-        threats = null;
-        sights_to_see = null;
+        // only need to check if new locations seen
+        if (0 >= new_los.Count) {
+          threats = null;
+          sights_to_see = null;
+        }
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
@@ -1849,14 +1849,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
-	  if (null != threats || null != sights_to_see) want_LOS_heuristics = true;
+	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      HashSet<Point>? new_los = null;
 
-	  var hypothetical_los = want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>>() : null;
-      var new_los = new HashSet<Point>();
-	  if (null != hypothetical_los) {
+      if (null != threats || null != sights_to_see) {
+	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        new_los = new HashSet<Point>();
+
 	    // only need points newly in FOV that aren't currently
 	    foreach(var x in tmp) {
           if (!legal_steps.ContainsKey(x)) continue;
@@ -1866,11 +1867,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
 	    }
-	  }
-      // only need to check if new locations seen
-      if (0 >= new_los.Count) {
-        threats = null;
-        sights_to_see = null;
+
+        // only need to check if new locations seen
+        if (0 >= new_los.Count) {
+          threats = null;
+          sights_to_see = null;
+        }
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
@@ -1917,14 +1919,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
-	  if (null != threats || null != sights_to_see) want_LOS_heuristics = true;
+	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      HashSet<Point>? new_los = null;
 
-	  var hypothetical_los = want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>>() : null;
-      var new_los = new HashSet<Point>();
-	  if (null != hypothetical_los) {
+      if (null != threats || null != sights_to_see) {
+	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        new_los = new HashSet<Point>();
+
 	    // only need points newly in FOV that aren't currently
 	    foreach(var x in src) {
           if (x.Value is ActionUseExit) continue;
@@ -1933,11 +1936,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
 	    }
-	  }
-      // only need to check if new locations seen
-      if (0 >= new_los.Count) {
-        threats = null;
-        sights_to_see = null;
+
+        // only need to check if new locations seen
+        if (0 >= new_los.Count) {
+          threats = null;
+          sights_to_see = null;
+        }
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
@@ -2038,24 +2042,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
-	  if (null != threats || null != sights_to_see) want_LOS_heuristics = true;
+	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      HashSet<Point>? new_los = null;
 
-	  var hypothetical_los = want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>>() : null;
-      var new_los = new HashSet<Point>();
-	  if (null != hypothetical_los) {
+      if (null != threats || null != sights_to_see) {
+  	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        new_los = new HashSet<Point>();
+
 	    // only need points newly in FOV that aren't currently
 	    foreach(Point pt in tmp2) {
 	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
 	    }
-	  }
-      // only need to check if new locations seen
-      if (0 >= new_los.Count) {
-        threats = null;
-        sights_to_see = null;
+        // only need to check if new locations seen
+        if (0 >= new_los.Count) {
+          threats = null;
+          sights_to_see = null;
+        }
       }
 
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 2;
