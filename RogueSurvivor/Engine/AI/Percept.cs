@@ -104,6 +104,23 @@ namespace djack.RogueSurvivor.Engine.AI
       return ret;
 	}
 
+	internal static bool AnyT<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
+	{
+      if (null == percepts || !percepts.Any()) return false;
+      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) return true;
+      return false;
+	}
+
+#if DEAD_FUNC
+	internal static Zaimoni.Data.Stack<_T_> ToZStack<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
+	{
+      if (null == percepts || !percepts.Any()) throw new ArgumentNullException(nameof(percepts));
+      var ret = new Zaimoni.Data.Stack<_T_>(new _T_[percepts.Count()]);
+      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) ret.push(test);
+      return ret;
+	}
+#endif
+
     // for completeness
 	internal static List<Percept_<_T_>>? FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn) where _T_:class
 	{

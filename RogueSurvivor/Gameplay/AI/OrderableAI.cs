@@ -1350,7 +1350,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == en_in_range && null != _legal_steps) {
         List<Percept> percepts2 = FilterPossibleFireTargets(_enemies);
 		if (null != percepts2) {
-		  IEnumerable<Point> tmp = _legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
+		  IEnumerable<Point> tmp = _legal_steps.Where(p=>AnyContrafactualFireTargets(percepts2,p));
 		  if (tmp.Any()) {
 	        tmpAction = DecideMove(tmp);
             if (null != tmpAction) {

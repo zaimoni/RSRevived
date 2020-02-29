@@ -302,8 +302,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void OnRaid(RaidType raid, in Location loc)
     {
-      if (m_Actor.IsSleeping) return;
-      _onRaid(raid, loc);
+      if (!m_Actor.IsSleeping) _onRaid(raid, loc);
     }
 
     protected abstract void _onRaid(RaidType raid, in Location loc);
@@ -1048,21 +1047,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return "BASTARD! TRAITOR!";
     }
 
-    protected ActorAction BehaviorFleeExplosives()
+#nullable enable
+    protected ActorAction? BehaviorFleeExplosives()
     {
       if (!(_blast_field?.Contains(m_Actor.Location.Position) ?? false)) return null;
-      ActorAction ret = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
+      ActorAction? ret = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((null != _retreat) ? DecideMove(_retreat) : null));
       if (null != ret) {
         if (ret is ActionMoveStep) m_Actor.Run();
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
       }
       return ret;
     }
+#nullable restore
 
-    protected ActorAction BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
+    protected ActorAction? BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
     {
       if (en.HitPoints>tmp_attack.DamageValue/2) return null;
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       // can one-shot
       if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
         tmpAction = BehaviorMeleeAttack(en);
@@ -1144,8 +1145,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
       var rw = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
-      if (null == rw) return null;  // XXX likely error condition
-      if (0 >= rw.Ammo) return null;    // XXX likely error condition
+      if (   null == rw  // XXX likely error condition
+          || 0 >= rw.Ammo)  // XXX likely error condition
+        return null;
 
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
@@ -1163,25 +1165,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Get ETA stats
       var best_weapon_ETAs = new Dictionary<Actor,int>();
       foreach(Percept p in en_in_range) {
-        Actor a = p.Percepted as Actor;
-        ETAToKill(a,Rules.InteractionDistance(m_Actor.Location,p.Location), rw, best_weapon_ETAs);
+        ETAToKill(p.Percepted as Actor, Rules.InteractionDistance(m_Actor.Location,p.Location), rw, best_weapon_ETAs);
       }
 
       // at this point: there definitely is more than one enemy in range
       // if there are any immediate threat, there are at least two immediate threat
       if (2 <= immediate_threat_in_range.Count) {
-        int ETA_min = immediate_threat_in_range.Select(a => best_weapon_ETAs[a]).Min();
+        int ETA_min = immediate_threat_in_range.Min(a => best_weapon_ETAs[a]);
         immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => best_weapon_ETAs[a] == ETA_min));
         if (2 <= immediate_threat_in_range.Count) {
-          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
+          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Max(a => a.HitPoints) : immediate_threat_in_range.Min(a => a.HitPoints));
           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
           if (2 <= immediate_threat_in_range.Count) {
-           int dist_min = immediate_threat_in_range.Select(a => Rules.InteractionDistance(m_Actor.Location,a.Location)).Min();
+           int dist_min = immediate_threat_in_range.Min(a => Rules.InteractionDistance(m_Actor.Location, a.Location));
            immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min));
           }
         }
-        Actor actor = immediate_threat_in_range.First();
-        return BehaviorRangedAttack(actor);
+        return BehaviorRangedAttack(immediate_threat_in_range.First());
       }
       // at this point, no immediate threat in range
       {
@@ -1197,8 +1197,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
             }
           }
-          Actor actor = en_in_range.First().Percepted as Actor;
-          return BehaviorRangedAttack(actor);
+          return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
         }
       }
 
@@ -1210,8 +1209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
           en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
         }
-        Actor actor = en_in_range.First().Percepted as Actor;
-        return BehaviorRangedAttack(actor);
+        return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
       }
     }
 

@@ -83,12 +83,11 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool IsSafeFor(Actor a)  // alpha10 was Actor::IsSafeFrom
     {
-      if (null != m_Known && m_Known.Contains(a)) return true;
+      if (m_Known?.Contains(a) ?? false) return true;
       if (null != m_Owner) {
         if (a == m_Owner) return true;
         if (a.IsInGroupWith(m_Owner)) { // XXX telepathy
-          var test = (m_Known ?? (m_Known = new List<Actor>()));
-          if (!test.Contains(a)) test.Add(a);
+          (m_Known ?? (m_Known = new List<Actor>())).Add(a);
           return true;
         }
       }

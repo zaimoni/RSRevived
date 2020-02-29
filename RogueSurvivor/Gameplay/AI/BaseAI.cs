@@ -202,9 +202,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.FilterT<Actor>(target => m_Actor.CouldFireAt(target));
     }
 
-    protected List<Percept>? FilterContrafactualFireTargets(List<Percept> percepts, Point p)
+    protected bool AnyContrafactualFireTargets(List<Percept> percepts, Point p)
     {
-      return percepts.FilterT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
+      return percepts.AnyT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 #nullable restore
 
