@@ -193,8 +193,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected List<Actor> _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
     [NonSerialized] protected HashSet<Point> _blast_field = null;
-    [NonSerialized] protected List<Point> _retreat = null;
-    [NonSerialized] protected List<Point> _run_retreat = null;
+#nullable enable
+    [NonSerialized] protected List<Point>? _retreat = null;
+    [NonSerialized] protected List<Point>? _run_retreat = null;
+#nullable restore
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
     [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest and actually put in the savefile
@@ -1252,9 +1254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries<burn_time;
     }
 
-    public bool WantToRecharge() {
-      return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
-    }
+    public bool WantToRecharge() { return m_Actor.Inventory.Has<ItemLight>(it => WantToRecharge(it)); }
 
 #nullable enable
     public ActionRechargeItemBattery? RechargeWithAdjacentGenerator()
@@ -1375,7 +1375,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void ClearMovePlan() { PlannedMoves.Clear(); }
 
-    private List<Point> FindRetreat()
+#nullable restore
+    private List<Point>? FindRetreat()
     {
 #if DEBUG
       if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
@@ -1388,7 +1389,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
 
-    private List<Point> FindRunRetreat()
+    private List<Point>? FindRunRetreat()
     {
 #if DEBUG
       if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
@@ -1403,6 +1404,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmp_point = ret.Where(pt=> _damage_field[pt] < _damage_field[m_Actor.Location.Position]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
+#nullable restore
 
 #region DecideMove
     static private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
