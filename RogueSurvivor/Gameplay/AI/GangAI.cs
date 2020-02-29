@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Location!=PrevLocation) m_Exploration.Update(m_Actor.Location);
       InitAICache(_all);
 
-      List<Percept> old_enemies = FilterEnemies(_all);
+      var old_enemies = FilterEnemies(_all);
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 

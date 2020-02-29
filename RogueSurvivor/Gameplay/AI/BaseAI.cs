@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
 #nullable enable
     [NonSerialized] protected List<Percept>? _all;           // cache variables of use to all AI subclasses
-    [NonSerialized] protected List<Percept>? _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
+    [NonSerialized] protected List<Percept_<Actor>>? _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
 #nullable restore
     [NonSerialized] private bool _processing;
 
@@ -122,9 +122,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected List<Percept> FilterEnemies(List<Percept> percepts)
+    protected List<Percept_<Actor>> FilterEnemies(List<Percept>? percepts)
     {
-      return percepts.FilterT<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
+      return percepts?.FilterCast<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
 
     protected List<Percept_<Actor>> FilterNonEnemies(List<Percept>? percepts)
@@ -192,19 +192,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
 #nullable enable
-    protected List<Percept>? FilterFireTargets(List<Percept>? percepts, int range)
+    protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)
     {
-      return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target,range));
+      return percepts.Filter(target => m_Actor.CanFireAt(target,range));
     }
 
-    protected List<Percept>? FilterPossibleFireTargets(List<Percept>? percepts)
+    protected List<Percept_<Actor>>? FilterPossibleFireTargets(List<Percept_<Actor>>? percepts)
     {
-      return percepts.FilterT<Actor>(target => m_Actor.CouldFireAt(target));
+      return percepts.Filter(target => m_Actor.CouldFireAt(target));
     }
 
-    protected bool AnyContrafactualFireTargets(List<Percept> percepts, Point p)
+    protected bool AnyContrafactualFireTargets(List<Percept_<Actor>> percepts, Point p)
     {
-      return percepts.AnyT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
+      return percepts.Any(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 #nullable restore
 
@@ -477,14 +477,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // A number of the melee enemy targeting sequences not only work on grid distance,
     // they need to return a coordinated action/target pair.
     // We assume the list is sorted in increasing order of grid distance
-    protected ActorAction? TargetGridMelee(List<Percept>? perceptList)
+    protected ActorAction? TargetGridMelee(List<Percept_<Actor>>? perceptList)
     {
       if (null == perceptList) return null; // inefficient, but reduces lines of code elsewhere
-      foreach (Percept percept in perceptList) {
+      foreach (var percept in perceptList) {
         var tmp = BehaviorStupidBumpToward(percept.Location, true, true);
         if (null != tmp) {
           m_Actor.Activity = Activity.CHASING;
-          m_Actor.TargetActor = percept.Percepted as Actor;
+          m_Actor.TargetActor = percept.Percepted;
           return tmp;
         }
       }
@@ -808,9 +808,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected virtual ActorAction BehaviorChargeEnemy(Percept target, bool canCheckBreak, bool canCheckPush)
+    protected virtual ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
-      Actor actor = target.Percepted as Actor;
+      Actor actor = target.Percepted;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
       // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
       try {
@@ -835,9 +835,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorFightOrFlee(RogueGame game, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
-      Percept target = FilterNearest(_enemies);
+      var target = FilterNearest(_enemies);
       bool doRun = false;	// only matters when fleeing
-      Actor enemy = target.Percepted as Actor;
+      Actor enemy = target.Percepted;
       bool decideToFlee;
       if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))

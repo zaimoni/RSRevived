@@ -72,6 +72,14 @@ namespace djack.RogueSurvivor.Engine.AI
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    internal static List<Percept_<_T_>>? Filter<_T_>(this IEnumerable<Percept_<_T_>> percepts, Func<_T_,bool> test) where _T_:class
+    {
+      if (!percepts.Any()) return null;
+      List<Percept_<_T_>>? ret = null;
+      foreach(var p in percepts) if (test(p.Percepted)) (ret ?? (ret = new List<Percept_<_T_>>())).Add(p);
+      return ret;
+    }
+
     internal static List<_T_>? FilterCurrent<_T_>(this IEnumerable<_T_> percepts, int turn) where _T_:WhereWhen
     {
       if (!percepts.Any()) return null;
@@ -104,10 +112,10 @@ namespace djack.RogueSurvivor.Engine.AI
       return ret;
 	}
 
-	internal static bool AnyT<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
+	internal static bool Any<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Predicate<_T_> fn) where _T_:class
 	{
       if (null == percepts || !percepts.Any()) return false;
-      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) return true;
+      foreach(var p in percepts) if (fn(p.Percepted)) return true;
       return false;
 	}
 

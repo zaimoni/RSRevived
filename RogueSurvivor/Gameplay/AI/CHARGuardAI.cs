@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       InitAICache(_all);
 
-      List<Percept> old_enemies = FilterEnemies(_all);
+      var old_enemies = FilterEnemies(_all);
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 
@@ -225,10 +225,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (old_enemies != null) {
-        Percept target = FilterNearest(old_enemies);
+        var target = FilterNearest(old_enemies);
         if (m_Actor.Location == target.Location) {
-          Actor actor = target.Percepted as Actor;
-          target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
+          Actor actor = target.Percepted;
+          target = new Percept_<Actor>(actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);  // XXX inerrant tracking \todo fix
         }
         if (CanReachSimple(target.Location, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP)) {
           tmpAction = BehaviorChargeEnemy(target,false,false);

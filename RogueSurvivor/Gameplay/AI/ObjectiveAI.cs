@@ -1119,9 +1119,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // something adjacent...check for one-shotting
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
-            foreach(Percept p in _enemies) {
+            foreach(var p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted as Actor;
+              Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
@@ -1129,9 +1129,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
             }
           } else { // also check for no-weapon one-shotting
-            foreach(Percept p in _enemies) {
+            foreach(var p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted as Actor;
+              Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
@@ -1164,8 +1164,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // Get ETA stats
       var best_weapon_ETAs = new Dictionary<Actor,int>();
-      foreach(Percept p in en_in_range) {
-        ETAToKill(p.Percepted as Actor, Rules.InteractionDistance(m_Actor.Location,p.Location), rw, best_weapon_ETAs);
+      foreach(var p in en_in_range) {
+        ETAToKill(p.Percepted, Rules.InteractionDistance(m_Actor.Location,p.Location), rw, best_weapon_ETAs);
       }
 
       // at this point: there definitely is more than one enemy in range
@@ -1188,13 +1188,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
         if (2==ETA_min) {
           // snipe something
-          en_in_range = new List<Percept>(en_in_range.Where(p => ETA_min == best_weapon_ETAs[p.Percepted as Actor]));
+          en_in_range = en_in_range.Filter(a => ETA_min == best_weapon_ETAs[a]);
           if (2<=en_in_range.Count) {
             int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
-            en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
+            en_in_range = en_in_range.Filter(a => a.HitPoints == HP_max);
             if (2<=en_in_range.Count) {
              int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
-             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+             en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
           return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
@@ -1204,10 +1204,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // just deal with something close
       {
         int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
-        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+        en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
         if (2<=en_in_range.Count) {
           int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
-          en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
+          en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
         return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
       }

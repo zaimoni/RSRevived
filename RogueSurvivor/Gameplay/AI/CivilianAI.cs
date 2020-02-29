@@ -401,7 +401,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           && !m_Actor.Model.Abilities.IsLawEnforcer
           && (m_Actor.IsHungry
           && !m_Actor.Has<ItemFood>())) {
-        var target = FilterNearest(current.FilterT<Actor>(a =>
+        var target = FilterNearest(current.FilterCast<Actor>(a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;

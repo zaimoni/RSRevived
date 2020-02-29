@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
-      List<Percept> old_enemies = FilterEnemies(_all);
+      var old_enemies = FilterEnemies(_all);
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe

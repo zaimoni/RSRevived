@@ -748,7 +748,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorDirective m_Directive;
     private ActorOrder m_Order;
-    protected Percept m_LastEnemySaw;
+    protected Percept_<Actor> m_LastEnemySaw;
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
     protected Percept m_LastRaidHeard;
@@ -858,56 +858,57 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteGuard(Location location, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(percepts);
+      var enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
-        Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
+        Actor actor = FilterNearest(enemies).Percepted;
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", actor.Name));
       }
 
+      ActorAction? tmpAction;
       if (m_Actor.Location.Position != location.Position) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(in location, false, false);
-        if (actorAction3 != null) {
+        tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
+          return tmpAction;
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction3 = BehaviorEat();
-        if (actorAction3 != null) return actorAction3;
+        tmpAction = BehaviorEat();
+        if (null != tmpAction) return tmpAction;
       }
 
-      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (actorAction4 != null) return actorAction4;
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
 
       return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecutePatrol(Location location, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(percepts);
+      var enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
-        Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
+        Actor actor = FilterNearest(enemies).Percepted;
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", actor.Name));
       }
-      if (!m_ReachedPatrolPoint)
-        m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
+      if (!m_ReachedPatrolPoint) m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
+      ActorAction? tmpAction;
       if (!m_ReachedPatrolPoint) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(in location, false, false);
-        if (actorAction3 != null) {
+        tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
+          return tmpAction;
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction3 = BehaviorEat();
-        if (actorAction3 != null) return actorAction3;
+        tmpAction = BehaviorEat();
+        if (null != tmpAction) return tmpAction;
       }
 
-      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (actorAction4 != null) return actorAction4;
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
 
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position);
       return BehaviorWander(null, loc =>
@@ -941,10 +942,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(percepts);
+      var enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
-        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (FilterNearest(enemies).Percepted as Actor).Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", FilterNearest(enemies).Percepted.Name));
       }
       string text;
       switch (m_ReportStage)
@@ -973,17 +974,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(percepts);
+      var enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
-        Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
+        Actor actor = FilterNearest(enemies).Percepted;
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", actor.Name));
       }
       if (m_Actor.CanSleep(out string reason)) {
         return (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0 ? (ActorAction)(new ActionSleep(m_Actor)) : new ActionWait(m_Actor));
       }
       SetOrder(null);
-      game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", (object) reason));
+      game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", reason));
       return new ActionWait(m_Actor);
     }
 
@@ -1067,7 +1068,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
-    private void MaximizeRangedTargets(List<Point> dests, List<Percept> enemies)
+    private void MaximizeRangedTargets(List<Point> dests, List<Percept_<Actor>> enemies)
     {
       if (null == dests || 2>dests.Count) return;
 
@@ -1230,12 +1231,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    private HashSet<Location> GetRangedAttackFromZone(List<Percept> enemies)   // XXX does not handle firing through exits
+    // want to be able to use this contrafactually
+    private HashSet<Location> GetRangedAttackFromZone(List<Percept_<Actor>> enemies)   // XXX does not handle firing through exits
     {
       var ret = new HashSet<Location>();
       var danger = new HashSet<Location>();
-      foreach(Percept en in enemies) {
-        if (null!=((en.Percepted as Actor).Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) continue;
+      foreach(var en in enemies) {
+        if (null!=(en.Percepted.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) continue;
         foreach(var pt in en.Location.Position.Adjacent()) {
           var test = new Location(en.Location.Map,pt);
           if (Map.Canonical(ref test)) danger.Add(test);
@@ -1243,7 +1245,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       var range = m_Actor.CurrentRangedAttack.Range;
       var optimal_FOV = LOS.OptimalFOV(range);
-      foreach(Percept en in enemies) {
+      foreach(var en in enemies) {
         foreach(var p in optimal_FOV) {
           var pt = p + en.Location.Position;
           var test = new Location(en.Location.Map,pt);
@@ -1291,9 +1293,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // something adjacent...check for one-shotting
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
-            foreach(Percept p in _enemies) {
+            foreach(var p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted as Actor;
+              Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
@@ -1301,9 +1303,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
             }
           } else { // also check for no-weapon one-shotting
-            foreach(Percept p in _enemies) {
+            foreach(var p in _enemies) {
               if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted as Actor;
+              Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
@@ -1348,7 +1350,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (null == en_in_range && null != _legal_steps) {
-        List<Percept> percepts2 = FilterPossibleFireTargets(_enemies);
+        var percepts2 = FilterPossibleFireTargets(_enemies);
 		if (null != percepts2) {
 		  IEnumerable<Point> tmp = _legal_steps.Where(p=>AnyContrafactualFireTargets(percepts2,p));
 		  if (tmp.Any()) {
@@ -1427,7 +1429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (1 == available_ranged_weapons.Count) {
         if (1 == en_in_range.Count) {
-          return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
+          return BehaviorRangedAttack(en_in_range[0].Percepted);
         } else if (1 == immediate_threat_in_range.Count) {
           return BehaviorRangedAttack(immediate_threat_in_range.First());
         }
@@ -1437,8 +1439,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var best_weapon_ETAs = new Dictionary<Actor,int>();
       var best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
       if (1<available_ranged_weapons.Count) {
-        foreach(Percept p in en_in_range) {
-          Actor a = p.Percepted as Actor;
+        foreach(var p in en_in_range) {
+          Actor a = p.Percepted;
           int range = Rules.InteractionDistance(m_Actor.Location, p.Location);
           foreach(ItemRangedWeapon rw in available_ranged_weapons) {
             if (range > rw.Model.Attack.Range) continue;
@@ -1446,15 +1448,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       } else {
-        foreach(Percept p in en_in_range) {
-          Actor a = p.Percepted as Actor;
+        foreach(var p in en_in_range) {
+          Actor a = p.Percepted;
           ETAToKill(a,Rules.InteractionDistance(m_Actor.Location,p.Location), available_ranged_weapons[0], best_weapon_ETAs);
         }
       }
 
       // cf above: we got here because there were multiple ranged weapons to choose from in these cases
       if (1 == en_in_range.Count) {
-        Actor a = en_in_range[0].Percepted as Actor;
+        Actor a = en_in_range[0].Percepted;
         return Equip(best_weapons[a]) ?? BehaviorRangedAttack(a);
       } else if (1 == immediate_threat_in_range.Count) {
         Actor a = immediate_threat_in_range.First();
@@ -1485,13 +1487,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
         if (2==ETA_min) {
           // snipe something
-          en_in_range = new List<Percept>(en_in_range.Where(p => ETA_min == best_weapon_ETAs[p.Percepted as Actor]));
+          en_in_range = en_in_range.Filter(a => ETA_min == best_weapon_ETAs[a]);
           if (2<=en_in_range.Count) {
-            int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
-            en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
+            int HP_max = en_in_range.Max(p => p.Percepted.HitPoints);
+            en_in_range = en_in_range.Filter(a => a.HitPoints == HP_max);
             if (2<=en_in_range.Count) {
              int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
-             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+             en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
           Actor actor = en_in_range.First().Percepted as Actor;
@@ -1506,10 +1508,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // just deal with something close
       {
         int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
-        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min));
+        en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
         if (2<=en_in_range.Count) {
-          int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
-          en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
+          int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
+          en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
         Actor actor = en_in_range.First().Percepted as Actor;
         if (1 < available_ranged_weapons.Count) {
@@ -1695,7 +1697,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else throw new InvalidOperationException("unhandled percept.Percepted type");
     }
 
+    protected string DescribePercept(Percept_<Actor> percept, Actor audience)
+    {
+      if (null == percept) return null;
+      string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
+      string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+      return string.Format("I saw {0} {1} {2}.", percept.Percepted.Name, str1, str2);
+    }
+
     protected ActorAction BehaviorTellFriendAboutPercept(Percept percept, int chance)
+    {
+      var scan_friends = friends_in_FOV;
+      if (null == scan_friends) return null;
+      if (null == _adjacent_friends) {
+        _adjacent_friends = new List<Actor>();
+        foreach(var x in scan_friends) {
+          if (!(x.Value.Controller is ObjectiveAI ai)) continue;
+          if (   1 >= Rules.InteractionDistance(m_Actor.Location,x.Key)
+              && !x.Value.IsSleeping
+              && !ai.IsEngaged)   // RS Revived: don't chat to a combatant
+            _adjacent_friends.Add(x.Value);
+        }
+      }
+      if (0 >= _adjacent_friends.Count) return null;
+      var rules = Rules.Get;
+      if (!rules.RollChance(chance)) return null;
+      Actor actorAt1 = rules.DiceRoller.Choose(_adjacent_friends);
+      string text = DescribePercept(percept, actorAt1);
+      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
+    }
+
+    protected ActorAction BehaviorTellFriendAboutPercept(Percept_<Actor> percept, int chance)
     {
       var scan_friends = friends_in_FOV;
       if (null == scan_friends) return null;
@@ -1835,9 +1867,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
 
-    protected override ActorAction BehaviorChargeEnemy(Percept target, bool canCheckBreak, bool canCheckPush)
+    protected override ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
-      Actor actor = target.Percepted as Actor;
+      Actor actor = target.Percepted;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
       // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
       try {
@@ -2039,8 +2071,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
-      Percept target = FilterNearest(_enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
-      Actor enemy = target.Percepted as Actor;
+      var target = FilterNearest(_enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
+      Actor enemy = target.Percepted;
       Location e_loc = enemy.Location;
 
       bool doRun = false;	// only matters when fleeing
@@ -2092,7 +2124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      List<Percept> approachable_enemies = _enemies.FindAll(p => Rules.IsAdjacent(m_Actor.Location, p.Location));
+      var approachable_enemies = _enemies.FindAll(p => Rules.IsAdjacent(m_Actor.Location, p.Location));
 
       if (0 >= approachable_enemies.Count) {
         if (null != legal_steps) {
