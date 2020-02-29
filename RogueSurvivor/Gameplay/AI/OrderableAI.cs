@@ -1749,7 +1749,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorEfficientlyHeadFor(want_to_resolve);
     }
 
-    protected ActionShout BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
+    protected ActionShout BehaviorWarnFriends(List<Percept_<Actor>> friends, Actor nearestEnemy)
     {
 #if DEBUG
       if (null == nearestEnemy) throw new ArgumentNullException(nameof(nearestEnemy));
@@ -1760,8 +1760,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       };
 
       if (m_Actor.HasLeader && need_waking(m_Actor.Leader)) return new ActionShout(m_Actor);
-      foreach (Percept friend in friends) {
-        if (!(friend.Percepted is Actor actor)) throw new ArgumentException("percept not an actor");
+      foreach (var friend in friends) {
+        var actor = friend.Percepted;
         if (actor != m_Actor && need_waking(actor) && !m_Actor.IsEnemyOf(actor) && actor.IsEnemyOf(nearestEnemy)) {
           return new ActionShout(m_Actor, string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name));
         }
@@ -1792,9 +1792,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathToAdjacent(target.Location);
     }
 
-    protected ActorAction? BehaviorLeadActor(Percept target)
+    protected ActorAction? BehaviorLeadActor(Percept_<Actor> target)
     {
-      Actor target1 = target.Percepted as Actor;
+      Actor target1 = target.Percepted;
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
       // need an after-action "hint" to the target on where/who to go to

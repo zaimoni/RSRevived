@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // all free actions have to be before targeting enemies
 
-	  List<Percept> friends = FilterNonEnemies(_all);
+	  var friends = FilterNonEnemies(_all);
       if (null != _enemies) {
         if (null != friends && Rules.Get.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
@@ -280,13 +280,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
-        var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
+        var want_leader = friends?.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
         FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
-            m_Actor.TargetActor = target.Percepted as Actor;
+            m_Actor.TargetActor = target.Percepted;
             return tmpAction;
           }
         }

@@ -127,9 +127,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.FilterT<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
 
-    protected List<Percept> FilterNonEnemies(List<Percept> percepts)
+    protected List<Percept_<Actor>> FilterNonEnemies(List<Percept>? percepts)
     {
-      return percepts.FilterT<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
+      return percepts?.FilterCast<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
     }
 
 #nullable enable
@@ -1283,7 +1283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
        return m_RouteFinder.CanReachSimple(RogueForm.Game, in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 
-    protected void FilterOutUnreachablePercepts(ref List<Percept> percepts, RouteFinder.SpecialActions allowedActions)
+    protected void FilterOutUnreachablePercepts<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:WhereWhen
     {
       if (null == percepts) return;
       int i = percepts.Count;

@@ -178,22 +178,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       // Secure CHAR property
-	  List<Percept> friends = FilterNonEnemies(_all);
+	  var friends = FilterNonEnemies(_all);
       if (null != friends) {
-        var percepts3 = friends.Filter(p =>
+        var percepts3 = friends?.Filter(p =>
         {
-          Actor actor = p.Percepted as Actor;
+          Actor actor = p.Percepted;
           return !actor.IsFaction(GameFactions.IDs.TheCHARCorporation) && RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
         });
         if (percepts3 != null) {
-          Actor target = FilterNearest(percepts3).Percepted as Actor;
+          Actor target = FilterNearest(percepts3).Percepted;
           // Now that we can get crowds of civilians, they should react to seeing others betrayed
           // also note that the CHAR armor comes with an inbuilt CHAR radio (they invented the hyper-efficient radios the police and army use)
           // however, CHAR guards are on zone defense so the immediate aggression is just the current CHAR office (underground base is whole base, however)
           Aggress(target);
           // betrayal reaction
           foreach(var witness in percepts3) {
-            Actor a = witness.Percepted as Actor;
+            Actor a = witness.Percepted;
             if (a == target) continue;
             if (a.IsSleeping) continue;
             // XXX cheat...assume symmetric visibility
@@ -283,13 +283,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         // XXX \todo CHAR Guard leading civilian would get ugly quickly; either disallow, or ignore trespassing when CHAR guard is leader
-        var want_leader = friends.FilterT<Actor>(a => m_Actor.CanTakeLeadOf(a));
+        var want_leader = friends.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
         FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
-            m_Actor.TargetActor = target.Percepted as Actor;
+            m_Actor.TargetActor = target.Percepted;
             return tmpAction;
           }
         }
