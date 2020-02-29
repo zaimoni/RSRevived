@@ -1424,14 +1424,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == en_in_range) return null; // no enemies in range, no constructive action: do something else
 
       // filter immediate threat by being in range
-      var immediate_threat_in_range = (null!=_immediate_threat ? new HashSet<Actor>(_immediate_threat) : new HashSet<Actor>());
-      if (null != _immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
+      Zaimoni.Data.Stack<Actor> immediate_threat_in_range = default;
+      if (null != _immediate_threat) immediate_threat_in_range = en_in_range.Select(p => p.Percepted).ToZStack(a => _immediate_threat.Contains(a));
 
       if (1 == available_ranged_weapons.Count) {
         if (1 == en_in_range.Count) {
           return BehaviorRangedAttack(en_in_range[0].Percepted);
         } else if (1 == immediate_threat_in_range.Count) {
-          return BehaviorRangedAttack(immediate_threat_in_range.First());
+          return BehaviorRangedAttack(immediate_threat_in_range[0]);
         }
       }
 
@@ -1459,23 +1459,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor a = en_in_range[0].Percepted;
         return Equip(best_weapons[a]) ?? BehaviorRangedAttack(a);
       } else if (1 == immediate_threat_in_range.Count) {
-        Actor a = immediate_threat_in_range.First();
+        Actor a = immediate_threat_in_range[0];
         return Equip(best_weapons[a]) ?? BehaviorRangedAttack(a);
       }
       // at this point: there definitely is more than one enemy in range
       // if there are any immediate threat, there are at least two immediate threat
       if (2 <= immediate_threat_in_range.Count) {
-        int ETA_min = immediate_threat_in_range.Select(a => best_weapon_ETAs[a]).Min();
-        immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => best_weapon_ETAs[a] == ETA_min));
+        int ETA_min = immediate_threat_in_range.Min(a => best_weapon_ETAs[a]);
+        immediate_threat_in_range.SelfFilter(a => best_weapon_ETAs[a] == ETA_min);
         if (2 <= immediate_threat_in_range.Count) {
-          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
-          immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
+          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Max(a => a.HitPoints) : immediate_threat_in_range.Min(a => a.HitPoints));
+          immediate_threat_in_range.SelfFilter(a => a.HitPoints == HP_min);
           if (2 <= immediate_threat_in_range.Count) {
-           int dist_min = immediate_threat_in_range.Select(a => Rules.InteractionDistance(m_Actor.Location,a.Location)).Min();
-           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min));
+           int dist_min = immediate_threat_in_range.Min(a => Rules.InteractionDistance(m_Actor.Location,a.Location));
+           immediate_threat_in_range.SelfFilter(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min);
           }
         }
-        Actor actor = immediate_threat_in_range.First();
+        Actor actor = immediate_threat_in_range[0];
         if (1 < available_ranged_weapons.Count) {
          tmpAction = Equip(best_weapons[actor]);
          if (null != tmpAction) return tmpAction;
@@ -1484,7 +1484,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // at this point, no immediate threat in range
       {
-        int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
+        int ETA_min = en_in_range.Min(p => best_weapon_ETAs[p.Percepted]);
         if (2==ETA_min) {
           // snipe something
           en_in_range = en_in_range.Filter(a => ETA_min == best_weapon_ETAs[a]);
@@ -1492,11 +1492,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
             int HP_max = en_in_range.Max(p => p.Percepted.HitPoints);
             en_in_range = en_in_range.Filter(a => a.HitPoints == HP_max);
             if (2<=en_in_range.Count) {
-             int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+             int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
              en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
-          Actor actor = en_in_range.First().Percepted as Actor;
+          Actor actor = en_in_range.First().Percepted;
           if (1 < available_ranged_weapons.Count) {
             tmpAction = Equip(best_weapons[actor]);
             if (null != tmpAction) return tmpAction;
@@ -1507,13 +1507,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // just deal with something close
       {
-        int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+        int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
         en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
         if (2<=en_in_range.Count) {
           int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
           en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
-        Actor actor = en_in_range.First().Percepted as Actor;
+        Actor actor = en_in_range.First().Percepted;
         if (1 < available_ranged_weapons.Count) {
           tmpAction = Equip(best_weapons[actor]);
           if (null != tmpAction) return tmpAction;

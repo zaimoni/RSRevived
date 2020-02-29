@@ -1154,13 +1154,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var en_in_range = FilterFireTargets(_enemies,rw.Model.Attack.Range);
       if (null == en_in_range) return null; // XXX likely error condition
-      if (1 == en_in_range.Count) return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
+      if (1 == en_in_range.Count) return BehaviorRangedAttack(en_in_range[0].Percepted);
 
       // filter immediate threat by being in range
-      var immediate_threat_in_range = (null!=_immediate_threat ? new HashSet<Actor>(_immediate_threat) : new HashSet<Actor>());
-      if (null != _immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
+      Zaimoni.Data.Stack<Actor> immediate_threat_in_range = default;
+      if (null != _immediate_threat) {
+        immediate_threat_in_range = en_in_range.Select(p => p.Percepted).ToZStack(a => _immediate_threat.Contains(a));
+      }
 
-      if (1 == immediate_threat_in_range.Count) return BehaviorRangedAttack(immediate_threat_in_range.First());
+      if (1 == immediate_threat_in_range.Count) return BehaviorRangedAttack(immediate_threat_in_range[0]);
 
       // Get ETA stats
       var best_weapon_ETAs = new Dictionary<Actor,int>();
@@ -1172,44 +1174,44 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if there are any immediate threat, there are at least two immediate threat
       if (2 <= immediate_threat_in_range.Count) {
         int ETA_min = immediate_threat_in_range.Min(a => best_weapon_ETAs[a]);
-        immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => best_weapon_ETAs[a] == ETA_min));
+        immediate_threat_in_range.SelfFilter(a => best_weapon_ETAs[a] == ETA_min);
         if (2 <= immediate_threat_in_range.Count) {
           int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Max(a => a.HitPoints) : immediate_threat_in_range.Min(a => a.HitPoints));
-          immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
+          immediate_threat_in_range.SelfFilter(a => a.HitPoints == HP_min);
           if (2 <= immediate_threat_in_range.Count) {
            int dist_min = immediate_threat_in_range.Min(a => Rules.InteractionDistance(m_Actor.Location, a.Location));
-           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min));
+           immediate_threat_in_range.SelfFilter(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min);
           }
         }
-        return BehaviorRangedAttack(immediate_threat_in_range.First());
+        return BehaviorRangedAttack(immediate_threat_in_range[0]);
       }
       // at this point, no immediate threat in range
       {
-        int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
+        int ETA_min = en_in_range.Min(p => best_weapon_ETAs[p.Percepted]);
         if (2==ETA_min) {
           // snipe something
           en_in_range = en_in_range.Filter(a => ETA_min == best_weapon_ETAs[a]);
           if (2<=en_in_range.Count) {
-            int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
+            int HP_max = en_in_range.Max(p => p.Percepted.HitPoints);
             en_in_range = en_in_range.Filter(a => a.HitPoints == HP_max);
             if (2<=en_in_range.Count) {
-             int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+             int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
              en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
-          return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
+          return BehaviorRangedAttack(en_in_range.First().Percepted);
         }
       }
 
       // just deal with something close
       {
-        int dist_min = en_in_range.Select(p => Rules.InteractionDistance(m_Actor.Location,p.Location)).Min();
+        int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
         en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
         if (2<=en_in_range.Count) {
-          int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
+          int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
           en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
-        return BehaviorRangedAttack(en_in_range.First().Percepted as Actor);
+        return BehaviorRangedAttack(en_in_range.First().Percepted);
       }
     }
 
