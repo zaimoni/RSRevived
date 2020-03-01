@@ -3781,7 +3781,8 @@ restart_single_exit:
 
     private int ItemRatingCode_generic(Item it)
     {
-        if (!m_Actor.Inventory.Contains(it) && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+        Inventory inv = m_Actor.Inventory;
+        if (!inv.Contains(it) && inv.HasAtLeastFullStackOf(it, 1)) return 0;
         return 1;
     }
 
@@ -4043,9 +4044,9 @@ restart_single_exit:
 
       {
       if (it is ItemTrackerModel) {
-        List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
-        if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
-        if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+        var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
+        if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
+        if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
         // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
         if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
         return (ok_trackers.Contains(it.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
@@ -4295,9 +4296,9 @@ restart_single_exit:
       if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
       else if (lhs_low_priority) return false;
 
-      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+      var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
 
       if (rhs is ItemTracker)
         {
