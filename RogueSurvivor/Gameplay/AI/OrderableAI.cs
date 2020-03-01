@@ -1080,19 +1080,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
     }
 
+#nullable enable
     protected bool HasBehaviorThatRecallsToSurface {
       get {
         if (null != m_Actor.Threats) return true;   // hunting threat
         if (null != m_Actor.InterestingLocs) return true;   // tourism
-        if (m_Actor.HasLeader) {
-          if (m_Actor.Leader.IsPlayer) return true; // typically true...staying in the subway forever isn't a good idea
-          if ((m_Actor.Leader.Controller as OrderableAI)?.HasBehaviorThatRecallsToSurface ?? false) return true;   // if leader has recall-to-surface behavior, following him recalls to surface
+        var leader = m_Actor.LiveLeader;
+        if (null != leader) {
+          if (leader.IsPlayer) return true; // typically true...staying in the subway forever isn't a good idea
+          if ((leader.Controller as OrderableAI)?.HasBehaviorThatRecallsToSurface ?? false) return true;   // if leader has recall-to-surface behavior, following him recalls to surface
         }
         return false;
       }
     }
 
-#nullable enable
     static public void BeforeRaid(RaidType raid, in Location location)
     {
       static string text(RaidType raid) {
@@ -1122,11 +1123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // but all body armors are equipped to the torso slot(?)
     private ItemBodyArmor? GetEquippedBodyArmor()
     {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemBodyArmor armor) return armor;
-      }
-      return null;
+      return m_Actor.Inventory.GetFirst<ItemBodyArmor>(it => it.IsEquipped);
     }
 
 #nullable enable
@@ -1254,8 +1251,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               while(1 < n--) {
                 var transit = new Location(test.Map,LoF[n]);
                 if (!Map.Canonical(ref transit)) throw new InvalidProgramException("line of fire contains impossible locations");
-                if (danger.Contains(transit)) continue;
-                ret.Add(transit);
+                if (!danger.Contains(transit)) ret.Add(transit);
               }
             }
           }
@@ -1516,7 +1512,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
-    protected ItemFood GetBestEdibleItem()
+    protected ItemFood? GetBestEdibleItem()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -1540,7 +1536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // This is more pro-active.  We might want to flag whether
     // an AI uses the behavior based on this
-    protected ItemFood GetBestPerishableItem()
+    protected ItemFood? GetBestPerishableItem()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -1562,19 +1558,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-    protected ActorAction BehaviorEat()
+#nullable enable
+    protected ActorAction? BehaviorEat()
     {
-      ItemFood bestEdibleItem = GetBestEdibleItem();
+      var bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
-    protected ActorAction BehaviorEatProactively()
+    protected ActorAction? BehaviorEatProactively()
     {
-      Item bestEdibleItem = GetBestPerishableItem();
+      var bestEdibleItem = GetBestPerishableItem();
       if (null == bestEdibleItem) return null;
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
+#nullable restore
 
     /// <returns>true if and only if light should be equipped</returns>
     protected bool BehaviorEquipLight()
