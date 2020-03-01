@@ -4160,10 +4160,11 @@ restart_single_exit:
       return ItemPriorities[(int)x];
     }
 
-    protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
+    protected ActorAction? BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item it in m_Actor.Inventory.Items) {
+      Inventory inv = m_Actor.Inventory;
+      if (inv.IsEmpty) return null;
+      foreach (Item it in inv.Items) {
         if (ItemIsUseless(it)) return BehaviorDropItem(it); // allows recovering cleanly from bugs and charismatic trades
       }
 
@@ -4176,7 +4177,7 @@ restart_single_exit:
         if (m_Actor.MeleeWeaponAttack(weapon.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return BehaviorDropItem(weapon);
       }
 
-      ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
+      ItemRangedWeapon rw = inv.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
       if (null != rw) return BehaviorDropItem(rw);
 
 #if FALSE_POSITIVE
@@ -4191,14 +4192,16 @@ restart_single_exit:
       return null;
     }
 
-    private ActorAction _BehaviorDropOrExchange(Item give, Item take, Point? position, bool use_ok=true)
+#nullable enable
+    private ActorAction? _BehaviorDropOrExchange(Item give, Item take, Point? position, bool use_ok=true)
     {
       if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
-      ActorAction tmp = _PrefilterDrop(give, use_ok);
+      var tmp = _PrefilterDrop(give, use_ok);
       if (null != tmp) return tmp;
       if (null != position) return new ActionTradeWithContainer(m_Actor,give,take,position.Value);
       return BehaviorDropItem(give);
     }
+#nullable restore
 
     protected bool RHSMoreInteresting(Item lhs, Item rhs)
     {
