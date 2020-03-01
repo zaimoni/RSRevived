@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_FEEL = new Verb("feel");
     private readonly Verb VERB_GIVE = new Verb("give");
     private readonly Verb VERB_GRAB = new Verb("grab");
-    private readonly Verb VERB_EQUIP = new Verb("equip");
+    public static readonly Verb VERB_EQUIP = new Verb("equip");
     private readonly Verb VERB_HAVE = new Verb("have", "has");
     private readonly Verb VERB_HELP = new Verb("help");
     private readonly Verb VERB_HEAL_WITH = new Verb("heal with", "heals with");
@@ -3805,7 +3805,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (it.Model.IsEquipable) {
             if (Player.CanEquip(it, out string reason)) {
-              DoEquipItem(Player, it);
+              it.EquippedBy(Player);
               return false;
             }
             AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
@@ -4068,7 +4068,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       if (it.IsEquipped) {
-        if (player.CanUnequip(it, out string reason)) {
+        if (player.CanUnequip(it, out string reason)) { // constant true, for now
           it.UnequippedBy(player);
           return false;
         }
@@ -4077,7 +4077,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (it.Model.IsEquipable) {
         if (player.CanEquip(it, out string reason)) {
-          DoEquipItem(player, it);
+          it.EquippedBy(player);
           return false;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
@@ -8813,7 +8813,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
-        DoEquipItem(actor, it);
+        it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
@@ -8872,8 +8872,8 @@ namespace djack.RogueSurvivor.Engine
       if (gift is ItemTrap trap) trap.Desactivate();
       actor.Inventory.Transfer(gift, target.Inventory);
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
-        DoEquipItem(target, gift);
+      if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) == null)
+        gift.EquippedBy(target);
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} to", VERB_GIVE.Conjugate(actor), gift.TheName), target));
@@ -8888,21 +8888,6 @@ namespace djack.RogueSurvivor.Engine
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
-    }
-
-    public void DoEquipItem(Actor actor, Item it)
-    {
-#if CPU_HOG
-      if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
-#endif
-      if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
-      actor.GetEquippedItem(it.Model.EquipmentPart)?.UnequippedBy(actor);
-      actor.Equip(it);
-#if FAIL
-      // postcondition: item is unequippable (but this breaks on merge)
-      if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
-#endif
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_EQUIP.Conjugate(actor), it));
     }
 
     public void DoDropItem(Actor actor, Item it)
@@ -9189,7 +9174,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer) {
         var bestMeleeWeapon = actor.GetBestMeleeWeapon(mapObj);
         if (null!=bestMeleeWeapon) {
-          if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) DoEquipItem(actor, bestMeleeWeapon);
+          if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(actor);
         }
       }
       Attack attack = actor.MeleeAttack(mapObj);

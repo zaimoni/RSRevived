@@ -111,6 +111,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void EquippedBy(Actor actor)
+    {
+#if CPU_HOG
+      if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
+#endif
+      if (IsEquipped) {
+        if (!actor.Inventory?.Contains(this) ?? true) throw new InvalidOperationException("Item::EquippedBy: must be in actor.Inventory");
+        return; // no-op
+      }
+      actor.GetEquippedItem(Model.EquipmentPart)?.UnequippedBy(actor);
+      actor.Equip(this);
+#if FAIL
+      // postcondition: item is unequippable (but this breaks on merge)
+      if (!Rules.CanActorUnequipItem(actor,this)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+Model.ID.ToString());
+#endif
+      var game = RogueForm.Game;
+      if (game.ForceVisibleToPlayer(actor)) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_EQUIP.Conjugate(actor), this));
+    }
+
     // thin wrappers
     public void DropAt(Map m, in Point pos) {m.DropItemAt(this, in pos);} // this guaranteed non-null so non-null precondition ok
 

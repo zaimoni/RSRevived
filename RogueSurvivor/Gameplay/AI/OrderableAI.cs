@@ -1131,7 +1131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       var bestBodyArmor = m_Actor.GetBestBodyArmor();
       if (bestBodyArmor == null) return;
-      if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
+      if (GetEquippedBodyArmor() != bestBodyArmor) bestBodyArmor.EquippedBy(m_Actor);
     }
 #nullable restore
 
@@ -1213,7 +1213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     private ActorAction Equip(ItemRangedWeapon rw) {
-      if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) RogueForm.Game.DoEquipItem(m_Actor, rw);
+      if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) rw.EquippedBy(m_Actor);
       if (0 >= rw.Ammo) {
         ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (null != ammo) return new ActionUseItem(m_Actor, ammo);
@@ -1287,7 +1287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
-                if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
+                if (!tmp_melee.IsEquipped) tmp_melee.EquippedBy(m_Actor);
                 return tmpAction;
               }
             }
@@ -1581,7 +1581,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == light) return false;
       if (NeedsLight()) {
-        RogueForm.Game.DoEquipItem(m_Actor, light);
+        light.EquippedBy(m_Actor);
         return true;
       }
       light.UnequippedBy(m_Actor);
@@ -1598,15 +1598,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == phone) return false;
       if (m_Actor.NeedActiveCellPhone) {    // VAPORWARE could dial 911, at least while that desk is manned
-        game.DoEquipItem(m_Actor, phone);
+        phone.EquippedBy(m_Actor);
         return true;
       }
       phone.UnequippedBy(m_Actor);
       return false;
     }
 
-    /// <returns>null, or a legal ActionThrowGrenade</returns>
-    protected ActorAction BehaviorThrowGrenade(RogueGame game)
+    protected ActionThrowGrenade? BehaviorThrowGrenade()
     {
 #if DEBUG
       if (null == _enemies) throw new ArgumentNullException(nameof(_enemies));
@@ -1647,10 +1646,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
       }
       if (null == bestSpot) return null;
-      if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);    // XXX required by the legality check
-      ActorAction actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value);
+      if (!firstGrenade.IsEquipped) firstGrenade.EquippedBy(m_Actor);    // XXX required by the legality check
+      var actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value);
 #if DEBUG
-      if (!actorAction.IsLegal()) throw new InvalidProgramException("created illegal ActionThrowGrenade");  // invariant failure
+      if (!actorAction.IsPerformable()) throw new InvalidProgramException("created illegal ActionThrowGrenade");  // invariant failure
 #endif
       return actorAction;
     }
@@ -2832,7 +2831,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       //  spray?
       if (sprayOn != null) {
-        RogueForm.Game.DoEquipItem(m_Actor,spray);
+        spray.EquippedBy(m_Actor);
         var sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
         if (sprayIt.IsPerformable()) return sprayIt;  // should be tautological given above
       }
@@ -3417,7 +3416,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
               if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
                 var ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-                RogueForm.Game.DoEquipItem(m_Actor,rw);
+                rw.EquippedBy(m_Actor);
                 return new ActionUseItem(m_Actor,ammo);
               };
               continue;

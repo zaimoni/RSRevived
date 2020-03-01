@@ -27,10 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.CanEquip(m_Item, out m_FailReason);
     }
 
-    public override void Perform()
-    {
-      RogueForm.Game.DoEquipItem(m_Actor, m_Item);
-    }
+    public override void Perform() { m_Item.EquippedBy(m_Actor); }
 
     public override string ToString()
     {

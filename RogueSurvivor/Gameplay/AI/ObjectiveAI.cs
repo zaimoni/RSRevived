@@ -1112,8 +1112,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == _enemies) return null;    // XXX likely error condition
 
-      var game = RogueForm.Game;
-
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
 
@@ -1126,7 +1124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
-                if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
+                if (!tmp_melee.IsEquipped) tmp_melee.EquippedBy(m_Actor);
                 return tmpAction;
               }
             }
@@ -1262,7 +1260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // design decision to not turn on here
         if (gen.IsOn && Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
           var recharge = recharge_these[0];
-          RogueForm.Game.DoEquipItem(m_Actor, recharge);
+          recharge.EquippedBy(m_Actor);
           return new ActionRechargeItemBattery(m_Actor, recharge);
         }
       }
@@ -3697,7 +3695,7 @@ restart_single_exit:
           if (   obj is ItemRangedWeapon rw
               && rw.AmmoType==ammo.AmmoType
               && rw.Ammo < rw.Model.MaxAmmo) {
-            RogueForm.Game.DoEquipItem(m_Actor,rw);
+            rw.EquippedBy(m_Actor);
             return new ActionUseItem(m_Actor, ammo);
           }
         }
@@ -5012,7 +5010,7 @@ restart_single_exit:
              var remote_ammo = x.Value.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
              Objectives.Insert(0, new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
-             RogueForm.Game.DoEquipItem(m_Actor,local_rw);  // \todo evaluate sinking this into the ammo use handler
+             local_rw.EquippedBy(m_Actor);  // \todo evaluate sinking this into the ammo use handler
              return new ActionUseItem(m_Actor, local_ammo);
             }
           }
@@ -5287,19 +5285,16 @@ restart_single_exit:
       var generators_on = generators.FindAll(power => power.IsOn);
       if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
-      if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
+      if (!it.IsEquipped) it.EquippedBy(m_Actor);
       return new ActionRechargeItemBattery(m_Actor,it);
     }
 
     public ActorAction? DoctrineButcher(Corpse c)
     {
       if (!m_Actor.CanButcher(c)) return null;
-      
-      {
-      var best = m_Actor.GetBestMeleeWeapon();
-      if (null!=best && !best.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,best);
-      }
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
+
+      m_Actor.GetBestMeleeWeapon()?.EquippedBy(m_Actor);
       return new ActionButcher(m_Actor,c);
     }
 

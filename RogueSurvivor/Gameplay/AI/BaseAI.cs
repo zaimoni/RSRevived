@@ -568,14 +568,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         equippedWeapon?.UnequippedBy(tmp_a);    // unusable ranged weapon
         return null;
       }
-      if (equippedWeapon != bestMeleeWeapon) RogueForm.Game.DoEquipItem(tmp_a, bestMeleeWeapon);
+      if (equippedWeapon != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(tmp_a);
       return null;
     }
 #nullable restore
 
     protected ActorAction BehaviorBuildTrap(RogueGame game)
     {
-      ItemTrap itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
+      var itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
       if (itemTrap == null) return null;
       if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out string reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
