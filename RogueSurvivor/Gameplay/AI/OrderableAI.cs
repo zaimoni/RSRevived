@@ -1037,11 +1037,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(var pt_delta in goals) {
             // relies on FOV not being "too large"
             int delta = pt_delta.Value-Rules.GridDistance(in pt, pt_delta.Key);
-            if (min_dist == pt_delta.Value) {
-              efficiency[pt] += near_scale*delta;
-            } else {
-              efficiency[pt] += delta;
-            }
+            efficiency[pt] += (min_dist == pt_delta.Value ? near_scale * delta : delta);
           }
         }
         efficiency.OnlyIfMaximal();
@@ -1057,11 +1053,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    public bool IsRationalTradeItem(Actor speaker, Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
+    public bool IsRationalTradeItem(Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
 #if DEBUG
-      if (null == speaker) throw new ArgumentNullException(nameof(speaker));
-      if (!speaker.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(speaker),"both parties trading must be capable of it");
       if (!m_Actor.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(speaker),"both parties trading must be capable of it");
 #endif
       return IsInterestingItem(offeredItem);

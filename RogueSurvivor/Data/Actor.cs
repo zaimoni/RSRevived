@@ -3085,7 +3085,7 @@ namespace djack.RogueSurvivor.Data
 
 //    if (buyer.IsPlayer) return Inventory.Items
 
-      var objList = m_Inventory.Items.Where(it=> buyer.IsRationalTradeItem(this, it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
+      var objList = m_Inventory.Items.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 
