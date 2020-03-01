@@ -6,7 +6,6 @@
 
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
-// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -17,9 +16,6 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-#if TIME_TURNS
-using System.Diagnostics;
-#endif
 using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;

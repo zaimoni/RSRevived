@@ -6,12 +6,10 @@
 
 // #define DATAFLOW_TRACE
 
-// #define STABLE_SIM_OPTIONAL
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
 // #define PANOPTIC_HOLYVISION
-// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -5599,12 +5597,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
       if (aiActor.IsDebuggingTarget) Session.Get.World.DaimonMap(); // so we have a completely correct map when things go wrong
-#endif
-#if TIME_TURNS
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": timing");
-      Stopwatch timer = Stopwatch.StartNew();
-#endif
-#if DEBUG
+
       int AP_checkpoint = aiActor.ActionPoints;
       Location loc_checkpoint = aiActor.Location;
 #endif
@@ -5620,10 +5613,6 @@ namespace djack.RogueSurvivor.Engine
       if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
       if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
       actorAction.Perform();
-#if TIME_TURNS
-      timer.Stop();
-      /* if (0<timer.ElapsedMilliseconds) */ Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
-#endif
 #if DEBUG
       if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor || actorAction is ActionSay)) {
         throw new InvalidOperationException(aiActor.Name+" got a free action "+actorAction.ToString());
