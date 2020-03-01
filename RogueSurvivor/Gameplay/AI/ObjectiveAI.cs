@@ -4336,8 +4336,8 @@ restart_single_exit:
 #endif
       Inventory inv = m_Actor.Inventory;
       { // drop useless item doesn't always happen in a timely fashion
-      var useless = inv.Items.Where(obj => ItemIsUseless(obj)).ToList();
-      if (0<useless.Count) return _BehaviorDropOrExchange(useless[0], it, position, use_ok);
+      var useless = inv.GetFirst<Item>(obj => ItemIsUseless(obj));
+      if (null != useless) return _BehaviorDropOrExchange(useless, it, position, use_ok);
       }
 
       // not-best body armor can be dropped
@@ -4356,10 +4356,10 @@ restart_single_exit:
       }
       {
       if (it is ItemRangedWeapon rw) {
-        var rws = inv.GetItemsByType<ItemRangedWeapon>(obj => 0==obj.Ammo && obj.AmmoType==rw.AmmoType);
-        if (null != rws) return _BehaviorDropOrExchange(rws[0], it, position);
-        rws = inv.GetItemsByType<ItemRangedWeapon>(obj => 0==obj.Ammo && null==inv.GetCompatibleAmmoItem(obj));
-        if (null != rws) return _BehaviorDropOrExchange(rws[0], it, position, use_ok);
+        var rws = inv.GetFirst<ItemRangedWeapon>(obj => 0==obj.Ammo && obj.AmmoType==rw.AmmoType);
+        if (null != rws) return _BehaviorDropOrExchange(rws, it, position);
+        rws = inv.GetFirst<ItemRangedWeapon>(obj => 0==obj.Ammo && null==inv.GetCompatibleAmmoItem(obj));
+        if (null != rws) return _BehaviorDropOrExchange(rws, it, position, use_ok);
       }
       }
 
@@ -4720,6 +4720,7 @@ restart_single_exit:
 #endif
     }
 
+#nullable enable
     private bool _InterestingItemPostprocess(Item it)
     {
       if (!m_Actor.CanGet(it)) {
@@ -4731,24 +4732,25 @@ restart_single_exit:
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
-      if (m_Actor.Inventory.Contains(rw)) {
+      Inventory inv = m_Actor.Inventory;
+      if (inv.Contains(rw)) {
         if (0 < rw.Ammo) return true;
         // should not have ammo in inventory at this point
-      }
-      int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo);
-      if (!m_Actor.Inventory.Contains(rw)) {
-        if (0< rws_w_ammo) {
-          if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
-          if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType && 0 < it.Ammo)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+      } else {
+        if (0< inv.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) {
+          if (null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+          if (null != inv.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType && 0 < it.Ammo)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
         } else {
-          if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return true;   
+          if (null != inv.GetCompatibleAmmoItem(rw)) return true;
         }
-        if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
+        if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (AmmoAtLimit && null== m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
-      if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
+      if (null == inv.GetCompatibleAmmoItem(rw)) {
+        if (AmmoAtLimit) return false;
+        if (0 >= rw.Ammo) return false;
+      }
       return _InterestingItemPostprocess(rw);
     }
 
@@ -4756,33 +4758,36 @@ restart_single_exit:
       get {
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-        int limit = m_Actor.Inventory.MaxCapacity;
-        if (0< m_Actor.Inventory.CountType<ItemBodyArmor>()) limit--;
-        if (0< m_Actor.Inventory.CountType<ItemLight>()) limit--;
-        if (0< m_Actor.Inventory.CountType<ItemFood>()) limit--;
-        if (0< m_Actor.Inventory.CountType<ItemExplosive>()) limit--;
-        if (0< m_Actor.Inventory.CountType<ItemMeleeWeapon>()) limit--;
+        Inventory inv = m_Actor.Inventory;
+        int limit = inv.MaxCapacity;
+        if (0< inv.CountType<ItemBodyArmor>()) limit--;
+        if (0< inv.CountType<ItemLight>()) limit--;
+        if (0< inv.CountType<ItemFood>()) limit--;
+        if (0< inv.CountType<ItemExplosive>()) limit--;
+        if (0< inv.CountType<ItemMeleeWeapon>()) limit--;
 
-        if (limit <= m_Actor.Inventory.CountType<ItemAmmo>()) return true;
-        if (limit <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return true;
+        if (limit <= inv.CountType<ItemAmmo>()) return true;
+        if (limit <= inv.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ inv.CountType<ItemAmmo>()) return true;
         return false;
       }
     }
 
     public bool IsInterestingItem(ItemAmmo am)
     {
-      ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
+      Inventory inv = m_Actor.Inventory;
+      ItemRangedWeapon rw = inv.GetCompatibleRangedWeapon(am);
       if (null == rw) {
-        if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
+        if (0 < inv.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
         if (KnowRelevantInventory(am) && !AmmoAtLimit) return true;
-        if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
+        if (0 < inv.CountType<ItemRangedWeapon>()) return false;  // XXX
       } else {
         if (rw.Model.MaxAmmo>rw.Ammo) return true;
-        if (m_Actor.HasAtLeastFullStackOf(am, 2)) return false;
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
+        if (inv.HasAtLeastFullStackOf(am, 2)) return false;
+        if (null != inv.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
       return _InterestingItemPostprocess(am);
     }
+#nullable restore
 
     // so we can do post-condition testing cleanly
     private bool _IsInterestingItem(Item it)
@@ -4901,16 +4906,17 @@ restart_single_exit:
 #endif
     }
 
+#nullable enable
     public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem) // Cf. OrderableAI::IsRationalTradeItem
     {
 #if DEBUG
-      if (null == speaker) throw new ArgumentNullException(nameof(speaker));
       if (!speaker.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(speaker)+" must be able to trade");
       if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(m_Actor)+" must be able to trade");
 #endif
       if (Rules.Get.RollChance(speaker.CharismaticTradeChance)) return true;
       return IsInterestingItem(offeredItem);
     }
+#nullable restore
 
     private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
     {
@@ -4937,9 +4943,10 @@ restart_single_exit:
             keep_empty = true;
           }
           if (rw.Model.MaxAmmo > rw.Ammo) {
+            int m_maxammo;
             if (    null == (rw_am_type = reload_rw[pt][am_type])
-                ||  rw_am_type.Model.MaxAmmo < rw.Model.MaxAmmo
-                || (rw_am_type.Model.MaxAmmo - rw_am_type.Ammo) < (rw.Model.MaxAmmo - rw.Ammo))
+                || (m_maxammo = rw_am_type.Model.MaxAmmo) < rw.Model.MaxAmmo
+                || (m_maxammo - rw_am_type.Ammo) < (rw.Model.MaxAmmo - rw.Ammo))
               reload_rw[pt][am_type] = rw;
             keep_reload = true;
           }
@@ -4962,13 +4969,14 @@ restart_single_exit:
     // we are having some problems with breaking an action loop that requires reloading a weapon to make ammo gettable, when already at ammo limit
     // the logic is there but it's not being reached.
     // issue w/recovery logic and ammo
-    protected ActorAction InventoryStackTactics(Location loc)
+    protected ActorAction? InventoryStackTactics(Location loc)
     {
-      if (m_Actor.Inventory.IsEmpty) return null;
+      Inventory inv = m_Actor.Inventory;
+      if (inv.IsEmpty) return null;
 
       // The index case.
-      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
-      if (0 < (rws?.Count ?? 0)) {
+      var rws = inv.GetItemsByType<ItemRangedWeapon>();
+      if (null != rws) {
         foreach(var rw in rws) {
           if (rw.Ammo < rw.Model.MaxAmmo) {
             // usually want to reload this even if we had to drop ammo as a recovery option
@@ -4996,12 +5004,12 @@ restart_single_exit:
       _InterpretRangedWeapons(rws, in viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
 
       if (reload_rw.ContainsKey(viewpoint_inventory)) {
+        ItemRangedWeapon? local_rw;
         { // historically, we preferred handling this reload-get combination elsewhere
           int i = (int)AmmoType._COUNT;
           while(0 <= --i) {
-            var local_rw = reload_rw[viewpoint_inventory][i];
-            if (null == local_rw) continue;
-            var local_ammo = m_Actor.Inventory.GetCompatibleAmmoItem(local_rw);
+            if (null == (local_rw = reload_rw[viewpoint_inventory][i])) continue;
+            var local_ammo = inv.GetCompatibleAmmoItem(local_rw);
             if (null == local_ammo) continue;
             foreach(var x in ground_inv) {
              var remote_ammo = x.Value.GetCompatibleAmmoItem(local_rw);
@@ -5019,28 +5027,24 @@ restart_single_exit:
           _InterpretRangedWeapons(ground_rws, x.Key, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
         }
 
+        ItemRangedWeapon? alt_rw;
         if (discard_empty_rw.ContainsKey(viewpoint_inventory)) {
           // we should not have been able to reload this i.e. no ammo.
           Point? dest = null;
-          ItemRangedWeapon test = null;
-          ItemRangedWeapon src = null;
+          ItemRangedWeapon? test = null;
+          ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;
           while(0 <= --i) {
-            if (null == discard_empty_rw[viewpoint_inventory][i]) continue;
+            if (null == (local_rw = discard_empty_rw[viewpoint_inventory][i])) continue;
             foreach(var where_inv in best_rw) {
               if (where_inv.Key == viewpoint_inventory) continue;
-              if (null == where_inv.Value[i]) continue;
-              if (0 >= where_inv.Value[i].Ammo) continue;
-              if (null == test) {
+              if (null == (alt_rw = where_inv.Value[i])) continue;
+              if (0 >= alt_rw.Ammo) continue;
+              if (    null == test
+                  || (test.Ammo < alt_rw.Ammo && test.Model.MaxAmmo <= alt_rw.Model.MaxAmmo)) {
                 dest = where_inv.Key;
-                src = discard_empty_rw[viewpoint_inventory][i];
-                test = where_inv.Value[i];
-                continue;
-              }
-              if (test.Ammo < where_inv.Value[i].Ammo && test.Model.MaxAmmo <= where_inv.Value[i].Model.MaxAmmo) {
-                dest = where_inv.Key;
-                src = discard_empty_rw[viewpoint_inventory][i];
-                test = where_inv.Value[i];
+                src = local_rw;
+                test = alt_rw;
                 continue;
               }
             }
@@ -5051,26 +5055,21 @@ restart_single_exit:
         // optimization: swap for most-loaded ranged weapon taking same ammo
         {
           Point? dest = null;
-          ItemRangedWeapon test = null;
-          ItemRangedWeapon src = null;
+          ItemRangedWeapon? test = null;
+          ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;
           while(0 <= --i) {
-            if (null == reload_rw[viewpoint_inventory][i]) continue;
+            if (null == (local_rw = reload_rw[viewpoint_inventory][i])) continue;
             foreach(var where_inv in best_rw) {
               if (where_inv.Key == viewpoint_inventory) continue;
-              if (null == where_inv.Value[i]) continue;
-              if (reload_rw[viewpoint_inventory][i].Ammo >= where_inv.Value[i].Ammo) continue;
-              if (reload_rw[viewpoint_inventory][i].Model.MaxAmmo > where_inv.Value[i].Model.MaxAmmo) continue;
-              if (null == test) {
+              if (null == (alt_rw = where_inv.Value[i])) continue;
+              if (local_rw.Ammo >= alt_rw.Ammo) continue;
+              if (local_rw.Model.MaxAmmo > alt_rw.Model.MaxAmmo) continue;
+              if (    null == test
+                  || (test.Ammo < alt_rw.Ammo && test.Model.MaxAmmo <= alt_rw.Model.MaxAmmo)) {
                 dest = where_inv.Key;
-                src = reload_rw[viewpoint_inventory][i];
-                test = where_inv.Value[i];
-                continue;
-              }
-              if (test.Ammo < where_inv.Value[i].Ammo && test.Model.MaxAmmo <= where_inv.Value[i].Model.MaxAmmo) {
-                dest = where_inv.Key;
-                src = reload_rw[viewpoint_inventory][i];
-                test = where_inv.Value[i];
+                src = local_rw;
+                test = alt_rw;
                 continue;
               }
             }
@@ -5082,7 +5081,8 @@ restart_single_exit:
       return null;
     }
 
-    protected ActorAction InventoryStackTactics() { return InventoryStackTactics(m_Actor.Location); }
+#nullable enable
+    protected ActorAction? InventoryStackTactics() { return InventoryStackTactics(m_Actor.Location); }
 
     /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
     /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
@@ -5210,23 +5210,23 @@ restart_single_exit:
       var insurance = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
       var want = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);
       GameItems.IDs i = GameItems.IDs._COUNT;
+      Inventory inv = m_Actor.Inventory;
+      ItemModel model;
       while(0 < i--) {
-        if (null == m_Actor.Inventory.GetBestDestackable(Models.Items[(int)i])) continue;   // not really in inventory
+        if (null == inv.GetBestDestackable((model = Models.Items[(int)i]))) continue;   // not really in inventory
         var code = ItemRatingCode(i);
-        if (3<=code) continue;
+        if (3 <= code) continue;
         // ranged weapons are problematic
         if (GameItems.ranged.Contains(i)) {
-          int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
-          if (1 >= rws_w_ammo) continue;    // really critical
-          if (null != m_Actor.Inventory.GetCompatibleAmmoItem(Models.Items[(int)i] as ItemRangedWeaponModel)) continue;
+          if (1 >= inv.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)) continue;    // really critical
+          if (null != inv.GetCompatibleAmmoItem(model as ItemRangedWeaponModel)) continue;
         }
-        if (2==ItemRatingCode(i)) want.Add(i);
+        if (2 == code) want.Add(i);
         else insurance.Add(i);
       }
       return new KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
-#nullable enable
     // arguable whether these twp should be public in Map
     static protected IEnumerable<Engine.MapObjects.PowerGenerator>? GeneratorsToTurnOn(Map m)
     {
@@ -5241,7 +5241,6 @@ restart_single_exit:
       var gens = m.PowerGenerators.Get;
       return (0 >= gens.Count) ? null : gens;
     }
-#nullable restore
 
     public bool CombatUnready()
     {
@@ -5258,29 +5257,28 @@ restart_single_exit:
 
     // conceptual difference between "doctrine" and "behavior" is that doctrine doesn't have contextual validity checks
     // that is, a null action return is defined to mean the doctrine is invalid
-    public ActorAction DoctrineRecoverSTA(int targetSTA)
+    public ActorAction? DoctrineRecoverSTA(int targetSTA)
     {
-       if (m_Actor.MaxSTA < targetSTA) targetSTA = m_Actor.MaxSTA;
-       if (m_Actor.StaminaPoints >= targetSTA) return null;
-       if (   m_Actor.StaminaPoints < targetSTA - 4
-           && m_Actor.CanActNextTurn) {
-         Item stim = m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_STA]);
+       int tmp;
+       if ((tmp = m_Actor.MaxSTA) < targetSTA) targetSTA = tmp;
+       if ((tmp = m_Actor.StaminaPoints) >= targetSTA) return null;
+       if (tmp < targetSTA - 4 && m_Actor.CanActNextTurn) {
+         var stim = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_STA);
          if (null != stim) return new ActionUseItem(m_Actor,stim);
        }
        return new ActionWait(m_Actor);
     }
 
-    public ActorAction DoctrineMedicateSLP()
+    public ActorAction? DoctrineMedicateSLP()
     {
-       ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine);
+       var stim = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP) as ItemMedicine;
        if (null == stim) return null;
-       int threshold = m_Actor.MaxSleep-(m_Actor.ScaleMedicineEffect(stim.SleepBoost));
-       if (m_Actor.SleepPoints > threshold) return null;
+       if (m_Actor.SleepPoints > (m_Actor.MaxSleep - m_Actor.ScaleMedicineEffect(stim.SleepBoost))) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        return new ActionUseItem(m_Actor,stim);
     }
 
-    public ActorAction DoctrineRechargeToFull(Item it)
+    public ActorAction? DoctrineRechargeToFull(Item it)
     {
       BatteryPowered obj = it as BatteryPowered;
 #if DEBUG
@@ -5291,12 +5289,12 @@ restart_single_exit:
       if (0 >= generators.Count) return null;
       var generators_on = generators.FindAll(power => power.IsOn);
       if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
-      if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
+      if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
       return new ActionRechargeItemBattery(m_Actor,it);
     }
 
-    public ActorAction DoctrineButcher(Corpse c)
+    public ActorAction? DoctrineButcher(Corpse c)
     {
       if (!m_Actor.CanButcher(c)) return null;
       
@@ -5309,26 +5307,12 @@ restart_single_exit:
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
-    public ItemRangedWeapon GetBestRangedWeaponWithAmmo()
+    public ItemRangedWeapon? GetBestRangedWeaponWithAmmo()
     {
-      if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory
-      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
-        if (0 < rw.Ammo) return true;
-        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
-        return null != ammo;
-      });
-      if (null == rws) return null;
-      if (1==rws.Count) return rws[0];
-      ItemRangedWeapon obj1 = null;
-      int num1 = 0;
-      foreach (ItemRangedWeapon w in rws) {
-        int num2 = ScoreRangedWeapon(w);
-        if (num2 > num1) {
-          obj1 = w;
-          num1 = num2;
-        }
-      }
-      return obj1;
+      var inv = m_Actor?.Inventory;  // PC zombies won't have inventory
+      if (inv?.IsEmpty ?? true) return null;
+      var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
+      return rws?.Maximize(w => ScoreRangedWeapon(w));
     }
 
     public KeyValuePair<Actor,ItemRangedWeapon>? GetNearestTargetFor()
@@ -5349,15 +5333,12 @@ restart_single_exit:
       }
       return null;
     }
+#nullable restore
 
-    public Dictionary<int,Attack> GetBestRangedAttacks(Actor target)
+    public Dictionary<int,Attack>? GetBestRangedAttacks(Actor target)
     {
       if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory
-      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
-        if (0 < rw.Ammo) return true;
-        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
-        return null != ammo;
-      });
+      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo|| null != m_Actor.Inventory.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
       if (null == rws) return null;
       var ret = new Dictionary<int, Attack>();
       foreach(var w in rws) {
