@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, _all);
+        var actorAction = ExecuteOrder(game, Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;

@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, _all);
+        var actorAction = ExecuteOrder(game, Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       InitAICache(_all, _all);
 
       // get out of the range of explosions if feasible
-      ActorAction tmpAction = BehaviorFleeExplosives();
+      var tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
       var old_enemies = FilterEnemies(_all);

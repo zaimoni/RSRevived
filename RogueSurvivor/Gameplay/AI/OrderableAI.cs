@@ -743,7 +743,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorDirective m_Directive;
-    private ActorOrder m_Order;
+#nullable enable
+    private ActorOrder? m_Order;
+#nullable restore
     protected Percept_<Actor> m_LastEnemySaw;
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
@@ -763,7 +765,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorDirective Directives { get { return m_Directive ?? (m_Directive = new ActorDirective()); } }
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
-    public ActorOrder Order { get { return m_Order; } }
+#nullable enable
+    public ActorOrder? Order { get { return m_Order; } }
+    public void SetOrder(ActorOrder? newOrder)
+    {
+      m_Order = newOrder;
+      m_ReachedPatrolPoint = false;
+      m_ReportStage = 0;
+    }
+#nullable restore
 
     // doesn't include no-enemies check, inside check or any directives/orders
     // would like to trigger pathing to inside to enable sleeping
@@ -780,14 +790,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
     }
 
-    public void SetOrder(ActorOrder newOrder)
-    {
-      m_Order = newOrder;
-      m_ReachedPatrolPoint = false;
-      m_ReportStage = 0;
-    }
-
-    protected ActorAction ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)
+    protected ActorAction? ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)
     {
       if (!m_Actor.HasLeader) return null;
       switch (order.Task) {

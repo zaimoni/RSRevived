@@ -162,7 +162,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "under orders");
 #endif
-        ActorAction actorAction = ExecuteOrder(game, Order, current);
+        var actorAction = ExecuteOrder(game, Order, current);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
 #if TRACE_SELECTACTION
