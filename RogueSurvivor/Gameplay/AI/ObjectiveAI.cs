@@ -3840,7 +3840,7 @@ restart_single_exit:
       // simulate historical usage (alpha 9)
       Inventory inv;
       if ((inv = m_Actor.Inventory).Contains(it)) return 1;
-      if (m_Actor.HasAtLeastFullStackOf(it, inv.IsFull ? 1 : 2)) return 0;
+      if (inv.HasAtLeastFullStackOf(it, inv.IsFull ? 1 : 2)) return 0;
       if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
         var rating = WantRestoreSAN;
         if (1!=rating) return rating;
@@ -3920,7 +3920,7 @@ restart_single_exit:
       }
       if (is_in_inventory) return 2;
       if (rw.Ammo < rw.Model.MaxAmmo) return 2;
-      if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
+      if (inv.HasAtLeastFullStackOf(am, 2)) return 0;
       if (null != inv.GetFirstByModel<ItemAmmo>(am.Model,am2=>am2.Quantity<am.Model.MaxQuantity)) return 2;
       if (AmmoAtLimit) return int.MaxValue;  // BehaviorMakeRoomFor triggers recursion. real value 0 or 2
       return 2;
@@ -3952,9 +3952,9 @@ restart_single_exit:
     private int ItemRatingCode(ItemGrenade grenade)
     {
       Inventory inv = m_Actor.Inventory;
-      if (inv.Contains(grenade)) return m_Actor.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;
+      if (inv.Contains(grenade)) return inv.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;  // \todo fix not quite...stack of 6 w/no spares should be 2
       if (inv.IsFull) return 1;
-      if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
+      if (inv.HasAtLeastFullStackOf(grenade, 1)) return 1;
       return 2;
     }
 

@@ -335,6 +335,15 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
+    public bool HasAtLeastFullStackOf(ItemModel it, int n)
+    {
+      if (IsEmpty) return false;
+      if (it.IsStackable) return CountQuantityOf(it) >= n * it.StackingLimit;
+      return Count(it) >= n;
+    }
+
+    public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
+
     public bool Has<_T_>() where _T_ : Item
     {
       return null != GetFirst<_T_>();
