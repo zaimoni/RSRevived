@@ -1136,10 +1136,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
-                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
-                  Item tmp_w = m_Actor.GetEquippedWeapon();
-                  if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
-                }
+                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
                 return tmpAction;
               }
             }

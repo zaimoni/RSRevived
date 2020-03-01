@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != _enemies) m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
-      if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
+      if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1

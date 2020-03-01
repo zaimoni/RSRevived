@@ -565,7 +565,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var bestMeleeWeapon = tmp_a.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
 
       if (bestMeleeWeapon == null) {
-        if (null != equippedWeapon) RogueForm.Game.DoUnequipItem(tmp_a, equippedWeapon);    // unusable ranged weapon
+        equippedWeapon?.UnequippedBy(tmp_a);    // unusable ranged weapon
         return null;
       }
       if (equippedWeapon != bestMeleeWeapon) RogueForm.Game.DoEquipItem(tmp_a, bestMeleeWeapon);

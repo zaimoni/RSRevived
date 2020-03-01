@@ -1297,10 +1297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               Actor en = p.Percepted;
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
               if (null != tmpAction) {
-                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
-                  Item tmp_w = m_Actor.GetEquippedWeapon();
-                  if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
-                }
+                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
                 return tmpAction;
               }
             }
@@ -1587,7 +1584,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         RogueForm.Game.DoEquipItem(m_Actor, light);
         return true;
       }
-      RogueForm.Game.DoUnequipItem(m_Actor, light);
+      light.UnequippedBy(m_Actor);
       return false;
     }
 
@@ -1604,7 +1601,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoEquipItem(m_Actor, phone);
         return true;
       }
-      game.DoUnequipItem(m_Actor, phone);
+      phone.UnequippedBy(m_Actor);
       return false;
     }
 
@@ -2511,7 +2508,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
+      if (it is BatteryPowered) it.UnequippedBy(m_Actor);
       return new ActionSleep(m_Actor);
     }
 
@@ -2842,8 +2839,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       }
 
-      var old_spray = GetEquippedStenchKiller();
-      if (null != old_spray) RogueForm.Game.DoUnequipItem(m_Actor,spray);
+      GetEquippedStenchKiller()?.UnequippedBy(m_Actor);
 
       return null;  // nope.
     }

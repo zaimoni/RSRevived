@@ -27,9 +27,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       return m_Actor.CanUnequip(m_Item, out m_FailReason);
     }
 
-    public override void Perform()
-    {
-      RogueForm.Game.DoUnequipItem(m_Actor, m_Item);
-    }
+    public override void Perform() { m_Item.UnequippedBy(m_Actor); }
   }
 }

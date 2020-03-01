@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_TAKE = new Verb("take");
     private readonly Verb VERB_THROW = new Verb("throw");
     private readonly Verb VERB_TRANSFORM_INTO = new Verb("transform into", "transforms into");
-    private readonly Verb VERB_UNEQUIP = new Verb("unequip");
+    public static readonly Verb VERB_UNEQUIP = new Verb("unequip");
     private readonly Verb VERB_VOMIT = new Verb("vomit");
     private readonly Verb VERB_WAIT = new Verb("wait");
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
@@ -559,7 +559,7 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    private static Data.Message MakeMessage(Actor actor, string doWhat, Item target)
+    public static Data.Message MakeMessage(Actor actor, string doWhat, Item target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
@@ -3797,7 +3797,7 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayerInventory) {
           if (it.IsEquipped) {
             if (Player.CanUnequip(it, out string reason)) {
-              DoUnequipItem(Player, it);
+              it.UnequippedBy(Player);
               return false;
             }
             AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
@@ -4069,7 +4069,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (it.IsEquipped) {
         if (player.CanUnequip(it, out string reason)) {
-          DoUnequipItem(player, it);
+          it.UnequippedBy(player);
           return false;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
@@ -8467,8 +8467,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (target.Leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
-      if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
-      if (trade.IsEquipped) DoUnequipItem(target, trade);
+      if (itSpeaker.IsEquipped) itSpeaker.UnequippedBy(speaker);
+      if (trade.IsEquipped) trade.UnequippedBy(target);
       var donor_inv = speaker.Inventory;
       donor_inv.RemoveAllQuantity(itSpeaker);
       var src_inv = target.Inventory;
@@ -8511,7 +8511,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         RedrawPlayScreen();
       }
-      if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
+      if (itSpeaker.IsEquipped) itSpeaker.UnequippedBy(speaker);
       var inv = speaker.Inventory;
       inv.RemoveAllQuantity(itSpeaker);
       target.RemoveAllQuantity(trade);
@@ -8532,7 +8532,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (give.IsEquipped) DoUnequipItem(actor, give, false);
+      if (give.IsEquipped) give.UnequippedBy(actor, false);
       inv.RemoveAllQuantity(give);
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
@@ -8576,12 +8576,11 @@ namespace djack.RogueSurvivor.Engine
 
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 
-      if (leader == speaker && flag3)
-        DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
+      if (leader == speaker && flag3) DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       Item donate = trade.Value.Key;
-      if (donate.IsEquipped) DoUnequipItem(speaker, donate);
+      if (donate.IsEquipped) donate.UnequippedBy(speaker);
       Item take = trade.Value.Value;
-      if (take.IsEquipped) DoUnequipItem(target, take);
+      if (take.IsEquipped) take.UnequippedBy(target);
       var donor_inv = speaker.Inventory!;
       donor_inv.RemoveAllQuantity(donate);
       var src_inv = speaker.Inventory!;
@@ -8882,7 +8881,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
     {
-      if (actor.CanUnequip(gift)) DoUnequipItem(actor,gift,false);
+      if (actor.CanUnequip(gift)) gift.UnequippedBy(actor,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       container.PutItemIn(gift);
       actor.Inventory.RemoveAllQuantity(gift);
@@ -8897,8 +8896,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
 #endif
       if (it.IsEquipped && actor.Inventory.Contains(it)) return;    // no-op
-      var equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
-      if (equippedItem != null) DoUnequipItem(actor, equippedItem);
+      actor.GetEquippedItem(it.Model.EquipmentPart)?.UnequippedBy(actor);
       actor.Equip(it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
@@ -8907,21 +8905,9 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_EQUIP.Conjugate(actor), it));
     }
 
-    public void DoUnequipItem(Actor actor, Item it, bool canMessage=true)
-    {
-#if CPU_HOG
-      if (!actor.Inventory?.Contains(it) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(it)");
-#endif
-      if (it.IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
-        it.Unequip();
-        actor.OnUnequipItem(it);
-        if (canMessage && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_UNEQUIP.Conjugate(actor), it));
-      }
-    }
-
     public void DoDropItem(Actor actor, Item it)
     {
-      if (actor.CanUnequip(it)) DoUnequipItem(actor,it,false);
+      if (actor.CanUnequip(it)) it.UnequippedBy(actor,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
       if (it is ItemTrap trap) {
@@ -9779,7 +9765,7 @@ namespace djack.RogueSurvivor.Engine
        // unequip, remove from inv and drop item in a random adjacent tile
        // if none possible, will drop on same tile (which then has no almost no gameplay effect 
        // because the actor can take it back asap at no ap cost... unless he dies)
-       DoUnequipItem(actor, disarmIt, false);
+       disarmIt.UnequippedBy(actor, false);
        actor.Inventory.RemoveAllQuantity(disarmIt);
        List<Point> dropTiles = new List<Point>(8);
        actor.Location.Map.ForEachAdjacent(actor.Location.Position, pt => {
@@ -13104,7 +13090,7 @@ namespace djack.RogueSurvivor.Engine
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsPerformable()) return actionUseItem;
           if (it.IsEquipped) {
-            DoUnequipItem(actor,it);
+            it.UnequippedBy(actor);
             return new ActionWait(actor);   // historically, it took 2 insane actions to drop an equipped body armor
           }
           return new ActionDropItem(actor, it);

@@ -6,6 +6,7 @@
 
 using System;
 using Zaimoni.Data;
+using djack.RogueSurvivor.Engine;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
@@ -94,6 +95,21 @@ namespace djack.RogueSurvivor.Data
 #if PROTOTYPE
     public virtual ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Quantity); } }
 #endif
+
+    public void UnequippedBy(Actor actor, bool canMessage=true)
+    {
+#if CPU_HOG
+      if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
+#endif
+      if (IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
+        Unequip();
+        actor.OnUnequipItem(this);
+        if (canMessage) {
+          var game = RogueForm.Game;
+          if (game.ForceVisibleToPlayer(actor)) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_UNEQUIP.Conjugate(actor), this));
+        }
+      }
+    }
 
     // thin wrappers
     public void DropAt(Map m, in Point pos) {m.DropItemAt(this, in pos);} // this guaranteed non-null so non-null precondition ok
