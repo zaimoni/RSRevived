@@ -3792,13 +3792,14 @@ restart_single_exit:
 
     private int ItemRatingCode(ItemTracker it)
     {
-      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+      var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
 
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
-      if (m_Actor.Inventory.Contains(it)) return (ok_trackers.Contains(it.Model.ID) && null!=m_Actor.LiveLeader) ? 2 : 1;
-      if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
+      Inventory inv;
+      if ((inv = m_Actor.Inventory).Contains(it)) return (ok_trackers.Contains(it.Model.ID) && null!=m_Actor.LiveLeader) ? 2 : 1;
+      if (inv.Items.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
       return (ok_trackers.Contains(it.Model.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
     }
 
@@ -3826,8 +3827,9 @@ restart_single_exit:
 
     private int ItemRatingCode(ItemLight it)
     {
-      if (m_Actor.Inventory.Contains(it)) return 2;
-      if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
+      Inventory inv;
+      if ((inv = m_Actor.Inventory).Contains(it)) return 2;
+      if (inv.Has<ItemLight>(obj => !obj.IsUseless)) return 0; // XXX \todo fix; could want to swap out, for instance
       return 2;   // historically low priority but ideal kit has one
     }
 
@@ -3836,8 +3838,9 @@ restart_single_exit:
     private int ItemRatingCode(ItemMedicine it)
     {
       // simulate historical usage (alpha 9)
-      if (m_Actor.Inventory.Contains(it)) return 1;
-      if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
+      Inventory inv;
+      if ((inv = m_Actor.Inventory).Contains(it)) return 1;
+      if (m_Actor.HasAtLeastFullStackOf(it, inv.IsFull ? 1 : 2)) return 0;
       if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
         var rating = WantRestoreSAN;
         if (1!=rating) return rating;
@@ -3851,7 +3854,7 @@ restart_single_exit:
 
     private int ItemRatingCode(ItemBodyArmor armor)
     {
-      ItemBodyArmor best = m_Actor.GetBestBodyArmor();
+      var best = m_Actor.GetBestBodyArmor();
       if (null == best) return 3; // want 3, but historically RHSMoreInteresting  says 2
       if (best == armor) return 3;
       return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
@@ -3904,47 +3907,53 @@ restart_single_exit:
 
     private int ItemRatingCode(ItemAmmo am)
     {
-      bool is_in_inventory = m_Actor.Inventory.Contains(am);
+      Inventory inv = m_Actor.Inventory;
+      bool is_in_inventory = inv.Contains(am);
 
-      ItemRangedWeapon rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
+      var rw = inv.GetCompatibleRangedWeapon(am);
       if (null == rw) {
         int potential_importance = KnowRelevantInventory(am) ? 2 : 1;
         if (is_in_inventory) return potential_importance;
-        if (0 < m_Actor.Inventory.Count(am.Model)) return 0;
+        if (0 < inv.Count(am.Model)) return 0;
         if (AmmoAtLimit) return int.MaxValue;  // BehaviorMakeRoomFor triggers recursion. real value 0 or potential_importance
         return potential_importance;
       }
       if (is_in_inventory) return 2;
       if (rw.Ammo < rw.Model.MaxAmmo) return 2;
       if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
-      if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am2.Quantity<am.Model.MaxQuantity)) return 2;
+      if (null != inv.GetFirstByModel<ItemAmmo>(am.Model,am2=>am2.Quantity<am.Model.MaxQuantity)) return 2;
       if (AmmoAtLimit) return int.MaxValue;  // BehaviorMakeRoomFor triggers recursion. real value 0 or 2
       return 2;
     }
 
     private int ItemRatingCode(ItemRangedWeapon rw)
     { // similar to IsInterestingItem(rw)
-      if (m_Actor.Inventory.Contains(rw)) return 0<rw.Ammo ? 3 : 1;
-      int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
+      Inventory inv = m_Actor.Inventory;
+      if (inv.Contains(rw)) return 0<rw.Ammo ? 3 : 1;
+      int rws_w_ammo = inv.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
       if (0 < rws_w_ammo) {
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
-        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        if (null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
+        if (null != inv.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
       }
-      if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
-      ItemAmmo compatible = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-      if (0 >= rw.Ammo && null == compatible) return 1;
-      if (0 >= rws_w_ammo && null != compatible) return 3;
-      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
-      // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (AmmoAtLimit && null==compatible) return 0;
+      if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
+      var compatible = inv.GetCompatibleAmmoItem(rw);
+      if (null == compatible) {
+        if (0 >= rw.Ammo) return 1;
+        // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+        // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+        if (AmmoAtLimit) return 0;
+      } else {
+        if (0 >= rws_w_ammo) return 3;
+      }
       if (0< rws_w_ammo) return 2;
       return 3;
     }
 
     private int ItemRatingCode(ItemGrenade grenade)
     {
-      if (m_Actor.Inventory.Contains(grenade)) return m_Actor.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;
-      if (m_Actor.Inventory.IsFull) return 1;
+      Inventory inv = m_Actor.Inventory;
+      if (inv.Contains(grenade)) return m_Actor.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;
+      if (inv.IsFull) return 1;
       if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
       return 2;
     }
