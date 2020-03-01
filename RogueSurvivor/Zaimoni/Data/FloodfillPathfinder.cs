@@ -398,7 +398,7 @@ namespace Zaimoni.Data
         }
 
         // normal use case is to set depth and then do local optimizations to the returned path
-        public List<List<T>> MinStepPathTo(T current_pos,int depth = 0)
+        public List<List<T>>? MinStepPathTo(T current_pos,int depth = 0)
         {
             if (!_map.TryGetValue(current_pos, out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             if (0 == current_cost) return null;   // already at a goal

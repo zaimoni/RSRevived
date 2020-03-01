@@ -1564,7 +1564,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return dests;
     }
 
-    private ActorAction _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
+    private ActorAction? _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
     {
 	  var secondary = new List<ActorAction>();
       bool prefer_cardinal(Point pt) {
@@ -1577,10 +1577,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // however, since the most natural-looking paths stay within the rhombus rather than the full min-step pathing rectangle,
       // we can prefer cardinal directions to diagonal directions safely at this point (all tactical considerations were supposed to have
       // been applied first)
+      Actor? shove_target;
 	  while(0<tmp.Count) {
 		ActorAction ret = legal_steps[Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
-        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           var ok_dests = ai.WantToGoHere(shove.Target.Location);
+        if (ret is ActionShove shove && (shove_target = shove.Target).Controller is ObjectiveAI ai) {
+           var ok_dests = ai.WantToGoHere(shove_target.Location);
            if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
              if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
@@ -1588,7 +1589,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
            // target should not be sleeping; check for that anyway
-           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
+           if (null!= shove_target.Location.Exit && !shove_target.IsSleeping) continue;
 
            if (   null == ok_dests // shove is rude
                || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
@@ -1630,7 +1631,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       var legal_steps = m_Actor.OnePathPt(m_Actor.Location); // other half
-      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
 
 	  List<Point> tmp = src.Where(pt => legal_steps.ContainsKey(pt)).ToList();
       if (0 >= tmp.Count) return null;
@@ -1689,7 +1690,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _finalDecideMove(tmp, legal_steps);
 	}
 
-    private ActorAction _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
+#nullable enable
+    private ActorAction? _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
     {
 	  var secondary = new List<ActorAction>();
       bool prefer_cardinal(Location loc) {
@@ -1697,12 +1699,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Location.Position.Y == loc.Position.Y) return true;
         return false;
       }
+      Actor? shove_target;
 	  while(0<tmp.Count) {
         var dest = Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
         if (ret is ActionUseExit use_exit && use_exit.IsNotBlocked) continue;
-        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-           var ok_dests = ai.WantToGoHere(shove.Target.Location);
+        if (ret is ActionShove shove && (shove_target = shove.Target).Controller is ObjectiveAI ai) {
+           var ok_dests = ai.WantToGoHere(shove_target.Location);
            if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
              if (null != ok_dests  && ok_dests.Contains(shove.a_dest)) secondary.Add(ret); // shove is to a wanted destination
@@ -1710,7 +1713,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
            // target should not be sleeping; check for that anyway
-           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
+           if (null!= shove_target.Location.Exit && !shove_target.IsSleeping) continue;
 
            if (   null == ok_dests // shove is rude
                || !ok_dests.Contains(shove.a_dest)) // shove is not to a wanted destination
@@ -1724,7 +1727,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
-#nullable enable
     private ActorAction? _finalDecideMove(Dictionary<Location,ActorAction>? src)
     {
       if (null==src || 0==src.Count) return null;
@@ -1751,12 +1753,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
-        foreach(var pt in close.Door.Location.Position.Adjacent()) {
-          var actor = close.Door.Location.Map.GetActorAtExt(pt);
+        var door = close.Door;
+        foreach(var pt in door.Location.Position.Adjacent()) {
+          var actor = door.Location.Map.GetActorAtExt(pt);
           if (null == actor || m_Actor.IsEnemyOf(actor)) continue;
           if (actor.Controller is ObjectiveAI ai) {
             var tmp = ai.WantToGoHere(actor.Location);
-            if (tmp?.Contains(close.Door.Location) ?? false) return true;
+            if (tmp?.Contains(door.Location) ?? false) return true;
           }
         }
       }
@@ -1831,11 +1834,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       src.OnlyIf(x => safe.Contains(x));
     }
 
-    protected ActorAction DecideMove(Dictionary<Location,int> src)
+    protected ActorAction? DecideMove(Dictionary<Location,int> src)
 	{
       if (null == src) return null; // does happen
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
-      legal_steps.OnlyIf(action => action.IsLegal() && !VetoAction(action));
+      legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       src.OnlyIf(loc => legal_steps.ContainsKey(loc));
       if (0 >= src.Count) return null;
       src.OnlyIfMinimal();
@@ -2102,7 +2105,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ((0 < new_dest && new_dest < src.Count) ? safe.ToList() : src);
     }
-        #endregion
+#endregion
 
     public Dictionary<Location, ActionMoveDelta> PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Location> range = null, IEnumerable<Location> range2 = null)
     {
@@ -2662,9 +2665,8 @@ restart:
       navigate.GoalDistance(goals, m_Actor.Location.Position);
       return navigate;
     }
-#nullable restore
 
-    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
+    protected ActorAction? BehaviorPathTo(FloodfillPathfinder<Point> navigate)
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
@@ -2675,15 +2677,16 @@ restart:
           return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         }
       }
-      ActorAction ret = DecideMove(PlanApproach(navigate));
+      var ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       var min_steps = navigate.MinStepPathTo(m_Actor.Location.Position);
       if (null != min_steps && 1<min_steps.Count) return RecordMinStepPath(min_steps,ret);
       return ret;
     }
+#nullable restore
 
-    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Location> navigate)
+    protected ActorAction? BehaviorPathTo(FloodfillPathfinder<Location> navigate)
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
@@ -3180,8 +3183,7 @@ restart_single_exit:
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)
     {
-      var locs = new HashSet<Location>(dest.Select(pt => new Location(m,pt)));
-      Objectives.Insert(0,new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,locs));
+      Objectives.Insert(0, new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Select(pt => new Location(m, pt))));
     }
 
 #region damage field
@@ -3270,9 +3272,7 @@ restart_single_exit:
             now = tmp2;
           } while(1<a_turns);
         }
-        if (ranged_damage_field.ContainsKey(m_Actor.Location.Position)) {
-          immediate_threat.Add(a);
-        }
+        if (ranged_damage_field.ContainsKey(m_Actor.Location.Position)) immediate_threat.Add(a);
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(var pt_dam in ranged_damage_field) {
           if (melee_damage_field.TryGetValue(pt_dam.Key,out int prior_dam)) {
@@ -3286,7 +3286,8 @@ restart_single_exit:
       }
     }
 
-    private void AddExplosivesToDamageField(List<Percept_<Inventory>> goals)
+#nullable enable
+    private void AddExplosivesToDamageField(List<Percept_<Inventory>>? goals)
     {
       if (null == goals) return;
       IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p => new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
@@ -3310,7 +3311,6 @@ restart_single_exit:
       }
     }
 
-#nullable enable
     private void AddExplosivesToDamageField(List<Percept>? percepts)
     {
       AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
@@ -3366,7 +3366,7 @@ restart_single_exit:
 #endif
       // message leader and followers, but *not* mates (chain of command) in communication by any means
       // message friends that can see us
-      bool is_available(Actor a, ObjectiveAI.ReactionCode priority) {
+      bool is_available(Actor a, ReactionCode priority) {
         if (null == a) return false;
         if (a.IsDead) return false;
         if (!(a.Controller is ObjectiveAI test_ai)) return false;
@@ -3377,16 +3377,16 @@ restart_single_exit:
 
       var responders = new List<Actor>();
       var test_actor = m_Actor.LiveLeader;
-      if (is_available(test_actor,ObjectiveAI.ReactionCode.ENEMY)) responders.Add(test_actor);
+      if (is_available(test_actor, ReactionCode.ENEMY)) responders.Add(test_actor);
       if (0<m_Actor.CountFollowers) {
         foreach(Actor fo in m_Actor.Followers) {
-          if (is_available(fo, ObjectiveAI.ReactionCode.ENEMY)) responders.Add(fo);
+          if (is_available(fo, ReactionCode.ENEMY)) responders.Add(fo);
         }
       }
       // XXX should be inverse-visibility
       if (null!= friends_in_FOV) {
         foreach(var x in friends_in_FOV) {
-          if (!responders.Contains(x.Value) && is_available(x.Value, ObjectiveAI.ReactionCode.ENEMY)) responders.Add(x.Value);
+          if (!responders.Contains(x.Value) && is_available(x.Value, ReactionCode.ENEMY)) responders.Add(x.Value);
         }
       }
       // \todo recruit allies by radio if needed
@@ -3465,13 +3465,15 @@ restart_single_exit:
 
     abstract protected ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack);
 
-    public ActorAction WouldGetFromContainer(in Location loc)
+#nullable enable
+    public ActorAction? WouldGetFromContainer(in Location loc)
     {
       if (!loc.MapObject?.IsContainer ?? true) return null;
       var stack = loc.Items;
       if (null == stack || stack.IsEmpty) return null;
       return BehaviorWouldGrabFromStack(in loc, stack);
     }
+#nullable restore
 
     protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {
@@ -3511,7 +3513,7 @@ restart_single_exit:
             // check for iron gates, etc in way
             var path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
             if (null == path) continue;
-            if (0 >= path[0].FindAll(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt))).Count) continue;
+            if (!path[0].Any(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt)))) continue;
         }
         ret.Add(x.Key,x.Value);
       }
@@ -3585,20 +3587,22 @@ restart_single_exit:
         return true;    // default to ok to trade away
     }
 
-    public List<Item> GetTradeableItems()
+#nullable enable
+    public List<Item>? GetTradeableItems()
     {
       Inventory inv = m_Actor.Inventory;
       if (inv == null) return null;
       IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
       return ret.Any() ? ret.ToList() : null;
     }
+#nullable restore
 
     protected Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
         if (null == friends || 0 >= friends.Count) return null;
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
         var TradeableItems = GetTradeableItems();
-        if (0>=(TradeableItems?.Count ?? 0)) return null;
+        if (null == TradeableItems || 0>=TradeableItems.Count) return null;
         Map map = m_Actor.Location.Map;
 
         var ret = new Dictionary< Location, Actor >(friends.Count);
@@ -3608,7 +3612,7 @@ restart_single_exit:
           if (!m_Actor.CanTradeWith(x.Value)) continue;
           if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Key)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
-            List<Item> other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
+            var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
           }
@@ -3658,7 +3662,7 @@ restart_single_exit:
         if (!m_Actor.Model.Abilities.CanTrade) return false; // arguably an invariant but not all PCs are overriding appropriate base AIs
         if (null == friends_in_FOV) return false;
         var TradeableItems = GetTradeableItems();
-        if (0>=(TradeableItems?.Count ?? 0)) return false;
+        if (null == TradeableItems || 0 >= TradeableItems.Count) return false;
 
         foreach(var x in friends_in_FOV) {
           if (x.Value.IsDead) continue;
@@ -3667,7 +3671,7 @@ restart_single_exit:
           if (!m_Actor.CanTradeWith(x.Value)) continue;
           if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Value.Location)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
-            List<Item> other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
+            var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
           }
@@ -3770,7 +3774,8 @@ restart_single_exit:
       if (it is ItemTrap trap && trap.IsActivated) return true;
       if (it.IsUseless || it is ItemPrimedExplosive) return true;
       if (it is ItemEntertainment ent && ent.IsBoringFor(m_Actor)) return true;
-      if (it is ItemRangedWeapon rw && 0==rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw) && m_Actor.Inventory.IsFull) return true;
+      Inventory inv;
+      if (it is ItemRangedWeapon rw && 0==rw.Ammo && null == (inv = m_Actor.Inventory).GetCompatibleAmmoItem(rw) && inv.IsFull) return true;
       return false;
     }
 
