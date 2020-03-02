@@ -561,7 +561,7 @@ namespace djack.RogueSurvivor.Engine
           var exit = a.Exit;
           return null != exit && exit.Location == b;
         }
-        IsAdjacent(a.Position, test.Value.Position);
+        return IsAdjacent(a.Position, test.Value.Position);
       }
       return IsAdjacent(a.Position, b.Position);
     }

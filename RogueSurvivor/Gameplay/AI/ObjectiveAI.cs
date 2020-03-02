@@ -3021,8 +3021,12 @@ restart:
           throw new InvalidProgramException("need to handle adjacent to blocked exit");
 #endif
         }
+#if DEBUG
+        throw new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+#else
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
-      }
+#endif
+                }
 
       // check for pre-existing relevant path (approaching dead code)
       {
