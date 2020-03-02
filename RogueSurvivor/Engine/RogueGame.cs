@@ -7470,7 +7470,8 @@ namespace djack.RogueSurvivor.Engine
       --trap.Quantity;
     }
 
-    public bool DoLeaveMap(Actor actor, in Point exitPoint, bool askForConfirmation)
+    // Intentionally leaving in the askForConfirmation parameter: should be used only for plot-significant map changes
+    public bool DoLeaveMap(Actor actor, in Point exitPoint, bool askForConfirmation=false)
     {
       bool isPlayer = actor.IsPlayer;
       Location origin = actor.Location;
@@ -7560,7 +7561,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint, false); }
+    public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint); }
 
     public void DoSwitchPlace(Actor actor, Actor other)
     {

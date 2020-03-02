@@ -44,8 +44,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (m_Actor.Location.Map==m_NewLocation.Map) RogueForm.Game.DoMoveActor(m_Actor, in m_NewLocation);
       else if (m_Actor.Location.Map.District!=m_NewLocation.Map.District) {
         var test = m_Actor.Location.Map.Denormalize(in m_NewLocation);
-        RogueForm.Game.DoLeaveMap(m_Actor, test.Value.Position, true);
-      } else RogueForm.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position, true);
+        RogueForm.Game.DoLeaveMap(m_Actor, test.Value.Position);
+      } else RogueForm.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position);
     }
 
     public override string ToString()
