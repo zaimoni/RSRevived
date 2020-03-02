@@ -12847,6 +12847,8 @@ namespace djack.RogueSurvivor.Engine
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, local_8.Model.Name));
                 m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                 Session.Get.ScriptStage_PoliceStationPrisoner = 2;
+                // VAPORWARE: this area will have working security cameras (either generator is enough to keep security cameras and the off-game
+                // camera monitoring going), so the police will learn the location of the CHAR Underground Facility as well.  
             }
             break;
           default: throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());

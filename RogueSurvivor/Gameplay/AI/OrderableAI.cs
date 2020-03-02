@@ -2771,17 +2771,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return loc.MapObject is DoorWindow;
     }
 
-    protected ItemSprayScent GetEquippedStenchKiller()
+    protected ItemSprayScent? GetEquippedStenchKiller()
     {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemSprayScent spray && Odor.SUPPRESSOR == spray.Model.Odor)
-          return spray;
-      }
-      return null;
+      return m_Actor.Inventory.GetFirst<ItemSprayScent>(spray => spray.IsEquipped && Odor.SUPPRESSOR == spray.Model.Odor);
     }
 
-    protected ActionSprayOdorSuppressor BehaviorUseStenchKiller()
+    protected ActionSprayOdorSuppressor? BehaviorUseStenchKiller()
     {
       // alpha 10 redefined spray suppression to work on the odor source, not the odor
 
@@ -2871,7 +2866,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
 
 #region ground inventory stacks
-    private List<Item> InterestingItems(IEnumerable<Item> Items)
+    private List<Item>? InterestingItems(IEnumerable<Item> Items)
     {
 #if DEBUG
       if (null == Items) throw new ArgumentNullException(nameof(Items));
@@ -2881,7 +2876,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.Any() ? tmp.ToList() : null);
     }
 
-    private List<Item> InterestingItems(Inventory inv)
+    private List<Item>? InterestingItems(Inventory inv)
     {
       return InterestingItems(inv.Items);
     }
@@ -2891,7 +2886,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      List<Item> interesting = InterestingItems(stack);
+      var interesting = InterestingItems(stack);
       if (null==interesting) return null;
 
       Item obj = null;
@@ -2906,6 +2901,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorGrabFromStack(in loc,stack,false);
     }
 
+#nullable enable
     public bool WouldGrabFromStack(in Location loc, Inventory stack)
     {
 #if DEBUG
@@ -2914,6 +2910,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.StackIsBlocked(in loc)) return false;
       return WouldGrabFromAccessibleStack(in loc,stack)?.IsLegal() ?? false;
     }
+#nullable restore
 
     private ActorAction? _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
     {
@@ -2943,7 +2940,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmp;
     }
 
-    public ActorAction WouldGrabFromAccessibleStack(in Location loc, Inventory stack, bool is_real=false)
+    public ActorAction? WouldGrabFromAccessibleStack(in Location loc, Inventory stack, bool is_real=false)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -2986,10 +2983,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 
-    public ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
+#nullable enable
+    public ActorAction? BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
     {
       return WouldGrabFromAccessibleStack(in loc, stack, true);
     }
+#nullable restore
 
     protected ActorAction BehaviorGrabFromStack(in Location loc, Inventory stack, bool is_real = true)
     {
