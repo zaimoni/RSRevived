@@ -257,9 +257,11 @@ namespace djack.RogueSurvivor.Engine
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         if (!actor.CanChatWith(actorAt, out reason)) return null;
-        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
-            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true))
-           return new ActionSwitchPlaceEmergency(actor,actorAt);
+        if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
+          if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(actor.Location)) {
+            return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+          }
+        }
         return new ActionChat(actor, actorAt);
 #if B_MOVIE_MARTIAL_ARTS
       } else if (0<actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
@@ -447,9 +449,10 @@ namespace djack.RogueSurvivor.Engine
         }
 
         // check for mutual-advantage switching place between ais
-        if (   ((actor.Controller as Gameplay.AI.OrderableAI)?.ProposeSwitchPlaces(actorAt.Location) ?? false)
-            && !((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(actor.Location) ?? true)) {
-           return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+        if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
+          if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(actor.Location)) {
+            return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+          }
         }
 
         // consider re-legalizing chat here

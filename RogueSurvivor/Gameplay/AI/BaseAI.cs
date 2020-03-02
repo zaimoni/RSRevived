@@ -1199,9 +1199,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == a) return false;
       if (a is Resolvable res) return IsValidMoveTowardGoalAction(res.ConcreteAction);
-      if (!(a is ActionChat) && (!(a is ActionGetFromContainer) && !(a is ActionSwitchPowerGenerator)))
-        return !(a is ActionRechargeItemBattery);
-      return false;
+      // blacklist actions inappropriate for bump movement
+      if (a is ActionChat) return false;
+      if (a is ActionGetFromContainer) return false;
+      if (a is ActionRechargeItemBattery) return false;
+      if (a is ActionSwitchPlaceEmergency) return false;
+      if (a is ActionSwitchPowerGenerator) return false;
+      return true;
     }
 
     protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized

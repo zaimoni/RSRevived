@@ -156,8 +156,8 @@ namespace djack.RogueSurvivor.Engine.Actions
            }
         }
         // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
-        if (!((actorAt.Controller as Gameplay.AI.OrderableAI)?.RejectSwitchPlaces(m_Actor.Location) ?? true)) {
-           return new ActionSwitchPlaceEmergency(m_Actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
+        if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(m_Actor.Location)) {
+          return new ActionSwitchPlaceEmergency(m_Actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
         }
       } else if (null != obj) {
            if (obj is DoorWindow door) {
