@@ -1056,7 +1056,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool IsRationalTradeItem(Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
 #if DEBUG
-      if (!m_Actor.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(speaker),"both parties trading must be capable of it");
+      if (!m_Actor.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(m_Actor),"both parties trading must be capable of it");
 #endif
       return IsInterestingItem(offeredItem);
     }

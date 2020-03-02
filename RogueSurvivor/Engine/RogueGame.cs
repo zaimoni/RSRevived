@@ -3690,7 +3690,7 @@ namespace djack.RogueSurvivor.Engine
               if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HeOrShe + " was contaminated by a ZM transformer agent.");
               if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should record sighting officer
-                // XXX the cell phone used for last contact should be down here (plausibly not an artifact, however)
+                // VAPORWARE the cell phone(?) used for last contact should be down here (plausibly not an artifact, however)
                 display.Add("We've found a CHAR research base they didn't tell us about.");
                 if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("It's reasonable that whoever signed off on that ZM transformer agent was in this base.");
               }
@@ -7718,13 +7718,7 @@ namespace djack.RogueSurvivor.Engine
           pt => in_underground_base_room(pt));
 #endregion
 #region 2) examine all CHAR offices
-     Session.Get.World.DoForAllDistricts(d=> {
-       Map map = d.EntryMap;
-       foreach(var zone in map.Zones) {
-         if (!zone.Name.Contains("CHAR Office")) continue;
-         zone.Bounds.DoForEach(pt => { if (!Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Session.Get.PoliceInvestigate.Record(map, in pt); });
-       }
-     });
+     Session.Get.World.DoForAllDistricts(District.DamnCHAROfficesToPoliceInvestigation);
 #endregion
     }
 
@@ -12824,11 +12818,12 @@ namespace djack.RogueSurvivor.Engine
             break;
           case 1:
             if (!p_map.HasZonePartiallyNamedAt(prisoner.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
+                var base_at = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District;
                 string[] local_7 = new string[8]
                 {
                   "\" Thank you! Thank you so much!",
                   "  As promised, I'll tell you the big secret!",
-                  string.Format("  The CHAR Underground Facility is in district {0}.",  World.CoordToString(Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.X, Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.Y)),
+                  string.Format("  The CHAR Underground Facility is in district {0}.",  World.CoordToString(base_at.WorldPosition.X, base_at.WorldPosition.Y)),
                   "  Look for a CHAR Office, a room with an iron door.",
                   "  Now I must hurry! Thanks a lot for saving me!",
                   "  I don't want them to... UGGH...",
@@ -12846,9 +12841,10 @@ namespace djack.RogueSurvivor.Engine
                 local_8.APreset();   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, local_8.Model.Name));
                 m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
-                Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 // VAPORWARE: this area will have working security cameras (either generator is enough to keep security cameras and the off-game
-                // camera monitoring going), so the police will learn the location of the CHAR Underground Facility as well.  
+                // camera monitoring going), so the police will learn the location of the CHAR Underground Facility as well.
+                District.DamnCHAROfficesToPoliceInvestigation(base_at);
+                Session.Get.ScriptStage_PoliceStationPrisoner = 2;
             }
             break;
           default: throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());

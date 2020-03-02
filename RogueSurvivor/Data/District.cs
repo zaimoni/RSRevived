@@ -398,6 +398,18 @@ namespace djack.RogueSurvivor.Data
           m.EndTurn();
         }
     }
+
+    public static void DamnCHAROfficesToPoliceInvestigation(District d)
+    {
+       if (   2 == Engine.Session.Get.ScriptStage_PoliceStationPrisoner
+           && d.WorldPosition == Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition)
+         return;    // already tagged
+       Map map = d.EntryMap;
+       foreach(var zone in map.Zones) {
+         if (!zone.Name.Contains("CHAR Office")) continue;
+         zone.Bounds.DoForEach(pt => { if (!Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Engine.Session.Get.PoliceInvestigate.Record(map, in pt); });
+       }
+    }
 #nullable restore
 
     // cheat map similar to savefile viewer

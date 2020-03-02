@@ -18,7 +18,7 @@ namespace Zaimoni.Data
 
         public Value Min<Value>(Func<T, Value> xform) where Value:IComparable<Value>
         {
-            Value ret = (Value)typeof(Value).GetField("Maxvalue").GetValue(default(Value));
+            Value ret = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
             int i = ub;
             Value test;
             while (0 <= --i) {
