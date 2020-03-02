@@ -909,7 +909,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // the intelligent callers are using the override at OrderableAI
     protected virtual ActorAction BehaviorExplore(ExplorationData exploration)
     {
-      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
+      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;

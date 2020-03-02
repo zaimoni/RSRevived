@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         #region Properties
         // this can be null during pathfinding
-        public Direction MoveActorDirection { get { return Direction.FromVector(m_MoveActorTo.X - m_Actor.Location.Position.X, m_MoveActorTo.Y - m_Actor.Location.Position.Y); } }
+        public Direction MoveActorDirection { get { return Direction.FromVector(m_MoveActorTo - m_Actor.Location.Position); } }
         public Point MoveActorTo { get { return m_MoveActorTo; } }
         public Location dest { get { return new Location(m_Object.Location.Map, m_MoveActorTo); } }
         #endregion

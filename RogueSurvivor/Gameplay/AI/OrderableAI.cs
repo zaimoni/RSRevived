@@ -1692,7 +1692,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return string.Format("I saw {0} {1} {2}.", percept.Percepted.Name, str1, str2);
     }
 
-    protected ActorAction BehaviorTellFriendAboutPercept(Percept percept, int chance)
+    protected ActionSay? BehaviorTellFriendAboutPercept(Percept percept, int chance)
     {
       var scan_friends = friends_in_FOV;
       if (null == scan_friends) return null;
@@ -1714,7 +1714,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
-    protected ActorAction BehaviorTellFriendAboutPercept(Percept_<Actor> percept, int chance)
+    protected ActionSay? BehaviorTellFriendAboutPercept(Percept_<Actor> percept, int chance)
     {
       var scan_friends = friends_in_FOV;
       if (null == scan_friends) return null;
@@ -1768,7 +1768,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorEfficientlyHeadFor(want_to_resolve);
     }
 
-    protected ActionShout BehaviorWarnFriends(List<Percept_<Actor>> friends, Actor nearestEnemy)
+    protected ActionShout? BehaviorWarnFriends(List<Percept_<Actor>> friends, Actor nearestEnemy)
     {
 #if DEBUG
       if (null == nearestEnemy) throw new ArgumentNullException(nameof(nearestEnemy));
@@ -1824,10 +1824,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(target1.Location, false, false);
     }
 
-    protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
+    protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
     {
       Inventory inventory = m_Actor.Inventory;
-      if (inventory?.IsEmpty ?? true) return null;
+      if (inventory.IsEmpty) return null;
 
       // OrderableAI::BehaviorUseEntertainment has been upgraded to know about sanity medications.
 
@@ -2670,7 +2670,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorRestIfTired()
+    protected ActionWait? BehaviorRestIfTired()
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
       return new ActionWait(m_Actor);
@@ -2679,7 +2679,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction BehaviorExplore(ExplorationData exploration)
     {
       ActorCourage courage = Directives.Courage;
-      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - PrevLocation.Position.X, m_Actor.Location.Position.Y - PrevLocation.Position.Y);
+      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;

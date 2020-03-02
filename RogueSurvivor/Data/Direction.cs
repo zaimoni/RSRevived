@@ -56,17 +56,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Direction FromVector(Point v)
     {
-      foreach (Direction direction in COMPASS) {
-        if (direction.Vector == v) return direction;
-      }
-      return null;
-    }
-
-    public static Direction FromVector(int vx, int vy)
-    {
-      foreach (Direction direction in COMPASS) {
-        if (direction.Vector.X == vx && direction.Vector.Y == vy) return direction;
-      }
+      foreach (Direction direction in COMPASS) if (direction.Vector == v) return direction;
       return null;
     }
 
