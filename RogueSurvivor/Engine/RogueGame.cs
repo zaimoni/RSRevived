@@ -7380,6 +7380,7 @@ namespace djack.RogueSurvivor.Engine
     {
       // \todo possible micro-optimization from common tests behind these function calls
       // sole caller has trap at victim's location
+      if (!trap.IsActivated) return false;
       if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
 
       if (trap.TriggeredBy(victim)) DoTriggerTrap(trap, victim);

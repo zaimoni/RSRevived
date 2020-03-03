@@ -3018,7 +3018,7 @@ restart:
             return new ActionBreak(m_Actor, mapObjectAt);
 #if DEBUG
           // needs implementation
-          throw new InvalidProgramException("need to handle adjacent to blocked exit");
+          throw new InvalidProgramException("need to handle adjacent to blocked exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
         }
 #if DEBUG
@@ -3026,7 +3026,7 @@ restart:
 #else
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
 #endif
-                }
+      }
 
       // check for pre-existing relevant path (approaching dead code)
       {
