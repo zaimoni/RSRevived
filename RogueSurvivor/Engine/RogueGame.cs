@@ -11294,7 +11294,17 @@ namespace djack.RogueSurvivor.Engine
 
     private string _gameStatus(Actor a) {
       if (a != m_PlayerInTurn) return "SIMULATING";
-      return m_Status;
+      if (!string.IsNullOrEmpty(m_Status)) return m_Status;
+      if (a.Controller.InCombat) return "IN COMBAT";
+      if (a.Controller is ObjectiveAI ai) {
+        var code = ai.InterruptLongActivity();
+        if (ObjectiveAI.ReactionCode.NONE != code) {
+          if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ENEMY)) return "THREAT NEAR";
+          if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ITEM)) return "WANTED ITEMS";   // INTERESTING ITEMS is 1 character too long
+          if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.TRADE)) return "WANTED TRADE";
+        }
+      }
+      return null;
     }
 
     public void DrawActorStatus(Actor actor, int gx, int gy)

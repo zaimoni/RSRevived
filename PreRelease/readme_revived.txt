@@ -3,12 +3,14 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* new text label SIMULATING when it is not your turn.  Not 100% reliable; if things look weird try the R)un command to force a screen redraw.
+** same screen space also has the SAVING label when saving a game.  This replaces wiping the displayed messages.
+** same screen space will also tell you if far-walking will/has aborted: IN COMBAT, ENEMIES NEAR, WANTED ITEMS, or WANTED TRADES text.
+*** These correspond to living AI objective/goal interrupt conditions.  Their accuracy for the player ranges from dubious to "not really".
 * Vomit is no longer eternal.
 * Safety from traps re-implementation, replacing RS Alpha 10's implementation, has landed
 ** It is now possible to learn how to be safe from a given trap, from overhearing explanations over the police radio.
 ** Avoiding a given trap, can also teach you how to be safe from it.
-* new text label SIMULATING when it is not your turn.  Not 100% reliable; if things look weird try the R)un command to force a screen redraw.
-** same screen space also has the SAVING label when saving a game.  This replaces wiping the displayed messages.
 * Counted walk command now available; 1) through 9) steps.
 * police radio range has been respecified as the minimap radius.  Reduction from being underground is not in (yet).
 * Many RS Alpha 10 changes merged in
