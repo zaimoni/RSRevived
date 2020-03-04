@@ -8826,6 +8826,9 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Inventory.Contains(it)) throw new InvalidOperationException(it.ToString()+" already taken");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
+#if AUTOREPAIR
+      if (actor.Inventory.Contains(it)) actor.Inventory.RemoveAllQuantity(it);
+#endif
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10

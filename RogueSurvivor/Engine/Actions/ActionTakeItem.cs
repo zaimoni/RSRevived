@@ -45,6 +45,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       var itemsAt = m_Location.Map.GetItemsAtExt(m_Location.Position);
       if (!itemsAt?.Contains(m_Item) ?? true) return false;
+      if (m_Actor.Inventory.Contains(m_Item)) return false; // can happen when returning to task
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
 
