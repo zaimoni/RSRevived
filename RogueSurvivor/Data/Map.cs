@@ -1375,17 +1375,11 @@ retry:
 
     public Inventory? GetItemsAt(Point position)
     {
-#if AUDIT_ITEM_INVARIANTS
-      if (!IsInBounds(position)) return null;
-      if (m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory)) {
-        if (inventory?.IsEmpty ?? true) throw new ArgumentNullException(nameof(inventory));
-        return inventory;
+      if (m_GroundItemsByPosition.TryGetValue(position, out var inventory)) {
+        if (!inventory.IsEmpty) return inventory;
+        m_GroundItemsByPosition.Remove(position);
       }
       return null;
-#else
-      if (m_GroundItemsByPosition.TryGetValue(position, out var inventory)) return inventory;
-      return null;
-#endif
     }
 
     public Inventory? GetItemsAtExt(Point pt)
@@ -1495,7 +1489,6 @@ retry:
       var itemsAt = GetItemsAt(position);
 #if DEBUG
       if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
-      if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
 #endif
       if (itemsAt.Transfer(it, dest)) m_GroundItemsByPosition.Remove(position);
     }

@@ -134,7 +134,13 @@ namespace djack.RogueSurvivor.Data
       if (dest.Contains(it)) throw new InvalidProgramException("item already there: "+it.ToString());
 #endif
       int quantity = it.Quantity;   // need initial value
-      if (quantity != dest.AddAsMuchAsPossible(it)) return false;
+      if (quantity != dest.AddAsMuchAsPossible(it)) {
+        // inventory cross-linking?
+#if DEBUG
+        if (Contains(it) && dest.Contains(it)) throw new InvalidProgramException("need to un-crosslink inventories");
+#endif
+        return false;
+      }
       RemoveAllQuantity(it);
       return IsEmpty;
     }

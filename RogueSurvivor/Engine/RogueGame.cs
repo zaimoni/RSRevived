@@ -8831,6 +8831,14 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint before:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
 #endif
+#if AUTOREPAIR
+      var src = map.GetItemsAt(position);
+      var overlap = src.Items.Intersect(actor.Inventory.Items).ToList();
+      foreach(var fried in overlap) {
+        if (it == fried) actor.Inventory.RemoveAllQuantity(fried);
+        else src.RemoveAllQuantity(fried);
+      }
+#endif
       map.TransferFrom(it, in position, actor.Inventory);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));

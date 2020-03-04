@@ -2368,8 +2368,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
+Restart:
         var dests = targets_at(m);
         if (0 < dests.Count) {
+          try {
           foreach(var pt in dests) {
             var loc = new Location(m,pt);
             Point dist = waypoint_bounds(in loc);
@@ -2395,6 +2397,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
               goals.Add(loc);
             } else goals.Add(loc);
+          }
+          } catch (InvalidOperationException e) {
+            if (e.Message.Contains("Collection was modified")) goto Restart;
+            throw;
           }
         }
         already_seen.Add(m);
