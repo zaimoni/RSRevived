@@ -8823,6 +8823,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
+      if (actor.Inventory.Contains(it)) throw new InvalidOperationException(it.ToString()+" already taken");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
       Map map = actor.Location.Map;
@@ -9186,13 +9187,13 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       bool have_messaged = false;
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen)) {
-        AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " on." : " off."));
+        AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
         have_messaged = true;
       }
       powGen.TogglePower(actor);
       if (!have_messaged) { 
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
-          AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " on." : " off."));
+          AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
       }
       RedrawPlayScreen();
     }

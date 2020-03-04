@@ -94,6 +94,12 @@ namespace djack.RogueSurvivor.Data
 
     public int AddAsMuchAsPossible(Item it)
     {
+#if DEBUG
+      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
+#endif
+#if AUTOREPAIR
+      while(Contains(it)) RemoveAllQuantity(it);
+#endif
       int quantity = it.Quantity;
       int quantityAdded = 0;
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
