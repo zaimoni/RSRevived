@@ -10,7 +10,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionLeaveMap : ActorAction
+  internal class ActionLeaveMap : ActorAction   // savefile break \todo eliminate this class in favor of ActionUseExit
   {
     private readonly Point m_ExitPoint;
 

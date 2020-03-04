@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionTake : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Item? m_Item;
+    private Item? m_Item;   // savefile break \todo make these non-serialized
     private Point? m_pos;
 
     public ActionTake(Actor actor, Gameplay.GameItems.IDs it)

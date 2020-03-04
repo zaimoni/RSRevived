@@ -1828,8 +1828,28 @@ namespace djack.RogueSurvivor.Engine
       do {
       foreach(Map current in district.Maps) {
         // not processing secret maps used to be a micro-optimization; now a hang bug
-        while(!current.IsSecret && null != current.NextActorToAct) {
-          AdvancePlay(current, sim);
+        if (current.IsSecret) continue;
+#if IRRATIONAL_CAUTION
+        int AP_checkpoint = 0;
+        Actor? last = null;
+#endif
+        Actor? next;
+        while(null != (next = current.NextActorToAct)) {
+#if DEBUG
+          // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
+          if (next.ActionPoints > next.Doll.Body.Speed) throw new InvalidOperationException(next.Name+" is hyperactive: energy limit, "+ next.Doll.Body.Speed.ToString() + " actual "+ next.ActionPoints.ToString());
+#endif
+#if IRRATIONAL_CAUTION
+          if (last != next) AP_checkpoint = next.ActionPoints;
+          else if (AP_checkpoint < next.ActionPoints) throw new InvalidOperationException("regained energy outside of next map turn processing");
+          Map map_checkpoint = next.Location.Map;
+#endif
+          AdvancePlay(current);
+#if IRRATIONAL_CAUTION
+          if (AP_checkpoint < next.ActionPoints && map_checkpoint==next.Location.Map) throw new InvalidOperationException("regained energy outside of next map turn processing");
+          else if (0 >= (AP_checkpoint = next.ActionPoints) && next == current.NextActorToAct) throw new InvalidOperationException("actor not rotating properly");
+          last = next;
+#endif
           if (district == CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (0>= world.PlayerCount) HandleReincarnation();
           }
@@ -1921,19 +1941,24 @@ namespace djack.RogueSurvivor.Engine
       OrderableAI.AfterRaid();
     }
 
-    [SecurityCritical] private void AdvancePlay(Map map, RogueGame.SimFlags sim)
+    [SecurityCritical] private void AdvancePlay(Map map)
     {
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
 #endif
-#if TEST_MULTITHREAD_ERROR_HANDLING
-      if (map.IsSecret) { map.LocalTime.TurnCounter++; return; } // use turn overflow crash to test multi-threading error handling
+       // undiscovered CHAR base is in stasis
+#if DEBUG
+      if (map.IsSecret) throw new InvalidProgramException("do not try to process secret maps");
 #else
       if (map.IsSecret) return; // undiscovered CHAR base is in stasis
 #endif
 
-      Actor nextActorToAct = map.NextActorToAct;
-      if (nextActorToAct == null) return;
+      Actor? nextActorToAct = map.NextActorToAct;
+#if DEBUG
+      if (nextActorToAct == null) throw new InvalidProgramException("need actor to handle");
+#else
+      if (nextActorToAct == null) return; // undiscovered CHAR base is in stasis
+#endif
 
       // We actually may do something.  Do a partial solution to dropped messages here in the multi-PC case
       if (map != Player.Location.Map && !nextActorToAct.IsPlayer) {
@@ -1947,8 +1972,6 @@ namespace djack.RogueSurvivor.Engine
 
 #if DEBUG
       if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
-      // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
-      if (nextActorToAct.ActionPoints > nextActorToAct.Doll.Body.Speed) throw new InvalidOperationException(nextActorToAct.Name+" is hyperactive: energy limit, "+ nextActorToAct.Doll.Body.Speed.ToString() + " actual "+ nextActorToAct.ActionPoints.ToString());
 #endif
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
       if (nextActorToAct.Controller == null)
@@ -3014,7 +3037,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerSwitchPlace(player);
                 break;
               case PlayerCommand.USE_EXIT:
-                flag1 = !TryPlayerInsanity() && !DoUseExit(player, player.Location.Position);
+                flag1 = !TryPlayerInsanity() && !DoLeaveMap(player, player.Location.Position);
                 break;
               case PlayerCommand.USE_SPRAY:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerUseSpray(player);
@@ -5597,6 +5620,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
       if (aiActor.IsDebuggingTarget) Session.Get.World.DaimonMap(); // so we have a completely correct map when things go wrong
+      if (aiActor!=aiActor.Location.Map.NextActorToAct) throw new InvalidProgramException("trying to process the wrong actor");
 
       int AP_checkpoint = aiActor.ActionPoints;
       Location loc_checkpoint = aiActor.Location;
@@ -5608,7 +5632,7 @@ namespace djack.RogueSurvivor.Engine
       }
       // we need to know if this got past internal testing.
 #if DEBUG
-      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
+      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString()+"; starting AP "+aiActor.ActionPoints);
 #endif
       if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
       if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
@@ -5617,6 +5641,7 @@ namespace djack.RogueSurvivor.Engine
       if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor || actorAction is ActionSay)) {
         throw new InvalidOperationException(aiActor.Name+" got a free action "+actorAction.ToString());
       }
+      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
     }
 
@@ -7562,8 +7587,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool DoUseExit(Actor actor, Point exitPoint) { return DoLeaveMap(actor, in exitPoint); }
-
     public void DoSwitchPlace(Actor actor, Actor other)
     {
       actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
@@ -8805,6 +8828,9 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
+#if DEBUG
+      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint before:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
+#endif
       map.TransferFrom(it, in position, actor.Inventory);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
@@ -8812,7 +8838,7 @@ namespace djack.RogueSurvivor.Engine
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
 #if DEBUG
-      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
+      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
 #endif
     }
 
