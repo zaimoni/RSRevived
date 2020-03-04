@@ -468,7 +468,7 @@ retry:
 #if DEBUG
         if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
 #endif
-		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0], d);
+		if (0 >= m_Ready.Count && null == m_PlayerDistrict && null== m_SimDistrict) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0], d);
 #if DEBUG
         if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
 #endif
