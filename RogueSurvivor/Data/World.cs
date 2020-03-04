@@ -352,15 +352,22 @@ namespace djack.RogueSurvivor.Data
     private void ScheduleForAdvancePlay(District d, District? origin=null)
     {
       District irrational_caution = d; // retain original district for debugging purposes
-retry:
+//retry:
       if (irrational_caution == m_PlayerDistrict) return;
       if (irrational_caution == m_SimDistrict) return;
       if (m_Ready.Contains(irrational_caution)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
       District? tmp = null;
-
       int district_turn = irrational_caution.EntryMap.LocalTime.TurnCounter;
+
+      foreach(var pt in d.WorldPosition.Adjacent()) {
+        var test = At(pt);
+        if (null == test) continue;
+        if (test.IsBefore(irrational_caution) && test.EntryMap.LocalTime.TurnCounter <= district_turn) return;  // reject causality loop
+      }
+
+#if OBSOLETE
       // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
       tmp = At(irrational_caution.WorldPosition+Direction.NW);
       if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -441,6 +448,7 @@ retry:
         irrational_caution = tmp;
         goto retry;
       }
+#endif
 
       // we're clear.
       m_Ready.Enqueue(irrational_caution);
