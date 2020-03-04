@@ -1623,6 +1623,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(var view in m_Actor.Controller.FOV) {
         if (blast_radius >= (my_dist = Rules.GridDistance(m_Actor.Location.Position, in view))) continue;
         if (maxRange < my_dist) continue;
+        if (!a_map.GetTileModelAtExt(view).IsWalkable) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, in view, maxRange)) continue;
         if (_blast_field?.Contains(view) ?? false) continue;
         int score = 0;
