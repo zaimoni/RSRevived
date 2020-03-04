@@ -8,7 +8,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionTradeWithContainer : ActorAction
     {
-        private readonly Point m_Position;
+        private readonly Point m_Position;  // \savefile break: convert to location
         private readonly Item m_TakeItem;
         private readonly Item m_GiveItem;
 
@@ -33,7 +33,15 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override bool IsLegal()
         {
+            if (m_Actor.Location.Map.GetItemsAtExt(m_Position)?.Contains(m_GiveItem) ?? false) return false;
+            if (m_Actor.Inventory.Contains(m_TakeItem)) return false;
             return true;    // XXX implement this correctly at some point
+        }
+
+        public override bool IsPerformable()
+        {
+            if (!base.IsPerformable()) return false;
+            return Rules.IsAdjacent(m_Actor.Location.Position, in m_Position);
         }
 
         public override void Perform()
