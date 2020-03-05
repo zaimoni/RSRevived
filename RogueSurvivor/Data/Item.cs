@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (IsEquipped) {
         if (!actor.Inventory?.Contains(this) ?? true) throw new InvalidOperationException("Item::EquippedBy: must be in actor.Inventory");
-        return; // no-op
+//        return; // should be no-op, but not really; death drops don't unequip
       }
       actor.GetEquippedItem(Model.EquipmentPart)?.UnequippedBy(actor);
       actor.Equip(this);
