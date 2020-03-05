@@ -1620,11 +1620,246 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
+    // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
+    // we also assume no enemies in sight.
+    // XXX as a de-facto leaf function, we can get away with destructive modifications to goals
+    public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
+    {
+      if (0>=goals.Count) return null;
+      if (null == _legal_steps) return null;
+
+#if DEBUG
+      var cardinal = new Dictionary<Compass.XCOMlike, HashSet<Point>>();
+#if PROTOTYPE
+      var staging = new Dictionary<Compass.XCOMlike, HashSet<Point>>();
+
+      void install(Compass.XCOMlike dir, Point pt) {
+        if (staging.TryGetValue(dir, out var cache)) cache.Add(pt);
+        else staging.Add(dir, new HashSet<Point> {pt});
+      }
+#endif
+
+      void primary_install(Compass.XCOMlike dir, Point pt) {
+        if (cardinal.TryGetValue(dir, out var cache)) cache.Add(pt);
+        else cardinal.Add(dir, new HashSet<Point> {pt});
+#if PROTOTYPE
+        install(dir, pt);
+#endif
+      }
+
+      static Compass.XCOMlike routing_code(Point delta) {
+        if (0 == delta.X) {
+          return 0 < delta.Y ? Compass.XCOMlike.S : Compass.XCOMlike.N;
+        } else if (0 == delta.Y) {
+          return 0 < delta.X ? Compass.XCOMlike.E : Compass.XCOMlike.W;  // E, W
+        } else if (0 < delta.X) {
+          if (0 < delta.Y) {
+            if (delta.X==delta.Y) return Compass.XCOMlike.SE;
+            else return (delta.X < delta.Y) ? Compass.XCOMlike.S : Compass.XCOMlike.E;
+          } else {
+            if (delta.X==-delta.Y) return Compass.XCOMlike.SW;
+            else return (delta.X < -delta.Y) ? Compass.XCOMlike.S : Compass.XCOMlike.W;
+          }
+        } else {
+          if (0 < delta.Y) {
+            if (delta.X==-delta.Y) return Compass.XCOMlike.NE;
+            else return (-delta.X < delta.Y) ? Compass.XCOMlike.N : Compass.XCOMlike.E;
+          } else {
+            if (delta.X==delta.Y) return Compass.XCOMlike.NW;
+            else return (delta.X < delta.Y) ? Compass.XCOMlike.W : Compass.XCOMlike.N;
+          }
+        }
+      }
+
+      // classify
+      foreach(var x in goals) {
+        var delta = x.Key - m_Actor.Location.Position;
+        var code = routing_code(delta);
+        primary_install(code, x.Key);
+#if PROTOTYPE
+        switch(routing_code(delta))
+        {
+        case Compass.XCOMlike.NE:
+          install(Compass.XCOMlike.N, x.Key);
+          install(Compass.XCOMlike.E, x.Key);
+          break;
+        case Compass.XCOMlike.NW:
+          install(Compass.XCOMlike.N, x.Key);
+          install(Compass.XCOMlike.W, x.Key);
+          break;
+        case Compass.XCOMlike.W:
+          install(Compass.XCOMlike.NW, x.Key);
+          install(Compass.XCOMlike.SW, x.Key);
+          break;
+        case Compass.XCOMlike.N:
+          install(Compass.XCOMlike.NE, x.Key);
+          install(Compass.XCOMlike.NW, x.Key);
+          break;
+        case Compass.XCOMlike.S:
+          install(Compass.XCOMlike.SE, x.Key);
+          install(Compass.XCOMlike.SW, x.Key);
+          break;
+        case Compass.XCOMlike.E:
+          install(Compass.XCOMlike.NE, x.Key);
+          install(Compass.XCOMlike.SE, x.Key);
+          break;
+        case Compass.XCOMlike.SE:
+          install(Compass.XCOMlike.S, x.Key);
+          install(Compass.XCOMlike.E, x.Key);
+          break;
+        case Compass.XCOMlike.SW:
+          install(Compass.XCOMlike.S, x.Key);
+          install(Compass.XCOMlike.W, x.Key);
+          break;
+        default: throw new InvalidProgramException("unexpected routing code");
+        }
+#endif
+      }
+
+#if PROTOTYPE
+      // Veto
+      var keep_dirs = new Zaimoni.Data.Stack<Compass.XCOMlike>(stackalloc Compass.XCOMlike[(int)Compass.reference.XCOM_STRICT_UB]);
+      foreach(var pt in _legal_steps) {
+        var dir = Direction.FromVector(pt-m_Actor.Location.Position);
+        if (null != dir) keep_dirs.push((Compass.XCOMlike)(dir.Index));
+      }
+      var flush_dirs = new Zaimoni.Data.Stack<Compass.XCOMlike>(stackalloc Compass.XCOMlike[(int)Compass.reference.XCOM_STRICT_UB]);
+      var ok_steps = new List<Point>();
+      foreach(var x in staging) {
+        if (!keep_dirs.Contains(x.Key)) flush_dirs.push(x.Key);
+        else ok_steps.Add(m_Actor.Location.Position + Direction.COMPASS[(int)x.Key]);
+      }
+      if (0 >= ok_steps.Count) return null;
+      if (1 == ok_steps.Count) {
+  	    var act = DecideMove(ok_steps);
+        if (null != act) {
+          if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
+          m_Actor.Activity = Activity.IDLE;
+          return act;
+        }
+        return null;
+      } 
+
+      int i = flush_dirs.Count;
+      while(0 <= --i) staging.Remove(flush_dirs[i]);
+      if (0 >= staging.Count) return null;
+
+      // ignore goals we cannot approach
+      var working = new Zaimoni.Data.Stack<Point>(stackalloc Point[goals.Count]);
+      foreach(var x in goals) {
+        bool discard = true;
+        foreach(var y in staging) {
+          if (y.Value.Contains(x.Key)) {
+            discard = false;
+            break;
+          }
+        }
+        if (discard) working.push(x.Key);
+      }
+      i = working.Count;
+      while(0 <= --i) goals.Remove(working[i]);
+      if (0 >= goals.Count) return null;
+
+      // must be approaching a nearest goal
+      if (1 < ok_steps.Count && 1 < goals.Count) {
+        int min_dist = int.MaxValue;
+        working.Clear();
+        foreach(var x in goals) {
+          if (x.Value > min_dist) continue;
+          if (x.Value < min_dist) {
+            min_dist = x.Value;
+            working.Clear();
+          }
+          working.push(x.Key);
+        }
+        flush_dirs.Clear();
+        foreach(var x in staging) {
+          bool discard = true;
+          i = working.Count;
+          while(0 <= --i) if (x.Value.Contains(working[i])) {
+            discard = false;
+            break;
+          }
+          if (discard) flush_dirs.push(x.Key);
+        }
+        i = flush_dirs.Count;
+        while(0 <= --i) staging.Remove(flush_dirs[i]);
+        if (0 >= staging.Count) return null;
+        ok_steps.Clear();
+        foreach(var x in staging) ok_steps.Add(m_Actor.Location.Position + Direction.COMPASS[(int)x.Key]);
+        if (1 == ok_steps.Count) {
+    	  var act = DecideMove(ok_steps);
+          if (null != act) {
+            if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
+            m_Actor.Activity = Activity.IDLE;
+            return act;
+          }
+          return null;
+        } 
+      }
+
+#if DEBUG
+      if (ok_steps.Count < _legal_steps.Count) throw new InvalidOperationException("tracing");
+#endif
+#endif
+#endif
+
+      // Following is not safe to call from within item evaluation -- stack overflow
+      List<Point> legal_steps = (2 <= _legal_steps.Count) ? DecideMove_WaryOfTraps(_legal_steps) : _legal_steps;    // need working copy here
+      if (2 <= legal_steps.Count) {
+        int min_dist = int.MaxValue;
+        // this breaks down if 2+ goals equidistant.
+        {
+        var near = new Zaimoni.Data.Stack<Point>(stackalloc Point[goals.Count]);
+        foreach(var x in goals) {
+          if (x.Value > min_dist) continue;
+          if (x.Value < min_dist) {
+            min_dist = x.Value;
+            near.Clear();
+          }
+          near.push(x.Key);
+        }
+        int ub = near.Count;
+        if (1 < ub) {
+          var ok = Rules.Get.Roll(0, ub);
+          while (0 <= --ub) if (ok != ub) goals.Remove(near[ub]);
+        }
+        }
+        // exactly one minimum-cost goal now
+        int near_scale = goals.Count+1;
+        var efficiency = new Dictionary<Point,int>();
+        foreach(Point pt in legal_steps) {
+          efficiency[pt] = 0;
+          foreach(var pt_delta in goals) {
+            // relies on FOV not being "too large"
+            int delta = pt_delta.Value-Rules.GridDistance(in pt, pt_delta.Key);
+            efficiency[pt] += (min_dist == pt_delta.Value ? near_scale * delta : delta);
+          }
+        }
+        efficiency.OnlyIfMaximal();
+        legal_steps = new List<Point>(efficiency.Keys);
+      }
+
+#if DEBUG
+      IEnumerable<Point> only_cardinal = legal_steps.Where(pt => cardinal.ContainsKey((Compass.XCOMlike)(Direction.FromVector(pt - m_Actor.Location.Position).Index)));
+      if (only_cardinal.Any() && only_cardinal.Count()<legal_steps.Count) legal_steps = only_cardinal.ToList();
+#endif
+
+	  var tmpAction = DecideMove(legal_steps);
+      if (null != tmpAction) {
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      return null;
+    }
+
     protected ActorAction? DecideMove(IEnumerable<Point> src)
 	{
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
+
       var legal_steps = m_Actor.OnePathPt(m_Actor.Location); // other half
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
 
@@ -2089,7 +2324,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Point> DecideMove_WaryOfTraps(List<Point> src)
     {
 	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
-	  foreach (Point pt in src) {
+   	  foreach (Point pt in src) {
 		trap_damage_field[pt] = m_Actor.Location.Map.TrapsUnavoidableMaxDamageAtFor(pt,m_Actor);
 	  }
 	  IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
@@ -3746,6 +3981,16 @@ restart_single_exit:
           }
         }
       }
+// does not work: infinite recursion issue, too vague
+#if PROTOTYPE
+      if (!(it is ItemTrap)) {  // traps: try to use them explicitly
+        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
+        if (use_trap.UrgentAction(out var ret) && null!=ret) {
+          Objectives.Insert(0, use_trap);
+          return ret;
+        }
+      }
+#endif
       } // end scoping brace
       } // if (use_ok)
       return null;
@@ -4333,11 +4578,14 @@ restart_single_exit:
 
       // light and entertainment have been revised to possibly higher priority (context-sensitive)
       // traps and barricade material are guaranteed insurance policy status
-      // medicine currently is, but that's an AI flaw
+      // medicine historically was, but that's an AI flaw
+
+      // note that ItemTrap and ItemBarricadeMaterial have maximum rating code 1
 
       // XXX note that sleep and stamina have special uses for sufficiently good AI
       bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
-      if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
+      bool rhs_low_priority = (rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial);
+      if (rhs_low_priority) return !lhs_low_priority;
       else if (lhs_low_priority) return false;
 
       var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
@@ -4404,7 +4652,6 @@ restart_single_exit:
       }
       }
 
-
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
       if (use_ok) {
@@ -4423,24 +4670,8 @@ restart_single_exit:
         if (num4 <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
       }
-
-      { // see if we can eat our way to a free slot
-      if (inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food) {
-        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-        int num4 = m_Actor.CurrentNutritionOf(food);
-        if (num4*food.Quantity <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
-      }
-      }
-
-      { // finisbing off stimulants to get a free slot is ok
-      if (inv.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim) {
-        int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = m_Actor.ScaleMedicineEffect(stim.SleepBoost);
-        if (num4*stim.Quantity <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
-      }
-      }
       } // if (use_ok)
+
       int it_rating = ItemRatingCode_no_recursion(it);
       if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
       bool is_SAN_restore_item = (it is ItemEntertainment || (it is ItemMedicine med && 0 < med.SanityCure));
@@ -4593,6 +4824,17 @@ restart_single_exit:
           return _BehaviorDropOrExchange(armor, it, position, use_ok);
         }
       }
+
+// does not work: infinite recursion
+#if PROTOTYPE
+      if (use_ok && !(it is ItemTrap)) {  // traps: try to use them explicitly
+        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
+        if (use_trap.UrgentAction(out var ret) && null!=ret) {
+          Objectives.Insert(0, use_trap);
+          return ret;
+        }
+      }
+#endif
 
       // medicine glut ... drop it
       foreach(GameItems.IDs x in GameItems.medicine) {

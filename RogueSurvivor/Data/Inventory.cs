@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
@@ -69,6 +70,13 @@ namespace djack.RogueSurvivor.Data
 #endif
       MaxCapacity = maxCapacity;
     }
+
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    { // backstop.  Any zero-quantity items are to be eliminated.
+      int i = m_Items.Count;
+      while (0 <= --i) if (0 >= m_Items[i].Quantity) m_Items.RemoveAt(i);
+    }
+
 
     public bool AddAll(Item it)
     {

@@ -467,6 +467,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+#if PROTOTYPE
+      // more urgent to build a trap if our inventory is full
+      if (m_Actor.Inventory.IsFull) {
+        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
+        if (use_trap.UrgentAction(out var ret) && null!=ret) {
+          Objectives.Insert(0, use_trap);
+          return ret;
+        }
+      }
+#endif
+
       var rules = Rules.Get;
       if (rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);

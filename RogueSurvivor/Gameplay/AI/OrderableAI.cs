@@ -1002,57 +1002,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
-    // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
-    // we also assume no enemies in sight.
-    // XXX as a de-facto leaf function, we can get away with destructive modifications to goals
-    public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
-    {
-      if (0>=goals.Count) return null;
-      if (null == _legal_steps) return null;
-      List<Point> legal_steps = (2 <= _legal_steps.Count) ? DecideMove_WaryOfTraps(_legal_steps) : _legal_steps;    // need working copy here
-      if (2 <= legal_steps.Count) {
-        int min_dist = int.MaxValue;
-        // this breaks down if 2+ goals equidistant.
-        {
-        var near = new Zaimoni.Data.Stack<Point>(stackalloc Point[goals.Count]);
-        foreach(var x in goals) {
-          if (x.Value > min_dist) continue;
-          if (x.Value < min_dist) {
-            min_dist = x.Value;
-            near.Clear();
-          }
-          near.push(x.Key);
-        }
-        int ub = near.Count;
-        if (1 < ub) {
-          var ok = Rules.Get.Roll(0, ub);
-          while (0 <= --ub) if (ok != ub) goals.Remove(near[ub]);
-        }
-        }
-        // exactly one minimum-cost goal now
-        int near_scale = goals.Count+1;
-        var efficiency = new Dictionary<Point,int>();
-        foreach(Point pt in legal_steps) {
-          efficiency[pt] = 0;
-          foreach(var pt_delta in goals) {
-            // relies on FOV not being "too large"
-            int delta = pt_delta.Value-Rules.GridDistance(in pt, pt_delta.Key);
-            efficiency[pt] += (min_dist == pt_delta.Value ? near_scale * delta : delta);
-          }
-        }
-        efficiency.OnlyIfMaximal();
-        legal_steps = new List<Point>(efficiency.Keys);
-      }
-
-	  var tmpAction = DecideMove(legal_steps);
-      if (null != tmpAction) {
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
-      return null;
-    }
-
     public bool IsRationalTradeItem(Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
 #if DEBUG
@@ -2933,6 +2882,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (recover is ActionDropItem drop) {
             if (obj.Model.ID == drop.Item.Model.ID) return null;
             if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
+          } else if (recover is ActionTradeWithContainer trade) {
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, trade.Give.Model.ID));
           }
           if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
           return recover;
@@ -3501,7 +3452,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != interestingStacks) {
         tmp = BehaviorHeadForBestStack(interestingStacks);
-      if (null != tmp) return tmp;
+        if (null != tmp) return tmp;
       }
 
       tmp = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
