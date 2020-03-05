@@ -2335,24 +2335,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var obtain_goals_cache = new Dictionary<Map,HashSet<Point>>();
       // branch-bound prefiltering support
       var min_dist = new Dictionary<Location,int>();
+      var waypoint_for_dist = new Dictionary<Location,Location>();
       int lb = int.MaxValue;
       int ub = int.MaxValue;
       var waypoint_dist = new Dictionary<Location,Point>(); // X lower bound, Y upper bound
-      waypoint_dist[m_Actor.Location] = new Point(0,0);
-      bool last_waypoint_ok = false;
+
+      void install_waypoint(Location loc, Point dists) {
+        if (!waypoint_dist.ContainsKey(loc)) waypoint_dist[loc] = dists;
+        var e = loc.Exit;
+        if (null != e && !waypoint_dist.ContainsKey(e.Location)) {
+          var move = new ActionMoveDelta(m_Actor, e.Location, loc);
+          int cost = Map.PathfinderMoveCosts(move);
+          if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+        }
+      }
+
+      install_waypoint(m_Actor.Location, new Point(0,0));
 
       Point waypoint_bounds(in Location loc) {
         Point ret = Point.MaxValue;
-        last_waypoint_ok = false;
+        if (waypoint_dist.TryGetValue(loc, out var ret2)) return ret2;
         foreach(var x in waypoint_dist) {
-          if (x.Key==loc) return x.Value;
           int dist = Rules.InteractionDistance(x.Key,in loc);
           if (short.MaxValue <= dist || short.MaxValue - dist <= x.Value.X) continue;
-          last_waypoint_ok = true;
           int lb_dist = dist + x.Value.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) continue;
           if (ret.X > dist) ret.X = (short)dist;
+          waypoint_for_dist[loc] = x.Key;
           short ub_dist = short.MaxValue;
           if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = (short)(2*dist + x.Value.Y);
           if (ret.Y > ub_dist) ret.Y = ub_dist;
@@ -2368,6 +2378,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": obtaining goals for " + m +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s()+ "\nwaypoint_dist: "+waypoint_dist.to_s());
+#endif
 Restart:
         var dests = targets_at(m);
         if (0 < dests.Count) {
@@ -2375,28 +2388,31 @@ Restart:
           foreach(var pt in dests) {
             var loc = new Location(m,pt);
             Point dist = waypoint_bounds(in loc);
-            if (last_waypoint_ok) {
-              if (ub < dist.X) continue;
-              if (ub > dist.Y) {
-                ub = dist.Y;
-                List<Location> remove = null;
-                foreach(var x in min_dist) {
-                  if (ub < x.Value) {
-                    (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+            if (short.MaxValue <= dist.Y) continue;
+            if (ub < dist.X) continue;
+            if (ub > dist.Y) {
+              ub = dist.Y;
+              List<Location> remove = null;
+              foreach(var x in min_dist) {
+                if (ub < x.Value) {
+                  (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
 #if TRACE_GOALS
-                    if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
+                  if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
 #endif
-                  }
-                }
-                if (null != remove) foreach(var x in remove) {
-                  goals.Remove(x);
-                  min_dist.Remove(x);
                 }
               }
-              if (lb > dist.X) lb = dist.X;
-              if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
-              goals.Add(loc);
-            } else goals.Add(loc);
+              if (null != remove) foreach(var x in remove) {
+                goals.Remove(x);
+                min_dist.Remove(x);
+                waypoint_for_dist.Remove(x);
+              }
+            }
+            if (lb > dist.X) lb = dist.X;
+#if TRACE_GOALS
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "min dist: "+loc.ToString()+": "+ dist.to_s());
+#endif
+            if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
+            goals.Add(loc);
           }
           } catch (InvalidOperationException e) {
             if (e.Message.Contains("Collection was modified")) goto Restart;
@@ -2404,6 +2420,9 @@ Restart:
           }
         }
         already_seen.Add(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": min_dist " + min_dist.to_s()+"\nwaypoint_for_dist "+waypoint_for_dist.to_s());
+#endif
         return obtain_goals_cache[m] = dests;
       }
 
@@ -2443,27 +2462,27 @@ Restart:
       } 
 
       void schedule_maps(Map m2) {
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": scheduling " + m2 +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s());
+#endif
         var ok_maps = new HashSet<Map>();
         m2.ForEachExit((pt,e) => {
           if (already_seen.Contains(e.ToMap)) return;
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
-          Point dist = waypoint_bounds(new Location(m2, pt));
+          Location dest = new Location(m2, pt);
+          Point dist = waypoint_bounds(dest);
 #if DEBUG
           if (short.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
 #else
           if (short.MaxValue == dist.X) return; // something haywire, discard
 #endif
-          bool in_bounds = m2.IsInBounds(pt);
-          if (in_bounds) {
-            dist.X += 1;
-            dist.Y += 1;
-          }
 #if DEBUG
           if (0 > dist.X || 0 > dist.Y) throw new InvalidOperationException("negative distance bounds: "+dist.to_s());
 #endif
           if (ub < dist.X) return;
-          if (in_bounds) waypoint_dist[e.Location] = dist;
+          bool in_bounds = m2.IsInBounds(pt);
+          if (in_bounds) install_waypoint(dest, dist);
           ok_maps.Add(e.ToMap);
         });
         scheduled.AddRange(ok_maps);
@@ -2482,6 +2501,23 @@ Restart:
 
         scheduled.RemoveAt(0);
       }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final goals: " + goals.to_s() + "\nwaypoints: " + waypoint_for_dist.to_s());
+#endif
+      var replace_goals = new List<Location>();
+      var replace_with = new HashSet<Location>();
+      var backup_replace_with = new HashSet<Location>();
+      foreach(var x in goals) {
+        if (!waypoint_for_dist.TryGetValue(x,out var relay) || relay==m_Actor.Location) continue;
+        replace_goals.Add(x);
+        (PrevLocation != relay ? replace_with : backup_replace_with).Add(relay);
+      }
+      goals.ExceptWith(replace_goals);
+      goals.UnionWith(replace_with);
+      if (0 >= goals.Count()) goals.UnionWith(backup_replace_with);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
+#endif
       return goals;
     }
 
