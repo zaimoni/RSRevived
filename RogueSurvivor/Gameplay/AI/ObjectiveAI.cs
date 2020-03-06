@@ -2668,9 +2668,20 @@ Restart:
         return obtain_goals_cache[m] = dests;
       }
 
-      bool veto_map(Map m) {
-        if (1<m.destination_maps.Get.Count) return false;
-        return 0 >= obtain_goals(m).Count;
+      bool veto_map(Map m, Map src) {
+        if (0 < obtain_goals(m).Count) return false;
+        if (1 >= m.destination_maps.Get.Count) return true;
+        if (m == m.District.EntryMap) return false;
+        if (null != Session.Get.UniqueMaps.NavigateHospital(src)) return false;
+        if (null != Session.Get.UniqueMaps.NavigatePoliceStation(src)) return false;
+        foreach(var test in m.destination_maps.Get) {
+          if (test == src) continue;
+          if (0 < obtain_goals(test).Count) return false;
+          if (test == test.District.EntryMap) return false;
+          if (null != Session.Get.UniqueMaps.NavigateHospital(test)) return false;
+          if (null != Session.Get.UniqueMaps.NavigatePoliceStation(test)) return false;
+        }
+        return true;
       }
 
       var where_to_go = obtain_goals(dest);
@@ -2685,7 +2696,7 @@ Restart:
         var maps = new HashSet<Map>(dest.destination_maps.Get);
         if (null != preblacklist) maps.RemoveWhere(preblacklist);
         if (1<maps.Count) {
-          foreach(Map m in maps.ToList()) if (veto_map(m)) maps.Remove(m);
+          foreach(Map m in maps.ToList()) if (veto_map(m,dest)) maps.Remove(m);
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for exit short-circuit  of " + dest);
 #endif
@@ -2714,7 +2725,7 @@ Restart:
           if (already_seen.Contains(e.ToMap)) return;
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
-          if (veto_map(e.ToMap)) return;
+          if (veto_map(e.ToMap,m2)) return;
           Location dest = new Location(m2, pt);
           Point dist = waypoint_bounds(dest);
 #if DEBUG
