@@ -7952,10 +7952,7 @@ namespace djack.RogueSurvivor.Engine
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
         attacker.OnUnequipItem(itemMeleeWeapon);
-        if (itemMeleeWeapon.Quantity > 1)
-          --itemMeleeWeapon.Quantity;
-        else
-          attacker.Inventory.RemoveAllQuantity(itemMeleeWeapon);
+        attacker.Inventory.Consume(itemMeleeWeapon);
         if (isAttVisible) {
           ImportantMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
@@ -8486,14 +8483,10 @@ namespace djack.RogueSurvivor.Engine
       }
       if (target.Leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
-      if (itSpeaker.IsEquipped) itSpeaker.UnequippedBy(speaker);
-      if (trade.IsEquipped) trade.UnequippedBy(target);
-      var donor_inv = speaker.Inventory;
-      donor_inv.RemoveAllQuantity(itSpeaker);
-      var src_inv = target.Inventory;
-      src_inv.RemoveAllQuantity(trade);
-      donor_inv.AddAll(trade);
-      src_inv.AddAll(itSpeaker);
+      speaker.Remove(itSpeaker);
+      target.Remove(trade);
+      speaker.Inventory.AddAll(trade);
+      target.Inventory.AddAll(itSpeaker);
       return true;
     }
 
@@ -8530,13 +8523,11 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         RedrawPlayScreen();
       }
-      if (itSpeaker.IsEquipped) itSpeaker.UnequippedBy(speaker);
-      var inv = speaker.Inventory;
-      inv.RemoveAllQuantity(itSpeaker);
+      speaker.Remove(itSpeaker);
       target.RemoveAllQuantity(trade);
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
-      inv.AddAsMuchAsPossible(trade);
+      speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
     public void DoTradeWithContainer(Actor actor, in Point pos, Item give, Item take)
@@ -8551,8 +8542,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (give.IsEquipped) give.UnequippedBy(actor, false);
-      inv.RemoveAllQuantity(give);
+      actor.Remove(give);
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       inv.AddAsMuchAsPossible(take);
@@ -8597,15 +8587,11 @@ namespace djack.RogueSurvivor.Engine
 
       if (leader == speaker && flag3) DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       Item donate = trade.Value.Key;
-      if (donate.IsEquipped) donate.UnequippedBy(speaker);
+      speaker.Remove(donate);
       Item take = trade.Value.Value;
-      if (take.IsEquipped) take.UnequippedBy(target);
-      var donor_inv = speaker.Inventory!;
-      donor_inv.RemoveAllQuantity(donate);
-      var src_inv = speaker.Inventory!;
-      src_inv.RemoveAllQuantity(take);
-      donor_inv.AddAll(take);
-      src_inv.AddAll(donate);
+      target.Remove(take);
+      speaker.Inventory.AddAll(take);
+      target.Inventory.AddAll(donate);
     }
 
     public void DoTrade(OrderableAI speaker_c, OrderableAI target_c)
@@ -8856,6 +8842,14 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
+#if DEBUG
+      if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
+      if (target.Inventory.Contains(gift)) throw new InvalidOperationException("already had gift");
+      if (null != received) {
+        if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+        if (actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");
+      }
+#endif
       bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       // try to trade with NPC first
       if (!target.IsPlayer) {
@@ -8878,6 +8872,12 @@ namespace djack.RogueSurvivor.Engine
           else if (recover is ActionChain chain) {
             if (chain.ConcreteAction is ActionDropItem drop) received = drop.Item;
           } else if (recover is ActionUseItem use) received = use.Item;
+#if DEBUG
+         if (null != received) {
+           if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+           if (actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");
+         }
+#endif
         }
 
         if (null != received) {
@@ -8915,10 +8915,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
     {
-      if (actor.CanUnequip(gift)) gift.UnequippedBy(actor,false);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       container.PutItemIn(gift);
-      actor.Inventory.RemoveAllQuantity(gift);
+      actor.Remove(gift, false);
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
@@ -8969,7 +8968,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void DropCloneItem(Actor actor, Item it, Item clone)
     {
-      if (--it.Quantity <= 0) actor.Inventory.RemoveAllQuantity(it);
+      actor.Inventory.Consume(it);
       actor.Location.Drop(clone);
       clone.Unequip();
     }
@@ -9784,8 +9783,7 @@ namespace djack.RogueSurvivor.Engine
        // unequip, remove from inv and drop item in a random adjacent tile
        // if none possible, will drop on same tile (which then has no almost no gameplay effect 
        // because the actor can take it back asap at no ap cost... unless he dies)
-       disarmIt.UnequippedBy(actor, false);
-       actor.Inventory.RemoveAllQuantity(disarmIt);
+       actor.Remove(disarmIt, false);
        List<Point> dropTiles = new List<Point>(8);
        actor.Location.Map.ForEachAdjacent(actor.Location.Position, pt => {
          // checking if can drop there is eq to checking if can throw it there

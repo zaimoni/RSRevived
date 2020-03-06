@@ -2021,15 +2021,42 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
+    static public bool ActorsNearby(Location loc, Predicate<Actor> test)
+    {
+      var e = loc.Exit;
+      if (null != e) {
+        var a = e.Location.Actor;
+        if (null != a && test(a)) return true;
+      }
+      foreach(var pt in loc.Position.Adjacent()) {
+        var loc2 = new Location(loc.Map, pt);
+        if (!Map.Canonical(ref loc2)) continue;
+        var a = loc2.Actor;
+        if (null != a && test(a)) return true;
+        // \todo set up range-2 processing
+      }
+      return false;
+    }
+
     public ActorAction? RewriteAction(ActorAction x)
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
 
       // exit-related processing.
       if (x is ActorDest a_dest) {
-      } else {
+      } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
         var e = m_Actor.Location.Exit;
-        if (null != e) throw new InvalidOperationException("attempting on exit: "+x);
+        if (null != e) {
+          if (null != _legal_path) {
+            var ok_moves = _legal_path.CloneOnly(ActorAction.Is<ActionMoveStep>);
+            if (0 < ok_moves.Count) return Rules.Get.DiceRoller.Choose(ok_moves).Value;
+            ok_moves = _legal_path.CloneOnly(act => act is ActorDest);
+            if (0 < ok_moves.Count) return Rules.Get.DiceRoller.Choose(ok_moves).Value;
+          }
+#if DEBUG
+          throw new InvalidOperationException("attempting on exit: "+x+"\nmoves: "+_legal_path.to_s());
+#endif
+        }
       }
       return null;
     }

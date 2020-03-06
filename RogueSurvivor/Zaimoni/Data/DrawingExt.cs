@@ -481,8 +481,16 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    // don't want to name-conflict with IEnumerable::Any (use that for guaranteed non-null)
 #nullable enable
+    public static Dictionary<T,U> CloneOnly<T,U>(this Dictionary<T, U> src,Predicate<U> test)
+    {
+      if (1 >= src.Count) return src;
+      var ret = new Dictionary<T, U>();
+      foreach(var x in src) if (test(x.Value)) ret.Add(x.Key, x.Value);
+      return ret;
+    }
+
+    // don't want to name-conflict with IEnumerable::Any (use that for guaranteed non-null)
     public static bool Any_<T>(this IEnumerable<T>? src, Predicate<T> test)
     {
       if (null != src) foreach(var x in src) if (test(x)) return true;

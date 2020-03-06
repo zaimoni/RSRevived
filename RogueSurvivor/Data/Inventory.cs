@@ -148,8 +148,18 @@ namespace djack.RogueSurvivor.Data
       return HasAtLeastOneStackableWith(it);
     }
 
-    public void RemoveAllQuantity(Item it) { m_Items.Remove(it); }
-    public void Consume(Item it) { if (0 >= --it.Quantity) m_Items.Remove(it); }
+    public void RemoveAllQuantity(Item it) {
+#if DEBUG
+      if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
+#endif
+      m_Items.Remove(it);
+    }
+    public void Consume(Item it) {
+#if DEBUG
+      if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
+#endif
+      if (0 >= --it.Quantity) m_Items.Remove(it);
+    }
 
     /// <returns>true if and only if the source inventory is now empty</returns>
     public bool Transfer(Item it, Inventory dest) {

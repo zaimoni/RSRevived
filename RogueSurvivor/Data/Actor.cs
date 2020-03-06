@@ -2912,8 +2912,7 @@ namespace djack.RogueSurvivor.Data
       var game = RogueForm.Game;
       var equippedItem = GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
       if (null != equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
-        OnUnequipItem(equippedItem);
-        Inventory.RemoveAllQuantity(equippedItem);
+        Remove(equippedItem);
         if (game.ForceVisibleToPlayer(this)) {
           game.ImportantMessage(Engine.RogueGame.MakeMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
         }
@@ -3603,6 +3602,12 @@ namespace djack.RogueSurvivor.Data
         m_CurrentDefence -= armor.ToDefence();
         return;
       }
+    }
+
+    public void Remove(Item it, bool canMessage=true)
+    {
+      it.UnequippedBy(this, canMessage);
+      m_Inventory.RemoveAllQuantity(it);
     }
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages

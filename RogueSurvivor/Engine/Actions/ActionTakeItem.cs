@@ -159,6 +159,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsPerformable()
     {
       if (!base.IsPerformable()) return false;
+#if DEBUG
+      if (!m_Actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
+      if (m_Target.Inventory.Contains(gift)) throw new InvalidOperationException("already had gift");
+#endif
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
         var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
@@ -171,7 +175,16 @@ namespace djack.RogueSurvivor.Engine.Actions
           return null;
         } 
 
-        if (null!=(received = parse_recovery(recover))) return true;
+        if (null!=(received = parse_recovery(recover))) {
+#if AUTOREPAIR
+          if (m_Target.Inventory.Contains(received) && m_Actor.Inventory.Contains(received)) m_Actor.Remove(received);
+#endif
+#if DEBUG
+          if (!m_Target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+          if (m_Actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");    // if this throws auto-repair is an option
+#endif
+          return true;
+        }
 
         m_FailReason = "target does not have room in inventory";
 #if DEBUG
