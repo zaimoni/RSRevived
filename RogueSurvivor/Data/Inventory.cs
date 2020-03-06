@@ -112,11 +112,11 @@ namespace djack.RogueSurvivor.Data
 
     public int AddAsMuchAsPossible(Item it)
     {
-#if DEBUG
-      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
-#endif
 #if AUTOREPAIR
       while(Contains(it)) RemoveAllQuantity(it);
+#endif
+#if DEBUG
+      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
 #endif
       int quantity = it.Quantity;
       int quantityAdded = 0;
@@ -288,40 +288,36 @@ namespace djack.RogueSurvivor.Data
         /// </summary>
         public void Defrag()
         {
-            int countEmptyStacksToRemove = 0;
-
             // iterate over all stackable items to see if we can "steal" quantity from other stacks.
-            // since we iterate from left to right and steal from the right, the leftmost stacks will always be
-            // the biggest one.
-            int n = m_Items.Count;
-            for (int i = 0; i < n; i++) {
+            // since we steal from the right, the leftmost not-full stacks will always be the biggest one.
+            int ub = m_Items.Count;
+            while (0 <= --ub) {
+              Item stealFrom = m_Items[ub];
+              if (0 >= stealFrom.Quantity) {
+                m_Items.Remove(stealFrom);
+                continue;
+              }
+              if (!stealFrom.CanStackMore) continue;
+              int i = ub;
+              while(0 <= --i) {
                 Item mergeWith = m_Items[i];
-                if (mergeWith.Quantity > 0 && mergeWith.CanStackMore) {
-                    for (int j = i + 1; j < n && mergeWith.CanStackMore; j++) {
-                        Item stealFrom = m_Items[j];
+                if (0 >= mergeWith.Quantity) {
+                  m_Items.Remove(mergeWith);
+                  if (0 > --ub) break;
+                  continue;
+                }
 #if DEBUG
-                        if (mergeWith == stealFrom) throw new InvalidOperationException("duplicate items found");
+                if (mergeWith == stealFrom) throw new InvalidOperationException("duplicate items found");
 #endif
-                        if (stealFrom.Model == mergeWith.Model && stealFrom.Quantity > 0) {
-                            int steal = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, stealFrom.Quantity);
-                            mergeWith.Quantity += steal;
-                            stealFrom.Quantity -= steal;
-                            if (stealFrom.Quantity <= 0) countEmptyStacksToRemove++;
-                        }
-                    }
+                if (stealFrom.Model == mergeWith.Model && mergeWith.CanStackMore) {
+                  int steal = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, stealFrom.Quantity);
+                  mergeWith.Quantity += steal;
+                  if (0 >= (stealFrom.Quantity -= steal)) {
+                    m_Items.Remove(stealFrom);
+                    break;
+                  }
                 }
-            }
-
-            // some smaller stacks might now be empty, delete them now.
-            if (countEmptyStacksToRemove > 0) {
-                int i = 0;
-                do {
-                    if (m_Items[i].Quantity <= 0) {
-                        --countEmptyStacksToRemove;
-                        m_Items.RemoveAt(i);
-                    } else i++;
-                }
-                while (i < m_Items.Count && countEmptyStacksToRemove > 0);
+              }
             }
         }
 
