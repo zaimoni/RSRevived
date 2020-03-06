@@ -8561,6 +8561,12 @@ namespace djack.RogueSurvivor.Engine
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
         return;
       }
+#if DEBUG
+      if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer have item");
+      if (!speaker.Inventory.Contains(trade.Value.Key)) throw new InvalidOperationException("no longer have item");
+      if (speaker.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("already had item");
+      if (target.Inventory.Contains(trade.Value.Key)) throw new InvalidOperationException("already had item");
+#endif
 
       bool wantedItem = true;
       bool flag3 = target_c.IsInterestingTradeItem(speaker, trade.Value.Key);
@@ -8856,6 +8862,13 @@ namespace djack.RogueSurvivor.Engine
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
           if (do_not_crash_on_target_turn) DoWait(target);
+#if AUTOREPAIR
+          if (actor.Inventory.Contains(trade.Value.Value) && target.Inventory.Contains(trade.Value.Value)) actor.Remove(trade.Value.Value);
+#endif
+#if DEBUG
+          if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
+          if (actor.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("already had recieved");
+#endif
           DoTrade(actor.Controller as OrderableAI, trade, target.Controller as OrderableAI, false);
           return;
         }
