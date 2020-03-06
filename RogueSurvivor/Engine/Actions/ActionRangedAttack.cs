@@ -10,10 +10,12 @@ using System.Collections.Generic;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionRangedAttack : ActorAction
+  internal class ActionRangedAttack : ActorAction, CombatAction
   {
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;
@@ -22,12 +24,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=FireMode.DEFAULT)
       : base(actor)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       m_Target = target;
       m_Mode = mode;
     }
+
+    public Actor target { get { return m_Target; } }
 
     public override bool IsLegal()
     {

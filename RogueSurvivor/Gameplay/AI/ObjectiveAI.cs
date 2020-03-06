@@ -2020,19 +2020,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-#if PROTOTYPE
-    public ActorAction RewriteAction(ActorAction x)
+#nullable enable
+    public ActorAction? RewriteAction(ActorAction x)
     {
-      if (x is ActionShove shove && 2==Rules.GridDistance(m_Actor.Location.Position,shove.To)) {
-        // check for a valid push to the same destination.  Not as likely to resist.
-        // XXX there is only one location generating shoves (pathing), do this rewrite there instead
-        var candidates = shove.To.Adjacent().Where(pt => 1==Rules.GridDistance(m_Actor.Location.Position,pt) && m_Actor.Location.Map.HasMapObjectAt(pt) && shove.To.Adjacent().Contains(pt)).Select(pt => new Engine.Actions.ActionPush(m_Actor,m_Actor.Location.Map.GetMapObjectAt(pt),Direction.FromVector(shove.To.X-pt.X,shove.To.Y-pt.Y)));
-        candidates = candidates.Where(Action => Action.IsLegal());
-        if (candidates.Any()) return RogueForm.Game.Rules.DiceRoller.Choose(candidates.ToList());
+      if (x is CombatAction) return null;   // do not second-guess combat actions
+
+      // exit-related processing.
+      if (x is ActorDest a_dest) {
+      } else {
+        var e = m_Actor.Location.Exit;
+        if (null != e) throw new InvalidOperationException("attempting on exit: "+x);
       }
       return null;
     }
-#endif
+#nullable restore
 
     public void ScheduleFollowup(ActorAction x)
     {
@@ -2676,13 +2677,15 @@ Restart:
       bool veto_map(Map m, Map src) {
         if (0 < obtain_goals(m).Count) return false;
         if (1 >= m.destination_maps.Get.Count) return true;
-        if (m == m.District.EntryMap) return false;
+        bool is_surface = m == m.District.EntryMap;
+        if (is_surface) return false;
         if (null != Session.Get.UniqueMaps.NavigateHospital(src)) return false;
         if (null != Session.Get.UniqueMaps.NavigatePoliceStation(src)) return false;
         foreach(var test in m.destination_maps.Get) {
           if (test == src) continue;
           if (0 < obtain_goals(test).Count) return false;
           if (test == test.District.EntryMap) return false;
+          if (!is_surface && test.destination_maps.Get.Contains(m.District.EntryMap)) return false;
           if (null != Session.Get.UniqueMaps.NavigateHospital(test)) return false;
           if (null != Session.Get.UniqueMaps.NavigatePoliceStation(test)) return false;
         }
@@ -3321,6 +3324,7 @@ restart:
             return new ActionBreak(m_Actor, mapObjectAt);
 #if DEBUG
           var actorAt = e.Location.Actor;
+          if (null != actorAt && !m_Actor.IsEnemyOf(actorAt)) throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
           // needs implementation
           throw new InvalidProgramException("need to handle adjacent to blocked exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif

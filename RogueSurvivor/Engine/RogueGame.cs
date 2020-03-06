@@ -8876,7 +8876,7 @@ namespace djack.RogueSurvivor.Engine
           if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = ai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
           if (recover is ActionTradeWithContainer trade) received = trade.Give;
           else if (recover is ActionChain chain) {
-            if (chain.First is ActionDropItem drop) received = drop.Item;
+            if (chain.ConcreteAction is ActionDropItem drop) received = drop.Item;
           } else if (recover is ActionUseItem use) received = use.Item;
         }
 

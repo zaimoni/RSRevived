@@ -7,11 +7,11 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 namespace djack.RogueSurvivor.Engine.Actions
 {
     [Serializable]
-    internal class ActionChain : ActorAction
+    internal class ActionChain : ActorAction,Resolvable
     {
         private readonly List<ActorAction> m_Actions;
 
-        public ActorAction First { get { return m_Actions[0]; } }
+        public ActorAction ConcreteAction { get { return m_Actions[0]; } }
 
         public ActionChain(Actor actor, List<ActorAction> actions)
         : base(actor)

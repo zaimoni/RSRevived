@@ -74,7 +74,17 @@ namespace djack.RogueSurvivor.Data
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     { // backstop.  Any zero-quantity items are to be eliminated.
       int i = m_Items.Count;
+#if DEBUG
+      while (0 <= --i) {
+        if (0 >= m_Items[i].Quantity) throw new InvalidOperationException("tried to save zero-qty item");
+        int j = i;
+        while (0 <= --j) {
+          if (m_Items[i]==m_Items[j]) throw new InvalidOperationException("tried to save duplicate items");
+        }
+      }
+#else
       while (0 <= --i) if (0 >= m_Items[i].Quantity) m_Items.RemoveAt(i);
+#endif
     }
 
 
@@ -279,6 +289,9 @@ namespace djack.RogueSurvivor.Data
                 if (mergeWith.Quantity > 0 && mergeWith.CanStackMore) {
                     for (int j = i + 1; j < n && mergeWith.CanStackMore; j++) {
                         Item stealFrom = m_Items[j];
+#if DEBUG
+                        if (mergeWith == stealFrom) throw new InvalidOperationException("duplicate items found");
+#endif
                         if (stealFrom.Model == mergeWith.Model && stealFrom.Quantity > 0) {
                             int steal = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, stealFrom.Quantity);
                             mergeWith.Quantity += steal;

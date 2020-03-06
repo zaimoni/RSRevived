@@ -1386,7 +1386,7 @@ retry:
     {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
       if (IsInBounds(pt)) return GetItemsAt(pt);
       Location? test = _Normalize(pt);
-      return null == test ? null : test.Value.Map.GetItemsAt(test.Value.Position);
+      return null == test ? null : test.Value.Items;
     }
 
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)

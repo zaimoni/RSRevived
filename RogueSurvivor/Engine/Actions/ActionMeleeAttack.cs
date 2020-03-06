@@ -5,23 +5,28 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionMeleeAttack : ActorAction
+  internal interface CombatAction
   {
+    Actor target { get; }  // of m_Actor
+  }
+
+  internal class ActionMeleeAttack : ActorAction, CombatAction
+    {
     private readonly Actor m_Target;
 
     public ActionMeleeAttack(Actor actor, Actor target)
       : base(actor)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       m_Target = target;
       actor.Activity = Activity.IDLE;   // transition to fighting is in DoMeleeAttack
     }
+
+    public Actor target { get { return m_Target; } }
 
     public override bool IsLegal()
     {
