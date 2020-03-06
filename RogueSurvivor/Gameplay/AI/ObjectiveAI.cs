@@ -2009,6 +2009,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // target should not be sleeping; check for that anyway
           if (null != target.Location.Exit && !target.IsSleeping) return true;
         }
+        // cf OrderableAI::RejectSwitchPlaces
+        if (target.Controller is OrderableAI oai) {
+          var trace = oai.WouldUseAccessibleStack(target.Location);
+          if (null != trace) return true;
+        }
       }
       if (x is ActionUseExit exit && !exit.IsNotBlocked) return true;
 
@@ -3315,6 +3320,7 @@ restart:
           if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
             return new ActionBreak(m_Actor, mapObjectAt);
 #if DEBUG
+          var actorAt = e.Location.Actor;
           // needs implementation
           throw new InvalidProgramException("need to handle adjacent to blocked exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
