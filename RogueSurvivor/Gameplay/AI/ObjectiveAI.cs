@@ -2590,21 +2590,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Point waypoint_bounds(in Location loc) {
         Point ret = Point.MaxValue;
         if (waypoint_dist.TryGetValue(loc, out var ret2)) return ret2;
-        foreach(var x in waypoint_dist) {
-          int dist = Rules.InteractionDistance(x.Key,in loc);
-          if (short.MaxValue <= dist || short.MaxValue - dist <= x.Value.X) continue;
-          int lb_dist = dist + x.Value.X;
+
+        void set_distance_estimate(Location test, in Location loc, Point range)
+        {
+          int dist = Rules.InteractionDistance(test,in loc);
+          if (short.MaxValue <= dist || short.MaxValue - dist <= range.X) return;
+          int lb_dist = dist + range.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
-          if (ret.X < lb_dist) continue;
-          if (ret.X > dist) ret.X = (short)dist;
-          waypoint_for_dist[loc] = x.Key;
+          if (ret.X < lb_dist) return;
+          if (ret.X > dist) {
+            ret.X = (short)dist;
+            waypoint_for_dist[loc] = test;
+          }
           short ub_dist = short.MaxValue;
-          if (ub_dist/2 >= dist && ub_dist - 2*dist > x.Value.Y) ub_dist = (short)(2*dist + x.Value.Y);
-          if (ret.Y > ub_dist) ret.Y = ub_dist;
-#if DEBUG
-          if (ret.X > ret.Y) throw new InvalidOperationException("generated inverted bounds: "+ret.to_s());
-#endif
+          if (ub_dist/2 >= dist && ub_dist - 2*dist > range.Y) ub_dist = (short)(2*dist + range.Y);
+          if (ret.Y > ub_dist) {
+            ret.Y = ub_dist;
+            waypoint_for_dist[loc] = test;
+          }
         }
+
+        set_distance_estimate(m_Actor.Location, in loc, new Point(0,0));
+        foreach(var x in waypoint_dist) set_distance_estimate(x.Key, in loc, x.Value);
 #if DELEGATED_TO_CALLER
         if (int.MaxValue <= ret.X) throw new InvalidOperationException("no-data bounds: "+ret.to_s()+" for "+loc+"; "+waypoint_dist.to_s()+" "+ last_waypoint_ok.ToString());
 #endif
@@ -2661,6 +2668,11 @@ Restart:
         return obtain_goals_cache[m] = dests;
       }
 
+      bool veto_map(Map m) {
+        if (1<m.destination_maps.Get.Count) return false;
+        return 0 >= obtain_goals(m).Count;
+      }
+
       var where_to_go = obtain_goals(dest);
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s()+" for "+dest);
@@ -2673,10 +2685,7 @@ Restart:
         var maps = new HashSet<Map>(dest.destination_maps.Get);
         if (null != preblacklist) maps.RemoveWhere(preblacklist);
         if (1<maps.Count) {
-          foreach(Map m in maps.ToList()) {
-            if (1<m.destination_maps.Get.Count) continue;
-            if (0 >= obtain_goals(m).Count) maps.Remove(m);
-          }
+          foreach(Map m in maps.ToList()) if (veto_map(m)) maps.Remove(m);
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for exit short-circuit  of " + dest);
 #endif
@@ -2705,6 +2714,7 @@ Restart:
           if (already_seen.Contains(e.ToMap)) return;
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
+          if (veto_map(e.ToMap)) return;
           Location dest = new Location(m2, pt);
           Point dist = waypoint_bounds(dest);
 #if DEBUG
