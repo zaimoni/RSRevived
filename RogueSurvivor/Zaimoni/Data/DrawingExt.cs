@@ -490,6 +490,20 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src) where V:class
+    {
+      var ret = new Dictionary<T, V>();
+      foreach(var x in src) if (x.Value is V ok) ret.Add(x.Key, ok);
+      return ret;
+    }
+
+    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src,Predicate<V> test) where V:class
+    {
+      var ret = new Dictionary<T, V>();
+      foreach(var x in src) if (x.Value is V ok && test(ok)) ret.Add(x.Key, ok);
+      return ret;
+    }
+
     // don't want to name-conflict with IEnumerable::Any (use that for guaranteed non-null)
     public static bool Any_<T>(this IEnumerable<T>? src, Predicate<T> test)
     {

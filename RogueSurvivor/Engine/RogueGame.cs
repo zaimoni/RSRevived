@@ -5643,6 +5643,12 @@ namespace djack.RogueSurvivor.Engine
       }
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
+#if IRRATIONAL_CAUTION
+      Engine.Session.Get.World.DoForAllActors(a => {
+        var inv = a.Inventory;
+        if (null != inv && inv.Has<Item>(it => 0 >= it.Quantity)) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered " + a.Name + " zero-qty: " + a.Inventory);
+      });
+#endif
     }
 
     private void HandleAdvisor(Actor player)

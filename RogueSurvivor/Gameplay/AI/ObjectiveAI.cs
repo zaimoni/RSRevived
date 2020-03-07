@@ -2038,15 +2038,66 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    static public int Air(Location test, Actor viewpoint) {
+      int ret = 0;
+      foreach(var pt in test.Position.Adjacent()) {
+        var loc = new Location(test.Map, pt);
+        if (!Map.Canonical(ref loc)) continue;
+        if (Map.Canonical(ref loc) && loc.IsWalkableFor(viewpoint)) ret++;
+      }
+      return ret;
+    }
+
+    static public Actor? NeedsAir(Location test, Actor viewpoint) {
+      foreach(var pt in test.Position.Adjacent()) {
+        var loc = new Location(test.Map, pt);
+        if (!Map.Canonical(ref loc) || loc==viewpoint.Location) continue;
+        var a = loc.Actor;
+        if (null == a) continue;
+        var air = Air(loc, a);    // for debugging convenience
+        if (1 >= air) return a;
+      }
+      return null;
+    }
+
+    public static bool NoContestedExit(ActorDest a_dest) {
+      var e = a_dest.dest.Exit;
+      return null == e || !ActorsNearby(e.Location, a => !a.IsSleeping);
+    }
+
     public ActorAction? RewriteAction(ActorAction x)
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
 
       // exit-related processing.
+      var e = m_Actor.Location.Exit;
       if (x is ActorDest a_dest) {
+        if (null == e) {
+          var dest_e = a_dest.dest.Exit;
+          bool destination_exit_contested = null != dest_e && ActorsNearby(dest_e.Location, a => !a.IsSleeping);
+            // crowd control
+          var gasping = NeedsAir(a_dest.dest, m_Actor);
+          if (null != gasping) {
+            if (null != _legal_path) {
+              var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
+              // if very crowded, relax standards
+              if (0 >= tolerable_moves.Count) tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>();
+              if (1 == tolerable_moves.Count) return (ActorAction)tolerable_moves.First().Value;
+              var best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>(NoContestedExit);
+              if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
+              var rude_moves = tolerable_moves.CloneOnly(NoContestedExit);
+              if (1 <= rude_moves.Count) return (ActorAction)Rules.Get.DiceRoller.Choose(rude_moves).Value;
+              best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>();
+              if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
+              if (1 <= tolerable_moves.Count) return (ActorAction)Rules.Get.DiceRoller.Choose(tolerable_moves).Value;
+            }
+#if DEBUG
+            throw new InvalidOperationException(gasping.Name+" needs crowd control\nmoves: "+_legal_path.to_s());
+#endif
+          }
+        }
       } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
-        var e = m_Actor.Location.Exit;
-        if (null != e) {
+        if (null != e) {    // don't dawdle on the exit itself
           if (null != _legal_path) {
             var ok_moves = _legal_path.CloneOnly(ActorAction.Is<ActionMoveStep>);
             if (0 < ok_moves.Count) return Rules.Get.DiceRoller.Choose(ok_moves).Value;
