@@ -5643,6 +5643,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
+RestartZeroCheck:
+      try {
 #if DEBUG
       Engine.Session.Get.World.DoForAllActors(a => {
         var inv = a.Inventory;
@@ -5655,6 +5657,10 @@ namespace djack.RogueSurvivor.Engine
         if (null != zeroed) inv.RemoveAllQuantity(zeroed);
       });
 #endif
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartZeroCheck;
+        throw;
+      }
     }
 
     private void HandleAdvisor(Actor player)
@@ -7595,6 +7601,9 @@ namespace djack.RogueSurvivor.Engine
       if (need_stamina_regen) actor.PreTurnStart();
       OnActorEnterTile(actor);
       actor.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
+      if (   actor.Controller is OrderableAI ai && !is_cross_district
+          && exitAt.Location.Map== exitAt.Location.Map.District.EntryMap)
+        ai.Avoid(exitAt.Location.Exit);
       if (isPlayer) PanViewportTo(actor.Location);
       return true;
     }

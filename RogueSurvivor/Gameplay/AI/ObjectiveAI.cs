@@ -3785,6 +3785,13 @@ restart_single_exit:
       } else test.NewTarget(a);
     }
 
+    public void Avoid(Exit e)
+    {
+        var veto_map = Goal<Goals.BlacklistExits>();
+        if (null != veto_map) veto_map.Blacklist(e);
+        else Objectives.Add(new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e));
+    }
+
     public bool InCommunicationWith(Actor a)
     {
       if (m_Actor==a) return true;
