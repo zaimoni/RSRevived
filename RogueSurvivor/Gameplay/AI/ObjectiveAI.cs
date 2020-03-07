@@ -1971,6 +1971,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorDest a_dest) {
         if (a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
         if (1>=FastestTrapKill(a_dest.dest)) return true;   // death-trapped
+#if PROTOTYPE
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          if (x is ActionUseExit) {
+            var leader = m_Actor.LiveLeader;
+            if (null != leader && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
+          } else {
+            var e = a_dest.dest.Exit;
+            if (null != e) {
+              if (null != NeedsAir(e.Location, m_Actor)) return true;    // too crowded?
+              var leader = m_Actor.LiveLeader;
+              if (null != leader && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
+            }
+          }
+        }
+#endif
 #if USING_ESCAPE_MOVES
         var friends = friends_in_FOV;
         if (null != friends_in_FOV) {
@@ -2058,6 +2073,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (1 >= air) return a;
       }
       return null;
+    }
+
+    static public bool VetoExit(Actor a, Exit? e) {
+      if (a.Model.Abilities.AI_CanUseAIExits && null != e) {
+        if (null != Gameplay.AI.ObjectiveAI.NeedsAir(e.Location, a)) return true;    // too crowded?
+#if PROTOTYPE
+        var leader = actor.LiveLeader;
+        if (null != leader && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
+#endif
+      }
+      return false;
     }
 
     public static bool NoContestedExit(ActorDest a_dest) {
@@ -2662,7 +2688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       void install_waypoint(Location loc, Point dists) {
         if (!waypoint_dist.ContainsKey(loc)) waypoint_dist[loc] = dists;
         var e = loc.Exit;
-        if (null != e && !waypoint_dist.ContainsKey(e.Location)) {
+        if (null != e && !waypoint_dist.ContainsKey(e.Location) && !VetoExit(m_Actor, e)) {
           var move = new ActionMoveDelta(m_Actor, e.Location, loc);
           int cost = Map.PathfinderMoveCosts(move);
           if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
@@ -2812,6 +2838,7 @@ Restart:
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
           if (veto_map(e.ToMap,m2)) return;
+          if (VetoExit(m_Actor, e)) return;
           Location dest = new Location(m2, pt);
           Point dist = waypoint_bounds(dest);
 #if DEBUG

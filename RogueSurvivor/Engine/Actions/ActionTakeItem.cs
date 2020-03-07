@@ -176,12 +176,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         } 
 
         if (null!=(received = parse_recovery(recover))) {
-#if AUTOREPAIR
-          if (m_Target.Inventory.Contains(received) && m_Actor.Inventory.Contains(received)) m_Actor.Remove(received);
-#endif
 #if DEBUG
           if (!m_Target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
           if (m_Actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");    // if this throws auto-repair is an option
+#else
+          if (m_Target.Inventory.Contains(received) && m_Actor.Inventory.Contains(received)) m_Actor.Remove(received);
 #endif
           return true;
         }

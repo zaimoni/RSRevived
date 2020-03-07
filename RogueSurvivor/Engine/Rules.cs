@@ -406,6 +406,7 @@ namespace djack.RogueSurvivor.Engine
            // better to push to non-adjacent when pathing
            // we are adjacent due to the early-escape above
            var push_dest = actorAt.ShoveDestinations;
+           push_dest.OnlyIf(loc => Gameplay.AI.ObjectiveAI.VetoExit(actorAt, loc.Exit));
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {

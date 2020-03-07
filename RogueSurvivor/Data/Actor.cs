@@ -366,11 +366,7 @@ namespace djack.RogueSurvivor.Data
       if (null != m_Followers) foreach(var fo in m_Followers) op(fo);
     }
 
-    public int CountFollowers {
-      get {
-        return m_Followers?.Count ?? 0;
-      }
-    }
+    public int CountFollowers { get { return m_Followers?.Count ?? 0; } }
 
     public int MaxFollowers {
       get {

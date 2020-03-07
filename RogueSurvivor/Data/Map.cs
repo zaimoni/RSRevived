@@ -708,6 +708,10 @@ namespace djack.RogueSurvivor.Data
     public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
     {
       if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+      if (actor.Model.Abilities.AI_CanUseAIExits) {
+        if (Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt))) return true;
+      }
+
       if (actor.CanEnter(new Location(this,pt))) return false;
       if (   1 == Engine.Rules.InteractionDistance(new Location(this,pt),actor.Location)
           && null == Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return true;
