@@ -132,6 +132,7 @@
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
+    <Compile Include="Gameplay\AI\Goals\BlacklistExits.cs" />
     <Compile Include="Gameplay\AI\Goals\SetTrap.cs" />
     <Compile Include="Gameplay\AI\Goals\Objective.cs" />
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />

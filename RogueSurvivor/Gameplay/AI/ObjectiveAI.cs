@@ -2091,6 +2091,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null == e || !ActorsNearby(e.Location, a => !a.IsSleeping);
     }
 
+    protected ActorAction? BehaviorMakeTime() {
+      if (null == _legal_path) return null;
+      var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
+      // if very crowded, relax standards
+      if (0 >= tolerable_moves.Count) tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>();
+      if (1 == tolerable_moves.Count) return (ActorAction)tolerable_moves.First().Value;
+      var best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>(NoContestedExit);
+      if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
+      var rude_moves = tolerable_moves.CloneOnly(NoContestedExit);
+      if (1 <= rude_moves.Count) return (ActorAction)Rules.Get.DiceRoller.Choose(rude_moves).Value;
+      best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>();
+      if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
+      /* if (1 <= tolerable_moves.Count) */ return (ActorAction)Rules.Get.DiceRoller.Choose(tolerable_moves).Value;
+    }
+
     public ActorAction? RewriteAction(ActorAction x)
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
@@ -2104,19 +2119,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // crowd control
           var gasping = NeedsAir(a_dest.dest, m_Actor);
           if (null != gasping) {
-            if (null != _legal_path) {
-              var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
-              // if very crowded, relax standards
-              if (0 >= tolerable_moves.Count) tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>();
-              if (1 == tolerable_moves.Count) return (ActorAction)tolerable_moves.First().Value;
-              var best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>(NoContestedExit);
-              if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
-              var rude_moves = tolerable_moves.CloneOnly(NoContestedExit);
-              if (1 <= rude_moves.Count) return (ActorAction)Rules.Get.DiceRoller.Choose(rude_moves).Value;
-              best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>();
-              if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
-              if (1 <= tolerable_moves.Count) return (ActorAction)Rules.Get.DiceRoller.Choose(tolerable_moves).Value;
-            }
+            var act = BehaviorMakeTime();
+            if (null != act) return act;
 #if DEBUG
             throw new InvalidOperationException(gasping.Name+" needs crowd control\nmoves: "+_legal_path.to_s());
 #endif
@@ -2124,12 +2128,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
         if (null != e) {    // don't dawdle on the exit itself
-          if (null != _legal_path) {
-            var ok_moves = _legal_path.CloneOnly(ActorAction.Is<ActionMoveStep>);
-            if (0 < ok_moves.Count) return Rules.Get.DiceRoller.Choose(ok_moves).Value;
-            ok_moves = _legal_path.CloneOnly(act => act is ActorDest);
-            if (0 < ok_moves.Count) return Rules.Get.DiceRoller.Choose(ok_moves).Value;
-          }
+          var act = BehaviorMakeTime();
+          if (null != act) return act;
 #if DEBUG
           throw new InvalidOperationException("attempting on exit: "+x+"\nmoves: "+_legal_path.to_s());
 #endif
@@ -2674,6 +2674,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ObjectiveAI::Goals (depth 1) @ "+m_Actor.Location);
 #endif
+      var exit_veto = Goal<Goals.BlacklistExits>();
       var goals = new HashSet<Location>();
       var already_seen = new List<Map>();
       var scheduled = new List<Map>();
@@ -2688,10 +2689,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       void install_waypoint(Location loc, Point dists) {
         if (!waypoint_dist.ContainsKey(loc)) waypoint_dist[loc] = dists;
         var e = loc.Exit;
-        if (null != e && !waypoint_dist.ContainsKey(e.Location) && !VetoExit(m_Actor, e)) {
-          var move = new ActionMoveDelta(m_Actor, e.Location, loc);
-          int cost = Map.PathfinderMoveCosts(move);
-          if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+        if (null != e && !waypoint_dist.ContainsKey(e.Location) && (null == exit_veto || !exit_veto.Veto(e))) {
+          if (VetoExit(m_Actor, e)) {
+            if (1 < loc.Map.destination_maps.Get.Count) {
+              if (null == exit_veto) {
+                exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                Objectives.Add(exit_veto);
+              } else exit_veto.Blacklist(e);
+            }
+          } else {
+            var move = new ActionMoveDelta(m_Actor, e.Location, loc);
+            int cost = Map.PathfinderMoveCosts(move);
+            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+          }
         }
       }
 
@@ -2838,7 +2848,16 @@ Restart:
           if (scheduled.Contains(e.ToMap)) return;
           if (null!=preblacklist && preblacklist(e.ToMap)) return;
           if (veto_map(e.ToMap,m2)) return;
-          if (VetoExit(m_Actor, e)) return;
+          if (null != exit_veto && exit_veto.Veto(e)) return;
+          if (VetoExit(m_Actor, e)) {
+            if (1 < m2.destination_maps.Get.Count) {
+              if (null == exit_veto) {
+                exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                Objectives.Add(exit_veto);
+              } else exit_veto.Blacklist(e);
+            }
+            return;
+          }
           Location dest = new Location(m2, pt);
           Point dist = waypoint_bounds(dest);
 #if DEBUG
@@ -3429,8 +3448,14 @@ restart:
             return new ActionBreak(m_Actor, mapObjectAt);
 #if DEBUG
           var actorAt = e.Location.Actor;
-          if (null != actorAt && !m_Actor.IsEnemyOf(actorAt)) throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+          if (null != actorAt && !m_Actor.IsEnemyOf(actorAt)) {
+            var act = BehaviorMakeTime();
+            if (null != act) return act;
+            throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+#endif
+          }
           // needs implementation
+#if DEBUG
           throw new InvalidProgramException("need to handle adjacent to blocked exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
         }

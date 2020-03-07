@@ -8829,8 +8829,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
       if (actor.Inventory.Contains(it)) throw new InvalidOperationException(it.ToString()+" already taken");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
-#endif
-#if AUTOREPAIR
+#else
       if (actor.Inventory.Contains(it)) actor.Inventory.RemoveAllQuantity(it);
 #endif
       Map map = actor.Location.Map;
@@ -8838,8 +8837,7 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint before:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
-#endif
-#if AUTOREPAIR
+#else
       var src = map.GetItemsAt(position);
       var overlap = src.Items.Intersect(actor.Inventory.Items).ToList();
       foreach(var fried in overlap) {
@@ -8874,12 +8872,11 @@ namespace djack.RogueSurvivor.Engine
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
           if (do_not_crash_on_target_turn) DoWait(target);
-#if AUTOREPAIR
-          if (actor.Inventory.Contains(trade.Value.Value) && target.Inventory.Contains(trade.Value.Value)) actor.Remove(trade.Value.Value);
-#endif
 #if DEBUG
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
           if (actor.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("already had recieved");
+#else
+          if (actor.Inventory.Contains(trade.Value.Value) && target.Inventory.Contains(trade.Value.Value)) actor.Remove(trade.Value.Value);
 #endif
           DoTrade(actor.Controller as OrderableAI, trade, target.Controller as OrderableAI, false);
           return;
