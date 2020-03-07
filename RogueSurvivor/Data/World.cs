@@ -515,7 +515,6 @@ restart:
       }
     }
 
-#if PROTOTYPE
     private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
     {
       var o_inv = origin.Inventory;
@@ -567,7 +566,6 @@ restart:
     {
       DoForAllActors(origin => _RejectActorGroundInventoryCrossLink(errors, origin));
     }
-#endif
 
     private void _RejectActorInventoryZero(List<string> errors)
     {
@@ -603,7 +601,6 @@ RestartGroundZeroCheck:
         if (e.Message.Contains("Collection was modified")) goto RestartGroundZeroCheck;
         throw;
       }
-#if PROTOTYPE
 RestartActorGroundCrossLinkCheck:
       try {
         _RejectActorGroundInventoryCrossLink(errors);
@@ -626,10 +623,43 @@ RestartGroundGroundCrossLinkCheck:
         if (e.Message.Contains("Collection was modified")) goto RestartGroundGroundCrossLinkCheck;
         throw;
       }
-#endif
-        }
+    }
 
-        public void TrimToBounds(ref Rectangle src)
+    [Conditional("DEBUG")]
+    public void _RejectInventoryDamage(List<string> errors, Actor a)
+    {
+RestartActorZeroCheck:
+      try {
+        _RejectActorInventoryZero(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorZeroCheck;
+        throw;
+      }
+RestartGroundZeroCheck:
+      try {
+        _RejectGroundInventoryZero(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartGroundZeroCheck;
+        throw;
+      }
+RestartActorGroundCrossLinkCheck:
+      try {
+        _RejectActorGroundInventoryCrossLink(errors, a);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorGroundCrossLinkCheck;
+        throw;
+      }
+      // non-repairable checks (context-sensitive)
+RestartActorActorCrossLinkCheck:
+      try {
+        _RejectActorActorInventoryCrossLink(errors, a);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorActorCrossLinkCheck;
+        throw;
+      }
+    }
+
+    public void TrimToBounds(ref Rectangle src)
     {
       var test = src.Left;
       if (0>test) {
