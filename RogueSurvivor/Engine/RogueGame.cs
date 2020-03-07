@@ -8824,8 +8824,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeItem(Actor actor, in Point position, Item it)
     {
+      var g_inv = actor.Location.Map.GetItemsAt(position);
 #if DEBUG
-      if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
+      if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if (actor.Inventory.Contains(it)) throw new InvalidOperationException(it.ToString()+" already taken");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #else
@@ -8834,25 +8835,14 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
-#if DEBUG
-      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint before:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
-#else
-      var src = map.GetItemsAt(position);
-      var overlap = src.Items.Intersect(actor.Inventory.Items).ToList();
-      foreach(var fried in overlap) {
-        if (it == fried) actor.Inventory.RemoveAllQuantity(fried);
-        else src.RemoveAllQuantity(fried);
-      }
-#endif
-      map.TransferFrom(it, in position, actor.Inventory);
+      g_inv.RepairCrossLink(actor.Inventory);
+      map.TransferFrom(it, in position, actor.Inventory);   // invalidates g_inv if that was the last item
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
-#if DEBUG
-      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString()+"intersection: "+ map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).to_s());
-#endif
+      map.GetItemsAt(position)?._RejectCrossLink(actor.Inventory);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
@@ -8969,9 +8959,7 @@ namespace djack.RogueSurvivor.Engine
       else DropCloneItem(actor, it, obj);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DROP.Conjugate(actor), obj));
       if (Player==actor) RedrawPlayScreen();
-#if DEBUG
-      if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
-#endif
+      actor.Location.Items?._RejectCrossLink(actor.Inventory);
     }
 
     static private void DiscardItem(Actor actor, Item it)

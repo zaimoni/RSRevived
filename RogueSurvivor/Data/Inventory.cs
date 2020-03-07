@@ -541,6 +541,19 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    // \todo set this up as a forwarder (need way to conditionally compile against missing DEBUG symbol?)
+    public void RepairCrossLink(Inventory master)
+    {
+      if (0 >= m_Items.Count) return;
+      _RejectCrossLink(master);
+      int i = master.m_Items.Count;
+      while (0 <= --i) {
+        var other_it = master.m_Items[i];
+        int j = m_Items.Count;
+        while (0 <= --j) if (other_it == m_Items[j]) m_Items.RemoveAt(j);
+      }
+    }
+
     public override string ToString()
     {
       var ret = new List<string>(1 + m_Items.Count) {
