@@ -222,6 +222,11 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
+#if DEBUG
+      var errors = new List<string>();
+      session.World._RejectInventoryDamage(errors);
+      if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
+#endif
 #if LINUX
       filename = filename.Replace("\\", "/");
 #endif
@@ -291,6 +296,11 @@ namespace djack.RogueSurvivor.Engine
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         return false;
       }
+#endif
+#if DEBUG
+      var errors = new List<string>();
+      s_TheSession.World._RejectInventoryDamage(errors);
+      if (0 < errors.Count) throw new InvalidOperationException("inventory damage on load: " + string.Join("\n", errors));
 #endif
 #if PRERELEASE_MOTHBALL
       s_TheSession.World.DoForAllMaps(m=>m.RegenerateChokepoints());

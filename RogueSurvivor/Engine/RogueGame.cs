@@ -5643,24 +5643,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
-RestartZeroCheck:
-      try {
-#if DEBUG
-      Engine.Session.Get.World.DoForAllActors(a => {
-        var inv = a.Inventory;
-        if (null != inv && inv.Has<Item>(it => 0 >= it.Quantity)) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered " + a.Name + " zero-qty: " + a.Inventory);
-      });
-#else
-      Engine.Session.Get.World.DoForAllActors(a => {
-        var inv = a.Inventory;
-        var zeroed = inv?.GetFirst<Item>(it => 0 >= it.Quantity);
-        if (null != zeroed) inv.RemoveAllQuantity(zeroed);
-      });
-#endif
-      } catch (InvalidOperationException e) {
-        if (e.Message.Contains("Collection was modified")) goto RestartZeroCheck;
-        throw;
-      }
+      var errors = new List<string>();
+      Session.Get.World._RejectInventoryDamage(errors);
+      if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
     }
 
     private void HandleAdvisor(Actor player)
@@ -8452,6 +8437,7 @@ RestartZeroCheck:
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
+      target.Inventory._RejectCrossLink(speaker.Inventory);
 //    bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);   // now constant true but wouldn't be for AI trades/RS 9 Alpha
       const bool flag1 = true;
 
@@ -8508,6 +8494,7 @@ RestartZeroCheck:
       target.Remove(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
+      target.Inventory._RejectCrossLink(speaker.Inventory);
       return true;
     }
 
@@ -8517,6 +8504,7 @@ RestartZeroCheck:
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
+      target._RejectCrossLink(speaker.Inventory);
 //    bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
       const bool flag1 = true;
 
@@ -8549,6 +8537,7 @@ RestartZeroCheck:
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
+      target._RejectCrossLink(speaker.Inventory);
     }
 
     public void DoTradeWithContainer(Actor actor, in Point pos, Item give, Item take)
@@ -8559,7 +8548,7 @@ RestartZeroCheck:
       if (null == dest) throw new ArgumentNullException(nameof(dest));
       if (null == inv) throw new ArgumentNullException("actor.Inventory");
 #endif
-
+      inv._RejectCrossLink(dest);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8567,6 +8556,7 @@ RestartZeroCheck:
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       inv.AddAsMuchAsPossible(take);
+      inv._RejectCrossLink(dest);
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>

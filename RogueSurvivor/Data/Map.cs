@@ -953,6 +953,11 @@ retry:
       }
     }
 
+    public void DoForAllGroundInventories(Action<Location,Inventory> op)
+    {
+      foreach (var x in m_GroundItemsByPosition) op(new Location(this, x.Key), x.Value);
+    }
+
     public int SumOverAllInventory(Func<Inventory,int> xform)
     {
       int ret = 0;

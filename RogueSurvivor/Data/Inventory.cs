@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
@@ -107,6 +108,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (IsFull) return false;
       m_Items.Add(it);
+      _RejectZeroQty();
       return true;
     }
 
@@ -133,11 +135,16 @@ namespace djack.RogueSurvivor.Data
           }
         } else
           it.Quantity = 0;
+        _RejectZeroQty();
         return quantityAdded;
       }
-      if (IsFull) return 0;
+      if (IsFull) {
+        _RejectZeroQty();
+        return 0;
+      }
 
       m_Items.Add(it);
+      _RejectZeroQty();
       return it.Quantity;
     }
 
@@ -152,12 +159,15 @@ namespace djack.RogueSurvivor.Data
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
       m_Items.Remove(it);
+      _RejectZeroQty();
     }
+
     public void Consume(Item it) {
 #if DEBUG
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
       if (0 >= --it.Quantity) m_Items.Remove(it);
+      _RejectZeroQty();
     }
 
     /// <returns>true if and only if the source inventory is now empty</returns>
@@ -175,6 +185,9 @@ namespace djack.RogueSurvivor.Data
         return false;
       }
       RemoveAllQuantity(it);
+      _RejectZeroQty();
+      dest._RejectZeroQty();
+      _RejectCrossLink(dest);
       return IsEmpty;
     }
 
@@ -318,9 +331,10 @@ namespace djack.RogueSurvivor.Data
                 }
               }
             }
+            _RejectZeroQty();
         }
 
-    public void IncrementalDefrag(Item mergeWith) {
+        public void IncrementalDefrag(Item mergeWith) {
       if (0>=mergeWith.Quantity) return;    // arguably can just remove it but plausible callers were already doing so
       int i = m_Items.Count;
       while(0 < i-- && mergeWith.CanStackMore) {
@@ -335,6 +349,7 @@ namespace djack.RogueSurvivor.Data
         mergeWith.Quantity += realloc;
         if (0 >= (src.Quantity -= realloc)) m_Items.RemoveAt(i);
       }
+      _RejectZeroQty();
     }
 
     public bool HasModel(ItemModel model)
@@ -460,7 +475,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public _T_? GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item    // XXX cf GetFirst
-        {
+    {
       foreach (Item obj in m_Items) if (obj is _T_ tmp && fn(tmp)) return tmp;
       return null;
     }
@@ -474,6 +489,56 @@ namespace djack.RogueSurvivor.Data
         };
       }
       return ret;
+    }
+
+    public string? _HasZeroQuantityOrDuplicate()
+    {
+      int i = m_Items.Count;
+      while (0 <= --i) {
+        if (0 >= m_Items[i].Quantity) return "zero qty";
+        int j = i;
+        while (0 <= --j) {
+          if (m_Items[i]==m_Items[j]) return "duplicate "+ m_Items[i];
+        }
+      }
+      return null;
+    }
+
+    [Conditional("DEBUG")]
+    public void _RejectZeroQty()
+    {
+      int i = m_Items.Count;
+      while (0 <= --i) {
+        if (0 >= m_Items[i].Quantity) throw new InvalidOperationException("zero qty: "+this);
+        int j = i;
+        while (0 <= --j) {
+          if (m_Items[i]==m_Items[j]) throw new InvalidOperationException("duplicate item "+m_Items[i]+": "+this);
+        }
+      }
+    }
+
+    [Conditional("DEBUG")]
+    public void _RejectCrossLink(Inventory other)
+    {
+      if (0 >= m_Items.Count) return;
+      int i = other.m_Items.Count;
+      while (0 <= --i) {
+        var other_it = other.m_Items[i];
+        int j = m_Items.Count;
+        while (0 <= --j) if (other_it == m_Items[j]) throw new InvalidOperationException("cross-linked item "+other_it+": "+this+"\n\n"+other);
+      }
+    }
+
+    public string? _HasCrossLink(Inventory other)
+    {
+      if (0 >= m_Items.Count) return null;
+      int i = other.m_Items.Count;
+      while (0 <= --i) {
+        var other_it = other.m_Items[i];
+        int j = m_Items.Count;
+        while (0 <= --j) if (other_it == m_Items[j]) return "cross-linked item "+other_it+": "+this+"\n\n"+other;
+      }
+      return null;
     }
 
     public override string ToString()

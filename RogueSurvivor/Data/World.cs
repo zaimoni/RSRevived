@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
@@ -166,6 +167,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
+    public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (District d in m_DistrictsGrid) d.DoForAllGroundInventories(op); }
 
     public World(short size)
     {
@@ -513,7 +515,121 @@ restart:
       }
     }
 
-    public void TrimToBounds(ref Rectangle src)
+#if PROTOTYPE
+    private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
+    {
+      var o_inv = origin.Inventory;
+      if (null == o_inv || o_inv.IsEmpty) return;
+      DoForAllActors(a => {
+        if (a == origin) return;
+        var err = a.Inventory?._HasCrossLink(o_inv);
+        if (!string.IsNullOrEmpty(err)) errors.Add(origin.Name +", " + a.Name +" " + err);
+      });
+    }
+
+    private void _RejectActorActorInventoryCrossLink(List<string> errors)
+    {
+      DoForAllActors(origin => _RejectActorActorInventoryCrossLink(errors, origin));
+    }
+
+    private void _RejectGroundGroundInventoryCrossLink(List<string> errors, Location o_loc, Inventory o_inv)
+    {
+      if (o_inv.IsEmpty) return;
+      DoForAllGroundInventories((loc, inv) => {
+        if (o_loc == loc) return;
+        if (o_inv == inv) {
+          errors.Add("bi-located inventory: "+o_loc+"; "+loc);
+          return;
+        }
+        if (inv.IsEmpty) return;
+        var err = inv._HasCrossLink(o_inv);
+        if (!string.IsNullOrEmpty(err)) errors.Add(o_loc + "; " + loc + ": " + err);
+      });
+    }
+
+    private void _RejectGroundGroundInventoryCrossLink(List<string> errors)
+    {
+      DoForAllGroundInventories((loc,inv) => _RejectGroundGroundInventoryCrossLink(errors, loc, inv));
+    }
+
+    private void _RejectActorGroundInventoryCrossLink(List<string> errors, Actor origin)
+    {
+      var o_inv = origin.Inventory;
+      if (null == o_inv || o_inv.IsEmpty) return;
+      DoForAllGroundInventories((loc, inv) => {
+        if (inv.IsEmpty) return;
+        var err = inv._HasCrossLink(o_inv);
+        if (!string.IsNullOrEmpty(err)) errors.Add(origin.Name + "; " + loc + ": " + err);
+      });
+    }
+
+    private void _RejectActorGroundInventoryCrossLink(List<string> errors)
+    {
+      DoForAllActors(origin => _RejectActorGroundInventoryCrossLink(errors, origin));
+    }
+#endif
+
+    private void _RejectActorInventoryZero(List<string> errors)
+    {
+      DoForAllActors(a => {
+        var err = a.Inventory?._HasZeroQuantityOrDuplicate();
+        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name + err +": " + a.Inventory);
+      });
+    }
+
+    private void _RejectGroundInventoryZero(List<string> errors)
+    {
+      DoForAllGroundInventories((loc,inv) => {
+        var err = inv._HasZeroQuantityOrDuplicate();
+        if (!string.IsNullOrEmpty(err))  errors.Add(loc + err +": " + inv);
+      });
+    }
+
+    [Conditional("DEBUG")]
+    public void _RejectInventoryDamage(List<string> errors)
+    {
+      // repairable checks
+RestartActorZeroCheck:
+      try {
+        _RejectActorInventoryZero(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorZeroCheck;
+        throw;
+      }
+RestartGroundZeroCheck:
+      try {
+        _RejectGroundInventoryZero(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartGroundZeroCheck;
+        throw;
+      }
+#if PROTOTYPE
+RestartActorGroundCrossLinkCheck:
+      try {
+        _RejectActorGroundInventoryCrossLink(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorGroundCrossLinkCheck;
+        throw;
+      }
+      // non-repairable checks (context-sensitive)
+RestartActorActorCrossLinkCheck:
+      try {
+        _RejectActorActorInventoryCrossLink(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorActorCrossLinkCheck;
+        throw;
+      }
+RestartGroundGroundCrossLinkCheck:
+      try {
+        _RejectGroundGroundInventoryCrossLink(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartGroundGroundCrossLinkCheck;
+        throw;
+      }
+#endif
+        }
+
+        public void TrimToBounds(ref Rectangle src)
     {
       var test = src.Left;
       if (0>test) {
