@@ -1184,9 +1184,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is ActionOpenDoor) return true;
       if (a is ActionBashDoor) return true;
       if (a is ActionBarricadeDoor) return true;
+/*
+      // locked down to PlayerController so Jason Myers/CHAR guards no longer an issue
       if (a is ActionGetFromContainer get_from) {    // XXX Jason Myers: not OrderableAI but capable of this
         return (m_Actor.Controller as ObjectiveAI)?.IsInterestingItem(get_from.Item) ?? true;
       }
+*/
       if (!(this is OrderableAI downcast)) return false;
       if (a is ActionChat chat) {
         return downcast.Directives.CanTrade || chat.Target == m_Actor.Leader;

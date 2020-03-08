@@ -5722,7 +5722,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.MOVE_JUMP:
           return Player.IsTired ? false : map.AnyAdjacent<MapObject>(position, obj => obj.IsJumpable);
         case AdvisorHint.ITEM_GRAB_CONTAINER:
-          return map.HasAnyAdjacentInMap(position, pt => Player.CanGetFromContainer(pt));
+          return map.HasAnyAdjacentInMap(position, pt => (Player.Controller as PlayerController).CanGetFromContainer(pt));
         case AdvisorHint.ITEM_GRAB_FLOOR:
           var itemsAt = map.GetItemsAt(position);
           if (itemsAt == null) return false;
@@ -8787,7 +8787,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-    private void HandlePlayerTakeItemFromContainer(Actor player, Inventory inv, Point src)
+    private void HandlePlayerTakeItemFromContainer(Actor player, Inventory inv, Location src)
     {
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
       bool details(int index) {
@@ -8805,26 +8805,26 @@ namespace djack.RogueSurvivor.Engine
       PagedMenu("Taking...", inv.CountItems, label, details);
     }
 
-    public void DoTakeFromContainer(Actor actor, in Point position)
+    public void DoTakeFromContainer(PlayerController pc, in Location loc)
     {
-      var inv = actor.Location.Map.GetItemsAt(position);
+      var actor = pc.ControlledActor;
+      var inv = loc.Items;
 #if DEBUG
-      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(inv));
-      if (1 != Rules.GridDistance(actor.Location.Position,in position)) throw new ArgumentOutOfRangeException(nameof(position), "("+ position.X.ToString()+", "+ position.Y.ToString()+") not adjacent");
-      if (!actor.IsPlayer) throw new InvalidOperationException("NPC trying to take from container");    // \todo measure whether this is an invariant
+      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(loc)+".Items");
+      if (1 != Rules.GridDistance(actor.Location,in loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "not adjacent");
 #endif
-      if (actor.IsPlayer && 2 <= inv.CountItems) {
-        HandlePlayerTakeItemFromContainer(actor, inv, position);
+      if (2 <= inv.CountItems) {
+        HandlePlayerTakeItemFromContainer(actor, inv, loc);
         return;
       }
 
       Item topItem = inv.TopItem!;
-      DoTakeItem(actor, in position, topItem);
+      DoTakeItem(actor, in loc, topItem);
     }
 
-    public void DoTakeItem(Actor actor, in Point position, Item it)
+    public void DoTakeItem(Actor actor, in Location loc, Item it)
     {
-      var g_inv = actor.Location.Map.GetItemsAt(position);
+      var g_inv = loc.Items;
 #if DEBUG
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
@@ -8834,13 +8834,20 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
-      map.TransferFrom(it, in position, actor.Inventory);   // invalidates g_inv if that was the last item
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
+      loc.Map.TransferFrom(it, loc.Position, actor.Inventory);   // invalidates g_inv if that was the last item
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(loc))
         AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
-      map.GetItemsAt(position)?.RejectCrossLink(actor.Inventory);
+      loc.Items?.RejectCrossLink(actor.Inventory);
+    }
+
+    public void DoTakeItem(Actor actor, in Point position, Item it)
+    {
+      var loc = new Location(actor.Location.Map, position);
+      if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "not canonical");
+      DoTakeItem(actor, loc, it);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)

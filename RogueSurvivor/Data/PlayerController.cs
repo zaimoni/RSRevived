@@ -157,6 +157,35 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.SelectAction()");
     }
 
+    // originally in Actor
+    private string ReasonCantGetFromContainer(Location loc)
+    {
+      if (!loc.MapObject?.IsContainer ?? true) return "object is not a container";
+      if (loc.Items?.IsEmpty ?? true) return "nothing to take there";
+      return "";
+    }
+
+    private string ReasonCantGetFromContainer(Point position)
+    {
+      return ReasonCantGetFromContainer(new Location(m_Actor.Location.Map, position));
+    }
+
+	public bool CanGetFromContainer(Location loc, out string reason)
+	{
+	  reason = ReasonCantGetFromContainer(loc);
+	  return string.IsNullOrEmpty(reason);
+	}
+
+	public bool CanGetFromContainer(Point position)
+	{
+	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
+	}
+
+	public bool CanGetFromContainer(Location loc)
+	{
+	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(loc));
+	}
+
     public bool AutoPilotIsOn { get { return 0 < Objectives.Count;  } }
 
     // This is too dangerous to provide a member function for in ObjectiveAI.
@@ -446,7 +475,7 @@ namespace djack.RogueSurvivor.Data
 
     protected override ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack)
     {
-      if (m_Actor.CanGetFromContainer(loc.Position)) return new Engine.Actions.ActionGetFromContainer(m_Actor, loc.Position);
+      if (CanGetFromContainer(loc)) return new Engine.Actions.ActionGetFromContainer(this, loc);
       return null;
     }
 

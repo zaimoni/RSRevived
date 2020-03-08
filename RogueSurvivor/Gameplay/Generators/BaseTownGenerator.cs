@@ -60,8 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // not going full read-only types on these two for now (relying on access control instead)
     private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
 
-    private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
-    private readonly string[] m_PC_names;
+    private Parameters m_Params = DEFAULT_PARAMS;
     private const int HOSPITAL_TYPICAL_WIDTH_HEIGHT = 5;
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;

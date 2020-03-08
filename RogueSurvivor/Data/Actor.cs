@@ -3314,28 +3314,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    private string ReasonCantGetFromContainer(Point position)
-    {
-#if DEBUG
-      if (!IsPlayer) throw new InvalidOperationException("only player uses the get from container action");
-#endif
-      if (!Location.Map.GetMapObjectAt(position)?.IsContainer ?? true) return "object is not a container";
-      var itemsAt = Location.Map.GetItemsAt(position);
-      if (itemsAt?.IsEmpty ?? true) return "nothing to take there";
-      return "";
-    }
-
-	public bool CanGetFromContainer(Point position,out string reason)
-	{
-	  reason = ReasonCantGetFromContainer(position);
-	  return string.IsNullOrEmpty(reason);
-	}
-
-	public bool CanGetFromContainer(Point position)
-	{
-	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
-	}
-
     private string ReasonCantEquip(Item it)
     {
       if (!Model.Abilities.CanUseItems) return "no ability to use items";

@@ -13,32 +13,30 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionGetFromContainer : ActorAction   // XXX reskinned ActionTakeItem
   {
-    private readonly Point m_Position;
+    private readonly Location m_Location;
 
-    public Item Item {
-      get {
-        return m_Actor.Location.Map.GetItemsAt(m_Position).TopItem;
-      }
-    }
+#if DEAD_FUNC
+    public Item Item { get { return m_Location.Items.TopItem; } }
+#endif
 
-    public ActionGetFromContainer(Actor actor, Point position)
-      : base(actor)
+    public ActionGetFromContainer(PlayerController pc, Location loc)
+      : base(pc.ControlledActor)
     {
-      m_Position = position;
+      if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc),loc,"not canonical");
+      m_Location = loc;
 #if DEBUG
-      var itemsAt = actor.Location.Map.GetItemsAt(position);
-      if (null == itemsAt) throw new InvalidOperationException("no items in container");
+      if (null == loc.Items) throw new ArgumentNullException(nameof(loc)+".Items");
 #endif
     }
 
     public override bool IsLegal()
     {
-      return m_Actor.CanGetFromContainer(m_Position, out m_FailReason);
+      return (m_Actor.Controller as PlayerController).CanGetFromContainer(m_Location, out m_FailReason);
     }
 
     public override void Perform()
     {
-      RogueForm.Game.DoTakeFromContainer(m_Actor, in m_Position);
+      RogueForm.Game.DoTakeFromContainer(m_Actor.Controller as PlayerController, in m_Location);
     }
   }
 }
