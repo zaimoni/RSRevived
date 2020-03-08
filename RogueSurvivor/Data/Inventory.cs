@@ -91,9 +91,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool AddAll(Item it)
     {
-#if DEBUG
-      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
-#endif
+      RejectContains(it, "already had ");
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
       if (null != itemsStackableWith) { // also have 0<stackedQuantity
         int quantity = stackedQuantity;
@@ -114,11 +112,7 @@ namespace djack.RogueSurvivor.Data
 
     public int AddAsMuchAsPossible(Item it)
     {
-#if DEBUG
-      if (Contains(it)) throw new InvalidOperationException("already had item: "+it.ToString());
-#else
-      while(Contains(it)) RemoveAllQuantity(it);
-#endif
+      RepairContains(it, "already had ");
       int quantity = it.Quantity;
       int quantityAdded = 0;
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
@@ -187,7 +181,7 @@ namespace djack.RogueSurvivor.Data
       RemoveAllQuantity(it);
       _RejectZeroQty();
       dest._RejectZeroQty();
-      _RejectCrossLink(dest);
+      RejectCrossLink(dest);
       return IsEmpty;
     }
 
@@ -518,7 +512,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Conditional("DEBUG")]
-    public void _RejectCrossLink(Inventory other)
+    public void RejectCrossLink(Inventory other)
     {
       if (0 >= m_Items.Count) return;
       int i = other.m_Items.Count;
@@ -541,17 +535,41 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    // \todo set this up as a forwarder (need way to conditionally compile against missing DEBUG symbol?)
-    public void RepairCrossLink(Inventory master)
+    [Conditional("RELEASE")]
+    private void _RepairCrossLink(Inventory master)
     {
       if (0 >= m_Items.Count) return;
-      _RejectCrossLink(master);
       int i = master.m_Items.Count;
       while (0 <= --i) {
         var other_it = master.m_Items[i];
         int j = m_Items.Count;
         while (0 <= --j) if (other_it == m_Items[j]) m_Items.RemoveAt(j);
       }
+    }
+
+    public void RepairCrossLink(Inventory master)
+    {
+      RejectCrossLink(master);
+      _RepairCrossLink(master);
+    }
+
+    [Conditional("DEBUG")]
+    public void RejectContains(Item it, string prefix_msg)
+    {
+      if (Contains(it)) throw new InvalidOperationException(prefix_msg + it);
+    }
+
+    [Conditional("RELEASE")]
+    private void _RepairContains(Item it)
+    {
+      int i = m_Items.Count;
+      while (0 <= --i) if (m_Items[i] == it) m_Items.RemoveAt(i);
+    }
+
+    public void RepairContains(Item it, string prefix_msg)
+    {
+      RejectContains(it, prefix_msg);
+      _RepairContains(it);
     }
 
     public override string ToString()

@@ -8437,7 +8437,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      target.Inventory._RejectCrossLink(speaker.Inventory);
+      target.Inventory.RejectCrossLink(speaker.Inventory);
 //    bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);   // now constant true but wouldn't be for AI trades/RS 9 Alpha
       const bool flag1 = true;
 
@@ -8494,7 +8494,7 @@ namespace djack.RogueSurvivor.Engine
       target.Remove(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
-      target.Inventory._RejectCrossLink(speaker.Inventory);
+      target.Inventory.RejectCrossLink(speaker.Inventory);
       return true;
     }
 
@@ -8504,7 +8504,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      target._RejectCrossLink(speaker.Inventory);
+      target.RejectCrossLink(speaker.Inventory);
 //    bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
       const bool flag1 = true;
 
@@ -8537,7 +8537,7 @@ namespace djack.RogueSurvivor.Engine
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
-      target._RejectCrossLink(speaker.Inventory);
+      target.RejectCrossLink(speaker.Inventory);
     }
 
     public void DoTradeWithContainer(Actor actor, in Point pos, Item give, Item take)
@@ -8548,7 +8548,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == dest) throw new ArgumentNullException(nameof(dest));
       if (null == inv) throw new ArgumentNullException("actor.Inventory");
 #endif
-      inv._RejectCrossLink(dest);
+      inv.RejectCrossLink(dest);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8556,7 +8556,7 @@ namespace djack.RogueSurvivor.Engine
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       inv.AddAsMuchAsPossible(take);
-      inv._RejectCrossLink(dest);
+      inv.RejectCrossLink(dest);
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
@@ -8575,9 +8575,9 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer have item");
       if (!speaker.Inventory.Contains(trade.Value.Key)) throw new InvalidOperationException("no longer have item");
-      if (speaker.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("already had item");
-      if (target.Inventory.Contains(trade.Value.Key)) throw new InvalidOperationException("already had item");
 #endif
+      speaker.Inventory.RepairContains(trade.Value.Value, "already had ");
+      target.Inventory.RepairContains(trade.Value.Key, "already had ");
 
       bool wantedItem = true;
       bool flag3 = target_c.IsInterestingTradeItem(speaker, trade.Value.Key);
@@ -8827,11 +8827,9 @@ namespace djack.RogueSurvivor.Engine
       var g_inv = actor.Location.Map.GetItemsAt(position);
 #if DEBUG
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
-      if (actor.Inventory.Contains(it)) throw new InvalidOperationException(it.ToString()+" already taken");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
-#else
-      if (actor.Inventory.Contains(it)) actor.Inventory.RemoveAllQuantity(it);
 #endif
+      actor.Inventory.RepairContains(it, "have already taken ");
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
@@ -8842,19 +8840,22 @@ namespace djack.RogueSurvivor.Engine
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
-      map.GetItemsAt(position)?._RejectCrossLink(actor.Inventory);
+      map.GetItemsAt(position)?.RejectCrossLink(actor.Inventory);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
     {
 #if DEBUG
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
-      if (target.Inventory.Contains(gift)) throw new InvalidOperationException("already had gift");
-      if (null != received) {
-        if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
-        if (actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");
-      }
 #endif
+      if (null != received) {
+#if DEBUG
+        if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+#endif
+        actor.Inventory.RepairContains(received, "already had received ");
+      }
+      target.Inventory.RepairContains(gift, "already had ");
+
       bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       // try to trade with NPC first
       if (!target.IsPlayer) {
@@ -8863,10 +8864,8 @@ namespace djack.RogueSurvivor.Engine
           if (do_not_crash_on_target_turn) DoWait(target);
 #if DEBUG
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
-          if (actor.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("already had recieved");
-#else
-          if (actor.Inventory.Contains(trade.Value.Value) && target.Inventory.Contains(trade.Value.Value)) actor.Remove(trade.Value.Value);
 #endif
+          actor.Inventory.RepairContains(trade.Value.Value, "already had recieved ");
           DoTrade(actor.Controller as OrderableAI, trade, target.Controller as OrderableAI, false);
           return;
         }
@@ -8883,12 +8882,12 @@ namespace djack.RogueSurvivor.Engine
           else if (recover is ActionChain chain) {
             if (chain.ConcreteAction is ActionDropItem drop) received = drop.Item;
           } else if (recover is ActionUseItem use) received = use.Item;
-#if DEBUG
          if (null != received) {
+#if DEBUG
            if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
-           if (actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");
-         }
 #endif
+           actor.Inventory.RepairContains(received, "already had received ");
+         }
         }
 
         if (null != received) {
@@ -8959,7 +8958,7 @@ namespace djack.RogueSurvivor.Engine
       else DropCloneItem(actor, it, obj);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DROP.Conjugate(actor), obj));
       if (Player==actor) RedrawPlayScreen();
-      actor.Location.Items?._RejectCrossLink(actor.Inventory);
+      actor.Location.Items?.RejectCrossLink(actor.Inventory);
     }
 
     static private void DiscardItem(Actor actor, Item it)

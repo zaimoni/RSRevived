@@ -122,9 +122,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       Item it = Item!;  // cf IsLegal(), above
-      m_Actor.Inventory._RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
+      m_Actor.Inventory.RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
       RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
-      m_Actor.Inventory._RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
+      m_Actor.Inventory.RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
     }
 
     public override string ToString()
@@ -163,8 +163,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!base.IsPerformable()) return false;
 #if DEBUG
       if (!m_Actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
-      if (m_Target.Inventory.Contains(gift)) throw new InvalidOperationException("already had gift");
 #endif
+      m_Target.Inventory.RepairContains(gift, "already had ");
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
         var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
@@ -180,10 +180,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (null!=(received = parse_recovery(recover))) {
 #if DEBUG
           if (!m_Target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
-          if (m_Actor.Inventory.Contains(received)) throw new InvalidOperationException("already had recieved");    // if this throws auto-repair is an option
-#else
-          if (m_Target.Inventory.Contains(received) && m_Actor.Inventory.Contains(received)) m_Actor.Remove(received);
 #endif
+          m_Actor.Inventory.RepairContains(received, "already had recieved ");
           return true;
         }
 
