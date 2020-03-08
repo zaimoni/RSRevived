@@ -4,19 +4,23 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionLeaveMap : ActorAction   // savefile break \todo eliminate this class in favor of ActionUseExit
+  internal class ActionLeaveMap : ActorAction
   {
     private readonly Point m_ExitPoint;
 
     public ActionLeaveMap(Actor actor, in Point exitPoint)
       : base(actor)
     {
+#if DEBUG
+       if (actor.Location.Map.IsInBounds(exitPoint)) throw new ArgumentOutOfRangeException(nameof(exitPoint), exitPoint, "must not be InBounds");
+#endif
        m_ExitPoint = exitPoint;
     }
 

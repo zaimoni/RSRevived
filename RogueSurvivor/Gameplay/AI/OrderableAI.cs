@@ -2866,7 +2866,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var best_armor = GetEquippedBodyArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return new ActionTradeWithContainer(m_Actor,best_armor,obj,loc.Position);
+            return new ActionTradeWithContainer(m_Actor,best_armor,obj,loc);
           }
         }
 #if DEBUG
