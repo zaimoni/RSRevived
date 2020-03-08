@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
 #if DEBUG
       var ai = actor.Controller as Gameplay.AI.ObjectiveAI;
-      if (null == ai) throw new ArgumentNullException(nameof(ai));
+      if (null == ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
       if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
 #if TRACER

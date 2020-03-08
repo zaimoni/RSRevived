@@ -570,10 +570,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void RecordLastAction(ActorAction act) {
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
-        ActionMoveDelta record = act as ActionMoveDelta;
-        if (null == record) {    // the one type that actually knows the origin; the legacy actions don't. \todo savefile break: require ActorDest to provide origin as well and thus avoid this
-          record = new ActionMoveDelta(m_Actor,dest.dest);
-        }
+        // the one type that actually knows the origin; the legacy actions don't. \todo savefile break: require ActorDest to provide origin as well and thus avoid this
+        if (!(act is ActionMoveDelta record)) record = new ActionMoveDelta(m_Actor,dest.dest);
         _last_move = record;
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget)  Logger.WriteLine(Logger.Stage.RUN_MAIN, "recording "+record+" for "+act);
@@ -1141,9 +1139,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 
-      var rw = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
-      if (   null == rw  // XXX likely error condition
-          || 0 >= rw.Ammo)  // XXX likely error condition
+      if (   !(m_Actor.GetEquippedWeapon() is ItemRangedWeapon rw)  // XXX likely error condition
+          ||   0 >= rw.Ammo)  // XXX likely error condition
         return null;
 
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
@@ -4868,8 +4865,7 @@ restart_single_exit:
         if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           if (null!=position && use_ok) { // only do this when right on top of the inventory containing the ammo
-            var already = inv.GetBestDestackable(am) as ItemAmmo;
-            if (null!=already) return new ActionUseItem(m_Actor, already);
+            if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(m_Actor, already);
           }
 
           // 1) we would re-pickup food.
@@ -5722,8 +5718,7 @@ restart_single_exit:
 
     public ActorAction? DoctrineMedicateSLP()
     {
-       var stim = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP) as ItemMedicine;
-       if (null == stim) return null;
+       if (!(m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
        if (m_Actor.SleepPoints > (m_Actor.MaxSleep - m_Actor.ScaleMedicineEffect(stim.SleepBoost))) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        return new ActionUseItem(m_Actor,stim);

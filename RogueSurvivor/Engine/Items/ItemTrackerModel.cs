@@ -25,9 +25,9 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     // work around lack of const strings
-    private static string _track_undead_only = Rules.ZTRACKINGRADIUS.ToString();
-    private static string _track_non_undead_only = RogueGame.MINIMAP_RADIUS.ToString();
-    private static string _track_both = Rules.ZTRACKINGRADIUS.ToString() + "/" + RogueGame.MINIMAP_RADIUS.ToString();
+    private static readonly string _track_undead_only = Rules.ZTRACKINGRADIUS.ToString();
+    private static readonly string _track_non_undead_only = RogueGame.MINIMAP_RADIUS.ToString();
+    private static readonly string _track_both = Rules.ZTRACKINGRADIUS.ToString() + "/" + RogueGame.MINIMAP_RADIUS.ToString();
 
     public string? RangeDesc { get {
         if (TrackingFlags.UNDEADS == Tracking) return _track_undead_only;

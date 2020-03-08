@@ -488,7 +488,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
-        tmpAction = BehaviorBuildLargeFortification(1);
+        tmpAction = BehaviorBuildLargeFortification(START_FORT_LINE_CHANCE);
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");

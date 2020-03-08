@@ -968,7 +968,7 @@ restart:
       // Horticulture/gardening store
       // * grow lights require a working generator.
       // * bamboo can provide "wood".  At one foot per day (i.e. it actually *recovers* if only damaged, and can spread if planted in parks)
-    static private KeyValuePair<string, string>[] shop_name_images = new KeyValuePair<string, string>[] {
+    static private readonly KeyValuePair<string, string>[] shop_name_images = new KeyValuePair<string, string>[] {
       new KeyValuePair<string,string>("GeneralStore", GameImages.DECO_SHOP_GENERAL_STORE),
       new KeyValuePair<string,string>("Grocery", GameImages.DECO_SHOP_GROCERY),
       new KeyValuePair<string,string>("Sportswear", GameImages.DECO_SHOP_SPORTSWEAR),
@@ -2207,7 +2207,7 @@ restart:
 
     // RS Alpha 9: 40% ranged weapons, 60% ammo
     private const int gunshop_checksum = 100;
-    KeyValuePair<GameItems.IDs, int>[] gunshop_stock = {
+    private static readonly KeyValuePair<GameItems.IDs, int>[] gunshop_stock = {
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_PISTOL,5),
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_KOLT_REVOLVER,5),
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,10),

@@ -2491,11 +2491,11 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private const int army_supply_drop_checksum = 100;
-    private static KeyValuePair<GameItems.IDs, int>[] army_supply_drop_stock = {
+    private static readonly KeyValuePair<GameItems.IDs, int>[] army_supply_drop_stock = {
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.FOOD_ARMY_RATION,80),
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,20)
     };
-    private static GameItems.IDs[] army_supply_drop_stock_domain = army_supply_drop_stock.Select(x => x.Key).ToArray();
+    private static readonly GameItems.IDs[] army_supply_drop_stock_domain = army_supply_drop_stock.Select(x => x.Key).ToArray();
 
     private void FireEvent_ArmySupplies(Map map)
     {
@@ -10815,8 +10815,7 @@ namespace djack.RogueSurvivor.Engine
         draw(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
-        DoorWindow doorWindow = mapObj as DoorWindow;
-        if (doorWindow == null || doorWindow.BarricadePoints <= 0) return;
+        if (!(mapObj is DoorWindow doorWindow) || 0 >= doorWindow.BarricadePoints) return;
         DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else if (tile.IsVisited && !IsPlayerSleeping()) {
@@ -11193,12 +11192,12 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!Player.IsSleeping) {
 	    // normal detectors/lights
-        var itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         bool find_followers = false;
 //      bool find_leader = false; // may need this, but not for single PC
         bool find_undead = false;
         bool find_blackops = false;
         bool find_police = Player.IsFaction(GameFactions.IDs.ThePolice);
+        var itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         if (null != itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
           find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC

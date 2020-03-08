@@ -3186,9 +3186,8 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood && !_has_to_eat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
       if (it is ItemAmmo itemAmmo) {
-        var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
-        if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
-        if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
+        if (!(GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
+        if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
 #if OBSOLETE
       } else if (it is ItemSprayScent) {
         if (it.IsUseless) return "no spray left.";

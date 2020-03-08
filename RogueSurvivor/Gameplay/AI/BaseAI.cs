@@ -610,12 +610,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Map map = m_Actor.Location.Map;
       Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
-        var doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
-        return (null != doorWindow && doorWindow.IsBarricaded) ? doorWindow : null;
+        return (m.GetMapObjectAtExt(pt) is DoorWindow dw && dw.IsBarricaded) ? dw : null;
       });
       if (0 >= doors.Count) return null;
       DoorWindow doorWindow1 = Rules.Get.DiceRoller.Choose(doors).Value;
-      return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
+      return m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null;
     }
 #nullable restore
 

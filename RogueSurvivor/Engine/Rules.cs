@@ -103,8 +103,6 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -WorldTime.TURNS_PER_HOUR;
     public const int TRUST_LEADER_KILL_ENEMY = 3*WorldTime.TURNS_PER_HOUR;
 //  public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;  // removed in RS Alpha 10
-    private const float INFECTION_BASE_FACTOR = 1f;
-    private const float CORPSE_ZOMBIFY_TIME_FACTOR = 0.001388889f;
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
 #nullable enable
