@@ -3446,11 +3446,11 @@ restart:
           var mapObjectAt = e.Location.MapObject;
           if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
             return new ActionBreak(m_Actor, mapObjectAt);
-#if DEBUG
           var actorAt = e.Location.Actor;
           if (null != actorAt && !m_Actor.IsEnemyOf(actorAt)) {
             var act = BehaviorMakeTime();
             if (null != act) return act;
+#if DEBUG
             throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
           }

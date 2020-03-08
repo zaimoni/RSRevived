@@ -133,8 +133,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanAddAtLeastOne(Item it)
     {
-      if (!IsFull) return true;
-      return HasAtLeastOneStackableWith(it);
+      return !IsFull || HasAtLeastOneStackableWith(it);
     }
 
     public void RemoveAllQuantity(Item it) {
@@ -157,8 +156,8 @@ namespace djack.RogueSurvivor.Data
     public bool Transfer(Item it, Inventory dest) {
 #if DEBUG
       if (!Contains(it)) throw new InvalidOperationException("item not here");
-      if (dest.Contains(it)) throw new InvalidProgramException("item already there: "+it.ToString());
 #endif
+      RepairContains(it, "was already there: ");
       int quantity = it.Quantity;   // need initial value
       if (quantity != dest.AddAsMuchAsPossible(it)) {
         // inventory cross-linking?
@@ -215,9 +214,7 @@ namespace djack.RogueSurvivor.Data
 
       foreach (Item it in m_Items) {
         if (it is _T_ obj) {
-          if (null == smallest || obj.Quantity < smallest.Quantity) {
-            smallest = obj;
-          }
+          if (null == smallest || obj.Quantity < smallest.Quantity) smallest = obj;
         }
       }
       if (null == smallest) throw new InvalidOperationException("not found");
@@ -250,9 +247,8 @@ namespace djack.RogueSurvivor.Data
     // we prefer to return weapons that need reloading.
     public ItemRangedWeapon? GetCompatibleRangedWeapon(ItemAmmoModel am)
     {
-      var rw = GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo);
-      if (null != rw) return rw;
-      return GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
+      return GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo)
+          ?? GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
     }
 
     public ItemRangedWeapon? GetCompatibleRangedWeapon(ItemAmmo am)
@@ -317,7 +313,7 @@ namespace djack.RogueSurvivor.Data
             RepairZeroQty();
         }
 
-        public void IncrementalDefrag(Item mergeWith) {
+    public void IncrementalDefrag(Item mergeWith) {
       if (0>=mergeWith.Quantity) return;    // arguably can just remove it but plausible callers were already doing so
       int i = m_Items.Count;
       while(0 < i-- && mergeWith.CanStackMore) {
@@ -337,9 +333,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasModel(ItemModel model)
     {
-      foreach (Item mItem in m_Items) {
-        if (mItem.Model == model) return true;
-      }
+      foreach (Item mItem in m_Items) if (mItem.Model == model) return true;
       return false;
     }
 
@@ -351,9 +345,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item? GetFirstByModel<_T_>(ItemModel model, Predicate<_T_> ok) where _T_ : Item
     {
-      foreach (Item mItem in m_Items) {
-        if (mItem.Model == model && mItem is _T_ it && ok(it)) return mItem;
-      }
+      foreach (Item mItem in m_Items) if (mItem.Model == model && mItem is _T_ it && ok(it)) return mItem;
       return null;
     }
 
@@ -480,9 +472,7 @@ namespace djack.RogueSurvivor.Data
       while (0 <= --i) {
         if (0 >= m_Items[i].Quantity) return "zero qty";
         int j = i;
-        while (0 <= --j) {
-          if (m_Items[i]==m_Items[j]) return "duplicate "+ m_Items[i];
-        }
+        while (0 <= --j) if (m_Items[i]==m_Items[j]) return "duplicate "+ m_Items[i];
       }
       return null;
     }
@@ -494,9 +484,7 @@ namespace djack.RogueSurvivor.Data
       while (0 <= --i) {
         if (0 >= m_Items[i].Quantity) throw new InvalidOperationException("zero qty: "+this);
         int j = i;
-        while (0 <= --j) {
-          if (m_Items[i]==m_Items[j]) throw new InvalidOperationException("duplicate item "+m_Items[i]+": "+this);
-        }
+        while (0 <= --j) if (m_Items[i]==m_Items[j]) throw new InvalidOperationException("duplicate item "+m_Items[i]+": "+this);
       }
     }
 
