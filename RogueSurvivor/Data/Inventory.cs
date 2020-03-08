@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (!Contains(it)) throw new InvalidOperationException("item not here");
 #endif
-      RepairContains(it, "was already there: ");
+      dest.RepairContains(it, "was already there: ");
       int quantity = it.Quantity;   // need initial value
       if (quantity != dest.AddAsMuchAsPossible(it)) {
         // inventory cross-linking?
