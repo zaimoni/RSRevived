@@ -1063,7 +1063,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
     {
       if (en.HitPoints>tmp_attack.DamageValue/2) return null;
-      ActorAction? tmpAction = null;
+      ActorAction? tmpAction;
       // can one-shot
       if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
         tmpAction = BehaviorMeleeAttack(en);
@@ -2143,7 +2143,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // inline ClearGoals body here -- this is called at the right place
       if (x is ActorDest && !_used_advanced_pathing) _sparse.Unset(SparseData.PathingTo);
       // proper handling
-      if (x is ActionMoveStep step) {
+      if (x is ActionMoveStep) {
         // Historically, CivilianAI has the behavior of closing doors behind them.  The other three OrderableAI classes don't do this
         // refine the historical behavior to not happen in-combat (bad for CHAR base assault, good for most other combat situations)
         if (m_Actor.Model.DefaultController==typeof(CivilianAI)) {
@@ -4044,7 +4044,6 @@ restart_single_exit:
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
         var TradeableItems = GetTradeableItems();
         if (null == TradeableItems || 0>=TradeableItems.Count) return null;
-        Map map = m_Actor.Location.Map;
 
         var ret = new Dictionary< Location, Actor >(friends.Count);
         foreach(var x in friends) {
@@ -4326,7 +4325,6 @@ restart_single_exit:
       if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
         var worst = m_Actor.GetWorstMeleeWeapon();
-        int worst_rating = m_Actor.MeleeWeaponAttack(worst.Model).Rating;
         return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
       }
       return 1;

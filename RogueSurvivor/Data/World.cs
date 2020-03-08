@@ -235,10 +235,8 @@ namespace djack.RogueSurvivor.Data
 
       District viewpoint = Engine.RogueGame.CurrentMap.District;
       viewpoint.DaimonMap(dest);
-      int x = 0;
-      int y = 0;
-      for(x = 0; x<Size; x++) {
-        for(y = 0; y<Size; y++) {
+      for(int x = 0; x<Size; x++) {
+        for(int y = 0; y<Size; y++) {
           if (x== viewpoint.WorldPosition.X && y == viewpoint.WorldPosition.Y) continue;
           District d = this[x,y];
 //        lock(d) { // this is causing a deadlock

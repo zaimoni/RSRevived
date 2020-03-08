@@ -2665,20 +2665,16 @@ namespace djack.RogueSurvivor.Engine
       Point nearPoint = near.Position;
 
       int num1 = 4 * (map.Width + map.Height);
-      int num2 = 0;
       var range = new Rectangle((Point)1,(Point)maxDistToPoint);
       var rules = Rules.Get;
-      Point p = new Point();
-      do {
-        ++num2;
-        p = nearPoint + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
+      while(0 <= --num1) {
+        var p = nearPoint + rules.DiceRoller.Choose(range) - rules.DiceRoller.Choose(range);
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceAt(actorToSpawn, in p);
           return actorToSpawn;
         }
       }
-      while (num2 <= num1);
       return null;
     }
 #nullable restore
@@ -10156,15 +10152,12 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
-      bool is_UI_viewpoint = upgradeActor == Player;
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
       var skills = upgradeActor.Sheet.SkillTable;
       if (0 >= upgrade.Count) { 
         AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
       } else {
         do {
-          OverlayPopupTitle popup = null;
-
           ClearMessages();
           var popupLines = new List<string> { "" };
 
@@ -10191,14 +10184,14 @@ namespace djack.RogueSurvivor.Engine
             }
           }
 
-          popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
+          var popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
           AddOverlay(popup);
           RedrawPlayScreen();
           KeyEventArgs key = m_UI.UI_WaitKey();
           if (key.KeyCode == Keys.Escape) break;
           if (key.KeyCode == Keys.Space) {
             upgrade = RollSkillsToUpgrade(upgradeActor, 300);
-            if (null != popup) RemoveOverlay(popup);
+            RemoveOverlay(popup);
             continue;
           }
 
@@ -10212,10 +10205,11 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
             upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
             AddMessagePressEnter();
-            if (null != popup) RemoveOverlay(popup);
+            RemoveOverlay(popup);
             RedrawPlayScreen();
             break;
           }
+          RemoveOverlay(popup);
         }
         while(true);
       }

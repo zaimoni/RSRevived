@@ -37,11 +37,10 @@ namespace djack.RogueSurvivor.Engine.Actions
             _result = null;
         }
 
-        private ActorAction _resolve()
+        private ActorAction? _resolve()
         {
-            ActorAction working = null;
             while(0 < _handler_codes.Count) {
-                working = m_Actor.Controller.ExecAryZeroBehavior(_handler_codes[0]);
+                var working = m_Actor.Controller.ExecAryZeroBehavior(_handler_codes[0]);
                 if (null != working && working.IsPerformable()) return working;
                 // \todo we're using a list so we can append further handlers
                 _handler_codes.RemoveAt(0);
