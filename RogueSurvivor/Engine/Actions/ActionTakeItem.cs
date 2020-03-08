@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       Item it = Item!;  // cf IsLegal(), above
       m_Actor.Inventory.RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
       RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
-      m_Actor.Inventory.RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
+      m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.RejectCrossLink(m_Actor.Inventory);
     }
 
     public override string ToString()
