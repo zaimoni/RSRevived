@@ -2906,8 +2906,7 @@ namespace djack.RogueSurvivor.Data
       HitPoints -= dmg;
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueForm.Game;
-      var equippedItem = GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (null != equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         Remove(equippedItem);
         if (game.ForceVisibleToPlayer(this)) {
           game.ImportantMessage(Engine.RogueGame.MakeMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);

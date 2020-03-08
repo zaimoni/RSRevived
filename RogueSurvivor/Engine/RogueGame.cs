@@ -2247,7 +2247,7 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 5. Check batteries : lights, trackers.
         // lights and normal trackers
-        bool is_drained(BatteryPowered it) {
+        static bool is_drained(BatteryPowered it) {
           return 0 < it.Batteries && 0 >= --it.Batteries;
         }
         void drain(Actor actor, Item it) {
@@ -9850,8 +9850,8 @@ namespace djack.RogueSurvivor.Engine
     {
       const int BLOOD_WALL_SPLAT_CHANCE = 20;
 
-      bool is_floor(Map m, Point pt) { return m.GetTileModelAt(pt).IsWalkable; }
-      bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && Rules.Get.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
+      static bool is_floor(Map m, Point pt) { return m.GetTileModelAt(pt).IsWalkable; }
+      static bool is_wall(Map m, Point pt) { return !m.GetTileModelAt(pt).IsWalkable && Rules.Get.RollChance(BLOOD_WALL_SPLAT_CHANCE); }
 
       map.AddTimedDecoration(position, GameImages.DECO_BLOODIED_FLOOR, WorldTime.TURNS_PER_DAY, is_floor);
       map.ForEachAdjacent(position,p => map.AddTimedDecoration(p, GameImages.DECO_BLOODIED_WALL, WorldTime.TURNS_PER_DAY, is_wall));    // no cross-district walls so ok
@@ -10806,7 +10806,7 @@ namespace djack.RogueSurvivor.Engine
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }
-      void draw(MapObject obj, GDI_Point scr, string imageID, Action<string, int, int> drawFn) { 
+      static void draw(MapObject obj, GDI_Point scr, string imageID, Action<string, int, int> drawFn) {
         drawFn(imageID, scr.X, scr.Y);
         if (obj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, scr.X, scr.Y);
       }

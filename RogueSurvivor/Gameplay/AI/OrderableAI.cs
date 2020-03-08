@@ -1265,10 +1265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (rw.Model.MaxAmmo <= rw.Ammo) continue;
           ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
           if (null == am) continue;
-          if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) {
-            tmpAction = Equip(rw);
-            return null != tmpAction ? tmpAction : new ActionUseItem(m_Actor, am);
-          }
+          if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) return Equip(rw) ?? new ActionUseItem(m_Actor, am);
         }
         return Equip(GetBestRangedWeaponWithAmmo());
       }
