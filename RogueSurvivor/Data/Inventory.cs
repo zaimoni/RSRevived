@@ -74,18 +74,7 @@ namespace djack.RogueSurvivor.Data
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     { // backstop.  Any zero-quantity items are to be eliminated.
-      int i = m_Items.Count;
-#if DEBUG
-      while (0 <= --i) {
-        if (0 >= m_Items[i].Quantity) throw new InvalidOperationException("tried to save zero-qty item");
-        int j = i;
-        while (0 <= --j) {
-          if (m_Items[i]==m_Items[j]) throw new InvalidOperationException("tried to save duplicate items");
-        }
-      }
-#else
-      while (0 <= --i) if (0 >= m_Items[i].Quantity) m_Items.RemoveAt(i);
-#endif
+      RepairZeroQty();
     }
 
 
@@ -106,7 +95,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (IsFull) return false;
       m_Items.Add(it);
-      _RejectZeroQty();
+      RepairZeroQty();
       return true;
     }
 
@@ -129,16 +118,16 @@ namespace djack.RogueSurvivor.Data
           }
         } else
           it.Quantity = 0;
-        _RejectZeroQty();
+        RepairZeroQty();
         return quantityAdded;
       }
       if (IsFull) {
-        _RejectZeroQty();
+        RepairZeroQty();
         return 0;
       }
 
       m_Items.Add(it);
-      _RejectZeroQty();
+      RepairZeroQty();
       return it.Quantity;
     }
 
@@ -153,7 +142,7 @@ namespace djack.RogueSurvivor.Data
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
       m_Items.Remove(it);
-      _RejectZeroQty();
+      RepairZeroQty();
     }
 
     public void Consume(Item it) {
@@ -161,7 +150,7 @@ namespace djack.RogueSurvivor.Data
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
       if (0 >= --it.Quantity) m_Items.Remove(it);
-      _RejectZeroQty();
+      RepairZeroQty();
     }
 
     /// <returns>true if and only if the source inventory is now empty</returns>
@@ -179,8 +168,8 @@ namespace djack.RogueSurvivor.Data
         return false;
       }
       RemoveAllQuantity(it);
-      _RejectZeroQty();
-      dest._RejectZeroQty();
+      RepairZeroQty();
+      dest.RepairZeroQty();
       RejectCrossLink(dest);
       return IsEmpty;
     }
@@ -325,7 +314,7 @@ namespace djack.RogueSurvivor.Data
                 }
               }
             }
-            _RejectZeroQty();
+            RepairZeroQty();
         }
 
         public void IncrementalDefrag(Item mergeWith) {
@@ -343,7 +332,7 @@ namespace djack.RogueSurvivor.Data
         mergeWith.Quantity += realloc;
         if (0 >= (src.Quantity -= realloc)) m_Items.RemoveAt(i);
       }
-      _RejectZeroQty();
+      RepairZeroQty();
     }
 
     public bool HasModel(ItemModel model)
@@ -499,7 +488,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Conditional("DEBUG")]
-    public void _RejectZeroQty()
+    private void _RejectZeroQty()
     {
       int i = m_Items.Count;
       while (0 <= --i) {
@@ -510,6 +499,32 @@ namespace djack.RogueSurvivor.Data
         }
       }
     }
+
+    [Conditional("RELEASE")]
+    private void _RepairZeroQty()
+    {
+      int i = m_Items.Count;
+      while (0 <= --i) {
+        if (0 >= m_Items[i].Quantity) {
+          m_Items.RemoveAt(i);
+          continue;
+        }
+        int j = i;
+        while (0 <= --j) {
+          if (m_Items[i]==m_Items[j]) {
+            m_Items.RemoveAt(i);
+            break;
+          }
+        }
+      }
+    }
+
+    public void RepairZeroQty()
+    {
+      _RejectZeroQty();
+      _RepairZeroQty();
+    }
+
 
     [Conditional("DEBUG")]
     public void RejectCrossLink(Inventory other)
