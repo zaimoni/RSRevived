@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     new public ItemBarricadeMaterialModel Model { get {return base.Model as ItemBarricadeMaterialModel; } }
 
-    public ItemBarricadeMaterial(ItemBarricadeMaterialModel model)
-      : base(model)
+    public ItemBarricadeMaterial(ItemBarricadeMaterialModel model, int qty=1)
+      : base(model, qty)
     {
     }
   }

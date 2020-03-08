@@ -16,9 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public AmmoType AmmoType { get { return Model.AmmoType; } }
 
     public ItemAmmo(ItemAmmoModel model)
-      : base(model)
+      : base(model, model.MaxQuantity)
     {
-      Quantity = model.MaxQuantity;
     }
   }
 }

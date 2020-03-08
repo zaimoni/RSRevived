@@ -477,11 +477,9 @@ namespace djack.RogueSurvivor.Data
       if (GivesWood) {
         int val2 = 1 + MaxHitPoints / 40;
         while (val2 > 0) {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(Gameplay.GameItems.WOODENPLANK) {
-            Quantity = (sbyte)Math.Min(Gameplay.GameItems.WOODENPLANK.StackingLimit, val2)
-          };
-          val2 -= barricadeMaterial.Quantity;
-          Location.Drop(barricadeMaterial);
+          var qty = Math.Min(Gameplay.GameItems.WOODENPLANK.StackingLimit, val2);
+          Location.Drop(new ItemBarricadeMaterial(Gameplay.GameItems.WOODENPLANK, qty));
+          val2 -= qty;
         }
         var rules = Engine.Rules.Get;
         if (rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {

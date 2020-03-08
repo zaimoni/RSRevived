@@ -15,8 +15,8 @@ namespace djack.RogueSurvivor.Engine.Items
     new public ItemExplosiveModel Model { get {return base.Model as ItemExplosiveModel; } }    
     public readonly int PrimedModelID;
 
-    public ItemExplosive(ItemExplosiveModel model, ItemExplosiveModel primedModel)
-      : base(model)
+    public ItemExplosive(ItemExplosiveModel model, ItemExplosiveModel primedModel, int qty=1)
+      : base(model, qty)
     {
       PrimedModelID = (int) primedModel.ID;
     }

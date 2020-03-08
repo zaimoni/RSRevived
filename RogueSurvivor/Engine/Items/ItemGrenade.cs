@@ -13,8 +13,8 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemGrenade : ItemExplosive
   {
     new public ItemGrenadeModel Model { get {return base.Model as ItemGrenadeModel; } }    
-    public ItemGrenade(ItemGrenadeModel model, ItemGrenadePrimedModel primedModel)
-      : base(model, primedModel)
+    public ItemGrenade(ItemGrenadeModel model, ItemGrenadePrimedModel primedModel, int qty=1)
+      : base(model, primedModel, qty)
     {
     }
   }

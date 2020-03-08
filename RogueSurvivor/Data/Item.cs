@@ -85,10 +85,10 @@ namespace djack.RogueSurvivor.Data
 #endif
     public virtual bool IsUseless { get { return false; } }
 
-    public Item(ItemModel model)
+    public Item(ItemModel model, int qty = 1)
     {
       m_ModelID = (int) model.ID;
-      m_Quantity = 1;
+      m_Quantity = qty;
       EquippedPart = DollPart.NONE;
     }
 
