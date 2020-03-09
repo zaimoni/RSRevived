@@ -451,10 +451,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         critical.IntersectWith(items);
         if (0 < critical.Count) {
+          // Unfortunately, this causes bizarrely long hang times in the sewers.  What we really want is some way to properly record
+          // multi-pathing such that an ai that can reach an inventory target "first" excludes it from its allies' consideration
+#if FAIL
           // this is unstable if it's *JUST* critical items; include want to mitigate pathing loops
           HashSet<Gameplay.GameItems.IDs> want = WhatDoIWantNow();
           want.IntersectWith(items);
           critical.UnionWith(want);
+#endif
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+critical.to_s());
