@@ -113,14 +113,12 @@ namespace djack.RogueSurvivor.Data
 
     public void EquippedBy(Actor actor)
     {
-#if CPU_HOG
+      var already = actor.GetEquippedItem(Model.EquipmentPart);
+      if (already == this) return;
+#if DEBUG
       if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
 #endif
-      if (IsEquipped) {
-        if (!actor.Inventory?.Contains(this) ?? true) throw new InvalidOperationException("Item::EquippedBy: must be in actor.Inventory");
-//        return; // should be no-op, but not really; death drops don't unequip
-      }
-      actor.GetEquippedItem(Model.EquipmentPart)?.UnequippedBy(actor);
+      already?.UnequippedBy(actor);
       actor.Equip(this);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
