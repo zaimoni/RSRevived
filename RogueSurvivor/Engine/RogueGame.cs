@@ -3535,7 +3535,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleItemInfo()
     {
       var item_classes = Player.Controller.WhatHaveISeen();
-      if (0>=(item_classes?.Count ?? 0)) {
+      if (null == item_classes || 0>=item_classes.Count) {
         AddMessage(new Data.Message("You have seen no memorable items.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         return;
       }
@@ -7924,7 +7924,7 @@ namespace djack.RogueSurvivor.Engine
             // need to know whether it's a zombifying hit or not
             bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled
                                       && !defender.Model.Abilities.IsUndead && Rules.Get.RollChance(s_Options.ZombificationChance);
-            KillActor(attacker, defender, (to_immediately_zombify ? "hit" : "hit"));
+            KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
             if (Session.Get.HasImmediateZombification) {
@@ -8826,7 +8826,6 @@ namespace djack.RogueSurvivor.Engine
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
       actor.Inventory.RepairContains(it, "have already taken ");
-      Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
@@ -10333,7 +10332,7 @@ namespace djack.RogueSurvivor.Engine
         if (num > test) continue;
         if (num < test) {
           idsList.Clear();
-          test = num;
+          num = test;
         }
         idsList.push(id);
       }
@@ -10623,7 +10622,6 @@ namespace djack.RogueSurvivor.Engine
       HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
 
       // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
-      Point delta = new Point();
       int i = view_squares;
       while(0 < i--) {
         MapViewRect.convert(i,ref point);
@@ -10635,7 +10633,7 @@ namespace djack.RogueSurvivor.Engine
           if (null == LoF) continue;
           foreach(Point pt in LoF) {
             if (pt==actorAt.Location.Position) continue;
-            delta = pt - actorAt.Location.Position + point;
+            var delta = pt - actorAt.Location.Position + point;
             if (!MapViewRect.Contains(delta)) continue;
             MapViewRect.convert(delta,ref working);
             if (0 > working || view_squares <= working) continue;
@@ -10654,7 +10652,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool isUndead = Player.Model.Abilities.IsUndead;
-      bool flag1 = Player.Model.StartingSheet.BaseSmellRating > 0;
+      bool canScentTrack = Player.Model.StartingSheet.BaseSmellRating > 0;
       bool p_is_awake = !Player.IsSleeping;
       for (var x = num1; x < num2; ++x) {
         point.X = x;
@@ -10684,8 +10682,7 @@ namespace djack.RogueSurvivor.Engine
             flag2 = true;
           }
           if (p_is_awake && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
-            if (isUndead) {
-              if (flag1) {
+            if (canScentTrack && isUndead) {
                 int num5 = Player.SmellThreshold;
                 int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, in point);
                 if (scentByOdorAt1 >= num5) {
@@ -10697,7 +10694,6 @@ namespace djack.RogueSurvivor.Engine
                   float num6 = (float) (0.9 * scentByOdorAt2 / OdorScent.MAX_STRENGTH);
                   m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_ZOMBIEMASTER, screen.X, screen.Y);
                 }
-              }
             }
           }
           if (player) {
@@ -11925,8 +11921,7 @@ namespace djack.RogueSurvivor.Engine
     {
       m_MusicManager.IsMusicEnabled = s_Options.PlayMusic;
       m_MusicManager.Volume = s_Options.MusicVolume;
-      if (m_MusicManager.IsMusicEnabled) return;
-      m_MusicManager.Stop();
+      if (!m_MusicManager.IsMusicEnabled) m_MusicManager.Stop();
     }
 
     private void LoadKeybindings()
@@ -12818,8 +12813,7 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
         }
       }
-      Actor vip = null;
-      if (!Session.Get.PlayerKnows_TheSewersThingLocation && null != (vip = player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor))) {
+      if (!Session.Get.PlayerKnows_TheSewersThingLocation && null != player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor)) {
           Session.Get.PlayerKnows_TheSewersThingLocation = true;
           m_MusicManager.Stop();
           m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
@@ -12908,7 +12902,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      vip = Session.Get.UniqueActors.JasonMyers.TheActor;
+      var vip = Session.Get.UniqueActors.JasonMyers.TheActor;
       if (!player.ActorScoring.HasSighted(vip.Model.ID) && null != player.Sees(vip)) {
             ClearMessages();
             AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
