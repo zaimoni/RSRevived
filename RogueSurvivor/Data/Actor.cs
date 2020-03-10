@@ -29,6 +29,20 @@ using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 
 namespace djack.RogueSurvivor.Data
 {
+    [Serializable]
+    internal enum Activity    // .NET Core 3.0: conflicts with System.Diagnostics.Activity
+    {
+        IDLE,
+        CHASING,
+        FIGHTING,
+        TRACKING,
+        FLEEING,
+        FOLLOWING,
+        SLEEPING,
+        FOLLOWING_ORDER,
+        FLEEING_FROM_EXPLOSIVE,
+    }
+
   [Serializable]
   internal class Actor : IEquatable<Actor>
     {

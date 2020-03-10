@@ -96,7 +96,6 @@
     <Compile Include="..\Data\Corpse.cs" />
     <Compile Include="..\Data\StateMapObject.cs" />
     <Compile Include="..\Data\TimedTask.cs" />
-    <Compile Include="..\Data\Activity.cs" />
     <Compile Include="..\Data\ItemModelDB.cs" />
     <Compile Include="..\Data\Verb.cs" />
     <Compile Include="..\Data\SkillTable.cs" />
