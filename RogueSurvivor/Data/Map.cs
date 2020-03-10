@@ -1762,22 +1762,15 @@ retry:
     public void DecayScents()
     {
       // Cf. Location.OdorsDecay
-      int mapOdorDecayRate = 1;
+      short mapOdorDecayRate = 1;
       if (District.IsSewersMap(this)) mapOdorDecayRate += 2;
 
       var discard = new List<OdorScent>();
       List<Point>? discard2 = null;
       foreach(var tmp in m_ScentsByPosition) {
-        int odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
-        foreach(OdorScent scent in tmp.Value) {
-          scent.Strength -= odorDecayRate;
-          if (0 >= scent.Strength) discard.Add(scent);  // XXX looks like it could depend on OdorScent being class rather than struct, but if that were to matter we'd have to lock anyway.
-        }
-        if (0 < discard.Count) {
-          foreach(var x in discard) tmp.Value.Remove(x);
-          discard.Clear();
-          if (0 >= tmp.Value.Count) (discard2 ?? (discard2 = new List<Point>())).Add(tmp.Key);
-        }
+        short odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
+        tmp.Value.OnlyIfNot(scent => scent.Decay(odorDecayRate));
+        if (0 >= tmp.Value.Count) (discard2 ?? (discard2 = new List<Point>())).Add(tmp.Key);
       }
       if (null != discard2) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
     }

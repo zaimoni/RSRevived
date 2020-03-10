@@ -116,9 +116,9 @@ namespace djack.RogueSurvivor.Data
     } }
 
     // alpha10
-    public int OdorsDecay()
+    public short OdorsDecay()
     {
-      int decay = 1;  // base decay
+      short decay = 1;  // base decay
 
       // sewers?
       if (District.IsSewersMap(Map)) decay += 2;

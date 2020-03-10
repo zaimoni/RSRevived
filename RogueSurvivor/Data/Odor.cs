@@ -41,5 +41,12 @@ namespace djack.RogueSurvivor.Data
       Odor = odor;
       Strength = strength;
     }
+
+    public bool Decay(short decay_rate)
+    {
+      bool ret = MIN_STRENGTH > (m_Strength -= decay_rate);
+      if (ret) m_Strength = 0;
+      return ret;
+    }
   }
 }
