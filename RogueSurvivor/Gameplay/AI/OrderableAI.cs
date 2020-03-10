@@ -1804,7 +1804,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
       Actor actor = target.Percepted;
-      ActorAction tmpAction = BehaviorMeleeAttack(actor);
+      ActorAction? tmpAction = BehaviorMeleeAttack(actor);
       // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
       try {
         if (null != tmpAction) return tmpAction;
