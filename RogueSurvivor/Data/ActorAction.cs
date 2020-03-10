@@ -7,22 +7,21 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal abstract class ActorAction
   {
     protected readonly Actor m_Actor;
-    protected string m_FailReason;
+    protected string? m_FailReason;
 
-    public string FailReason { get { return m_FailReason; } }
-    public bool PerformedBy(Actor a) { return m_Actor == a; }
+    public string? FailReason { get { return m_FailReason; } }
+    public bool PerformedBy(Actor? a) { return m_Actor == a; }
 
     protected ActorAction(Actor actor)
     {
-#if DEBUG
-      if (null == actor || actor.IsDead) throw new ArgumentNullException(nameof(actor));
-#endif
       m_Actor = actor;
     }
 
@@ -33,11 +32,11 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
 
-    public static bool Is<T>(ActorAction src) where T:ActorAction { return src is T; }
-    public static bool IsNot<T>(ActorAction src) where T:ActorAction { return !(src is T); }
+    public static bool Is<T>(ActorAction? src) where T:ActorAction { return src is T; }
+    public static bool IsNot<T>(ActorAction? src) where T:ActorAction { return !(src is T); }
 
-    public static bool Is<T,U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return src is T; }
-    public static bool IsNot<T, U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return !(src is T); }
+    public static bool Is<T,U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return src.Value is T; }
+    public static bool IsNot<T, U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return !(src.Value is T); }
 
   }
 }
