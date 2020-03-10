@@ -4,10 +4,11 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using djack.RogueSurvivor.Data;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -47,10 +48,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public IEnumerable<Actor>? KnownBy {
       get {
         if (null != m_Known) {
-          int i = m_Known.Count;
-          while(0 < i--) {
-            if (m_Known[i].IsDead) m_Known.RemoveAt(i);
-          }
+          m_Known.OnlyIfNot(Actor.IsDeceased);
           if (0 >= m_Known.Count) m_Known = null;
         }
         return m_Known;
@@ -195,10 +193,7 @@ namespace djack.RogueSurvivor.Engine.Items
       if (m_Owner?.IsDead ?? false) m_Owner = null;
 
       if (null != m_Known) {
-        int i = m_Known.Count;
-        while(0 < i--) {
-          if (m_Known[i].IsDead) m_Known.RemoveAt(i);
-        }
+        m_Known.OnlyIfNot(Actor.IsDeceased);
         if (0 >= m_Known.Count) m_Known = null;
       }
     }

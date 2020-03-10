@@ -936,10 +936,7 @@ retry:
     public void OnMapGenerated()
     { // coordinates with StdTownGenerator::Generate
       // 1) flush all NoCivSpawn zones
-      int i = m_Zones.Count;
-      while(0 < i--) {
-        if ("NoCivSpawn"==m_Zones[i].Name) m_Zones.RemoveAt(i);
-      }
+      m_Zones.OnlyIfNot(z => "NoCivSpawn" == z.Name);
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
@@ -1666,12 +1663,13 @@ retry:
     {
       int i = m_Timers.Count;
       if (0 >= i) return;
-      // we use this idiom to allow a triggering timer to add more timers to the map safely
-      while(0 < i--) {
-        var timer = m_Timers[i];
-        timer.Tick(this);
-        if (timer.IsCompleted) m_Timers.RemoveAt(i);
+
+      bool elapse(TimedTask timer) {
+        timer.Tick(this);   // ok for this to add timers; removal is by downward index sweep
+        return timer.IsCompleted;
       }
+
+      m_Timers.OnlyIfNot(elapse);
     }
 
     public KeyValuePair<bool,bool> AdvanceLocalTime()
@@ -2733,11 +2731,7 @@ retry:
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      int i = m_ActorsList.Count;
-      while (0 < i--) {
-        var a = m_ActorsList[i];
-        if (a.IsDead) m_ActorsList.RemoveAt(i);
-      }
+      m_ActorsList.OnlyIfNot(Actor.IsDeceased);
 
       m_ActorsList.TrimExcess();    // 2019-09-28: unsure if these actually do anything useful (inherited from Alpha 9)
       m_MapObjectsList.TrimExcess();

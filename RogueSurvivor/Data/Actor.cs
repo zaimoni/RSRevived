@@ -268,6 +268,7 @@ namespace djack.RogueSurvivor.Data
       get { return GetFlag(Flags.IS_DEAD); }
       set { SetFlag(Flags.IS_DEAD, value); }
     }
+    public static bool IsDeceased(Actor a) { return a.IsDead; }
 
     public bool IsSleeping {
       get { return GetFlag(Flags.IS_SLEEPING); }
@@ -3734,24 +3735,20 @@ namespace djack.RogueSurvivor.Data
     {
       if (m_TargetActor?.IsDead ?? false) m_TargetActor = null;
       if (m_Leader?.IsDead ?? false) m_Leader = null;
-      int i;
       // \todo match RS alpha 10's prune of trust entries in dead actors (m_TrustDict for us)
       // to avoid weirdness we want to drop only if no revivable corpse is in-game
       if (null != m_Followers) {
-        i = m_Followers.Count;
-        while(0 <= --i) if (m_Followers[i].IsDead) m_Followers.RemoveAt(i);
+        m_Followers.OnlyIfNot(IsDeceased);
         if (0 >= m_Followers.Count) m_Followers = null;
         else m_Followers.TrimExcess();
       }
       if (null != m_AggressorOf) {
-        i = m_AggressorOf.Count;
-        while(0 <= --i) if (m_AggressorOf[i].IsDead) m_AggressorOf.RemoveAt(i);
+        m_AggressorOf.OnlyIfNot(IsDeceased);
         if (0 >= m_AggressorOf.Count) m_AggressorOf = null;
         else m_AggressorOf.TrimExcess();
       }
       if (null != m_SelfDefenceFrom) {
-        i = m_SelfDefenceFrom.Count;
-        while(0 <= --i) if (m_SelfDefenceFrom[i].IsDead) m_SelfDefenceFrom.RemoveAt(i);
+        m_SelfDefenceFrom.OnlyIfNot(IsDeceased);
         if (0 >= m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
         else m_SelfDefenceFrom.TrimExcess();
       }

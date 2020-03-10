@@ -93,17 +93,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public CivilianAI()
     {
-      m_Emotes = CivilianAI.FIGHT_EMOTES;
+      m_Emotes = FIGHT_EMOTES;
     }
 
     // we don't have memory, but we do have taboo trades
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      if (null == TabooTrades) return;
-      int i = TabooTrades.Count;
-      while(0 < i--) {
-        if (TabooTrades[i].IsDead) TabooTrades.RemoveAt(i);
-      }
+      TabooTrades?.OnlyIfNot(Actor.IsDeceased);
     }
 
     public override void TakeControl(Actor actor)

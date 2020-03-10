@@ -4,10 +4,11 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using djack.RogueSurvivor.Data;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -39,10 +40,7 @@ namespace djack.RogueSurvivor.Engine.Items
       // clean up dead actors refs
       // side effect: revived actors will forget about boring items
       if (null != m_BoringFor) {
-        int i = m_BoringFor.Count;
-        while(0 < i--) {
-          if (m_BoringFor[i].IsDead) m_BoringFor.RemoveAt(i);
-        }
+        m_BoringFor.OnlyIfNot(Actor.IsDeceased);
         if (m_BoringFor.Count == 0) m_BoringFor = null;
       }
     }

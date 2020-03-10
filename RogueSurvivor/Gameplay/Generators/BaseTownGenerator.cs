@@ -245,10 +245,7 @@ restart:
           blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
           // maintain building plans:
           ForceSubwayStation.Remove(world_pos);
-          int i = SubwayElectrifyPlans.Count;
-          while(0 < i--) {
-            if (SubwayElectrifyPlans[i].Contains(world_pos)) SubwayElectrifyPlans.RemoveAt(i);
-          }
+          SubwayElectrifyPlans.OnlyIfNot(x => x.Contains(world_pos));
         } else {    // no station here
           int i = SubwayElectrifyPlans.Count;
           while(0 < i--) {
