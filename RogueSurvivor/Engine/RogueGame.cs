@@ -13428,20 +13428,14 @@ namespace djack.RogueSurvivor.Engine
       });
       (Player.Model.Abilities.IsUndead ? actorList2 : actorList1).Add(Player);
       if (actorList1.Count > 0) {
-        actorList1.Sort((a, b) => {
-          if (a.SpawnTime < b.SpawnTime) return -1;
-          return a.SpawnTime != b.SpawnTime ? 1 : 0;
-        });
+        actorList1.SortIncreasing(x => x.SpawnTime);
         stringList.Add("- Oldest Livings Surviving");
         stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList1[0], new WorldTime(actorList1[0].SpawnTime).ToString())));
         if (actorList1.Count > 1)
           stringList.Add(string.Format("    2nd {0}.", FunFactActorResume(actorList1[1], new WorldTime(actorList1[1].SpawnTime).ToString())));
       } else stringList.Add("    No living actors alive!");
       if (actorList2.Count > 0) {
-        actorList2.Sort((a, b) => {
-          if (a.SpawnTime < b.SpawnTime) return -1;
-          return a.SpawnTime != b.SpawnTime ? 1 : 0;
-        });
+        actorList2.SortIncreasing(x => x.SpawnTime);
         stringList.Add("- Oldest Undeads Rotting Around");
         stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList2[0], new WorldTime(actorList2[0].SpawnTime).ToString())));
         if (actorList2.Count > 1)
@@ -13449,10 +13443,7 @@ namespace djack.RogueSurvivor.Engine
       }
       else stringList.Add("    No undeads shambling around!");
       if (actorList1.Count > 0) {
-        actorList1.Sort((a, b) => {
-          if (a.KillsCount > b.KillsCount) return -1;
-          return a.KillsCount != b.KillsCount ? 1 : 0;
-        });
+        actorList1.SortDecreasing(x => x.KillsCount);
         stringList.Add("- Deadliest Livings Kicking ass");
         if (actorList1[0].KillsCount > 0) {
           stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList1[0], actorList1[0].KillsCount.ToString())));
@@ -13462,10 +13453,7 @@ namespace djack.RogueSurvivor.Engine
         else stringList.Add("    Livings can't fight for their lives apparently.");
       }
       if (actorList2.Count > 0) {
-        actorList2.Sort((a, b) => {
-          if (a.KillsCount > b.KillsCount) return -1;
-          return a.KillsCount != b.KillsCount ? 1 : 0;
-        });
+        actorList2.SortDecreasing(x => x.KillsCount);
         stringList.Add("- Deadliest Undeads Chewing Brains");
         if (actorList2[0].KillsCount > 0) {
           stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList2[0], actorList2[0].KillsCount.ToString())));
@@ -13475,10 +13463,7 @@ namespace djack.RogueSurvivor.Engine
         else stringList.Add("    Undeads don't care for brains apparently.");
       }
       if (actorList1.Count > 0) {
-        actorList1.Sort((a, b) => {
-          if (a.MurdersCounter > b.MurdersCounter) return -1;
-          return a.MurdersCounter != b.MurdersCounter ? 1 : 0;
-        });
+        actorList1.SortDecreasing(x => x.MurdersCounter);
         stringList.Add("- Most Murderous Murderer Murdering");
         if (actorList1[0].MurdersCounter > 0) {
           stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList1[0], actorList1[0].MurdersCounter.ToString())));

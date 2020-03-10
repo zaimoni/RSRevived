@@ -175,17 +175,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // firearms use grid i.e. L-infinity distance
     protected List<Percept_<_T_>>? SortByGridDistance<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
-      if (null == percepts || 0 >= percepts.Count) return null;
-      if (1==percepts.Count) return percepts;
-
-      List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
       Location from = m_Actor.Location;
-      Dictionary<Percept_<_T_>, int> dict = new Dictionary<Percept_<_T_>, int>(perceptList.Count);
-      foreach(Percept_<_T_> p in perceptList) {
-        dict.Add(p,Rules.InteractionDistance(p.Location, in from));
-      }
-      perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
-      return perceptList;
+      return percepts?.SortIncreasing(p => Rules.InteractionDistance(p.Location, from));
     }
 #nullable restore
 

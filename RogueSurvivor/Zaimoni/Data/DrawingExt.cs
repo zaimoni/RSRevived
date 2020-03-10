@@ -511,6 +511,31 @@ namespace Zaimoni.Data
       return false;
     }
 
+    // sorts in-place
+    public static List<T>? SortIncreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R>
+    {
+      var n = src.Count;
+      if (0 >= n) return null;
+      if (1 == n) return src;
+
+      var dict = new Dictionary<T, R>(n);
+      foreach(var x in src) dict.Add(x, score(x));
+      src.Sort((a, b) => dict[a].CompareTo(dict[b]));
+      return src;
+    }
+
+    public static List<T>? SortDecreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R>
+    {
+      var n = src.Count;
+      if (0 >= n) return null;
+      if (1 == n) return src;
+
+      var dict = new Dictionary<T, R>(n);
+      foreach(var x in src) dict.Add(x, score(x));
+      src.Sort((a, b) => dict[b].CompareTo(dict[a]));
+      return src;
+    }
+
     // generic loop iteration ... these are always inefficient compared to inlining, due to parameter passing overhead
     public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn)
     {

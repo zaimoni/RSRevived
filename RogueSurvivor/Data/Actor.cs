@@ -1500,15 +1500,7 @@ namespace djack.RogueSurvivor.Data
         var a = e.Location.Actor;
         if (null!=a && IsEnemyOf(a)) actorList.Add(a);
       }
-      if (2 <= actorList.Count) {
-        actorList.Sort((Comparison<Actor>) ((a, b) =>
-        {
-          double num1 = Rules.InteractionStdDistance(a.Location, in m_Location);
-          double num2 = Rules.InteractionStdDistance(b.Location, in m_Location);
-          return num1.CompareTo(num2);
-        }));
-      }
-      return (1<=actorList.Count ? actorList : null);
+      return actorList.SortIncreasing(x => Rules.InteractionStdDistance(x.Location, m_Location));
     }
 
     // stripped down from above
