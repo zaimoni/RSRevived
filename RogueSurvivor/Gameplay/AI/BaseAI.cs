@@ -149,82 +149,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // the outside (Contracts saw a non-null return)
     protected Percept_<_T_>? FilterNearest<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
-      if (null == percepts || 0 == percepts.Count) return null;
-      return percepts.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
+      return percepts?.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location)) ?? null;
     }
-#nullable restore
 
-    public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T> src)
+    public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T>? src)
     {
-        if (null==src || 0 >= src.Count) return default;
-        int dist = int.MaxValue;
-        KeyValuePair<Location,T> ret = default;
-        foreach (var x in src) {
-          int test = Rules.InteractionDistance(m_Actor.Location,x.Key);
-          if (test < dist) {
-            dist = test;
-            ret = x;
-          }
-        }
-
-        return ret;
+        return src?.Minimize(x => Rules.InteractionDistance(m_Actor.Location, x.Key)) ?? default;
     }
 
-
-    static private Percept_<AIScent> FilterStrongestScent(List<Percept_<AIScent>> scents)
-    {
-#if DEBUG
-      if (0 >= (scents?.Count ?? 0)) throw new ArgumentNullException(nameof(scents));
-#endif
-      Percept_<AIScent> percept = null;
-      foreach (var scent in scents) {
-        // minimum valid scent strength is 1
-        if (scent.Percepted.Strength > (percept?.Percepted.Strength ?? 0)) percept = scent;
-      }
-      return percept;
-    }
-
-#if DEAD_FUNC
-    protected List<Percept> FilterFireTargets(List<Percept> percepts)
-    {
-      return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target));
-    }
-#endif
-
-#nullable enable
     protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)
     {
-      return percepts.Filter(target => m_Actor.CanFireAt(target,range));
+      return percepts?.Filter(target => m_Actor.CanFireAt(target,range));
     }
 
     protected List<Percept_<Actor>>? FilterPossibleFireTargets(List<Percept_<Actor>>? percepts)
     {
-      return percepts.Filter(target => m_Actor.CouldFireAt(target));
+      return percepts?.Filter(target => m_Actor.CouldFireAt(target));
     }
 
     protected bool AnyContrafactualFireTargets(List<Percept_<Actor>> percepts, Point p)
     {
       return percepts.Any(target => m_Actor.CanContrafactualFireAt(target,p));
     }
-#nullable restore
 
-#if DEAD_FUNC
-    protected List<Percept_<_T_>> SortByDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      Point from = m_Actor.Location.Position;
-      List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
-      perceptList.Sort(((pA, pB) =>
-      {
-        double num1 = Rules.StdDistance(pA.Location.Position, from);
-        double num2 = Rules.StdDistance(pB.Location.Position, from);
-        return num1.CompareTo(num2);
-      }));
-      return perceptList;
-    }
-#endif
-
-#nullable enable
     // firearms use grid i.e. L-infinity distance
     protected List<Percept_<_T_>>? SortByGridDistance<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
@@ -773,7 +720,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorTrackScent(List<Percept_<AIScent>> scents)
     {
       if (null == scents || 0 >= scents.Count) return null;
-      Percept_<AIScent> percept = FilterStrongestScent(scents);
+      var percept = scents.Maximize(scent => scent.Percepted.Strength);
       if (m_Actor.Location != percept.Location) {
         var tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
         if (null!=tmpAction) return tmpAction;
