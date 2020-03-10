@@ -90,7 +90,6 @@
     <Compile Include="..\Data\AttackKind.cs" />
     <Compile Include="..\Data\FireMode.cs" />
     <Compile Include="..\Data\Attack.cs" />
-    <Compile Include="..\Data\ActorTasks.cs" />
     <Compile Include="..\Data\ActorOrder.cs" />
     <Compile Include="..\Data\MapObject.cs" />
     <Compile Include="..\Data\Corpse.cs" />

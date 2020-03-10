@@ -9,10 +9,26 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+  internal enum ActorTasks
+  {
+    BARRICADE_ONE,
+    BARRICADE_MAX,
+    GUARD,
+    PATROL,
+    DROP_ALL_ITEMS,
+    BUILD_SMALL_FORTIFICATION,
+    BUILD_LARGE_FORTIFICATION,
+    REPORT_EVENTS,
+    SLEEP_NOW,
+    FOLLOW_TOGGLE,
+    WHERE_ARE_YOU,
+  }
+
+  [Serializable]
   internal class ActorOrder
   {
-    public ActorTasks Task { get; private set; }
-    public Location Location { get; private set; }
+    public readonly ActorTasks Task;
+    public readonly Location Location;
 
     public ActorOrder(ActorTasks task, Location location)
     {
