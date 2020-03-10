@@ -1228,19 +1228,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected class ChoiceEval<_T_>
     {
-      public _T_ Choice { get; private set; }
-
-      public float Value { get; private set; }
+      public readonly _T_ Choice;
+      public readonly float Value;
 
       public ChoiceEval(_T_ choice, float value)
       {
-                Choice = choice;
-                Value = value;
+        Choice = choice;
+        Value = value;
       }
 
       public override string ToString()
       {
-        return string.Format("ChoiceEval({0}; {1:F})", (object)Choice == null ? (object) "NULL" : (object)Choice.ToString(), (object)Value);
+        return string.Format("ChoiceEval({0}; {1:F})", null == Choice ? "NULL" : Choice.ToString(), Value);
       }
     }
 
