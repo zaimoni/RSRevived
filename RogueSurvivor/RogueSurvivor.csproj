@@ -164,7 +164,6 @@
     <Compile Include="Data\DollPart.cs" />
     <Compile Include="Data\DollBody.cs" />
     <Compile Include="Data\Doll.cs" />
-    <Compile Include="Data\AttackKind.cs" />
     <Compile Include="Data\FireMode.cs" />
     <Compile Include="Data\Attack.cs" />
     <Compile Include="Data\ActorOrder.cs" />

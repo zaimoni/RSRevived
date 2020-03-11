@@ -9,6 +9,14 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+  internal enum AttackKind
+  {
+    PHYSICAL,
+    FIREARM,
+    BOW,
+  }
+
+  [Serializable]
   internal struct Attack
   {
     [NonSerialized]
