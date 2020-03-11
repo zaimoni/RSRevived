@@ -13,6 +13,19 @@ using System.Runtime.Serialization;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+  internal enum DayPhase
+  {
+    SUNSET,
+    EVENING,
+    MIDNIGHT,
+    DEEP_NIGHT,
+    SUNRISE,
+    MORNING,
+    MIDDAY,
+    AFTERNOON,
+  }
+
+  [Serializable]
   internal class WorldTime : ISerializable
     {
     public const int HOURS_PER_DAY = 24;    // not scalable
@@ -143,4 +156,26 @@ namespace djack.RogueSurvivor.Data
       }
     }
   }
+
+    static internal class WorldTime_ext
+    {
+      static public string to_s(this DayPhase phase)
+      {
+        switch (phase) {
+          case DayPhase.SUNSET: return "Sunset";
+          case DayPhase.EVENING: return "Evening";
+          case DayPhase.MIDNIGHT: return "Midnight";
+          case DayPhase.DEEP_NIGHT: return "Deep Night";
+          case DayPhase.SUNRISE: return "Sunrise";
+          case DayPhase.MORNING: return "Morning";
+          case DayPhase.MIDDAY: return "Midday";
+#if DEBUG
+          case DayPhase.AFTERNOON: return "Afternoon";
+          default: throw new ArgumentOutOfRangeException(nameof(phase), phase, "unhandled dayphase");
+#else
+          default: return "Afternoon";
+#endif
+        }
+      }
+    }
 }

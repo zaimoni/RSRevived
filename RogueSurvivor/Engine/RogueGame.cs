@@ -1875,7 +1875,7 @@ namespace djack.RogueSurvivor.Engine
           if (canSeeSky) AddMessage(new Data.Message("Night is falling upon you...", turn, NIGHT_COLOR));
           OnNewNight();
         } else if (phase1 != phase2) {
-          if (canSeeSky) AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), turn, sess.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
+          if (canSeeSky) AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", phase2.to_s()), turn, sess.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
         }
 
         // alpha10
@@ -7241,21 +7241,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string DescribeDayPhase(DayPhase phase)
-    {
-      switch (phase) {
-        case DayPhase.SUNSET: return "Sunset";
-        case DayPhase.EVENING: return "Evening";
-        case DayPhase.MIDNIGHT: return "Midnight";
-        case DayPhase.DEEP_NIGHT: return "Deep Night";
-        case DayPhase.SUNRISE: return "Sunrise";
-        case DayPhase.MORNING: return "Morning";
-        case DayPhase.MIDDAY: return "Midday";
-        case DayPhase.AFTERNOON: return "Afternoon";
-        default: throw new ArgumentOutOfRangeException("unhandled dayphase");
-      }
-    }
-
     static private string DescribeWeather(Weather weather)
     {
       switch (weather) {
@@ -10517,7 +10502,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, LocationText(), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING, new Color?());
-                m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, Session.Get.WorldTime.Phase.to_s(), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(WeatherStatusText(), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING);
                 // end measure from above
 
@@ -13800,7 +13785,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
     }
-
   }
 #nullable restore
 }

@@ -107,7 +107,6 @@
     <Compile Include="..\Data\PlayerController.cs" />
     <Compile Include="..\Data\Abilities.cs" />
     <Compile Include="..\Data\ActorModel.cs" />
-    <Compile Include="..\Data\DayPhase.cs" />
     <Compile Include="..\Data\WorldTime.cs" />
     <Compile Include="..\Data\Message.cs" />
     <Compile Include="..\Data\Exit.cs" />
