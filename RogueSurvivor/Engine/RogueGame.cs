@@ -6733,40 +6733,40 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeMapObject(MapObject obj)
     {
-      var stringList = new List<string>(4) { string.Format("{0}.", obj.AName) };
-      if (obj.IsJumpable) stringList.Add("Can be jumped on.");
-      if (obj.IsCouch) stringList.Add("Is a couch.");
-      if (obj.GivesWood) stringList.Add("Can be dismantled for wood.");
-      if (obj.IsMovable) stringList.Add("Can be moved.");
-      if (obj.StandOnFovBonus) stringList.Add("Increases view range.");
+      var lines = new List<string>(4) { string.Format("{0}.", obj.AName) };
+      if (obj.IsJumpable) lines.Add("Can be jumped on.");
+      if (obj.IsCouch) lines.Add("Is a couch.");
+      if (obj.GivesWood) lines.Add("Can be dismantled for wood.");
+      if (obj.IsMovable) lines.Add("Can be moved.");
+      if (obj.StandOnFovBonus) lines.Add("Increases view range.");
       var stringBuilder = new StringBuilder();
       if (obj.BreakState == MapObject.Break.BROKEN) stringBuilder.Append("Broken! ");
       if (obj.FireState == MapObject.Fire.ONFIRE) stringBuilder.Append("On fire! ");
       else if (obj.FireState == MapObject.Fire.ASHES) stringBuilder.Append("Burnt to ashes! ");
-      stringList.Add(stringBuilder.ToString());
+      lines.Add(stringBuilder.ToString());
       if (obj is PowerGenerator power) {
-        stringList.Add(power.IsOn ? "Currently ON." : "Currently OFF.");
-        stringList.Add(string.Format("The power gauge reads {0}%.", (int)(100.0 * obj.Location.Map.PowerRatio)));
+        lines.Add(power.IsOn ? "Currently ON." : "Currently OFF.");
+        lines.Add(string.Format("The power gauge reads {0}%.", (int)(100.0 * obj.Location.Map.PowerRatio)));
       } else if (obj is Board bb) {
-        stringList.Add("The text reads : ");
-        stringList.AddRange(bb.Text);
+        lines.Add("The text reads : ");
+        lines.AddRange(bb.Text);
       }
       int tmp_i = obj.MaxHitPoints;
       if (tmp_i > 0) {
         int tmp_hp;
-        stringList.Add((tmp_hp = obj.HitPoints) < tmp_i
-                     ? string.Format("HP        : {0}/{1}", tmp_hp, tmp_i)
-                     : string.Format("HP        : {0} MAX", tmp_hp));
+        lines.Add((tmp_hp = obj.HitPoints) < tmp_i
+                 ? string.Format("HP        : {0}/{1}", tmp_hp, tmp_i)
+                 : string.Format("HP        : {0} MAX", tmp_hp));
         if (obj is DoorWindow doorWindow) {
-          stringList.Add((tmp_hp = doorWindow.BarricadePoints) < Rules.BARRICADING_MAX
-                       ? string.Format("Barricades: {0}/{1}", tmp_hp, Rules.BARRICADING_MAX)
-                       : string.Format("Barricades: {0} MAX", tmp_hp));
+          lines.Add((tmp_hp = doorWindow.BarricadePoints) < Rules.BARRICADING_MAX
+                   ? string.Format("Barricades: {0}/{1}", tmp_hp, Rules.BARRICADING_MAX)
+                   : string.Format("Barricades: {0} MAX", tmp_hp));
         }
       }
-      if (0 < (tmp_i = obj.Weight)) stringList.Add(string.Format("Weight    : {0}", tmp_i));
+      if (0 < (tmp_i = obj.Weight)) lines.Add(string.Format("Weight    : {0}", tmp_i));
       var itemsAt = obj.Location.Items;
-      if (itemsAt != null) stringList.AddRange(DescribeInventory(itemsAt));
-      return stringList.ToArray();
+      if (itemsAt != null) lines.AddRange(DescribeInventory(itemsAt));
+      return lines.ToArray();
     }
 
     static private string[] DescribeInventory(Inventory inv)
@@ -6847,8 +6847,8 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemFood food) {
         if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter)) str += " (spoiled)";
         else if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) str += " (expired)";
-      } else if (it is ItemRangedWeapon itemRangedWeapon) {
-        str += string.Format(" ({0}/{1})", itemRangedWeapon.Ammo, itemRangedWeapon.Model.MaxAmmo);
+      } else if (it is ItemRangedWeapon rw) {
+        str += string.Format(" ({0}/{1})", rw.Ammo, rw.Model.MaxAmmo);
       } else if (it is ItemTrap trap) {
         if (trap.IsActivated) str += "(activated)";
         if (trap.IsTriggered) str += "(triggered)";

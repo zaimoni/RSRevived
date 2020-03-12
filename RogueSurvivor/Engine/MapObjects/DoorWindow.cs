@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Threading;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]

@@ -7,12 +7,14 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
   internal class Board : MapObject
   {
-    public string[] Text { get; private set; }
+    public readonly string[] Text;
 
     public Board(string imageID, string[] text)
       : base(imageID)

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Tasks
 {
     [Serializable]
