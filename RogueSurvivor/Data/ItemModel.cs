@@ -16,12 +16,12 @@ namespace djack.RogueSurvivor.Data
     public readonly string ImageID;
     public readonly string FlavorDescription;
     public readonly DollPart EquipmentPart;
+    public readonly bool DontAutoEquip;
 
     private int m_StackingLimit = 1;
 
     public bool IsPlural { get; protected set; }
     public bool IsProper { get; protected set; }
-    public bool DontAutoEquip { get; set; }
     public bool IsUnbreakable { get; protected set; }
     public bool IsUnique { get; set; }
     public bool IsForbiddenToAI { get; set; }
@@ -40,14 +40,14 @@ namespace djack.RogueSurvivor.Data
     public bool IsStackable { get { return 2 <= m_StackingLimit; } }
     public bool IsEquipable { get { return EquipmentPart != DollPart.NONE; } }
 
-    public ItemModel(string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE)
+    public ItemModel(string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
     {
       SingleName = aName;
       PluralName = theNames;
       ImageID = imageID;
       FlavorDescription = flavor;
       // if we are not equippable, then there is no operational difference whether we auto-equip or not.
-      if (DollPart.NONE == (EquipmentPart = part)) DontAutoEquip = true;
+      DontAutoEquip = DollPart.NONE == (EquipmentPart = part) || no_autoequip;
     }
 
     public virtual Item create()

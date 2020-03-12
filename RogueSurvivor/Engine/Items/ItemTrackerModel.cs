@@ -17,11 +17,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxBatteries;
 
     public ItemTrackerModel(string aName, string theNames, string imageID, TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
-      : base(aName, theNames, imageID, flavor, part)
+      : base(aName, theNames, imageID, flavor, part, true)
     {
        Tracking = tracking;
        MaxBatteries = maxBatteries;
-       DontAutoEquip = true;
     }
 
     // work around lack of const strings

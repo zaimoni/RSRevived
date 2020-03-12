@@ -770,9 +770,8 @@ namespace djack.RogueSurvivor.Gameplay
       // this manual is *very* relevant, but dry reading.
       _setModel(IDs.ENT_CHAR_GUARD_MANUAL, new ItemEntertainmentModel("CHAR Guard Manual","CHAR Guard Manuals", GameImages.ITEM_BOOK, DATA_ENT_MAGAZINE.VALUE, 0, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
 
-      _setModel(IDs.UNIQUE_SUBWAY_BADGE, new ItemModel("Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND)
+      _setModel(IDs.UNIQUE_SUBWAY_BADGE, new ItemModel("Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND, true)
       {
-        DontAutoEquip = true,
         IsUnique = true,
         IsForbiddenToAI = true
       });

@@ -27,7 +27,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
       : base(aName, theNames, imageID, flavor)
     {
-      DontAutoEquip = true;
       if (stackLimit > 1) StackingLimit = stackLimit;
       TriggerChance = triggerChance;
       Damage = damage;
