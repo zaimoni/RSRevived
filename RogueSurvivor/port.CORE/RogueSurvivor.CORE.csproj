@@ -108,7 +108,6 @@
     <Compile Include="..\Data\WorldTime.cs" />
     <Compile Include="..\Data\Message.cs" />
     <Compile Include="..\Data\Exit.cs" />
-    <Compile Include="..\Data\Lighting.cs" />
     <Compile Include="..\Data\Map.cs" />
     <Compile Include="..\Data\Actor.cs" />
     <Compile Include="..\Data\World.cs" />

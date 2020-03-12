@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {

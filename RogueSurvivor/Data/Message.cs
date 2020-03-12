@@ -8,6 +8,8 @@ using System;
 using System.Drawing;
 using Zaimoni.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]

@@ -8,6 +8,9 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
+  // VAPORWARE while currently this is a single value at the World level, it logically should be per-district to allow
+  // for fronts, etc. (also want to adjust sunrise/sunset times by longitude/latitude)
+
   [Serializable]
   internal enum Weather
   {

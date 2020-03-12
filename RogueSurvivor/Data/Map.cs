@@ -25,6 +25,16 @@ using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transi
 
 namespace djack.RogueSurvivor.Data
 {
+  // VAPORWARE this is currently per-map and works off of where the viewer is, not what the light level of the viewing target is.
+  // Staying Alive has made a massive fix attempt and should be reviewed. 
+  [Serializable]
+  internal enum Lighting
+  {
+    DARKNESS = 0,
+    OUTSIDE = 1,
+    LIT = 2
+  }
+
   [Serializable]
   internal class Map : ISerializable
   {
