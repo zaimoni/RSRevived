@@ -15,6 +15,17 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+  internal enum DistrictKind
+  {
+    GENERAL = 0,
+    RESIDENTIAL = 1,
+    SHOPPING = 2,
+    GREEN = 3,
+    BUSINESS = 4,
+    _COUNT = 5,
+  }
+
+  [Serializable]
   internal class District
   {
 #nullable enable

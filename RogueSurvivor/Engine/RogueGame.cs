@@ -3342,40 +3342,6 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
     }
 
-	static private string HandleCityInfo_DistrictToCode(DistrictKind d)
-	{
-       switch (d) {
-         case DistrictKind.GENERAL: return "Gen";
-         case DistrictKind.RESIDENTIAL: return "Res";
-         case DistrictKind.SHOPPING: return "Sho";
-         case DistrictKind.GREEN: return "Gre";
-         case DistrictKind.BUSINESS: return "Bus";
-         default:
-#if DEBUG
-           throw new ArgumentOutOfRangeException("unhandled district kind");
-#else
-		   return "BUG";
-#endif
-       }
-	}
-
-	static private Color HandleCityInfo_DistrictToColor(DistrictKind d)
-	{
-       switch (d) {
-         case DistrictKind.GENERAL: return Color.Gray;
-         case DistrictKind.RESIDENTIAL: return Color.Orange;
-         case DistrictKind.SHOPPING: return Color.White;
-         case DistrictKind.GREEN: return Color.Green;
-         case DistrictKind.BUSINESS: return Color.Red;
-         default:
-#if DEBUG
-           throw new ArgumentOutOfRangeException("unhandled district kind");
-#else
-		   return Color.Blue;
-#endif
-	  }
-	}
-
     private void HandleCityInfo()
     {
       int gx = 0;
@@ -3404,6 +3370,24 @@ namespace djack.RogueSurvivor.Engine
       }
       for (int index = 0; index < Session.Get.World.Size; ++index)
         m_UI.UI_DrawStringBold(index == Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy, new Color?());
+
+      static ColorString DistrictToColorCode(DistrictKind d)
+      {
+        switch (d) {
+          case DistrictKind.GENERAL: return new ColorString(Color.Gray, "Gen");
+          case DistrictKind.RESIDENTIAL: return new ColorString(Color.Orange, "Res");
+          case DistrictKind.SHOPPING: return new ColorString(Color.White, "Sho");
+          case DistrictKind.GREEN: return new ColorString(Color.Green, "Gre");
+          case DistrictKind.BUSINESS: return new ColorString(Color.Red, "Bus");
+          default:
+#if DEBUG
+            throw new ArgumentOutOfRangeException("unhandled district kind");
+#else
+		    return new ColorString(Color.Blue, "BUG");
+#endif
+        }
+	  }
+
       int num3 = gy + BOLD_LINE_SPACING;
       const int num4 = 32;
       int num5 = num3;
@@ -3411,12 +3395,11 @@ namespace djack.RogueSurvivor.Engine
         for (int index2 = 0; index2 < Session.Get.World.Size; ++index2) {
           District district = Session.Get.World[index2, index1];
           char ch = district == CurrentMap.District ? '*' : (Player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
-          Color color = HandleCityInfo_DistrictToColor(district.Kind);
-          string str = HandleCityInfo_DistrictToCode(district.Kind);
+          var cs = DistrictToColorCode(district.Kind);
           string text = "".PadLeft(5,ch);
-          m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * BOLD_LINE_SPACING, new Color?());
-          m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", ch, str, ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
-          m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * BOLD_LINE_SPACING, new Color?());
+          m_UI.UI_DrawStringBold(cs.Key, text, num4 + index2 * 48, num5 + index1 * 3 * BOLD_LINE_SPACING, new Color?());
+          m_UI.UI_DrawStringBold(cs.Key, string.Format("{0}{1}{2}", ch, cs.Value, ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
+          m_UI.UI_DrawStringBold(cs.Key, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * BOLD_LINE_SPACING, new Color?());
         }
       }
 

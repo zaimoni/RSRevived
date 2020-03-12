@@ -98,7 +98,6 @@
     <Compile Include="..\Data\Verb.cs" />
     <Compile Include="..\Data\SkillTable.cs" />
     <Compile Include="..\Data\Faction.cs" />
-    <Compile Include="..\Data\DistrictKind.cs" />
     <Compile Include="..\Data\District.cs" />
     <Compile Include="..\Data\FactionDB.cs" />
     <Compile Include="..\Data\Tile.cs" />
