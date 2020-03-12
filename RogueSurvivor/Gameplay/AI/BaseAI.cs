@@ -451,7 +451,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // alpha10
       // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
-      FireMode fireMode = FireMode.DEFAULT;
+      FireMode fireMode = default;
       if ((m_Actor.GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2) {
         Attack rangedAttack = m_Actor.RangedAttack(Rules.InteractionDistance(m_Actor.Location, target.Location), target);
         if (rangedAttack.DamageValue < target.HitPoints) {

@@ -4461,7 +4461,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = player.RangedAttack(0);
       int index = 0;
       var LoF = new List<Point>(attack.Range);
-      FireMode mode = FireMode.DEFAULT;
+      FireMode mode = default;
       do {
         Actor currentTarget = enemiesInFov[index];
         LoF.Clear();
@@ -7938,7 +7938,7 @@ namespace djack.RogueSurvivor.Engine
       var ai = attacker.Controller as ObjectiveAI;
       ai?.RecordLoF(LoF);
       switch (mode) {
-        case FireMode.DEFAULT:
+        case FireMode.AIMED:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
           DoSingleRangedAttack(attacker, defender, LoF, 0);
           break;

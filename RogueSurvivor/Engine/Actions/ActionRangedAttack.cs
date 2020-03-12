@@ -14,6 +14,16 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  // VAPORWARE need to include burst fire as well (both aimed and snap/hipfire)
+  // * convert army rifle to burst-competent, scale army rifle clip accordingly; leave sniper rifle alone
+  // * machine pistol: not in gun stores; allow for survivalist caches and SWAT police (leaders?).
+  [Serializable]
+  internal enum FireMode
+  {
+    AIMED = 0,  // single, aimed shot; keyword default
+    RAPID       // single snap shot
+  }
+
   [Serializable]
   internal class ActionRangedAttack : ActorAction, CombatAction
   {
@@ -21,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Actor m_Target;
     private readonly FireMode m_Mode;
 
-    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=FireMode.DEFAULT)
+    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default)
       : base(actor)
     {
       m_Target = target;
