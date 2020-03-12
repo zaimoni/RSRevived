@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine
 {
   internal class TextFile
@@ -15,17 +17,8 @@ namespace djack.RogueSurvivor.Engine
     private readonly List<string> m_RawLines = new List<string>();
     private readonly List<string> m_FormatedLines = new List<string>();
 
-    public IEnumerable<string> RawLines {
-      get {
-        return m_RawLines;
-      }
-    }
-
-    public List<string> FormatedLines {
-      get {
-        return m_FormatedLines;
-      }
-    }
+    public IEnumerable<string> RawLines { get { return m_RawLines; } }
+    public List<string> FormatedLines { get { return m_FormatedLines; } }
 
     public TextFile()
     {
@@ -43,8 +36,7 @@ namespace djack.RogueSurvivor.Engine
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
 		using (StreamReader streamReader = File.OpenText(fileName)) {
 	      m_RawLines.Clear();
-		  while (!streamReader.EndOfStream)
-		    m_RawLines.Add(streamReader.ReadLine());
+		  while (!streamReader.EndOfStream) m_RawLines.Add(streamReader.ReadLine());
 		}
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
@@ -70,14 +62,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void Append(string line)
-    {
-      m_RawLines.Add(line);
-    }
+    public void Append(string line) { m_RawLines.Add(line); }
 
     public void FormatLines(int charsPerLine)
     {
-      if (m_RawLines == null || m_RawLines.Count == 0) return;
+      if (m_RawLines.Count == 0) return;
       m_FormatedLines.Clear();
 	  m_FormatedLines.Capacity = m_RawLines.Count;
       for (int index = 0; index < m_RawLines.Count; ++index) {
