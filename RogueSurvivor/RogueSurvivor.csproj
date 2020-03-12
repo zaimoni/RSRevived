@@ -241,7 +241,6 @@
     <Compile Include="Engine\InputTranslator.cs" />
     <Compile Include="Engine\MessageManager.cs" />
     <Compile Include="Engine\Achievement.cs" />
-    <Compile Include="Engine\DifficultySide.cs" />
     <Compile Include="Engine\Scoring.cs" />
     <Compile Include="Engine\GameOptions.cs" />
     <Compile Include="Engine\Rules.cs" />

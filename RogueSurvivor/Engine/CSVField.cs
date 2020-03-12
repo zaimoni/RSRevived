@@ -6,6 +6,8 @@
 
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine
 {
   public class CSVField
@@ -20,24 +22,9 @@ namespace djack.RogueSurvivor.Engine
       m_RawString = rawString;
     }
 
-    public int ParseInt()
-    {
-      return int.Parse(m_RawString);
-    }
-
-    public float ParseFloat()
-    {
-      return float.Parse(m_RawString);
-    }
-
-    public string ParseText()
-    {
-      return m_RawString.Trim('"');
-    }
-
-    public bool ParseBool()
-    {
-      return ParseInt() > 0;
-    }
+    public int ParseInt() { return int.Parse(m_RawString); }
+    public float ParseFloat() { return float.Parse(m_RawString); }
+    public string ParseText() { return m_RawString.Trim('"'); }
+    public bool ParseBool() { return ParseInt() > 0; }
   }
 }
