@@ -188,29 +188,25 @@ namespace djack.RogueSurvivor.Engine
     // access control wants m_Event_Raids to be a private static member of District.  However, it is not 
     // a natural singleton (one per savegame) so it probably belongs with the World object.
     // At that point, keeping it in Session eliminates a use of the Load/Save helper idiom.
+#nullable enable
     public bool HasRaidHappened(RaidType raid, District district)
     {
-#if DEBUG
-      if (null == district) throw new ArgumentNullException(nameof(district));
-#endif
-      return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
+      var w_pos = district.WorldPosition;
+      return m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] > -1;
     }
 
     public int LastRaidTime(RaidType raid, District district)
     {
-#if DEBUG
-      if (null == district) throw new ArgumentNullException(nameof(district));
-#endif
-      return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
+      var w_pos = district.WorldPosition;
+      return m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
     }
 
-    public void SetLastRaidTime(RaidType raid, District district, int turnCounter)
+    public void SetLastRaidTime(RaidType raid, Map map)
     {
-#if DEBUG
-      if (null == district) throw new ArgumentNullException(nameof(district));
-#endif
-      m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
+      var w_pos = map.District.WorldPosition;
+      m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = map.LocalTime.TurnCounter;
     }
+#nullable restore
 
     public void LatestKill(Actor killer, Actor victim, string death_loc)
     {

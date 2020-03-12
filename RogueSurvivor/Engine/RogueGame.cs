@@ -2547,24 +2547,26 @@ namespace djack.RogueSurvivor.Engine
       return Rules.Get.DiceRoller.Choose(pts);
     }
 
-    static private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
+#nullable enable
+    static private bool HasRaidHappenedSince(RaidType raid, Map map, int sinceNTurns)
     {
       var sess = Session.Get;
-      if (sess.HasRaidHappened(raid, district))
-        return mapTime.TurnCounter - sess.LastRaidTime(raid, district) < sinceNTurns;
-      return false;
+      var district = map.District;
+      return sess.HasRaidHappened(raid, district) && map.LocalTime.TurnCounter - sess.LastRaidTime(raid, district) < sinceNTurns;
     }
 
     private bool CheckForEvent_BikersRaid(Map map)
     {
-      return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY
-         && !HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY)
+      var day = map.LocalTime.Day;
+      return day >= BIKERS_RAID_DAY && day < BIKERS_END_DAY
+         && !HasRaidHappenedSince(RaidType.BIKERS, map, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(BIKERS_RAID_CHANCE_PER_TURN);
     }
+#nullable restore
 
     private void FireEvent_BikersRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
+      Session.Get.SetLastRaidTime(RaidType.BIKERS, map);
       var actor = SpawnNewBikerLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
@@ -2574,16 +2576,19 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(RaidType.BIKERS, actor.Location);
     }
 
+#nullable enable
     private bool CheckForEvent_GangstasRaid(Map map)
     {
-      return map.LocalTime.Day >= GANGSTAS_RAID_DAY && map.LocalTime.Day < GANGSTAS_END_DAY
-         && !HasRaidHappenedSince(RaidType.GANGSTA, map.District, map.LocalTime, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY)
+      var day = map.LocalTime.Day;
+      return day >= GANGSTAS_RAID_DAY && day < GANGSTAS_END_DAY
+         && !HasRaidHappenedSince(RaidType.GANGSTA, map, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(GANGSTAS_RAID_CHANCE_PER_TURN);
     }
+#nullable restore
 
     private void FireEvent_GangstasRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
+      Session.Get.SetLastRaidTime(RaidType.GANGSTA, map);
       var actor = SpawnNewGangstaLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
@@ -2593,16 +2598,18 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(RaidType.GANGSTA, actor.Location);
     }
 
+#nullable enable
     private bool CheckForEvent_BlackOpsRaid(Map map)
     {
       return map.LocalTime.Day >= BLACKOPS_RAID_DAY
-         && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY)
+         && !HasRaidHappenedSince(RaidType.BLACKOPS, map, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
     }
+#nullable restore
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.BLACKOPS, map.District, map.LocalTime.TurnCounter);
+      Session.Get.SetLastRaidTime(RaidType.BLACKOPS, map);
       var actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
@@ -2615,16 +2622,18 @@ namespace djack.RogueSurvivor.Engine
     // Post-apocalyptic survivors do *NOT* need gas stations to arrive, unlike bikers and gangsters.
     // Their vans are assumed to be retrofitted to use biodiesel or ethanol (and they may well be
     // carrying the means to synthesize either or both).
+#nullable enable
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
       return map.LocalTime.Day >= SURVIVORS_BAND_DAY
-         && !HasRaidHappenedSince(RaidType.SURVIVORS, map.District, map.LocalTime, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY)
+         && !HasRaidHappenedSince(RaidType.SURVIVORS, map, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
     }
+#nullable restore
 
     private void FireEvent_BandOfSurvivors(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
+      Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
       var actor = SpawnNewSurvivor(map);
       if (actor == null) return;
       var origin = actor.Location;
