@@ -548,15 +548,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemFood(GameItems.CANNED_FOOD, m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit));
     }
 
-    // XXX This arguably should be an alternate constructor.
-    static public ItemAmmo MakeAmmo(GameItems.IDs x)
-    {
-      ItemModel tmp = Models.Items[(int)x];
-      if (tmp is ItemRangedWeaponModel rw_model) tmp = Models.Items[(int)(rw_model.AmmoType)+(int)(GameItems.IDs.AMMO_LIGHT_PISTOL)];    // use the ammo of the ranged weapon instead
-      if (tmp is ItemAmmoModel am_model) return new ItemAmmo(am_model);
-      throw new InvalidOperationException(x.ToString()+" not an ammo or ranged weapon");
-    }
-
     public ItemRangedWeapon MakeItemRandomPistol()
     {
       return (m_DiceRoller.RollChance(50) ? GameItems.KOLT_REVOLVER : GameItems.PISTOL).instantiate();
@@ -565,12 +556,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static public ItemBodyArmor MakeItemBikerGangJacket(GameGangs.IDs gangId)
     {
       switch (gangId) {
-        case GameGangs.IDs.BIKER_HELLS_SOULS:
-          return new ItemBodyArmor(GameItems.HELLS_SOULS_JACKET);
-        case GameGangs.IDs.BIKER_FREE_ANGELS:
-          return new ItemBodyArmor(GameItems.FREE_ANGELS_JACKET);
-        default:
-          throw new ArgumentException("unhandled biker gang");
+        case GameGangs.IDs.BIKER_HELLS_SOULS: return new ItemBodyArmor(GameItems.HELLS_SOULS_JACKET);
+        case GameGangs.IDs.BIKER_FREE_ANGELS: return new ItemBodyArmor(GameItems.FREE_ANGELS_JACKET);
+        default: throw new ArgumentOutOfRangeException(nameof(gangId), gangId, "not really a biker gang");
       }
     }
 

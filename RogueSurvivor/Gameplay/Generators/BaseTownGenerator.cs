@@ -2557,10 +2557,10 @@ restart:
           // and a secondary ranged weapon (with one ammo clip)
           KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
           basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), in pt);
+          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Key), in pt);
+          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Key), in pt);
           basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Value), in pt);
-          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Value), in pt);
+          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Value), in pt);
           Session.Get.PoliceInvestigate.Record(basement, in pt);
           return MakeObjShelf();
         }));
@@ -3546,7 +3546,7 @@ restart:
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
       inv.AddAll(rw);
-      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeAmmo(rw.Model.ID) : MakeItemGrenade());
+      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.Model.ID) : MakeItemGrenade());
       }
       inv.AddAll(GameItems.MEDIKIT.instantiate());
       inv.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
@@ -3591,7 +3591,7 @@ restart:
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).instantiate();
       numberedName.Inventory.AddAll(rw);
-      numberedName.Inventory.AddAll(MakeAmmo(rw.Model.ID));
+      numberedName.Inventory.AddAll(ItemAmmo.make(rw.Model.ID));
       numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it
