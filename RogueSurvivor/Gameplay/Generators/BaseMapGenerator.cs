@@ -535,6 +535,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
+#nullable enable
     public ItemFood MakeItemGroceries()
     {
       int turnCounter = Session.Get.WorldTime.TurnCounter;
@@ -553,19 +554,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return (m_DiceRoller.RollChance(50) ? GameItems.KOLT_REVOLVER : GameItems.PISTOL).instantiate();
     }
 
-    static public ItemBodyArmor MakeItemBikerGangJacket(GameGangs.IDs gangId)
-    {
-      switch (gangId) {
-        case GameGangs.IDs.BIKER_HELLS_SOULS: return new ItemBodyArmor(GameItems.HELLS_SOULS_JACKET);
-        case GameGangs.IDs.BIKER_FREE_ANGELS: return new ItemBodyArmor(GameItems.FREE_ANGELS_JACKET);
-        default: throw new ArgumentOutOfRangeException(nameof(gangId), gangId, "not really a biker gang");
-      }
-    }
-
     public ItemGrenade MakeItemGrenade()
     {
       return new ItemGrenade(GameItems.GRENADE, GameItems.GRENADE_PRIMED, m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit));
     }
+#nullable restore
 
     protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {

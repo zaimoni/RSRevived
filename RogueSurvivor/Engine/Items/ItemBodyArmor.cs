@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
@@ -25,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Items
     private const int MIN_GANG_ARMOR_ID = (int)GameItems.IDs.ARMOR_HELLS_SOULS_JACKET;
     private const int MIN_GANG_ID = (int)GameGangs.IDs.NONE+1;
 
-    new public ItemBodyArmorModel Model { get {return base.Model as ItemBodyArmorModel; } }
+    new public ItemBodyArmorModel Model { get {return (base.Model as ItemBodyArmorModel)!; } }
     public int Protection_Hit { get { return Model.Protection_Hit; } }
     public int Protection_Shot { get { return Model.Protection_Shot; } }
     public int Encumbrance { get { return Model.Encumbrance; } }
@@ -67,6 +69,15 @@ namespace djack.RogueSurvivor.Engine.Items
       get {
         int armor_index = (int)Model.ID- MIN_GANG_ARMOR_ID;
         return -GOOD_POLICE_OUTFITS.Length > armor_index;
+      }
+    }
+
+    static public ItemBodyArmor make(GameGangs.IDs gangId)
+    {
+      switch (gangId) {
+        case GameGangs.IDs.BIKER_HELLS_SOULS: return new ItemBodyArmor(GameItems.HELLS_SOULS_JACKET);
+        case GameGangs.IDs.BIKER_FREE_ANGELS: return new ItemBodyArmor(GameItems.FREE_ANGELS_JACKET);
+        default: throw new ArgumentOutOfRangeException(nameof(gangId), gangId, "not really a biker gang");
       }
     }
   }

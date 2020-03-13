@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemAmmoModel : ItemModel
@@ -15,20 +17,13 @@ namespace djack.RogueSurvivor.Engine.Items
     public int MaxQuantity { get { return StackingLimit; } }
 
     public ItemAmmoModel(string imageID, AmmoType ammoType, int maxQuantity)
-      : base(ammoType.Describe(), ammoType.Describe(true), imageID)
+    : base(ammoType.Describe(), ammoType.Describe(true), imageID)
     {
       AmmoType = ammoType;
       StackingLimit = maxQuantity;
     }
 
-    public override Item create()
-    {
-      return new ItemAmmo(this);
-    }
-
-    public ItemAmmo instantiate()
-    {
-      return new ItemAmmo(this);
-    }
+    public override Item create() { return new ItemAmmo(this); }
+    public ItemAmmo instantiate() { return new ItemAmmo(this); }
   }
 }

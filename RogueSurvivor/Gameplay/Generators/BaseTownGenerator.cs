@@ -3704,7 +3704,7 @@ restart:
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Inventory.AddAll(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
-      numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
+      numberedName.Inventory.AddAll(ItemBodyArmor.make(gangId));
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
     }
