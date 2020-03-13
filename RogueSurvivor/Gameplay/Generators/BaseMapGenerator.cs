@@ -548,13 +548,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemFood(GameItems.CANNED_FOOD, m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit));
     }
 
-    // XXX These two arguably should be alternate constructors.
-    static public ItemRangedWeapon MakeRangedWeapon(GameItems.IDs x)
-    {
-      if (Models.Items[(int)x] is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
-      throw new InvalidOperationException(x.ToString()+" not a ranged weapon");
-    }
-
+    // XXX This arguably should be an alternate constructor.
     static public ItemAmmo MakeAmmo(GameItems.IDs x)
     {
       ItemModel tmp = Models.Items[(int)x];

@@ -2556,10 +2556,10 @@ restart:
           // There will be a primary ranged weapon (with 2 ammo clips)
           // and a secondary ranged weapon (with one ammo clip)
           KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
-          basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Key), in pt);
+          basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Key), in pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), in pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Value), in pt);
+          basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Value), in pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Value), in pt);
           Session.Get.PoliceInvestigate.Record(basement, in pt);
           return MakeObjShelf();

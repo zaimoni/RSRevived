@@ -6,34 +6,33 @@
 
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemRangedWeapon : ItemWeapon
   {
-    new public ItemRangedWeaponModel Model { get {return base.Model as ItemRangedWeaponModel; } }
+    new public ItemRangedWeaponModel Model { get {return (base.Model as ItemRangedWeaponModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
 
-    private int m_Ammo;
-
-    public int Ammo {
-      get {
-        return m_Ammo;
-      }
-      set {
-        m_Ammo = value;
-      }
-    }
+    public int Ammo;
 
     public ItemRangedWeapon(ItemRangedWeaponModel model)
       : base(model)
     {
-      m_Ammo = model.MaxAmmo;
+      Ammo = model.MaxAmmo;
     }
 
 #if PROTOTYPE
     public override ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Ammo); } }
 #endif
+
+    static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
+    {
+      if (Data.Models.Items[(int)x] is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
+      throw new ArgumentOutOfRangeException(nameof(x), x, "not a ranged weapon");
+    }
 
     public override string ToString()
     {
