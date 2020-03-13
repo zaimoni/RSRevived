@@ -32,19 +32,19 @@ namespace djack.RogueSurvivor.Engine.Items
     // RS 9 does not have a random component to their duration, unlike groceries
     public override Item create()
     {
-      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(this, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays);
+      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
       return new ItemFood(this);
     }
 
     public ItemFood instantiate()
     {
-      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(this, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays);
+      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
       return new ItemFood(this);
     }
 
     public ItemFood instantiate(int bestBefore)
     {
-      return new ItemFood(this, bestBefore);
+      return new ItemFood(bestBefore, this);
     }
   }
 }

@@ -540,14 +540,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       int max = WorldTime.TURNS_PER_DAY * GameItems.GROCERIES.BestBeforeDays;
       int min = max / 2;
-      return new ItemFood(GameItems.GROCERIES, turnCounter + m_DiceRoller.Roll(min, max));
+      return new ItemFood(turnCounter + m_DiceRoller.Roll(min, max), GameItems.GROCERIES);
     }
 
     public ItemFood MakeItemCannedFood()
     {
-      return new ItemFood(GameItems.CANNED_FOOD) {
-        Quantity = m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit)
-      };
+      return new ItemFood(GameItems.CANNED_FOOD, m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit));
     }
 
     // XXX These two arguably should be alternate constructors.

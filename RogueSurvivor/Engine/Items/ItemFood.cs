@@ -47,15 +47,16 @@ namespace djack.RogueSurvivor.Engine.Items
       return (2*Nutrition)/3;
     }
 
-    public ItemFood(ItemFoodModel model) : base(model)
+    public ItemFood(ItemFoodModel model, int qty=1) : base(model)
     {
 #if DEBUG
       if (model.IsPerishable) throw new InvalidOperationException("wrong constructor");
 #endif
       Nutrition = model.Nutrition;
+      Quantity = qty;
     }
 
-    public ItemFood(ItemFoodModel model, int bestBefore) : base(model)
+    public ItemFood(int bestBefore, ItemFoodModel model) : base(model)
     {
 #if DEBUG
       if (0 > bestBefore) throw new InvalidOperationException("expired in past");
