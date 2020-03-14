@@ -123,10 +123,8 @@ namespace djack.RogueSurvivor.Data
       if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
       return ret;
     }
-#nullable restore
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
-#nullable enable
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
     public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_LOSSensor.items; } }

@@ -59,10 +59,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MasterSmellSensor?.Sense(m_Actor);
       return m_MemLOSSensor.Sense(m_Actor);
     }
-#nullable restore
 
     public override HashSet<Point> FOV { get { return m_MemLOSSensor.Sensor.FOV; } }
-#nullable enable
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
 #nullable restore

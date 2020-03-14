@@ -1,5 +1,6 @@
 ﻿using djack.RogueSurvivor.Data;
-using System;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -10,9 +11,6 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionButcher(Actor actor, Corpse target)
       : base(actor)
     {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
       m_Target = target;
     }
 

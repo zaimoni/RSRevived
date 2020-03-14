@@ -6,6 +6,8 @@ using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
     [Serializable]
@@ -30,14 +32,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
       /// <returns>true to take action</returns>
-      public abstract bool UrgentAction(out ActorAction ret);
+      public abstract bool UrgentAction(out ActorAction? ret);
 
-      public virtual List<Objective> Subobjectives() { return null; }
+//    public virtual List<Objective>? Subobjectives() { return null; }  // theoretically reasonable, but didn't actually get used
     }
 
     internal interface Pathable
     {
-        ActorAction Pathing();
+        ActorAction? Pathing();
     }
 
     [Serializable]
@@ -50,8 +52,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         public readonly Dictionary<Location,int> reasons = new Dictionary<Location, int>();
-        private List<List<Point>> pt_path = null;
-        private List<List<Location>> loc_path = null;
+        private List<List<Point>>? pt_path = null;
+        private List<List<Location>>? loc_path = null;
         private readonly HashSet<Location> stage_view = new HashSet<Location>(); // these three can be non-serialized only if they are rebuilt on load
         private readonly HashSet<Location> stage_inventory = new HashSet<Location>();
         private readonly List<Engine.MapObjects.PowerGenerator> stage_generators = new List<Engine.MapObjects.PowerGenerator>();
@@ -94,7 +96,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #endregion
 
-        private static List<List<Location>> _upgrade(Map m, List<List<Point>> src) {
+        private static List<List<Location>>? _upgrade(Map m, List<List<Point>>? src) {
             if (null == src) return null;
             var xform = new List<List<Location>>();
             foreach (var step in src) {
@@ -105,7 +107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return 0 < xform.Count ? xform : null;
         }
 
-        private Map HomeMap(ObjectiveAI ai) {
+        private Map? HomeMap(ObjectiveAI ai) {
             if (null == pt_path) return null;
             if (0 < reasons.Count) return reasons.First().Key.Map;
             return ai.ControlledActor.Location.Map;
@@ -155,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
         }
 
-        public void Install(List<List<Location>> src, ObjectiveAI ai) {
+        public void Install(List<List<Location>>? src, ObjectiveAI ai) {
             if (null == src || 0 >= src.Count) {
                 ForgetStaging();
                 return;
@@ -181,7 +183,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             _expired = false;
         }
 
-        public void Install(Map m, List<List<Point>> src, ObjectiveAI ai)
+        public void Install(Map m, List<List<Point>>? src, ObjectiveAI ai)
         {
             if (null == src || 0 >= src.Count) {
                 ForgetStaging();
@@ -212,7 +214,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             _expired = false;
         }
 
-        public static List<Location> WantToGoHere(List<List<Location>> src, Location loc) {
+        public static List<Location>? WantToGoHere(List<List<Location>>? src, Location loc) {
             if (null == src || 0 >= src.Count) return null;
             List<Location> ret;
             int n = src.Count;
@@ -223,7 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return null;
         }
 
-        public static List<Location> WantToGoHere(List<List<Point>> src, Location loc) {
+        public static List<Location>? WantToGoHere(List<List<Point>>? src, Location loc) {
             if (null == src || 0 >= src.Count) return null;
             List<Point> working;
             int n = src.Count;
@@ -250,7 +252,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #region path management
         // require that we be adjacent to the path.
-        public static bool reject_path(List<List<Location>> min_path, ObjectiveAI ai)
+        public static bool reject_path(List<List<Location>>? min_path, ObjectiveAI ai)
         {
            if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
@@ -278,7 +280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;   // \todo could try to reconnect if there was a path
         }
 
-        public static bool reject_path(List<List<Point>> min_path, ObjectiveAI ai)
+        public static bool reject_path(List<List<Point>>? min_path, ObjectiveAI ai)
         {
            if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
@@ -512,9 +514,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #endif
 
-        static private Func<Location,int> static_reasons(ObjectiveAI ai)
+        static private Func<Location,int>? static_reasons(ObjectiveAI ai)
         {
-            Func<Location, int> test = null;
+            Func<Location, int>? test = null;
             var items = ai.ItemMemory;
             if (null != items) {
                 var need = ai.WhatDoINeedNow();
@@ -596,7 +598,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return false;
         }
 
-        public ActorAction WalkPath(ObjectiveAI ai) {
+        public ActorAction? WalkPath(ObjectiveAI ai) {
             if (null != loc_path) return ai.UsePreexistingPath(loc_path);
             if (null != pt_path) return ai.UsePreexistingPath(pt_path);
             return null;

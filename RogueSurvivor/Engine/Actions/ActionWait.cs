@@ -7,6 +7,8 @@
 using System;
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
@@ -18,14 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       actor.Activity = Activity.IDLE;   // normal state of a waiting actor
     }
 
-    public override bool IsLegal()
-    {
-      return true;
-    }
-
-    public override void Perform()
-    {
-      RogueForm.Game.DoWait(m_Actor);
-    }
+    public override bool IsLegal() { return true; }
+    public override void Perform() { RogueForm.Game.DoWait(m_Actor); }
   }
 }

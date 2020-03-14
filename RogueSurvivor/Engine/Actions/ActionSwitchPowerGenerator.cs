@@ -6,7 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,15 +18,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
       : base(actor)
     {
-#if DEBUG
-      if (null == powGen) throw new ArgumentNullException(nameof(powGen));
-#endif
       m_PowGen = powGen;
     }
 
     public override bool IsLegal()
     {
       return m_Actor.CanSwitch(m_PowGen, out m_FailReason);
+    }
+
+    public override bool IsPerformable()
+    {
+      if (!base.IsPerformable()) return false;
+      return 1==Rules.GridDistance(m_Actor.Location, m_PowGen.Location);
     }
 
     public override void Perform()

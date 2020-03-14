@@ -10,14 +10,16 @@ using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemEntertainment : Item
   {
-    List<Actor> m_BoringFor = null; // alpha10 boring items moved out of Actor
+    List<Actor>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
-    new public ItemEntertainmentModel Model { get {return base.Model as ItemEntertainmentModel; } }
+    new public ItemEntertainmentModel Model { get {return (base.Model as ItemEntertainmentModel)!; } }
 
     public ItemEntertainment(ItemEntertainmentModel model)
       : base(model)
@@ -30,10 +32,7 @@ namespace djack.RogueSurvivor.Engine.Items
       else if (!m_BoringFor.Contains(a)) m_BoringFor.Add(a);
     }
 
-    public bool IsBoringFor(Actor a)
-    {
-      return m_BoringFor?.Contains(a) ?? false;
-    }
+    public bool IsBoringFor(Actor a) { return m_BoringFor?.Contains(a) ?? false; }
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {

@@ -262,6 +262,7 @@ namespace djack.RogueSurvivor.Engine
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     // the return of a cached value is assumed to be by value
+#nullable enable
     public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
@@ -331,5 +332,6 @@ namespace djack.RogueSurvivor.Engine
     {
 	  return ComputeFOVFor(actor, actor.Location);
     }
+#nullable restore
   }
 }
