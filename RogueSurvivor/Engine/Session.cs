@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
-      info.read(ref m_CommandLineOptions, "CommandLineOptions");
+      info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
       Actor.Load(info,context);
       Rules.Get.Load(info,context);

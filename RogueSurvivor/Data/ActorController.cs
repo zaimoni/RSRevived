@@ -139,8 +139,8 @@ namespace djack.RogueSurvivor.Data
     public abstract List<Percept> UpdateSensors();
 
     // vision
-    public abstract HashSet<Point> FOV { get; }
 #nullable enable
+    public abstract HashSet<Point> FOV { get; }
     public abstract Dictionary<Location, Actor>? friends_in_FOV { get; }
     public abstract Dictionary<Location, Actor>? enemies_in_FOV { get; }
     public virtual Dictionary<Location, Inventory>? items_in_FOV { get { return null; } }
@@ -155,15 +155,16 @@ namespace djack.RogueSurvivor.Data
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
+#nullable enable
     public virtual ActorAction? ExecAryZeroBehavior(int code) { return null; }
 
     /// <param name="x"></param>
     private bool _CanSee(Point pos)
     {
       if (pos == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
-      if (m_Actor.IsSleeping) return false;
-      return FOV?.Contains(pos) ?? false;
+      return !m_Actor.IsSleeping && FOV.Contains(pos);
     }
+#nullable restore
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
@@ -194,8 +195,7 @@ namespace djack.RogueSurvivor.Data
         if (null == tmp) return false;
         return _IsVisibleTo(a_map, tmp.Value.Position);
         }
-      if (!map.IsValid(position)) return false;
-      return FOV?.Contains(position) ?? false;
+      return map.IsValid(position) && FOV.Contains(position);
     }
 
     private bool _IsVisibleTo(in Location location)
@@ -203,7 +203,8 @@ namespace djack.RogueSurvivor.Data
       return _IsVisibleTo(location.Map, location.Position);
     }
 
-    public bool IsVisibleTo(Map map, in Point position)
+#nullable enable
+    public bool IsVisibleTo(Map? map, in Point position)
     {
 #if DEBUG
       if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
@@ -211,6 +212,7 @@ namespace djack.RogueSurvivor.Data
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       return _IsVisibleTo(map,position);
     }
+#nullable restore
 
     public bool IsVisibleTo(in Location loc)
     {
