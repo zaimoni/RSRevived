@@ -19,26 +19,34 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   [Serializable]
   internal class LOSSensor : Sensor
   {
-    private Actor m_Actor;
+#nullable enable
+    private Actor? m_Actor = null;
     private readonly SensingFilter Filters;
     // Actor caches for AI purposes
-#nullable enable
     private Dictionary<Location, Actor>? _friends;
     private Dictionary<Location, Actor>? _enemies;
     private Dictionary<Location,Inventory>? _items;
 
-    public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
+    public Actor Viewpoint { get { return m_Actor!; } }
+    public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(Viewpoint); } }
     public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
     public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
     public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
-#nullable restore
 
     public LOSSensor(SensingFilter filters)
     {
       Filters = filters;
     }
 
-    public void OwnedBy(Actor actor) { m_Actor = actor; }
+#if DEBUG
+    public void OwnedBy(Actor? actor) {
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#else
+    public void OwnedBy(Actor actor) {
+#endif
+      m_Actor = actor;
+    }
+#nullable restore
 
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
@@ -112,13 +120,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     }
 
 #nullable enable
-    public List<Percept> Sense(Actor actor)
+    public List<Percept> Sense()
     {
-      m_Actor = actor;
-      var _view_map = m_Actor.Location.Map;
+#if DEBUG
+      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
+#endif
+      var actor = Viewpoint;
+      var _view_map = actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(_view_map, m_FOV);    // will have seen everything; note this
-      var e = m_Actor.Location.Exit;
+      var e = actor.Location.Exit;
       var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
       {
       int i = 0;

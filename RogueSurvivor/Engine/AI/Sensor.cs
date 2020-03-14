@@ -6,15 +6,16 @@
 
 #nullable enable
 
-using djack.RogueSurvivor.Data;
 using System.Collections.Generic;
 
+using Actor = djack.RogueSurvivor.Data.Actor;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
   internal interface Sensor
   {
-    List<Percept> Sense(Actor actor);
+    List<Percept> Sense();
+    Actor Viewpoint { get; }
   }
 }

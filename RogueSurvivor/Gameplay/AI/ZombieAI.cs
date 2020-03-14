@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      m_MemLOSSensor.Forget(m_Actor);
+      m_MemLOSSensor.Forget();
     }
 
 #nullable enable
@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       m_LivingSmellSensor.Sense(m_Actor);
       m_MasterSmellSensor?.Sense(m_Actor);
-      return m_MemLOSSensor.Sense(m_Actor);
+      return m_MemLOSSensor.Sense();
     }
 
     public override HashSet<Point> FOV { get { return m_MemLOSSensor.Sensor.FOV; } }

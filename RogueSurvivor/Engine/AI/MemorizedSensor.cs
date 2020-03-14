@@ -36,8 +36,9 @@ namespace djack.RogueSurvivor.Engine.AI
     public void Clear() { m_Percepts.Clear(); }
 #nullable restore
 
-    public void Forget(Actor actor)
+    public void Forget()
     {
+      var actor = Viewpoint;
       // memorized sensor is only used for vision
       HashSet<Point> FOV = LOS.ComputeFOVFor(actor);
       var tmp = new List<Percept>(m_Percepts.Count);
@@ -63,11 +64,13 @@ namespace djack.RogueSurvivor.Engine.AI
     }
 
 #nullable enable
-    public List<Percept> Sense(Actor actor)
-    {
-      Forget(actor);
+    public Actor Viewpoint { get { return m_Sensor.Viewpoint; } }
 
-      var tmp = new HashSet<Percept>(m_Sensor.Sense(actor));   // time is m_Actor.Location.Map.LocalTime.TurnCounter
+    public List<Percept> Sense()
+    {
+      Forget();
+
+      var tmp = new HashSet<Percept>(m_Sensor.Sense());   // time is m_Actor.Location.Map.LocalTime.TurnCounter
       foreach (Percept percept in tmp.ToList()) { 
         foreach (Percept mPercept in m_Percepts) {
           if (mPercept.Percepted == percept.Percepted) {
