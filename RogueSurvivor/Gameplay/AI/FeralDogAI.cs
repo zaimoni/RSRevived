@@ -53,13 +53,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
-      ActorAction tmpAction;
+      var game = RogueForm.Game;
+
+      ActorAction? tmpAction;
 
       // dogs target their leader's enemy before the usual check for enemies
       if (m_Actor.HasLeader) {
-        Actor targetActor = m_Actor.Leader.TargetActor;
+        var targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
           tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);

@@ -68,8 +68,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else return "Where is that {0} retard?";
     }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
+      var game = RogueForm.Game;
+
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 

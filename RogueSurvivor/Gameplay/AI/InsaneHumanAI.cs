@@ -102,8 +102,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
 #nullable enable
-    protected override ActorAction? SelectAction(RogueGame game)
+    protected override ActorAction? SelectAction()
     {
+      var game = RogueForm.Game;
+
       m_Actor.Walk();    // alpha 10: don't run by default
       var tmpAction = BehaviorEquipWeapon();
       if (null != tmpAction) return tmpAction;

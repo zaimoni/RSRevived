@@ -132,8 +132,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else return "Where the hell is {0}?";
     }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
+      var game = RogueForm.Game;
+
       ClearMovePlan();
       // \todo start extraction target: BehaviorEquipBestItems (cf RS Alpha 10)
       BehaviorEquipBestBodyArmor();

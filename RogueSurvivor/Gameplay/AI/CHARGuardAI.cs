@@ -73,8 +73,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return base.AggressedBy(aggressor);
     }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
+      var game = RogueForm.Game;
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 

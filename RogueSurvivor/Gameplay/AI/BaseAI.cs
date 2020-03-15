@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
-      var actorAction = SelectAction(game);
+      var actorAction = SelectAction();
 #if DEBUG
       if (null != actorAction && !actorAction.IsPerformable()) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
@@ -88,7 +88,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>non-null, action x for which x.IsPerformable() is true</returns>
-    protected abstract ActorAction SelectAction(RogueGame game);
+#nullable enable
+    protected abstract ActorAction? SelectAction();
+#nullable restore
 
 /*
     NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down

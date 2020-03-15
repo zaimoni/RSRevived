@@ -150,7 +150,7 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
       throw new InvalidOperationException("do not call PlayerController.SelectAction()");
     }

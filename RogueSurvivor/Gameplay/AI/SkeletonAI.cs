@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
     protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
       const int IDLE_CHANCE = 80;
 

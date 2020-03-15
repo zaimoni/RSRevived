@@ -66,12 +66,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
     protected override void SensorsOwnedBy(Actor actor) { m_MemLOSSensor.Sensor.OwnedBy(actor); }
 
-    protected override ActorAction SelectAction(RogueGame game)
+    protected override ActorAction SelectAction()
     {
       var tmp_abilities = m_Actor.Model.Abilities;
       if (tmp_abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
 
-      ActorAction tmpAction;
+      ActorAction? tmpAction;
       if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
         tmpAction = TargetGridMelee(FilterCurrent(_enemies));
         if (null != tmpAction) return tmpAction;
