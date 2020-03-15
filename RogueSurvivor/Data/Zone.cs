@@ -80,9 +80,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DoForEach(Action<Location> doFn) {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
       Point point = new Point();
       for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
         for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
@@ -125,4 +122,33 @@ namespace djack.RogueSurvivor.Data
       return ret;
     } }
   }
+
+#if CTHORPE_BROKEN_GENERICS
+  internal class ZoneSpan<T> where T:IEnumerable<Point>
+  {
+    public readonly Map m;
+    public readonly T pts; // doesn't have to be normalized
+
+    public ZoneSpan(Map _m, T _pts)
+    {
+      m = _m;
+      pts = _pts;
+    }
+
+    // 2020-03-15: just because T is required to be IEnumerable<Point> doesn't make IEnumerable functions available
+    public bool Contains(in Location loc) { return m == loc.Map && pts.Contains(loc.Position); }
+    public bool ContainsExt(in Location loc) {
+      if (m == loc.Map) return pts.Contains(loc.Position);
+      var test = m.Denormalize(in loc);
+      return null!=test && pts.Contains(test.Value.Position);
+    }
+
+    public void DoForEach(Action<Location> doFn) {
+      foreach(var pt in pts) {
+        var loc = new Location(m,pt);
+        if (Map.Canonical(ref loc)) doFn(loc);
+      }
+    }
+  }
+#endif
 }
