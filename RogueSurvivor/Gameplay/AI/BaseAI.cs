@@ -588,16 +588,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
       // Some of these reality checks can be weakened for mentally disturbed livings
       var food_blockers = new Dictionary<Point,MapObject>();
-      var fov = FOV;
       Map map = m_Actor.Location.Map;
       // do not worry about inside vs. outside here
       foreach(var pt in FOV) {
         var o = map.GetMapObjectAtExt(pt);
-        if (null == o) continue;
-        if (o.IsWalkable) continue;
-        if (o.IsJumpable) continue;
-        if (!m_Actor.CanPush(o)) continue;
-        food_blockers[pt] = o;
+        if (null != o && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(pt, o);
       }
       if (0 >= food_blockers.Count) return null;
 
@@ -633,6 +628,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, in pt); }
 
+      // fail over to legacy code here
+      // \todo also evaluate pulls (return type weakening)
+      unclear.OnlyIf(adjacent);
+      verified.OnlyIf(adjacent);
+      if (0 >= verified.Count && 0 >=unclear.Count) return null;
+
       static bool safe_push(ActionPush act) {
         var loc = new Location(act.Target.Location.Map,act.To);
         Map.Canonical(ref loc);
@@ -646,14 +647,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (loc.Map.IsSECorner(loc.Position)) return true;
         return false;
       }
-      static bool unsafe_push(ActionPush act) { return !safe_push(act); }
-
-
-      // fail over to legacy code here
-      // \todo also evaluate pulls (return type weakening)
-      unclear.OnlyIf(adjacent);
-      verified.OnlyIf(adjacent);
-      if (0 >= verified.Count && 0 >=unclear.Count) return null;
 
       var pushes = new List<ActionPush>();
       foreach(var x in verified) {
@@ -664,7 +657,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (act.IsPerformable()) pushes.Add(act);
         }
       }
-      if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
+      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
       if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
 
       foreach(var x in unclear) {
@@ -675,7 +668,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (act.IsPerformable()) pushes.Add(act);
         }
       }
-      if (pushes.Any(safe_push) && pushes.Any(unsafe_push)) pushes = pushes.FindAll(safe_push);
+      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
       if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
 
       return null;

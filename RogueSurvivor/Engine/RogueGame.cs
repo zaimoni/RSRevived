@@ -11019,7 +11019,7 @@ namespace djack.RogueSurvivor.Engine
         var screen = MapToScreen(player.TargetActor.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
-      Actor actor;
+      Actor? actor;
       foreach(var pt in player.Controller.FOV) {
         if (pt == player.Location.Position) continue;
         actor = player.Location.Map.GetActorAtExt(pt);

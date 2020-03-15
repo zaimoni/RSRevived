@@ -39,8 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
 
             var candidates = new Dictionary<Point,int>();
-            var fov = m_Actor.Controller.FOV;
-            foreach (var pt in fov) {
+            foreach (var pt in m_Actor.Controller.FOV) {
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!Map.Canonical(ref loc)) continue;
                 if (IsGoodTrapSpot(loc,out var test)) candidates.Add(pt, Engine.Rules.GridDistance(m_Actor.Location.Position,pt));
