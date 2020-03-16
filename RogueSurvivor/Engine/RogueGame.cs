@@ -5613,7 +5613,7 @@ namespace djack.RogueSurvivor.Engine
       int AP_checkpoint = aiActor.ActionPoints;
       Location loc_checkpoint = aiActor.Location;
 #endif
-      var actorAction = aiActor.Controller.GetAction(this);
+      var actorAction = aiActor.Controller.GetAction();
       if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);
         if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;

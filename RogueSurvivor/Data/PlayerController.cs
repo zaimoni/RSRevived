@@ -145,15 +145,17 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public override ActorAction? GetAction(RogueGame game)
+#nullable enable
+    public override ActorAction? GetAction()
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       throw new InvalidOperationException("do not call PlayerController.SelectAction()");
     }
+#nullable restore
 
     // originally in Actor
     private string ReasonCantGetFromContainer(Location loc)

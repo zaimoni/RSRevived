@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected virtual void RecordLastAction(ActorAction act) { }    // no-op at this level
 
-    public override ActorAction? GetAction(RogueGame game)
+    public override ActorAction? GetAction()
     {
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
@@ -75,10 +75,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
-#if DEBUG
         var alt = ai.RewriteAction(actorAction);
         if (alt?.IsPerformable() ?? false) actorAction = alt;
-#endif
         ai.ScheduleFollowup(actorAction);
       }
       ResetAICache();

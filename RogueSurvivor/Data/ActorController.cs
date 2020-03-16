@@ -229,7 +229,9 @@ namespace djack.RogueSurvivor.Data
       return IsVisibleTo(actor.Location);
     }
 
-    public abstract ActorAction? GetAction(RogueGame game);
+#nullable enable
+    public abstract ActorAction? GetAction();
+#nullable restore
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>
     public virtual int FastestTrapKill(in Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs
