@@ -36,9 +36,7 @@ namespace djack.RogueSurvivor.Data
 
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {
-         if (null == m_Actor) return null;
-         if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.PoliceItemMemory;
-         return null;
+         return (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) ? Session.Get.PoliceItemMemory : null;
        }
     }
 
@@ -164,13 +162,10 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
-      if (   null == m_Actor 
-          || null == x.Map)     // convince Duckman to not superheroically crash many games on turn 0
-        return false;
+      if (null == x.Map) return false;     // convince Duckman to not superheroically crash many games on turn 0
       if (x.Map != m_Actor.Location.Map) {
         Location? test = m_Actor.Location.Map.Denormalize(in x);
-        if (null == test) return false;
-        return _CanSee(test.Value.Position);
+        return null!=test && _CanSee(test.Value.Position);
       }
       return _CanSee(x.Position);
     }
@@ -178,19 +173,14 @@ namespace djack.RogueSurvivor.Data
     // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases
     private bool _IsVisibleTo(Map map, Point position)
     {
-#if DEBUG
-      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
-#endif
       var a_loc = m_Actor.Location;
       var e = map.GetExitAt(position);
       if (null != e && e.Location == a_loc) return true;
       var a_map = a_loc.Map;
-      if (map != a_map)
-        {
+      if (map != a_map) {
         Location? tmp = a_map.Denormalize(new Location(map, position));
-        if (null == tmp) return false;
-        return _IsVisibleTo(a_map, tmp.Value.Position);
-        }
+        return null!=tmp && _IsVisibleTo(a_map, tmp.Value.Position);
+      }
       return map.IsValid(position) && FOV.Contains(position);
     }
 
@@ -202,30 +192,21 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public bool IsVisibleTo(Map? map, in Point position)
     {
-#if DEBUG
-      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
-#endif
-      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
-      return _IsVisibleTo(map,position);
+      return null != map && _IsVisibleTo(map, position);    // convince Duckman to not superheroically crash many games on turn 0
     }
 #nullable restore
 
     public bool IsVisibleTo(in Location loc)
     {
-#if DEBUG
-      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
-#endif
-      if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
-      return _IsVisibleTo(in loc);
-    }
-
-    public bool IsVisibleTo(Actor actor)
-    {
-      if (actor == m_Actor) return true;
-      return IsVisibleTo(actor.Location);
+      return null != loc.Map && _IsVisibleTo(loc.Map, loc.Position);    // convince Duckman to not superheroically crash many games on turn 0
     }
 
 #nullable enable
+    public bool IsVisibleTo(Actor actor)
+    {
+      return actor == m_Actor || IsVisibleTo(actor.Location);
+    }
+
     public abstract ActorAction? GetAction();
 #nullable restore
 

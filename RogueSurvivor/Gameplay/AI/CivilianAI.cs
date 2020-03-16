@@ -106,7 +106,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       base.TakeControl();
       ReviewItemRatings();  // XXX \todo should be in ObjectiveAI override
-      if (!m_Actor.IsUnique) return;
+    }
+
+    public void InstallUniqueEmotes()
+    {
+#if DEBUG
+      if (!m_Actor.IsUnique) throw new InvalidOperationException("only uniques can get better emotes");
+#endif
       UniqueActors tmp = Session.Get.UniqueActors;
       m_Emotes = (m_Actor != tmp.BigBear.TheActor ? (m_Actor != tmp.FamuFataru.TheActor ? (m_Actor != tmp.Santaman.TheActor ? (m_Actor != tmp.Roguedjack.TheActor ? (m_Actor != tmp.Duckman.TheActor ? (m_Actor != tmp.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
     }
