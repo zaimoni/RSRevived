@@ -141,6 +141,12 @@ namespace djack.RogueSurvivor.Engine
       TheSewersThing = new UniqueActor(named,true);
     }
 
+    private static readonly string[] BIG_BEAR_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "You fool",
+      "I'm fooled!",
+      "Be a man"
+    };
+
     private void init_BigBear(BaseTownGenerator tgen)
     {
 #if DEBUG
@@ -160,8 +166,14 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       BigBear = new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(BIG_BEAR_EMOTES);
     }
+
+    private static readonly string[] FAMU_FATARU_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "Bakemono",
+      "Nani!?",
+      "Kawaii"
+    };
 
     private void init_FamuFataru(BaseTownGenerator tgen)
     {
@@ -183,8 +195,14 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       FamuFataru = new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(FAMU_FATARU_EMOTES);
     }
+
+    private static readonly string[] SANTAMAN_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "DEM BLOODY KIDS!",
+      "LEAVE ME ALONE I AIN'T HAVE NO PRESENTS!",
+      "MERRY FUCKIN' CHRISTMAS"
+    };
 
     private void init_Santaman(BaseTownGenerator tgen)
     {
@@ -204,8 +222,14 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(SANTAMAN_EMOTES);
     }
+
+    private static readonly string[] ROGUEDJACK_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "Sorry but I am le busy,",
+      "I should have redone ze AI rootines!",
+      "Let me test le something on you"
+    };
 
     private void init_Roguedjack(BaseTownGenerator tgen)
     {
@@ -226,9 +250,14 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       Roguedjack = new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(ROGUEDJACK_EMOTES);
     }
 
+    private static readonly string[] DUCKMAN_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "I'LL QUACK YOU BACK",
+      "THIS IS MY FINAL QUACK",
+      "I'M GONNA QUACK YOU"
+    };
 
     private void init_Duckman(BaseTownGenerator tgen)
     {
@@ -250,8 +279,14 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       Duckman = new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(DUCKMAN_EMOTES);
     }
+
+    private static readonly string[] HANS_VON_HANZ_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+      "RAUS",
+      "MEIN FUHRER!",
+      "KOMM HIER BITE"
+    };
 
     private void init_HansVonHanz(BaseTownGenerator tgen)
     {
@@ -272,7 +307,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       HansVonHanz = new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
-      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes();
+      (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(HANS_VON_HANZ_EMOTES);
     }
 
     public void init_UnboundUniques(BaseTownGenerator tgen)

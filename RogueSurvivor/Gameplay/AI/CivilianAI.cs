@@ -27,47 +27,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class CivilianAI : OrderableAI
   {
-    private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES]
-    {
+#nullable enable
+    private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES] {
       "Go away",
       "Damn it I'm trapped!",
       "I'm not afraid"
-    };
-    private static readonly string[] BIG_BEAR_EMOTES = new string[MAX_EMOTES]
-    {
-      "You fool",
-      "I'm fooled!",
-      "Be a man"
-    };
-    private static readonly string[] FAMU_FATARU_EMOTES = new string[MAX_EMOTES]
-    {
-      "Bakemono",
-      "Nani!?",
-      "Kawaii"
-    };
-    private static readonly string[] SANTAMAN_EMOTES = new string[MAX_EMOTES]
-    {
-      "DEM BLOODY KIDS!",
-      "LEAVE ME ALONE I AIN'T HAVE NO PRESENTS!",
-      "MERRY FUCKIN' CHRISTMAS"
-    };
-    private static readonly string[] ROGUEDJACK_EMOTES = new string[MAX_EMOTES]
-    {
-      "Sorry butt I am le busy,",
-      "I should have redone ze AI rootines!",
-      "Let me test le something on you"
-    };
-    private static readonly string[] DUCKMAN_EMOTES = new string[MAX_EMOTES]
-    {
-      "I'LL QUACK YOU BACK",
-      "THIS IS MY FINAL QUACK",
-      "I'M GONNA QUACK YOU"
-    };
-    private static readonly string[] HANS_VON_HANZ_EMOTES = new string[MAX_EMOTES]
-    {
-      "RAUS",
-      "MEIN FUHRER!",
-      "KOMM HIER BITE"
     };
     private const int LOS_MEMORY = 1;   // just enough memory to not walk into exploding grenades
     private const int USE_EXIT_CHANCE = 20;
@@ -108,16 +72,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ReviewItemRatings();  // XXX \todo should be in ObjectiveAI override
     }
 
-    public void InstallUniqueEmotes()
+    public void InstallUniqueEmotes(string[] src)
     {
 #if DEBUG
       if (!m_Actor.IsUnique) throw new InvalidOperationException("only uniques can get better emotes");
 #endif
-      UniqueActors tmp = Session.Get.UniqueActors;
-      m_Emotes = (m_Actor != tmp.BigBear.TheActor ? (m_Actor != tmp.FamuFataru.TheActor ? (m_Actor != tmp.Santaman.TheActor ? (m_Actor != tmp.Roguedjack.TheActor ? (m_Actor != tmp.Duckman.TheActor ? (m_Actor != tmp.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
+      m_Emotes = src;
     }
 
-#nullable enable
+
     public override List<Percept> UpdateSensors()
     {
       return m_MemLOSSensor.Sense();
