@@ -23,9 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
-    public RatAI()
-    {
-    }
+    public RatAI(Actor src) : base(src) {}
 
 #nullable enable
     public override List<Percept> UpdateSensors()

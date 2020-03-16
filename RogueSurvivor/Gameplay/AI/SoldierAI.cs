@@ -42,9 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES), LOS_MEMORY);
     private readonly ExplorationData m_Exploration = new ExplorationData();
 
-    public SoldierAI()
-    {
-    }
+    public SoldierAI(Actor src) : base(src) {}
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {

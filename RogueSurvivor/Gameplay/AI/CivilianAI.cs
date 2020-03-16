@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
 
-    public CivilianAI()
+    public CivilianAI(Actor src) : base(src)
     {
       m_Emotes = FIGHT_EMOTES;
     }
@@ -102,9 +102,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       TabooTrades?.OnlyIfNot(Actor.IsDeceased);
     }
 
-    public override void TakeControl(Actor actor)
+    public override void TakeControl()
     {
-      base.TakeControl(actor);
+      base.TakeControl();
       ReviewItemRatings();  // XXX \todo should be in ObjectiveAI override
       if (!m_Actor.IsUnique) return;
       UniqueActors tmp = Session.Get.UniqueActors;

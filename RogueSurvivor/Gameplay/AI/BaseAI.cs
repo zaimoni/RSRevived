@@ -42,9 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
     [NonSerialized] private bool _processing;
 
-    protected BaseAI()
-    {
-    }
+    protected BaseAI(Actor src) : base(src) {}
 
     public Location PrevLocation { get { return m_prevLocation; } }
     public void UpdatePrevLocation() { m_prevLocation = m_Actor.Location; } // for PlayerController

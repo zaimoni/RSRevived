@@ -3163,7 +3163,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(confirm ? "You can't bear the horror anymore..."
                                           : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       if (!confirm) return false;
-      player.Controller = player.Model.InstanciateController();
+      player.Controller = player.Model.InstanciateController(player);
       player.DoForAllFollowers(fo => {
           if (fo.IsPlayer) {
               HandleAbandonPC(fo);
@@ -9740,7 +9740,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeYesNoMessage("Use a reincarnation on your "+(killer==reinc ? " killer " : " killer's leader ")+reinc.Name));
           RedrawPlayScreen();
           if (WaitYesOrNo()) {
-            reinc.Controller = new PlayerController();
+            reinc.Controller = new PlayerController(reinc);
             Session.Get.Scoring.UseReincarnation();
           }
         }
@@ -10213,7 +10213,7 @@ namespace djack.RogueSurvivor.Engine
             upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
             upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
             upgradeActor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
-            upgradeActor.Controller = new PlayerController();
+            upgradeActor.Controller = new PlayerController(upgradeActor);
             upgradeActor.Location.Map.Police.Recalc();
             AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           } else
@@ -10421,7 +10421,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeYesNoMessage(deadVictim.Name+" rises as a zombie.  Use a reincarnation"));
           RedrawPlayScreen();
           if (WaitYesOrNo()) {
-            actor.Controller = new PlayerController();
+            actor.Controller = new PlayerController(actor);
             Session.Get.Scoring.UseReincarnation();
           }
         }
@@ -12460,7 +12460,7 @@ namespace djack.RogueSurvivor.Engine
         actor.RecomputeStartingStats();
         actor.CreateCivilianDeductFoodSleep();
       }
-      actor.Controller = new PlayerController();
+      actor.Controller = new PlayerController(actor);
       if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
         var prune = district_spec.IndexOf('@');
         if (-1 < prune) district_spec = district_spec.Substring(prune+1);
@@ -12971,7 +12971,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      newPlayerAvatar.Controller = new PlayerController();
+      newPlayerAvatar.Controller = new PlayerController(newPlayerAvatar);
       if (newPlayerAvatar.Activity != Data.Activity.SLEEPING) newPlayerAvatar.Activity = Data.Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
       (m_Player = newPlayerAvatar).ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.StartNewLife()));

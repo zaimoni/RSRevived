@@ -259,7 +259,7 @@ namespace djack.RogueSurvivor.Data
         }
         m_Controller = value;
         if (null != m_Controller) {
-          m_Controller.TakeControl(this);
+          m_Controller.TakeControl();
           if (IsPlayer) playerDelta += 1;
         }
         if (0 != playerDelta) m_Location.Map?.Players.Recalc();
@@ -629,7 +629,7 @@ namespace djack.RogueSurvivor.Data
           _force_PC_names = new string[0];
         }
       }
-      if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController();
+      if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController(this);
     }
 
 #nullable enable
@@ -648,7 +648,7 @@ namespace djack.RogueSurvivor.Data
       ActorScoring = new Engine.ActorScoring(this);
       CommandLinePlayer();
       OnModelSet();
-      Controller = Model.InstanciateController();
+      Controller = Model.InstanciateController(this);
     }
 
     public void Retype(ActorModel model) { m_ModelID = model.ID; }
@@ -702,7 +702,7 @@ namespace djack.RogueSurvivor.Data
       // Support savefile hacking.
       // If the controller is null, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
-      if (null == m_Controller) Controller = Model.InstanciateController();
+      if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
 	public void PrefixName(string prefix)

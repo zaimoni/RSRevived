@@ -37,9 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private List<Actor> _squad = null;
 
-    public CHARGuardAI()
-    {
-    }
+    public CHARGuardAI(Actor src) : base(src) {}
 
     public override bool UsesExplosives { get { return false; } }
 

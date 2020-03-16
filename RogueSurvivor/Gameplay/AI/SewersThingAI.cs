@@ -28,9 +28,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     private readonly SmellSensor m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
 
-    public SewersThingAI()
-    {
-    }
+    public SewersThingAI(Actor src) : base(src) {}
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {

@@ -156,6 +156,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal abstract class ObjectiveAI : BaseAI
   {
+    protected ObjectiveAI(Actor src) : base(src) {}
+
     public enum SparseData {
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
       CloseToActor,

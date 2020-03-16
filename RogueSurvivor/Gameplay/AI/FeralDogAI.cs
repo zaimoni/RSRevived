@@ -34,9 +34,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
-    public FeralDogAI()
-    {
-    }
+    public FeralDogAI(Actor src) : base(src) {}
 
 #nullable enable
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }

@@ -35,13 +35,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private SmellSensor m_MasterSmellSensor;
     private ExplorationData m_Exploration;
 
-    public ZombieAI()
-    {
-    }
+    public ZombieAI(Actor src) : base(src) {}
 
-    public override void TakeControl(Actor actor)
+    public override void TakeControl()
     {
-      base.TakeControl(actor);
+      base.TakeControl();
       if (!m_Actor.Model.Abilities.IsUndeadMaster) m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
       if (!m_Actor.Model.Abilities.ZombieAI_Explore) return;
       m_Exploration = new ExplorationData();

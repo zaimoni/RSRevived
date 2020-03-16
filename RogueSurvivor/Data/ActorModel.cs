@@ -84,9 +84,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     // should be private, but savefile auto-repair contraindicates
-    public ActorController InstanciateController()
+    static private Type[] _controller_signature = new Type[] { typeof(Actor) };
+    public ActorController InstanciateController(Actor a)
     {
-      return (DefaultController.GetConstructor(Type.EmptyTypes).Invoke(null) as ActorController)!;
+      return (DefaultController.GetConstructor(_controller_signature).Invoke(new object[] { a }) as ActorController)!;
     }
 
     public Actor CreateAnonymous(Faction faction, int spawnTime)

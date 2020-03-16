@@ -23,14 +23,14 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class PlayerController : ObjectiveAI
     {
-    private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
-    private Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
+    private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
+    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
     private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
 
-	public PlayerController() {
-      // XXX filter should be by the normal filter type of the AI being substituted for
-      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES);
-      m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+	public PlayerController(Actor src) : base(src) {
+      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES());   // deal with vision capabilities
+      m_itemMemory = m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) ? Session.Get.PoliceItemMemory
+                                                                            : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
     public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
@@ -97,17 +97,10 @@ namespace djack.RogueSurvivor.Data
       Actor.Says += HandleSay;
     }
 
-	public override void TakeControl(Actor actor)
+	public override void TakeControl()
     {
-      base.TakeControl(actor);
+      base.TakeControl();
       Actor.Says += HandleSay;
-      if (actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) {
-        // use police item memory rather than ours
-        m_itemMemory = Session.Get.PoliceItemMemory;
-      }
-	  // deal with vision capabilities
-      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES());
-      SensorsOwnedBy(actor);
     }
 
     public override void LeaveControl()

@@ -23,9 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
 
-    public SkeletonAI()
-    {
-    }
+    public SkeletonAI(Actor src) : base(src) {}
 
 #nullable enable
     public override List<Percept> UpdateSensors()

@@ -20,18 +20,14 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal abstract class ActorController
   {
-    protected Actor? m_Actor;
+    protected readonly Actor m_Actor;
 
-    public Actor ControlledActor { get { return m_Actor!; } } // alpha10
+    protected ActorController(Actor src) { m_Actor = src; }
 
-    public virtual void TakeControl(Actor actor)
-    {
-      m_Actor = actor;
-      SensorsOwnedBy(actor);
-    }
-
+    public Actor ControlledActor { get { return m_Actor; } } // alpha10
+    public virtual void TakeControl() { SensorsOwnedBy(m_Actor); }
     protected abstract void SensorsOwnedBy(Actor actor);
-    public virtual void LeaveControl() { m_Actor = null; }
+    public virtual void LeaveControl() {}
 
     // forwarder system for to RogueGame::AddMessage
     public virtual void AddMessage(Data.Message msg) { RogueForm.Game.AddMessage(msg); }

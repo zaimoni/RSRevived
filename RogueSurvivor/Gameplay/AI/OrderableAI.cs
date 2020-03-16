@@ -759,9 +759,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool DontFollowLeader { get; set; }
 
-    protected OrderableAI()
-    {
-    }
+    protected OrderableAI(Actor src) : base(src) {}
 
     public ActorDirective Directives { get { return m_Directive ?? (m_Directive = new ActorDirective()); } }
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
