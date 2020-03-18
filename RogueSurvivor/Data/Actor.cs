@@ -3014,7 +3014,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemBodyArmor? GetWorstBodyArmor()
     {
-      return m_Inventory?.GetItemsByType<ItemBodyArmor>(armor => !armor.IsEquipped)?.Minimize(armor => armor.Rating);
+      return m_Inventory?.Minimize<ItemBodyArmor, int>(armor => !armor.IsEquipped, armor => armor.Rating);
     }
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)

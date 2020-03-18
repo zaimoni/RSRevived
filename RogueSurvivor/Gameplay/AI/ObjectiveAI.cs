@@ -4620,7 +4620,7 @@ restart_single_exit:
       }
 
       // strict domination checks
-      ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
+      var armor = m_Actor.GetWorstBodyArmor();
       if (null != armor && 2 <= m_Actor.CountQuantityOf<ItemBodyArmor>()) return BehaviorDropItem(armor);
 
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
@@ -4796,7 +4796,7 @@ restart_single_exit:
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
-        ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
+        var armor = m_Actor.GetWorstBodyArmor();
         if (null != armor) return _BehaviorDropOrExchange(armor,it,position, use_ok);
       }
 
@@ -4982,9 +4982,9 @@ restart_single_exit:
       // trackers (mainly because AI can't use properly), but cell phones are trackers
 
       // dropping body armor to get a better one should be ok
-      if (it is ItemBodyArmor) {
+      if (it is ItemBodyArmor old_armor) {
         var armor = m_Actor.GetBestBodyArmor();
-        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) return _BehaviorDropOrExchange(armor, it, position, use_ok);
+        if (null != armor && armor.Rating < old_armor.Rating) return _BehaviorDropOrExchange(armor, it, position, use_ok);
       }
 
 // does not work: infinite recursion

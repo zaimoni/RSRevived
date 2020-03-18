@@ -444,10 +444,10 @@ namespace djack.RogueSurvivor.Data
       return tList;
     }
 
-    public _T_ Maximize<_T_, R>(Func<_T_, R> metric) where _T_ : Item where R:IComparable<R>
+    public _T_? Maximize<_T_, R>(Func<_T_, R> metric) where _T_ : Item where R:IComparable<R>
     {
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
-      _T_ ret = default;
+      _T_? ret = default;
       foreach(_T_ it in m_Items) {
          if (!(it is _T_ test)) continue;
          R num2 = metric(test);
@@ -459,6 +459,20 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public _T_? Minimize<_T_, R>(Predicate<_T_> ok,Func<_T_, R> metric) where _T_ : Item where R : IComparable<R>
+    {
+      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      _T_? ret = default;
+      foreach(_T_ it in m_Items) {
+         if (!(it is _T_ test) || !ok(test)) continue;
+         R num2 = metric(test);
+         if (0>num2.CompareTo(num1)) {
+           ret = test;
+           num1 = num2;
+         }
+      }
+      return ret;
+    }
 
     public _T_? GetFirstMatching<_T_>() where _T_ : Item    // XXX cf GetFirst
     {

@@ -3624,7 +3624,7 @@ namespace djack.RogueSurvivor.Engine
         var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
-        List<ItemRangedWeapon> ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
+        var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (null != ranged) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
