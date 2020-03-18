@@ -4532,7 +4532,7 @@ restart_single_exit:
       }
       {
       if (it is ItemBodyArmorModel armor) {
-        ItemBodyArmor best = m_Actor.GetBestBodyArmor();
+        var best = m_Actor.GetBestBodyArmor();
         if (null == best) return 2; // want 3, but RHSMoreInteresting  says 2
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
@@ -4983,10 +4983,8 @@ restart_single_exit:
 
       // dropping body armor to get a better one should be ok
       if (it is ItemBodyArmor) {
-        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
-        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
-          return _BehaviorDropOrExchange(armor, it, position, use_ok);
-        }
+        var armor = m_Actor.GetBestBodyArmor();
+        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) return _BehaviorDropOrExchange(armor, it, position, use_ok);
       }
 
 // does not work: infinite recursion
@@ -5284,9 +5282,8 @@ restart_single_exit:
         return true;
       }
       if (it is ItemBodyArmor new_armor) {
-        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
-        if (null == armor) return true;
-        return armor.Rating < new_armor.Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
+        var armor = m_Actor.GetBestBodyArmor();
+        return null == armor || armor.Rating < new_armor.Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
 
       // No specific heuristic.

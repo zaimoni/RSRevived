@@ -3009,7 +3009,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemBodyArmor? GetBestBodyArmor()
     {
-      return m_Inventory?.GetItemsByType< ItemBodyArmor >()?.Maximize(armor => armor.Rating);
+      return m_Inventory?.Maximize<ItemBodyArmor,int>(armor => armor.Rating);
     }
 
     public ItemBodyArmor? GetWorstBodyArmor()

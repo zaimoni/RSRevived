@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Linq;
 
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
@@ -442,6 +443,22 @@ namespace djack.RogueSurvivor.Data
       }
       return tList;
     }
+
+    public _T_ Maximize<_T_, R>(Func<_T_, R> metric) where _T_ : Item where R:IComparable<R>
+    {
+      R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
+      _T_ ret = default;
+      foreach(_T_ it in m_Items) {
+         if (!(it is _T_ test)) continue;
+         R num2 = metric(test);
+         if (0<num2.CompareTo(num1)) {
+           ret = test;
+           num1 = num2;
+         }
+      }
+      return ret;
+    }
+
 
     public _T_? GetFirstMatching<_T_>() where _T_ : Item    // XXX cf GetFirst
     {
