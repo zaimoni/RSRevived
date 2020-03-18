@@ -43,8 +43,7 @@ namespace djack.RogueSurvivor.Data
       get {
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
-        if (m_Quantity > 1 || model.IsPlural)
-          return model.PluralName.PrefixDefinitePluralArticle();
+        if (m_Quantity > 1 || model.IsPlural) return model.PluralName.PrefixDefinitePluralArticle();
         return model.SingleName.PrefixDefiniteSingularArticle();
       }
     }
@@ -53,8 +52,7 @@ namespace djack.RogueSurvivor.Data
       get {
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
-        if (m_Quantity > 1 || model.IsPlural)
-          return model.PluralName.PrefixIndefinitePluralArticle();
+        if (m_Quantity > 1 || model.IsPlural) return model.PluralName.PrefixIndefinitePluralArticle();
         return model.SingleName.PrefixIndefiniteSingularArticle();
       }
     }
@@ -77,6 +75,8 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsEquipped { get { return EquippedPart != DollPart.NONE; } }
+    public static bool notEquipped(Item it) { return DollPart.NONE == it.EquippedPart; }
+
     public void Equip() { EquippedPart = Model.EquipmentPart; }
     public void Unequip() { EquippedPart = DollPart.NONE; }
     public bool IsUnique { get { return Model.IsUnique; } }

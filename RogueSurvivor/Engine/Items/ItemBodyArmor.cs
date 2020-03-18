@@ -33,6 +33,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public int Encumbrance { get { return Model.Encumbrance; } }
     public int Weight { get { return Model.Weight; } }
     public int Rating { get { return Model.Rating; } }
+    public static int Rate(ItemBodyArmor armor) { return armor.Rating; }
 
     public ItemBodyArmor(ItemBodyArmorModel model)
       : base(model)

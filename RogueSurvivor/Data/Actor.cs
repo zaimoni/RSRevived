@@ -3002,19 +3002,21 @@ namespace djack.RogueSurvivor.Data
       if (1 == melee.Count) return melee[0];
       // some sort of invariant problem here
       // NOTE: martial arts influences the apparent rating considerably
-      var ret = melee.Where(w=> !w.IsEquipped).Minimize(w=> MeleeWeaponAttack(w.Model).Rating);
-      if (null == ret) ret = melee.Minimize(w => MeleeWeaponAttack(w.Model).Rating);
+      int rate(ItemMeleeWeapon w) { return MeleeWeaponAttack(w.Model).Rating; }
+
+      var ret = melee.Where(Item.notEquipped).Minimize(rate);
+      if (null == ret) ret = melee.Minimize(rate);
       return ret;
     }
 
     public ItemBodyArmor? GetBestBodyArmor()
     {
-      return m_Inventory?.Maximize<ItemBodyArmor,int>(armor => armor.Rating);
+      return m_Inventory?.Maximize<ItemBodyArmor, int>(ItemBodyArmor.Rate);
     }
 
     public ItemBodyArmor? GetWorstBodyArmor()
     {
-      return m_Inventory?.Minimize<ItemBodyArmor, int>(armor => !armor.IsEquipped, armor => armor.Rating);
+      return m_Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
     }
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
