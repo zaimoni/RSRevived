@@ -448,7 +448,7 @@ namespace djack.RogueSurvivor.Data
     {
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
       _T_? ret = default;
-      foreach(_T_ it in m_Items) {
+      foreach(var it in m_Items) {
          if (!(it is _T_ test)) continue;
          R num2 = metric(test);
          if (0<num2.CompareTo(num1)) {
@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Data
     {
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
       _T_? ret = default;
-      foreach(_T_ it in m_Items) {
+      foreach(var it in m_Items) {
          if (!(it is _T_ test) || !ok(test)) continue;
          R num2 = metric(test);
          if (0>num2.CompareTo(num1)) {
