@@ -2309,7 +2309,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       DecideMove_NoShove(src);
       if (1 >= src.Count) return _finalDecideMove(src);
 
-      List<Location> tmp = src.Keys.ToList();
       // weakly prefer not to push
       DecideMove_NoPush(src);
       if (1 >= src.Count) return _finalDecideMove(src);
@@ -2320,12 +2319,76 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	}
 
 #nullable enable
-    // direct move cost adapter; note reference copy of parameter
-    protected ActorAction? DecideMove(Dictionary<Point,int> dests)
+    protected ActorAction? DecideMove(Dictionary<Location, KeyValuePair<ActorAction, int>> dests)
 	{
       if (0 >= dests.Count) return null;
-      dests.OnlyIfMinimal();
-      return DecideMove(dests.Keys);
+      dests.Minimize(x => x.Value.Value);
+      if (1 == dests.Count) return dests.First().Value.Key;   // intentionally allow non-moving shove through to simulate panic
+
+      var _dests = new Dictionary<Location, ActorAction>();
+      foreach(var x in dests) _dests.Add(x.Key, x.Value.Key);
+
+      DecideMove_WaryOfTraps(_dests);
+      if (1 == _dests.Count) return _dests.First().Value;
+
+	  // do not get in the way of allies' line of fire
+	  _dests = DecideMove_Avoid(_dests, FriendsLoF());
+      if (1 == _dests.Count) return _dests.First().Value;
+
+      // XXX if we have priority-see locations, maximize that
+      // XXX if we have threat tracking, maximize threat cleared
+      // XXX if we have item memory, maximize "update"
+	  ThreatTracking threats = m_Actor.Threats;
+	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      HashSet<Point>? new_los = null;
+
+      if (null != threats || null != sights_to_see) {
+	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        new_los = new HashSet<Point>();
+
+	    // only need points newly in FOV that aren't currently
+	    foreach(var x in dests) {
+          if (x.Value is ActionUseExit) continue;
+          Location? test = m_Actor.Location.Map.Denormalize(x.Key);
+          if (null == test) throw new ArgumentNullException(nameof(test));
+	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          new_los.UnionWith(hypothetical_los[test.Value.Position]);
+	    }
+
+        // only need to check if new locations seen
+        if (0 >= new_los.Count) {
+          threats = null;
+          sights_to_see = null;
+        }
+      }
+
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
+
+      if (null != threats) {
+        _dests = DecideMove_maximize_visibility(_dests, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
+        if (1 == _dests.Count) return _dests.First().Value;
+	  }
+	  if (null != sights_to_see) {
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
+        if (null!=inspect) {
+          _dests = DecideMove_maximize_visibility(_dests, inspect, new_los, hypothetical_los);
+          if (1 == _dests.Count) return _dests.First().Value;
+        }
+	  }
+
+      // weakly prefer not to shove
+      DecideMove_NoShove(_dests);
+      if (1 == _dests.Count) return _dests.First().Value;
+
+      // weakly prefer not to push
+      DecideMove_NoPush(_dests);
+      if (1 == _dests.Count) return _dests.First().Value;
+
+      // weakly prefer not to jump
+      DecideMove_NoJump(_dests);
+      return _finalDecideMove(_dests);
 	}
 #nullable restore
 
@@ -3094,14 +3157,23 @@ restart:
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        var legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
-        int current_cost = navigate.Cost(m_Actor.Location.Position);
-        if (!legal_steps?.Any(pt => navigate.Cost(pt)<=current_cost) ?? true) {
-          return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
+      int current_cost = navigate.Cost(m_Actor.Location.Position);
+      var approach = PlanApproach(navigate);
+      Dictionary<Location, KeyValuePair<ActorAction,int> >? ok_path = null;
+      ActionUseExit? _exit_map = null;
+      foreach(var x in _legal_path) {
+        if (x.Value is ActionUseExit use_exit && use_exit.dest != PrevLocation) {   // no-op unless m_Actor.Model.Abilities.AI_CanUseAIExits
+          _exit_map = use_exit;
+          continue;
+        }
+        var denorm = m_Actor.Location.Map.Denormalize(x.Key);
+        if (null != denorm && null != approach && approach.TryGetValue(denorm.Value.Position, out var cost)) {
+          (ok_path ?? (ok_path = new Dictionary<Location, KeyValuePair<ActorAction, int>>(_legal_path.Count))).Add(x.Key, new KeyValuePair<ActorAction, int>(x.Value, cost));
         }
       }
-      var ret = DecideMove(PlanApproach(navigate));
+      // \todo if _exit_map is null, may want to get more clever re push/pull
+      if (null == ok_path) return _exit_map;
+      var ret = DecideMove(ok_path);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       var min_steps = navigate.MinStepPathTo(m_Actor.Location.Position);

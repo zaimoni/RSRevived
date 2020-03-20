@@ -1779,14 +1779,8 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
-    public List<Point>? OnePathRange(Map m, Point p)
-    {
-      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(m,pt)));
-      return tmp.Any() ? tmp.ToList() : null;
-    }
-
     public Dictionary<Location,ActorAction> OnePath(in Location loc, Dictionary<Location, ActorAction> already)
-    {  // 2019-08-26: release-mode IL Code size       281 (0x119) [invalidated]
+    {
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
@@ -1799,6 +1793,8 @@ namespace djack.RogueSurvivor.Data
           ret.Add(dest, new Engine.Actions.ActionMoveStep(this, dest.Position));
           continue;
         }
+        // 2020-03-19 This is multi-threading sensitive -- the Sokoban preventer may have to reach across threads
+        // generators fail CanEnter but can be pathable so that would have to be accounted for
         if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
