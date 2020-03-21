@@ -7,21 +7,20 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemMedicine : Item
   {
-    new public ItemMedicineModel Model { get {return base.Model as ItemMedicineModel; } }    
+    new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }
     public int StaminaBoost { get { return Model.StaminaBoost; } }
     public int SleepBoost { get { return Model.SleepBoost; } }
     public int InfectionCure { get { return Model.InfectionCure; } }
     public int SanityCure { get { return Model.SanityCure; } }
 
-    public ItemMedicine(ItemMedicineModel model)
-      : base(model)
-    {
-    }
+    public ItemMedicine(ItemMedicineModel model) : base(model) {}
   }
 }

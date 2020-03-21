@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemSprayScentModel : ItemModel
@@ -14,22 +16,15 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly Odor Odor;
     public readonly int Strength;
 
-    public ItemSprayScentModel(string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
-      : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
+    public ItemSprayScentModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
+      : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
       MaxSprayQuantity = sprayQuantity;
       Odor = odor;
       Strength = strength;
     }
 
-    public override Item create()
-    {
-      return new ItemSprayScent(this);
-    }
-
-    public ItemSprayScent instantiate()
-    {
-      return new ItemSprayScent(this);
-    }
+    public override Item create() { return new ItemSprayScent(this); }
+    public ItemSprayScent instantiate() { return new ItemSprayScent(this); }
   }
 }

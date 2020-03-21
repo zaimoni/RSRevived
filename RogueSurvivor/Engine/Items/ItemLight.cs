@@ -7,18 +7,18 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemLight : Item, BatteryPowered
     {
-    new public ItemLightModel Model { get {return base.Model as ItemLightModel; } }
+    new public ItemLightModel Model { get {return (base.Model as ItemLightModel)!; } }
     private int m_Batteries;
 
     public int Batteries {
-      get {
-        return m_Batteries;
-      }
+      get { return m_Batteries; }
       set {
         if (value < 0) value = 0;
         m_Batteries = Math.Min(value, Model.MaxBatteries);
@@ -30,14 +30,11 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override string ImageID {
       get {
-        if (IsEquipped && Batteries > 0) return base.ImageID;
-        return Model.OutOfBatteriesImageID;
+        return (IsEquipped && 0 < m_Batteries) ? base.ImageID : Model.OutOfBatteriesImageID;
       }
     }
 
-    public override bool IsUseless {
-      get { return 0 >= m_Batteries; }
-    }
+    public override bool IsUseless { get { return 0 >= m_Batteries; } }
 
     // precondtion: neither is useless
     public bool IsLessUsableThan(ItemLight rhs)
@@ -50,8 +47,7 @@ namespace djack.RogueSurvivor.Engine.Items
       return Batteries < rhs.Batteries;
     }
 
-    public ItemLight(ItemLightModel model)
-      : base(model)
+    public ItemLight(ItemLightModel model) : base(model)
     {
       Batteries = model.MaxBatteries;
     }

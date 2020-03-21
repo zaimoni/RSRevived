@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public Attack Attack { get { return m_Attack; } }   // need value copy here for safety
 
-    protected ItemWeaponModel(string aName, string theNames, string imageID, Attack attack, string flavor, bool is_artifact)
-      : base(aName, theNames, imageID, flavor, DollPart.RIGHT_HAND)
+    protected ItemWeaponModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, Attack attack, string flavor, bool is_artifact)
+      : base(_id, aName, theNames, imageID, flavor, DollPart.RIGHT_HAND)
     {
       m_Attack = attack;
       if (is_artifact) {

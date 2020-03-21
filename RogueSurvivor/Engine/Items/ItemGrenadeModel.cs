@@ -6,14 +6,16 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemGrenadeModel : ItemExplosiveModel
   {
     public readonly int MaxThrowDistance;
 
-    public ItemGrenadeModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance, int stackingLimit, string flavor)
-      : base(aName, theNames, imageID, fuseDelay, attack, blastImageID, flavor)
+    public ItemGrenadeModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance, int stackingLimit, string flavor)
+      : base(_id, aName, theNames, imageID, fuseDelay, attack, blastImageID, flavor)
     {
       MaxThrowDistance = maxThrowDistance;
       StackingLimit = stackingLimit;

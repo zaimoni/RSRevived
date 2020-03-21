@@ -7,14 +7,16 @@
 using System;
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemGrenadePrimedModel : ItemExplosiveModel
   {
     public readonly ItemGrenadeModel GrenadeModel;
 
-    public ItemGrenadePrimedModel(string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
-      : base(aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage, grenadeModel.FlavorDescription)
+    public ItemGrenadePrimedModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
+      : base(_id, aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage, grenadeModel.FlavorDescription)
     {
 #if DEBUG
       if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));
@@ -22,14 +24,7 @@ namespace djack.RogueSurvivor.Engine.Items
       GrenadeModel = grenadeModel;
     }
 
-    public override Item create()
-    {
-      return new ItemGrenade(GrenadeModel,this);
-    }
-
-    public ItemGrenade instantiate()
-    {
-      return new ItemGrenade(GrenadeModel, this);
-    }
+    public override Item create() { return new ItemGrenade(GrenadeModel,this); }
+    public ItemGrenade instantiate() { return new ItemGrenade(GrenadeModel, this); }
   }
 }

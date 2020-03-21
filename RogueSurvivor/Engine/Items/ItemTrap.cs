@@ -55,15 +55,8 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemTrap(ItemTrapModel model)
-      : base(model)
-    {
-    }
-
-    public ItemTrap Clone()
-    {
-      return new ItemTrap(Model);
-    }
+    public ItemTrap(ItemTrapModel model) : base(model) {}
+    public ItemTrap Clone() { return new ItemTrap(Model); }
 
     // alpha10
     public void Activate(Actor owner)
@@ -144,6 +137,8 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool LearnHowToBypass(Actor a, Location loc) { return WouldLearnHowToBypass(a, loc); }
 
+#nullable enable
+
     // alpha10
     public int TriggerChanceFor(Actor a)
     {
@@ -175,16 +170,8 @@ namespace djack.RogueSurvivor.Engine.Items
       return false;
     }
 
-    public bool CheckStepOnBreaks(MapObject mobj)
-    {
-      return Rules.Get.RollChance(Model.BreakChance * mobj.Weight);
-    }
-
-    public bool CheckStepOnBreaks()
-    {
-      return Rules.Get.RollChance(Model.BreakChance);
-    }
-
+    public bool CheckStepOnBreaks(MapObject mobj) { return Rules.Get.RollChance(Model.BreakChance * mobj.Weight); }
+    public bool CheckStepOnBreaks() { return Rules.Get.RollChance(Model.BreakChance); }
 
     // alpha10
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)

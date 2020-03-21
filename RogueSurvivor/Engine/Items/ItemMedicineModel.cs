@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemMedicineModel : ItemModel
@@ -16,8 +18,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int InfectionCure;
     public readonly int SanityCure;
 
-    public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure, string flavor, int stackingLimit = 0)
-      : base(aName, theNames, imageID, flavor)
+    public ItemMedicineModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure, string flavor, int stackingLimit = 0)
+    : base(_id, aName, theNames, imageID, flavor)
     {
       Healing = healing;
       StaminaBoost = staminaBoost;
@@ -30,14 +32,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override Item create()
-    {
-      return new ItemMedicine(this);
-    }
-
-    public ItemMedicine instantiate()
-    {
-      return new ItemMedicine(this);
-    }
+    public override Item create() { return new ItemMedicine(this); }
+    public ItemMedicine instantiate() { return new ItemMedicine(this); }
   }
 }

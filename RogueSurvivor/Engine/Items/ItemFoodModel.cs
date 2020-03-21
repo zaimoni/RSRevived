@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemFoodModel : ItemModel
@@ -14,8 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly bool IsPerishable;
     public readonly int BestBeforeDays;
 
-    public ItemFoodModel(string aName, string theNames, string imageID, int nutrition, int bestBeforeDays, int stackingLimit, string flavor)
-      : base(aName, theNames, imageID, flavor)
+    public ItemFoodModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int nutrition, int bestBeforeDays, int stackingLimit, string flavor)
+      : base(_id, aName, theNames, imageID, flavor)
     {
       Nutrition = nutrition;
       if (bestBeforeDays < 0) {
@@ -42,9 +44,6 @@ namespace djack.RogueSurvivor.Engine.Items
       return new ItemFood(this);
     }
 
-    public ItemFood instantiate(int bestBefore)
-    {
-      return new ItemFood(bestBefore, this);
-    }
+    public ItemFood instantiate(int bestBefore) { return new ItemFood(bestBefore, this); }
   }
 }

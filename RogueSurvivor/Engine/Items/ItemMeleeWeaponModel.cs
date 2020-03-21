@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemMeleeWeaponModel : ItemWeaponModel
@@ -18,15 +20,15 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly float ToolBuildBonus;
     public bool IsTool { get { return ToolBashDamageBonus != 0 || ToolBuildBonus != 0; } }
 
-    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int bash, float build, bool is_artifact = false)
-      : base(aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
+    public ItemMeleeWeaponModel(Gameplay.GameItems.IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, bool is_artifact = false)
+      : base(_id, aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {
       ToolBashDamageBonus = bash;
       ToolBuildBonus = build;
     }
 
-    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, int bash, float build, int stackingLimit, bool fragile)
-      : base(aName, aName.Plural(true), imageID, attack, flavor, false)
+    public ItemMeleeWeaponModel(Gameplay.GameItems.IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, int stackingLimit, bool fragile)
+      : base(_id, aName, aName.Plural(true), imageID, attack, flavor, false)
     {
       StackingLimit = stackingLimit;
       IsFragile = fragile;
@@ -47,14 +49,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override Item create()
-    {
-      return new ItemMeleeWeapon(this);
-    }
-
-    public ItemMeleeWeapon instantiate()
-    {
-      return new ItemMeleeWeapon(this);
-    }
+    public override Item create() { return new ItemMeleeWeapon(this); }
+    public ItemMeleeWeapon instantiate() { return new ItemMeleeWeapon(this); }
   }
 }

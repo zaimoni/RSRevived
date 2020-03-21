@@ -7,24 +7,27 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
+// VAPORWARE this needs something that makes it AI-worthy to use.  Graffiti was a pre-apocalypse thing.
+// * Improvised flamethrower worked for James Bond 007.
+// * Z may not be that easy to blind in the first place.
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemSprayPaint : Item
   {
-    new public ItemSprayPaintModel Model { get {return base.Model as ItemSprayPaintModel; } }
+    new public ItemSprayPaintModel Model { get {return (base.Model as ItemSprayPaintModel)!; } }
     public int PaintQuantity { get; set; }
 
-    public override bool IsUseless {
-      get { return 0 >= PaintQuantity; }
-    }
+    public override bool IsUseless { get { return 0 >= PaintQuantity; } }
 
 #if PROTOTYPE
     public override ItemStruct Struct { get { return new ItemStruct(Model.ID, PaintQuantity); } }
 #endif
 
-    public ItemSprayPaint(ItemSprayPaintModel model)
-      : base(model)
+    public ItemSprayPaint(ItemSprayPaintModel model) : base(model)
     {
       PaintQuantity = model.MaxPaintQuantity;
     }

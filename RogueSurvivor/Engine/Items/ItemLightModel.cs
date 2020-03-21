@@ -7,6 +7,8 @@
 using System;
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemLightModel : ItemModel
@@ -15,8 +17,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly short FovBonus;
     public readonly string OutOfBatteriesImageID;
 
-    public ItemLightModel(string aName, string theNames, string imageID, short fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
-      : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND, true)
+    public ItemLightModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, short fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
+      : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND, true)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(outOfBatteriesImageID)) throw new ArgumentNullException(nameof(outOfBatteriesImageID));
@@ -26,14 +28,7 @@ namespace djack.RogueSurvivor.Engine.Items
       OutOfBatteriesImageID = outOfBatteriesImageID;
     }
 
-    public override Item create()
-    {
-      return new ItemLight(this);
-    }
-
-    public ItemLight instantiate()
-    {
-      return new ItemLight(this);
-    }
+    public override Item create() { return new ItemLight(this); }
+    public ItemLight instantiate() { return new ItemLight(this); }
   }
 }

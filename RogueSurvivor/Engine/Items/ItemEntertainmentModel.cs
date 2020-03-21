@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemEntertainmentModel : ItemModel
@@ -13,22 +15,15 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int Value;
     public readonly int BoreChance;
 
-    public ItemEntertainmentModel(string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
-      : base(aName, theNames, imageID, flavor)
+    public ItemEntertainmentModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
+      : base(_id, aName, theNames, imageID, flavor)
     {
       Value = value;
       BoreChance = boreChance;
       StackingLimit = stacking;
     }
 
-    public override Item create()
-    {
-      return new ItemEntertainment(this);
-    }
-
-    public ItemEntertainment instantiate()
-    {
-      return new ItemEntertainment(this);
-    }
+    public override Item create() { return new ItemEntertainment(this); }
+    public ItemEntertainment instantiate() { return new ItemEntertainment(this); }
   }
 }

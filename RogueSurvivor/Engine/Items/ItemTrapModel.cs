@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemTrapModel : ItemModel
@@ -24,8 +26,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsFlammable { get { return (m_Flags & Flags.IS_FLAMMABLE) != Flags.NONE; } }
     public bool ActivatesWhenDropped { get { return (m_Flags & Flags.DROP_ACTIVATE) != Flags.NONE; } }
 
-    public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
-      : base(aName, theNames, imageID, flavor)
+    public ItemTrapModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
+      : base(_id, aName, theNames, imageID, flavor)
     {
       if (stackLimit > 1) StackingLimit = stackLimit;
       TriggerChance = triggerChance;
@@ -43,15 +45,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (IsFlammable) m_Flags |= Flags.IS_FLAMMABLE;
     }
 
-    public override Item create()
-    {
-      return new ItemTrap(this);
-    }
-
-    public ItemTrap instantiate()
-    {
-      return new ItemTrap(this);
-    }
+    public override Item create() { return new ItemTrap(this); }
+    public ItemTrap instantiate() { return new ItemTrap(this); }
 
     [System.Flags]
     private enum Flags

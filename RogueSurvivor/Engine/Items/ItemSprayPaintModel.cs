@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemSprayPaintModel : ItemModel
@@ -14,8 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxPaintQuantity;
     public readonly string TagImageID;
 
-    public ItemSprayPaintModel(string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
-      : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
+    public ItemSprayPaintModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
+      : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(tagImageID)) throw new ArgumentNullException(nameof(tagImageID));
@@ -24,14 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
       TagImageID = tagImageID;
     }
 
-    public override Item create()
-    {
-      return new ItemSprayPaint(this);
-    }
-
-    public ItemSprayPaint instantiate()
-    {
-      return new ItemSprayPaint(this);
-    }
+    public override Item create() { return new ItemSprayPaint(this); }
+    public ItemSprayPaint instantiate() { return new ItemSprayPaint(this); }
   }
 }

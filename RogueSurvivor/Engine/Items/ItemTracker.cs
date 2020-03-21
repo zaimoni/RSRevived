@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
@@ -52,13 +54,9 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public int MaxBatteries { get { return Model.MaxBatteries; } }
+    public override bool IsUseless { get { return 0 >= m_Batteries; } }
 
-    public override bool IsUseless { 
-      get { return 0 >= m_Batteries; }
-    }
-
-    public ItemTracker(ItemTrackerModel model)
-      : base(model)
+    public ItemTracker(ItemTrackerModel model) : base(model)
     {
       Batteries = model.MaxBatteries;
     }
@@ -67,9 +65,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public override ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Batteries); } }
 #endif
 
-    public void Recharge()
-    {
-      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8);
-    }
+    public void Recharge() { Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8); }
   }
 }

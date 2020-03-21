@@ -7,16 +7,15 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemBarricadeMaterial : Item
   {
-    new public ItemBarricadeMaterialModel Model { get {return base.Model as ItemBarricadeMaterialModel; } }
+    new public ItemBarricadeMaterialModel Model { get {return (base.Model as ItemBarricadeMaterialModel)!; } }
 
-    public ItemBarricadeMaterial(ItemBarricadeMaterialModel model, int qty=1)
-      : base(model, qty)
-    {
-    }
+    public ItemBarricadeMaterial(ItemBarricadeMaterialModel model, int qty=1) : base(model, qty) {}
   }
 }

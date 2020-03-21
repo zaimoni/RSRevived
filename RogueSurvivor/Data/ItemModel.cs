@@ -6,11 +6,13 @@
 
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Data
 {
   internal class ItemModel : Zaimoni.Data.Factory<Item>
   {
-    public Gameplay.GameItems.IDs ID { get; set; }
+    public readonly Gameplay.GameItems.IDs ID;
     public readonly string SingleName;
     public readonly string PluralName;
     public readonly string ImageID;
@@ -40,8 +42,9 @@ namespace djack.RogueSurvivor.Data
     public bool IsStackable { get { return 2 <= m_StackingLimit; } }
     public bool IsEquipable { get { return EquipmentPart != DollPart.NONE; } }
 
-    public ItemModel(string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
+    public ItemModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
     {
+      ID = _id;
       SingleName = aName;
       PluralName = theNames;
       ImageID = imageID;

@@ -6,27 +6,22 @@
 
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemBarricadeMaterialModel : ItemModel
   {
     public readonly int BarricadingValue;
 
-    public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue, int stackingLimit, string flavor)
-      : base(aName, theNames, imageID, flavor)
+    public ItemBarricadeMaterialModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int barricadingValue, int stackingLimit, string flavor)
+      : base(_id, aName, theNames, imageID, flavor)
     {
       BarricadingValue = barricadingValue;
       StackingLimit = stackingLimit;
     }
 
-    public override Item create()
-    {
-      return new ItemBarricadeMaterial(this);
-    }
-
-    public ItemBarricadeMaterial instantiate()
-    {
-      return new ItemBarricadeMaterial(this);
-    }
+    public override Item create() { return new ItemBarricadeMaterial(this); }
+    public ItemBarricadeMaterial instantiate() { return new ItemBarricadeMaterial(this); }
   }
 }
