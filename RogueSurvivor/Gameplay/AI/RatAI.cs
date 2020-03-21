@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
@@ -20,12 +19,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
+#nullable enable
+    private readonly LOSSensor m_LOSSensor;
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
-    public RatAI(Actor src) : base(src) {}
+    public RatAI(Actor src) : base(src)
+    {
+      m_LOSSensor = new LOSSensor(VISION_SEES, src);
+    }
 
-#nullable enable
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
@@ -36,7 +38,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
 #nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
     protected override ActorAction SelectAction()
     {

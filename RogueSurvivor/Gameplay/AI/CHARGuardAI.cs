@@ -33,11 +33,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
 
     private List<Actor> _squad = null;
 
-    public CHARGuardAI(Actor src) : base(src) {}
+    public CHARGuardAI(Actor src) : base(src)
+    {
+      m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
+    }
 
     public override bool UsesExplosives { get { return false; } }
 
@@ -56,8 +59,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
     public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_MemLOSSensor.Sensor.items; } }
-#nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { m_MemLOSSensor.Sensor.OwnedBy(actor); }
 
     public override string AggressedBy(Actor aggressor)
     {
@@ -70,6 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return base.AggressedBy(aggressor);
     }
+#nullable restore
 
     protected override ActorAction SelectAction()
     {

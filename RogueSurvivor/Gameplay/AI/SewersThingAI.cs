@@ -24,11 +24,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     private readonly SmellSensor m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
 
-    public SewersThingAI(Actor src) : base(src) {}
+    public SewersThingAI(Actor src) : base(src)
+    {
+      m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
+    }
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
@@ -47,7 +50,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
 #nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { m_MemLOSSensor.Sensor.OwnedBy(actor); }
 
     protected override ActorAction SelectAction()
     {

@@ -25,8 +25,7 @@ namespace djack.RogueSurvivor.Data
     protected ActorController(Actor src) { m_Actor = src; }
 
     public Actor ControlledActor { get { return m_Actor; } } // alpha10
-    public virtual void TakeControl() { SensorsOwnedBy(m_Actor); }
-    protected abstract void SensorsOwnedBy(Actor actor);
+    public virtual void TakeControl() {}
     public virtual void LeaveControl() {}
 
     // forwarder system for to RogueGame::AddMessage

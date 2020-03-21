@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
 
 	public PlayerController(Actor src) : base(src) {
-      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES());   // deal with vision capabilities
+      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
       m_itemMemory = m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) ? Session.Get.PoliceItemMemory
                                                                             : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
@@ -122,7 +122,6 @@ namespace djack.RogueSurvivor.Data
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
     public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_LOSSensor.items; } }
 #nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
     // if the underlying controller has a non-default behavior we do want that here
     // i.e. a full migration of legacy code merely ends up relocating the complexity; rationale needed to proceed

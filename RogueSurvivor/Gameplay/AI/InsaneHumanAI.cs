@@ -83,11 +83,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
-
-    public InsaneHumanAI(Actor src) : base(src) {}
-
 #nullable enable
+    private readonly LOSSensor m_LOSSensor;
+
+    public InsaneHumanAI(Actor src) : base(src)
+    {
+      m_LOSSensor = new LOSSensor(VISION_SEES, src);
+    }
+
     public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense();
@@ -96,10 +99,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
-#nullable restore
-    protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
-#nullable enable
     protected override ActorAction? SelectAction()
     {
       var game = RogueForm.Game;

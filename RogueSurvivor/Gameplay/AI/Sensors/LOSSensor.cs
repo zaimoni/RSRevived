@@ -20,31 +20,23 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   internal class LOSSensor : Sensor
   {
 #nullable enable
-    private Actor? m_Actor = null;
+    private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI purposes
     private Dictionary<Location, Actor>? _friends;
     private Dictionary<Location, Actor>? _enemies;
     private Dictionary<Location,Inventory>? _items;
 
-    public Actor Viewpoint { get { return m_Actor!; } }
-    public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(Viewpoint); } }
+    public Actor Viewpoint { get { return m_Actor; } }
+    public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
     public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
     public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
 
-    public LOSSensor(SensingFilter filters)
+    public LOSSensor(SensingFilter filters, Actor actor)
     {
-      Filters = filters;
-    }
-
-#if DEBUG
-    public void OwnedBy(Actor? actor) {
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
-#else
-    public void OwnedBy(Actor actor) {
-#endif
       m_Actor = actor;
+      Filters = filters;
     }
 #nullable restore
 
@@ -122,9 +114,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 #nullable enable
     public List<Percept> Sense()
     {
-#if DEBUG
-      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
-#endif
       var actor = Viewpoint;
       var _view_map = actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
