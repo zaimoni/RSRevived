@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Collections.Generic;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
@@ -16,16 +17,23 @@ namespace djack.RogueSurvivor.Engine.Tasks
   [Serializable]
   internal class TaskRemoveDecoration : TimedTask
   {
-    private readonly Point m_pt;
+    private readonly List<Point> m_pt;  // or HashSet<Point>
     private readonly string m_imageID;
+
+    public string WillRemove { get { return m_imageID; } }
 
     public TaskRemoveDecoration(int turns, in Point pt, string imageID)
       : base(turns)
     {
-      m_pt = pt;
+      m_pt = new List<Point> { pt };
       m_imageID = imageID;
     }
 
-    public override void Trigger(Map m) { m.RemoveDecorationAt(m_imageID, in m_pt); }
+    public override void Trigger(Map m) {
+      foreach(var pt in m_pt) m.RemoveDecorationAt(m_imageID, in pt);
+    }
+
+    public void Add(Point dest) { if (!m_pt.Contains(dest)) m_pt.Add(dest); }
+    public bool Remove(Point dest) { m_pt.Remove(dest); return 0 >= m_pt.Count; }
   }
 }

@@ -13250,12 +13250,11 @@ namespace djack.RogueSurvivor.Engine
               escape.Trigger(dest);
               dest.AddTimer(escape);
               // * VAPORWARE: AI isn't otherwise there, so don't worry about waking up anyone who slept through the gates opening (yet)
-              // * VAPORWARE: Police that see the escaping prisoners before they get distance 2 beyond the front door will realize there is a breakout and attempt to kill.
-              // * VAPORWARE: If the police radio is *on* when the prisoner gives the location of the CHAR base, the police may get the location at the same time.
-              // (Backstory: It depends on how much AI/pattern matching is in the radio.)
-              // In this case, the player will not be targeted (cf police storyline), but the police will know of the breakout immediately.
-              // * VAPORWARE: If the radio was *not* on, and the player cannot pass as a police officer, (s)he'll be treated like an escaping prisoner.  
-              // Turning on/off the police radio where this can be seen or detected would raise suspicion.
+              // Currently, there is an off-map security camera control room (the player's jailbreak *is* recorded...as is the Prisoner Who Should Not Be's confession)
+              // * VAPORWARE: actually have that map (may be hard to reach, e.g. concealed doors/stairs)
+              // * VAPORWARE: have the Prisoner Who Should Not Be's confession cancel the charges related to the jailbreak
+              // * VAPORWARE: just because the police are letting the player off, doesn't mean they're letting the prisoners off.  Charges are just
+              //   "low priority" compared to Z or murderers.  Any unoccupied police in the area can set up ambushes, etc.
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();

@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
-    private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
+    private readonly List<TimedTask> m_Timers = new List<TimedTask>(5); // The end-of-turn timers.
     // position inverting caches
     [NonSerialized] private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized] private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
@@ -569,11 +569,20 @@ namespace djack.RogueSurvivor.Data
 
     public void AddTimedDecoration(Point pt, string imageId, int deltaT, Func<Map,Point,bool> test)
     {
-      if (!HasDecorationAt(imageId, in pt) && test(this, pt)) {
-        AddDecorationAt(imageId, in pt);
-        AddTimer(new Engine.Tasks.TaskRemoveDecoration(deltaT, in pt, imageId));
+      if (test(this, pt)) {
+        if (!HasDecorationAt(imageId, in pt)) AddDecorationAt(imageId, in pt);
+        bool not_yet = true;
+        int ub = m_Timers.Count;
+        while(0 <= --ub) {
+          if (!(m_Timers[ub] is Engine.Tasks.TaskRemoveDecoration clean) || clean.WillRemove != imageId) continue;
+          // VAPORWARE some sort of handling re stacked decaying decorations
+          if (clean.TurnsLeft >= deltaT) {  // not formally correct, but for our current use case the > doesn't actually happen
+            clean.Add(pt);
+            not_yet = false;
+          } else if (clean.Remove(pt)) m_Timers.RemoveAt(ub);
+        }
+        if (not_yet) m_Timers.Add(new Engine.Tasks.TaskRemoveDecoration(deltaT, in pt, imageId));
       }
-      // \todo would be nice to "extend" the duration of an existing timer (possibly by outright replacement)
     }
 
 
@@ -1671,8 +1680,7 @@ retry:
 
     public void UpdateTimers()
     {
-      int i = m_Timers.Count;
-      if (0 >= i) return;
+      if (0 >= m_Timers.Count) return;
 
       bool elapse(TimedTask timer) {
         timer.Tick(this);   // ok for this to add timers; removal is by downward index sweep
