@@ -689,6 +689,34 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static Action<T,U> Bind<T,U,V>(this V anchor, Action<T,U,V> lhs)
+    {
+      var l = lhs;
+      var bound = anchor;
+      void ret(T src, U src2) {
+        l(src, src2, bound);
+      }
+      return ret;
+    }
+
+#nullable enable
+    public static Action<T,U> Compose<T, U>(this Action<T, U>? rhs, Action<T, U>? lhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      if (null == rhs) {
+        if (null == l) throw new ArgumentNullException(nameof(lhs));
+        return l;
+      }
+      var r = rhs;
+      if (null == l) return r;
+      void ret(T src, U src2) {
+        l(src, src2);
+        r(src, src2);
+      }
+      return ret;
+    }
+#nullable restore
+
     // function composition is right-associative in higher math
     // reverse parameter order here to make function call chaining clean
     public static Func<T,V> Compose<T,U,V>(this Func<T,U> rhs, Func<U, V> lhs)

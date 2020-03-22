@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -26,6 +27,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Dictionary<Location, Actor>? _friends;
     private Dictionary<Location, Actor>? _enemies;
     private Dictionary<Location,Inventory>? _items;
+    [NonSerialized] private Action<List<Percept>, Location[]>? _sense;
 
     public Actor Viewpoint { get { return m_Actor; } }
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
@@ -35,6 +37,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public LOSSensor(SensingFilter filters, Actor actor)
     {
+#if DEBUG
+      if (filters == SensingFilter.NONE) throw new ArgumentNullException(nameof(filters));
+#endif
       m_Actor = actor;
       Filters = filters;
     }
@@ -111,7 +116,34 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
+    private void _seeCorpses(List<Percept> perceptList, Location[] normalized_FOV)
+    {
+      var turn = m_Actor.Location.Map.LocalTime.TurnCounter;
+      foreach (var loc in normalized_FOV) {
+        var corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
+        if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, turn, in loc));
+      }
+    }
+
 #nullable enable
+    private Action<List<Percept>, Location[]> HowToSense()
+    {
+      Action<List<Percept>, Location[]>? ret = null;
+      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
+        var threats = m_Actor.Threats;
+        ret = (null != threats) ? threats.Bind<List<Percept>, Location[], ThreatTracking>(_seeActors)
+                                : _seeActors;
+      }
+      if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
+        var items = m_Actor.Controller.ItemMemory;
+        ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>>(_seeItems)
+                                        : _seeItems);
+      }
+      if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) ret = ret.Compose(_seeCorpses);
+      if (null == ret) throw new ArgumentNullException(nameof(ret));
+      return ret;
+    }
+
     public List<Percept> Sense()
     {
       var actor = Viewpoint;
@@ -128,27 +160,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         normalized_FOV[i++] = loc;
       }
       if (null != e) {
-        normalized_FOV[i] = e.Location;
+        normalized_FOV[i] = e.Location; // chained value here isn't C++-legal so have to do this in two steps
         actor.InterestingLocs?.Seen(e.Location);
       }
       }
       List<Percept> perceptList = new List<Percept>();
-      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
-        var threats = actor.Threats;
-        if (null != threats) _seeActors(perceptList, normalized_FOV, threats);
-        else _seeActors(perceptList, normalized_FOV);
-      }
-      if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
-        var items = actor.Controller.ItemMemory;
-        if (null != items) _seeItems(perceptList, normalized_FOV, items);
-        else _seeItems(perceptList, normalized_FOV);
-      }
-      if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
-        foreach (var loc in normalized_FOV) {
-          var corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
-          if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, _view_map.LocalTime.TurnCounter, in loc));
-        }
-      }
+      (_sense ?? (_sense = HowToSense()))(perceptList, normalized_FOV);
       return perceptList;
     }
 #nullable restore
