@@ -55,8 +55,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Location, Actor>()))[loc] = actorAt;
-        else (_friends ?? (_friends = new Dictionary<Location, Actor>()))[loc] = actorAt;
+        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Location, Actor>())).Add(loc, actorAt);
+        else (_friends ?? (_friends = new Dictionary<Location, Actor>())).Add(loc, actorAt);
       }
     }
 
@@ -82,9 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
             continue;
           }
           if (is_enemy) {
-            (_enemies ?? (_enemies = new Dictionary<Location, Actor>()))[loc] = actorAt;
+            (_enemies ?? (_enemies = new Dictionary<Location, Actor>())).Add(loc, actorAt);
             has_threat.Add(test.Value.Position);
-          } else (_friends ?? (_friends = new Dictionary<Location, Actor>()))[loc] = actorAt;
+          } else (_friends ?? (_friends = new Dictionary<Location, Actor>())).Add(loc, actorAt);
         }
         // ensure fact what is in sight is current, is recorded
 		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));
@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         var itemsAt = loc.Items;
         if (null==itemsAt || itemsAt.IsEmpty) continue;
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
-        (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
+        (_items ?? (_items = new Dictionary<Location, Inventory>())).Add(loc, itemsAt);
       }
     }
 
@@ -112,7 +112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         }
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
         items.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);
-        (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = itemsAt;
+        (_items ?? (_items = new Dictionary<Location, Inventory>())).Add(loc, itemsAt);
       }
     }
 
