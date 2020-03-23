@@ -32,6 +32,8 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
 
+    public virtual bool AreEquivalent(ActorAction? src) { return this == src; } // pointer equality i.e. doesn't actually work when needed
+
     public static bool Is<T>(ActorAction? src) where T:ActorAction { return src is T; }
     public static bool IsNot<T>(ActorAction? src) where T:ActorAction { return !(src is T); }
 

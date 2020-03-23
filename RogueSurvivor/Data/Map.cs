@@ -686,7 +686,7 @@ namespace djack.RogueSurvivor.Data
             return cost;
         }
 
-        if (act is Engine.Actions.ActionMoveDelta delta) return PathfinderMoveCosts(delta.ConcreteAction);
+        if (act is Engine.Actions.Resolvable delta) return PathfinderMoveCosts(delta.ConcreteAction);
         if (act is Engine.Actions.ActionShove) return 4;    // impolite so penalize just more than walking around
         if (   act is Engine.Actions.ActionOpenDoor  // extra turn
             || act is Engine.Actions.ActionPush  // assume non-moving i.e. extra turn; also costs stamina

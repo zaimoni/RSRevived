@@ -38,5 +38,14 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);
         }
+
+        public ActorAction? Next { get {
+          return 1<m_Actions.Count ? m_Actions[1] : null;
+        } }
+
+        public bool IsSemanticParadox() {
+          // VAPORWARE: Checks for things like path loops not broken up by non-move actions
+          return false;
+        }
     }
 }

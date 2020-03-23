@@ -2731,6 +2731,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
        }
     }
 
+    public void ExecuteActionFork(List<ActorAction> actions)
+    {
+      var act = Rules.Get.DiceRoller.Choose(actions);
+#if DEBUG
+      if (act is Engine._Action.Fork) throw new ArgumentOutOfRangeException(nameof(act),act,"fork of fork not reasonable");
+      if (!act.IsPerformable()) throw new ArgumentOutOfRangeException(nameof(act),act,"not performable");
+#endif
+      act.Perform();
+    }
+
     private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
 #if TRACE_GOALS
