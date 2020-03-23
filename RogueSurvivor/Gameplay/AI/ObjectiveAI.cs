@@ -2718,17 +2718,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return PlanWalkAwayFrom(fear, (null != range) ? upgrade(range) : null, (null != range2) ? upgrade(range2) : null);
     }
 
-    public void ExecuteActionChain(IEnumerable<ActorAction> actions)
+    public void ExecuteActionChain(List<ActorAction> actions)
     {
-      int insertAt = -2;
-      foreach(ActorAction action in actions) {
-        insertAt++;
-        if (0 > insertAt) {
-          action.Perform();
-          continue;
-        }
-        Objectives.Insert(insertAt,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, action));
-       }
+      actions[0].Perform();
+      if (1<actions.Count) {
+        actions.RemoveAt(0);
+        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionChain(m_Actor, actions)));
+      }
     }
 
     public void ExecuteActionFork(List<ActorAction> actions)

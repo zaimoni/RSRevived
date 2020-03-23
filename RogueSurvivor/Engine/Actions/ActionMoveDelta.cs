@@ -80,6 +80,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         }
     }
 
+    public override bool AreEquivalent(ActorAction? src)
+    {
+      return src is ActionMoveDelta alt && m_Origin == alt.m_Origin && m_NewLocation == alt.m_NewLocation;
+    }
+
     // works like pathing rather than bumping
     private ActorAction _resolve()
     {
