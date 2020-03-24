@@ -113,6 +113,35 @@ namespace djack.RogueSurvivor.Engine._Action
         (m_Actor.Controller as ObjectiveAI).ExecuteActionFork(m_Candidates[act_cost]);
       }
 
+      // assume the candidate indexing is mostly correct
+      public int CumulativeMoveCost()
+      {
+#if TOO_FAST
+        return m_Candidates.Keys.Min();
+#else
+retry:
+        int act_cost = m_Candidates.Keys.Min();
+        var cache = m_Candidates[act_cost];
+        int ub = cache.Count;
+        bool recalc = false;
+        while(0 <= --ub) {
+          var act = cache[ub];
+          int test = (act is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(act);
+          if (test != act_cost) {
+            cache.RemoveAt(ub);
+            Add(act);
+            if (test < act_cost) recalc = true;
+          }
+        }
+        if (0 >= cache.Count) {
+          m_Candidates.Remove(act_cost);
+          if (!recalc) goto retry;
+        }
+        if (recalc) return m_Candidates.Keys.Min();
+        return act_cost;
+#endif
+        }
+
       private static void _add(Dictionary<int, List<Actions.ActionChain>> dest, Actions.ActionChain src)
       {
         int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src);
@@ -148,28 +177,6 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         return true;
       }
-
-#if PROTOTYPE
-      public ActorAction? splice(Fork next)
-      {
-        List<Engine.Actions.ActionChain>? preview_ret = null;
-        foreach(var start in m_Options) {
-          if (start is Actions.ActorDest a_dest) {
-            foreach (var end in next.m_Options) {
-              if (end is Actions.ActorOrigin a_origin) {
-                if (a_dest.dest == a_origin.origin) {
-                  var test = new Actions.ActionChain(start, end);
-                  if (!test.IsSemanticParadox()) (preview_ret ?? (preview_ret = new List<Engine.Actions.ActionChain>())).Add(test);
-                }
-              }
-            }
-          }
-        }
-        if (null == preview_ret) return null;
-        if (1 == preview_ret.Count) return preview_ret[0];
-        return new Fork(m_Actor, new List<ActorAction>(preview_ret));
-      }
-#endif
 
       public void splice(Actions.ActionChain wrapped)
       {
@@ -223,6 +230,14 @@ namespace djack.RogueSurvivor.Engine._Action
         return ret;
       }
 
+      private static List<ActorAction>? CanBackwardPlan(ActorAction src)
+      {
+        var act = src as BackwardPlan;
+        if (null == act && src is Actions.ActionChain chain) act = chain.ConcreteAction as BackwardPlan;
+        if (null != act) return act.prequel();
+        return null;
+      }
+
       bool backward_chain()
       {
         int act_cost = m_Candidates.Keys.Min();
@@ -231,8 +246,7 @@ namespace djack.RogueSurvivor.Engine._Action
         var copyin = new List<Actions.ActionChain>();
         int ub = cache.Count;
         while(0 <= --ub) {
-          if (!(cache[ub] is BackwardPlan act)) continue;
-          var setup = act.prequel();
+          var setup = CanBackwardPlan(cache[ub]);
           if (null == setup) continue;
           foreach (var x in setup) {
             var test = new Actions.ActionChain(x, cache[ub]);

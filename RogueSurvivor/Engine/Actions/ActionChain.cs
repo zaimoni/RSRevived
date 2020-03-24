@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             int cost = Map.PathfinderMoveCosts(m_Actions[0]);
             int ub = m_Actions.Count;
             while (1 <= --ub) {
-                int test = Map.PathfinderMoveCosts(m_Actions[ub]);
+                int test = (m_Actions[ub] is _Action.Fork fork) ? fork.CumulativeMoveCost() : Map.PathfinderMoveCosts(m_Actions[ub]);
                 if (int.MaxValue - cost >= test) cost += test;
                 else return int.MaxValue;
             }
@@ -171,10 +171,6 @@ namespace djack.RogueSurvivor.Engine.Actions
             while (src.Count > lb) if (src[lb++] is _Action.Fork) return lb;
             return int.MaxValue;
         }
-
-        public ActorAction? Next { get {
-          return 1<m_Actions.Count ? m_Actions[1] : null;
-        } }
 
         public bool IsSemanticParadox() {
           int ub = m_Actions.Count;
