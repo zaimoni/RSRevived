@@ -19,10 +19,16 @@ namespace djack.RogueSurvivor.Data
 
     public string? FailReason { get { return m_FailReason; } }
     public bool PerformedBy(Actor? a) { return m_Actor == a; }
+    public bool PerformedBy(ActorAction act) { return m_Actor == act.m_Actor; }
 
     protected ActorAction(Actor actor)
     {
       m_Actor = actor;
+    }
+
+    protected ActorAction(ActorAction act)
+    {
+      m_Actor = act.m_Actor;
     }
 
     public abstract bool IsLegal();
@@ -32,6 +38,7 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
 
+    // asymmetric: concrete type instances may not know they are equivalent to meta-type instances
     public virtual bool AreEquivalent(ActorAction? src) { return this == src; } // pointer equality i.e. doesn't actually work when needed
 
     public static bool Is<T>(ActorAction? src) where T:ActorAction { return src is T; }

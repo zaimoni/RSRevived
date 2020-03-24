@@ -15,13 +15,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     Location dest { get; }  // of m_Actor
   }
 
+  internal interface ActorOrigin
+  {
+    Location origin { get; }  // of m_Actor
+  }
+
   internal interface Resolvable
   {
     ActorAction ConcreteAction { get; }
   }
 
   [Serializable]
-  internal class ActionMoveDelta : ActorAction,ActorDest,Resolvable
+  internal class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable
   {
     private readonly Location m_NewLocation;
     private readonly Location m_Origin;
