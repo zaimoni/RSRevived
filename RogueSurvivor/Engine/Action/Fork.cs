@@ -171,11 +171,9 @@ namespace djack.RogueSurvivor.Engine._Action
       }
 #endif
 
-      public void splice(List<ActorAction> src, int lb)
+      public void splice(Actions.ActionChain wrapped)
       {
-        var wrapped = new Actions.ActionChain(src, lb);
-
-        var test = FindFirst(src[lb]);
+        var test = FindFirst(wrapped.ConcreteAction);
         if (int.MaxValue == test.Key) {
           Add(wrapped);
           return;

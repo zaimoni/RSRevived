@@ -137,10 +137,10 @@ namespace djack.RogueSurvivor.Engine.Actions
                   return this;
                 } else {
                   if (m_Actions[i] is _Action.Fork fork_left) {
-                    fork_left.splice(src.m_Actions, i);
+                    fork_left.splice(new ActionChain(src.m_Actions, i));
                     return this;
                   } else if (src.m_Actions[i] is _Action.Fork fork_right) {
-                    fork_right.splice(m_Actions, i);
+                    fork_right.splice(new ActionChain(m_Actions, i));
                     return src;
                   } else {
                     var args = new List<ActorAction>();
