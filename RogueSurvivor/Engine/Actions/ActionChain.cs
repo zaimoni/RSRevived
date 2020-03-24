@@ -59,6 +59,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);
         }
 
+        // chain only cares about full prefix match -- if this returns true, the LHS may be discarded safely
         public override bool AreEquivalent(ActorAction? src)
         {
             int ub = m_Actions.Count;
