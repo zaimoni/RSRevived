@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 #if DEBUG
             if (null == actions || 2 > actions.Count) throw new ArgumentNullException(nameof(actions));
             if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
+            if (actions.Count > _forkBefore(actions)) throw new ArgumentOutOfRangeException(nameof(actions), actions, "fork may only terminate an action chain");
 #endif
             m_Actions = actions;
             m_FailReason = actions[0].FailReason;
@@ -31,7 +32,13 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (!act0.PerformedBy(act1)) throw new ArgumentOutOfRangeException(nameof(act1), act1, "should have same target as " + act0);
 #endif
             var chain1 = act1 as ActionChain;
+#if DEBUG
+            if (null != chain1 && chain1.m_Actions.Count > _forkBefore(chain1.m_Actions)) throw new ArgumentOutOfRangeException(nameof(chain1), chain1, "fork may only terminate an action chain");
+#endif
             if (act0 is ActionChain chain0) {
+#if DEBUG
+                if (chain0.m_Actions.Count >= _forkBefore(chain0.m_Actions)) throw new ArgumentOutOfRangeException(nameof(chain0), chain0, "fork may only terminate an action chain");
+#endif
                 m_Actions = new List<ActorAction>(chain0.m_Actions);
                 if (null != chain1) m_Actions.AddRange(chain1.m_Actions);
                 else m_Actions.Add(act1);
@@ -42,6 +49,19 @@ namespace djack.RogueSurvivor.Engine.Actions
                 m_Actions = new List<ActorAction> { act0, act1 };
             }
             m_FailReason = m_Actions[0].FailReason;
+        }
+
+        public ActionChain(List<ActorAction> src, int lb) : base(src[0])
+        {
+#if DEBUG
+          if (null == src || src.Count <= lb) throw new ArgumentNullException(nameof(src));
+#endif
+          var actions = new List<ActorAction>();
+          while(lb < src.Count) actions.Add(src[lb++]);
+#if DEBUG
+          if (actions.Count > _forkBefore(actions)) throw new ArgumentOutOfRangeException(nameof(actions), actions, "fork may only terminate an action chain");
+#endif
+          m_Actions = actions;
         }
 
         public override bool IsLegal()
@@ -59,15 +79,35 @@ namespace djack.RogueSurvivor.Engine.Actions
             (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);
         }
 
+        public bool ContainsSuffix(List<ActorAction> lhs, int lb)
+        {
+            return _equivalent(lhs, lb, m_Actions, 0);
+        }
+
+        private static bool _equivalent(List<ActorAction> lhs, int lhs_lb, List<ActorAction> rhs, int rhs_lb)
+        {
+#if DEBUG
+            if (lhs_lb >= lhs.Count) throw new ArgumentOutOfRangeException(nameof(lhs_lb), lhs_lb, "past end of " + nameof(lhs));
+            if (rhs_lb >= rhs.Count) throw new ArgumentOutOfRangeException(nameof(rhs_lb), rhs_lb, "past end of " + nameof(rhs));
+#endif
+            if (lhs.Count - lhs_lb < rhs.Count - rhs_lb) return false;
+            while (lhs_lb < lhs.Count && rhs_lb < rhs.Count) {
+              if (lhs[lhs_lb].AreEquivalent(rhs[rhs_lb])) {
+                ++lhs_lb;
+                ++rhs_lb;
+                continue;
+              }
+              if (rhs.Count-1 == rhs_lb && rhs[rhs_lb] is _Action.Fork fork) return fork.ContainsSuffix(lhs, lhs_lb);
+              return false;
+            }
+            return true;
+        }
+
         // chain only cares about full prefix match -- if this returns true, the LHS may be discarded safely
         public override bool AreEquivalent(ActorAction? src)
         {
             int ub = m_Actions.Count;
-            if (src is ActionChain chain1) {
-                if (ub != chain1.m_Actions.Count) return false;
-                while (0 <= --ub) if (!m_Actions[ub].AreEquivalent(chain1.m_Actions[ub])) return false;
-                return true;
-            }
+            if (src is ActionChain chain1) return _equivalent(m_Actions, 0, chain1.m_Actions, 0);
             if (1 == ub) return m_Actions[0].AreEquivalent(src);
             return false;
         }
@@ -82,6 +122,54 @@ namespace djack.RogueSurvivor.Engine.Actions
                 else return int.MaxValue;
             }
             return cost;
+        }
+
+        public ActionChain? splice(ActionChain src)
+        {
+            if (2 > m_Actions.Count) return null;
+            if (2 > src.m_Actions.Count) return null;
+            int i = 0;
+            while (m_Actions[i].AreEquivalent(src.m_Actions[i])) {
+                ++i;
+                if (m_Actions.Count <= i) {
+                  if (src.m_Actions.Count <= i) return null;    // equivalent...return null to avoid thrashing GC further
+                } else if (src.m_Actions.Count <= i) {
+                  return this;
+                } else {
+                  if (m_Actions[i] is _Action.Fork fork_left) {
+                    fork_left.splice(src.m_Actions, i);
+                    return this;
+                  } else if (src.m_Actions[i] is _Action.Fork fork_right) {
+                    fork_right.splice(m_Actions, i);
+                    return src;
+                  } else {
+                    var args = new List<ActorAction>();
+                    args.Add(i + 1 == m_Actions.Count ? m_Actions[i] : new ActionChain(m_Actions, i));
+                    args.Add(i + 1 == src.m_Actions.Count ? src.m_Actions[i] : new ActionChain(src.m_Actions, i));
+                    var fork = new _Action.Fork(m_Actor, args);
+                    if (i + 1 == m_Actions.Count) {
+                      m_Actions[i] = fork;
+                      return this;
+                    } else if (i + 1 == src.m_Actions.Count) {
+                      src.m_Actions[i] = fork;
+                      return src;
+                    } else {
+                      int ub = m_Actions.Count;
+                      m_Actions[i] = fork;
+                      while(i < --ub) m_Actions.RemoveAt(ub);
+                      return this;
+                    }
+                  }
+                }
+            }
+            return null;
+        }
+
+        private static int _forkBefore(List<ActorAction> src)
+        {
+            int lb = 0;
+            while (src.Count > lb) if (src[lb++] is _Action.Fork) return lb;
+            return int.MaxValue;
         }
 
         public ActorAction? Next { get {

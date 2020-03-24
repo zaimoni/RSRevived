@@ -2723,7 +2723,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       actions[0].Perform();
       if (1<actions.Count) {
         actions.RemoveAt(0);
-        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionChain(m_Actor, actions)));
+        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, 1 < actions.Count ? new ActionChain(m_Actor, actions) : actions[0]));
       }
     }
 

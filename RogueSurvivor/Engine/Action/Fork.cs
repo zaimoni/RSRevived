@@ -38,12 +38,13 @@ namespace djack.RogueSurvivor.Engine._Action
         }
       }
 
-      private Fork(Actor actor, List<ActorAction>? legal_path) : base(actor)
+      public Fork(Actor actor, List<ActorAction>? legal_path) : base(actor)
       {
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
         if (null == legal_path) throw new ArgumentNullException(nameof(legal_path));
 #endif
+        foreach (var act in legal_path) Add(act);
       }
 
       public Fork(Actor actor, ActorAction root) : base(actor)
@@ -126,6 +127,28 @@ namespace djack.RogueSurvivor.Engine._Action
         else m_Candidates.Add(cost, new List<ActorAction> { src });
       }
 
+      public ActorAction? Reduce()
+      {
+        if (1 != m_Candidates.Count) return null;
+        var test = m_Candidates.First();
+        return 1==test.Value.Count ? test.Value[0] : null;
+      }
+
+      public bool ContainsSuffix(List<ActorAction> src, int index)
+      {
+        if (index < src.Count) {
+          var test = src[index];
+          foreach(var x in m_Candidates) {
+            foreach(var act in x.Value) {
+              if (act is Actions.ActionChain chain) return chain.ContainsSuffix(src, index);
+              else if (test.AreEquivalent(act)) return index+1==src.Count;
+            }
+          }
+          return false;
+        }
+        return true;
+      }
+
 #if PROTOTYPE
       public ActorAction? splice(Fork next)
       {
@@ -148,11 +171,66 @@ namespace djack.RogueSurvivor.Engine._Action
       }
 #endif
 
+      public void splice(List<ActorAction> src, int lb)
+      {
+        var wrapped = new Actions.ActionChain(src, lb);
+
+        var test = FindFirst(src[lb]);
+        if (int.MaxValue == test.Key) {
+          Add(wrapped);
+          return;
+        }
+
+        var prefix_cache = m_Candidates[test.Key];
+        var prefix_match = prefix_cache[test.Value];
+        prefix_cache.RemoveAt(test.Value);
+        if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
+        if (!(prefix_match is Actions.ActionChain chain)) {
+          Add(wrapped);
+          return;
+        }
+        var replace = chain.splice(wrapped);
+        if (null != replace) Add(replace);
+      }
+
+      private KeyValuePair<int,int> FindFirst(ActorAction src) {
+        var ret = new KeyValuePair<int,int>(int.MaxValue, int.MaxValue);
+        foreach(var x in m_Candidates) {
+          int ub = x.Value.Count;
+          while(0 <= --ub) {
+            var test_act = x.Value[ub];
+            if (test_act is Actions.ActionChain chain) {
+              if (src.AreEquivalent(chain.ConcreteAction)) return new KeyValuePair<int,int>(x.Key, ub);
+              continue;
+            }
+            if (src.AreEquivalent(test_act)) return new KeyValuePair<int,int>(x.Key, ub);
+          }
+        }
+        return ret;
+      }
+
+      private KeyValuePair<int,int> FindFirst(Actions.ActionChain src) {
+        var ret = new KeyValuePair<int,int>(int.MaxValue, int.MaxValue);
+        foreach(var x in m_Candidates) {
+          int ub = x.Value.Count;
+          while(0 <= --ub) {
+            var test_act = x.Value[ub];
+            if (test_act is Actions.ActionChain chain) {
+              if (src.ConcreteAction.AreEquivalent(chain.ConcreteAction)) return new KeyValuePair<int,int>(x.Key, ub);
+              continue;
+            }
+            if (src.ConcreteAction.AreEquivalent(test_act)) return new KeyValuePair<int,int>(x.Key, ub);
+          }
+        }
+        return ret;
+      }
+
       bool backward_chain()
       {
         int act_cost = m_Candidates.Keys.Min();
         var cache = m_Candidates[act_cost];
-        var working = new Dictionary<int, List<Actions.ActionChain>>();
+        var working = new List<Actions.ActionChain>();
+        var copyin = new List<Actions.ActionChain>();
         int ub = cache.Count;
         while(0 <= --ub) {
           if (!(cache[ub] is BackwardPlan act)) continue;
@@ -160,45 +238,61 @@ namespace djack.RogueSurvivor.Engine._Action
           if (null == setup) continue;
           foreach (var x in setup) {
             var test = new Actions.ActionChain(x, cache[ub]);
-            if (!test.IsSemanticParadox()) _add(working, test);
+            if (!test.IsSemanticParadox()) working.Add(test);
           }
           if (0 >= working.Count) {
             cache.RemoveAt(ub);
             continue;
           }
-          // assuming increasing cost; reject duplicates
-          var doomed = new Zaimoni.Data.Stack<int>(stackalloc int[working.Count]);
-          int in_scan;
-          foreach(var x in working) {
-            if (!m_Candidates.TryGetValue(x.Key, out var examining)) continue;
-            bool duplicate = false;
-            in_scan = x.Value.Count;
-            while(0 <= --in_scan) {
-              var test_act = x.Value[in_scan];
-              int scan = examining.Count;
-              while(0 <= --scan) {
-                if (test_act.AreEquivalent(examining[scan])) {
-                  duplicate = true;
-                  break;
-                }
-              }
-              if (duplicate) {
-                x.Value.RemoveAt(in_scan);
-                continue;
-              }
-//            if (int.MaxValue > forkable) { /* ... */ }
+          int in_scan = working.Count;
+          while(0 <= --in_scan) {   // trivial vs fork processing
+            var test_act = working[in_scan];
+            var test = FindFirst(test_act);
+            if (int.MaxValue == test.Key) {
+              copyin.Add(test_act);
+              working.RemoveAt(in_scan);
+              continue;
             }
-            if (0 >= x.Value.Count) doomed.push(x.Key);
+            var prefix_cache = m_Candidates[test.Key];
+            var prefix_match = prefix_cache[test.Value];
+            if (!(prefix_match is Actions.ActionChain chain)) {
+              copyin.Add(test_act);
+              working.RemoveAt(in_scan);
+              prefix_cache.RemoveAt(test.Value);
+              if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
+              continue;
+            }
+            if (test_act.AreEquivalent(prefix_match)) {
+              working.RemoveAt(in_scan);
+              continue;
+            }
           }
-          in_scan = doomed.Count;
-          while(0 <= in_scan) working.Remove(doomed[in_scan]);
-          if (0 >= working.Count) {
-            cache.RemoveAt(ub);
-            continue;
+          cache.RemoveAt(ub);
+          if (0 >= cache.Count) m_Candidates.Remove(act_cost);
+          in_scan = working.Count;
+          while(0 <= --in_scan) {   // fork processing
+            var test_act = working[in_scan];
+            var test = FindFirst(test_act);
+#if DEBUG
+            if (int.MaxValue == test.Key) throw new InvalidProgramException("should not have disappeared");
+#endif
+            var prefix_cache = m_Candidates[test.Key];
+            var prefix_match = prefix_cache[test.Value];
+            var chain = prefix_match as Actions.ActionChain;
+#if DEBUG
+            if (null == chain) throw new InvalidProgramException("no longer spliceable");
+#endif
+            var new_chain = test_act.splice(chain);
+            if (null != new_chain) {
+              prefix_cache.RemoveAt(test.Value);
+              if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
+              Add(new_chain);
+            };
           }
+          foreach(var chain in copyin) Add(chain);
+          return true;
         }
-        if (0 >= cache.Count) m_Candidates.Remove(act_cost);
-        return 0 < m_Candidates.Count;
+        return false;
       }
     }
 }
