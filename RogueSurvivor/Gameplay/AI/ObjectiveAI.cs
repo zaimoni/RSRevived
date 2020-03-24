@@ -2720,11 +2720,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void ExecuteActionChain(List<ActorAction> actions)
     {
-      actions[0].Perform();
-      if (1<actions.Count) {
-        actions.RemoveAt(0);
-        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, 1 < actions.Count ? new ActionChain(m_Actor, actions) : actions[0]));
-      }
+      var act = actions[0];
+      if (act is Resolvable resolve) act = resolve.ConcreteAction;
+      if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
+      act.Perform();
+      if (!(actions[0] is ActorDest) || !actions[0].IsPerformable()) actions.RemoveAt(0);
+      if (1<=actions.Count)
+        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, 1 < actions.Count ? new ActionChain(m_Actor, actions)
+                                                                                                                       : actions[0]));
     }
 
     public void ExecuteActionFork(List<ActorAction> actions)
