@@ -47,7 +47,6 @@ namespace djack.RogueSurvivor.Engine
     public GameMode GameMode;
     public int LastTurnPlayerActed;
     public bool PlayerKnows_CHARUndergroundFacilityLocation;
-    public bool PlayerKnows_TheSewersThingLocation;
     public int ScriptStage_PoliceStationPrisoner;
     public int ScriptStage_PoliceCHARrelations;
     public int ScriptStage_HospitalPowerup;
@@ -85,11 +84,11 @@ namespace djack.RogueSurvivor.Engine
       s_seed = info.GetInt32("Seed");
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
-      PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
       ActorModel.Load(info,context);
       Actor.Load(info,context);
       Rules.Get.Load(info,context);
+      PlayerController.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
       RogueGame.Load(info, context);
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
@@ -112,11 +111,11 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("Seed",s_seed);
       info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
-      info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
       Actor.Save(info, context);
       Rules.Get.Save(info,context);
+      PlayerController.Save(info,context);
       info.AddValue("World",World,typeof(World));
       RogueGame.Save(info, context);
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
@@ -155,7 +154,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       PlayerKnows_CHARUndergroundFacilityLocation = false;
-      PlayerKnows_TheSewersThingLocation = false;
       ScriptStage_PoliceStationPrisoner = 0;
       ScriptStage_PoliceCHARrelations = 0;
       ScriptStage_HospitalPowerup = 0;

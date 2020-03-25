@@ -8,7 +8,9 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Linq;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Color = System.Drawing.Color;
@@ -20,12 +22,62 @@ using ActionSequence = djack.RogueSurvivor.Engine.Actions.ActionSequence;
 
 namespace djack.RogueSurvivor.Data
 {
+  internal interface EventUnconditional // maybe more general
+  {
+    bool Expire(Actor viewpoint);
+  }
+
+  [Serializable]
+  internal class UIOnSighting : EventUnconditional
+  {
+    private bool expired = false;
+    private readonly Actor who;
+    private readonly string msg;
+    private readonly string? music;
+
+    public UIOnSighting(Actor _who, string _msg, string? _music = null)
+    {
+        who = _who;
+        msg = _msg;
+        music = _music;
+    }
+
+    public bool Expire(Actor viewpoint)
+    {
+        if (expired || who.IsDead) return true;
+        if (null == viewpoint.Sees(who)) return false;
+        expired = true; // just in case of severe multithreading bug
+        (viewpoint.Controller as PlayerController)?.InstallAfterAction(new UITracking(who));
+        var game = RogueForm.Game;
+        game.PlayEventMusic(music);
+        game.ClearMessages();
+        game.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        game.AddMessagePressEnter();
+        return true;
+    }
+  }
+
+  internal class UITracking : EventUnconditional
+  {
+    private bool expired = false;
+    private readonly Actor who;
+
+    public UITracking(Actor _who) { who = _who; }
+
+    public bool Expire(Actor viewpoint) { return who.IsDead; }
+
+    public bool IsTarget(Actor x) { return x == who; }
+  }
+
   [Serializable]
   internal class PlayerController : ObjectiveAI
     {
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
     private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
+
+    private static List<EventUnconditional>? s_BeforeAction;
+    private static List<EventUnconditional>? s_AfterAction;
 
 	public PlayerController(Actor src) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
@@ -110,6 +162,65 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
+    public static void Reset()
+    {
+      s_BeforeAction = new List<EventUnconditional>();
+      // set up cosmetic UI handlers
+      s_BeforeAction.Add(new UIOnSighting(Session.Get.UniqueActors.TheSewersThing.TheActor, "Hey! What's that THING!?", Gameplay.GameMusics.FIGHT));
+      s_BeforeAction.Add(new UIOnSighting(Session.Get.UniqueActors.JasonMyers.TheActor, "Nice axe you have there!"));
+
+      s_AfterAction = new List<EventUnconditional>(s_BeforeAction); // all cosmetic handlers should be safe to execute both before/after action
+      // set up material UI handlers
+    }
+
+#region Session save/load assistants
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+      info.read_nullsafe(ref s_BeforeAction, nameof(s_BeforeAction));
+      info.read_nullsafe(ref s_AfterAction,  nameof(s_AfterAction));
+    }
+
+    static public void Save(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue(nameof(s_BeforeAction), s_BeforeAction);
+      info.AddValue(nameof(s_AfterAction),  s_AfterAction);
+    }
+#endregion
+
+    // event handlers use countdown loop to allow safely adding event handlers from within an event handler
+    public void BeforeAction()
+    {
+      if (null != s_BeforeAction) {
+        int ub = s_BeforeAction.Count;
+        while(0 <= --ub) {
+          if (s_BeforeAction[ub].Expire(m_Actor)) s_BeforeAction.RemoveAt(ub);
+        }
+        if (0 >= s_BeforeAction.Count) s_BeforeAction = null;
+      }
+    }
+
+    public void AfterAction()
+    {
+      if (null != s_AfterAction) {
+        int ub = s_AfterAction.Count;
+        while(0 <= --ub) {
+          if (s_AfterAction[ub].Expire(m_Actor)) s_AfterAction.RemoveAt(ub);
+        }
+        if (0 >= s_AfterAction.Count) s_AfterAction = null;
+      }
+    }
+
+    public void InstallAfterAction(EventUnconditional e)
+    {
+      (s_AfterAction ?? (s_AfterAction = new List<EventUnconditional>())).Add(e);
+    }
+
+    public bool KnowsWhere(Actor a)
+    {
+      if (!a.IsDead && null != s_AfterAction) foreach(var e in s_AfterAction) if (e is UITracking track && track.IsTarget(a)) return true;
+      return false;
+    }
+
     public override List<Percept> UpdateSensors()
     {
       var ret = m_LOSSensor.Sense();

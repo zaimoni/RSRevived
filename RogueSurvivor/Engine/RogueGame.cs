@@ -619,6 +619,15 @@ namespace djack.RogueSurvivor.Engine
       if (s_Options.IsAnimDelayOn) m_UI.UI_Wait(msecs);
     }
 
+    public void PlayEventMusic(string music, bool loop=false)
+    {
+      if (!string.IsNullOrEmpty(music)) {
+        m_MusicManager.Stop();
+        if (loop) m_MusicManager.PlayLooping(music, MusicPriority.PRIORITY_EVENT);
+        else      m_MusicManager.Play(music, MusicPriority.PRIORITY_EVENT);
+      }
+    }
+
     public void Run()
     {
             InitDirectories();
@@ -2827,6 +2836,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       pc.SparseReset();
       pc.UpdateSensors();
+      pc.BeforeAction();
       m_Player = player;
       m_PlayerInTurn = player;
       SetCurrentMap(player.Location);  // multi-PC support
@@ -3474,8 +3484,8 @@ namespace djack.RogueSurvivor.Engine
                 gx += 350;
               }
             }
-            if (Session.Get.PlayerKnows_TheSewersThingLocation && (entryMap == Session.Get.UniqueActors.TheSewersThing.TheActor.Location.Map.District.EntryMap && !Session.Get.UniqueActors.TheSewersThing.TheActor.IsDead))
-            {
+            var vip = Session.Get.UniqueActors.TheSewersThing.TheActor;
+            if ((m_Player.Controller as PlayerController).KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
               m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
               if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
@@ -12155,6 +12165,9 @@ namespace djack.RogueSurvivor.Engine
       }
       Session.Get.UniqueActors.init_UnboundUniques(m_TownGenerator);
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
+
+      PlayerController.Reset(); // not safe to use before this point (relies on unique actor/item data)
+
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
           if (isVerbose) {
@@ -12790,14 +12803,7 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
         }
       }
-      if (!Session.Get.PlayerKnows_TheSewersThingLocation && null != player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor)) {
-          Session.Get.PlayerKnows_TheSewersThingLocation = true;
-          m_MusicManager.Stop();
-          m_MusicManager.PlayLooping(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
-          ClearMessages();
-          AddMessage(new Data.Message("Hey! What's that THING!?", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-          AddMessagePressEnter();
-      }
+      (player.Controller as PlayerController)?.AfterAction();
       // The Prisoner Who Should Not Be should only respond to civilian players; other factions should either be hostile, or colluding on
       // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
       // Acceptable factions are civilians and survivors.
@@ -12879,12 +12885,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      var vip = Session.Get.UniqueActors.JasonMyers.TheActor;
-      if (!player.ActorScoring.HasSighted(vip.Model.ID) && null != player.Sees(vip)) {
-            ClearMessages();
-            AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-            AddMessagePressEnter();
-      }
       if (District.IsSubwayMap(p_map)) {
         var badge = Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem;
         if (   badge.IsEquipped

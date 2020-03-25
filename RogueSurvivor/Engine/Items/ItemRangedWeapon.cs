@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
 #if PROTOTYPE
-    public override ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Ammo); } }
+    public override Data.ItemStruct Struct { get { return new Data.ItemStruct(Model.ID, Ammo); } }
 #endif
 
     static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
