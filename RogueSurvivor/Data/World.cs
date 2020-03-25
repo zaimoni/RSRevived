@@ -569,15 +569,16 @@ restart:
     {
       DoForAllActors(a => {
         var err = a.Inventory?._HasZeroQuantityOrDuplicate();
-        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name + err +": " + a.Inventory);
+        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + a.Inventory);
       });
     }
 
-    private void _RejectGroundInventoryZero(List<string> errors)
+    private void _RejectGroundInventoryZero(List<string> errors)    // multi-thread sensitive
     {
       DoForAllGroundInventories((loc,inv) => {
+        if (loc.Map.District == (Engine.RogueGame.IsSimulating ? m_PlayerDistrict : m_SimDistrict)) return;
         var err = inv._HasZeroQuantityOrDuplicate();
-        if (!string.IsNullOrEmpty(err))  errors.Add(loc + err +": " + inv);
+        if (!string.IsNullOrEmpty(err)) errors.Add(loc + ": " + err +": " + inv);
       });
     }
 

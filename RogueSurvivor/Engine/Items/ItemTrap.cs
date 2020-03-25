@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool IsTriggered {   // savefile break \todo convert to member variable, or actually use access control in the setter
       get { return m_IsTriggered; }
-      set { m_IsTriggered = value; }
+      set { m_IsTriggered = value; }    // can't deactivate because that eliminates the owner information
     }
 
 
