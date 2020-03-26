@@ -38,6 +38,10 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsPerformable() { return IsLegal(); }
     public abstract void Perform();
 
+    // stop processing just for containing this action in the plan -- we want to re-plan or fail over to a reflex ai
+    // want to run IsPerformable and/or IsLegal first so that gets a chance to trigger auto-delete for the Fork class
+    public virtual bool Abort() { return false; }
+
     // asymmetric: concrete type instances may not know they are equivalent to meta-type instances
     public virtual bool AreEquivalent(ActorAction? src) { return this == src; } // pointer equality i.e. doesn't actually work when needed
 

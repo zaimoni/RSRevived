@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 
@@ -11,7 +9,7 @@ using djack.RogueSurvivor.Data;
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class TakeFromLocation : ActorAction    // similar to ActionTake
+    class TakeFromLocation : ActorAction,BackwardPlan    // similar to ActionTake
     {
         private readonly Gameplay.GameItems.IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
@@ -39,14 +37,12 @@ namespace djack.RogueSurvivor.Engine._Action
             var denorm = m_Actor.Location.Map.Denormalize(in m_loc);
             if (null == denorm || !stacks.ContainsKey(denorm.Value.Position)) return false;
             m_Item = m_loc.Items.GetBestDestackable(Models.Items[(int)m_ID]);
-            return true;
+            return null != m_Item;
         }
 
         public override void Perform()
         {
-            m_Actor.Inventory.RejectCrossLink(m_loc.Items!);
-            RogueForm.Game.DoTakeItem(m_Actor, m_loc, m_Item!);
-            m_loc.Items?.RejectCrossLink(m_Actor.Inventory);
+            RogueForm.Game.DoTakeItem(m_Actor, m_loc, m_Item!); // \todo fix should be the more general handling
         }
 
         public override bool AreEquivalent(ActorAction? src)
@@ -54,19 +50,36 @@ namespace djack.RogueSurvivor.Engine._Action
             return src is TakeFromLocation alt && m_ID == alt.m_ID && m_loc == alt.m_loc;
         }
 
-        public List<Location> origin_range {
+        public override bool Abort() { return m_Actor.Controller.CanSee(m_loc); }   // fail over to in-sight item processing
+
+        private List<Location> origin_range {
             get {
-                var ret = new List<Location> { m_loc };
+                var ret = new List<Location>();
+                if (m_Actor.CanEnter(m_loc)) ret.Add(m_loc);    // future-proofing
                 // handle containers (will go obsolete eventually)
                 var obj = m_loc.MapObject;
                 if (null != obj && obj.IsContainer) {
                     foreach (var pt in m_loc.Position.Adjacent()) {
                         var test = new Location(m_loc.Map, pt);
-                        if (Map.Canonical(ref test)) ret.Add(test);
+                        if (m_Actor.CanEnter(ref test)) ret.Add(test);
                     }
                 }
                 return ret;
             }
+        }
+
+        public List<ActorAction>? prequel()
+        {
+            List<ActorAction>? ret = null;
+            var ok_dest = origin_range;
+            foreach (var dest in ok_dest) {
+                foreach (var pt in dest.Position.Adjacent()) {
+                    var test = new Location(m_loc.Map, pt);
+                    if (m_Actor.CanEnter(ref test) && !ok_dest.Contains(test))
+                        (ret ?? (ret = new List<ActorAction>())).Add(new Actions.ActionMoveDelta(m_Actor, dest, test));
+                }
+            }
+            return ret;
         }
 
     }

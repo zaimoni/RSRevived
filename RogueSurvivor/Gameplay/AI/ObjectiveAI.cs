@@ -979,6 +979,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != act) return act;
       var update_path = ForceLambdaPath();
       HashSet<Point> inv_dests(Map m) {
+        if (Session.Get.HasZombiesInSewers && CombatUnready() && m == m.District.SewersMap) return null;
         var ret = WhereIs(critical, m);
         if (null == ret || 0 >= ret.Count) return null;
         update_path.StageInventory(m,ret);

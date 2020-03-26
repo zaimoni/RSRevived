@@ -79,6 +79,12 @@ namespace djack.RogueSurvivor.Engine.Actions
             (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);
         }
 
+        public override bool Abort()
+        {
+            foreach (var act in m_Actions) if (act.Abort()) return true;
+            return false;
+        }
+
         public bool ContainsSuffix(List<ActorAction> lhs, int lb)
         {
             return _equivalent(lhs, lb, m_Actions, 0);

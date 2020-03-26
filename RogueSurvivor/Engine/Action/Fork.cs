@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 
@@ -31,11 +29,13 @@ namespace djack.RogueSurvivor.Engine._Action
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
         if (null == legal_path) throw new ArgumentNullException(nameof(legal_path));
 #endif
-        foreach(var x in legal_path) {
-          if (x.Value is Actions.ActorDest) Add(new Actions.ActionMoveDelta(m_Actor, x.Key));
-          else if (x.Value is Actions.Resolvable act) Add(act.ConcreteAction);
+        void record(KeyValuePair<Location, ActorAction> x) {
+          if (x.Value is Actions.ActorDest) Add(x.Value is Actions.ActorOrigin ? x.Value : new Actions.ActionMoveDelta(m_Actor, x.Key));
+          else if (x.Value is Actions.Resolvable act) record(new KeyValuePair<Location, ActorAction>(x.Key, act.ConcreteAction));
           else Add(x.Value);
         }
+
+        foreach(var x in legal_path) record(x);
       }
 
       public Fork(Actor actor, List<ActorAction>? legal_path) : base(actor)
@@ -111,6 +111,12 @@ namespace djack.RogueSurvivor.Engine._Action
       {
         int act_cost = m_Candidates.Keys.Min();
         (m_Actor.Controller as ObjectiveAI).ExecuteActionFork(m_Candidates[act_cost]);
+      }
+
+      public override bool Abort()  // \todo want to block double-processing to conserve CPU
+      {
+        foreach(var x in m_Candidates) foreach(var act in x.Value) if (act.Abort()) return true;
+        return false;
       }
 
       // assume the candidate indexing is mostly correct
