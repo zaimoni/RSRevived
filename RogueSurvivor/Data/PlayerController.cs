@@ -59,7 +59,6 @@ namespace djack.RogueSurvivor.Data
 
   internal class UITracking : EventUnconditional
   {
-    private bool expired = false;
     private readonly Actor who;
 
     public UITracking(Actor _who) { who = _who; }

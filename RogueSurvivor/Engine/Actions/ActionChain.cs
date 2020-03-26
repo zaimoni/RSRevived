@@ -172,15 +172,30 @@ namespace djack.RogueSurvivor.Engine.Actions
             return int.MaxValue;
         }
 
+        public bool RejectOrigin(Location origin, int i)
+        {
+          int ub = m_Actions.Count;
+#if DEBUG
+          if (ub <= i) throw new ArgumentOutOfRangeException(nameof(i), i, "not less than strict upper bound "+ub);
+#endif
+          do {
+            var act = m_Actions[i];
+            if (act is ActorDest a_dest) {
+              if (a_dest.dest == origin) return true;
+            } else if (act is _Action.Fork fork) {
+              var test = fork.RejectOrigin(origin);
+              if (null == test) return true;
+              m_Actions[i] = test;
+              return false;
+            } else return false;
+          } while(ub > ++i);
+          return false;
+        }
+
         public bool IsSemanticParadox() {
           int ub = m_Actions.Count;
           if (2 > ub) return false; // no context
-          if (m_Actions[0] is ActorOrigin a_origin) {
-            while(1 <= --ub) {
-              if (m_Actions[ub] is ActorDest a_dest && a_dest.dest == a_origin.origin) return true; // path is looped
-            }
-//          ub = m_Actions.Count;
-          }
+          if (m_Actions[0] is ActorOrigin a_origin) RejectOrigin(a_origin.origin, 1);   // don't avoidably loop (may fix terminal fork)
           return false;
         }
     }

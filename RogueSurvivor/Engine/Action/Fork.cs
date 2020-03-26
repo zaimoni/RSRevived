@@ -214,22 +214,6 @@ retry:
         return ret;
       }
 
-      private KeyValuePair<int,int> FindFirst(Actions.ActionChain src) {
-        var ret = new KeyValuePair<int,int>(int.MaxValue, int.MaxValue);
-        foreach(var x in m_Candidates) {
-          int ub = x.Value.Count;
-          while(0 <= --ub) {
-            var test_act = x.Value[ub];
-            if (test_act is Actions.ActionChain chain) {
-              if (src.ConcreteAction.AreEquivalent(chain.ConcreteAction)) return new KeyValuePair<int,int>(x.Key, ub);
-              continue;
-            }
-            if (src.ConcreteAction.AreEquivalent(test_act)) return new KeyValuePair<int,int>(x.Key, ub);
-          }
-        }
-        return ret;
-      }
-
       private static List<ActorAction>? CanBackwardPlan(ActorAction src)
       {
         var act = src as BackwardPlan;
@@ -243,68 +227,45 @@ retry:
         int act_cost = m_Candidates.Keys.Min();
         var cache = m_Candidates[act_cost];
         var working = new List<Actions.ActionChain>();
-        var copyin = new List<Actions.ActionChain>();
         int ub = cache.Count;
         while(0 <= --ub) {
-          var setup = CanBackwardPlan(cache[ub]);
-          if (null == setup) continue;
+          var dest = cache[ub];
+          var setup = CanBackwardPlan(dest);
+          if (null == setup) throw new ArgumentNullException(nameof(setup));    // invariant failure
           foreach (var x in setup) {
-            var test = new Actions.ActionChain(x, cache[ub]);
+            var test = new Actions.ActionChain(x, dest);
             if (!test.IsSemanticParadox()) working.Add(test);
           }
-          if (0 >= working.Count) {
-            cache.RemoveAt(ub);
-            continue;
-          }
-          int in_scan = working.Count;
-          while(0 <= --in_scan) {   // trivial vs fork processing
-            var test_act = working[in_scan];
-            var test = FindFirst(test_act);
-            if (int.MaxValue == test.Key) {
-              copyin.Add(test_act);
-              working.RemoveAt(in_scan);
-              continue;
-            }
-            var prefix_cache = m_Candidates[test.Key];
-            var prefix_match = prefix_cache[test.Value];
-            if (!(prefix_match is Actions.ActionChain chain)) {
-              copyin.Add(test_act);
-              working.RemoveAt(in_scan);
-              prefix_cache.RemoveAt(test.Value);
-              if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
-              continue;
-            }
-            if (test_act.AreEquivalent(prefix_match)) {
-              working.RemoveAt(in_scan);
-              continue;
-            }
-          }
           cache.RemoveAt(ub);
-          if (0 >= cache.Count) m_Candidates.Remove(act_cost);
-          in_scan = working.Count;
-          while(0 <= --in_scan) {   // fork processing
-            var test_act = working[in_scan];
-            var test = FindFirst(test_act);
-#if DEBUG
-            if (int.MaxValue == test.Key) throw new InvalidProgramException("should not have disappeared");
-#endif
-            var prefix_cache = m_Candidates[test.Key];
-            var prefix_match = prefix_cache[test.Value];
-            var chain = prefix_match as Actions.ActionChain;
-#if DEBUG
-            if (null == chain) throw new InvalidProgramException("no longer spliceable");
-#endif
-            var new_chain = test_act.splice(chain);
-            if (null != new_chain) {
-              prefix_cache.RemoveAt(test.Value);
-              if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
-              Add(new_chain);
-            };
-          }
-          foreach(var chain in copyin) Add(chain);
+          if (0 >= working.Count) continue;
+          foreach(var chain in working) splice(chain);
           return true;
         }
         return false;
+      }
+
+      public ActorAction? RejectOrigin(Location origin)
+      {
+        List<ActorAction>? args = null;
+        bool all_there = true;
+        foreach(var x in m_Candidates) {
+          foreach (var act in x.Value) {
+            if (act is Actions.ActorDest a_dest) {
+              if (a_dest.dest == origin) {
+                all_there = false;
+                continue;
+              }
+            } else if (act is Actions.ActionChain chain && chain.RejectOrigin(origin, 0)) { 
+              all_there = false;
+              continue;
+            }
+            (args ?? (args = new List<ActorAction>())).Add(act);
+          }
+        }
+        if (all_there) return this;
+        if (null == args) return null;
+        if (1 == args.Count) return args[0];
+        return new Fork(m_Actor, args);
       }
     }
 }
