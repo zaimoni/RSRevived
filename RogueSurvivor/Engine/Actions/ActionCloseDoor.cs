@@ -17,12 +17,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly DoorWindow m_Door;
     private readonly bool m_IsFreeAction;
 
-    public ActionCloseDoor(Actor actor, DoorWindow door, bool free = false)
-      : base(actor)
+    public ActionCloseDoor(Actor actor, DoorWindow door, bool free = false) : base(actor)
     {
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       m_Door = door;
       m_IsFreeAction = free;
     }

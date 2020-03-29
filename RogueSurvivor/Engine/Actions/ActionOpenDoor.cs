@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,12 +15,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public DoorWindow door { get { return m_Door; } }
 
-    public ActionOpenDoor(Actor actor, DoorWindow door)
-      : base(actor)
+    public ActionOpenDoor(Actor actor, DoorWindow door) : base(actor)
     {
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       m_Door = door;
     }
 
@@ -29,6 +24,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       return m_Actor.CanOpen(m_Door, out m_FailReason);
     }
+
+    // would need IsPerformable if could be saved to hard drive
 
     public override void Perform()
     {

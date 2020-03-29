@@ -206,6 +206,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected bool _rejected_backtrack = false;
     [NonSerialized] protected HashSet<Location> _current_goals = null;
     [NonSerialized] protected CallChain _caller = CallChain.NONE;
+    [NonSerialized] protected ActorAction? _staged_action = null;   // should be a free action
 #if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
@@ -282,6 +283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    public void Stage(ActorAction act) { _staged_action = act; }
 
     protected override void ResetAICache()
     {
@@ -2126,6 +2128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           }
         }
+        if (_staged_action is ActionCloseDoor close && a_dest.dest == close.Door.Location) _staged_action = null;   // 2020-03-29: do not self-block
       } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
         if (null != e) {    // don't dawdle on the exit itself
           var act = BehaviorMakeTime();
@@ -2134,6 +2137,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new InvalidOperationException("attempting on exit: "+x+"\nmoves: "+_legal_path.to_s());
 #endif
         }
+      }
+      // clear staged actions here
+      if (null != _staged_action) {
+        if (_staged_action.IsPerformable() && !VetoAction(_staged_action)) _staged_action.Perform();
+        _staged_action = null;
       }
       return null;
     }
@@ -2151,7 +2159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // refine the historical behavior to not happen in-combat (bad for CHAR base assault, good for most other combat situations)
         if (m_Actor.Model.DefaultController==typeof(CivilianAI)) {
           if (m_Actor.Location.MapObject is DoorWindow door && door.IsOpen && !InCombat) {
-            Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionCloseDoor(m_Actor, door, true)));
+            Objectives.Insert(0,new Goals.StageAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionCloseDoor(m_Actor, door, true)));
             return;
           }
         }
