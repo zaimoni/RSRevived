@@ -4,6 +4,7 @@ using System.Linq;
 
 using djack.RogueSurvivor.Data;
 
+using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 #nullable enable
@@ -11,11 +12,6 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 // namespace Action conflicts with C# STL Action<>
 namespace djack.RogueSurvivor.Engine._Action
 {
-    internal interface BackwardPlan
-    {
-      List<ActorAction>? prequel();
-    }
-
     // Case study in Many-Worlds interpretation of Quantum Mechanics.
     [Serializable]
     class Fork : ActorAction

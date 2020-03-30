@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using djack.RogueSurvivor.Data;
+
+using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
 
 #nullable enable
 
@@ -77,6 +78,22 @@ namespace djack.RogueSurvivor.Engine._Action
                     var test = new Location(m_loc.Map, pt);
                     if (m_Actor.CanEnter(ref test) && !ok_dest.Contains(test))
                         (ret ?? (ret = new List<ActorAction>())).Add(new Actions.ActionMoveDelta(m_Actor, dest, test));
+                }
+            }
+            return ret;
+        }
+
+        public Dictionary<ActorAction,int>? backward()
+        {
+            Dictionary<ActorAction, int>? ret = null;
+            var ok_dest = origin_range;
+            foreach (var dest in ok_dest) {
+                foreach (var pt in dest.Position.Adjacent()) {
+                    var test = new Location(m_loc.Map, pt);
+                    if (m_Actor.CanEnter(ref test) && !ok_dest.Contains(test)) {
+                        var move = new Actions.ActionMoveDelta(m_Actor, dest, test);
+                        (ret ?? (ret = new Dictionary<ActorAction, int>())).Add(move, Map.PathfinderMoveCosts(move));
+                    }
                 }
             }
             return ret;
