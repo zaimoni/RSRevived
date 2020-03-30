@@ -9,11 +9,13 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBump : ActorAction, Resolvable
+  internal class ActionBump : ActorAction, Resolvable, ActorDest
     {
     private readonly Direction m_Direction;
     private readonly Location m_NewLocation;
     private readonly ActorAction m_ConcreteAction;
+
+    public Location dest { get { return m_NewLocation; } }
 
     public Direction Direction { get { return m_Direction; } }
     public ActorAction ConcreteAction { get { return m_ConcreteAction; } }

@@ -2140,7 +2140,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // clear staged actions here
       if (null != _staged_action) {
-        if (_staged_action.IsPerformable() && !VetoAction(_staged_action)) _staged_action.Perform();
+        if (_staged_action.IsPerformable() && !VetoAction(_staged_action)) {
+          if (_staged_action is ActionCloseDoor close && x is ActionCloseDoor o_close && close.Door.Location==o_close.Door.Location) {
+            // double close.  Use ours (it's free)
+            _staged_action = null;
+            return close;
+          }
+          _staged_action.Perform();
+        }
         _staged_action = null;
       }
       return null;
