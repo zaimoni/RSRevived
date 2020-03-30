@@ -1894,7 +1894,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
+        var bump = Rules.IsBumpableFor(m_Actor, in location);
+        if (!IsValidFleeingAction(bump)) return float.NaN;
+#if DEBUG
+        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+#else
+        if (!bump.IsPerformable()) return float.NaN;
+#endif
         float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
@@ -2628,8 +2634,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
-        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
+        var bump = Rules.IsBumpableFor(m_Actor, in loc);
+        if (!IsValidMoveTowardGoalAction(bump)) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
+#if DEBUG
+        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+#else
+        if (!bump.IsPerformable()) return float.NaN;
+#endif
 
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;

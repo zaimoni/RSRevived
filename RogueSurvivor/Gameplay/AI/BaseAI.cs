@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
         var alt = ai.RewriteAction(actorAction);
-        if (alt?.IsPerformable() ?? false) actorAction = alt;
+        if (null!=alt && alt.IsPerformable()) actorAction = alt;
         ai.ScheduleFollowup(actorAction);
       }
       ResetAICache();
@@ -187,10 +187,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
         if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
-        if (!IsValidWanderAction(Rules.IsBumpableFor(m_Actor, in next))) return float.NaN;
+        var bump = Rules.IsBumpableFor(m_Actor, in next);
+        if (!IsValidWanderAction(bump)) return float.NaN;
         if (!Map.Canonical(ref next)) return float.NaN;
 #if DEBUG
-        if (m_Actor.IsDebuggingTarget && dir==Direction.N) throw new InvalidOperationException("tracing");
+        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump"); 
+#else
+        if (!bump.IsPerformable()) return float.NaN;
 #endif
 
         int score = 0;
@@ -423,7 +426,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var leader = m_Actor.LiveLeader;
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, in location))) return float.NaN;
+        var bump = Rules.IsBumpableFor(m_Actor, in location);
+        if (!IsValidFleeingAction(bump)) return float.NaN;
+#if DEBUG
+        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+#else
+        if (!bump.IsPerformable()) return float.NaN;
+#endif
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
@@ -828,8 +837,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
-        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, in loc))) return float.NaN;
+        var bump = Rules.IsBumpableFor(m_Actor, in loc);
+        if (!IsValidMoveTowardGoalAction(bump)) return float.NaN;
         if (!Map.Canonical(ref loc)) return float.NaN;
+#if DEBUG
+        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+#else
+        if (!bump.IsPerformable()) return float.NaN;
+#endif
 
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;

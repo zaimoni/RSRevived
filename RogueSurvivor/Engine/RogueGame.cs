@@ -5624,6 +5624,8 @@ namespace djack.RogueSurvivor.Engine
       Location loc_checkpoint = aiActor.Location;
 #endif
       var actorAction = aiActor.Controller.GetAction();
+      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
+      if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
       if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);
         if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;
@@ -5632,8 +5634,6 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString()+"; starting AP "+aiActor.ActionPoints);
 #endif
-      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
-      if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
       actorAction.Perform();
 #if DEBUG
       if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor || actorAction is ActionSay)) {
@@ -7628,8 +7628,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
-      ActionBump actionBump = new ActionBump(player, direction);
-      if (actionBump.IsLegal()) {
+      var actionBump = new ActionBump(player, direction);
+      if (actionBump.IsPerformable()) {
         actionBump.Perform();
         return true;
       }

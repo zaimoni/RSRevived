@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
@@ -14,24 +15,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_NewLocation;
     private readonly ActorAction m_ConcreteAction;
 
-    public Direction Direction {
-      get {
-        return m_Direction;
-      }
-    }
+    public Direction Direction { get { return m_Direction; } }
+    public ActorAction ConcreteAction { get { return m_ConcreteAction; } }
 
-    public ActorAction ConcreteAction {
-      get {
-        return m_ConcreteAction;
-      }
-    }
-
-    public ActionBump(Actor actor, Direction direction)
-      : base(actor)
+    public ActionBump(Actor actor, Direction direction) : base(actor)
     {
       m_Direction = direction;
       m_NewLocation = actor.Location + direction;   // tentatively excluding this ActionBump class from IsPerformable upgrade due to this
       m_ConcreteAction = Rules.IsBumpableFor(m_Actor, in m_NewLocation, out m_FailReason);
+#if DEBUG
+      if (null != m_ConcreteAction && !m_ConcreteAction.IsPerformable()) throw new ArgumentOutOfRangeException(nameof(m_ConcreteAction), m_ConcreteAction, "not performable");
+#endif
     }
 
     public override bool IsLegal()
@@ -46,9 +40,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_ConcreteAction.Perform();
     }
 
-    public override string ToString()
-    {
-      return m_ConcreteAction.ToString();
-    }
+    public override string ToString() { return m_ConcreteAction.ToString(); }
   }
 }
