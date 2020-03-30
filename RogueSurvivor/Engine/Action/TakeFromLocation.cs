@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using djack.RogueSurvivor.Data;
 
 using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
+using BackwardPlanOp = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.WorldUpdate>;
 
 #nullable enable
 
@@ -97,6 +98,56 @@ namespace djack.RogueSurvivor.Engine._Action
                 }
             }
             return ret;
+        }
+
+    }
+}
+
+namespace djack.RogueSurvivor.Engine.Op
+{
+    [Serializable]
+    class TakeFromLocation_memory : WorldUpdate, BackwardPlanOp    // similar to ActionTake
+    {
+        private readonly Gameplay.GameItems.IDs m_ID;
+        private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
+        private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_memory;
+        [NonSerialized] private Item? m_Item;
+
+        public TakeFromLocation_memory(Gameplay.GameItems.IDs id, Location loc, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
+        {
+            if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "has no canonical form");
+            m_ID = id;
+            m_loc = loc;
+            m_memory = items;
+        }
+
+        public override bool IsLegal() { return m_memory.WhatIsAt(m_loc)?.Contains(m_ID) ?? false; }
+        public override ActorAction? Bind(Actor src) { return new _Action.TakeFromLocation(src, m_ID, m_loc); }
+
+        private List<Location> origin_range {
+            get {
+                var ret = new List<Location>();
+                if (m_loc.TileModel.IsWalkable) ret.Add(m_loc);    // future-proofing
+                // handle containers (will go obsolete eventually)
+                var obj = m_loc.MapObject;
+                if (null != obj && obj.IsContainer) {
+                    foreach (var pt in m_loc.Position.Adjacent()) {
+                        var test = new Location(m_loc.Map, pt);
+                        if (Map.Canonical(ref test) && test.TileModel.IsWalkable) ret.Add(test);
+                    }
+                }
+                return ret;
+            }
+        }
+
+        public override List<WorldUpdate>? prequel()
+        {
+            return null;
+        }
+
+        public override Dictionary<WorldUpdate, int>? backward()
+        {
+            return null;
         }
 
     }

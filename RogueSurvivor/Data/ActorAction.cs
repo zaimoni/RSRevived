@@ -52,4 +52,17 @@ namespace djack.RogueSurvivor.Data
     public static bool IsNot<T, U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return !(src.Value is T); }
 
   }
+
+    [Serializable]
+    internal abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>, Zaimoni.Data.BackwardPlan<WorldUpdate>
+    {
+        protected WorldUpdate() {}
+
+        public abstract bool IsLegal();
+        public abstract ActorAction? Bind(Actor src);
+
+        public abstract List<WorldUpdate>? prequel();
+        public abstract Dictionary<WorldUpdate, int>? backward();
+
+    }
 }
