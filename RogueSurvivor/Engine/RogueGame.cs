@@ -8382,8 +8382,10 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (null != s_PC) PC_hear_question(s_PC);
+      else if (null != t_PC) PC_hear_question(t_PC);
       speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, TRUE);
       if (null != t_PC) PC_hear_answer(t_PC);
+      else if (null != s_PC) PC_hear_answer(s_PC);
       target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, TRUE);
 
       // not nearly as sanity-restoring as proper chat, but worth something

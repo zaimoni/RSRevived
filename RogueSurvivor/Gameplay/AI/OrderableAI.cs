@@ -2467,6 +2467,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (null == item_memory) throw new ArgumentNullException(nameof(item_memory));
 #endif
+        if (null == _legal_path) return null;
         var med_slp = item_memory.WhereIs(GameItems.IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
         bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
             if (null!=med_slp && med_slp.ContainsKey(loc)) return true;

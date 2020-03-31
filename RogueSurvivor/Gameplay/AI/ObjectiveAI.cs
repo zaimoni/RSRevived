@@ -2098,6 +2098,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
       // if very crowded, relax standards
       if (0 >= tolerable_moves.Count) tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>();
+      if (0 >= tolerable_moves.Count) return null;
       if (1 == tolerable_moves.Count) return (ActorAction)tolerable_moves.First().Value;
       var best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>(NoContestedExit);
       if (1 <= best_moves.Count) return Rules.Get.DiceRoller.Choose(best_moves).Value;
@@ -2117,25 +2118,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorDest a_dest) {
         if (null == e) {
           var dest_e = a_dest.dest.Exit;
-          bool destination_exit_contested = null != dest_e && ActorsNearby(dest_e.Location, a => !a.IsSleeping);
             // crowd control
           var gasping = NeedsAir(a_dest.dest, m_Actor);
           if (null != gasping) {
+            if (x is ActionOpenDoor) return null;
             var act = BehaviorMakeTime();
             if (null != act) return act;
-#if DEBUG
-            throw new InvalidOperationException(gasping.Name+" needs crowd control\nmoves: "+_legal_path.to_s());
-#endif
           }
         }
         if (_staged_action is ActionCloseDoor close && a_dest.dest == close.Door.Location) _staged_action = null;   // 2020-03-29: do not self-block
       } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
-        if (null != e) {    // don't dawdle on the exit itself
+        if (null == e) {    // don't dawdle on the exit itself
+          if (x is ActionOpenDoor) return null;
           var act = BehaviorMakeTime();
           if (null != act) return act;
-#if DEBUG
-          throw new InvalidOperationException("attempting on exit: "+x+"\nmoves: "+_legal_path.to_s());
-#endif
         }
       }
       // clear staged actions here
