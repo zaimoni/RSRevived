@@ -2373,6 +2373,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
       if (loc.Map.HasExitAt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
+      if (loc.Items?.Has<Item>(it => !it.IsUseless) ?? false) return 0; // sleeping on useful items is bad for others' pathing
       if (m_Actor.Location!=loc && loc.StrictHasActorAt) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
