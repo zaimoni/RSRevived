@@ -2905,6 +2905,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
+      if (m_Actor.Location.Map != loc.Map) return null;
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
 
@@ -2955,7 +2956,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      if (m_Actor.StackIsBlocked(in loc)) return null;
+      if (m_Actor.StackIsBlocked(in loc) || m_Actor.Location.Map != loc.Map) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
