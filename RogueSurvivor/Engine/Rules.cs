@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFromContainer(in loc);
+        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
@@ -473,7 +473,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = ai?.WouldGetFromContainer(in loc);
+        var act = ai?.WouldGetFrom(mapObjectAt);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause

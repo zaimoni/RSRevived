@@ -8,7 +8,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionTradeWithContainer : ActorAction
     {
-        private readonly Location m_Location;
+        private readonly Location m_Location;   // savefile break \todo respecify to MapObject
         private readonly Item m_TakeItem;
         private readonly Item m_GiveItem;
 

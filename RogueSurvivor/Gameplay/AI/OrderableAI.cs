@@ -2855,13 +2855,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj;
     }
 
-    protected override ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack)
+#nullable enable
+    protected override ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack)
     {
       return BehaviorGrabFromStack(in loc,stack,false);
     }
 
-#nullable enable
-    public bool WouldGrabFromStack(in Location loc, Inventory stack)
+    public bool WouldGrabFromStack(in Location loc, Inventory? stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -2952,7 +2952,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    protected ActorAction BehaviorGrabFromStack(in Location loc, Inventory stack, bool is_real = true)
+    protected ActorAction? BehaviorGrabFromStack(in Location loc, Inventory? stack, bool is_real = true)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));

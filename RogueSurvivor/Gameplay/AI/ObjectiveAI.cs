@@ -3999,15 +3999,15 @@ restart_single_exit:
       }
     }
 
-    abstract protected ActorAction BehaviorWouldGrabFromStack(in Location loc, Inventory stack);
-
 #nullable enable
-    public ActorAction? WouldGetFromContainer(in Location loc)
+    abstract protected ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack);
+
+    public ActorAction? WouldGetFrom(MapObject? obj)
     {
-      if (!loc.MapObject?.IsContainer ?? true) return null;
-      var stack = loc.Items;
+      if (null == obj || !obj.IsContainer) return null;
+      var stack = obj.Inventory;
       if (null == stack || stack.IsEmpty) return null;
-      return BehaviorWouldGrabFromStack(in loc, stack);
+      return BehaviorWouldGrabFromStack(obj.Location, stack);
     }
 #nullable restore
 

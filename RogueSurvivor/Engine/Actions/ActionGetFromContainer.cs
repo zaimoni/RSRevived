@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionGetFromContainer : ActorAction   // XXX reskinned ActionTakeItem
   {
-    private readonly Location m_Location;
+    private readonly Location m_Location;   // savefile break \todo respecify this to MapObject i.e. real containers
 
 #if DEAD_FUNC
     public Item Item { get { return m_Location.Items.TopItem; } }
