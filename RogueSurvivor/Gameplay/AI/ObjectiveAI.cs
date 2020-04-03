@@ -2027,7 +2027,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != target.Location.Exit && !target.IsSleeping) return true;
         }
         // cf OrderableAI::RejectSwitchPlaces
-        if (target.Controller is OrderableAI oai) {
+        if (!target.IsSleeping && target.Controller is OrderableAI oai) {
           var trace = oai.WouldUseAccessibleStack(target.Location);
           if (null != trace) return true;
         }
