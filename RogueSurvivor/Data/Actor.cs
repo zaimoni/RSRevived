@@ -1259,8 +1259,8 @@ namespace djack.RogueSurvivor.Data
 
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
-      bool player_initiated = Engine.RogueGame.IsPlayer(this);
-      bool simulating = Engine.RogueGame.IsSimulating;
+      bool player_initiated = RogueGame.IsPlayer(this);
+      bool simulating = RogueGame.IsSimulating;
       bool police_radio = HasActivePoliceRadio;
       bool army_radio = HasActiveArmyRadio;
       if (!police_radio && !army_radio) return;
@@ -1271,7 +1271,8 @@ namespace djack.RogueSurvivor.Data
 
       var radio_location = Rules.PoliceRadioLocation(origin.Value);
       var radio_range = radio_location.RadioDistricts;
-      Engine.Session.Get.World.DoForAllMaps(map => {
+      // \todo ultimately, we'd like to prescreen whether the current player is one of the radio targets and pre-empt viewport panning if so
+      Session.Get.World.DoForAllMaps(map => {
         foreach (Actor actor in map.Actors.ToList()) {   // subject to multi-threading race
           if (this == actor) continue;
           // XXX defer implementing dual radios
@@ -1282,7 +1283,7 @@ namespace djack.RogueSurvivor.Data
           }
           if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
           var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
-          if (Engine.RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
+          if (RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
 
           // note: UI redraw will fail if IsSimulating; should be deferring message in that case
           if (actor.IsPlayer && msg_player_test(actor)) {

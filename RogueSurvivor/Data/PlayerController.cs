@@ -101,6 +101,11 @@ namespace djack.RogueSurvivor.Data
       else DeferMessage(msg);
     }
 
+    public void AddMessages(IEnumerable<Data.Message> msgs) {
+      if (RogueGame.IsPlayer(m_Actor)) RogueForm.Game.AddMessages(msgs);
+      else DeferMessages(msgs);
+    }
+
     public override void AddMessageForceRead(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
         var game = RogueForm.Game;

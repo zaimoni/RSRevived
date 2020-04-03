@@ -8366,9 +8366,7 @@ namespace djack.RogueSurvivor.Engine
 
       void heard_question(Actor a) { audience.Add(a); }
       void heard_answer(Actor a) { audience2.Add(a); }
-      static void PC_message(PlayerController PC, List<Data.Message> msgs) {
-        PC.DeferMessages(msgs);
-      }
+      static void PC_message(PlayerController PC, List<Data.Message> msgs) { PC.AddMessages(msgs); }
 
       void PC_hear_question(PlayerController PC) { PC_message(PC, PC.ControlledActor == speaker ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : msg_question); }
       void PC_heard_question(Actor a) {
@@ -8381,12 +8379,16 @@ namespace djack.RogueSurvivor.Engine
         heard_answer(a);
       }
 
+      bool reject_conversants(Actor a) {
+        return a != speaker && a != target;
+      }
+
       if (null != s_PC) PC_hear_question(s_PC);
-      else if (null != t_PC) PC_hear_question(t_PC);
-      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, TRUE);
+      if (null != t_PC) PC_hear_question(t_PC);
+      speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, reject_conversants);
       if (null != t_PC) PC_hear_answer(t_PC);
-      else if (null != s_PC) PC_hear_answer(s_PC);
-      target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, TRUE);
+      if (null != s_PC) PC_hear_answer(s_PC);
+      target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, reject_conversants);
 
       // not nearly as sanity-restoring as proper chat, but worth something
       speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
