@@ -4261,7 +4261,7 @@ restart_single_exit:
       var tmp = _PrefilterDrop(it);
       if (null != tmp) return tmp;
 
-      var has_container = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
+      var has_container = new Zaimoni.Data.Stack<MapObject>(new MapObject[8]);
       foreach(var dir in Direction.COMPASS) {
         var pos = m_Actor.Location.Position + dir;
         var container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
@@ -4274,7 +4274,7 @@ restart_single_exit:
           if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
 #endif
           }
-        has_container.push(pos);
+        has_container.push(container);
       }
       if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, Rules.Get.DiceRoller.Choose(has_container));
 

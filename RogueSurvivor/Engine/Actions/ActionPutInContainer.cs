@@ -1,38 +1,38 @@
-﻿using System;
-using djack.RogueSurvivor.Data;
+﻿using djack.RogueSurvivor.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
     internal class ActionPutInContainer : ActorAction
     {
-        private readonly Point m_Position;
         private readonly Item m_Item;
-        private MapObject m_Container = null;   // would be non-serialized
+        private readonly MapObject m_Container;
 
         public Item Item { get { return m_Item; } }
 
-        public ActionPutInContainer(Actor actor, Item it, Point position)
-        : base(actor)
+        public ActionPutInContainer(Actor actor, Item it, MapObject container) : base(actor)
         {
-#if DEBUG
-            if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
             m_Item = it;
-            m_Position = position;
+            m_Container = container;
             actor.Activity = Activity.IDLE;
         }
 
         public override bool IsLegal()
         {
-            m_Container = Rules.CanActorPutItemIntoContainer(m_Actor, in m_Position, out m_FailReason);
-            return null != m_Container;
+            m_FailReason = m_Container?.ReasonCantPutItemIn(m_Actor) ?? "object is not a container";
+            return string.IsNullOrEmpty(m_FailReason);
+        }
+
+        public override bool IsPerformable()
+        {
+            if (1 != Rules.InteractionDistance(m_Actor.Location, m_Container.Location)) return false;
+            return base.IsPerformable();
         }
 
         public override void Perform()
         {
-            RogueForm.Game.DoPutItemInContainer(m_Actor,m_Container ?? Rules.CanActorPutItemIntoContainer(m_Actor, in m_Position, out m_FailReason),m_Item);
+            RogueForm.Game.DoPutItemInContainer(m_Actor, m_Container, m_Item);
         }
     }
 }

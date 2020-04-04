@@ -192,12 +192,14 @@ namespace djack.RogueSurvivor.Engine
       return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
 
+#if DEAD_FUNC
     static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point pos, out string reason)
     {
       var obj = actor.Location.Map.GetMapObjectAt(pos);
       reason = obj?.ReasonCantPutItemIn(actor) ?? "object is not a container";
       return string.IsNullOrEmpty(reason) ? obj : null;
     }
+#endif
 #nullable restore
 
     static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
