@@ -8769,13 +8769,24 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-    private void HandlePlayerTakeItemFromContainer(Actor player, Inventory inv, Location src)
+    public void HandlePlayerTakeItemFromContainer(PlayerController pc, MapObject container)
     {
+      var player = pc.ControlledActor;
+      var inv = container.Inventory;
+#if DEBUG
+      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(container)+".Inventory");
+      if (1 != Rules.GridDistance(player.Location,container.Location)) throw new ArgumentOutOfRangeException(nameof(container), container, "not adjacent");
+#endif
+      if (2 > inv.CountItems) {
+        DoTakeItem(player, container, inv.TopItem!);
+        return;
+      }
+
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
       bool details(int index) {
         Item obj = inv[index]!;
         if (player.CanGet(obj, out string reason)) {
-          DoTakeItem(player, in src, obj);
+          DoTakeItem(player, container, obj);
           return true;
         }
         ClearMessages();
@@ -8787,21 +8798,24 @@ namespace djack.RogueSurvivor.Engine
       PagedMenu("Taking...", inv.CountItems, label, details);
     }
 
-    public void DoTakeFromContainer(PlayerController pc, in Location loc)
+    public void DoTakeItem(Actor actor, MapObject container, Item it)
     {
-      var actor = pc.ControlledActor;
-      var inv = loc.Items;
+      var g_inv = container.Inventory;
 #if DEBUG
-      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(loc)+".Items");
-      if (1 != Rules.GridDistance(actor.Location,in loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "not adjacent");
+      if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
+      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
-      if (2 <= inv.CountItems) {
-        HandlePlayerTakeItemFromContainer(actor, inv, loc);
-        return;
-      }
-
-      Item topItem = inv.TopItem!;
-      DoTakeItem(actor, in loc, topItem);
+      actor.Inventory.RepairContains(it, "have already taken ");
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
+      g_inv.RepairCrossLink(actor.Inventory);
+      container.TransferFrom(it, actor.Inventory);   // invalidates g_inv if that was the last item
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
+        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
+      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
+        it.EquippedBy(actor);
+      if (Player==actor) RedrawPlayScreen();
+      container.Inventory?.RejectCrossLink(actor.Inventory);
     }
 
     public void DoTakeItem(Actor actor, in Location loc, Item it)

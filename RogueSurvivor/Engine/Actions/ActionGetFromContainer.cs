@@ -7,36 +7,36 @@
 using djack.RogueSurvivor.Data;
 using System;
 
-using Point = Zaimoni.Data.Vector2D_short;
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionGetFromContainer : ActorAction   // XXX reskinned ActionTakeItem
   {
-    private readonly Location m_Location;   // savefile break \todo respecify this to MapObject i.e. real containers
+    private readonly MapObject m_Container;
 
-#if DEAD_FUNC
-    public Item Item { get { return m_Location.Items.TopItem; } }
-#endif
-
-    public ActionGetFromContainer(PlayerController pc, Location loc)
-      : base(pc.ControlledActor)
+    public ActionGetFromContainer(PlayerController pc, Location loc) : base(pc.ControlledActor)
     {
       if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc),loc,"not canonical");
-      m_Location = loc;
-#if DEBUG
-      if (null == loc.Items) throw new ArgumentNullException(nameof(loc)+".Items");
-#endif
+      var obj = loc.MapObject;
+      if (null == obj || !obj.IsContainer || null==obj.Inventory) throw new ArgumentNullException(nameof(obj));
+      m_Container = obj;
     }
 
     public override bool IsLegal()
     {
-      return (m_Actor.Controller as PlayerController).CanGetFromContainer(m_Location, out m_FailReason);
+      return (m_Actor.Controller as PlayerController).CanGetFromContainer(m_Container.Location, out m_FailReason);
+    }
+
+    public override bool IsPerformable()
+    {
+      if (1!=Rules.GridDistance(m_Actor.Location, m_Container.Location)) return false;
+      return base.IsPerformable();
     }
 
     public override void Perform()
     {
-      RogueForm.Game.DoTakeFromContainer(m_Actor.Controller as PlayerController, in m_Location);
+      RogueForm.Game.HandlePlayerTakeItemFromContainer(m_Actor.Controller as PlayerController, m_Container);
     }
   }
 }

@@ -430,6 +430,10 @@ namespace djack.RogueSurvivor.Data
       return Location.Items;
     } }
 
+    public void TransferFrom(Item it, Inventory dest) {
+      Location.Map.TransferFrom(it, Location.Position, dest);
+    }
+
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);
