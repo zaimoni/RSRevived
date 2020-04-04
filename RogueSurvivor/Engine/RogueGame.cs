@@ -2270,20 +2270,18 @@ namespace djack.RogueSurvivor.Engine
 
 #region 6. Check explosives.
         bool hasExplosivesToExplode = false;
-        void expire_exp(ItemPrimedExplosive exp) { if (0 >= --exp.FuseTimeLeft) hasExplosivesToExplode = true; };
+        void expire_exp(ItemPrimedExplosive exp) { if (exp.Expire()) hasExplosivesToExplode = true; };
         void expire_all_exp(Inventory inv) { inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp); }
         map.DoForAllInventory(expire_all_exp);  // 6.1 Update fuses.
 
         if (hasExplosivesToExplode) {
 #region 6.2 Explode.
           bool find_live_grenade(Inventory inv, Location loc) {
-            var tmp = inv.GetItemsByType<ItemPrimedExplosive>();
+            var tmp = inv.GetItemsByType<ItemPrimedExplosive>(ItemPrimedExplosive.IsExpired);
             if (null != tmp) foreach (var exp in tmp) {
-              if (0 >= exp.FuseTimeLeft) {
                 inv.RemoveAllQuantity(exp);
                 DoBlast(loc, exp.Model.BlastAttack);
                 return true;
-              }
             }
             return false;
           }
@@ -8222,8 +8220,7 @@ namespace djack.RogueSurvivor.Engine
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
         map.RemoveAtExt<Item>(obj => {
-            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0)
-                && Rules.Get.RollChance(chance);
+            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive exp) || exp.FuseTimeLeft > 0) && Rules.Get.RollChance(chance);
         }, location.Position);
       }
       if (blast.CanDamageObjects) {
@@ -8247,29 +8244,27 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-    static private void ExplosionChainReaction(Inventory inv, in Location location)
+#nullable enable
+    static private void ExplosionChainReaction(Inventory? inv, in Location location)
     {
       if (null == inv || inv.IsEmpty) return;
-      List<ItemExplosive> itemExplosiveList = null;
-      List<ItemPrimedExplosive> itemPrimedExplosiveList = null;
+      List<ItemExplosive>? itemExplosiveList = null;
+      List<ItemPrimedExplosive>? itemPrimedExplosiveList = null;
       foreach (Item obj in inv.Items) {
         if (!(obj is ItemExplosive itemExplosive)) continue;
-        if (itemExplosive is ItemPrimedExplosive primed) {
-          primed.FuseTimeLeft = 0;
-        } else {
+        if (itemExplosive is ItemPrimedExplosive primed) primed.Cook();
+        else {
           if (itemExplosiveList == null) itemExplosiveList = new List<ItemExplosive>();
           if (itemPrimedExplosiveList == null) itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
           itemExplosiveList.Add(itemExplosive);
           for (int index = 0; index < obj.Quantity; ++index)
-            itemPrimedExplosiveList.Add(new ItemPrimedExplosive(GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID))
-            {
-              FuseTimeLeft = 0
-            });
+            itemPrimedExplosiveList.Add(new ItemPrimedExplosive(GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID), 0));
         }
       }
       if (null != itemExplosiveList) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
       if (null != itemPrimedExplosiveList) foreach (var it in itemPrimedExplosiveList) location.Map.DropItemAtExt(it, location.Position);
     }
+#nullable restore
 
     public void DoChat(Actor speaker, Actor target)
     {
