@@ -5517,13 +5517,9 @@ restart_single_exit:
         foreach(var rw in rws) {
           if (rw.Ammo < rw.Model.MaxAmmo) {
             // usually want to reload this even if we had to drop ammo as a recovery option
+            var want_ammo = (GameItems.IDs)((int)(rw.AmmoType) + (int)(GameItems.IDs.AMMO_LIGHT_PISTOL));
             int i = Objectives.Count;
-            while(0<i) {
-              if (Objectives[--i] is Goal_DoNotPickup dnp) {
-                if (dnp.Avoid != (GameItems.IDs)((int)(rw.AmmoType)+(int)(GameItems.IDs.AMMO_LIGHT_PISTOL))) continue;
-                Objectives.RemoveAt(i);
-              }
-            }
+            while(0<i) if (Objectives[--i] is Goal_DoNotPickup dnp && dnp.Avoid == want_ammo) Objectives.RemoveAt(i);
           }
         }
       }
