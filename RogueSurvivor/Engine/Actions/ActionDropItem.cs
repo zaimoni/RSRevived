@@ -10,14 +10,13 @@ using djack.RogueSurvivor.Data;
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionDropItem : ActorAction
+  internal class ActionDropItem : ActorAction,ActorGive
   {
     private readonly Item m_Item;
 
-    public Item Item { get { return m_Item; } }
+    public Item Give { get { return m_Item; } }
 
-    public ActionDropItem(Actor actor, Item it)
-      : base(actor)
+    public ActionDropItem(Actor actor, Item it) : base(actor)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));

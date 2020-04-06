@@ -582,7 +582,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         return;
       }
-      if (act is ActionTake || act is ActionTakeItem || act is ActionTradeWithContainer || act is ActionTrade) {
+      if (act is ActionTake || act is ActorTake || act is ActionTrade) {
         // these actions are inventory-altering and will invalidate inventory-based pathing
         _last_move = null;
         return;
@@ -4742,7 +4742,7 @@ restart_single_exit:
       if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
       var tmp = _PrefilterDrop(give, use_ok);
       if (null != tmp) return tmp;
-      if (null != position) return new ActionTradeWithContainer(m_Actor,give,take,position.Value);
+      if (null != position) return ActionTradeWith.Cast(position.Value, m_Actor, give, take);
       return BehaviorDropItem(give);
     }
 #nullable restore
@@ -4983,7 +4983,7 @@ restart_single_exit:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionTradeWithContainer(m_Actor,drop,it,position.Value));
+              recover.Add(ActionTradeWith.Cast(position.Value, m_Actor, drop, it));
             } else {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
@@ -5021,7 +5021,7 @@ restart_single_exit:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionTradeWithContainer(m_Actor,drop,it,position.Value));
+              recover.Add(ActionTradeWith.Cast(position.Value, m_Actor, drop, it));
             } else {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
@@ -5582,7 +5582,7 @@ restart_single_exit:
               }
             }
           }
-          if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
+          if (null != test) return ActionTradeWith.Cast(dest.Value, m_Actor, src, test);
         }
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
@@ -5607,7 +5607,7 @@ restart_single_exit:
               }
             }
           }
-          if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
+          if (null != test) return ActionTradeWith.Cast(dest.Value, m_Actor, src, test);
         }
       }
 

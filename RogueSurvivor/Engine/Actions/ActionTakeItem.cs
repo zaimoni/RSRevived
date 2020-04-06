@@ -14,7 +14,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionTakeItem : ActorAction
+  internal class ActionTakeItem : ActorAction,ActorTake
   {
     private readonly Location m_Location;
     private readonly Item m_Item;
@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
     }
 
-    public Item Item { get { return m_Item; } }
+    public Item Take { get { return m_Item; } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
@@ -172,8 +172,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static Item? parse_recovery(ActorAction act) {
           if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
-          if (act is ActionTradeWithContainer trade) return trade.Give;
-          if (act is ActionDropItem drop) return drop.Item;
+          if (act is ActorGive trade) return trade.Give;
           return null;
         } 
 

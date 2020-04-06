@@ -2878,7 +2878,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var best_armor = GetEquippedBodyArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return new ActionTradeWithContainer(m_Actor,best_armor,obj,loc);
+            return ActionTradeWith.Cast(loc, m_Actor, best_armor, obj);
           }
         }
 #if DEBUG
@@ -2889,8 +2889,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
           if (recover is ActionDropItem drop) {
-            if (obj.Model.ID == drop.Item.Model.ID) return null;
-            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
+            if (obj.Model.ID == drop.Give.Model.ID) return null;
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
           } else if (recover is ActionTradeWithContainer trade) {
             if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, trade.Give.Model.ID));
           }
@@ -3084,28 +3084,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
                   case ActionTakeItem old_take:
-                     if (new_take.Item.Model.ID==old_take.Item.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                     if (new_take.Take.Model.ID==old_take.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                        item_compare = -1;
                        break;
                      }
-                     if (RHSMoreInteresting(new_take.Item,old_take.Item)) {
+                     if (RHSMoreInteresting(new_take.Take,old_take.Take)) {
                        item_compare = -1;
                        break;
                      }
-                     if (RHSMoreInteresting(old_take.Item, new_take.Item)) dominated.Add(old_loc);
+                     if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
                   case ActionTradeWithContainer old_trade:
-                     if (RHSMoreInteresting(new_take.Item,old_trade.Take)) {
+                     if (RHSMoreInteresting(new_take.Take,old_trade.Take)) {
                        item_compare = -1;
                        break;
                      }
-                     if (RHSMoreInteresting(old_trade.Take, new_take.Item)) dominated.Add(old_loc);
+                     if (RHSMoreInteresting(old_trade.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
                   case ActionUseItem old_use:
                     // generally better to take than use
-                    if (old_use.Item.Model.ID!=new_take.Item.Model.ID) dominated.Add(old_loc);
+                    if (old_use.Item.Model.ID!=new_take.Take.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
                     break;
                   }
@@ -3117,11 +3117,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
                   case ActionTakeItem old_take:
-                     if (RHSMoreInteresting(new_trade.Take,old_take.Item)) {
+                     if (RHSMoreInteresting(new_trade.Take,old_take.Take)) {
                        item_compare = -1;
                        break;
                      }
-                     if (RHSMoreInteresting(old_take.Item, new_trade.Take)) dominated.Add(old_loc);
+                     if (RHSMoreInteresting(old_take.Take, new_trade.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
                   case ActionTradeWithContainer old_trade:
@@ -3156,7 +3156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                       }
                       break;
                     case ActionTakeItem old_take:
-                      if (old_take.Item.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
+                      if (old_take.Take.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
                         item_compare = -1;
                         break;
                       }

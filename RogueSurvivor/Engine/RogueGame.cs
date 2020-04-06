@@ -8522,13 +8522,11 @@ namespace djack.RogueSurvivor.Engine
       target.RejectCrossLink(speaker.Inventory);
     }
 
-    public void DoTradeWithContainer(Actor actor, in Location loc, Item give, Item take)
+    private void DoTradeWith(Actor actor, Inventory dest, Item give, Item take)
     {
-      var dest = loc.Items;
       var inv = actor.Inventory;
 #if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-      if (null == inv) throw new ArgumentNullException("actor.Inventory");
+      if (null == inv) throw new ArgumentNullException(nameof(actor)+".Inventory");
 #endif
       inv.RejectCrossLink(dest);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
@@ -8539,6 +8537,15 @@ namespace djack.RogueSurvivor.Engine
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
       inv.AddAsMuchAsPossible(take);
       inv.RejectCrossLink(dest);
+    }
+
+    public void DoTradeWithContainer(Actor actor, in Location loc, Item give, Item take)
+    {
+      var dest = loc.Items;
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      DoTradeWith(actor, dest, give, take);
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
@@ -8845,7 +8852,7 @@ namespace djack.RogueSurvivor.Engine
       DoTakeItem(actor, loc, it);
     }
 
-    public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item received)
+    public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item? received)
     {
 #if DEBUG
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
@@ -8880,16 +8887,20 @@ namespace djack.RogueSurvivor.Engine
           var ai = (target.Controller as Gameplay.AI.ObjectiveAI)!;
           var recover = ai.BehaviorMakeRoomFor(gift,actor.Location.Position); // unsure if this works cross-map
           if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = ai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
-          if (recover is ActionTradeWithContainer trade) received = trade.Give;
-          else if (recover is ActionChain chain) {
-            if (chain.ConcreteAction is ActionDropItem drop) received = drop.Item;
-          } else if (recover is ActionUseItem use) received = use.Item;
-         if (null != received) {
+
+          static Item? parse_recovery(ActorAction? act) {
+            if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
+            if (act is ActorGive trade) return trade.Give;
+            if (act is ActionUseItem use) return use.Item;
+            return null;
+          }
+          received = parse_recovery(recover);
+          if (null != received) {
 #if DEBUG
-           if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+            if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
-           actor.Inventory.RepairContains(received, "already had received ");
-         }
+            actor.Inventory.RepairContains(received, "already had received ");
+          }
         }
 
         if (null != received) {

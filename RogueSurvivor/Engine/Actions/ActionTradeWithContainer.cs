@@ -5,38 +5,77 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-    [Serializable]
-    internal class ActionTradeWithContainer : ActorAction
-    {
-        private readonly Location m_Location;   // savefile break \todo respecify to MapObject
-        private readonly Item m_TakeItem;
-        private readonly Item m_GiveItem;
+    internal interface ActorGive {
+        public Item Give { get; }
+    }
 
-        public ActionTradeWithContainer(Actor actor, Item give, Item take, Location loc)
-        : base(actor)
+    internal interface ActorTake
+    {
+        public Item Take { get; }
+    }
+
+    [Serializable]
+    internal abstract class ActionTradeWith : ActorAction,ActorGive,ActorTake
+    {
+        protected readonly Item m_TakeItem;
+        protected readonly Item m_GiveItem;
+
+        public ActionTradeWith(Actor actor, Item give, Item take) : base(actor)
         {
 #if DEBUG
-            if (null == give) throw new ArgumentNullException(nameof(give));
-            if (null == take) throw new ArgumentNullException(nameof(take));
+            if (null == give || !m_Actor.Inventory.Contains(give)) throw new ArgumentNullException(nameof(give));
+            if (null == take || m_Actor.Inventory.Contains(take)) throw new ArgumentNullException(nameof(take));
 #endif
-            if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "non-canonical");
-            m_Location = loc;
             m_GiveItem = give;
             m_TakeItem = take;
             actor.Activity = Activity.IDLE;
         }
-
-        public ActionTradeWithContainer(Actor actor, Item give, Item take, Point pt)
-        : this(actor, give, take, new Location(actor.Location.Map, pt)) {}
 
         public Item Give { get { return m_GiveItem; } }
         public Item Take { get { return m_TakeItem; } }
 
         public override bool IsLegal()
         {
-            if (m_Location.Items?.Contains(m_GiveItem) ?? false) return false;
+            if (!m_Actor.Inventory.Contains(m_GiveItem)) return false;
             if (m_Actor.Inventory.Contains(m_TakeItem)) return false;
-            return true;    // XXX implement this correctly at some point
+            return true;
+        }
+
+        public override abstract void Perform();
+
+        static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
+        {   // for now, just pass through to the only subclass
+            return new ActionTradeWithContainer(actor, give, take, loc);
+        }
+
+        static public ActionTradeWith Cast(Point pt, Actor actor, Item give, Item take)
+        {
+            return Cast(new Location(actor.Location.Map, pt), actor, give, take);
+        }
+    }
+
+
+    [Serializable]
+    internal class ActionTradeWithContainer : ActionTradeWith
+    {
+        private readonly Location m_Location;   // savefile break \todo respecify to MapObject
+
+        public ActionTradeWithContainer(Actor actor, Item give, Item take, Location loc) : base(actor, give, take)
+        {
+#if DEBUG
+            var g_inv = loc.Items;
+            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(loc)+".Items");
+#endif
+            if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "non-canonical");
+            m_Location = loc;
+            actor.Activity = Activity.IDLE;
+        }
+
+        public override bool IsLegal()
+        {
+            var g_inv = m_Location.Items;
+            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) return false;
+            return base.IsLegal();
         }
 
         public override bool IsPerformable()
