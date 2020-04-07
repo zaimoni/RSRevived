@@ -8539,7 +8539,16 @@ namespace djack.RogueSurvivor.Engine
       inv.RejectCrossLink(dest);
     }
 
-    public void DoTradeWithContainer(Actor actor, in Location loc, Item give, Item take)
+    public void DoTradeWithContainer(Actor actor, in MapObject obj, Item give, Item take)
+    {
+      var dest = obj.Inventory;
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      DoTradeWith(actor, dest, give, take);
+    }
+
+    public void DoTradeWithGround(Actor actor, in Location loc, Item give, Item take)
     {
       var dest = loc.Items;
 #if DEBUG

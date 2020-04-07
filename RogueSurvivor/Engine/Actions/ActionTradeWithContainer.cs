@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
         {
             var obj = loc.MapObject;
-            if (null != obj && obj.IsContainer) new ActionTradeWithContainer(actor, give, take, loc);
+            if (null != obj && obj.IsContainer) new ActionTradeWithContainer(actor, give, take, obj);
             return new ActionTradeWithGround(actor, give, take, loc);
         }
 
@@ -60,35 +60,34 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionTradeWithContainer : ActionTradeWith
     {
-        private readonly Location m_Location;   // savefile break \todo respecify to MapObject
+        private readonly MapObject m_obj;
 
-        public ActionTradeWithContainer(Actor actor, Item give, Item take, Location loc) : base(actor, give, take)
+        public ActionTradeWithContainer(Actor actor, Item give, Item take, MapObject obj) : base(actor, give, take)
         {
 #if DEBUG
-            var g_inv = loc.Items;
-            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(loc)+".Items");
+            var inv = obj.Inventory;
+            if (null == inv || inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(obj)+".Inventory");
 #endif
-            if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "non-canonical");
-            m_Location = loc;
+            m_obj = obj;
             actor.Activity = Activity.IDLE;
         }
 
         public override bool IsLegal()
         {
-            var g_inv = m_Location.Items;
-            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) return false;
+            var inv = m_obj.Inventory;
+            if (null == inv || inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) return false;
             return base.IsLegal();
         }
 
         public override bool IsPerformable()
         {
             if (!base.IsPerformable()) return false;
-            return Rules.IsAdjacent(m_Actor.Location, in m_Location);
+            return Rules.IsAdjacent(m_Actor.Location, m_obj.Location);
         }
 
         public override void Perform()
         {
-            RogueForm.Game.DoTradeWithContainer(m_Actor,in m_Location,m_GiveItem,m_TakeItem);
+            RogueForm.Game.DoTradeWithContainer(m_Actor,in m_obj,m_GiveItem,m_TakeItem);
         }
     }
 
@@ -123,7 +122,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoTradeWithContainer(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
+            RogueForm.Game.DoTradeWithGround(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
         }
     }
 }
