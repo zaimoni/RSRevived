@@ -2888,11 +2888,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
-          if (recover is ActionDropItem drop) {
+          if (recover is ActorGive drop) {
             if (obj.Model.ID == drop.Give.Model.ID) return null;
             if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
-          } else if (recover is ActionTradeWithContainer trade) {
-            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, trade.Give.Model.ID));
           }
           if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
           return recover;
@@ -3078,6 +3076,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 continue;
               }
               int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+              // relying on more specific cases blocking less-specific cases in C# here
+              // ActionTakeItem does implement ActorTake; we want ActorTake to handle the various trade-with-inventory classes
               switch(x.Value) {
               case ActionTakeItem new_take:
                 item_compare = 1;
@@ -3095,7 +3095,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActionTradeWithContainer old_trade:
+                  case ActorTake old_trade:
                      if (RHSMoreInteresting(new_take.Take,old_trade.Take)) {
                        item_compare = -1;
                        break;
@@ -3112,7 +3112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (-1==item_compare) break;
                 }
                 break;
-              case ActionTradeWithContainer new_trade:
+              case ActorTake new_trade:
                 item_compare = 1;
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
@@ -3124,7 +3124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_take.Take, new_trade.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActionTradeWithContainer old_trade:
+                  case ActorTake old_trade:
                      if (new_trade.Take.Model.ID == old_trade.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                        item_compare = -1;
                        break;

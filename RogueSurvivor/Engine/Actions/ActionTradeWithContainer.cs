@@ -44,8 +44,10 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override abstract void Perform();
 
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
-        {   // for now, just pass through to the only subclass
-            return new ActionTradeWithContainer(actor, give, take, loc);
+        {
+            var obj = loc.MapObject;
+            if (null != obj && obj.IsContainer) new ActionTradeWithContainer(actor, give, take, loc);
+            return new ActionTradeWithGround(actor, give, take, loc);
         }
 
         static public ActionTradeWith Cast(Point pt, Actor actor, Item give, Item take)
@@ -87,6 +89,41 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override void Perform()
         {
             RogueForm.Game.DoTradeWithContainer(m_Actor,in m_Location,m_GiveItem,m_TakeItem);
+        }
+    }
+
+    [Serializable]
+    internal class ActionTradeWithGround : ActionTradeWith
+    {
+        private readonly Location m_Location;
+
+        public ActionTradeWithGround(Actor actor, Item give, Item take, Location loc) : base(actor, give, take)
+        {
+#if DEBUG
+            var g_inv = loc.Items;
+            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(loc) + ".Items");
+#endif
+            if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "non-canonical");
+            m_Location = loc;
+            actor.Activity = Activity.IDLE;
+        }
+
+        public override bool IsLegal()
+        {
+            var g_inv = m_Location.Items;
+            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) return false;
+            return base.IsLegal();
+        }
+
+        public override bool IsPerformable()
+        {
+            if (!base.IsPerformable()) return false;
+            return Rules.IsAdjacent(m_Actor.Location, in m_Location);
+        }
+
+        public override void Perform()
+        {
+            RogueForm.Game.DoTradeWithContainer(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
         }
     }
 }
