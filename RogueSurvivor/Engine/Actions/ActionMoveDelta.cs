@@ -205,14 +205,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(m_Actor.Location);
                if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
-               // function target
-               List<KeyValuePair<Location, Direction>> candidates = null;
-               var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
-               var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
-               if (candidates_2.Any()) candidates = candidates_2.ToList();
-               if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
-               // end function target
-
+               var candidates = Rules.PreferNonAdjacent(push_dest, m_Actor.Location);
                if (null != candidates) return new ActionPush(m_Actor,obj, rules.DiceRoller.Choose(candidates).Value);
            }
            // proceed with pull if we can't push safely

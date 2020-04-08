@@ -342,6 +342,22 @@ namespace djack.RogueSurvivor.Engine
       return IsBumpableFor(actor, location.Map, location.Position, out reason);
     }
 
+#nullable enable
+    // Key is Adjacent, Value is non-Adjacent
+    public static KeyValuePair<IEnumerable<KeyValuePair<Location, T>>, IEnumerable<KeyValuePair<Location, T>>> ClassifyAdjacent<T>(Dictionary<Location, T> src, Location origin)
+    {
+      return new KeyValuePair<IEnumerable<KeyValuePair<Location, T>>, IEnumerable<KeyValuePair<Location, T>>>(src.Where(pt => IsAdjacent(origin, pt.Key)), src.Where(pt => !IsAdjacent(origin, pt.Key)));
+    }
+
+    public static List<KeyValuePair<Location, T>>? PreferNonAdjacent<T>(Dictionary<Location, T> src, Location origin)
+    {
+      var test = ClassifyAdjacent(src, origin);
+      if (test.Value.Any()) return test.Value.ToList();
+      if (test.Key.Any()) return test.Key.ToList();
+      return null;
+    }
+#nullable restore
+
     // Pathfindability is not quite the same as bumpability
     // * ok to break barricaded doors on fastest path
     // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
@@ -427,10 +443,9 @@ namespace djack.RogueSurvivor.Engine
              }
 
              // function target
-             var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location, pt.Key));
-             var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(actor.Location, pt.Key));
-             var candidates = (i_can_help && candidates_2.Any()) ? candidates_2.ToList() : null;
-             if (null == candidates && !i_am_in_his_way && i_can_help && candidates_1.Any()) candidates = candidates_1.ToList();
+             var test = ClassifyAdjacent(push_dest, actor.Location);
+             var candidates = (i_can_help && test.Value.Any()) ? test.Value.ToList() : null;
+             if (null == candidates && !i_am_in_his_way && i_can_help && test.Key.Any()) candidates = test.Key.ToList();
              if (null == candidates && i_am_in_his_way) {
                // HMM...maybe step aside instead?
                var considering = actor.MutuallyAdjacentFor(actor.Location,actorAt.Location);
@@ -441,8 +456,8 @@ namespace djack.RogueSurvivor.Engine
              }
 
              // legacy initialization
-             if (null == candidates && candidates_2.Any()) candidates = candidates_2.ToList();
-             if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
+             if (null == candidates && test.Value.Any()) candidates = test.Value.ToList();
+             if (null == candidates && test.Key.Any()) candidates = test.Key.ToList();
              // end function target
 
              if (null != candidates) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
@@ -500,22 +515,13 @@ namespace djack.RogueSurvivor.Engine
                var self_block = ai.WantToGoHere(mapObjectAt.Location);
                if (null != self_block && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
-               // function target
-               List<KeyValuePair<Location, Direction>> candidates = null;
-               var candidates_2 = push_dest.Where(pt => !IsAdjacent(actor.Location, pt.Key));
-               var candidates_1 = push_dest.Where(pt => IsAdjacent(actor.Location, pt.Key));
-               if (candidates_2.Any()) candidates = candidates_2.ToList();
-               if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
-               // end function target
-
+               var candidates = PreferNonAdjacent(push_dest, actor.Location);
                if (null != candidates) return new ActionPush(actor,mapObjectAt, Get.DiceRoller.Choose(candidates).Value);
              } else {
                // proceed with pull if we can't push safely
                var possible = mapObjectAt.Location.Position.Adjacent();
                var pull_dests = possible.Where(pt => 1==Rules.GridDistance(actor.Location,new Location(mapObjectAt.Location.Map,pt)));
-               if (pull_dests.Any()) {
-                 return new ActionPull(actor,mapObjectAt, Get.DiceRoller.Choose(pull_dests));
-               }
+               if (pull_dests.Any()) return new ActionPull(actor,mapObjectAt, Get.DiceRoller.Choose(pull_dests));
              }
            }
         }
