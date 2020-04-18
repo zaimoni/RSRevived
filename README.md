@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/zaimoni/rsrevived/badge)](https://www.codefactor.io/repository/github/zaimoni/rsrevived)
+
 Forum: http://roguesurvivor.proboards.com/
 
 Original Rogue Survivor: http://roguesurvivor.blogspot.com/ ; source at https://github.com/roguedjack/Rogue-Survivor-Alpha-9 .
