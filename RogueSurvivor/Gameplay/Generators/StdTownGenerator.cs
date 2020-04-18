@@ -16,17 +16,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 {
   internal class StdTownGenerator : BaseTownGenerator
   {
-    public StdTownGenerator(RogueGame game, Parameters parameters)
-      : base(game, parameters)
+    public StdTownGenerator(RogueGame game, Parameters parameters) : base(game, parameters)
     {
     }
 
     public override Map Generate(int seed, string name)
     {
       Map map = base.Generate(seed, name);
-      bool outside_test(Point pt) { return !map.IsInsideAt(pt); };
+      bool outside_test(Point pt) { return !map.IsInsideAt(pt); }
       // XXX with default 15% policeman probability and default 25 max civilians, 0 police in district is ~1.7% chance and happens noticeably often in testing
-      bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); };
+      bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); }
       bool has_subway = null!=map.GetZoneByPartialName("Subway Station");
       bool has_CHAR_office = null!=map.GetZoneByPartialName("CHAR Office");
       List<Zone> unclaimed_sheds = map.GetZonesByPartialName("Shed");

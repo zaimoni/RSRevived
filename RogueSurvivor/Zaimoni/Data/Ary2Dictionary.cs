@@ -69,7 +69,7 @@ namespace Zaimoni.Data
         }
 
         public List<Key2> WhatHaveISeen() {
-            lock (_second_first_dict) { return new List<Key2>(_second_first_dict.Keys); };
+            lock (_second_first_dict) { return new List<Key2>(_second_first_dict.Keys); }
         }
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {

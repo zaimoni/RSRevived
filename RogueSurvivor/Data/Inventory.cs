@@ -492,7 +492,7 @@ namespace djack.RogueSurvivor.Data
       foreach (Item obj in m_Items) {
         if (obj is _T_ tmp && ok(tmp)) {
           if (null == ret || lt(ret,tmp)) ret = tmp;
-        };
+        }
       }
       return ret;
     }

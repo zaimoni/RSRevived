@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       IRON,
       WINDOW,
       MAX
-    };
+    }
 
     static readonly string[][] images = new string[(int)DW_type.MAX][]{
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED, Gameplay.GameImages.OBJ_WOODEN_DOOR_OPEN, Gameplay.GameImages.OBJ_WOODEN_DOOR_BROKEN},
