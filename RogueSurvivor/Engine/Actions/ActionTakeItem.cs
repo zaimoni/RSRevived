@@ -18,9 +18,9 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_Location;
     private readonly Item m_Item;
+    private readonly MapObject m_Container = null;
 
-    public ActionTakeItem(Actor actor, in Location loc, Item it)
-      : base(actor)
+    public ActionTakeItem(Actor actor, in Location loc, Item it) : base(actor)
     {
 #if DEBUG
       var ai = actor.Controller as Gameplay.AI.ObjectiveAI;
@@ -32,19 +32,27 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
       m_Location = loc;
       m_Item = it;
+      var obj = loc.Map.GetMapObjectAtExt(loc.Position);
+      if (null != obj && obj.IsContainer && obj.Inventory.Contains(it)) m_Container = obj;
+
 #if DEBUG
-      var itemsAt = loc.Map.GetItemsAtExt(loc.Position);
-      if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
+      else {
+        var itemsAt = loc.Map.GetItemsAtExt(loc.Position);
+        if (null == itemsAt || !itemsAt.Contains(it))
+          throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
+      }
 #endif
     }
 
     public Item Take { get { return m_Item; } }
 
+    private Inventory? _inv { get { return null != m_Container ? m_Container.Inventory : m_Location.Map.GetItemsAtExt(m_Location.Position); } }
+    private Location _loc { get { return null != m_Container ? m_Container.Location : m_Location; } }
+
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      var itemsAt = m_Location.Map.GetItemsAtExt(m_Location.Position);
-      if (!itemsAt?.Contains(m_Item) ?? true) return false;
+      if (!_inv?.Contains(m_Item) ?? true) return false;
       if (m_Actor.Inventory.Contains(m_Item)) return false; // can happen when returning to task
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
@@ -52,7 +60,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsPerformable()
     {
       if (!base.IsPerformable()) return false;
-      return m_Actor.MayTakeFromStackAt(in m_Location);
+      return m_Actor.MayTakeFromStackAt(_loc);
     }
 
     public override void Perform()
@@ -60,7 +68,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 #if DEBUG
       if (!m_Actor.MayTakeFromStackAt(in m_Location)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + m_Location + " at " + m_Actor.Location);
 #endif
-      if (m_Location.Map==m_Actor.Location.Map) RogueForm.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
+      if (null != m_Container) RogueForm.Game.DoTakeItem(m_Actor, m_Container, m_Item);
+      else if (m_Location.Map==m_Actor.Location.Map) RogueForm.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
     }
 
     public override string ToString()
@@ -75,9 +84,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Gameplay.GameItems.IDs m_ID;
     [NonSerialized] private Item? m_Item;
     [NonSerialized] private Point? m_pos;
+    [NonSerialized] private MapObject m_Container;
 
-    public ActionTake(Actor actor, Gameplay.GameItems.IDs it)
-      : base(actor)
+    public ActionTake(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
     {
       m_ID = it;
     }
@@ -103,10 +112,14 @@ namespace djack.RogueSurvivor.Engine.Actions
         m_Item = x.Value.GetFirstByModel(model);
         if (null != m_Item) {
           m_pos = x.Key;
+          var obj = m_Actor.Location.Map.GetMapObjectAtExt(x.Key);
+          if (null != obj && obj.IsContainer && obj.Inventory.Contains(m_Item)) m_Container = obj;
           return;
         }
       }
     }
+
+    private Inventory? _inv { get { return null != m_Container ? m_Container.Inventory : m_Actor.Location.Map.GetItemsAtExt(m_pos.Value); } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
@@ -122,9 +135,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       Item it = Item!;  // cf IsLegal(), above
-      m_Actor.Inventory.RejectCrossLink(m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)!);
-      RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
-      m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.RejectCrossLink(m_Actor.Inventory);
+      m_Actor.Inventory.RejectCrossLink(_inv!);
+      if (null != m_Container) RogueForm.Game.DoTakeItem(m_Actor, m_Container, m_Item);
+      else RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
+      _inv?.RejectCrossLink(m_Actor.Inventory);
     }
 
     public override string ToString()

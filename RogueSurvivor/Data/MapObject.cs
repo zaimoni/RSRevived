@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Linq;
 using Zaimoni.Data;
 
 using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
@@ -26,6 +27,7 @@ namespace djack.RogueSurvivor.Data
     private int m_HitPoints;
     private Fire m_FireState;
     private Location m_Location;
+    private Inventory? m_Inventory = null;
 
     public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
     public string TheName { get { return _ID_Name(m_ID).PrefixDefiniteSingularArticle(); } }
@@ -67,7 +69,7 @@ namespace djack.RogueSurvivor.Data
     virtual public bool IsWalkable { get { return GetFlag(Flags.IS_WALKABLE); } }
     public int JumpLevel { get { return m_JumpLevel; } }
     public bool IsJumpable { get { return m_JumpLevel > 0; } }
-    public bool IsContainer { get { return GetFlag(Flags.IS_CONTAINER); } }
+    public bool IsContainer { get { return null != m_Inventory; } }
     public bool IsCouch { get { return GetFlag(Flags.IS_COUCH); } }
     public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
 
@@ -76,7 +78,24 @@ namespace djack.RogueSurvivor.Data
       protected set { // Cf IsTransparent which affects LOS calculations
         Break old = m_BreakState;
         m_BreakState = value;
-        if ((Break.BROKEN == old)!=(Break.BROKEN == value)) InvalidateLOS();
+        bool now_broken = Break.BROKEN == value;
+        if ((Break.BROKEN == old)!= now_broken) InvalidateLOS();
+        if (now_broken) {
+          if (null != m_Inventory) {
+            if (!m_Inventory.IsEmpty) {
+              // cf. RogueGame::KillActor
+              foreach (Item it in m_Inventory.Items.ToArray()) {
+                if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
+                if (it.Model.IsUnbreakable || it.IsUnique || Engine.Rules.Get.RollChance(Engine.RogueGame.ItemSurviveKillProbability(it, "suicide"))) { // not really, but this keys the most lenient drop probabilities
+                  m_Inventory.RemoveAllQuantity(it);
+                  Location.Drop(it);
+                }
+              }
+              Engine.Session.Get.PoliceInvestigate.Record(Location);  // cheating ai: police consider death drops tourism targets
+            }
+            m_Inventory = null;
+          }
+        } else if (_ID_IsContainer(m_ID) && null == m_Inventory) m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
       }
     }
 
@@ -375,7 +394,7 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
-      if (_ID_IsContainer(m_ID)) m_Flags |= Flags.IS_CONTAINER;
+      if (_ID_IsContainer(m_ID)) m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
       if (_ID_IsWalkable(m_ID)) m_Flags |= Flags.IS_WALKABLE;
       m_JumpLevel = _ID_Jumplevel(m_ID);
 
@@ -414,25 +433,23 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-    public void PutItemIn(Item gift)
+    public bool PutItemIn(Item gift)
     {
 #if DEBUG
       if (!IsContainer) throw new InvalidOperationException("cannot put "+gift+" into non-container "+this+" @ "+Location);
 #endif
       if (gift is Engine.Items.ItemTrap trap) trap.Desactivate();    // alpha10
-      Location.Drop(gift);  // VAPORWARE: containers actually have inventory and items they contain are pushed with them
+      return m_Inventory.AddAll(gift);
     }
 
     public Inventory? Inventory { get {
 #if DEBUG
       if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
 #endif
-      return Location.Items;
+      return m_Inventory;
     } }
 
-    public void TransferFrom(Item it, Inventory dest) {
-      Location.Map.TransferFrom(it, Location.Position, dest);
-    }
+    public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
 
     private string ReasonCantPushTo(Point toPos)
     {
@@ -599,11 +616,11 @@ namespace djack.RogueSurvivor.Data
     private enum Flags
     {
       NONE = 0,
-      IS_AN = 1,    // XXX dead, retaining for binary compatibility
+      IS_AN = 1,    // XXX dead, retaining for historical reference
       IS_PLURAL = 2,
       IS_MATERIAL_TRANSPARENT = 4,
       IS_WALKABLE = 8,
-      IS_CONTAINER = 16,
+      IS_CONTAINER = 16,    // XXX dead, retaining for historical reference
       IS_COUCH = 32,
       GIVES_WOOD = 64,
       IS_MOVABLE = 128,

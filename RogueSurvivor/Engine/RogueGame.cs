@@ -8948,8 +8948,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      container.PutItemIn(gift);
-      actor.Remove(gift, false);
+      if (container.PutItemIn(gift)) actor.Remove(gift, false);
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
         AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
@@ -9595,7 +9594,7 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(loud_noise);
     }
 
-    static private int ItemSurviveKillProbability(Item it, string reason)
+    static public int ItemSurviveKillProbability(Item it, string reason)
     {
       switch(reason)    // XXX be sure not to typo
       {
@@ -9822,7 +9821,7 @@ namespace djack.RogueSurvivor.Engine
        Point dropOnTile;
        if (dropTiles.Count > 0) dropOnTile = Rules.Get.DiceRoller.Choose(dropTiles);
        else dropOnTile = actor.Location.Position;
-       actor.Location.Map.DropItemAt(disarmIt, in dropOnTile);
+       actor.Location.Map.DropItemAt(disarmIt, in dropOnTile);  // formal fix \todo this could end up making a dropped item inaccessible?
 
        return disarmIt; // done
     }

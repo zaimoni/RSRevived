@@ -808,8 +808,9 @@ restart:
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, pt => {
           if (!subway.IsWalkable(pt) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
-          subway.PlaceAt(MakeObjShelf(), pt);
-          subway.DropItemAt(MakeShopConstructionItem(), in pt);
+          var shelf = MakeObjShelf();
+          subway.PlaceAt(shelf, pt);
+          shelf.Inventory.AddAll(MakeShopConstructionItem());
         });
         break;
       }
@@ -1360,12 +1361,13 @@ restart:
         if (0 == CountAdjWalls(map, pt)) return;
 
         // shelf.
-        map.PlaceAt(MakeObjShelf(), pt);
+        var shelf = MakeObjShelf();
+        map.PlaceAt(shelf, pt);
 
         // construction item (tools, lights)
         Item it = MakeShopConstructionItem();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
-        map.DropItemAt(it, in pt);
+        shelf.Inventory.AddAll(it);
         Session.Get.PoliceInvestigate.Record(map, in pt);
       });
     }
@@ -1724,9 +1726,10 @@ restart:
           return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
-          map.DropItemAt(MakeItemCannedFood(), in pt);
+          var fridge = MakeObjFridge();
+          fridge.Inventory.AddAll(MakeItemCannedFood());
           Session.Get.PoliceInvestigate.Record(map, in pt);
-          return MakeObjFridge();
+          return fridge;
         }));
       }
       Actor newCivilian = CreateNewCivilian(0, RogueGame.REFUGEES_WAVE_ITEMS, 1);
@@ -2036,9 +2039,10 @@ restart:
               return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
-              map.DropItemAt(MakeRandomBedroomItem(), in pt);
+              var drawer = (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
+              drawer.Inventory.AddAll(MakeRandomBedroomItem());
               Session.Get.PoliceInvestigate.Record(map, in pt);
-              return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
+              return drawer;
             }));
           break;
         case 5:
@@ -2092,15 +2096,15 @@ restart:
             return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
+            var fridge = MakeObjFridge();
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
-              map.DropItemAt(MakeRandomKitchenItem(), in pt);
+              fridge.Inventory.AddAll(MakeRandomKitchenItem());
             }
             Session.Get.PoliceInvestigate.Record(map, in pt);
-            return MakeObjFridge();
+            return fridge;
           }));
           break;
-        default:
-          throw new InvalidOperationException("unhandled roll");
+        default: throw new InvalidProgramException("unhandled roll");
       }
     }
 
@@ -2520,16 +2524,17 @@ restart:
         if (basement.HasExitAt(in pt)) return null;
         if (!basement.IsWalkable(pt)) return null;
         switch (m_DiceRoller.Roll(0, 5)) {
-          case 0:
-            return MakeObjJunk();
-          case 1:
-            return MakeObjBarrels();
+          case 0: return MakeObjJunk();
+          case 1: return MakeObjBarrels();
           case 2:
             basement.DropItemAt(MakeShopConstructionItem(), in pt);
             return MakeObjTable(GameImages.OBJ_TABLE);
           case 3:
-            basement.DropItemAt(MakeShopConstructionItem(), in pt);
-            return MakeObjDrawer();
+            {
+            var drawer = MakeObjDrawer();
+            drawer.Inventory.AddAll(MakeShopConstructionItem());
+            return drawer;
+            }
 #if DEBUG
           case 4:
 #else
@@ -2537,8 +2542,7 @@ restart:
 #endif
             return MakeObjBed(GameImages.OBJ_BED);
 #if DEBUG
-          default:
-            throw new ArgumentOutOfRangeException("unhandled roll");
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
 #endif
         }
       }));
@@ -2551,18 +2555,20 @@ restart:
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
         MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(in pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         { // survivalist weapons cache.  Grenades were not acquired locally.  Guaranteed usable.
-          basement.DropItemAt(MakeItemGrenade(), in pt);
-          basement.DropItemAt(MakeItemGrenade(), in pt);
+          var shelf = MakeObjShelf();
+          var o_inv = shelf.Inventory!;
+          o_inv.AddAll(MakeItemGrenade());
+          o_inv.AddAll(MakeItemGrenade());
           // There will be a primary ranged weapon (with 2 ammo clips)
           // and a secondary ranged weapon (with one ammo clip)
           KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
-          basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Key), in pt);
-          basement.DropItemAt(ItemRangedWeapon.make(survivalist_cache_ranged.Value), in pt);
-          basement.DropItemAt(ItemAmmo.make(survivalist_cache_ranged.Value), in pt);
+          o_inv.AddAll(ItemRangedWeapon.make(survivalist_cache_ranged.Key));
+          o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Key));
+          o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Key));
+          o_inv.AddAll(ItemRangedWeapon.make(survivalist_cache_ranged.Value));
+          o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Value));
           Session.Get.PoliceInvestigate.Record(basement, in pt);
-          return MakeObjShelf();
+          return shelf;
         }));
 
       // alpha10
@@ -2751,8 +2757,9 @@ restart:
         if (map.HasExitAt(in pt)) return null;
         int choice = m_DiceRoller.Roll(0, CHAR_armory_checksum / 4*5);   // historically 80% chance of an item
         if (CHAR_armory_checksum <= choice) return null;
-        map.DropItemAt(PostprocessQuantity(Models.Items[(int)CHAR_armory_stock.UseRarityTable(choice)].create()), in pt);
-        return MakeObjShelf();
+        var shelf = MakeObjShelf();
+        shelf.Inventory.AddAll(PostprocessQuantity(Models.Items[(int)CHAR_armory_stock.UseRarityTable(choice)].create()));
+        return shelf;
       }));
     }
 
@@ -2804,8 +2811,9 @@ restart:
         if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
-        map.DropItemAt(MakeHospitalItem(), in pt);
-        return MakeObjShelf();
+        var shelf = MakeObjShelf();
+        shelf.Inventory.AddAll(MakeHospitalItem());
+        return shelf;
       }));
     }
 
@@ -2914,8 +2922,9 @@ restart:
           PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
             if (!map.IsWalkable(pt) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
-            map.PlaceAt(MakeObjShelf(), pt);
-            map.DropItemAt(stock_armory(), in pt);
+            var shelf = MakeObjShelf();
+            map.PlaceAt(shelf, pt);
+            shelf.Inventory.AddAll(stock_armory());
           });
           map.AddZone(MakeUniqueZone("security", rect3));
           continue;
@@ -3435,8 +3444,9 @@ restart:
       Point bedAt = room.Anchor(Compass.XCOMlike.S)+Direction.N;
       map.PlaceAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), bedAt);
       map.PlaceAt(MakeObjChair(GameImages.OBJ_HOSPITAL_CHAIR), bedAt+facing);
-      Point nightTableAt = bedAt - facing;
-      map.PlaceAt(MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE), nightTableAt);
+      var table = MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE);
+      var pt = bedAt - facing;
+      map.PlaceAt(table, pt);
 
       // Inefficient, but avoids polluting interface
       Item furnish() {
@@ -3452,7 +3462,7 @@ restart:
         }
       };
 
-      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), in nightTableAt);
+      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), in pt);
       Direction wardrobe_dir = isFacingEast ? Direction.NW : Direction.NE;
       map.PlaceAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), room.Anchor((Compass.XCOMlike)wardrobe_dir.Index)- wardrobe_dir);
     }
@@ -3477,10 +3487,11 @@ restart:
       PlaceDoor(map, room.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
       DoForEachTile(room, pt => {
         if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
-        map.PlaceAt(MakeObjShelf(), pt);
+        var shelf = MakeObjShelf();
+        map.PlaceAt(shelf, pt);
         Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
-        map.DropItemAt(it, in pt);
+        shelf.Inventory.AddAll(it);
       });
     }
 

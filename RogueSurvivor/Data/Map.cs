@@ -2502,6 +2502,17 @@ retry:
       string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
       List<string> actor_data = new List<string>();
       string[][] ascii_map = new string[Height][];
+
+      void _process_inv(Inventory inv, int x, int y) {
+        if (!inv?.IsEmpty ?? false) {
+          string p_txt = '('+x.ToString()+','+y.ToString()+')';
+          foreach (Item it in inv.Items) {
+            inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
+          }
+          ascii_map[y][x] = "&"; // Angband/Nethack pile.
+        }
+      }
+
       foreach(short y in Enumerable.Range(0, Height)) {
         ascii_map[y] = new string[Width];
         foreach(short x in Enumerable.Range(0, Width)) {
@@ -2569,18 +2580,10 @@ retry:
                 }
               }
             }
+            if (tmp_obj.IsContainer) _process_inv(tmp_obj.Inventory, x, y);
 		  }
 #endregion
-#region map inventory
-          var inv = GetItemsAt(pt);
-          if (!inv?.IsEmpty ?? false) {
-            string p_txt = '('+x.ToString()+','+y.ToString()+')';
-            foreach (Item it in inv.Items) {
-              inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
-            }
-            ascii_map[y][x] = "&"; // Angband/Nethack pile.
-          }
-#endregion
+          _process_inv(GetItemsAt(pt), x, y);
 #region actors
           Actor a = GetActorAt(pt);
           if (null!=a && !a.IsDead) {

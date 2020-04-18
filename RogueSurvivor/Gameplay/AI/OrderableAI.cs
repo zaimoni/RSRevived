@@ -2164,7 +2164,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= final_range.Count) return null;
       range = final_range;
 
-      // start function target
       var adjacent = m_Actor.OnePathRange(m_Actor.Location);
       if (null == adjacent) return null;
       adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsPerformable() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
@@ -2172,7 +2171,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       adjacent.OnlyIf(loc => range.ContainsKey(loc));
       if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts));
 
-      // end function target
       var init_costs = new Dictionary<Location,int>();
       foreach(var x in range) init_costs[x.Key] = 0;
 
@@ -2884,7 +2882,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
-        ActorAction tmp = new ActionTakeItem(m_Actor, in loc, obj);
+        ActorAction tmp = new ActionTakeItem(m_Actor, in loc, obj); // FIX \todo fails if taking from a container
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
