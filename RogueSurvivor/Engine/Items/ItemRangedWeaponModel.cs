@@ -37,6 +37,5 @@ namespace djack.RogueSurvivor.Engine.Items
         return (_rw ?? (_rw = instantiate()));
       }
     }
-
   }
 }

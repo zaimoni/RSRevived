@@ -68,6 +68,5 @@ namespace djack.RogueSurvivor.Engine
         throw new InvalidOperationException(string.Format("invalid data format for {0} {1}; exception : {2}", typeof(_T_).ToString(), modelID.ToString(), ex.ToString()));
       }
     }
-
   }
 }
