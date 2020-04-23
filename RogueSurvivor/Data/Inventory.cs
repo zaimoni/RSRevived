@@ -78,7 +78,6 @@ namespace djack.RogueSurvivor.Data
       RepairZeroQty();
     }
 
-
     public bool AddAll(Item it)
     {
       RejectContains(it, "already had ");
@@ -383,7 +382,6 @@ namespace djack.RogueSurvivor.Data
       return null != GetFirst<_T_>(ok);
     }
 
-
     public _T_? GetFirst<_T_>() where _T_ : Item
     {
       foreach (Item it in m_Items) if (it is _T_ obj) return obj;
@@ -543,7 +541,6 @@ namespace djack.RogueSurvivor.Data
       _RejectZeroQty();
       _RepairZeroQty();
     }
-
 
     [Conditional("DEBUG")]
     public void RejectCrossLink(Inventory other)

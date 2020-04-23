@@ -64,7 +64,6 @@ namespace Zaimoni.Data
             _inverse = Inverse;
         }
 
-
         // blacklist manipulation
         public void Blacklist(IEnumerable<T> src)
         {

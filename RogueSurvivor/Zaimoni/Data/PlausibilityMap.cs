@@ -184,7 +184,6 @@ namespace Zaimoni.Data
             IncludeCertain(Certain);
         }
 
-
         class NormalizeScaler
         {
             readonly int _actual;

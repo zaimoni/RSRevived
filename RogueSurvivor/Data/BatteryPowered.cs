@@ -1,5 +1,4 @@
-﻿
-namespace djack.RogueSurvivor.Data
+﻿namespace djack.RogueSurvivor.Data
 {
     internal interface BatteryPowered
     {

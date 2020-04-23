@@ -36,7 +36,6 @@ using System;
 
 namespace Microsoft
 {
-
     [Serializable]
     public class Random
     {
@@ -129,7 +128,6 @@ namespace Microsoft
         // Public Instance Methods
         //
 
-
         /*=====================================Next=====================================
         **Returns: An int [0..Int32.MaxValue)
         **Arguments: None
@@ -160,7 +158,6 @@ namespace Microsoft
             return d;
         }
 
-
         /*=====================================Next=====================================
         **Returns: An int [minvalue..maxvalue)
         **Arguments: minValue -- the least legal value for the Random number.
@@ -182,7 +179,6 @@ namespace Microsoft
             }
         }
 
-
         /*=====================================Next=====================================
         **Returns: An int [0..maxValue)
         **Arguments: maxValue -- One more than the greatest legal return value.
@@ -194,7 +190,6 @@ namespace Microsoft
             return (int)(Sample() * maxValue);
         }
 
-
         /*=====================================Next=====================================
         **Returns: A double [0..1)
         **Arguments: None
@@ -204,7 +199,6 @@ namespace Microsoft
         {
             return Sample();
         }
-
 
         /*==================================NextBytes===================================
         **Action:  Fills the byte array with random bytes [0..0x7f].  The entire array is filled.

@@ -62,7 +62,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-
     public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
     public int BarricadePoints { get { return m_BarricadePoints; } }
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }

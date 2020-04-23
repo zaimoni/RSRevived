@@ -297,7 +297,6 @@ namespace djack.RogueSurvivor
         UI_DrawStringBold(text.Key, text.Value, gx, gy, shadowColor);
     }
 
-
     public void UI_DrawRect(Color color, Rectangle rect)
     {
 #if DEBUG
