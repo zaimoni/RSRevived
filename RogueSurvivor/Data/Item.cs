@@ -129,7 +129,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     // thin wrappers
-    public void DropAt(Map m, in Point pos) {m.DropItemAt(this, in pos);} // this guaranteed non-null so non-null precondition ok
+    public void DropAt(Map m, in Point pos) {   // used only in map generation
+      var obj = m.GetMapObjectAt(pos);
+      if (null != obj && obj.IsContainer) obj.PutItemIn(this);
+      else m.DropItemAt(this, in pos);
+    }
 
     public override string ToString()
     {

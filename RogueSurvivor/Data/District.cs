@@ -122,6 +122,11 @@ namespace djack.RogueSurvivor.Data
         var zones = map.GetZonesAt(pt);
         if (null == zones) throw new InvalidOperationException(map.Name+": unzoned "+pt.to_s());
       });
+      // we're bringing up containers
+      map.DoForAllGroundInventories((loc,inv) => {
+          var obj = loc.MapObject;
+          if (null != obj && obj.IsContainer) throw new InvalidOperationException("failed to convert to proper container use at game start");
+      });
 #endif
     }
 
