@@ -10123,6 +10123,29 @@ namespace djack.RogueSurvivor.Engine
       HandleHiScores(true);
     }
 
+    private void PCsurvival(PlayerController pc, Data.Message msg_alive, Data.Message msg_welcome)
+    {
+        if (IsSimulating || IsPlayer(pc.ControlledActor)) {
+            pc.DeferMessage(msg_alive);
+            pc.DeferMessage(msg_welcome);
+        } else {
+            ClearOverlays();
+            AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+            m_MusicManager.Stop();
+            m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+            ClearMessages();
+            AddMessage(msg_alive);
+            pc.UpdateSensors();
+            AddMessagePressEnter();
+            // HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
+            ClearMessages();
+            AddMessage(msg_welcome);
+            ClearOverlays();
+            RedrawPlayScreen();
+            m_MusicManager.Stop();
+        }
+    }
+
     private void HandleNewNight(Actor victor)
     {
       if (!victor.Model.Abilities.IsUndead) return;
@@ -10133,27 +10156,9 @@ namespace djack.RogueSurvivor.Engine
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(victor.Model)) return;
       if (victor.Controller is PlayerController pc) {
         int turn = Session.Get.WorldTime.TurnCounter;
-        var msg_alive = new Data.Message("You will hunt another day!", turn, Color.Green);  // \todo cache these in multi-PC case (could only have 2 message objects rather than 2n)
-        var msg_welcome = new Data.Message("Welcome to the night.", turn, Color.White);
-        if (IsSimulating || victor!=Player) {
-          pc.DeferMessage(msg_alive);
-          pc.DeferMessage(msg_welcome);
-        } else {
-          ClearOverlays();
-          AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-          m_MusicManager.Stop();
-          m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-          ClearMessages();
-          AddMessage(msg_alive);
-          pc.UpdateSensors();
-          AddMessagePressEnter();
-//        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
-          ClearMessages();
-          AddMessage(msg_welcome);
-          ClearOverlays();
-          RedrawPlayScreen();
-          m_MusicManager.Stop();
-        }
+        // \todo cache these messages in multiple-PC case?
+        PCsurvival(pc, new Data.Message("You will hunt another day!", turn, Color.Green),
+                       new Data.Message("Welcome to the night.", turn, Color.White));
       }
     }
 
@@ -12779,27 +12784,9 @@ namespace djack.RogueSurvivor.Engine
       if (victor.Model.Abilities.IsUndead) return;
       if (victor.Controller is PlayerController pc) {
         var turn = Session.Get.WorldTime.TurnCounter;
-        var msg_alive = new Data.Message("You survived another night!", turn, Color.Green);
-        var msg_welcome = new Data.Message("Welcome to tomorrow.", turn, Color.White);
-        if (IsSimulating || victor!=Player) {
-          pc.DeferMessage(msg_alive);
-          pc.DeferMessage(msg_welcome);
-        } else {
-          ClearOverlays();
-          AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-          m_MusicManager.Stop();
-          m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-          ClearMessages();
-          AddMessage(msg_alive);
-          pc.UpdateSensors();
-          AddMessagePressEnter();
-//        HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
-          ClearMessages();
-          AddMessage(msg_welcome);
-          ClearOverlays();
-          RedrawPlayScreen();
-          m_MusicManager.Stop();
-        }
+        // \todo cache these messages in multiple-PC case?
+        PCsurvival(pc, new Data.Message("You survived another night!", turn, Color.Green),
+                       new Data.Message("Welcome to tomorrow.", turn, Color.White));
       }
       // XXX \todo these are notable achievements
       switch(Session.Get.WorldTime.Day - new WorldTime(victor.SpawnTime).Day) {
