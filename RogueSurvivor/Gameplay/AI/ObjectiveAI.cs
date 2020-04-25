@@ -2277,8 +2277,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  ThreatTracking threats = m_Actor.Threats;
-	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  var threats = m_Actor.Threats;
+	  var sights_to_see = m_Actor.InterestingLocs;
 	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
@@ -2350,8 +2350,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  ThreatTracking threats = m_Actor.Threats;
-	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  var threats = m_Actor.Threats;
+	  var sights_to_see = m_Actor.InterestingLocs;
 	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
@@ -2361,7 +2361,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	    // only need points newly in FOV that aren't currently
 	    foreach(var x in dests) {
-          if (x.Value is ActionUseExit) continue;
+          if (x.Value.Key is ActionUseExit) continue;
           Location? test = m_Actor.Location.Map.Denormalize(x.Key);
           if (null == test) throw new ArgumentNullException(nameof(test));
 	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
@@ -5621,10 +5621,11 @@ restart_single_exit:
     /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
     static public bool TradeVeto(Item mine, Item theirs)
     {
+      var rw_model = mine.Model as ItemRangedWeaponModel;
       // reject identity trades for now.  This will change once AI state is involved.
       if (mine.Model == theirs.Model) {
         // ranged weapons: require ours to have strictly less ammo
-        if (mine.Model is ItemRangedWeaponModel) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
+        if (null != rw_model) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
         // battery-powered items: require strictly less charge (police radios not included as they are low-grade generators)
         if (mine is BatteryPowered test && mine.Model.ID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
         // generally, if stackable we want to trade away the smaller stack (intercepting partial take from ground inventory is a higher order test)
@@ -5633,31 +5634,11 @@ restart_single_exit:
         return true;
       }
 
+      // do not trade away weapon for own ammo
+      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
+
       switch(mine.Model.ID)
       {
-      // two weapons for the ammo
-      case GameItems.IDs.RANGED_PRECISION_RIFLE:
-      case GameItems.IDs.RANGED_ARMY_RIFLE:
-        if (GameItems.IDs.AMMO_HEAVY_RIFLE==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_PISTOL:
-      case GameItems.IDs.RANGED_KOLT_REVOLVER:
-        if (GameItems.IDs.AMMO_LIGHT_PISTOL==theirs.Model.ID) return true;
-        break;
-      // one weapon for the ammo
-      case GameItems.IDs.RANGED_ARMY_PISTOL:
-        if (GameItems.IDs.AMMO_HEAVY_PISTOL==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
-        if (GameItems.IDs.AMMO_BOLTS==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_RIFLE:
-        if (GameItems.IDs.AMMO_LIGHT_RIFLE==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_SHOTGUN:
-        if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
-        break;
-
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
       case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
         if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
@@ -5673,31 +5654,11 @@ restart_single_exit:
     /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
     public bool InventoryTradeVeto(Item mine, Item theirs)
     {
-      switch(mine.Model.ID)
-      {
-      // two weapons for the ammo
-      case GameItems.IDs.RANGED_PRECISION_RIFLE:
-      case GameItems.IDs.RANGED_ARMY_RIFLE:
-        if (GameItems.IDs.AMMO_HEAVY_RIFLE==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_PISTOL:
-      case GameItems.IDs.RANGED_KOLT_REVOLVER:
-        if (GameItems.IDs.AMMO_LIGHT_PISTOL==theirs.Model.ID) return true;
-        break;
-      // one weapon for the ammo
-      case GameItems.IDs.RANGED_ARMY_PISTOL:
-        if (GameItems.IDs.AMMO_HEAVY_PISTOL==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
-        if (GameItems.IDs.AMMO_BOLTS==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_RIFLE:
-        if (GameItems.IDs.AMMO_LIGHT_RIFLE==theirs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_SHOTGUN:
-        if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
-        break;
-      }
+      var rw_model = mine.Model as ItemRangedWeaponModel;
+
+      // do not trade away weapon for own ammo
+      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
+
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
       if (mine is ItemAmmo am) {
