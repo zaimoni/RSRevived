@@ -10699,6 +10699,11 @@ namespace djack.RogueSurvivor.Engine
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
+            if (player && mapObjectAt.IsContainer) {
+              // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
+              var itemsAt = mapObjectAt.Inventory;  // will not handle concealed inventory
+              if (!itemsAt.IsEmpty) DrawItemsStack(itemsAt, screen, tint);
+            }
           }
           if (p_is_awake && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
             if (canScentTrack && isUndead) {
