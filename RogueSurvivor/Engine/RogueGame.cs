@@ -4245,6 +4245,10 @@ namespace djack.RogueSurvivor.Engine
             var obj = player.Location.Map.GetMapObjectAtExt(pos);
             if (null == obj || !obj.IsContainer) ground_inv = null;
           }
+        } else if (next_to) {
+          var obj = player.Location.Map.GetMapObjectAtExt(pos);
+          if (null != obj && obj.IsContainer) ground_inv = obj.Inventory;
+          if (ground_inv.IsEmpty) ground_inv = null;
         }
         if (null != ground_inv) {
           DoTrade(pc, inventoryItem, ground_inv);

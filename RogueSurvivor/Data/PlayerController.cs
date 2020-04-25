@@ -267,7 +267,9 @@ namespace djack.RogueSurvivor.Data
     // originally in Actor
     private string ReasonCantGetFromContainer(Location loc)
     {
-      if (!loc.MapObject?.IsContainer ?? true) return "object is not a container";
+      var obj = loc.MapObject;
+      if (null == obj || !obj.IsContainer) return "object is not a container";
+      if (!obj.Inventory.IsEmpty) return "";
       if (loc.Items?.IsEmpty ?? true) return "nothing to take there";
       return "";
     }
