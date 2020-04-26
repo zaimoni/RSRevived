@@ -3793,6 +3793,33 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+    private bool _HandlePlayerInventory(Actor player, Item it)
+    {
+      if (it.IsEquipped) {
+        if (player.CanUnequip(it, out string reason)) {
+          it.UnequippedBy(Player);
+          return false;
+        }
+        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
+        return false;
+      }
+      if (it.Model.IsEquipable) {
+        if (player.CanEquip(it, out string reason)) {
+          it.EquippedBy(player);
+          return false;
+        }
+        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
+        return false;
+      }
+      // Above strictly implies that an equippable item that also can be used, is not used by mouse click
+      if (player.CanUse(it, out string reason1)) {
+        DoUseItem(player, it);
+        return true;
+      }
+      AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
+      return false;
+    }
+
     private bool HandleMouseInventory(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
@@ -3813,31 +3840,8 @@ namespace djack.RogueSurvivor.Engine
 
       bool OnLMBItem(Item it)
       {
-        if (isPlayerInventory) {
-          if (it.IsEquipped) {
-            if (Player.CanUnequip(it, out string reason)) {
-              it.UnequippedBy(Player);
-              return false;
-            }
-            AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
-            return false;
-          }
-          if (it.Model.IsEquipable) {
-            if (Player.CanEquip(it, out string reason)) {
-              it.EquippedBy(Player);
-              return false;
-            }
-            AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
-            return false;
-          }
-          // Above strictly implies that an equippable item that also can be used, is not used by mouse click
-          if (Player.CanUse(it, out string reason1)) {
-            DoUseItem(Player, it);
-            return true;
-          }
-          AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
-          return false;
-        }   // if (isPlayerInventory)
+        if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
+
         if (Player.CanGet(it, out string reason2)) {
           DoTakeItem(Player, Player.Location.Position, it);
           return true;
@@ -4086,28 +4090,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
         return false;
       }
-      if (it.IsEquipped) {
-        if (player.CanUnequip(it, out string reason)) { // constant true, for now
-          it.UnequippedBy(player);
-          return false;
-        }
-        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
-        return false;
-      }
-      if (it.Model.IsEquipable) {
-        if (player.CanEquip(it, out string reason)) {
-          it.EquippedBy(player);
-          return false;
-        }
-        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
-        return false;
-      }
-      if (player.CanUse(it, out string reason1)) {
-        DoUseItem(player, it);
-        return true;
-      }
-      AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
-      return false;
+      return _HandlePlayerInventory(player, it);
     }
 
     private bool DoPlayerItemSlotTake(Actor player, int slot)
