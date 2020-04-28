@@ -764,7 +764,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
 #endif
             m_Actor.Activity = Activity.IDLE;
-            _adjacent_friends = null;
             return tmpAction;
           }
         }
@@ -775,7 +774,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
 #endif
             m_Actor.Activity = Activity.IDLE;
-            _adjacent_friends = null;
             return tmpAction;
           }
         }
@@ -786,7 +784,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
 #endif
             m_Actor.Activity = Activity.IDLE;
-            _adjacent_friends = null;
             return tmpAction;
           }
         }
@@ -797,11 +794,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
 #endif
             m_Actor.Activity = Activity.IDLE;
-           _adjacent_friends = null;
             return tmpAction;
           }
         }
-        _adjacent_friends = null;
 	  }
 
       if (m_Actor.CountFollowers > 0) {

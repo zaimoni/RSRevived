@@ -752,8 +752,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept m_LastRaidHeard;
 #nullable enable
     [NonSerialized] static private Percept? _lastRaidHeard; // staging for m_LastRaidHeard
+    [NonSerialized] private List<Actor>? _adjacent_friends;    // cache variable for above four
 #nullable restore
-    [NonSerialized] protected List<Actor> _adjacent_friends;    // cache variable for above four
     protected bool m_ReachedPatrolPoint;
     protected int m_ReportStage;
 
@@ -770,6 +770,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Order = newOrder;
       m_ReachedPatrolPoint = false;
       m_ReportStage = 0;
+    }
+
+    protected override void ResetAICache()
+    {
+      base.ResetAICache();
+      _adjacent_friends = null;
+    }
+
+    private List<Actor>? AdjacentFriends() {
+      if (null == _adjacent_friends) {
+        var scan_friends = friends_in_FOV;
+        if (null == scan_friends) return null;
+        _adjacent_friends = new List<Actor>();
+        foreach(var x in scan_friends) {
+          if (!(x.Value.Controller is ObjectiveAI ai)) continue;
+          if (   1 >= Rules.InteractionDistance(m_Actor.Location,x.Key)
+              && !x.Value.IsSleeping
+              && !ai.IsEngaged)   // RS Revived: don't chat to a combatant
+            _adjacent_friends.Add(x.Value);
+        }
+      }
+      return 0<_adjacent_friends.Count ? _adjacent_friends : null;
     }
 #nullable restore
 
@@ -1616,44 +1638,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionSay? BehaviorTellFriendAboutPercept(Percept percept, int chance)
     {
-      var scan_friends = friends_in_FOV;
-      if (null == scan_friends) return null;
-      if (null == _adjacent_friends) {
-        _adjacent_friends = new List<Actor>();
-        foreach(var x in scan_friends) {
-          if (!(x.Value.Controller is ObjectiveAI ai)) continue;
-          if (   1 >= Rules.InteractionDistance(m_Actor.Location,x.Key)
-              && !x.Value.IsSleeping
-              && !ai.IsEngaged)   // RS Revived: don't chat to a combatant
-            _adjacent_friends.Add(x.Value);
-        }
-      }
-      if (0 >= _adjacent_friends.Count) return null;
+      var friends = AdjacentFriends();
+      if (null == friends) return null;
       var rules = Rules.Get;
       if (!rules.RollChance(chance)) return null;
-      Actor actorAt1 = rules.DiceRoller.Choose(_adjacent_friends);
+      Actor actorAt1 = rules.DiceRoller.Choose(friends);
       string text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
     protected ActionSay? BehaviorTellFriendAboutPercept(Percept_<Actor> percept, int chance)
     {
-      var scan_friends = friends_in_FOV;
-      if (null == scan_friends) return null;
-      if (null == _adjacent_friends) {
-        _adjacent_friends = new List<Actor>();
-        foreach(var x in scan_friends) {
-          if (!(x.Value.Controller is ObjectiveAI ai)) continue;
-          if (   1 >= Rules.InteractionDistance(m_Actor.Location,x.Key)
-              && !x.Value.IsSleeping
-              && !ai.IsEngaged)   // RS Revived: don't chat to a combatant
-            _adjacent_friends.Add(x.Value);
-        }
-      }
-      if (0 >= _adjacent_friends.Count) return null;
+      var friends = AdjacentFriends();
+      if (null == friends) return null;
       var rules = Rules.Get;
       if (!rules.RollChance(chance)) return null;
-      Actor actorAt1 = rules.DiceRoller.Choose(_adjacent_friends);
+      Actor actorAt1 = rules.DiceRoller.Choose(friends);
       string text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
