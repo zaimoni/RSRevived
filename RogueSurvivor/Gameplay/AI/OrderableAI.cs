@@ -1733,18 +1733,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathToAdjacent(target.Location);
     }
 
+#nullable enable
     protected ActorAction? BehaviorLeadActor(Percept_<Actor> target)
     {
       Actor target1 = target.Percepted;
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
-      // need an after-action "hint" to the target on where/who to go to
-      if (!m_Actor.WillActAgainBefore(target1) && !((target1.Controller as OrderableAI)?.IsFocused ?? true)) {
+      if (!m_Actor.WillActAgainBefore(target1)) {
+        var targ_ai = target1.Controller as OrderableAI;   // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
+        // need an after-action "hint" to the target on where/who to go to
+        if (null == targ_ai || targ_ai.IsFocused) return null;
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
-        (target1.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
+        targ_ai.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));
       }
       return BehaviorIntelligentBumpToward(target1.Location, false, false);
     }
+#nullable restore
 
     protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
     {
