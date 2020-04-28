@@ -1063,9 +1063,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ret;
     }
-#nullable restore
 
-    protected ActorAction? BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
+    private ActorAction? BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
     {
       if (en.HitPoints>tmp_attack.DamageValue/2) return null;
       ActorAction? tmpAction;
@@ -1080,6 +1079,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
+#nullable restore
 
     protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
@@ -1110,39 +1110,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#nullable enable
+    protected ActorAction? ScanForMeleeSnipe()
+    {
+#if DEBUG
+      if (null == _enemies) throw new ArgumentNullException(nameof(_enemies));
+#endif
+      if (1 < Rules.InteractionDistance(_enemies[0].Location, m_Actor.Location)) return null;
+      // something adjacent...check for one-shotting
+      var tmp_melee = m_Actor.GetBestMeleeWeapon();
+      if (null != tmp_melee) {
+        foreach (var p in _enemies) {
+          if (!Rules.IsAdjacent(p.Location, m_Actor.Location)) return null;
+          Actor en = p.Percepted;
+          var act = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
+          if (null != act) {
+            if (!tmp_melee.IsEquipped) tmp_melee.EquippedBy(m_Actor);
+            return act;
+          }
+        }
+      } else { // also check for no-weapon one-shotting
+        foreach (var p in _enemies) {
+          if (!Rules.IsAdjacent(p.Location, m_Actor.Location)) return null;
+          Actor en = p.Percepted;
+          var act = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
+          if (null != act) {
+            if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
+            return act;
+          }
+        }
+      }
+      return null;
+    }
+#nullable restore
+
     // forked from OrderableAI::BehaviorEquipWeapon
     private ActorAction? AttackWithoutMoving()
     {
       if (null == _enemies) return null;    // XXX likely error condition
 
       // migrated from CivilianAI::SelectAction
-      ActorAction tmpAction = null;
-
-        if (1==Rules.InteractionDistance(_enemies[0].Location,m_Actor.Location)) {
-          // something adjacent...check for one-shotting
-          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
-          if (null!=tmp_melee) {
-            foreach(var p in _enemies) {
-              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
-              if (null != tmpAction) {
-                if (!tmp_melee.IsEquipped) tmp_melee.EquippedBy(m_Actor);
-                return tmpAction;
-              }
-            }
-          } else { // also check for no-weapon one-shotting
-            foreach(var p in _enemies) {
-              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
-              if (null != tmpAction) {
-                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
-                return tmpAction;
-              }
-            }
-          }
-        }
+      var tmpAction = ScanForMeleeSnipe();
+      if (null != tmpAction) return tmpAction;
 
       if (   !(m_Actor.GetEquippedWeapon() is ItemRangedWeapon rw)  // XXX likely error condition
           ||   0 >= rw.Ammo)  // XXX likely error condition

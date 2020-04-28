@@ -1225,31 +1225,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
       if (null != _enemies) {
-        if (1==Rules.InteractionDistance(_enemies[0].Location,m_Actor.Location)) {
-          // something adjacent...check for one-shotting
-          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
-          if (null!=tmp_melee) {
-            foreach(var p in _enemies) {
-              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==_immediate_threat || (1==_immediate_threat.Count && _immediate_threat.Contains(en)));
-              if (null != tmpAction) {
-                if (!tmp_melee.IsEquipped) tmp_melee.EquippedBy(m_Actor);
-                return tmpAction;
-              }
-            }
-          } else { // also check for no-weapon one-shotting
-            foreach(var p in _enemies) {
-              if (!Rules.IsAdjacent(p.Location,m_Actor.Location)) break;
-              Actor en = p.Percepted;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
-              if (null != tmpAction) {
-                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
-                return tmpAction;
-              }
-            }
-          }
-        }
+        tmpAction = ScanForMeleeSnipe();
+        if (null != tmpAction) return tmpAction;
       }
 
       // if no ranged weapons, use BaseAI
