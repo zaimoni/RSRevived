@@ -328,6 +328,15 @@ namespace Zaimoni.Data
       return false;
     }
 
+    public static int ExcessTrue<T>(this IEnumerable<T> src, Predicate<T> test) {
+      int ret = 0;
+      foreach (var x in src) {
+        if (test(x)) ++ret;
+        else --ret;
+      }
+      return ret;
+    }
+
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {

@@ -944,13 +944,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
       bool isFromInside = map.IsInsideAtExt(from);
-      int majorityDangersInside = 0;
-      foreach (Point danger in dangers) {
-        if (map.IsInsideAtExt(danger))
-          ++majorityDangersInside;
-        else
-          --majorityDangersInside;
-      }
+      int majorityDangersInside = dangers.ExcessTrue(pt => map.IsInsideAtExt(pt));
       const float inOutFactor = 1.25f;
       float inOutBonus = 0.0f;
       if (isFromInside) {
@@ -995,13 +989,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
       bool isFromInside = from.Map.IsInsideAtExt(from.Position);
-      int majorityDangersInside = 0;
-      foreach (var danger in dangers) {
-        if (danger.Map.IsInsideAtExt(danger.Position))
-          ++majorityDangersInside;
-        else
-          --majorityDangersInside;
-      }
+      int majorityDangersInside = dangers.ExcessTrue(loc => loc.Map.IsInsideAtExt(loc.Position));
       const float inOutFactor = 1.25f;
       float inOutBonus = 0.0f;
       if (isFromInside) {
