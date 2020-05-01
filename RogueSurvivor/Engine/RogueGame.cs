@@ -8399,64 +8399,44 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoTrade(PlayerController pc, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
-      var speaker = pc.ControlledActor;
-#if OBSOLETE
-      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer"); // valid for RS 9 Alpha; will go away
-#endif
+      var speaker = pc.ControlledActor; // i.e., always visible
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       target.Inventory.RejectCrossLink(speaker.Inventory);
-//    bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);   // now constant true but wouldn't be for AI trades/RS 9 Alpha
-      const bool flag1 = true;
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
-      if (target.Leader == speaker)
-        wantedItem = true;
-      else if (doesTargetCheckForInterestInOffer)
-        wantedItem = flag3;
+      if (target.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
 
-      if (!wantedItem)
-      { // offered item is not of perceived use
-        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", itSpeaker.TheName)));
+      if (!wantedItem) { // offered item is not of perceived use
+        AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", itSpeaker.TheName)));
         return false;
       };
 
       var trade = PickItemToTrade(target, pc, itSpeaker); // XX rewrite target
       if (null == trade) {
-        if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
+        AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return false;
       };
 
-//    bool isPlayer = speaker.IsPlayer; // now constant
-      const bool isPlayer = true;
-      if (flag1)
-        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.AName, itSpeaker.AName)));
+      AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.AName, itSpeaker.AName)));
 
-      bool acceptDeal = true;
-      if (isPlayer) {
-        AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        RedrawPlayScreen();
-        acceptDeal = WaitYesOrNo();
-        ClearOverlays();
-        RedrawPlayScreen();
-      }
-      else
-        acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
+      AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      RedrawPlayScreen();
+      bool acceptDeal = WaitYesOrNo();
+      ClearOverlays();
+      RedrawPlayScreen();
 
       if (!acceptDeal) {
-        if (flag1) {
-          AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
-          if (isPlayer) RedrawPlayScreen();
-        }
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
+        RedrawPlayScreen();
         return false;
       }
 
-      if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-        if (isPlayer) RedrawPlayScreen();
-      }
+      AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
+      RedrawPlayScreen();
+
       if (target.Leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
