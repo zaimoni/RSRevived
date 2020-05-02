@@ -161,10 +161,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
-      _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast
+      _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast; makes InCombat valid
+
+      // civilians track how long since they've seen trouble
+      if (InCombat) m_SafeTurns = 0;
+      else ++m_SafeTurns;
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == _enemies) AdviseFriendsOfSafety();
+      else m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
       // New objectives system
 #if TRACE_SELECTACTION
@@ -199,11 +204,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 #endif
-      // civilians track how long since they've seen trouble
-      if (InCombat) m_SafeTurns = 0;
-      else ++m_SafeTurns;
-
-      if (null != _enemies) m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
 
