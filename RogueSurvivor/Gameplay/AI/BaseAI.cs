@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // a behavior should handle all free actions itself and return only non-free actions.
 
     /// <param name="exploration">can be null for ais with no exploration</param>
-    protected ActorAction BehaviorWander(ExplorationData exploration=null, Predicate<Location> goodWanderLocFn=null)
+    protected ActorAction? BehaviorWander(ExplorationData? exploration=null, Predicate<Location>? goodWanderLocFn=null)
     {
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;

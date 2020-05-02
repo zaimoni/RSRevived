@@ -10,6 +10,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
@@ -223,24 +225,21 @@ namespace djack.RogueSurvivor.Engine
     }
   }
 
-  // not clear if this should be serializable
-  [Serializable]
   internal class Scoring_fatality
   {
-    private readonly List<Actor> m_FollowersWhenDied = null;
+    private readonly List<Actor>? m_FollowersWhenDied = null;
     public readonly Actor Killer;
-    private Actor m_ZombifiedPlayer;
+    private Actor? m_ZombifiedPlayer;
     public readonly string DeathPlace;
 
-    public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
-    public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
+    public List<Actor>? FollowersWhendDied { get { return m_FollowersWhenDied; } }
+    public Actor? ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
 
     public Scoring_fatality(Actor killer, Actor victim, string death_loc) // historically victim is a player, but we don't check that here
     {
       Killer = killer;
       DeathPlace = death_loc;
-      int ub = victim.CountFollowers;
-      if (0 < ub) m_FollowersWhenDied = new List<Actor>(victim.Followers);
+      m_FollowersWhenDied = victim.Followers?.ToList();
     }
 
     public void SetZombifiedPlayer(Actor z)

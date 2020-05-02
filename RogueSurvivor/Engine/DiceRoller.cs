@@ -12,6 +12,8 @@ using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Random = Microsoft.Random;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
@@ -65,7 +67,7 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    public T ChooseWithoutReplacement<T>(List<T> src) {
+    public T ChooseWithoutReplacement<T>(List<T>? src) {
 #if DEBUG
       if (null==src || 0 >= src.Count) throw new ArgumentNullException(nameof(src));
 #endif
@@ -74,7 +76,7 @@ namespace djack.RogueSurvivor.Engine
 
     public T ChooseWithoutReplacement<T>(List<T> src, Predicate<T> bias) {
 #if DEBUG
-      if (null==src || 0 >= src.Count) throw new ArgumentNullException(nameof(src));
+      if (0 >= src.Count) throw new ArgumentNullException(nameof(src));
 #endif
       var filtered = src.FindAll(bias);
       if (0 < filtered.Count) {
@@ -87,7 +89,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public T Choose<T>(List<T> src) {
-      int n = (src?.Count ?? 0);
+      int n = src.Count;
 #if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
 #endif
@@ -95,7 +97,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public T Choose<T>(T[] src) {
-      int n = (src?.Length ?? 0);
+      int n = src.Length;
 #if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
 #endif
@@ -103,7 +105,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public T Choose<T>(IEnumerable<T> src) {
-      int n = (src?.Count() ?? 0);
+      int n = src.Count();
 #if DEBUG
       if (0 >= n) throw new ArgumentNullException(nameof(src));
 #endif

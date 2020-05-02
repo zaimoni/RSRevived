@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
@@ -19,7 +21,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-#nullable enable
     private readonly LOSSensor m_LOSSensor;
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
@@ -37,9 +38,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
-#nullable restore
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       ActorAction? tmpAction;
       if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
