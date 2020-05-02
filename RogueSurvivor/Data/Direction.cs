@@ -196,18 +196,11 @@ diagonalExit:
 
   internal static class Direction_ext {
     private static readonly TimeCache<Point,Point[]> _adjacent = new TimeCache<Point, Point[]>();
-#if PROTOTYPE
-    private static readonly TimeCache<Location, Location[]> _adjacent_loc = new TimeCache<Location, Location[]>();  // doesn't scale well -- fully using causes slowdown
-#endif
 
     public static void Now() {  // generally not called in an actively multi-threaded context
       var t0 = Engine.Session.Get.WorldTime.TurnCounter;
       _adjacent.Now(t0);
       _adjacent.Expire(t0 - 2);
-#if PROTOTYPE
-      _adjacent_loc.Now(t0);
-      _adjacent_loc.Expire(t0 - 2);
-#endif
     }
 
     public static Point[] Adjacent(in this Point pt) {
@@ -220,26 +213,6 @@ diagonalExit:
       }
     }
 
-#if PROTOTYPE
-    public static Location[] Adjacent(this Location pt) {
-      lock (_adjacent_loc) {
-        if (_adjacent_loc.TryGetValue(pt, out Location[] value)) return value;
-        var working = new List<Location>();
-        foreach(var dir in Direction.COMPASS) {
-          Location dest = pt+dir;
-          if (!dest.Map.IsInBounds(dest.Position)) {
-            Location? test = dest.Map.Normalize(dest.Position);
-            if (null == test) continue;
-            dest = test.Value;
-          }
-          if (!dest.Map.GetTileModelAt(dest.Position).IsWalkable) continue;
-          working.Add(dest);
-        }
-        Location[] ret = working.ToArray();
-        _adjacent_loc.Set(pt, ret);
-        return ret;
-      }
-    }
-#endif
+//  public static Location[] Adjacent(in this Location pt) {...}    // massive slowdown in testing
   }
 }
