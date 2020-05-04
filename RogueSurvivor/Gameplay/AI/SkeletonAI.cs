@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
@@ -28,7 +30,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LOSSensor = new LOSSensor(VISION_SEES, src);
     }
 
-#nullable enable
     public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense();
@@ -37,9 +38,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
-#nullable restore
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       const int IDLE_CHANCE = 80;
 
