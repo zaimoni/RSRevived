@@ -3587,7 +3587,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // taboos
-    protected void MarkActorAsRecentTrade(Actor other)
+    public void MarkActorAsRecentTrade(Actor other)
     {
       if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
       else if (m_TabooTrades.Contains(other)) return;

@@ -386,7 +386,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(in goal, canCheckBreak, canCheckPush);
     }
 
-    protected ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
+    public ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
     {
       if (null == goals || !goals.Any()) return null;
       ActorAction? tmp;
