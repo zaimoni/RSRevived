@@ -23,6 +23,7 @@ using static Zaimoni.Data.Functor;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using djack.RogueSurvivor.Gameplay.AI.Goals;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -3396,18 +3397,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
           return new ActionTrade(m_Actor, near.Value);
         }
+        if (IsFocused) return null; // just in case
+        var o_oai = (near.Value.Controller as OrderableAI)!;
+        if (o_oai.IsFocused && !m_Actor.WillActAgainBefore(near.Value)) return null;
         var tmpAction = BehaviorIntelligentBumpToward(near.Key, false, false);
         if (null == tmpAction) return null;
+        if (o_oai.IsFocused) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.
         RogueGame.DoSay(m_Actor, near.Value, String.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);
 
         m_Actor.Activity = Activity.FOLLOWING;
         m_Actor.TargetActor = near.Value;
-        // need an after-action "hint" to the target on where/who to go to
-        if (!m_Actor.WillActAgainBefore(near.Value) && !((near.Value.Controller as OrderableAI)?.IsFocused ?? true)) {
-          int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, near.Value) -(m_Actor.IsBefore(near.Value) ? 1 : 0);
-          (near.Value.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, near.Value, m_Actor, new ActionTrade(near.Value, m_Actor)));    // AI disallowed from initiating trades with player so fine
+
+        // install trading objectives -- hints to target where to go
+        var my_trading = new Trade(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, near.Value);
+        SetObjective(my_trading);
+        var your_trading = o_oai.Goal<Trade>();
+        if (null != your_trading) your_trading.Add(m_Actor);
+        else {
+          your_trading = new Trade(m_Actor.Location.Map.LocalTime.TurnCounter, near.Value, m_Actor);
+          o_oai.SetObjective(your_trading);
         }
         return tmpAction;
     }

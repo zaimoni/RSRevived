@@ -42,6 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             // closely related to OrderableAI::GetTradingTargets.  We'll use the pathfinder if minstep pathing fails.
             var oai = (m_Actor.Controller as ObjectiveAI)!;
+            if (oai.IsFocused) return false;
             var TradeableItems = oai.GetTradeableItems();   // may need revision for player....
             if (null == TradeableItems || 0 >= TradeableItems.Count) {
                 _isExpired = true;
@@ -91,6 +92,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 ret = new ActionTrade(m_Actor, actor);
                 return true;
             }
+            /*
+             * Legacy code was doing:
+                    m_Actor.Activity = Activity.FOLLOWING;
+                    m_Actor.TargetActor = near.Value;
+             *  */
 
             var find_us = _whom.Select(act => act.Location);
             var act = oai.BehaviorHeadFor(find_us.Where(loc => oai.CanSee(loc)), false, false);
