@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
@@ -14,6 +13,8 @@ using System.Runtime.Serialization;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -38,7 +39,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor.Forget();
     }
 
-#nullable enable
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
@@ -49,9 +49,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override HashSet<Point> FOV { get { return m_MemLOSSensor.Sensor.FOV; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
-#nullable restore
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       ActorAction? tmpAction;
       if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {

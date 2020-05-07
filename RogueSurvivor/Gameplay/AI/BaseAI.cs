@@ -875,7 +875,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseExit(UseExitFlags useFlags)
+#nullable enable
+    protected ActorAction? BehaviorUseExit(UseExitFlags useFlags)
     {
       var exitAt = m_Actor.Location.Exit;
       if (null == exitAt) return null;
@@ -891,15 +892,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
+#nullable restore
 
-    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
+    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept>? stacksPercepts)
     {
       if (stacksPercepts == null) return null;
       var percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
       if (percepts == null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
-      Percept percept = FilterNearest(percepts);
+      var percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }
 

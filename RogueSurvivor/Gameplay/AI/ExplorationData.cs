@@ -9,6 +9,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
@@ -82,7 +84,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_ZonesQueue.RemoveAt(i);   // prevent duplicates
       } else {
         if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
-        if (null!= new_zone_handler) new_zone_handler(zone);
       }
       m_ZonesQueue.Add(zone);
     }
@@ -116,16 +117,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void Update(Location location)
     {
       AddExplored(in location);
-      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
-      if (0 >= (zonesAt?.Count ?? 0)) return;
+      var zonesAt = location.Map.GetZonesAt(location.Position);
+      if (null == zonesAt || 0 >= zonesAt.Count) return;
       foreach (Zone zone in zonesAt) AddExplored(zone);
     }
 
     public void Update(Location location, Action<Zone> new_zone_handler)
     {
       AddExplored(in location);
-      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
-      if (0 >= (zonesAt?.Count ?? 0)) return;
+      var zonesAt = location.Map.GetZonesAt(location.Position);
+      if (null == zonesAt || 0 >= zonesAt.Count) return;
       foreach (Zone zone in zonesAt) AddExplored(zone, new_zone_handler);
     }
   }

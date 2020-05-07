@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
@@ -83,7 +85,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-#nullable enable
     private readonly LOSSensor m_LOSSensor;
 
     public InsaneHumanAI(Actor src) : base(src)
@@ -125,6 +126,5 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return BehaviorWander();
     }
-#nullable restore
   }
 }
