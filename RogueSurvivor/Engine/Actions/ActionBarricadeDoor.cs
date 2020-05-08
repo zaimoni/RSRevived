@@ -5,8 +5,10 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -14,12 +16,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly DoorWindow m_Door;
 
-    public ActionBarricadeDoor(Actor actor, DoorWindow door)
-      : base(actor)
+    public ActionBarricadeDoor(Actor actor, DoorWindow door) : base(actor)
     {
-#if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
-#endif
       m_Door = door;
     }
 
