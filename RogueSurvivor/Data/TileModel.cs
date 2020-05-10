@@ -4,8 +4,9 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using System;
 using Color = System.Drawing.Color;
+
+#nullable enable
 
 namespace djack.RogueSurvivor.Data
 {
@@ -18,14 +19,11 @@ namespace djack.RogueSurvivor.Data
     public readonly bool IsWalkable;
     public readonly bool IsTransparent;
     public readonly Color MinimapColor;
-    public readonly bool IsWater;
-    public readonly string WaterCoverImageID;
+    public readonly bool IsWater;   // 2020-05-09 should be ok to pay RAM for CPU here
+    public readonly string? WaterCoverImageID;
 
-    public TileModel(Gameplay.GameTiles.IDs id, string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string waterCoverImageID=null)
-    {
-#if DEBUG
-      if (null == imageID) throw new ArgumentNullException(nameof(imageID));  // the undef tile is empty-string imageID
-#endif
+    public TileModel(Gameplay.GameTiles.IDs id, string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string? waterCoverImageID=null)
+    { // the undef tile is empty-string imageID
       ID = (int)id;
       ImageID = imageID;
       IsWalkable = isWalkable;

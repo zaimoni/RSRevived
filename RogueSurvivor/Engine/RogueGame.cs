@@ -6759,6 +6759,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (0 < (tmp_i = obj.Weight)) lines.Add(string.Format("Weight    : {0}", tmp_i));
+      if (obj.IsContainer) {
+        var inv = obj.Inventory;
+        if (!inv.IsEmpty) lines.AddRange(DescribeInventory(inv));
+      }
       var itemsAt = obj.Location.Items;
       if (itemsAt != null) lines.AddRange(DescribeInventory(itemsAt));
       return lines.ToArray();
