@@ -1441,6 +1441,7 @@ retry:
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
+      foreach (var x in m_aux_MapObjectsByPosition) if (x.Value.IsContainer && x.Value.Inventory.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, x.Value.Inventory);
       return null;
     }
 
