@@ -21,6 +21,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public const int STATE_BROKEN = 2;
     private const int MAX_STATE = 3;
 
+    // VAPORWARE: locked doors
+    // physical locks require a corresponding key, and may fail-closed on breaking
+    // power locks may either fail-closed (subway, technically but that's handled as gates) or fail-open (police station)
+    // we want concealed inventory before police door power locks.
+
     public enum DW_type : byte {
       WOODEN = 0,
       HOSPITAL,

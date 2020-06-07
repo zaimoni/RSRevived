@@ -10888,7 +10888,13 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsInsane) m_UI.UI_DrawImage(GameImages.ICON_SANITY_INSANE, gx2, gy2, tint);
             else if (actor.IsDisturbed) m_UI.UI_DrawImage(GameImages.ICON_SANITY_DISTURBED, gx2, gy2, tint);
           }
-          if (Player?.CanTradeWith(actor) ?? false) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
+          if (Player.CanTradeWith(actor)) {
+/*          var o_oai = actor.Controller as OrderableAI;
+            if (null != o_oai) {
+              // \todo evaluate whether ai actually will accept any trades
+            } */
+            m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
+          }
           if (actor.OdorSuppressorCounter > 0) m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx2, gy2, tint);  // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
 
           if (actor.IsSleeping && (actor.IsOnCouch || 0 < actor.HealChanceBonus)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
