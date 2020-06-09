@@ -4192,6 +4192,50 @@ namespace djack.RogueSurvivor.Engine
       return actionDone;
     }
 
+    private void HandlePlayerRequestTrade(PlayerController pc)
+    {
+      var player = pc.ControlledActor;
+      if (!player.Model.Abilities.CanTrade) {
+        AddMessage(MakeErrorMessage("Incapable of trading."));
+        return;
+      }
+      var can_trade_with = pc.GetTradingTargets(player.Controller.friends_in_FOV); // this should only return legal trading targets
+
+      // \todo filter these
+      if (null == can_trade_with) {
+        AddMessage(MakeErrorMessage("No visible non-enemy actors to trade with."));
+        RedrawPlayScreen();
+        return;
+      }
+
+      var actorList = can_trade_with.Values.ToList();
+      int index = 0;
+      do {
+        Actor target = actorList[index];
+        ClearOverlays();
+        AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+        AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
+        RedrawPlayScreen();
+        KeyEventArgs key = m_UI.UI_WaitKey();
+        if (key.KeyCode == Keys.Escape) break;
+        else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
+        else if (key.KeyCode == Keys.E) {
+          AddMessage(new Data.Message(string.Format("Hey {0}, let's make a deal!", target.TheName), Session.Get.WorldTime.TurnCounter, PLAYER_ACTION_COLOR));
+          var my_trading = new Gameplay.AI.Goals.Trade(player.Location.Map.LocalTime.TurnCounter, player, target);
+          pc.SetObjective(my_trading);
+          var o_oai = (target.Controller as ObjectiveAI)!;
+          var your_trading = o_oai.Goal<Gameplay.AI.Goals.Trade>();
+          if (null != your_trading) your_trading.Add(player);
+          else {
+            your_trading = new Gameplay.AI.Goals.Trade(player.Location.Map.LocalTime.TurnCounter, target, player);
+            o_oai.SetObjective(your_trading);
+          }
+          break;
+        }
+      } while(true);
+      ClearOverlays();
+    }
+
     private bool HandlePlayerInitiateTrade(PlayerController pc, GDI_Point screen)
     {
       var player = pc.ControlledActor;

@@ -574,7 +574,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void RecordLastAction(ActorAction act) {
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
-        // the one type that actually knows the origin; the legacy actions don't. \todo savefile break: require ActorDest to provide origin as well and thus avoid this
+        // the one type that actually knows the origin; the legacy actions don't.
         if (!(act is ActionMoveDelta record)) record = new ActionMoveDelta(m_Actor,dest.dest);
         _last_move = record;
 #if TRACE_SELECTACTION
@@ -4142,7 +4142,7 @@ restart_single_exit:
     }
 #nullable restore
 
-    protected Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
+    public Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
         if (null == friends || 0 >= friends.Count) return null;
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
