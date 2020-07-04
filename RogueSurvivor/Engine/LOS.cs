@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine
         var needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
-        Direction tmp = Direction.To(from.X, from.Y, to.X, to.Y, out Direction knightmove);
+        Direction tmp = Direction.To(from.X, from.Y, to.X, to.Y);
         Point end = start + needRange * tmp;
         Direction offset = Direction.To(end.X, end.Y, to.X, to.Y);
         int i = 0;

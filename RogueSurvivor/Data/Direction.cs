@@ -112,6 +112,7 @@ diagonalExit:
         }
     }
 
+#if DEAD_FUNC
     // this version reports on the chess knight move issue
     public static Direction To(int xFrom, int yFrom, int xTo, int yTo, out Direction alt)
     {
@@ -176,6 +177,7 @@ diagonalExit:
         case 4: return SE;
         }
     }
+#endif
 
     public static Direction ApproximateFromVector(Point v)
     {
