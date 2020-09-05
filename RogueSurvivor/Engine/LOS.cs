@@ -301,7 +301,7 @@ namespace djack.RogueSurvivor.Engine
         // S.Z.
 
         int num = 0;
-        foreach (Point point3 in Direction.COMPASS.Select(dir=> point2 + dir)) {
+        foreach (Point point3 in point2.Adjacent()) {
           if (!visibleSet.Contains(point3)) continue;
 #if OBSOLETE
           // unfortunately, a barricaded glass door is

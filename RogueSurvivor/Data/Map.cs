@@ -1916,7 +1916,7 @@ retry:
       if (!IsInBounds(pos)) throw new InvalidOperationException("!IsInBounds(pos)");
 #endif
       var ret = new Dictionary<Point,T>();
-      foreach(Point pt in Direction.COMPASS.Select(dir => pos + dir)) {
+      foreach(Point pt in pos.Adjacent()) {
         var test = testFn(this,pt);
         if (null != test) ret.Add(pt, test);
       }
@@ -1926,7 +1926,7 @@ retry:
     public List<Point>? FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
       if (!IsInBounds(position)) return null;
-      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
+      IEnumerable<Point> tmp = position.Adjacent().Where(p=>IsInBounds(p) && predicateFn(p));
       return (tmp.Any() ? tmp.ToList() : null);
     }
 
@@ -1958,7 +1958,7 @@ retry:
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {
       if (!IsInBounds(position)) return 0;
-      return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
+      return position.Adjacent().Count(p=>IsInBounds(p) && predicateFn(p));
     }
 
     public int CountAdjacent<T>(Point pos) where T:MapObject

@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEAD_FUNC
     protected static bool PlaceDoorIfAccessible(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
     {
-      int num = Direction.COMPASS.Select(d => pt+d).Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
+      int num = pt.Adjacent().Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
       if (num < minAccessibility) return false;
       PlaceDoorIfNoObject(map, pt, floor, door);
       return true;
