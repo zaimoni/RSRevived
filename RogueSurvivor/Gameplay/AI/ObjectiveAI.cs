@@ -201,7 +201,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
-    [NonSerialized] protected ActionMoveDelta _last_move = null;   // for detecting period 2 move looping \todo savefile break: relax this to ActorDest and actually put in the savefile
+#nullable enable
+    protected ActionMoveDelta? _last_move = null;   // for detecting period 2 move looping
+#nullable restore
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
     [NonSerialized] protected HashSet<Location> _current_goals = null;
