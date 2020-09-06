@@ -3669,6 +3669,7 @@ restart:
       var map_goals = RadixSortLocations(goal_costs);
 
       var excluded = new HashSet<Map>();
+      var excluded_zones = new List<ZoneLoc>();
 
 restart_single_exit:
 #if TRACE_GOALS
@@ -3685,27 +3686,58 @@ restart_single_exit:
         }
       }
 
-      var in_police_station = Session.Get.UniqueMaps.NavigatePoliceStation(m_Actor.Location.Map);
-      if (null==in_police_station) {
-#if PATHFIND_IMPLEMENTATION_GAPS
-        if (m_Actor.Location.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for jail");
+      var my_police_map_code = Session.Get.UniqueMaps.PoliceStationDepth(m_Actor.Location.Map);
+      if (0 == my_police_map_code) {
+        var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+        if (0 == goals_map_code) {
+          excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
+#if PROTOTYPE
+          var zone = Session.Get.UniqueMaps.PoliceLanding();
+          if (!goals.Any(loc => zone.Contains(loc)) {
+            if (zone.Contains(m_Actor.Location)) {
+            } else {
+              excluded_zones.Add(zone);
+            }
+          }
 #endif
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap, Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap, excluded))
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+        } else {
+          do {
+            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStationMap(goals_map_code), Session.Get.UniqueMaps.PoliceStationMap(goals_map_code - 1), excluded))
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+            var next_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+            if (goals_map_code <= next_code) break;
+            goals_map_code = next_code;
+          } while(0 < goals_map_code);
+          var no_map = Session.Get.UniqueMaps.PoliceStationMap(goals_map_code + 1);
+          if (null != no_map) excluded.Add(no_map);
+        }
       }
-      var in_hospital = Session.Get.UniqueMaps.NavigateHospital(m_Actor.Location.Map);
-      if (null==in_hospital) {
-#if PATHFIND_IMPLEMENTATION_GAPS
-        if (m_Actor.Location.Map != Session.Get.UniqueMaps.Hospital_Power.TheMap && map_goals.TryGetValue(Session.Get.UniqueMaps.Hospital_Power.TheMap,out var test)) throw new InvalidProgramException("need goal rewriter for hospital power");
+
+      var my_hospital_map_code = Session.Get.UniqueMaps.HospitalDepth(m_Actor.Location.Map);
+      if (0 == my_hospital_map_code) {
+        var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+        if (0 == goals_map_code) {
+          excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
+#if PROTOTYPE
+          var zone = Session.Get.UniqueMaps.HospitalLanding();
+          if (!goals.Any(loc => zone.Contains(loc)) {
+            if (zone.Contains(m_Actor.Location)) {
+            } else {
+              excluded_zones.Add(zone);
+            }
+          }
 #endif
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Storage.TheMap, Session.Get.UniqueMaps.Hospital_Patients.TheMap, excluded))
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Patients.TheMap, Session.Get.UniqueMaps.Hospital_Offices.TheMap, excluded))
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Offices.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, excluded))
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
-        if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.Hospital_Admissions.TheMap, Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap, excluded))
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+        } else {
+          do {
+            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.HospitalMap(goals_map_code), Session.Get.UniqueMaps.HospitalMap(goals_map_code - 1), excluded))
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+            var next_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+            if (goals_map_code <= next_code) break;
+            goals_map_code = next_code;
+          } while(0 < goals_map_code);
+          var no_map = Session.Get.UniqueMaps.HospitalMap(goals_map_code + 1);
+          if (null != no_map) excluded.Add(no_map);
+        }
       }
 
       int path_contains_our_goals_loc(List<List<Location>> path) {
