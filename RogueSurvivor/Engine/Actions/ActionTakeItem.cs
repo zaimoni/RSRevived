@@ -154,6 +154,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private Actor m_Target;
     [NonSerialized] Item? gift;
     [NonSerialized] Item? received;
+    [NonSerialized] ActorAction? m_ConcreteAction; // not meant to be Resolvable
 
     public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it)
       : base(actor)
@@ -179,10 +180,18 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!m_Actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
       m_Target.Inventory.RepairContains(gift, "already had ");
+      if (null != m_ConcreteAction) {
+        if (m_ConcreteAction.IsPerformable()) return true;
+        m_ConcreteAction = null;
+      }
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
         var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
         if (null == recover) return false;
+        if (recover is ActionTradeWithActor trade && trade.Whom == m_Target && trade.IsPerformable()) {
+          m_ConcreteAction = trade;
+          return true;
+        }
 
         static Item? parse_recovery(ActorAction act) {
           if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
@@ -210,7 +219,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
+      if (null != m_ConcreteAction) m_ConcreteAction.Perform();
+      else RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
     }
 
     public override string ToString()

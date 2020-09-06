@@ -8624,6 +8624,11 @@ namespace djack.RogueSurvivor.Engine
       target.Inventory.AddAll(donate);
     }
 
+    public void DoTrade(OrderableAI speaker_c, OrderableAI target_c, Item give, Item take)
+    {
+      DoTrade(speaker_c, new KeyValuePair<Item, Item>(give, take), target_c, false);
+    }
+
     public void DoTrade(OrderableAI speaker_c, OrderableAI target_c)
     {   // precondition: !speaker.IsPlayer (need different implementation)
       var target = target_c.ControlledActor;

@@ -1,6 +1,7 @@
 ﻿using System;
 using djack.RogueSurvivor.Data;
 
+using OrderableAI = djack.RogueSurvivor.Gameplay.AI.OrderableAI;
 using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
@@ -47,7 +48,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             var obj = loc.MapObject;
             if (null != obj && obj.IsContainer && obj.Inventory.Contains(take)) return new ActionTradeWithContainer(actor, give, take, obj);
-            return new ActionTradeWithGround(actor, give, take, loc);
+            var g_inv = loc.Items;
+            if (null != g_inv && g_inv.Contains(take)) return new ActionTradeWithGround(actor, give, take, loc);
+            var a_inv = loc.Actor?.Inventory;
+            if (null != a_inv && a_inv.Contains(take)) return new ActionTradeWithActor(actor, give, take, loc.Actor);
+            return null;
         }
 
         static public ActionTradeWith Cast(Point pt, Actor actor, Item give, Item take)
@@ -123,6 +128,41 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override void Perform()
         {
             RogueForm.Game.DoTradeWithGround(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
+        }
+    }
+
+    [Serializable]
+    internal class ActionTradeWithActor : ActionTradeWith
+    {
+        private readonly Actor m_Whom;
+        public Actor Whom { get { return m_Whom;  } }
+
+        public ActionTradeWithActor(Actor actor, Item give, Item take, Actor whom) : base(actor, give, take)
+        {
+#if DEBUG
+            var a_inv = whom.Inventory;
+            if (null == a_inv || a_inv.Contains(m_GiveItem) || !a_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(whom) + ".Inventory");
+#endif
+            m_Whom = whom;
+            actor.Activity = Activity.IDLE;
+        }
+
+        public override bool IsLegal()
+        {
+            if (m_Whom.Inventory.Contains(m_GiveItem)) return false;
+            if (!m_Whom.Inventory.Contains(m_TakeItem)) return false;
+            return base.IsLegal();
+        }
+
+        public override bool IsPerformable()
+        {
+            if (!base.IsPerformable()) return false;
+            return Rules.IsAdjacent(m_Actor.Location, m_Whom.Location);
+        }
+
+        public override void Perform()
+        {
+            RogueForm.Game.DoTrade(m_Actor.Controller as OrderableAI, m_Whom.Controller as OrderableAI, m_GiveItem, m_TakeItem);
         }
     }
 }
