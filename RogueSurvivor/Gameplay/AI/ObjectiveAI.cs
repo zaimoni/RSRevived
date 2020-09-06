@@ -3525,6 +3525,7 @@ restart:
 #if DEBUG
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
+      bool moveloop_risk = (null != _last_move && goals.Contains(_last_move.origin));
 
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
@@ -3533,11 +3534,20 @@ restart:
 #endif
       {
       bool null_return = false;
+      ActorAction? movelooping = null;
       foreach(Location loc in goals) {  // \todo should only null-return if no legal adjacent goals at all
         if (moves.TryGetValue(loc,out var tmp)) {
+          if (moveloop_risk && _last_move.origin==loc) {
+            movelooping = tmp;
+            continue;
+          }
           if (tmp.IsPerformable() && !VetoAction(tmp)) return _recordPathfinding(tmp, goals);
           null_return = true;
         }
+      }
+      if (null != movelooping) {
+        if (movelooping.IsPerformable() && !VetoAction(movelooping)) return _recordPathfinding(movelooping, goals);
+        null_return = true;
       }
       if (null_return) return null;
       }
