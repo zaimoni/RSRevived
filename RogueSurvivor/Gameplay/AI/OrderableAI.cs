@@ -570,6 +570,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly Actor _dest;
       private readonly ActorAction _when_at_target;
 
+      public Actor Whom { get { return _dest; } }
+
       public Goal_HintPathToActor(int t0, Actor who, Actor dest, ActorAction at_target=null)
       : base(t0,who)
       {
@@ -1743,7 +1745,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.WillActAgainBefore(target1)) {
         var targ_ai = target1.Controller as OrderableAI;   // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
         // need an after-action "hint" to the target on where/who to go to
-        if (null == targ_ai || targ_ai.IsFocused) return null;
+        if (null == targ_ai) return null;
+        targ_ai.CancelPathTo(m_Actor);  // do not count pathing to *me* as focused
+        if (targ_ai.IsFocused) return null;
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
         targ_ai.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));
       }

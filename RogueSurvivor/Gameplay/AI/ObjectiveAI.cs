@@ -263,7 +263,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     } }
 
-
     public bool IsFocused { get {
       if (null!=Goal<Goal_NextAction>()) return true;
       if (null!=Goal<Goal_NextCombatAction>()) return true;
@@ -272,6 +271,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null!=Goal<Goal_HintPathToActor>()) return true;
       return false;
     } }
+
+    public void CancelPathTo(Actor dest) {
+      var goal = Goal<Goal_HintPathToActor>(o => o.Whom == dest);
+      if (null != goal) Objectives.Remove(goal);    // \todo? optimize...could just find index and remove that index immediately
+    }
 
     public override ActorAction? ExecAryZeroBehavior(int code)
     {
@@ -2121,6 +2125,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction? RewriteAction(ActorAction x)
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
+      if (x is ActionTakeLead) return null;
 
       // exit-related processing.
       var e = m_Actor.Location.Exit;

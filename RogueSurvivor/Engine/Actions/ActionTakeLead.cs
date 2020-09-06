@@ -32,5 +32,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       RogueForm.Game.DoTakeLead(m_Actor, m_Target);
     }
+
+    public override string ToString()
+    {
+      return m_Actor.Name + " trying to lead " + m_Target.Name + "; " + m_Actor.Location + ", " + m_Target.Location;
+    }
+
   }
 }
