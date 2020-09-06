@@ -3493,6 +3493,7 @@ restart:
 restart:
         foreach(var fail in rude) {
           var working = fail;
+          if (m_Actor.IsInGroupWith(working.Actor)) continue;
           var exit = m_Actor.Location.Exit;
           if (null != exit && exit.Location == working) working = m_Actor.Location;
           foreach(var pt in working.Position.Adjacent()) {
