@@ -2504,7 +2504,7 @@ retry:
       // XXX since the lock at the district level causes deadlocking, we may be inconsistent for simulation districtions
       List<Actor> tmp_Actors = (0< m_ActorsList.Count ? new List<Actor>(m_ActorsList) : null);
       List<Point> inv_locs = (0<m_GroundItemsByPosition.Count ? new List<Point>(m_GroundItemsByPosition.Keys) : null);
-      if (null==tmp_Actors && null==inv_locs) return;
+//    if (null==tmp_Actors && null==inv_locs) return;
       // we have one of actors or items here...full map has motivation
       var inv_data = new List<string>();
       string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
@@ -2512,7 +2512,7 @@ retry:
       string[][] ascii_map = new string[Height][];
 
       void _process_inv(Inventory inv, int x, int y) {
-        if (!inv?.IsEmpty ?? false) {
+        if (null != inv && !inv.IsEmpty) {
           string p_txt = '('+x.ToString()+','+y.ToString()+')';
           foreach (Item it in inv.Items) {
             inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
