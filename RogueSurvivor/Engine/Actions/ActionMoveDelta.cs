@@ -226,4 +226,59 @@ namespace djack.RogueSurvivor.Engine.Actions
        return "moving: " + m_Origin + " to " + m_NewLocation;
     }
   }
+
+  [Serializable]
+  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin
+  {
+        private readonly Location m_NewLocation;
+        private readonly Location m_Origin;
+
+        public Location dest { get { return m_NewLocation; } }  // of m_Actor
+        public Location origin { get { return m_Origin; } }
+
+        public UpdateMoveDelta(Location from, Location to) {
+#if DEBUG
+            if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
+#endif
+            if (!Map.CanEnter(ref from)) throw new InvalidOperationException("must be able to exist at the origin");
+            if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
+            m_NewLocation = to;
+            m_Origin = from;
+        }
+
+        public override bool IsLegal() { return true; }
+
+        public override ActorAction? Bind(Actor src) {
+            if (!src.CanEnter(m_NewLocation)) return null;
+            if (!src.CanEnter(m_Origin)) return null;
+            return new ActionMoveDelta(src, in m_NewLocation, in m_Origin);
+        }
+
+        public override List<WorldUpdate>? prequel() {
+            var ret = new List<WorldUpdate>();
+            var e = m_NewLocation.Exit;
+            if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location));
+            foreach (var dir in Direction.COMPASS) {
+                var test = m_NewLocation + dir;
+                if (!Map.Canonical(ref test)) continue;
+                if (test == m_Origin) continue;
+                ret.Add(new UpdateMoveDelta(m_NewLocation, test));
+            }
+            return 0 < ret.Count ? ret : null;
+        }
+
+        public override Dictionary<WorldUpdate, int>? backward() {
+            var ret = new Dictionary<WorldUpdate, int>();
+            var e = m_NewLocation.Exit;
+            // \todo want a better cost-of-entry estimator; something like Map.PathfinderMoveCosts(move)
+            if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location), 1);
+            foreach (var dir in Direction.COMPASS) {
+                var test = m_NewLocation + dir;
+                if (!Map.Canonical(ref test)) continue;
+                if (test == m_Origin) continue;
+                ret.Add(new UpdateMoveDelta(m_NewLocation, test), 1);
+            }
+            return 0 < ret.Count ? ret : null;
+        }
+    }
 }

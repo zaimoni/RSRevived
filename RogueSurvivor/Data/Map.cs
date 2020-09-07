@@ -328,6 +328,16 @@ namespace djack.RogueSurvivor.Data
     }
     // end placeholder for define-controlled redefinitions
 
+    /// <summary>
+    /// Cf. Actor::_CanEnter and CanEnter
+    /// </summary>
+    /// <returns>true if and only if it is possible to configure an actor that can enter the location.</returns>
+    static public bool CanEnter(ref Location loc)
+    {
+      if (!Map.Canonical(ref loc)) return false;
+      return loc.TileModel.IsWalkable;
+    }
+
     static public bool Canonical(ref Location loc) {
       if (loc.Map.IsInBounds(loc.Position)) return true;
       var test = loc.Map._Normalize(loc.Position);
@@ -335,7 +345,6 @@ namespace djack.RogueSurvivor.Data
       loc = test.Value;
       return true;
     }
-
 
     /// <param name="pt">Precondition: not in bounds</param>
     private Location? _Normalize(Point pt)
