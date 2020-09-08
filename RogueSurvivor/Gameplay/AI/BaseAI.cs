@@ -76,7 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         bool is_rewritable = actorAction is ActionMoveStep || actorAction is ActionMoveDelta || actorAction is ActionWait
                           || actorAction is ActionCloseDoor || actorAction is Resolvable || actorAction is ActionLeaveMap
-                          || actorAction is ActionSleep;
+                          || actorAction is ActionSleep || actorAction is ActionChat;
         var backup = actorAction;
 #endif
         var alt = ai.RewriteAction(actorAction);

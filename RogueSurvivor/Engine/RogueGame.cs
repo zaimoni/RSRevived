@@ -4943,12 +4943,13 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location.Position), SIZE_OF_TILE)));
 
-      Point? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool pull(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsInBounds(pos.Value)) return false;   // \todo this is not cross-district
-        if (player.CanPull(other, pos.Value, out string reason)) {
-          DoPullActor(player, other, pos.Value);
+      Location? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(player.Location + dir); }
+      bool pull(Location? dest) {
+        if (null == dest) return false;
+        Location _dest = dest.Value;
+        if (!Map.Canonical(ref _dest)) return false;
+        if (player.CanPull(other, _dest, out string reason)) {
+          DoPullActor(player, other, _dest);
           return true;
         } else {
           AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
@@ -9491,7 +9492,7 @@ namespace djack.RogueSurvivor.Engine
       CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
     }
 
-    public void DoPullActor(Actor actor, Actor target, in Point moveActorToPos)    // alpha10
+    public void DoPullActor(Actor actor, Actor target, in Location dest)    // alpha10
     {
       bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target);
 
@@ -9506,14 +9507,14 @@ namespace djack.RogueSurvivor.Engine
       target.StopDraggingCorpse();
 
       // do it : move actor then move target
-      Map map = target.Location.Map;
+      Location src = actor.Location;
+
       // move actor...
-      Point pullTargetTo = actor.Location.Position;
-      map.Remove(actor);
-      map.PlaceAt(actor, in moveActorToPos);
+     src.Map.Remove(actor);
+     dest.Place(actor);
       // ...move target
-      map.Remove(target);
-      map.PlaceAt(target, in pullTargetTo);
+     target.Location.Map.Remove(target);
+     src.Place(target);
 
       // if target is sleeping, wakes him up!
       if (target.IsSleeping) DoWakeUp(target);

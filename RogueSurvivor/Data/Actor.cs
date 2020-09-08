@@ -1988,6 +1988,15 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantPull(mapObj, in moveToPos));
     }
 
+    private string ReasonCantPull(Actor other, in Location dest)
+    {
+      string ret = ReasonCantShove(other);
+      if (!string.IsNullOrEmpty(ret)) return ret;
+
+      dest.IsWalkableFor(this, out ret);
+      return ret;
+    }
+
     private string ReasonCantPull(Actor other, Point moveToPos)
     {
       string ret = ReasonCantShove(other);
@@ -2006,6 +2015,18 @@ namespace djack.RogueSurvivor.Data
     public bool CanPull(Actor other, Point moveToPos)
     {
       return string.IsNullOrEmpty(ReasonCantPull(other, moveToPos));
+    }
+
+
+    public bool CanPull(Actor other, in Location dest, out string reason)
+    {
+      reason = ReasonCantPull(other, in dest);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPull(Actor other, in Location dest)
+    {
+      return string.IsNullOrEmpty(ReasonCantPull(other, in dest));
     }
 
     // these two are optimized for RogueGame::HandlePlayerPull (fast-fail)
