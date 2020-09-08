@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override string ToString()
     {
-      return m_Actor.Name+"leaving "+m_Actor.Location.ToString()+" for "+m_ExitPoint.ToString();
+      return m_Actor.Name+" leaving "+m_Actor.Location.ToString()+" for "+m_ExitPoint.ToString();
     }
   }
 }

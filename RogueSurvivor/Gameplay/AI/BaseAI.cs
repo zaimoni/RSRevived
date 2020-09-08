@@ -73,8 +73,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
+#if DEBUG
+        bool is_rewritable = actorAction is ActionMoveStep || actorAction is ActionMoveDelta || actorAction is ActionWait
+                          || actorAction is ActionCloseDoor || actorAction is Resolvable || actorAction is ActionLeaveMap
+                          || actorAction is ActionSleep;
+        var backup = actorAction;
+#endif
         var alt = ai.RewriteAction(actorAction);
         if (null!=alt && alt.IsPerformable()) actorAction = alt;
+#if DEBUG
+        if (!is_rewritable && (actorAction is ActionMoveStep || actorAction is ActionMoveDelta)) throw new InvalidOperationException("tracing");
+#endif
         ai.ScheduleFollowup(actorAction);
       }
       ResetAICache();
