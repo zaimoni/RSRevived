@@ -2817,6 +2817,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int lb_dist = dist + range.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) return;
+          // no restrictions causes problems w/hospital ground floor 2020-09-07 zaimoni
+          if (test != m_Actor.Location) {
+            var e = test.Exit;
+            if (null != e) {
+              int loc_mapcode = District.UsesCrossDistrictView(loc.Map);
+              if (0 < loc_mapcode) {
+                int test_mapcode = District.UsesCrossDistrictView(test.Map);
+                int dest_mapcode = District.UsesCrossDistrictView(e.ToMap);
+                if (test_mapcode == loc_mapcode && 0 >= dest_mapcode) return;  // vertical exit away from cross-map view not a useful waypoint
+              }
+            }
+          }
+
           if (ret.X > dist) {
             ret.X = (short)dist;
             waypoint_for_dist[loc] = test;
@@ -3477,6 +3490,7 @@ restart:
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
+      if (0 >= goals.Count) return null;
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
 
       bool rude_goal(Location loc) {
@@ -3669,7 +3683,9 @@ restart:
       var map_goals = RadixSortLocations(goal_costs);
 
       var excluded = new HashSet<Map>();
+#if PROTOTYPE
       var excluded_zones = new List<ZoneLoc>();
+#endif
 
 restart_single_exit:
 #if TRACE_GOALS
@@ -3691,15 +3707,25 @@ restart_single_exit:
         var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
         if (0 == goals_map_code) {
           excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-#if PROTOTYPE
-          var zone = Session.Get.UniqueMaps.PoliceLanding();
-          if (!goals.Any(loc => zone.Contains(loc)) {
+          var zone = Session.Get.UniqueMaps.PoliceLanding();    // \todo cache this (profile-negative)
+          if (!goals.Any(loc => zone.Contains(loc))) {
             if (zone.Contains(m_Actor.Location)) {
+              var escape = zone.WalkOut();  // \todo cache this (profile-negative)
+              if (null != escape) {
+                var new_goals = new HashSet<Location>();
+                foreach(var x in escape) new_goals.Add(x.origin);
+                if (!new_goals.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+                  goals = new_goals;
+                  goal_costs.Clear();
+                  foreach(var goal in goals) goal_costs[goal] = 0;
+                }
+              }
+#if PROTOTYPE
             } else {
               excluded_zones.Add(zone);
+#endif
             }
           }
-#endif
         } else {
           do {
             if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStationMap(goals_map_code), Session.Get.UniqueMaps.PoliceStationMap(goals_map_code - 1), excluded))
@@ -3718,15 +3744,27 @@ restart_single_exit:
         var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
         if (0 == goals_map_code) {
           excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
-#if PROTOTYPE
-          var zone = Session.Get.UniqueMaps.HospitalLanding();
-          if (!goals.Any(loc => zone.Contains(loc)) {
+          var zone = Session.Get.UniqueMaps.HospitalLanding();   // \todo cache this (profile-negative)
+          if (!goals.Any(loc => zone.Contains(loc))) {
             if (zone.Contains(m_Actor.Location)) {
+              var escape = zone.WalkOut();  // \todo cache this (profile-negative)
+              if (null != escape) {
+                var new_goals = new HashSet<Location>();
+                foreach(var x in escape) new_goals.Add(x.origin);
+                if (!new_goals.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+                  goals = new_goals;
+                  goal_costs.Clear();
+                  foreach(var goal in goals) goal_costs[goal] = 0;
+                  _current_goals = goals;
+                  return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+                }
+              }
+#if PROTOTYPE
             } else {
               excluded_zones.Add(zone);
+#endif
             }
           }
-#endif
         } else {
           do {
             if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.HospitalMap(goals_map_code), Session.Get.UniqueMaps.HospitalMap(goals_map_code - 1), excluded))

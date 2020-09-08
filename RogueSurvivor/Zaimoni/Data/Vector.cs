@@ -433,6 +433,24 @@ namespace Zaimoni.Data
       }
     }
 
+    public void DoForEachOnEdge(Action<Vector2D_int> doFn)
+    {
+      var point = new Vector2D_int();
+      for (point.X = Left; point.X < Right; ++point.X) {
+        point.Y = Top;
+        doFn(point);
+        point.Y = Bottom-1;
+        doFn(point);
+      }
+      if (2 >= Height) return;
+      for (point.Y = Top+1; point.Y < Bottom-2; ++point.Y) {
+        point.X = Left;
+        doFn(point);
+        point.X = Right-1;
+        doFn(point);
+      }
+    }
+
     public void DoForEachOnEdge(Action<Vector2D_int> doFn, Predicate<Vector2D_int> testFn)
     {
       var point = new Vector2D_int();
@@ -963,6 +981,25 @@ namespace Zaimoni.Data
       }
     }
 
+    public void DoForEachOnEdge(Action<Vector2D_short> doFn)
+    {
+      var poshort = new Vector2D_short();
+      for (poshort.X = Left; poshort.X < Right; ++poshort.X) {
+        poshort.Y = Top;
+        doFn(poshort);
+        poshort.Y = (short)(Bottom -1);
+        doFn(poshort);
+      }
+      if (2 >= Height) return;
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+        poshort.X = Left;
+        doFn(poshort);
+        poshort.X = (short)(Right -1);
+        doFn(poshort);
+      }
+    }
+
+
     public void DoForEachOnEdge(Action<Vector2D_short> doFn, Predicate<Vector2D_short> testFn)
     {
       var poshort = new Vector2D_short();
@@ -1459,6 +1496,24 @@ namespace Zaimoni.Data
         for (polong.Y = Top; polong.Y < Bottom; ++polong.Y) {
           doFn(polong);
         }
+      }
+    }
+
+    public void DoForEachOnEdge(Action<Vector2D_long> doFn)
+    {
+      var polong = new Vector2D_long();
+      for (polong.X = Left; polong.X < Right; ++polong.X) {
+        polong.Y = Top;
+        doFn(polong);
+        polong.Y = Bottom-1;
+        doFn(polong);
+      }
+      if (2 >= Height) return;
+      for (polong.Y = Top+1; polong.Y < Bottom-2; ++polong.Y) {
+        polong.X = Left;
+        doFn(polong);
+        polong.X = Right-1;
+        doFn(polong);
       }
     }
 

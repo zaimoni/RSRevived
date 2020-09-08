@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 
+using UpdateMoveDelta = djack.RogueSurvivor.Engine.Actions.UpdateMoveDelta;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Size = Zaimoni.Data.Vector2D_short;
@@ -90,6 +91,15 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Location Center { get { return new Location(m, Rect.Location + Rect.Size / 2); } }
+
+    public List<UpdateMoveDelta>? WalkOut() {
+      var ret = new List<UpdateMoveDelta>();
+      Rect.DoForEachOnEdge(pt => {
+          var test = UpdateMoveDelta.fromOrigin(new Location(m, pt), loc => !Contains(loc));
+          if (null != test) ret.AddRange(test);
+      });
+      return 0<ret.Count ? ret : null;
+    }
 
     public Rectangle DistrictSpan { get {
       var ret = new Rectangle(m.District.WorldPosition,new Size(1,1));

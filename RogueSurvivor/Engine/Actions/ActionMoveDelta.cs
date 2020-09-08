@@ -254,6 +254,32 @@ namespace djack.RogueSurvivor.Engine.Actions
             return new ActionMoveDelta(src, in m_NewLocation, in m_Origin);
         }
 
+        static public List<UpdateMoveDelta>? toDest(Location _dest) {
+            if (!Map.CanEnter(ref _dest)) return null;
+            var ret = new List<UpdateMoveDelta>();
+            var e = _dest.Exit;
+            if (null != e) ret.Add(new UpdateMoveDelta(e.Location, _dest)); // currently all exits come in matching pairs i.e. no one-way exits
+            foreach (var dir in Direction.COMPASS) {
+                var test = _dest + dir;
+                if (!Map.Canonical(ref test)) continue;
+                ret.Add(new UpdateMoveDelta(test, _dest));
+            }
+            return 0 < ret.Count ? ret : null;
+        }
+
+        static public List<UpdateMoveDelta>? fromOrigin(Location _origin, Func<Location, bool> ok) {
+            if (!Map.CanEnter(ref _origin)) return null;
+            var ret = new List<UpdateMoveDelta>();
+            var e = _origin.Exit;
+            if (null != e && ok(e.Location)) ret.Add(new UpdateMoveDelta(_origin, e.Location)); // currently all exits come in matching pairs i.e. no one-way exits
+            foreach (var dir in Direction.COMPASS) {
+                var test = _origin + dir;
+                if (!Map.Canonical(ref test)) continue;
+                if (ok(test)) ret.Add(new UpdateMoveDelta(_origin, test));
+            }
+            return 0 < ret.Count ? ret : null;
+        }
+
         public override List<WorldUpdate>? prequel() {
             var ret = new List<WorldUpdate>();
             var e = m_NewLocation.Exit;
