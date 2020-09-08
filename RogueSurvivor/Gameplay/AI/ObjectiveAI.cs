@@ -2128,6 +2128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
       if (x is ActionTakeLead) return null;
+      if (x is ActionBreak) return null;
 
       // exit-related processing.
       var e = m_Actor.Location.Exit;

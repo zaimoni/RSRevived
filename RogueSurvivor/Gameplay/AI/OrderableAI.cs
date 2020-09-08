@@ -667,6 +667,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
           if (!m_Actor.IsTired) throw new InvalidOperationException("!m_Actor.IsTired");
 #endif
+          var break_from = new List<Location>(8);
+          foreach(var pt in _dest.Position.Adjacent()) {
+            break_from.Add(new Location(_dest.Map, pt)); // will be normalized since doors aren't on map edges 2020-09-08 zaimoni
+          }
+
           // check for helpers that are ready and politely back off for them
           var escape = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
           var motive = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
@@ -676,6 +681,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             else {
               Actor helper = m_Actor.Location.Map.GetActorAt(pt);
               if (null == helper) continue;
+              if (break_from.Any(loc => Rules.IsAdjacent(loc, helper.Location))) continue;
               if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == door)) {
                 motive.push(pt);
               }
