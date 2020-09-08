@@ -1940,36 +1940,23 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantShove(other));
     }
 
-    private string ReasonCantBeShovedTo(Point toPos)
+    private string ReasonCantBeShovedTo(Location to)
     {
-      Map map = Location.Map;
-      if (!map.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid
-      if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked"; // XXX should be GetTileModelAtExt
-      if (!map.GetMapObjectAt(toPos)?.IsWalkable ?? false) return "blocked by an object";
-      if (map.HasActorAt(in toPos)) return "blocked by someone";
+      if (!Map.Canonical(ref to)) return "out of map";
+      if (!to.TileModel.IsWalkable) return "blocked";
+      if (!to.MapObject?.IsWalkable ?? false) return "blocked by an object";
+      if (null != to.Actor) return "blocked by someone";
       return "";
     }
 
-    /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    private string ReasonCantBeShovedTo(in Location to)
-    {
-      Map map = to.Map;
-      Point pos = to.Position;
-      if (map != Location.Map) return "out of map";  // XXX needs to go
-      if (!map.GetTileModelAt(pos).IsWalkable) return "blocked";
-      if (!map.GetMapObjectAt(pos)?.IsWalkable ?? false) return "blocked by an object";
-      if (map.HasActorAt(in pos)) return "blocked by someone";
-      return "";
-    }
-
-    public bool CanBeShovedTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(toPos)); }
-    public bool CanBeShovedTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos)); }
+    public bool CanBeShovedTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(new Location(Location.Map, toPos))); }
+    public bool CanBeShovedTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(new Location(Location.Map, toPos))); }
 #if DEAD_FUNC
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
     public bool CanBeShovedTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(in to)); }
 #endif
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    public bool CanBeShovedTo(in Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(in to)); }
+    public bool CanBeShovedTo(in Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(to)); }
 
     public Dictionary<Location, Direction> ShoveDestinations {
       get {
