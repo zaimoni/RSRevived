@@ -189,8 +189,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
         if (null == recover) return false;
         if (recover is ActionTradeWithActor trade && trade.Whom == m_Target && trade.IsPerformable()) {
-          m_ConcreteAction = trade;
-          return true;
+          if (trade.IsPerformable()) {
+            m_ConcreteAction = trade;
+            return true;
+          }
+          return false;
         }
 
         static Item? parse_recovery(ActorAction act) {

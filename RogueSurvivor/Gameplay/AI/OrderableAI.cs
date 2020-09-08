@@ -189,12 +189,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
+        var dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoINeedNow();
+        if (0 == dont_ignore_these.Count) dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoIWantNow();
+        if (dont_ignore_these.Contains(Avoid)) {
+          // instantly expire if critical.
+          _isExpired = true;
+          return false;
+        }
+
         // expire if the offending item is not in LoS
         var stacks = m_Actor.Controller.items_in_FOV;
         if (null != stacks) foreach(var x in stacks) if (x.Value.Has(Avoid)) return false;
 //      if (m_Actor.Inventory.Has(Avoid)) return false; // checking whether this is actually needed
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
+      }
+
+      public override string ToString()
+      {
+        return "Avoiding picking up " + Avoid;
       }
     }
 
@@ -475,7 +488,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var inv = p.Location.Items;
           if (    (inv?.IsEmpty ?? true)    // can crash otherwise in presence of bugs
                || !m_Actor.CanEnter(p.Location)
-               || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
+               || (m_Actor.Controller.CanSee(p.Location) && (m_Actor.StackIsBlocked(p.Location)
+                                                         || null == (m_Actor.Controller as OrderableAI).WouldGrabFromAccessibleStack(p.Location, inv)))) {
               _stacks.RemoveAt(i);
               (m_Actor.Controller as ObjectiveAI).ClearLastMove();
               continue;

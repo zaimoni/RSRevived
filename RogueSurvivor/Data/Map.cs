@@ -1439,7 +1439,15 @@ retry:
         var obj = GetMapObjectAtExt(adjacent);
         if (null != obj && obj.IsContainer) {
           inv = obj.Inventory;
-          if (null != inv && !inv.IsEmpty) ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
+          if (null != inv && !inv.IsEmpty) {
+            ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
+#if DEBUG
+            if (null != GetItemsAtExt(adjacent)) throw new InvalidOperationException("lost ground inventory");
+#endif
+          } else {
+            inv = GetItemsAtExt(adjacent);
+            if (null != inv) ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
+          }
         }
       }
       return ground_inv;

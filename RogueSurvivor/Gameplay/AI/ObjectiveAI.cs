@@ -994,6 +994,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return ret;
       }
       _caller = CallChain.SelectAction_LambdaPath;
+#if CPU_HOG
+      var test = m_Actor.CastToInventoryAccessibleDestinations(m_Actor.Location.Map, inv_dests(m_Actor.Location.Map));
+      if (null != test && test.Any(pt => pt == m_Actor.Location.Position)) {
+        var accessible = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+        if (null == accessible) throw new InvalidOperationException("self-pathing inventory accessible destination, isn't");
+        else {
+            foreach(var inv in accessible) {
+                if (null != (m_Actor.Controller as OrderableAI).WouldGrabFromAccessibleStack(new Location(m_Actor.Location.Map, inv.Key), inv.Value)) {
+                     throw new InvalidOperationException("usable inventory ignored");
+                }
+            }
+        }
+        throw new InvalidOperationException("self-pathing?");
+      }
+#endif
       act = BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
       _caller = CallChain.NONE;
       return act;
