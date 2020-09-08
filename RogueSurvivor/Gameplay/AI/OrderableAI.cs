@@ -432,7 +432,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
+        ret = ai.BehaviorPathTo(_locs);
         if (!(ret?.IsPerformable() ?? false)) {
           ret = null;
           _isExpired = true;    // cancel: buggy

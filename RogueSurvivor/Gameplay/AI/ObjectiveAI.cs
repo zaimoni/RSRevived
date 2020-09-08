@@ -2806,6 +2806,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       install_waypoint(m_Actor.Location, new Point(0,0));
+      int actor_mapcode = District.UsesCrossDistrictView(m_Actor.Location.Map);
 
       Point waypoint_bounds(in Location loc) {
         Point ret = Point.MaxValue;
@@ -2819,7 +2820,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
           if (ret.X < lb_dist) return;
           // no restrictions causes problems w/hospital ground floor 2020-09-07 zaimoni
-          if (test != m_Actor.Location) {
+          if (test != m_Actor.Location && 0 < actor_mapcode) {
             var e = test.Exit;
             if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.District==loc.Map.District) e = null;
             if (null != e) {
