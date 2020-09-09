@@ -2146,10 +2146,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorGive) return null;
       if (x is ActorTake) return null;
       if (x is ActionTrade) return null;
+      if (x is ActionReviveCorpse) return null;
       if (x is ActionPutInContainer) return null;
       if (x is ActionSequence) return null;
       if (x is ActionGiveTo) return null;
       if (x is ActionTake) return null;
+      if (x is ActionBarricadeDoor) return null;
       if (x is ActionUseItem) return null;
       if (x is ActionUse) return null;
       if (x is ActionSprayOdorSuppressor) return null;
