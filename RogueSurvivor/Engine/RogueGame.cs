@@ -8921,7 +8921,7 @@ namespace djack.RogueSurvivor.Engine
           static Item? parse_recovery(ActorAction? act) {
             if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
             if (act is ActorGive trade) return trade.Give;
-            if (act is ActorUse use) return use.Use;
+            if (act is Use<Item> use) return use.Use;
             return null;
           }
           received = parse_recovery(recover);

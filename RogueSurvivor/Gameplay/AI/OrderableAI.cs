@@ -3107,7 +3107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActorUse old_use:
+                  case Use<Item> old_use:
                     // generally better to take than use
                     if (old_use.Use.Model.ID!=new_take.Take.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
@@ -3140,7 +3140,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_trade.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActorUse old_use:
+                  case Use<Item> old_use:
                     // generally better to take than use
                     if (old_use.Use.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
@@ -3149,11 +3149,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (-1==item_compare) break;
                 }
                 break;
-              case ActorUse new_use:
+              case Use<Item> new_use:
                 item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
-                    case ActorUse old_use:
+                    case Use<Item> old_use:
                       if (old_use.Use.Model.ID==new_use.Use.Model.ID) { // duplicate
                         item_compare = -1;
                         break;

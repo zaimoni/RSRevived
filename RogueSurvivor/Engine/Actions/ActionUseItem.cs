@@ -9,13 +9,14 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal interface ActorUse
+  internal interface Use<out T> where T:Item
   {
-    public Item? Use { get; }
+    public T Use { get; }
   }
 
-  internal class ActionUseItem : ActorAction,ActorUse
-  {
+
+  internal class ActionUseItem : ActorAction, Use<Item>
+    {
     private readonly Item m_Item;
 
     public ActionUseItem(Actor actor, Item it)
@@ -42,8 +43,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionUseItem
 
   [Serializable]
-  internal class ActionUse : ActorAction,ActorUse
-  {
+  internal class ActionUse : ActorAction, Use<Item>
+    {
     private readonly Gameplay.GameItems.IDs m_ID;
     [NonSerialized] private Item? m_Item = null;
 
