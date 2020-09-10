@@ -20,6 +20,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         public Actor Whom { get; }
     }
 
+    internal interface TargetCorpse
+    {
+        public Corpse What { get; }
+    }
+
     internal interface Target<out T> where T:MapObject
     {
         public T What { get; }
@@ -73,7 +78,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
 
     [Serializable]
-    internal class ActionTradeWithContainer : ActionTradeWith
+    internal class ActionTradeWithContainer : ActionTradeWith,Target<MapObject>
     {
         private readonly MapObject m_obj;
 
@@ -86,6 +91,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             m_obj = obj;
             actor.Activity = Activity.IDLE;
         }
+
+        public MapObject What { get { return m_obj; } }
 
         public override bool IsLegal()
         {
@@ -142,7 +149,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     [Serializable]
-    internal class ActionTradeWithActor : ActionTradeWith
+    internal class ActionTradeWithActor : ActionTradeWith,TargetActor
     {
         private readonly Actor m_Whom;
         public Actor Whom { get { return m_Whom;  } }

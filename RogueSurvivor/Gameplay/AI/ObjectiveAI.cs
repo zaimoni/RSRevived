@@ -2146,10 +2146,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorTake) return null;
       if (x is Use<Item>) return null; // end (noncombat) inventory manipulation block
       if (x is ActionTrade) return null;
-      if (x is ActionReviveCorpse) return null;
       if (x is ActionSequence) return null;
-      if (x is ActionBarricadeDoor) return null;
-      if (x is ActionSprayOdorSuppressor) return null;
       if (x is ActionTakeLead) return null;
       if (x is ActionBreak) return null;
       if (x is ActionSay) return null;
@@ -5154,13 +5151,19 @@ restart_single_exit:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(ActionTradeWith.Cast(position.Value, m_Actor, drop, it));
-            } else {
+              tmp = ActionTradeWith.Cast(position.Value, m_Actor, drop, it);
+              if (null != tmp) recover.Add(tmp);
+#if DEBUG
+              else throw new InvalidOperationException("testing whether this is a false-fail");
+#endif
+            }
+            if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
               recover.Add(new ActionTake(m_Actor,it.Model.ID));
             }
+
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
             recover.Add(new ActionUse(m_Actor, it.Model.ID));
             return new ActionChain(m_Actor,recover);

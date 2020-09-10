@@ -6,7 +6,7 @@ using djack.RogueSurvivor.Engine.Items;
 namespace djack.RogueSurvivor.Engine.Actions
 {
     // alpha10
-    class ActionSprayOdorSuppressor : ActorAction
+    class ActionSprayOdorSuppressor : ActorAction,TargetActor,Use<ItemSprayScent>
     {
         #region Fields
         readonly ItemSprayScent m_Spray;
@@ -25,6 +25,9 @@ namespace djack.RogueSurvivor.Engine.Actions
             m_SprayOn = sprayOn;
         }
         #endregion
+
+        public Actor Whom { get { return m_SprayOn; } }
+        public ItemSprayScent Use { get { return m_Spray; } }
 
         #region ActorAction
         public override bool IsLegal()

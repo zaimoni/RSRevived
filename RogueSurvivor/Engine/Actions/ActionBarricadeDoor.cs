@@ -5,14 +5,14 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-
+using djack.RogueSurvivor.Engine.Items;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBarricadeDoor : ActorAction
+  internal class ActionBarricadeDoor : ActorAction,Target<DoorWindow>,Use<ItemBarricadeMaterial>
   {
     private readonly DoorWindow m_Door;
 
@@ -20,6 +20,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_Door = door;
     }
+
+    public DoorWindow What { get { return m_Door; } }
+    public ItemBarricadeMaterial Use { get { return m_Actor.Inventory?.GetSmallestStackOf<ItemBarricadeMaterial>()!; } } // assume legal/performable
 
     public override bool IsLegal()
     {

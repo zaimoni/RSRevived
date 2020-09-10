@@ -5,11 +5,12 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.Items;
 using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionReviveCorpse : ActorAction
+  internal class ActionReviveCorpse : ActorAction,TargetCorpse,Use<ItemMedicine>
   {
     private readonly Corpse m_Target;
 
@@ -21,6 +22,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
       m_Target = target;
     }
+
+    public Corpse What { get { return m_Target; } }
+    public ItemMedicine Use { get { return m_Actor.Inventory?.GetFirst(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT) as ItemMedicine; } } // assume legal
 
     public override bool IsLegal()
     {
