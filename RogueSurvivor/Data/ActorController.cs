@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
           if (null == ammo) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc);
+                var allItems = Map.AllItemsAt(loc, m_Actor);
                 if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Data
         if (Models.Items[(int)it] is Engine.Items.ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc);
+                var allItems = Map.AllItemsAt(loc, m_Actor);
                 if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Data
           if (Models.Items[(int)it] is Engine.Items.ItemLightModel || Models.Items[(int)it] is Engine.Items.ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc);
+                var allItems = Map.AllItemsAt(loc, m_Actor);
                 if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;

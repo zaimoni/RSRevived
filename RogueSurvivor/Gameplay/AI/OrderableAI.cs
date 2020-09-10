@@ -486,18 +486,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         while(0 < i--) {
           { // scope var p
           var p = _stacks[i];
-          var inv = p.Location.Items;
-          if (    (inv?.IsEmpty ?? true)    // can crash otherwise in presence of bugs
+          var inv = exemplarStack(p.Location);
+          if (    null == inv    // can crash otherwise in presence of bugs
                || !m_Actor.CanEnter(p.Location)
-               || (m_Actor.Controller.CanSee(p.Location) && (m_Actor.StackIsBlocked(p.Location)
-                                                         || null == (m_Actor.Controller as OrderableAI).WouldGrabFromAccessibleStack(p.Location, inv)))) {
+               || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
               _stacks.RemoveAt(i);
               (m_Actor.Controller as ObjectiveAI).ClearLastMove();
               continue;
-            }
-            _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
+          }
+          _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
           } // end scope var p
-          // XXX \todo some telepathic leakage since this isn't a value copy
+          
           if (_stacks[i].Percepted.IsEmpty || !(m_Actor.Controller as OrderableAI).WouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
             _stacks.RemoveAt(i);
             continue;
@@ -542,25 +541,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
+      private Inventory? exemplarStack(in Location loc) // XXX causes telepathic leakage
+      {
+        var allItems = Map.AllItemsAt(loc, m_Actor);
+        if (null == allItems) return null;
+        foreach(var inv in allItems) {
+          if ((m_Actor.Controller as OrderableAI).WouldGrabFromStack(in loc, inv)) return inv;
+        }
+        return null;
+      }
+
       public void newStack(in Location loc) {
-        var inv = loc.Items;
-        if (inv?.IsEmpty ?? true) return;
-        if (!(m_Actor.Controller as OrderableAI).WouldGrabFromStack(in loc, inv)) return;
 #if DEBUG
+        // containers can only exist on enterable squares
         if (!m_Actor.CanEnter(loc)) throw new InvalidOperationException(m_Actor.Name+" wants inaccessible ground inventory at "+loc);
 #endif
+        var relay = exemplarStack(in loc);
+        if (null == relay) return;
 
         int i = _stacks.Count;
-        // update if stack is present
+        // update if stack is present // \todo
         while(0 < i--) {
           var p = _stacks[i];
           if (p.Location==loc) {
-            _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
+            _stacks[i] = new Percept_<Inventory>(relay, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
             return;
           }
         }
 
-        _stacks.Add(new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));   // otherwise, add
+        _stacks.Add(new Percept_<Inventory>(relay, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));   // otherwise, add
       }
 
       public ActorAction Pathing()
