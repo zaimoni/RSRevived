@@ -15,6 +15,16 @@ namespace djack.RogueSurvivor.Engine.Actions
         public Item Take { get; }
     }
 
+    internal interface TargetActor
+    {
+        public Actor Whom { get; }
+    }
+
+    internal interface Target<out T> where T:MapObject
+    {
+        public T What { get; }
+    }
+
     [Serializable]
     internal abstract class ActionTradeWith : ActorAction,ActorGive,ActorTake
     {

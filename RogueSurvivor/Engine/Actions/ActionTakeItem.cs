@@ -79,12 +79,12 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionTakeItem
 
   [Serializable]
-  internal class ActionTake : ActorAction
+  internal class ActionTake : ActorAction,ActorTake,Target<MapObject?>
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     [NonSerialized] private Item? m_Item;
     [NonSerialized] private Point? m_pos;
-    [NonSerialized] private MapObject m_Container;
+    [NonSerialized] private MapObject? m_Container;
 
     public ActionTake(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
     {
@@ -93,12 +93,15 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Gameplay.GameItems.IDs ID { get { return m_ID; } }
 
-    private Item? Item {
-      get {
-        init();
-        return m_Item;
-      }
-    }
+    public Item? Take { get {
+      init();
+      return m_Item;
+    } }
+
+    public MapObject? What { get {
+      init();
+      return m_Container;
+    } }
 
     private void init()
     {
@@ -124,7 +127,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      var it = Item;
+      var it = Take;
       if (null == it) {
         m_FailReason = "not in reach";
         return false;
@@ -134,7 +137,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      Item it = Item!;  // cf IsLegal(), above
+      Item it = Take!;  // cf IsLegal(), above
       m_Actor.Inventory.RejectCrossLink(_inv!);
       if (null != m_Container) RogueForm.Game.DoTakeItem(m_Actor, m_Container, m_Item);
       else RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
@@ -148,7 +151,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionTake
 
   [Serializable]
-  internal class ActionGiveTo : ActorAction
+  internal class ActionGiveTo : ActorAction,ActorGive,TargetActor
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     private Actor m_Target;
@@ -163,13 +166,19 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Target = target;
     }
 
+    public Actor Whom { get { return m_Target; } }
+
     public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+
+    public Item? Give { get {
+      gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]); // force regeneration
+      return gift;
+    } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]);
-      if (null==gift) { m_FailReason = "not in inventory"; return false; }
+      if (null==Give) { m_FailReason = "not in inventory"; return false; }
       return true;
     }
 

@@ -2147,10 +2147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActorUse) return null; // end (noncombat) inventory manipulation block
       if (x is ActionTrade) return null;
       if (x is ActionReviveCorpse) return null;
-      if (x is ActionPutInContainer) return null;
       if (x is ActionSequence) return null;
-      if (x is ActionGiveTo) return null;
-      if (x is ActionTake) return null;
       if (x is ActionBarricadeDoor) return null;
       if (x is ActionSprayOdorSuppressor) return null;
       if (x is ActionTakeLead) return null;
