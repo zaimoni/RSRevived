@@ -13,7 +13,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionThrowGrenade : ActorAction
+  internal class ActionThrowGrenade : ActorAction,CombatAction
   {
     private readonly Point m_ThrowPos;
 
@@ -22,6 +22,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_ThrowPos = throwPos;
     }
+
+    public Actor? target { get { return (new Location(m_Actor.Location.Map, m_ThrowPos)).Actor; } }
 
     public override bool IsLegal()
     {

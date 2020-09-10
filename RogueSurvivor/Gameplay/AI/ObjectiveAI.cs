@@ -2151,6 +2151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionTakeLead) return null;
       if (x is ActionBreak) return null;
       if (x is ActionSay) return null;
+      if (x is ActionShout) return null;
       if (x is ActionSwitchPlace) return null;
       if (x is ActionSwitchPlaceEmergency) return null;
 
