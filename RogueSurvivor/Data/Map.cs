@@ -1430,6 +1430,20 @@ retry:
       return null == test ? null : test.Value.Items;
     }
 
+    /// <summary>
+    /// All inventories at that position, regardless of type.  Actors are not meant to be equally efficient at noticing inventories.
+    /// </summary>
+    static public List<Inventory>? AllItemsAt(Location loc, Actor a=null)
+    {
+       if (!Map.Canonical(ref loc)) return null;
+       var g_inv = loc.Items;
+       var ret = (null == g_inv ? null : new List<Inventory> { g_inv });
+       var obj = loc.MapObject;
+       var o_inv = (null != obj && obj.IsContainer ? obj.Inventory : null);
+       if (null != o_inv) (ret ?? (ret = new List<Inventory>())).Add(o_inv);
+       return ret;
+    }
+
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
     {
       var ground_inv = new Dictionary<Point, Inventory>();

@@ -74,14 +74,27 @@ namespace djack.RogueSurvivor.Data
           if (null == ammo) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var itemsAt = loc.Map.GetItemsAt(loc.Position);
-                if (null == itemsAt) {
+                var allItems = Map.AllItemsAt(loc);
+                if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
                 }
-                if (null != itemsAt.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0 < rw.Ammo)) return true;
-                if (null == itemsAt.GetFirstByModel(model))
-                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                var ub = allItems.Count;
+                bool rebuild = true;
+                while (0 < ub) {
+                    var itemsAt = allItems[--ub];
+                    if (null != itemsAt.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0 < rw.Ammo)) return true;
+                    if (null != itemsAt.GetFirstByModel(model)) rebuild = false;
+                }
+                if (rebuild) {
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    ub = allItems.Count;
+                    while (1 < ub) {
+                        var itemsAt = allItems[--ub];
+                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                    }
+                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                }
                 return false;
             });
             if (0 >= tmp.Count) continue;
@@ -91,14 +104,27 @@ namespace djack.RogueSurvivor.Data
         if (Models.Items[(int)it] is Engine.Items.ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var itemsAt = loc.Map.GetItemsAt(loc.Position);
-                if (null == itemsAt) {
+                var allItems = Map.AllItemsAt(loc);
+                if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
                 }
-                if (null != itemsAt.GetFirstByModel<Engine.Items.ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
-                if (null == itemsAt.GetFirstByModel(ent))
-                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                var ub = allItems.Count;
+                bool rebuild = true;
+                while (0 < ub) {
+                    var itemsAt = allItems[--ub];
+                    if (null != itemsAt.GetFirstByModel<Engine.Items.ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
+                    if (null != itemsAt.GetFirstByModel(ent)) rebuild = false;
+                }
+                if (rebuild) {
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    ub = allItems.Count;
+                    while (1 < ub) {
+                        var itemsAt = allItems[--ub];
+                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                    }
+                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                }
                 return false;
             });
         }
@@ -107,18 +133,32 @@ namespace djack.RogueSurvivor.Data
           if (Models.Items[(int)it] is Engine.Items.ItemLightModel || Models.Items[(int)it] is Engine.Items.ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
-                var itemsAt = loc.Map.GetItemsAt(loc.Position);
-                if (null == itemsAt) {
+                var allItems = Map.AllItemsAt(loc);
+                if (null == allItems) {
                   it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
                   return false;
                 }
-                var test = itemsAt.GetFirstByModel(Models.Items[(int)it]);
-                if (null == test) {
-                  it_memory.Set(loc, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
-                  return false;
+                var ub = allItems.Count;
+                bool rebuild = true;
+                while (0 < ub) {
+                    var itemsAt = allItems[--ub];
+                    var test = itemsAt.GetFirstByModel(Models.Items[(int)it]);
+                    if (null == test) rebuild = true;
+                    else {
+                        if (!test.IsUseless
+                          || null != itemsAt.GetFirstByModel<Item>(Models.Items[(int)it], obj => !obj.IsUseless)) return true;   // actualy want this one
+                    }
                 }
-                if (!test.IsUseless) return true;   // actualy want this one
-                return null!= itemsAt.GetFirstByModel<Item>(Models.Items[(int)it],obj => !obj.IsUseless);
+                if (rebuild) {
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    ub = allItems.Count;
+                    while (1 < ub) {
+                        var itemsAt = allItems[--ub];
+                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                    }
+                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
+                }
+                return false;
             });
             if (0 >= tmp.Count) continue;
           }

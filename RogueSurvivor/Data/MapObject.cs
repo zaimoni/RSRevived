@@ -507,6 +507,12 @@ namespace djack.RogueSurvivor.Data
           Location.Drop((rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
         }
       }
+      if (null != m_Inventory) {
+        foreach (Item it in m_Inventory.Items.ToArray()) {
+          if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
+          Location.Drop(it);
+        }
+      }
       _destroy();
       RogueForm.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
     }
