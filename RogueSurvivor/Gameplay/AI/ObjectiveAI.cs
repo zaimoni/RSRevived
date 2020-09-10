@@ -1,6 +1,7 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 #define PATHFIND_IMPLEMENTATION_GAPS
 // #define TRACE_GOALS
+// #define DIAGNOSE_SELF_PATHING
 
 using System;
 using System.Collections.Generic;
@@ -3522,7 +3523,13 @@ restart:
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
 
       bool rude_goal(Location loc) {
         if (!CanSee(in loc)) return false;
@@ -3563,6 +3570,9 @@ restart:
         }
       }
       force_polite(goals);
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
       return _recordPathfinding(BehaviorPathTo(goals),goals);
     }

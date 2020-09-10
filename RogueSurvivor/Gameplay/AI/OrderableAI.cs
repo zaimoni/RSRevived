@@ -6,6 +6,7 @@
 
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
+// #define REPAIR_DO_NOT_PICKUP
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -190,7 +191,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
         var dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoINeedNow();
-        if (0 == dont_ignore_these.Count) dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoIWantNow();
+        dont_ignore_these.UnionWith((m_Actor.Controller as ObjectiveAI).WhatDoIWantNow());
         if (dont_ignore_these.Contains(Avoid)) {
           // instantly expire if critical.
           _isExpired = true;
@@ -2835,6 +2836,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == Items) throw new ArgumentNullException(nameof(Items));
 #endif
       var exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
+#if REPAIR_DO_NOT_PICKUP
+      exclude.ExceptWith(WhatDoINeedNow());
+      exclude.ExceptWith(WhatDoIWantNow());
+#endif
       IEnumerable<Item> tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
       return (tmp.Any() ? tmp.ToList() : null);
     }
