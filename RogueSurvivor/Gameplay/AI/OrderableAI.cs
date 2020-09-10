@@ -3107,9 +3107,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActionUseItem old_use:
+                  case ActorUse old_use:
                     // generally better to take than use
-                    if (old_use.Item.Model.ID!=new_take.Take.Model.ID) dominated.Add(old_loc);
+                    if (old_use.Use.Model.ID!=new_take.Take.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
                     break;
                   }
@@ -3140,27 +3140,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_trade.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case ActionUseItem old_use:
+                  case ActorUse old_use:
                     // generally better to take than use
-                    if (old_use.Item.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
+                    if (old_use.Use.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
                     else item_compare = 0;
                     break;
                   }
                   if (-1==item_compare) break;
                 }
                 break;
-              case ActionUseItem new_use:
+              case ActorUse new_use:
                 item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
-                    case ActionUseItem old_use:
-                      if (old_use.Item.Model.ID==new_use.Item.Model.ID) { // duplicate
+                    case ActorUse old_use:
+                      if (old_use.Use.Model.ID==new_use.Use.Model.ID) { // duplicate
                         item_compare = -1;
                         break;
                       }
                       break;
                     case ActionTakeItem old_take:
-                      if (old_take.Take.Model.ID!=new_use.Item.Model.ID) { // generally better to take than use
+                      if (old_take.Take.Model.ID!=new_use.Use.Model.ID) { // generally better to take than use
                         item_compare = -1;
                         break;
                       }

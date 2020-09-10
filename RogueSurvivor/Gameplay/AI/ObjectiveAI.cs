@@ -2142,9 +2142,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction? RewriteAction(ActorAction x)
     {
       if (x is CombatAction) return null;   // do not second-guess combat actions
-      if (x is ActionTradeWith) return null;
-      if (x is ActorGive) return null;
+      if (x is ActorGive) return null; // start (noncombat) inventory manipulation block
       if (x is ActorTake) return null;
+      if (x is ActorUse) return null; // end (noncombat) inventory manipulation block
       if (x is ActionTrade) return null;
       if (x is ActionReviveCorpse) return null;
       if (x is ActionPutInContainer) return null;
@@ -2152,8 +2152,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionGiveTo) return null;
       if (x is ActionTake) return null;
       if (x is ActionBarricadeDoor) return null;
-      if (x is ActionUseItem) return null;
-      if (x is ActionUse) return null;
       if (x is ActionSprayOdorSuppressor) return null;
       if (x is ActionTakeLead) return null;
       if (x is ActionBreak) return null;

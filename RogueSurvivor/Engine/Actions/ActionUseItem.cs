@@ -9,7 +9,12 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionUseItem : ActorAction
+  internal interface ActorUse
+  {
+    public Item? Use { get; }
+  }
+
+  internal class ActionUseItem : ActorAction,ActorUse
   {
     private readonly Item m_Item;
 
@@ -23,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       actor.Activity = Activity.IDLE;
     }
 
-    public Item Item { get { return m_Item; } }
+    public Item Use { get { return m_Item; } }
 
     public override bool IsLegal()
     {
@@ -37,10 +42,10 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionUseItem
 
   [Serializable]
-  internal class ActionUse : ActorAction
+  internal class ActionUse : ActorAction,ActorUse
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Item m_Item;
+    [NonSerialized] private Item? m_Item = null;
 
     public ActionUse(Actor actor, Gameplay.GameItems.IDs it)
       : base(actor)
@@ -51,23 +56,18 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_ID = it;
     }
 
-    public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+    public Gameplay.GameItems.IDs ID { get { return m_ID; } } // for completeness
 
-    private Item Item {
+    public Item? Use {
       get {
-        init();
+        if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Models.Items[(int) m_ID]);
         return m_Item;
       }
     }
 
-    private void init()
-    {
-      if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Models.Items[(int) m_ID]);
-    }
-
     public override bool IsLegal()
     {
-      Item it = Item;
+      var it = Use;
       if (null == it) {
         m_FailReason = "not in inventory";
         return false;
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       m_Actor.Activity = Activity.IDLE;
-      RogueForm.Game.DoUseItem(m_Actor, Item);
+      RogueForm.Game.DoUseItem(m_Actor, Use);
     }
   } // ActionUse
 }
