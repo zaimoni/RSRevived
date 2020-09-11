@@ -24,7 +24,6 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Dictionary<string, Bitmap> s_Images = new Dictionary<string, Bitmap>();
     private static readonly Dictionary<string, Bitmap> s_GrayLevelImages = new Dictionary<string, Bitmap>();
     private static readonly List<string> s_Mods = new List<string>();
-    private const float GRAYLEVEL_DIM_FACTOR = 0.55f;
     public const string ACTIVITY_CHASING = "Activities\\chasing";
     public const string ACTIVITY_CHASING_PLAYER = "Activities\\chasing_player";
     public const string ACTIVITY_TRACKING = "Activities\\tracking";
@@ -1008,11 +1007,12 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static Bitmap MakeGrayLevel(Bitmap img)
     {
+      const float GRAYLEVEL_DIM_FACTOR = 0.55f;
       Bitmap bitmap = new Bitmap(img);
       for (int x = 0; x < bitmap.Width; ++x) {
         for (int y = 0; y < bitmap.Height; ++y) {
           Color pixel = img.GetPixel(x, y);
-          int num = (int) (140.25 * pixel.GetBrightness());
+          int num = (int) (255 * GRAYLEVEL_DIM_FACTOR * pixel.GetBrightness());
           bitmap.SetPixel(x, y, Color.FromArgb((int) pixel.A, num, num, num));
         }
       }

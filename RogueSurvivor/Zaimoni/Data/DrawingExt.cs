@@ -274,6 +274,42 @@ namespace Zaimoni.Data
       }
     }
 
+    // convention: pixels are unit length/width squares whose centers are on the integer coordinates
+    // x0,y0 pair is the top left corner
+    public static void Ellipse(this Bitmap img, Color tint, int x0, int y0, int width, int height)
+    {
+#if DEBUG
+      if (3 > width) throw new InvalidOperationException("too narrow");
+      if (3 > height) throw new InvalidOperationException("too short");
+#endif
+      if (img.Width < x0) return;
+      if (img.Height < y0) return;
+      // base algorithm; using symmetries is an optimization
+      PointF center = new PointF((width-1)/2.0f, (height - 1) / 2.0f);
+      PointF ab = new PointF(center.X + 0.5f, center.Y + 0.5f);
+      PointF delta = new PointF();
+      PointF scaled_delta = new PointF();
+      int x = x0+width;
+      while(x0 <= --x) {
+        if (img.Width <= x) continue;
+        delta.X = (x-x0)-center.X;
+        scaled_delta.X = delta.X/ab.X;
+        int y = y0+height;
+        while(y0 <= --y) {
+          if (img.Height <= y) continue;
+          delta.Y = (y-y0)-center.Y;
+          scaled_delta.Y = delta.Y/ab.Y;
+          if (1.0f < scaled_delta.X * scaled_delta.X+ scaled_delta.Y * scaled_delta.Y) continue;
+          img.SetPixel(x, y, tint);
+        }
+      }
+    }
+
+    public static void Circle(this Bitmap img, Color tint, int x0, int y0, int radius)
+    {
+      img.Ellipse(tint, x0, y0, radius, radius);
+    }
+
 #if PROTOTYPE
     public static Bitmap SkewCopy(this Bitmap img, int w, int h, Func<Point,Point> transform)
     {
