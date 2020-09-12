@@ -10257,36 +10257,18 @@ namespace djack.RogueSurvivor.Engine
         }
         while(true);
       }
-      // this is the change target for becoming a cop.  The test may need extracting to an ImpersonateCop function
-      // 0) must be civilian or survivor with 0 murders
-      if ((GameFactions.TheCivilians == upgradeActor.Faction || GameFactions.TheSurvivors == upgradeActor.Faction)
-           // 1) required skills: Firearms 1, Leadership 1
-           && 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
-           // 2) must have equipped: police radio, police armor
-           && null != upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO)
-           && (null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
-           // 3) must have in inventory: one of pistol or shotgun
-           && (null != upgradeActor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != upgradeActor.GetItem(GameItems.IDs.RANGED_SHOTGUN))
-           // 4) must have committed no murders \todo once we have revamped the representation of crime, review this
-           && 0 >= upgradeActor.MurdersCounter) {
-          // then: y/n prompt, if y become cop
+      // this is the change target for becoming a cop
+      if (upgradeActor.Controller is ObjectiveAI oai) {
+        if (oai.CanBecomeCop()) {
           AddMessage(MakeYesNoMessage("Become a cop"));
           RedrawPlayScreen();
-          if (WaitYesOrNo()) {
-            upgradeActor.Faction = GameFactions.ThePolice;
-            DiscardItem(upgradeActor, upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO));    // now implicit; don't worry about efficiency here
-            upgradeActor.PrefixName("Cop"); // adjust job title
-            upgradeActor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
-            upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
-            upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
-            upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
-            upgradeActor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
+          if (WaitYesOrNo() && oai.BecomeCop()) {
+            // 2020-09-12: NPC CivilianAI do not have pre-existing item memory and upgrade theirs without help.
             upgradeActor.Controller = new PlayerController(upgradeActor);
-            upgradeActor.Location.Map.Police.Recalc();
-            AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-          } else
-            AddMessage(new Data.Message("Acknowledged.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+          }
+        }
       }
+
       if (upgradeActor.IsPlayer) HandlePlayerFollowersUpgrade(upgradeActor);
     }
 

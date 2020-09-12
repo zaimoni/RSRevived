@@ -67,6 +67,9 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != g_inv && g_inv.Contains(take)) return new ActionTradeWithGround(actor, give, take, loc);
             var a_inv = loc.Actor?.Inventory;
             if (null != a_inv && a_inv.Contains(take)) return new ActionTradeWithActor(actor, give, take, loc.Actor);
+#if DEBUG
+            throw new InvalidOperationException("tracing"); // need to verify null return
+#endif
             return null;
         }
 

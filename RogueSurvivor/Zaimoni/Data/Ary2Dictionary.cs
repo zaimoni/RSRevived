@@ -11,7 +11,7 @@ namespace Zaimoni.Data
     /// <typeparam name="Key2">The key for which something has to be observed; e.g. GameItems.IDs</typeparam>
     /// <typeparam name="Range">the value, e.g. turn</typeparam>
     [Serializable]
-    class Ary2Dictionary<Key1, Key2, Range>
+    class Ary2Dictionary<Key1, Key2, Range> where Range:IComparable
     {
         readonly private Dictionary<Key1, Range> _no_entries = new Dictionary<Key1, Range>();
         readonly private Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>> _first_second_dict = new Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>();
@@ -120,18 +120,22 @@ namespace Zaimoni.Data
             if (null != expired) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
         }
 
-#if FAIL
-        public void Instruct(Ary2Dictionary<Key1, Key2, Range> student)
+        public List<Key1> Instruct(Ary2Dictionary<Key1, Key2, Range> student)
         {
+            var ret = new List<Key1>();
             Range student_last_taught;
-            foreach(KeyValuePair<Key1, Range> tmp in _no_entries) {
-              if (student.HaveEverSeen(tmp.Key, out student_last_taught) && student_last_taught>=tmp.Value) continue;
+            foreach(var tmp in _no_entries) {
+              if (student.HaveEverSeen(tmp.Key, out student_last_taught) && -1 < student_last_taught.CompareTo(tmp.Value)) continue;
+              ret.Add(tmp.Key);
               student.Set(tmp.Key,null,tmp.Value);
             }
 
-            foreach(KeyValuePair<Key1, Dictionary<Key2, Range>> tmp in _first_second_dict) {
+            foreach(var tmp in _first_second_dict) {
+              if (student.HaveEverSeen(tmp.Key, out student_last_taught) && -1 < student_last_taught.CompareTo(tmp.Value.Key)) continue;
+              ret.Add(tmp.Key);
+              student.Set(tmp.Key, tmp.Value.Value, tmp.Value.Key);
             }
+            return ret;
         }
-#endif
     }
 }

@@ -18,6 +18,7 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using System.Runtime.Remoting.Messaging;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -2154,6 +2155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionShout) return null;
       if (x is ActionSwitchPlace) return null;
       if (x is ActionSwitchPlaceEmergency) return null;
+      if (x is ActionSwitchPowerGenerator) return null;
 
       // exit-related processing.
       var e = m_Actor.Location.Exit;
@@ -4886,9 +4888,6 @@ restart_single_exit:
       if (null != position) {
         var act = ActionTradeWith.Cast(position.Value, m_Actor, give, take);
         if (null != act) return act;
-#if DEBUG
-        else throw new InvalidOperationException("tracing"); // need to verify null return
-#endif
       }
       return BehaviorDropItem(give);
     }
@@ -5133,9 +5132,6 @@ restart_single_exit:
               // 3a) drop target without triggering the no-pickup schema
               tmp = ActionTradeWith.Cast(position.Value, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
-#if DEBUG
-              else throw new InvalidOperationException("testing whether this is a false-fail");
-#endif
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
@@ -5176,9 +5172,6 @@ restart_single_exit:
               // 3a) drop target without triggering the no-pickup schema
               tmp = ActionTradeWith.Cast(position.Value, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
-#if DEBUG
-              else throw new InvalidOperationException("testing whether this is a false-fail");
-#endif
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
@@ -6018,5 +6011,68 @@ restart_single_exit:
       });
     }
 #nullable restore
+
+    /// <summary>
+    /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.
+    /// </summary>
+    /// <returns>true if cannot impersonate a cop enough to become one.  Doesn't prevent remaining one.</returns>
+    public bool DisqualifiedForBecomingCop() {
+      // 0) must be civilian or survivor
+      var faction = m_Actor.Faction;
+      if (GameFactions.TheCivilians != faction && GameFactions.TheSurvivors != faction) return true;
+      // 4) must have committed no murders \todo once we have revamped the representation of crime, review this
+      if (0 < m_Actor.MurdersCounter) return true;
+      return false;
+    }
+
+    /// <summary>
+    /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.
+    /// </summary>
+    /// <returns>true if can impersonate a cop enough to become one</returns>
+    public bool CanBecomeCop() {
+        if (DisqualifiedForBecomingCop()) return false;
+        var skills = m_Actor.Sheet.SkillTable;
+           // 1) required skills: Firearms 1, Leadership 1
+        return 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
+           // 2) must have equipped: police radio, police armor
+           && null != m_Actor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO)
+           && (null != m_Actor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != m_Actor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
+           // 3) must have in inventory: one of pistol or shotgun
+           && (null != m_Actor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != m_Actor.GetItem(GameItems.IDs.RANGED_SHOTGUN));
+    }
+
+    /// <summary>
+    /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.
+    /// </summary>
+    /// <returns>true if there was prior item memory and the controller needs re-creation</returns>
+    public bool BecomeCop() {
+#if DEBUG
+      if (!CanBecomeCop()) throw new InvalidOperationException(m_Actor.Name+" tried to become cop while unable to impersonate one");
+#else
+      if (!CanBecomeCop()) return false;
+#endif
+      var upgradeActor = m_Actor;
+      var items = ItemMemory;
+      bool regenerate_controller = null != items;
+      if (regenerate_controller) {
+        // debrief item memory to avoid cheesy metagaming (handwave this as background task)
+        var locs = items.Instruct(Session.Get.PoliceItemMemory);
+        var tourism = Session.Get.PoliceInvestigate;
+        foreach(var x in locs) tourism.Seen(x); // \todo actually should clear tourism only for those locations seen more recently
+        // than they were requested, but that would replace LocationSet with another type
+      }
+      m_Actor.Faction = GameFactions.ThePolice;
+      var it = m_Actor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
+      m_Actor.Inventory.RemoveAllQuantity(it);
+      it.Unequip();
+      m_Actor.PrefixName("Cop"); // adjust job title
+      m_Actor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
+      m_Actor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
+      m_Actor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
+      m_Actor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
+      m_Actor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
+      m_Actor.Location.Map.Police.Recalc();
+      return regenerate_controller;
+    }
   }
 }
