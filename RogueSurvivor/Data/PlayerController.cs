@@ -384,7 +384,7 @@ namespace djack.RogueSurvivor.Data
         var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.Model.ID && it.MaxBatteries - 1 > it.Batteries);
         if (0 < (lights?.Count ?? 0) || 0 < (trackers?.Count ?? 0)) ret.Add("Recharge everything to full");
       }
-      if (null != (m_Actor.Controller as ObjectiveAI)?.TurnOnAdjacentGenerators()) ret.Add("Turn on all adjacent generators");
+      if (null != TurnOnAdjacentGenerators()) ret.Add("Turn on all adjacent generators");
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
 
@@ -393,8 +393,10 @@ namespace djack.RogueSurvivor.Data
         foreach(Corpse c in corpses_at) ret.Add("Butcher "+c.ToString());
       }
 
-      Objective test = new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor);
+      Objective test = new Goal_MedicateSLP(m_Actor);
       if (test.UrgentAction(out ActorAction testAction) && null!=testAction) ret.Add("Medicate sleep");
+      test = new Goal_MedicateHP(m_Actor);
+      if (test.UrgentAction(out testAction) && null!=testAction) ret.Add("Medicate HP");
       } // if (!in_combat)
       return ret;
     }
@@ -439,16 +441,19 @@ namespace djack.RogueSurvivor.Data
         }
         return true;
       case "Recharge everything to full":
-        Objectives.Insert(0,new Goal_RechargeAll(Session.Get.WorldTime.TurnCounter, m_Actor));
+        Objectives.Insert(0,new Goal_RechargeAll(m_Actor));
         return true;
       case "Rest rather than lose turn when tired":
-        Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(Session.Get.WorldTime.TurnCounter, m_Actor));
+        Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
         return true;
       case "Turn on all adjacent generators":
         Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return true;
       case "Medicate sleep":
-        Objectives.Insert(0,new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor));
+        Objectives.Insert(0,new Goal_MedicateSLP(m_Actor));
+        return true;
+      case "Medicate HP":
+        Objectives.Insert(0,new Goal_MedicateHP(m_Actor));
         return true;
       default: return false;  // automatic failure
       }

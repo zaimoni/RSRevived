@@ -25,10 +25,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class Goal_RestRatherThanLoseturnWhenTired : Objective
   {
-    public Goal_RestRatherThanLoseturnWhenTired(int t0, Actor who)
-    : base(t0,who)
-    {
-    }
+    public Goal_RestRatherThanLoseturnWhenTired(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
     {
@@ -71,10 +68,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class Goal_MedicateSLP : Objective
   {
-    public Goal_MedicateSLP(int t0, Actor who)
-    : base(t0,who)
-    {
-    }
+    public Goal_MedicateSLP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
     {
@@ -90,12 +84,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
+  internal class Goal_MedicateHP : Objective
+  {
+    public Goal_MedicateHP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (null != m_Actor.Controller.enemies_in_FOV) {
+        _isExpired = true;
+        return true;
+      }
+      ret = (m_Actor.Controller as ObjectiveAI).DoctrineMedicateHP();
+      if (null == ret) _isExpired = true;
+      return true;
+    }
+  }
+
+  [Serializable]
   internal class Goal_RechargeAll : Objective
   {
-    public Goal_RechargeAll(int t0, Actor who)
-    : base(t0,who)
-    {
-    }
+    public Goal_RechargeAll(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
     {
@@ -5917,10 +5926,28 @@ restart_single_exit:
 
     public ActorAction? DoctrineMedicateSLP()
     {
-       if (!(m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
+       if (!(m_Actor.Inventory?.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
        if (m_Actor.SleepPoints > (m_Actor.MaxSleep - m_Actor.ScaleMedicineEffect(stim.SleepBoost))) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        return new ActionUseItem(m_Actor,stim);
+    }
+
+    public ActorAction? DoctrineMedicateHP()
+    {
+       var bandage = m_Actor.Inventory?.GetBestDestackable(GameItems.BANDAGE) as ItemMedicine;
+       var medikit = m_Actor.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
+       if (null == bandage && null == medikit) return null;
+       if (null == medikit) return new ActionUseItem(m_Actor, bandage);
+       int delta = m_Actor.MaxHPs - m_Actor.HitPoints;
+       int medikit_help = m_Actor.ScaleMedicineEffect(medikit.Healing);
+       if (medikit_help <= delta) return new ActionUseItem(m_Actor, medikit);
+       if (null != bandage) {
+         int bandage_help = m_Actor.ScaleMedicineEffect(bandage.Healing);
+         int bandage_total = m_Actor.Inventory!.CountQuantityOf(GameItems.BANDAGE); // automated static analysis failure 2020-09-12
+         if (delta <= bandage_help*bandage_total) return new ActionUseItem(m_Actor, bandage);
+       }
+       // \todo this is problematic for AI; relying on player control here to not initiate inappropriately
+       return new ActionUseItem(m_Actor, medikit);
     }
 
     public ActorAction? DoctrineRechargeToFull(Item it)

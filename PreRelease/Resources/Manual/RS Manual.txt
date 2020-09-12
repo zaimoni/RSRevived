@@ -968,6 +968,10 @@ Effect is occassionally pre-empting a turn but otherwise allowing normal action.
 
 Use the blue SLP pills as long as they're in inventory and no wastage.
 
+> Medicate HP
+
+Use medikits and bandages to heal to full hitpoints.  This can waste bandages/medikits, but tries not to be too egregious.
+
 > Butcher corpse of ....
 
 For Infection modes.  Enough butcher actions to completely destroy the target.
