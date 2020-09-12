@@ -3,6 +3,14 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* Friends are now enemy detectors.
+** Handwavium: you're reading off where they want to shoot or melee, from their body language.  You must be able to see them; detection isn't enough.
+** Provisional implementation: zombies get the zombie detector icon; everyone else gets the blackops icon.
+** this is very gamey currently:
+*** the detectee only has to be targetable with the best ranged weapon.  It'll trigger even if that isn't in use.  You cannot read off an enemy at range five,
+    from someone who only has a shotgun (typically range 3).
+*** this does work for melee weapons (with targeting range 1, except for Father Time's Scythe which is range 2)
+* Containers now have real inventory: pushing that store shelf takes the item on it, with it.
 * new text label SIMULATING when it is not your turn.  Not 100% reliable; if things look weird try the R)un command to force a screen redraw.
 ** same screen space also has the SAVING label when saving a game.  This replaces wiping the displayed messages.
 ** same screen space will also tell you if far-walking will/has aborted: IN COMBAT, ENEMIES NEAR, WANTED ITEMS, or WANTED TRADES text.

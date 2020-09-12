@@ -11244,6 +11244,27 @@ namespace djack.RogueSurvivor.Engine
         pt => { return Player.Controller.IsKnown(new Location(map, pt)); });
       }
       if (!Player.IsSleeping) {
+        // if we see an ally, we should be able to "read off body language" who they are aiming at 2020-09-11 zaimoni
+        var friends = Player.Controller.friends_in_FOV;
+        if (null != friends) foreach(var fr in friends) {
+          if (fr.Value.IsSleeping) continue;
+          var oai = fr.Value.Controller as ObjectiveAI;
+          if (null == oai) continue;
+          var rw = (fr.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
+          int detection_range = (null != rw ? rw.Model.Attack.Range : 1);
+          var fr_enemies = fr.Value.Controller.enemies_in_FOV;
+          if (null == fr_enemies) continue;
+          if (1 == detection_range && null != fr.Value.Inventory?.GetFirst(GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
+          foreach(var en in fr_enemies) {
+            if (detection_range < Rules.InteractionDistance(fr.Value.Location, en.Value.Location)) continue;
+            // \todo more relevant icons (likely want CGI generation)
+            if (en.Value.IsFaction(GameFactions.IDs.TheUndeads)) DrawDetected(en.Value, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
+            else { // \todo respond to viewer's own faction; definitely "wrong" for blackops to have out-of-sight enemies labeled as blackops
+              DrawDetected(en.Value, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
+            }
+          }
+        }
+
 	    // normal detectors/lights
         bool find_followers = false;
 //      bool find_leader = false; // may need this, but not for single PC
