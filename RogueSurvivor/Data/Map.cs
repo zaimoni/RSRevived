@@ -967,6 +967,42 @@ retry:
       m_Zones.OnlyIfNot(z => "NoCivSpawn" == z.Name);
     }
 
+    // assumes world has been substantially loaded/generated (in particular, real-time extending a map would require
+    // invalidating some of this)
+    public void RegenerateZoneExits()
+    {
+      foreach(var z in m_Zones) {
+        if (z.VolatileAttribute.HasKey("exits")) continue;
+        var locs = new List<Location>();
+        var staging = new ZoneLoc(this, z.Bounds);
+        var walking = staging.WalkOut();
+        if (null != walking) locs.AddRange(walking.Select(act => act.dest));
+        var vertical = staging.grep(loc => null != loc.Exit);
+        if (null != vertical) locs.AddRange(vertical.Select(loc => loc.Exit!.Location));
+        z.VolatileAttribute.Set("exits", locs.ToArray());
+        var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
+        foreach(var loc in locs) {
+          var dest_zones = loc.Map.GetZonesAt(loc.Position);
+          if (null != dest_zones) foreach(var zone in dest_zones) zones[loc.Map].Add(zone);
+        }
+        var ordered_zones = new List<ZoneLoc>();
+        var order_staging = new Dictionary<int, List<Zone>>();
+        foreach(var mapzone in zones) {
+          foreach(var x in mapzone.Value) {
+            var area = (x.Bounds.Right-x.Bounds.Left)*(x.Bounds.Bottom-x.Bounds.Top);
+            if (!order_staging.TryGetValue(area, out var cache)) order_staging.Add(area, (cache = new List<Zone>()));
+            cache.Add(x);
+          }
+          while(0 < order_staging.Count) {
+            int index = order_staging.Keys.Max();
+            foreach(var x in order_staging[index]) ordered_zones.Add(new ZoneLoc(mapzone.Key, x.Bounds));
+            order_staging.Remove(index);
+          }
+        }
+        z.VolatileAttribute.Set("exit_zones", ordered_zones.ToArray());
+      }
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
 
     public void DoForAllInventory(Action<Inventory> op)

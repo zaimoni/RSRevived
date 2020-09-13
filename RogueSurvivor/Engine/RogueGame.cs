@@ -11949,6 +11949,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
+      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
       Direction_ext.Now();
 #if OBSOLETE
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
@@ -12440,6 +12441,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.World.DoForAllMaps(m=>m.RegenerateChokepoints());
 #endif
       Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
+      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
       Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
       m_UI.UI_Clear(Color.Black);

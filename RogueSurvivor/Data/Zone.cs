@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
     // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
     public AVtable Attribute;
-    [NonSerialized] AVtable VolatileAttribute;
+    [NonSerialized] public AVtable VolatileAttribute;
 
     public string Name { get { return m_Name; } }
     public Rectangle Bounds { get { return m_Bounds; } }
