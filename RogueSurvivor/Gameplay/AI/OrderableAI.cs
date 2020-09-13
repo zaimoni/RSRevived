@@ -1218,7 +1218,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) rw.EquippedBy(m_Actor);
       if (0 >= rw.Ammo) {
         ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-        if (null != ammo) return new ActionUseItem(m_Actor, ammo);
+        if (null != ammo) return UseAmmo(ammo, rw);
       }
       return null;
     }
@@ -3393,11 +3393,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
             if (GameItems.ammo.Contains(it)) {  // reload ASAP
               var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
-              if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
-                var ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-                rw.EquippedBy(m_Actor);
-                return new ActionUseItem(m_Actor,ammo);
-              };
+              if (null != rw && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
               continue;
             }
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.

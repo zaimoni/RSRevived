@@ -18,7 +18,6 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using System.Runtime.Remoting.Messaging;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -4368,6 +4367,20 @@ restart_single_exit:
         return false;
     }
 
+#nullable enable
+    /// <summary>
+    /// Strongly prefer to not directly create ActionUseItem for ammo; use this wrapper to bypass a player UI check.
+    /// </summary>
+    protected ActionUseItem UseAmmo(ItemAmmo ammo, ItemRangedWeapon rw)
+    {
+#if DEBUG
+      if (rw.AmmoType != ammo.AmmoType) throw new InvalidOperationException("ammunition types must agree");
+#endif
+      rw.EquippedBy(m_Actor);
+      return new ActionUseItem(m_Actor, ammo);
+    }
+#nullable restore
+
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
       if (use_ok) {
@@ -4384,12 +4397,7 @@ restart_single_exit:
       { // scoping brace
       if (it is ItemAmmo ammo) {
         foreach(Item obj in m_Actor.Inventory.Items) {
-          if (   obj is ItemRangedWeapon rw
-              && rw.AmmoType==ammo.AmmoType
-              && rw.Ammo < rw.Model.MaxAmmo) {
-            rw.EquippedBy(m_Actor);
-            return new ActionUseItem(m_Actor, ammo);
-          }
+          if (obj is ItemRangedWeapon rw && rw.AmmoType==ammo.AmmoType && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(ammo, rw);
         }
       }
 // does not work: infinite recursion issue, too vague
@@ -5709,8 +5717,7 @@ restart_single_exit:
              var remote_ammo = x.Value.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
              Objectives.Insert(0, new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
-             local_rw.EquippedBy(m_Actor);  // \todo evaluate sinking this into the ammo use handler
-             return new ActionUseItem(m_Actor, local_ammo);
+             return UseAmmo(local_ammo, local_rw);
             }
           }
         }
@@ -5937,6 +5944,7 @@ restart_single_exit:
        var bandage = m_Actor.Inventory?.GetBestDestackable(GameItems.BANDAGE) as ItemMedicine;
        var medikit = m_Actor.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
        if (null == bandage && null == medikit) return null;
+       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        if (null == medikit) return new ActionUseItem(m_Actor, bandage);
        int delta = m_Actor.MaxHPs - m_Actor.HitPoints;
        int medikit_help = m_Actor.ScaleMedicineEffect(medikit.Healing);
