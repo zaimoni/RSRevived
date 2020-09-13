@@ -12482,7 +12482,7 @@ namespace djack.RogueSurvivor.Engine
       world.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
         foreach(var zone in d.EntryMap.Zones) {
-          if (!zone.HasGameAttribute("CHAR Office")) continue;
+          if (!zone.Attribute.HasKey("CHAR Office")) continue;
           districtList.Add(d);
           return;
         }
@@ -12492,7 +12492,7 @@ namespace djack.RogueSurvivor.Engine
       District district = rules.DiceRoller.Choose(districtList);
       var zoneList = new List<Zone>();
       foreach (var zone in district.EntryMap.Zones) {
-        if (zone.HasGameAttribute("CHAR Office")) zoneList.Add(zone);
+        if (zone.Attribute.HasKey("CHAR Office")) zoneList.Add(zone);
       }
       Zone officeZone = rules.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
@@ -13404,7 +13404,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool IsInCHAROffice(Location location)
     {
-      return location.Map.GetZonesAt(location.Position)?.Any(zone => zone.HasGameAttribute("CHAR Office")) ?? false;
+      return location.Map.GetZonesAt(location.Position)?.Any(zone => zone.Attribute.HasKey("CHAR Office")) ?? false;
     }
 
     static public bool IsInCHARProperty(Location location)

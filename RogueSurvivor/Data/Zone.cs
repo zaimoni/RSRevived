@@ -47,7 +47,9 @@ namespace djack.RogueSurvivor.Data
   {
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
-    private Dictionary<string, object> m_Attributes;
+    // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
+    public AVtable Attribute;
+    [NonSerialized] AVtable VolatileAttribute;
 
     public string Name { get { return m_Name; } }
     public Rectangle Bounds { get { return m_Bounds; } }
@@ -59,32 +61,6 @@ namespace djack.RogueSurvivor.Data
 #endif
       m_Name = name;
       m_Bounds = bounds;
-    }
-
-    // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
-    public bool HasGameAttribute(string key)
-    {
-      return m_Attributes?.ContainsKey(key) ?? false;
-    }
-
-    public void SetGameAttribute<_T_>(string key, _T_ value)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-#endif
-      if (m_Attributes == null) m_Attributes = new Dictionary<string, object>(1);
-      m_Attributes[key] = value;
-    }
-
-    public _T_ GetGameAttribute<_T_>(string key)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-#endif
-      if (m_Attributes == null) return default;
-      if (!m_Attributes.TryGetValue(key, out object obj)) return default;
-      if (!(obj is _T_)) throw new InvalidOperationException("game attribute is not of requested type");
-      return (_T_) obj;
     }
   }
 

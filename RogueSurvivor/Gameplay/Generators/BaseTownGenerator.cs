@@ -1292,7 +1292,7 @@ restart:
 
       (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map, m_DiceRoller.Choose(table_pos));
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
-      zone.SetGameAttribute<bool>("CHAR Office", true);
+      zone.Attribute.Set<bool>("CHAR Office", true);
       map.AddZone(zone);
       MakeWalkwayZones(map, b);
 
