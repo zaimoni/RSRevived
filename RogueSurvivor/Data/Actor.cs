@@ -1746,6 +1746,42 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    public Dictionary<Location,ActorAction>? MovesTo(in Location dest) {
+      var ret = new Dictionary<Location,ActorAction>();
+      if (CanEnter(dest)) {
+        foreach(var pt in dest.Position.Adjacent()) {
+          Location src = new Location(dest.Map, pt);
+          if (!CanEnter(ref src)) continue;
+          ret[src] = new Engine.Actions.ActionMoveDelta(this, dest, src);
+        }
+        var e = Model.Abilities.AI_CanUseAIExits ? dest.Exit : null;
+        if (null != e && e.ToMap.District == dest.Map.District && CanEnter(e.Location)) {
+          // we are assuming this is a two-way exit.  \todo fix when introducing rooftops, e.g. helipads
+          ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, dest, e.Location);
+        }
+      }
+      // tentatively not handling generators, etc. here
+      return 0 < ret.Count ? ret : null;
+    }
+
+    public Dictionary<Location,ActorAction>? MovesFrom(in Location src) {
+      var ret = new Dictionary<Location,ActorAction>();
+      if (CanEnter(src)) {
+        foreach(var pt in src.Position.Adjacent()) {
+          Location dest = new Location(src.Map, pt);
+          if (!CanEnter(ref dest)) continue;
+          ret[dest] = new Engine.Actions.ActionMoveDelta(this, dest, src);
+        }
+        var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
+        if (null != e && e.ToMap.District == src.Map.District && CanEnter(e.Location)) {
+          // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
+          ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, e.Location, src);
+        }
+      }
+      // tentatively not handling generators, etc. here
+      return 0 < ret.Count ? ret : null;
+    }
+
     public Dictionary<Location,ActorAction>? OnePathRange(in Location loc)
     {
       var ret = new Dictionary<Location,ActorAction>();

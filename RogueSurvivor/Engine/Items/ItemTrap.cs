@@ -173,6 +173,14 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool CheckStepOnBreaks(MapObject mobj) { return Rules.Get.RollChance(Model.BreakChance * mobj.Weight); }
     public bool CheckStepOnBreaks() { return Rules.Get.RollChance(Model.BreakChance); }
 
+    public override string ToString()
+    {
+      var ret = base.ToString();
+      if (m_IsActivated) ret += " (activated)";
+      if (m_IsTriggered) ret += " (triggered)";
+      return ret;
+    }
+
     // alpha10
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
