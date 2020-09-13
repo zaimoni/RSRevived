@@ -14,6 +14,33 @@ using Size = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
+  [Serializable]
+  internal struct AVtable // attribute-value table
+  {
+    private Dictionary<string, object>? m_Attributes;
+
+    public bool HasKey(string key) { return m_Attributes?.ContainsKey(key) ?? false; }
+
+    public void Set<_T_>(string key, _T_ value)
+    {
+#if DEBUG
+      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+#endif
+      (m_Attributes ?? (m_Attributes = new Dictionary<string, object>(1)))[key] = value;
+    }
+
+    public _T_ Get<_T_>(string key)
+    {
+#if DEBUG
+      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+#endif
+      if (m_Attributes == null) return default;
+      if (!m_Attributes.TryGetValue(key, out object obj)) return default;
+      if (obj is _T_ x) return x;
+      throw new InvalidOperationException("game attribute is not of requested type");
+    }
+  }
+
   // not meant to be self-contained
   [Serializable]
   internal class Zone
@@ -88,6 +115,18 @@ namespace djack.RogueSurvivor.Data
           if (Map.Canonical(ref loc)) doFn(loc);
         }
       }
+    }
+
+    public List<Location>? grep(Predicate<Location> ok) {
+      var ret = new List<Location>();
+      Point point = new Point();
+      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
+        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
+          var loc = new Location(m,point);
+          if (Map.Canonical(ref loc) && ok(loc)) ret.Add(loc);
+        }
+      }
+      return 0 < ret.Count ? ret : null;
     }
 
     public Location Center { get { return new Location(m, Rect.Location + Rect.Size / 2); } }
