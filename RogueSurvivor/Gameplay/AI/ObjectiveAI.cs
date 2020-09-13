@@ -2809,6 +2809,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ObjectiveAI::Goals (depth 1) @ "+m_Actor.Location);
 #endif
+      var dest_hospital = Session.Get.UniqueMaps.HospitalDepth(dest);
+      var dest_police = Session.Get.UniqueMaps.PoliceStationDepth(dest);
+
       var exit_veto = Goal<Goals.BlacklistExits>();
       var goals = new HashSet<Location>();
       var already_seen = new List<Map>();
@@ -2864,7 +2867,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (0 < loc_mapcode) {
                 int test_mapcode = District.UsesCrossDistrictView(test.Map);
                 int dest_mapcode = District.UsesCrossDistrictView(e.ToMap);
-                if (test_mapcode == loc_mapcode && 0 >= dest_mapcode) return;  // vertical exit away from cross-map view not a useful waypoint
+                if (test_mapcode == loc_mapcode && 0 >= dest_mapcode) {
+                   // vertical exit away from cross-map view not a useful waypoint
+                   if (0 < dest_hospital) {
+                     if (!goals.Any(loc => dest_hospital <= Session.Get.UniqueMaps.HospitalDepth(loc.Map))) return;
+                   } else if (0 < dest_police) {
+                     if (!goals.Any(loc => dest_police <= Session.Get.UniqueMaps.PoliceStationDepth(loc.Map))) return;
+                   } else {
+                     if (!goals.Any(loc => loc.Map==dest)) return;
+                   }
+                   return;
+                }
               }
             }
           }
@@ -2967,7 +2980,6 @@ Restart:
 #endif
 
       // upper/lower bounds; using X as lower, Y as upper bound
-        
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
       if (0==where_to_go.Count && 0>=District.UsesCrossDistrictView(dest)) {
         var maps = new HashSet<Map>(dest.destination_maps.Get);
@@ -3650,6 +3662,7 @@ restart:
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
 #endif
       }
+
 
       // check for pre-existing relevant path (approaching dead code)
       {

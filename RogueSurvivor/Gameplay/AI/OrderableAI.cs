@@ -2187,10 +2187,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       adjacent.OnlyIf(loc => range.ContainsKey(loc));
       if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts));
 
+#if OBSOLETE
       var init_costs = new Dictionary<Location,int>();
       foreach(var x in range) init_costs[x.Key] = 0;
-
       return BehaviorPathTo(PathfinderFor(init_costs,new HashSet<Map>()));
+#endif
+      return BehaviorPathTo(new HashSet<Location>(range.Keys));
 	}
 
     protected ActorAction BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
@@ -2262,7 +2264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
       }
-	  ActorAction actorAction = BehaviorPathToAdjacent(other.Location);
+	  ActorAction actorAction = BehaviorPathToAdjacent(other.Location); // can null out from traffic jam
       if (!actorAction?.IsPerformable() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
