@@ -178,6 +178,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
+      // can happen if double-executing
+      if (null != received && !m_Target.Inventory.Contains(received)) { m_FailReason = "no longer had received"; return false; }
       if (null==Give) { m_FailReason = "not in inventory"; return false; }
       return true;
     }
