@@ -1746,8 +1746,8 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Location,ActorAction>? MovesTo(in Location dest) {
-      var ret = new Dictionary<Location,ActorAction>();
+    public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesTo(in Location dest) {
+      var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
       if (CanEnter(dest)) {
         foreach(var pt in dest.Position.Adjacent()) {
           Location src = new Location(dest.Map, pt);
@@ -1764,8 +1764,8 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
-    public Dictionary<Location,ActorAction>? MovesFrom(in Location src) {
-      var ret = new Dictionary<Location,ActorAction>();
+    public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesFrom(in Location src) {
+      var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
       if (CanEnter(src)) {
         foreach(var pt in src.Position.Adjacent()) {
           Location dest = new Location(src.Map, pt);
@@ -1776,6 +1776,24 @@ namespace djack.RogueSurvivor.Data
         if (null != e && e.ToMap.District == src.Map.District && CanEnter(e.Location)) {
           // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
           ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, e.Location, src);
+        }
+      }
+      // tentatively not handling generators, etc. here
+      return 0 < ret.Count ? ret : null;
+    }
+
+    public List<Location>? ReachableFrom(in Location src) {
+      var ret = new List<Location>();
+      if (CanEnter(src)) {
+        foreach(var pt in src.Position.Adjacent()) {
+          Location dest = new Location(src.Map, pt);
+          if (!CanEnter(ref dest)) continue;
+          ret.Add(dest);
+        }
+        var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
+        if (null != e && e.ToMap.District == src.Map.District && CanEnter(e.Location)) {
+          // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
+          ret.Add(e.Location);
         }
       }
       // tentatively not handling generators, etc. here
