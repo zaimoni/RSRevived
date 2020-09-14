@@ -3801,10 +3801,14 @@ restart_single_exit:
             return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
           goto restart_single_exit;
         }
-#if DEBUG
-        // checking for optimization relevance
-        if (excluded.Any(m => tmp.Contains(m))) throw new InvalidOperationException("test case");
-#endif
+        if (excluded.Any(m => tmp.Contains(m))) {
+          var restricted = tmp.Where(m => !excluded.Contains(m));
+          if (1== restricted.Count() && m_Actor.Location.Map!= restricted.First()) {
+            if (GoalRewrite(goals, goal_costs, map_goals, x.Key, restricted.First(),excluded))
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+            goto restart_single_exit;
+          }
+        }
       }
 
 restart_chokepoints:
