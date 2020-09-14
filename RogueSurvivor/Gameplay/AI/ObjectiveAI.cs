@@ -3752,6 +3752,43 @@ restart:
       var excluded = new HashSet<Map>();
       var excluded_zones = new List<ZoneLoc>();
 
+#if DEBUG
+      // prime police, hospital special cases
+      var my_police_map_code = Session.Get.UniqueMaps.PoliceStationDepth(m_Actor.Location.Map);
+      var goals_police_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+      switch(my_police_map_code) {
+      case 2: throw new InvalidOperationException("test case");
+      case 1: throw new InvalidOperationException("test case");
+      default: {
+        if (0 == goals_police_map_code) {
+          var landing_zone = Session.Get.UniqueMaps.PoliceLanding();
+          if (landing_zone.Contains(m_Actor.Location) || goals.Any(loc => landing_zone.Contains(loc))) excluded.Add(Session.Get.UniqueMaps.PoliceStationMap(1));
+          else excluded_zones.Add(landing_zone);
+        } else if (2 > goals_police_map_code) {
+          excluded.Add(Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code+1));
+        }
+        break;
+      }
+      }
+
+      var my_hospital_map_code = Session.Get.UniqueMaps.HospitalDepth(m_Actor.Location.Map);
+      var goals_hospital_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+      switch(my_hospital_map_code) {
+      case 5: throw new InvalidOperationException("test case");
+      case 0: {
+          if (0 == goals_hospital_map_code) {
+            var landing_zone = Session.Get.UniqueMaps.HospitalLanding();
+            if (landing_zone.Contains(m_Actor.Location) || goals.Any(loc => landing_zone.Contains(loc))) excluded.Add(Session.Get.UniqueMaps.HospitalMap(1));
+            else excluded_zones.Add(landing_zone);
+          } else if (5 > goals_hospital_map_code) {
+            excluded.Add(Session.Get.UniqueMaps.HospitalMap(goals_police_map_code+1));
+          }
+        }
+        break;
+      default: throw new InvalidOperationException("test case");
+      }
+#endif
+
 restart_single_exit:
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: iterating restart_single_exit");
@@ -3835,7 +3872,6 @@ restart_chokepoints:
         }
       }
 
-      var my_police_map_code = Session.Get.UniqueMaps.PoliceStationDepth(m_Actor.Location.Map);
       if (0 == my_police_map_code) {
         var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
         if (0 == goals_map_code) {
@@ -3874,7 +3910,6 @@ restart_chokepoints:
         }
       }
 
-      var my_hospital_map_code = Session.Get.UniqueMaps.HospitalDepth(m_Actor.Location.Map);
       if (0 == my_hospital_map_code) {
         var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
         if (0 == goals_map_code) {
