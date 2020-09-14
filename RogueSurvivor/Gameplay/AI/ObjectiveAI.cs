@@ -3360,13 +3360,17 @@ restart:
       return ret;
     }
 
+    /// <param name="src">The map whose goals are to be rewritten to a nearer map</param>
+    /// <param name="dest">The adjacent map that is the rewrite target</param>
+    /// <param name="excluded">maps that are blacklisted</param>
+    /// <returns>true if and only if all goals are now in the actor's own map and do not require leaving it</returns>
     private bool GoalRewrite(HashSet<Location> goals, Dictionary<Location, int> goal_costs, Dictionary<Map, Dictionary<Point, int>> map_goals,Map src,Map dest, HashSet<Map> excluded)
     {
         if (!map_goals.TryGetValue(src,out var test)) {
           excluded.Add(src);
           return false;
         }
-        if (src.Exits.Any(e => e.Location==m_Actor.Location)) return false; // would be very bad to remap a goal w/cost onto the actor
+        if (src.Exits.Any(e => Rules.IsAdjacent(e.Location,m_Actor.Location))) return false; // would be very bad to remap a goal w/cost onto the actor, or even next to the actor
 
         string index = src.Rect.Encode(test);
         if (!map_goals.TryGetValue(dest,out var cache)) {

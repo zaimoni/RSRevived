@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using Zaimoni.Data;
 using Map = djack.RogueSurvivor.Data.Map;
 
 namespace djack.RogueSurvivor.Engine

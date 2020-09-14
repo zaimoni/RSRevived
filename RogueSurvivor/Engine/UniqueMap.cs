@@ -7,19 +7,14 @@
 using djack.RogueSurvivor.Data;
 using System;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class UniqueMap
   {
 	public readonly Map TheMap;
-
-	public UniqueMap(Map src)
-	{
-#if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
-	  TheMap = src;
-	}
+	public UniqueMap(Map src) { TheMap = src; }
   }
 }
