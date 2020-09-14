@@ -1500,16 +1500,25 @@ retry:
       var inv = GetItemsAtExt(pt);
       if (null != inv && !inv.IsEmpty) ground_inv.Add(pt, inv);
       foreach(var adjacent in pt.Adjacent()) {
-        var obj = GetMapObjectAtExt(adjacent);
+        var loc = new Location(this, adjacent);
+        if (!Canonical(ref loc)) continue;
+        var obj = loc.MapObject;
         if (null != obj && obj.IsContainer) {
           inv = obj.Inventory;
           if (null != inv && !inv.IsEmpty) {
             ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
+            // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
+            // \todo for now, A Miracle Occurs
+            var losing_inv = loc.Items;
+            while(null != losing_inv && !inv.IsFull) {
+              loc.Map.TransferFrom(losing_inv.TopItem, loc.Position, inv);
+              losing_inv = loc.Items;
+            }
 #if DEBUG
-            if (null != GetItemsAtExt(adjacent)) throw new InvalidOperationException("lost ground inventory");
+            if (null != losing_inv) throw new InvalidOperationException("lost ground inventory");
 #endif
           } else {
-            inv = GetItemsAtExt(adjacent);
+            inv = loc.Items;
             if (null != inv) ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
           }
         }
