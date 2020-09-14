@@ -261,7 +261,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != e) ret.Add(new UpdateMoveDelta(e.Location, _dest)); // currently all exits come in matching pairs i.e. no one-way exits
             foreach (var dir in Direction.COMPASS) {
                 var test = _dest + dir;
-                if (!Map.Canonical(ref test)) continue;
+                if (!Map.CanEnter(ref test)) continue;
                 ret.Add(new UpdateMoveDelta(test, _dest));
             }
             return 0 < ret.Count ? ret : null;
@@ -274,7 +274,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != e && ok(e.Location)) ret.Add(new UpdateMoveDelta(_origin, e.Location)); // currently all exits come in matching pairs i.e. no one-way exits
             foreach (var dir in Direction.COMPASS) {
                 var test = _origin + dir;
-                if (!Map.Canonical(ref test)) continue;
+                if (!Map.CanEnter(ref test)) continue;
                 if (ok(test)) ret.Add(new UpdateMoveDelta(_origin, test));
             }
             return 0 < ret.Count ? ret : null;
@@ -286,7 +286,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location));
             foreach (var dir in Direction.COMPASS) {
                 var test = m_NewLocation + dir;
-                if (!Map.Canonical(ref test)) continue;
+                if (!Map.CanEnter(ref test)) continue;
                 if (test == m_Origin) continue;
                 ret.Add(new UpdateMoveDelta(m_NewLocation, test));
             }
@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location), 1);
             foreach (var dir in Direction.COMPASS) {
                 var test = m_NewLocation + dir;
-                if (!Map.Canonical(ref test)) continue;
+                if (!Map.CanEnter(ref test)) continue;
                 if (test == m_Origin) continue;
                 ret.Add(new UpdateMoveDelta(m_NewLocation, test), 1);
             }

@@ -3763,7 +3763,6 @@ restart_single_exit:
       foreach(var x in map_goals) {
         if (m_Actor.Location.Map == x.Key) continue;    // do not try to goal-rewrite the map we are in
         var tmp = x.Key.destination_maps.Get;
-        // 2019-01-13: triggers on subways (diagonal connectors not generated properly)
         if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
           if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First(),excluded))
             return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);

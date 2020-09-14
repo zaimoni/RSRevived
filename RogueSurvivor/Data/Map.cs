@@ -983,7 +983,10 @@ retry:
         var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
         foreach(var loc in locs) {
           var dest_zones = loc.Map.GetZonesAt(loc.Position);
-          if (null != dest_zones) foreach(var zone in dest_zones) zones[loc.Map].Add(zone);
+          if (null != dest_zones) {
+            if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new HashSet<Zone>()));
+            foreach(var zone in dest_zones) cache.Add(zone);
+          }
         }
         var ordered_zones = new List<ZoneLoc>();
         var order_staging = new Dictionary<int, List<Zone>>();
