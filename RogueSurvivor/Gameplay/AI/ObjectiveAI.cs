@@ -3752,13 +3752,21 @@ restart:
       var excluded = new HashSet<Map>();
       var excluded_zones = new List<ZoneLoc>();
 
-#if DEBUG
       // prime police, hospital special cases
       var my_police_map_code = Session.Get.UniqueMaps.PoliceStationDepth(m_Actor.Location.Map);
       var goals_police_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+      var goals_police_map_code_min = (0 == goals_police_map_code ? 0 : goals.Min(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map)));
       switch(my_police_map_code) {
-      case 2: throw new InvalidOperationException("test case");
-      case 1: throw new InvalidOperationException("test case");
+      case 2:
+        if (0 < goals_police_map_code_min) excluded.Add(Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code_min - 1));
+        break;
+      case 1:  {
+         var ceiling = Math.Max(my_police_map_code, goals_police_map_code);
+         if (5 > ceiling) excluded.Add(Session.Get.UniqueMaps.PoliceStationMap(ceiling + 1));
+         var floor = Math.Min(my_police_map_code, goals_police_map_code_min);
+         if (0 < floor) excluded.Add(Session.Get.UniqueMaps.PoliceStationMap(floor - 1));
+       }
+       break;
       default: {
         if (0 == goals_police_map_code) {
           var landing_zone = Session.Get.UniqueMaps.PoliceLanding();
@@ -3773,21 +3781,29 @@ restart:
 
       var my_hospital_map_code = Session.Get.UniqueMaps.HospitalDepth(m_Actor.Location.Map);
       var goals_hospital_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+      var goals_hospital_map_code_min = (0 == goals_hospital_map_code ? 0 : goals.Min(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map)));
       switch(my_hospital_map_code) {
-      case 5: throw new InvalidOperationException("test case");
+      case 5:
+        if (0 < goals_hospital_map_code_min) excluded.Add(Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code_min - 1));
+        break;
       case 0: {
           if (0 == goals_hospital_map_code) {
             var landing_zone = Session.Get.UniqueMaps.HospitalLanding();
             if (landing_zone.Contains(m_Actor.Location) || goals.Any(loc => landing_zone.Contains(loc))) excluded.Add(Session.Get.UniqueMaps.HospitalMap(1));
             else excluded_zones.Add(landing_zone);
           } else if (5 > goals_hospital_map_code) {
-            excluded.Add(Session.Get.UniqueMaps.HospitalMap(goals_police_map_code+1));
+            excluded.Add(Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code+1));
           }
         }
         break;
-      default: throw new InvalidOperationException("test case");
+      default: {
+         var ceiling = Math.Max(my_hospital_map_code, goals_hospital_map_code);
+         if (5 > ceiling) excluded.Add(Session.Get.UniqueMaps.HospitalMap(ceiling + 1));
+         var floor = Math.Min(my_hospital_map_code, goals_hospital_map_code_min);
+         if (0 < floor) excluded.Add(Session.Get.UniqueMaps.HospitalMap(floor - 1));
+       }
+       break;
       }
-#endif
 
 restart_single_exit:
 #if TRACE_GOALS
