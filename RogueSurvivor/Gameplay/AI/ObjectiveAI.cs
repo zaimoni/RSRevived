@@ -3104,7 +3104,7 @@ Restart:
       return map_goals;
     }
 
-    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals, HashSet<Map> excluded)
+    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
     {
        Predicate<Location> ret = null;
 
@@ -3202,11 +3202,12 @@ restart:
 
       // once excluded is known, we can construct a lambda function and use that as an additional blacklist.
       if (0<excluded.Count) ret = ret.Or(loc => excluded.Contains(loc.Map));
+      if (0<excluded_zones.Count) ret = ret.Or(loc => excluded_zones.Any(z => z.Contains(loc)));
 
       return ret;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs, HashSet<Map> excluded)
+    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
     {
 #if DEBUG
       if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
@@ -3224,7 +3225,7 @@ restart:
       // 4) a map that does not contain a goal, does not contain the origin location, and is not in a "minimal" closed loop that is qualified may be blacklisted for pathing.
       // 4a) a chokepointed zone that does not contain a goal may be blacklisted for pathing
 
-      var blacklist = BlacklistFunction(goal_costs,excluded);
+      var blacklist = BlacklistFunction(goal_costs, excluded, excluded_zones);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
       navigate.GoalDistance(goal_costs, m_Actor.Location);
@@ -3373,10 +3374,7 @@ restart:
         if (src.Exits.Any(e => Rules.IsAdjacent(e.Location,m_Actor.Location))) return false; // would be very bad to remap a goal w/cost onto the actor, or even next to the actor
 
         string index = src.Rect.Encode(test);
-        if (!map_goals.TryGetValue(dest,out var cache)) {
-          cache = new Dictionary<Point,int>();
-          map_goals[dest] = cache;
-        }
+        if (!map_goals.TryGetValue(dest,out var cache)) map_goals.Add(dest,(cache = new Dictionary<Point, int>()));
 
         if (src.pathing_exits_to_goals.TryGetValue(index,out var saved)) {
           foreach(var x in saved) {
@@ -3752,9 +3750,7 @@ restart:
       var map_goals = RadixSortLocations(goal_costs);
 
       var excluded = new HashSet<Map>();
-#if PROTOTYPE
       var excluded_zones = new List<ZoneLoc>();
-#endif
 
 restart_single_exit:
 #if TRACE_GOALS
@@ -3767,6 +3763,75 @@ restart_single_exit:
           if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First(),excluded))
             return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
           goto restart_single_exit;
+        }
+#if DEBUG
+        // checking for optimization relevance
+        if (excluded.Any(m => tmp.Contains(m))) throw new InvalidOperationException("test case");
+#endif
+      }
+
+restart_chokepoints:
+      // jump to chokepoints
+      var zone_test = new Dictionary<Map,HashSet<Zone>>();
+      foreach(var goal in goals) {
+        var zones_at = goal.Map.GetZonesAt(goal.Position);
+        if (null != zones_at) {
+          if (!zone_test.TryGetValue(goal.Map, out var cache)) zone_test.Add(goal.Map, (cache = new HashSet<Zone>()));
+          cache.UnionWith(zones_at);
+        }
+      }
+      foreach(var x in zone_test) {
+        ZoneLoc? bounce_out = null;
+        Zone? bounce = null;
+        if (m_Actor.Location.Map == x.Key) {
+          foreach(var z in x.Value) {
+            if (z.Bounds.Contains(m_Actor.Location.Position)) continue;
+            if (    1 == z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones").Length
+                && !z.VolatileAttribute.Get<Location[]>("exits").Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+              bounce_out = new ZoneLoc(x.Key, z.Bounds);
+              bounce = z;
+              break;
+            }
+          }
+        } else {
+          foreach(var z in x.Value) {
+            if (    1 == z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones").Length
+                && !z.VolatileAttribute.Get<Location[]>("exits").Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+              bounce_out = new ZoneLoc(x.Key, z.Bounds);
+              bounce = z;
+              break;
+            }
+          }
+        }
+        if (null != bounce) {
+          var relocate_to = bounce.VolatileAttribute.Get<Location[]>("exits");
+          var relocate_from = goals.Where(loc => bounce_out.Contains(loc)).ToArray(); // has to be value copy
+          foreach(var dest in relocate_to) {
+            if (!m_Actor.CanEnter(dest)) continue;
+            var cost = relocate_from.Min(src => Rules.JumpPoint_Distance(dest, src)+goal_costs[src]);
+            if (goal_costs.TryGetValue(dest, out var old_cost)) {
+              // tried to jump to something that already had an estimate
+              if (old_cost > cost) {
+                if (!map_goals.TryGetValue(dest.Map,out var cache)) map_goals.Add(dest.Map,(cache = new Dictionary<Point, int>()));
+                goal_costs[dest] = cost; // but this was cheaper
+                cache[dest.Position] = cost;
+              }
+            } else { // no prior entry
+              if (!map_goals.TryGetValue(dest.Map,out var cache)) map_goals.Add(dest.Map,(cache = new Dictionary<Point, int>()));
+              goals.Add(dest);
+              goal_costs.Add(dest,cost);
+              cache[dest.Position] = cost;
+            }
+          }
+          var cache2 = map_goals[x.Key];
+          foreach(var src in relocate_from) {
+            goals.Remove(src);
+            goal_costs.Remove(src);
+            cache2.Remove(src.Position);
+          }
+          if (0 >= cache2.Count) map_goals.Remove(x.Key);
+          excluded_zones.Add(bounce_out);
+          goto restart_chokepoints;
         }
       }
 
@@ -3874,7 +3939,7 @@ restart_single_exit:
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s()+", "+excluded.to_s());
 #endif
       _current_goals = goals;
-      return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs,excluded)),goals);
+      return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs, excluded, excluded_zones)),goals);
     }
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)

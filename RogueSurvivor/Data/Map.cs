@@ -973,12 +973,12 @@ retry:
     {
       foreach(var z in m_Zones) {
         if (z.VolatileAttribute.HasKey("exits")) continue;
-        var locs = new List<Location>();
+        var locs = new HashSet<Location>();
         var staging = new ZoneLoc(this, z.Bounds);
         var walking = staging.WalkOut();
-        if (null != walking) locs.AddRange(walking.Select(act => act.dest));
+        if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
         var vertical = staging.grep(loc => null != loc.Exit);
-        if (null != vertical) locs.AddRange(vertical.Select(loc => loc.Exit!.Location));
+        if (null != vertical) locs.UnionWith(vertical.Select(loc => loc.Exit!.Location));
         z.VolatileAttribute.Set("exits", locs.ToArray());
         var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
         foreach(var loc in locs) {

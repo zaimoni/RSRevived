@@ -641,6 +641,38 @@ namespace djack.RogueSurvivor.Engine
       return GridDistance(a.Position, b.Position);
     }
 
+    // for jump point pathing
+    public static int L1_Distance(Point pt) { return Math.Abs(pt.X)+Math.Abs(pt.Y); }
+    public static int L1_Distance(in Point pA, in Point pB) { return L1_Distance(pB - pA); }
+
+    public static int L1_Distance(in Location a, in Location b)
+    {
+      if (null == a.Map) return int.MaxValue;
+      if (null == b.Map) return int.MaxValue;
+      if (a.Map == b.Map) return L1_Distance(b.Position - a.Position);
+      Location? tmp = a.Map.Denormalize(in b);
+      if (null == tmp) return int.MaxValue;
+      return L1_Distance(tmp.Value.Position - a.Position);
+    }
+
+    public static int JumpPoint_Distance(in Point a, in Point b)
+    {
+      var pt = a - b;
+      var grid = GridDistance(pt);
+      if (1 >= grid) return grid;
+      return L1_Distance(pt);
+    }
+
+    public static int JumpPoint_Distance(in Location a, in Location b)
+    {
+      if (null == a.Map) return int.MaxValue;
+      if (null == b.Map) return int.MaxValue;
+      if (a.Map == b.Map) return JumpPoint_Distance(a.Position, b.Position);
+      Location? tmp = a.Map.Denormalize(in b);
+      if (null == tmp) return int.MaxValue;
+      return JumpPoint_Distance(a.Position, tmp.Value.Position);
+    }
+
     public static bool IsMurder(Actor? killer, Actor victim)
     {
       if (null == killer) return false;
