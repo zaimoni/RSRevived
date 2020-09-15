@@ -545,22 +545,24 @@ namespace djack.RogueSurvivor.Data
     [Conditional("DEBUG")]
     public void RejectCrossLink(Inventory other)
     {
-      if (0 >= m_Items.Count) return;
+      int ub = m_Items.Count;
+      if (0 >= ub) return;
       int i = other.m_Items.Count;
       while (0 <= --i) {
         var other_it = other.m_Items[i];
-        int j = m_Items.Count;
+        int j = ub;
         while (0 <= --j) if (other_it == m_Items[j]) throw new InvalidOperationException("cross-linked item "+other_it+": "+this+"\n\n"+other);
       }
     }
 
     public string? _HasCrossLink(Inventory other)
-    {
-      if (0 >= m_Items.Count) return null;
+    { // 2020-09-15 Release Mode IL size 169 (0xa9)
+      int ub = m_Items.Count;
+      if (0 >= ub) return null;
       int i = other.m_Items.Count;
       while (0 <= --i) {
         var other_it = other.m_Items[i];
-        int j = m_Items.Count;
+        int j = ub;
         while (0 <= --j) if (other_it == m_Items[j]) return "cross-linked item "+other_it+": "+this+"\n\n"+other;
       }
       return null;
