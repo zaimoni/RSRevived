@@ -3892,80 +3892,28 @@ restart_chokepoints:
         }
       }
 
-      if (0 == my_police_map_code) {
-        var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
-        if (0 == goals_map_code) {
-          excluded.Add(Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap);
-          var zone = Session.Get.UniqueMaps.PoliceLanding();    // \todo cache this (profile-negative)
-          if (!goals.Any(loc => zone.Contains(loc))) {
-            if (zone.Contains(m_Actor.Location)) {
-              var escape = zone.WalkOut();  // \todo cache this (profile-negative)
-              if (null != escape) {
-                var new_goals = new HashSet<Location>();
-                foreach(var x in escape) new_goals.Add(x.origin);
-                if (!new_goals.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
-                  goals = new_goals;
-                  goal_costs.Clear();
-                  foreach(var goal in goals) goal_costs[goal] = 0;
-                  _current_goals = goals;
-                  return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
-                }
-              }
-#if PROTOTYPE
-            } else {
-              excluded_zones.Add(zone);
-#endif
-            }
-          }
-        } else {
+      if (0 == my_police_map_code && 0 < goals_police_map_code) {
           do {
-            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStationMap(goals_map_code), Session.Get.UniqueMaps.PoliceStationMap(goals_map_code - 1), excluded))
+            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code), Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code - 1), excluded))
               return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
             var next_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
-            if (goals_map_code <= next_code) break;
-            goals_map_code = next_code;
-          } while(0 < goals_map_code);
-          var no_map = Session.Get.UniqueMaps.PoliceStationMap(goals_map_code + 1);
+            if (goals_police_map_code <= next_code) break;
+            goals_police_map_code = next_code;
+          } while(0 < goals_police_map_code);
+          var no_map = Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code + 1);
           if (null != no_map) excluded.Add(no_map);
-        }
       }
 
-      if (0 == my_hospital_map_code) {
-        var goals_map_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
-        if (0 == goals_map_code) {
-          excluded.Add(Session.Get.UniqueMaps.Hospital_Admissions.TheMap);
-          var zone = Session.Get.UniqueMaps.HospitalLanding();   // \todo cache this (profile-negative)
-          if (!goals.Any(loc => zone.Contains(loc))) {
-            if (zone.Contains(m_Actor.Location)) {
-              var escape = zone.WalkOut();  // \todo cache this (profile-negative)
-              if (null != escape) {
-                var new_goals = new HashSet<Location>();
-                foreach(var x in escape) new_goals.Add(x.origin);
-                if (!new_goals.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
-                  goals = new_goals;
-                  goal_costs.Clear();
-                  foreach(var goal in goals) goal_costs[goal] = 0;
-                  _current_goals = goals;
-                  return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
-                }
-              }
-#if PROTOTYPE
-            } else {
-              excluded_zones.Add(zone);
-#endif
-            }
-          }
-        } else {
+      if (0 == my_hospital_map_code && 0 < goals_hospital_map_code) {
           do {
-            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.HospitalMap(goals_map_code), Session.Get.UniqueMaps.HospitalMap(goals_map_code - 1), excluded))
+            if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code), Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code - 1), excluded))
               return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
             var next_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
-            if (goals_map_code <= next_code) break;
-            goals_map_code = next_code;
-          } while(0 < goals_map_code);
-          var no_map = Session.Get.UniqueMaps.HospitalMap(goals_map_code + 1);
+            if (goals_hospital_map_code <= next_code) break;
+            goals_hospital_map_code = next_code;
+          } while(0 < goals_hospital_map_code);
+          var no_map = Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code + 1);
           if (null != no_map) excluded.Add(no_map);
-        }
       }
 
       int path_contains_our_goals_loc(List<List<Location>> path) {
