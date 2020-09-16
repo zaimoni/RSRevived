@@ -1501,30 +1501,25 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
     // not just our FoV.
-    public List<Actor>? GetEnemiesInFov(HashSet<Point> fov)
+    public List<Actor>? GetEnemiesInFov(Location[] fov)
     {
-      if (1 >= fov.Count) return null;  // sleeping?
-      var actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
-      foreach (Point position in fov) {
-        var actorAt = Location.Map.GetActorAtExt(position);
+      if (1 >= fov.Length) return null;  // sleeping?
+      var actorList = new List<Actor>(fov.Length-1); // assuming ok to thrash GC
+      foreach (var loc in fov) {
+        var actorAt = loc.Actor;
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
           actorList.Add(actorAt);
         }
-      }
-      var e = Location.Exit;
-      if (null!=e) {
-        var a = e.Location.Actor;
-        if (null!=a && IsEnemyOf(a)) actorList.Add(a);
       }
       return actorList.SortIncreasing(x => Rules.InteractionStdDistance(x.Location, m_Location));
     }
 
     // stripped down from above
-    public bool AnyEnemiesInFov(HashSet<Point> fov)
+    public bool AnyEnemiesInFov(Location[] fov)
     {
-      if (1 >= fov.Count) return false;  // sleeping?
-      foreach (Point position in fov) {
-        var actorAt = Location.Map.GetActorAtExt(position);
+      if (1 >= fov.Length) return false;  // sleeping?
+      foreach (var loc in fov) {
+        var actorAt = loc.Actor;
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) return true;
       }
       return false;

@@ -4198,7 +4198,7 @@ restart_chokepoints:
       // but this won't trigger if any of our friends are mutual enemies
       if (0<observers.Count) {
         foreach(KeyValuePair<Actor,ThreatTracking> wary in observers) {
-          if (!wary.Key.AnyEnemiesInFov(FOV)) wary.Value.Cleared(m_Actor.Location.Map,FOV);
+          if (!wary.Key.AnyEnemiesInFov(FOVloc)) wary.Value.Cleared(FOVloc);
         }
       }
     }

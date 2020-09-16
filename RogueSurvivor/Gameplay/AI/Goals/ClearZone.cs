@@ -41,18 +41,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 else m_Unverified.RemoveWhere(pt => !threats_at.Contains(pt));
             } else if (null != tourism_at) m_Unverified.RemoveWhere(pt => !tourism_at.Contains(pt));
             if (null == tourism_at || null != threats_at) {
-                foreach (var pt in m_Actor.Controller.FOV) {
-                    if (m_Zone.m == m_Actor.Location.Map) {
-                        m_Unverified.Remove(pt);
+                foreach (var loc in m_Actor.Controller.FOVloc) {
+                    if (m_Zone.m == loc.Map) {
+                        m_Unverified.Remove(loc.Position);
                         continue;
                     }
-                    var loc = m_Zone.m.Denormalize(new Location(m_Actor.Location.Map, pt));
-                    if (null == loc) continue;
-                    m_Unverified.Remove(loc.Value.Position);
-                }
-                if (m_Actor.Location.Map != m_Zone.m) {
-                    var e = m_Actor.Location.Exit;
-                    if (null != e && e.ToMap == m_Zone.m) m_Unverified.Remove(e.Location.Position);
+                    var denorm = m_Zone.m.Denormalize(loc);
+                    if (null != denorm) m_Unverified.Remove(denorm.Value.Position);
                 }
             }
             if (0 >= m_Unverified.Count) {

@@ -232,12 +232,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        var denorm = m_Actor.Location.Map.Denormalize(_locs);
-        if (null == denorm) return true;
-        var tmp =  denorm.Select(loc => loc.Position).Intersect(m_Actor.Controller.FOV);
-        if (!tmp.Any()) return true;
+        var fov = m_Actor.Controller.FOVloc;
+        if (!fov.Any(loc => _locs.Contains(loc))) return true;
         if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
-        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(denorm,null);
+        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(_locs, null);
         return true;
       }
 
@@ -2532,7 +2530,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop
-        IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.IsInsideAtExt(pt) && m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+        var see_inside = FOVloc.Where(loc => loc.Map.IsInsideAt(loc.Position) && loc.IsWalkableFor(m_Actor));
         return BehaviorHeadFor(see_inside, false, false);
       }
 

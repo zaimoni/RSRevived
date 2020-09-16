@@ -4500,7 +4500,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         return false;
       }
-      var enemiesInFov = player.GetEnemiesInFov(player.Controller.FOV);
+      var enemiesInFov = player.GetEnemiesInFov(player.Controller.FOVloc);
       if (null == enemiesInFov || 0 >= enemiesInFov.Count) {
         AddMessage(MakeErrorMessage("No targets to fire at."));
         RedrawPlayScreen();
@@ -11081,9 +11081,9 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
       Actor? actor;
-      foreach(var pt in player.Controller.FOV) {
-        if (pt == player.Location.Position) continue;
-        actor = player.Location.Map.GetActorAtExt(pt);
+      foreach(var loc in player.Controller.FOVloc) {
+        if (loc == player.Location) continue;
+        actor = loc.Actor;
         if (null==actor || actor.IsDead) continue;
         if (actor.TargetActor == player && actor.IsEngaged) {
           var screen = MapToScreen(player.Location);
@@ -11958,6 +11958,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
       AddMessage(new Data.Message("LOADING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       AddMessage(new Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+      // we crash on FOVloc otherwise
+      Session.Get.World.DoForAllMaps(m => { foreach (var player in m.Players.Get) { player.Controller.UpdateSensors(); } },  m => 0<m.PlayerCount);
       RedrawPlayScreen();
       m_UI.UI_Repaint();
 #if OBSOLETE

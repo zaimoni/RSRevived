@@ -341,6 +341,36 @@ namespace djack.RogueSurvivor.Data
           if (0<invalid_xy.Count) Cleared(Engine.Session.Get.World[pos.X+x_delta,pos.Y+y_delta].CrossDistrictViewing(crossdistrict_ok),invalid_xy);
         }
 
+        public void Cleared(IEnumerable<Location> locs)
+        { // assume all values of locs are in canonical form
+          var staging = new Dictionary<Map, HashSet<Point>>();
+          Map? last_map = null;
+          HashSet<Point>? last_pts = null;
+          foreach(var loc in locs) {
+            if (last_map == loc.Map) last_pts.Add(loc.Position);
+            else {
+              last_map = loc.Map;
+              if (!staging.TryGetValue(last_map, out last_pts)) staging.Add(last_map, (last_pts = new HashSet<Point>()));
+              last_pts.Add(loc.Position);
+            }
+          }
+          lock(_threats) {
+            foreach(var m_pts in staging) {
+              _ThreatWhere_cache.Remove(m_pts.Key);   // XXX could be more selective
+              var amnesia = new List<Actor>();
+              foreach(var x in _threats) {
+                if (!x.Value.TryGetValue(m_pts.Key, out var test)) continue;
+                test.ExceptWith(m_pts.Value);
+                if (0 >= test.Count) {
+                  x.Value.Remove(m_pts.Key);
+                  if (0 >= x.Value.Count) amnesia.Add(x.Key);
+                }
+              }
+              foreach(Actor a in amnesia) _threats.Remove(a);
+            }
+          }
+        }
+
         public void Cleared(Actor a)
         {
           lock(_threats) {
