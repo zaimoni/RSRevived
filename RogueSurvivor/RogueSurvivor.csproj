@@ -134,6 +134,7 @@
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="Gameplay\AI\Goals\BlacklistExits.cs" />
+    <Compile Include="Gameplay\AI\Goals\ClearZone.cs" />
     <Compile Include="Gameplay\AI\Goals\Trade.cs" />
     <Compile Include="Gameplay\AI\Goals\StageAction.cs" />
     <Compile Include="Gameplay\AI\Goals\SetTrap.cs" />
