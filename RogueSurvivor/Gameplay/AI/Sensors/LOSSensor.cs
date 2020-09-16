@@ -28,9 +28,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Dictionary<Location, Actor>? _enemies;
     private Dictionary<Location,Inventory>? _items;
     [NonSerialized] private Action<List<Percept>, Location[]>? _sense;
+    [NonSerialized] private Location[]? _normalized_FOV;
 
     public Actor Viewpoint { get { return m_Actor; } }
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
+    public Location[] FOVloc { get {
+#if DEBUG
+      if (null == _normalized_FOV) throw new InvalidOperationException("need to default-initialize");
+#endif
+      return _normalized_FOV!;
+    } }
     public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
     public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
     public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
@@ -170,6 +177,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         actor.InterestingLocs?.Seen(e.Location);
       }
       }
+      _normalized_FOV = normalized_FOV; // \todo stop thrashing GC (some sort of pooling)
       List<Percept> perceptList = new List<Percept>();
       (_sense ?? (_sense = HowToSense()))(perceptList, normalized_FOV);
       return perceptList;

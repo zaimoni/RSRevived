@@ -233,6 +233,8 @@ namespace djack.RogueSurvivor.Data
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
+    public override Location[] FOVloc { get { return m_LOSSensor.FOVloc; } }
+
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
     public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_LOSSensor.items; } }

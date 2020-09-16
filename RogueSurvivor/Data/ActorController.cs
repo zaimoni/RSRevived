@@ -174,6 +174,8 @@ namespace djack.RogueSurvivor.Data
     // vision
 #nullable enable
     public abstract HashSet<Point> FOV { get; }
+    public abstract Location[] FOVloc { get; }
+
     public abstract Dictionary<Location, Actor>? friends_in_FOV { get; }
     public abstract Dictionary<Location, Actor>? enemies_in_FOV { get; }
     public virtual Dictionary<Location, Inventory>? items_in_FOV { get { return null; } }
