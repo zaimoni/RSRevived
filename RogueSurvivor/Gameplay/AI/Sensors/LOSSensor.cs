@@ -180,6 +180,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       _normalized_FOV = normalized_FOV; // \todo stop thrashing GC (some sort of pooling)
       List<Percept> perceptList = new List<Percept>();
       (_sense ?? (_sense = HowToSense()))(perceptList, normalized_FOV);
+      actor.Controller.eventFOV(); // trigger additional vision processing; rely on z processing being so trivial that their CPU wastage is negligible
       return perceptList;
     }
 #nullable restore
