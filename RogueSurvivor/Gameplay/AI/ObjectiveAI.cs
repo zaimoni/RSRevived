@@ -191,6 +191,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SelectAction_LambdaPath   // ...::SelectAction: path is from a lambda pathing block and should be recorded to the lambda path cache
     }
 
+    readonly private Observed<Location[]> FOVevents = new Observed<Location[]>();
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
     readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
@@ -222,6 +223,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
+
+    // processing based on field of view
+    public override void eventFOV() { FOVevents.update(FOVloc); }
+    protected void AddFOVevent(Observer<Location[]> src) { FOVevents.Add(src); }
+
 
     public void ClearLastMove() { _last_move = null; }
 
