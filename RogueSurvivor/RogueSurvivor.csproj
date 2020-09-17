@@ -347,6 +347,7 @@
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
+    <Compile Include="Zaimoni\Data\Observer.cs" />
     <Compile Include="Zaimoni\Data\Operator.cs" />
     <Compile Include="Zaimoni\Data\Stack.cs" />
     <Compile Include="Zaimoni\Data\Vector.cs" />
