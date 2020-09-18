@@ -585,6 +585,15 @@ namespace djack.RogueSurvivor.Data
 		}
       }
 
+      public void Seen(Location[] locs) {
+        // assume all of these are in canonical form
+        lock(_locs) {
+          foreach(var loc in locs) {
+		    if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
+          }
+        }
+      }
+
       public void Seen(Location loc)
       {
         if (Map.Canonical(ref loc))
@@ -593,14 +602,13 @@ namespace djack.RogueSurvivor.Data
 		  }
       }
 
+#if DEAD_FUNC
       public void Seen(Map m, IEnumerable<Point> pts)
       {
         foreach(Point pt in pts) Seen(new Location(m,pt));
       }
+#endif
 
-      public void Seen(Map m, Point pt)
-      {
-        Seen(new Location(m,pt));
-      }
+      public void Seen(Map m, Point pt) { Seen(new Location(m,pt)); }
     }
 }

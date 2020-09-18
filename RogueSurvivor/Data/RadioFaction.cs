@@ -11,6 +11,7 @@ namespace djack.RogueSurvivor.Data
     // would be reasonable for all of CHAR, National Guard, and Black Ops to have CHAR tech radios as well
 
     // support classes
+    [Serializable]
     class ImplicitRadio : Observer<Location[]>
     {
         public readonly ThreatTracking Threats;
@@ -26,8 +27,8 @@ namespace djack.RogueSurvivor.Data
 
         public bool update(Location[] fov) {
             var my_faction = Models.Factions[(int)FactionID];
+            Investigate.Seen(fov);
             foreach (var loc in fov) {
-                Investigate.Seen(loc);
                 var actorAt = loc.Actor;
                 if (null != actorAt && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
@@ -39,6 +40,7 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
+    [Serializable]
     class ExplicitRadio : Observer<Location[]>
     {
         public readonly ThreatTracking Threats;
@@ -60,8 +62,8 @@ namespace djack.RogueSurvivor.Data
         public bool update(Location[] fov) {
             if (!Radio.IsEquipped || Radio.IsUseless) return true;
             var my_faction = Models.Factions[(int)FactionID];
+            Investigate.Seen(fov);
             foreach (var loc in fov) {
-                Investigate.Seen(loc);
                 var actorAt = loc.Actor;
                 if (null != actorAt && !actorAt.IsDead && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
