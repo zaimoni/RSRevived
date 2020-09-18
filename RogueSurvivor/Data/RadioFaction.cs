@@ -79,7 +79,9 @@ namespace djack.RogueSurvivor.Data
         public readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
         public readonly ThreatTracking Threats = new ThreatTracking();
         public readonly LocationSet Investigate = new LocationSet();
+#if PROTOTYPE
         private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>();
+#endif
         static private ImplicitRadio? s_implicitRadio = null;
 
         public readonly djack.RogueSurvivor.Gameplay.GameFactions.IDs FactionID;
@@ -102,12 +104,15 @@ namespace djack.RogueSurvivor.Data
             ItemMemory.Clear();
             Threats.Clear();
             Investigate.Clear();
+#if PROTOTYPE
             m_Aggressors.Clear();
+#endif
         }
 
         public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
         public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Models.Factions[(int)FactionID]) || Threats.IsThreat(a); }
 
+#if PROTOTYPE
         void AggressedBy(Actor myfac, Actor other) {
 #if DEBUG
             if (!IsMine(myfac)) throw new InvalidOperationException("invariant violation");
@@ -120,6 +125,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         void Killed(Actor a) {
+            if (a.Faction.IsEnemyOf(Models.Factions[(int)FactionID])) return;
             var could_forget = new List<Actor>();
             var ub = m_Aggressors.Count;
             while (0 < --ub) {
@@ -133,7 +139,7 @@ namespace djack.RogueSurvivor.Data
                     continue;
                 }
             }
-            foreach (var actor in could_forget) if (!m_Aggressors.Any(x => x.Value == actor)) Threats.Cleared(actor);
         }
+#endif
     }
 }
