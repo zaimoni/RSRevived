@@ -7372,10 +7372,10 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public void OnActorEnterTile(Actor actor)
     {
+	  Session.Get.Police.TrackThroughExitSpawn(actor);
+      (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       Map map = actor.Location.Map;
       Point pos = actor.Location.Position;
-	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
-      (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       if (map.IsTrapCoveringMapObjectAt(pos)) return;
       List<Actor>? trap_owners = null;
       int cur_hp = actor.HitPoints;
@@ -10478,7 +10478,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!isStartingGame) {
         deadVictim.Location.Place(actor);
-	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
+	    Session.Get.Police.TrackThroughExitSpawn(actor);
       }
       var skillTable = deadVictim.Sheet.SkillTable;
       var skill_count = skillTable.CountSkills;

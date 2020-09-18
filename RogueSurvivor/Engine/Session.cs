@@ -170,11 +170,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    // to eventually be obsoleted by an event
-    public void PoliceTrackingThroughExitSpawn(Actor a) {
-      if (Police.IsEnemy(a)) Police.Threats.RecordTaint(a,a.Location);
-    }
-
     // we have conflicting implementation imperatives here.
     // access control wants m_Event_Raids to be a private static member of District.  However, it is not 
     // a natural singleton (one per savegame) so it probably belongs with the World object.

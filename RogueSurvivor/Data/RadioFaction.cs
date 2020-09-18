@@ -112,6 +112,11 @@ namespace djack.RogueSurvivor.Data
         public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
         public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Models.Factions[(int)FactionID]) || Threats.IsThreat(a); }
 
+        public void TrackThroughExitSpawn(Actor a)
+        {
+            if (IsEnemy(a)) Threats.RecordTaint(a, a.Location);
+        }
+
 #if PROTOTYPE
         void AggressedBy(Actor myfac, Actor other) {
 #if DEBUG
