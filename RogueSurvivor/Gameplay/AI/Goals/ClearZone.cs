@@ -13,9 +13,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // Civilian: view every single coordinate in the zone
     // Police: view every contaminated square in the zone (tourism and/or threat)
-    // ZoneLoc member must be "suitable for clearing"
+    // ZoneLoc member must be "suitable for clearing" (in particular, completely within bounds so its locations are in canonical form)
     [Serializable]
-    class ClearZone : Objective,Pathable
+    class ClearZone : Objective,Pathable,Observer<Location[]>
     {
         private ZoneLoc m_Zone;
         private HashSet<Point> m_Unverified = new HashSet<Point>();
@@ -40,16 +40,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 if (null != tourism_at) m_Unverified.RemoveWhere(pt => !threats_at.Contains(pt) && !tourism_at.Contains(pt));
                 else m_Unverified.RemoveWhere(pt => !threats_at.Contains(pt));
             } else if (null != tourism_at) m_Unverified.RemoveWhere(pt => !tourism_at.Contains(pt));
-            if (null == tourism_at || null != threats_at) {
-                foreach (var loc in m_Actor.Controller.FOVloc) {
-                    if (m_Zone.m == loc.Map) {
-                        m_Unverified.Remove(loc.Position);
-                        continue;
-                    }
-                    var denorm = m_Zone.m.Denormalize(loc);
-                    if (null != denorm) m_Unverified.Remove(denorm.Value.Position);
-                }
-            }
             if (0 >= m_Unverified.Count) {
                 _isExpired = true;
                 return true;
@@ -57,6 +47,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
             ret = Pathing();
             return true;
+        }
+
+        public bool update(Location[] fov) {
+            foreach (var loc in fov) {
+              if (m_Zone.m == loc.Map) m_Unverified.Remove(loc.Position);
+            }
+            if (0 >= m_Unverified.Count) {
+                _isExpired = true;
+                return true;
+            }
+            return false;
         }
 
         public ActorAction? Pathing() {
