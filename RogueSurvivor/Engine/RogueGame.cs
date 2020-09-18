@@ -2513,12 +2513,12 @@ namespace djack.RogueSurvivor.Engine
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
           map.DropItemAt(Models.Items[(int)army_supply_drop_stock.UseRarityTable(Rules.Get.DiceRoller.Roll(0, army_supply_drop_checksum))].create(), in pt);
-          Session.Get.PoliceInvestigate.Record(map, in pt);
+          Session.Get.Police.Investigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures proper prioritzation
-          var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc) ?? new HashSet<GameItems.IDs>();
+          var already_known = Session.Get.Police.ItemMemory.WhatIsAt(loc) ?? new HashSet<GameItems.IDs>();
           already_known.UnionWith(army_supply_drop_stock_domain);
-          Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
+          Session.Get.Police.ItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
         },pt => AirdropWithoutIncident(map, in pt));
 
       NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map, dropPoint.Value));
@@ -7762,7 +7762,7 @@ namespace djack.RogueSurvivor.Engine
         if (exit_to_surface.Y-2 <=p.Y && exit_to_surface.Y + 2 >= p.Y) return false;
         return true;
       };
-      m.Rect.DoForEach(pt=>Session.Get.PoliceInvestigate.Record(m, in pt),
+      m.Rect.DoForEach(pt=>Session.Get.Police.Investigate.Record(m, in pt),
           pt => in_underground_base_room(pt));
 #endregion
 #region 2) examine all CHAR offices
@@ -9694,7 +9694,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      Session.Get.PoliceThreatTracking.Audit(police_wanted);
+      Session.Get.Police.Threats.Audit(police_wanted); // cf. RadioFaction.Killed
 
       if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
@@ -9707,7 +9707,7 @@ namespace djack.RogueSurvivor.Engine
           if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }
-        Session.Get.PoliceInvestigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
+        Session.Get.Police.Investigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
       }
 
       if (!deadGuy_isUndead.cache) {
@@ -13382,7 +13382,7 @@ namespace djack.RogueSurvivor.Engine
           z.Bounds.DoForEach(pt => {
             if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
             if (storage.AnyAdjacent<DoorWindow>(pt)) return;
-            Session.Get.PoliceInvestigate.Record(storage, in pt);
+            Session.Get.Police.Investigate.Record(storage, in pt);
           });
         }
       }

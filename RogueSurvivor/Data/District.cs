@@ -59,8 +59,8 @@ namespace djack.RogueSurvivor.Data
             return;
           }
           var loc = new Location(m_EntryMap, pt);
-          if (Engine.Session.Get.PoliceInvestigate.Contains(in loc)) return; // already known
-          Engine.Session.Get.PoliceInvestigate.Record(in loc);
+          if (Engine.Session.Get.Police.Investigate.Contains(in loc)) return; // already known
+          Engine.Session.Get.Police.Investigate.Record(in loc);
         });
       }
     }
@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Data
        Map map = d.EntryMap;
        foreach(var zone in map.Zones) {
          if (!zone.Name.Contains("CHAR Office")) continue;
-         zone.Bounds.DoForEach(pt => { if (!Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(map, pt))) Engine.Session.Get.PoliceInvestigate.Record(map, in pt); });
+         zone.Bounds.DoForEach(pt => { if (!Engine.Session.Get.Police.ItemMemory.HaveEverSeen(new Location(map, pt))) Engine.Session.Get.Police.Investigate.Record(map, in pt); });
        }
     }
 #nullable restore

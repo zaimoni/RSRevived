@@ -1043,12 +1043,12 @@ restart:
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
-          Session.Get.PoliceInvestigate.Record(shopBasement, in pt);
+          Session.Get.Police.Investigate.Record(shopBasement, in pt);
           if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(in pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
-              Session.Get.PoliceInvestigate.Record(shopBasement, in pt);
+              Session.Get.Police.Investigate.Record(shopBasement, in pt);
               MakeRandomShopItem(shopType)?.DropAt(shopBasement, in pt);
             }
           }
@@ -1368,7 +1368,7 @@ restart:
         Item it = MakeShopConstructionItem();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         shelf.Inventory.AddAll(it);
-        Session.Get.PoliceInvestigate.Record(map, in pt);
+        Session.Get.Police.Investigate.Record(map, in pt);
       });
     }
 
@@ -1713,7 +1713,7 @@ restart:
           return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => {
           map.DropItemAt(MakeShopConstructionItem(), in pt);
-          Session.Get.PoliceInvestigate.Record(map, in pt);
+          Session.Get.Police.Investigate.Record(map, in pt);
           return MakeObjTable(GameImages.OBJ_TABLE);
         });
       if (m_DiceRoller.RollChance(33)) {
@@ -1728,7 +1728,7 @@ restart:
         {
           var fridge = MakeObjFridge();
           fridge.Inventory.AddAll(MakeItemCannedFood());
-          Session.Get.PoliceInvestigate.Record(map, in pt);
+          Session.Get.Police.Investigate.Record(map, in pt);
           return fridge;
         }));
       }
@@ -1745,7 +1745,7 @@ restart:
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
       DoForEachTile(b.BuildingRect,pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
-          Session.Get.PoliceInvestigate.Seen(map, pt);
+          Session.Get.Police.Investigate.Seen(map, pt);
           map.SetIsInsideAt(pt);    // XXX this is a severe change -- combined with the early generation, it guarantees the subway is inside when the NPCs are placed.
                                     // with late generation it was possible to overwrite a park
       });
@@ -2027,7 +2027,7 @@ restart:
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 map.DropItemAt(MakeRandomBedroomItem(), in pt2);
-                Session.Get.PoliceInvestigate.Record(map, in pt2);
+                Session.Get.Police.Investigate.Record(map, in pt2);
                 return MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
               }));
               return MakeObjBed(GameImages.OBJ_BED);
@@ -2041,7 +2041,7 @@ restart:
             {
               var drawer = (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
               drawer.Inventory.AddAll(MakeRandomBedroomItem());
-              Session.Get.PoliceInvestigate.Record(map, in pt);
+              Session.Get.Police.Investigate.Record(map, in pt);
               return drawer;
             }));
           break;
@@ -2058,7 +2058,7 @@ restart:
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
                 map.DropItemAt(MakeRandomKitchenItem(), in pt);
               }
-              Session.Get.PoliceInvestigate.Record(map, in pt);
+              Session.Get.Police.Investigate.Record(map, in pt);
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
@@ -2084,7 +2084,7 @@ restart:
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
               map.DropItemAt(MakeRandomKitchenItem(), in pt);
             }
-            Session.Get.PoliceInvestigate.Record(map, in pt);
+            Session.Get.Police.Investigate.Record(map, in pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
             {
               return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
@@ -2100,7 +2100,7 @@ restart:
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
               fridge.Inventory.AddAll(MakeRandomKitchenItem());
             }
-            Session.Get.PoliceInvestigate.Record(map, in pt);
+            Session.Get.Police.Investigate.Record(map, in pt);
             return fridge;
           }));
           break;
@@ -2515,8 +2515,8 @@ restart:
       var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
       basement.Rect.DoForEach(pt => {
           if (!basement.GetTileModelAt(pt).IsWalkable) return;
-          Session.Get.PoliceInvestigate.Record(basement, in pt);
-          Session.Get.PoliceItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
+          Session.Get.Police.Investigate.Record(basement, in pt);
+          Session.Get.Police.ItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
       });
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
@@ -2567,7 +2567,7 @@ restart:
           o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Key));
           o_inv.AddAll(ItemRangedWeapon.make(survivalist_cache_ranged.Value));
           o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Value));
-          Session.Get.PoliceInvestigate.Record(basement, in pt);
+          Session.Get.Police.Investigate.Record(basement, in pt);
           return shelf;
         }));
 

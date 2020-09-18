@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Data
 
 	public PlayerController(Actor src) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
-      m_itemMemory = m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) ? Session.Get.PoliceItemMemory
+      m_itemMemory = m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
                                                                             : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 

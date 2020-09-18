@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
+    <Compile Include="Data\RadioFaction.cs" />
     <Compile Include="Data\LinearChokepoint.cs" />
     <Compile Include="Data\ThreatTracking.cs" />
     <Compile Include="Engine\Actions\ActionPull.cs" />

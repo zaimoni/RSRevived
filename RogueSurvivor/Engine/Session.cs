@@ -29,9 +29,7 @@ namespace djack.RogueSurvivor.Engine
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
-    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
-    private readonly ThreatTracking m_PoliceThreatTracking = new ThreatTracking();
-    private readonly LocationSet m_PoliceInvestigate = new LocationSet();
+    public readonly RadioFaction Police = new RadioFaction(Gameplay.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
 
     [NonSerialized] private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
 
@@ -61,9 +59,6 @@ namespace djack.RogueSurvivor.Engine
 
     public Scoring Scoring { get { return m_Scoring; } }
     public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
-    public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory { get { return m_PoliceItemMemory; } }
-    public ThreatTracking PoliceThreatTracking { get { return m_PoliceThreatTracking; } }
-    public LocationSet PoliceInvestigate { get { return m_PoliceInvestigate; } }
 
     private Session()
     {
@@ -94,9 +89,7 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
-      info.read(ref m_PoliceItemMemory, "m_PoliceItemMemory");
-      info.read(ref m_PoliceThreatTracking, "m_PoliceThreatTracking");
-      info.read(ref m_PoliceInvestigate, "m_PoliceInvestigate");
+      info.read(ref Police, "Police");
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -121,9 +114,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
       info.AddValue("UniqueItems",UniqueItems,typeof(UniqueItems));
       info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
-      info.AddValue("m_PoliceItemMemory", m_PoliceItemMemory, typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
-      info.AddValue("m_PoliceThreatTracking", m_PoliceThreatTracking, typeof(ThreatTracking));
-      info.AddValue("m_PoliceInvestigate", m_PoliceInvestigate, typeof(LocationSet));
+      info.AddValue("Police", Police, typeof(RadioFaction));
 
       // non-serialized fields
       m_Scoring_fatality = null;
@@ -160,8 +151,7 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = new UniqueActors();
       UniqueItems = new UniqueItems();
       UniqueMaps = new UniqueMaps();
-      m_PoliceItemMemory.Clear();
-      m_PoliceThreatTracking.Clear();
+      Police.Clear();
     }
 
     public bool CMDoptionExists(string x) {
@@ -172,19 +162,17 @@ namespace djack.RogueSurvivor.Engine
     public void ForcePoliceKnown(Location loc) {   // for world creation
       var allItems = Map.AllItemsAt(loc);
       if (null == allItems) {
-        m_PoliceItemMemory.Set(loc, null, 0);
+        Police.ItemMemory.Set(loc, null, 0);
       } else {
         var seen_items = new HashSet<Gameplay.GameItems.IDs>();
         foreach(var inv in allItems) seen_items.UnionWith(inv.Items.Select(x => x.Model.ID));
-        m_PoliceItemMemory.Set(loc, seen_items, 0);
+        Police.ItemMemory.Set(loc, seen_items, 0);
       }
     }
 
     // to eventually be obsoleted by an event
     public void PoliceTrackingThroughExitSpawn(Actor a) {
-      if (a.Faction.IsEnemyOf(Models.Factions[(int) Gameplay.GameFactions.IDs.ThePolice]) || m_PoliceThreatTracking.IsThreat(a)) {
-        m_PoliceThreatTracking.RecordTaint(a,a.Location);
-      }
+      if (Police.IsEnemy(a)) Police.Threats.RecordTaint(a,a.Location);
     }
 
     // we have conflicting implementation imperatives here.

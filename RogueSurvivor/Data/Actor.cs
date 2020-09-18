@@ -1362,14 +1362,14 @@ namespace djack.RogueSurvivor.Data
 
     public ThreatTracking? Threats {
       get {
-        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Engine.Session.Get.PoliceThreatTracking;
+        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.Police.Threats;
         return null;
       }
     }
 
     public LocationSet? InterestingLocs {
       get {
-        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Engine.Session.Get.PoliceInvestigate;
+        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.Police.Investigate;
         return null;
       }
     }

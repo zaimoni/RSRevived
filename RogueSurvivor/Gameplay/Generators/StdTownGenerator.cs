@@ -154,7 +154,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       while(0 < num--) ActorPlace(m_DiceRoller, map, CreateNewFeralDog(0), outside_test);
       num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
       while(0 < num--) ActorPlace(m_DiceRoller, map, CreateNewUndead(0), outside_test);
-      Session.Get.PoliceThreatTracking.Rebuild(map);   // prune back RAM cost
+      Session.Get.Police.Threats.Rebuild(map);   // prune back RAM cost
       map.OnMapGenerated(); // remove deadwood that should not hit the savefile
       return map;
     }
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int num = (int) (0.5 * (double) (RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent) / 100.0);
         while(0 < num--) ActorPlace(m_DiceRoller, sewersMap, CreateNewSewersUndead(0));
       }
-      Session.Get.PoliceThreatTracking.Rebuild(sewersMap);   // prune back RAM cost
+      Session.Get.Police.Threats.Rebuild(sewersMap);   // prune back RAM cost
       return sewersMap;
     }
   }

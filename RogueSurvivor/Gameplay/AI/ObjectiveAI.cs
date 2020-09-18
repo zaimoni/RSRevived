@@ -6181,8 +6181,8 @@ restart_chokepoints:
       bool regenerate_controller = null != items;
       if (regenerate_controller) {
         // debrief item memory to avoid cheesy metagaming (handwave this as background task)
-        var locs = items.Instruct(Session.Get.PoliceItemMemory);
-        var tourism = Session.Get.PoliceInvestigate;
+        var locs = items.Instruct(Session.Get.Police.ItemMemory);
+        var tourism = Session.Get.Police.Investigate;
         foreach(var x in locs) tourism.Seen(x); // \todo actually should clear tourism only for those locations seen more recently
         // than they were requested, but that would replace LocationSet with another type
       }

@@ -175,8 +175,7 @@ namespace djack.RogueSurvivor.Engine
       List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
       map.PlaceAt(actor, roller.Choose(valid_spawn));
-      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
-        Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
+      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) Session.Get.Police.Threats.RecordSpawn(actor, map, valid_spawn);
       return true;
     }
 
@@ -188,7 +187,7 @@ namespace djack.RogueSurvivor.Engine
       if (!Map.Canonical(ref dest)) throw new InvalidOperationException("location cannot be made canonical");
 #endif
       dest.Map.PlaceAt(actor, dest.Position);
-      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) Session.Get.PoliceThreatTracking.RecordTaint(actor, dest);
+      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) Session.Get.Police.Threats.RecordTaint(actor, dest);
       return true;
     }
 #endregion

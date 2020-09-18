@@ -1395,8 +1395,8 @@ retry:
       // cf Map::PlaceAt(Actor,Position)
       if (null != mapObj.Location.Map && HasMapObject(mapObj)) {
         if (update_item_memory) {
-          if (Engine.Session.Get.PoliceItemMemory.HaveEverSeen(mapObj.Location))
-            Engine.Session.Get.PoliceInvestigate.Record(mapObj.Location);   // XXX \todo should message based on item memories
+          if (Engine.Session.Get.Police.ItemMemory.HaveEverSeen(mapObj.Location))
+            Engine.Session.Get.Police.Investigate.Record(mapObj.Location);   // XXX \todo should message based on item memories
         }
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       }
@@ -1406,7 +1406,7 @@ retry:
       }
       m_aux_MapObjectsByPosition.Add(position, mapObj);
       mapObj.Location = new Location(this, position);
-      if (update_item_memory) Engine.Session.Get.PoliceInvestigate.Record(mapObj.Location);
+      if (update_item_memory) Engine.Session.Get.Police.Investigate.Record(mapObj.Location);
     }
 
     public void RemoveMapObjectAt(Point pt)

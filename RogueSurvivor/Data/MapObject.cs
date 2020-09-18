@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Data
                   Location.Drop(it);
                 }
               }
-              Engine.Session.Get.PoliceInvestigate.Record(Location);  // cheating ai: police consider death drops tourism targets
+              Engine.Session.Get.Police.Investigate.Record(Location);  // cheating ai: police consider death drops tourism targets
             }
             m_Inventory = null;
           }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Zaimoni.Data;
 
 #nullable enable
@@ -75,23 +73,19 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
+    [Serializable]
     class RadioFaction
     {
-        private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_ItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
-        private readonly ThreatTracking m_ThreatTracking = new ThreatTracking();
-        private readonly LocationSet m_Investigate = new LocationSet();
+        public readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+        public readonly ThreatTracking Threats = new ThreatTracking();
+        public readonly LocationSet Investigate = new LocationSet();
         private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>();
         static private ImplicitRadio? s_implicitRadio = null;
 
         public readonly djack.RogueSurvivor.Gameplay.GameFactions.IDs FactionID;
         public readonly djack.RogueSurvivor.Gameplay.GameItems.IDs RadioID;
 
-        // accessors
-        public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory { get { return m_ItemMemory; } }
-        public ThreatTracking Threats { get { return m_ThreatTracking; } }
-        public LocationSet Investigate { get { return m_Investigate; } }
-
-        RadioFaction(djack.RogueSurvivor.Gameplay.GameFactions.IDs faction, djack.RogueSurvivor.Gameplay.GameItems.IDs radio)
+        public RadioFaction(djack.RogueSurvivor.Gameplay.GameFactions.IDs faction, djack.RogueSurvivor.Gameplay.GameItems.IDs radio)
         {
             FactionID = faction;
             RadioID = radio;
@@ -104,7 +98,15 @@ namespace djack.RogueSurvivor.Data
 
         ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
 
-        bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
+        public void Clear() {
+            ItemMemory.Clear();
+            Threats.Clear();
+            Investigate.Clear();
+            m_Aggressors.Clear();
+        }
+
+        public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
+        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Models.Factions[(int)FactionID]) || Threats.IsThreat(a); }
 
         void AggressedBy(Actor myfac, Actor other) {
 #if DEBUG
