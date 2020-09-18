@@ -50,7 +50,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Actor = actor;
       Filters = filters;
     }
-#nullable restore
 
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
@@ -67,35 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
-    private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV, ThreatTracking threats)
-    {
-        _enemies = null;
-        _friends = null;
-        HashSet<Point> has_threat = new HashSet<Point>();   // XXX Span<Point> will not convert to IEnumerable<Point>
-        foreach (var loc in normalized_FOV) {
-          var actorAt = loc.Actor;
-          var test = m_Actor.Location.Map.Denormalize(in loc);
-          if (   null==actorAt
-              || actorAt== m_Actor
-              || actorAt.IsDead) {
-            if (null == test) threats.Cleared(loc.Map,new Point[1] { loc.Position });
-            continue;
-          }
-          perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-          bool is_enemy = m_Actor.IsEnemyOf(actorAt);
-          if (is_enemy) threats.Sighted(actorAt, actorAt.Location);
-          if (null == test) {
-            if (!is_enemy) threats.Cleared(loc.Map,new Point[1] { loc.Position });
-            continue;
-          }
-          if (is_enemy) {
-            (_enemies ?? (_enemies = new Dictionary<Location, Actor>())).Add(loc, actorAt);
-            has_threat.Add(test.Value.Position);
-          } else (_friends ?? (_friends = new Dictionary<Location, Actor>())).Add(loc, actorAt);
-        }
-        // ensure fact what is in sight is current, is recorded
-		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));
-    }
+#nullable restore
 
     private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV)
     {
@@ -142,11 +113,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Action<List<Percept>, Location[]> HowToSense()
     {
       Action<List<Percept>, Location[]>? ret = null;
-      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
-        var threats = m_Actor.Threats;
-        ret = (null != threats) ? threats.Bind<List<Percept>, Location[], ThreatTracking>(_seeActors)
-                                : _seeActors;
-      }
+      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) ret = _seeActors;
       if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
         var items = m_Actor.Controller.ItemMemory;
         ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>>(_seeItems)
@@ -162,7 +129,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       var actor = Viewpoint;
       var _view_map = actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
-      actor.InterestingLocs?.Seen(_view_map, m_FOV);    // will have seen everything; note this
       var e = actor.Location.Exit;
       var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
       {
@@ -172,10 +138,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (!Map.Canonical(ref loc)) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
         normalized_FOV[i++] = loc;
       }
-      if (null != e) {
-        normalized_FOV[i] = e.Location; // chained value here isn't C++-legal so have to do this in two steps
-        actor.InterestingLocs?.Seen(e.Location);
-      }
+      if (null != e) normalized_FOV[i] = e.Location;
       }
       _normalized_FOV = normalized_FOV; // \todo stop thrashing GC (some sort of pooling)
       List<Percept> perceptList = new List<Percept>();
@@ -183,7 +146,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       actor.Controller.eventFOV(); // trigger additional vision processing; rely on z processing being so trivial that their CPU wastage is negligible
       return perceptList;
     }
-#nullable restore
 
     [System.Flags]
     public enum SensingFilter

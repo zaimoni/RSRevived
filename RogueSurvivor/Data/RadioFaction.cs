@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Data
             foreach (var loc in fov) {
                 Investigate.Seen(loc);
                 var actorAt = loc.Actor;
-                if (null != actorAt && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
+                if (null != actorAt && !actorAt.IsDead && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
                     continue;
                 }
@@ -93,12 +93,12 @@ namespace djack.RogueSurvivor.Data
             RadioID = radio;
         }
 
-        ImplicitRadio implicitRadio { get {
+        public ImplicitRadio implicitRadio { get {
             if (null != s_implicitRadio) return s_implicitRadio;
             return s_implicitRadio = new ImplicitRadio(this);
         } }
 
-        ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
+        public ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
 
         public void Clear() {
             ItemMemory.Clear();
