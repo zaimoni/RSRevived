@@ -202,7 +202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
-      if (null == old_enemies && WantToSleepNow) {
+      if (null == old_enemies && m_Actor.WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();
         if (null != tmpAction) return tmpAction;
       }

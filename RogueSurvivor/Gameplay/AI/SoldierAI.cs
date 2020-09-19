@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
-      if (null == old_enemies && WantToSleepNow) {
+      if (null == old_enemies && m_Actor.WantToSleepNow) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
 #endif

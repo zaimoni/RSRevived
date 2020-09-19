@@ -234,7 +234,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         var fov = m_Actor.Controller.FOVloc;
         if (!fov.Any(loc => _locs.Contains(loc))) return true;
-        if (0 < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
+        if (ObjectiveAI.ReactionCode.SLEEPY < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(_locs, null);
         return true;
       }
@@ -394,7 +394,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         RefreshLocations();
         if (ai is PlayerController) return false;   // do not hijack player (use case is threat detection)
-        if (0 < ai.InterruptLongActivity()) return false;
+        if (ObjectiveAI.ReactionCode.SLEEPY < ai.InterruptLongActivity()) return false;
         // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
         ai.ClearLastMove();
         ret = ai.BehaviorPathTo(m => WhereIn(m));
@@ -677,7 +677,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
-        if (ObjectiveAI.ReactionCode.NONE != (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
+        if (ObjectiveAI.ReactionCode.SLEEPY < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
           _isExpired = true;    // cancel: something urgent
           return true;
         }
@@ -825,13 +825,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<_adjacent_friends.Count ? _adjacent_friends : null;
     }
 #nullable restore
-
-    // doesn't include no-enemies check, inside check or any directives/orders
-    // would like to trigger pathing to inside to enable sleeping
-    // but have to distinguish between AI w/o item memory and AI w/item memory, etc.
-    protected bool WantToSleepNow { get {
-      return m_Actor.WouldLikeToSleep && m_Actor.CanSleep();
-    } }
 
     public override int FastestTrapKill(in Location loc)
     {

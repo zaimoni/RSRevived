@@ -1038,7 +1038,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       NONE = 0,
       ENEMY = uint.MaxValue/2+1,
       ITEM = ENEMY/2,
-      TRADE = ITEM/2
+      TRADE = ITEM/2,
+      SLEEPY = TRADE/2
     };
 
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
@@ -1047,6 +1048,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
         ReactionCode ret = ReactionCode.NONE;
         if (null != enemies_in_FOV) ret |= ReactionCode.ENEMY;
+        if (m_Actor.WantToSleepNow) ret |= ReactionCode.SLEEPY;
         // we should also interrupt if there is a useful item in sight (this can happen with an enemy in sight)
         // (requires items in view cache from LOSSensor, which is wasted RAM for Z; living-specific cache in savefile indicated)
         // note that due to critical ai issues, soldiers and CHAR guards do not trade or intentionally seek out ground inventories.
@@ -1074,7 +1076,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       switch(Priority)
       {
       case ReactionCode.NONE:   // would be noticed if paying full attention to environment
-        if (ReactionCode.NONE != InterruptLongActivity()) return true;
+        if (ReactionCode.SLEEPY < InterruptLongActivity()) return true;
         break;
       case ReactionCode.ENEMY:  // direct communication from leader, or other credible survival mutual advantage
         if (null != enemies_in_FOV) return true;

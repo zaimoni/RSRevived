@@ -2932,6 +2932,8 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantSleep());
     }
 
+    public bool WantToSleepNow { get { return WouldLikeToSleep && CanSleep(); } }
+
     public void Rest(int s) {
       m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
     }
