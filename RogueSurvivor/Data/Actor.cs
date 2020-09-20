@@ -403,9 +403,12 @@ namespace djack.RogueSurvivor.Data
       int num = MaxFollowers;
       if (num == 0) return "can't lead";
       if (CountFollowers >= num) return "too many followers";
+      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
       // to support savefile hacking.  AI in charge of player is a problem.
       if (target.IsPlayer && !IsPlayer) return "is player";
-      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
+      // this should need refinement (range 1 might be ok)
+      if (!IsPlayer && Controller.InCombat) return "in combat";
+      if (target.Controller.InCombat && !target.IsPlayer) return target.Name+" in combat";
       return "";
     }
 
