@@ -708,7 +708,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
             bool prefilter_minimap(Map m) {
               if (m==m_Actor.Location.Map) return false;
-//            if (0 >= map_code) return true;  // don't really want to exclude basements/CHAR underground base
+              if (0 >= map_code) return true;  // CHAR underground base and basements are their own minimaps
               if (!d_span.Contains(m.District.WorldPosition)) return true;
               // entry map is code 1, and is promiscuous (want to respond to basements, etc.)
               int other_map_code = District.UsesCrossDistrictView(m);
