@@ -211,17 +211,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorUseMedecine ok"); // TRACER
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "medicating");
-#endif
-      if (null != tmpAction) return tmpAction;
-      tmpAction = BehaviorRestIfTired();
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorRestIfTired ok"); // TRACER
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
-#endif
+      tmpAction = NonCombatReflexMoves();
       if (null != tmpAction) return tmpAction;
 
       if (old_enemies != null) {
@@ -235,30 +225,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
-
-      tmpAction = TurnOnAdjacentGenerators();
-      if (null!=tmpAction) {
-        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
-        return tmpAction;
-      }
-
-      tmpAction = RechargeWithAdjacentGenerator();
-      if (null!=tmpAction) return tmpAction;
-
-      // while groggy ai may not be up to ranged inventory management, items in reach should still be managed
-      tmpAction = InventoryStackTactics();
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "inventory management failsafe triggered");
-#endif
-      if (null != tmpAction) return tmpAction;
-      tmpAction = BehaviorUseAdjacentStack();
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "adjacent inventory management triggered");
-#endif
-      if (null != tmpAction) return tmpAction;
-
-      tmpAction = BehaviorDropUselessItem();
-      if (null != tmpAction) return tmpAction;
 
       if (null == old_enemies && m_Actor.WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();

@@ -390,6 +390,8 @@ namespace djack.RogueSurvivor.Data
     }
 #nullable restore
 
+    // Formally would make sense to break this up into target-independent and target-dependent checks for AI processing,
+    // but this is profile-cold 2020-9-20 zaimoni
     private string ReasonCantTakeLeadOf(Actor target)
     {
 #if DEBUG

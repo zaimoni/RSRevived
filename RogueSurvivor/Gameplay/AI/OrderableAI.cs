@@ -908,7 +908,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", actor.Name));
       }
 
-      ActorAction? tmpAction;
+      ActorAction? tmpAction = NonCombatReflexMoves();
+      if (null != tmpAction) return tmpAction;
+
       if (m_Actor.Location.Position != location.Position) {
         tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
         if (null != tmpAction) {
@@ -916,13 +918,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (m_Actor.IsHungry) {
-        tmpAction = BehaviorEat();
-        if (null != tmpAction) return tmpAction;
-      }
-
-      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (null != tmpAction) return tmpAction;
 
       return new ActionWait(m_Actor);
     }
@@ -935,9 +930,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actor = FilterNearest(enemies).Percepted;
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", actor.Name));
       }
-      if (!m_ReachedPatrolPoint) m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
-      ActorAction? tmpAction;
+      ActorAction? tmpAction = NonCombatReflexMoves();
+      if (null != tmpAction) return tmpAction;
+
+      if (!m_ReachedPatrolPoint) m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
       if (!m_ReachedPatrolPoint) {
         tmpAction = BehaviorIntelligentBumpToward(in location, false, false);
         if (null != tmpAction) {
@@ -945,13 +942,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (m_Actor.IsHungry) {
-        tmpAction = BehaviorEat();
-        if (null != tmpAction) return tmpAction;
-      }
-
-      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (null != tmpAction) return tmpAction;
 
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position);
       return BehaviorWander(null, loc =>
@@ -3622,6 +3612,49 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       }
     }
+
+#nullable enable
+/// <summary>
+/// Enemies check should have completed before this.
+/// </summary>
+/// <returns>null, or a performable action</returns>
+    protected ActorAction? NonCombatReflexMoves() {
+      ActorAction? act = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != act) return act;
+      act = BehaviorRestIfTired();
+      if (null != act) return act;
+      act = BehaviorEatProactively();
+      if (null != act) return act;
+      if (m_Actor.IsHungry) {
+        act = BehaviorEat();
+        if (null != act) return act;
+        if (m_Actor.IsStarving || m_Actor.IsInsane) {
+          act = BehaviorGoEatCorpse(FilterCurrent(_all));
+          if (null != act) return act;
+        }
+      }
+
+      act = TurnOnAdjacentGenerators();
+      if (null != act) {
+        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        return act;
+      }
+      act = RechargeWithAdjacentGenerator();
+      if (null!= act) return act;
+
+      // while groggy ai may not be up to ranged inventory management, items in reach should still be managed
+      // XXX this should lose to same-map threat hunting at close ETA
+      act = InventoryStackTactics();
+      if (null != act) return act;
+      act = BehaviorUseAdjacentStack();
+      if (null != act) return act;
+
+      act = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
+      if (null != act) return act;
+
+      return null;
+    }
+#nullable restore
 
     // taboos
     public void MarkActorAsRecentTrade(Actor other)
