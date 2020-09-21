@@ -457,46 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       return (m_Actor.CanMeleeAttack(target) ? new ActionMeleeAttack(m_Actor, target) : null);
     }
-#nullable restore
 
-    protected ActionRangedAttack BehaviorRangedAttack(Actor target)
-    {
-#if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
-#endif
-      if (!m_Actor.CanFireAt(target)) return null;
-
-      // alpha10
-      // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
-      FireMode fireMode = default;
-      if ((m_Actor.GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2) {
-        Attack rangedAttack = m_Actor.RangedAttack(Rules.InteractionDistance(m_Actor.Location, target.Location), target);
-        if (rangedAttack.DamageValue < target.HitPoints) {
-          int rapidHit1Chance = m_Actor.ComputeChancesRangedHit(target, 1);
-          int rapidHit2Chance = m_Actor.ComputeChancesRangedHit(target, 2);
-          // "good chances" = both hits at least 50%
-          // typically the second shot has worse chances to hit (recoil) but a true burst fire weapon would reverse this;
-          // it is possible to correct the targeting ellipse that fast even at Angband space-time scale.
-          // after configuration merge:
-          // * no true burst fire weapons, not even the army rifle
-          // * getting true burst fire may require a minimum level of firearms skill, much like martial arts weapons don't work right without martial arts skill
-          // * shotguns appear artificially inaccurate (but considering that CHAR guards have them, that may be a case of balance over realism)  High recoil, but also very wide fire cone
-          // * not clear why Kolt so much more inaccurate than pistol
-          // * not clear why Hanz Von Hanz has steeper drop-off than normal light pistol
-          // \todo when the army rifle is configured as a true burst fire weapon, ensure that the army sniper rifle gets 3x the shots from a clip.  Clip size 60(!), but reloading army rifle is 10 shots for 30 ammo.
-          // \todo new burst fire weapon: machine pistol (uses light pistol ammo).  Uses 3 ammo at once (handwave last burst), so only gets 7 shots from a light pistol clip (but loads the entire clip!)
-          // somewhat exotic (may only be available from survivalist caches as contraband, or possibly an unusual SWAT police weapon)
-          if (rapidHit1Chance >= 50 && rapidHit2Chance >= 50) fireMode = FireMode.RAPID;
-        }
-      }
-
-       // fire!
-       m_Actor.Activity = Activity.FIGHTING;
-       m_Actor.TargetActor = target;
-       return new ActionRangedAttack(m_Actor, target, fireMode);
-    }
-
-#nullable enable
     /// <returns>null, or a non-free action</returns>
     protected ActorAction? BehaviorEquipWeapon()
     {

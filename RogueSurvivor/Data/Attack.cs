@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -54,6 +55,20 @@ namespace djack.RogueSurvivor.Data
       get {
         return 100000 * DamageValue + 1000 * HitValue + DisarmChance + -StaminaPenalty;
       }
+    }
+
+    public int ComputeChancesHit(Actor target, int shotCounter=0)
+    {
+#if DEBUG
+      if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
+#endif
+      Defence defence = target.Defence;
+
+      int hitValue = (shotCounter == 0 ? HitValue : shotCounter == 1 ? Hit2Value : Hit3Value);
+      int defValue = defence.Value;
+
+      float ranged_hit = Engine.Rules.SkillProbabilityDistribution(defValue).LessThan(Engine.Rules.SkillProbabilityDistribution(hitValue));
+      return (int)(100* ranged_hit);
     }
   }
 }

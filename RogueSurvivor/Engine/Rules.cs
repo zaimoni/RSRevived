@@ -167,7 +167,6 @@ namespace djack.RogueSurvivor.Engine
       if (skillValue <= 0) return 0;
       return (m_DiceRoller.Roll(0, skillValue + 1) + m_DiceRoller.Roll(0, skillValue + 1)) / 2;
     }
-#nullable restore
 
     private static int _Average(int x, int y) { return x+y/2; }
 
@@ -178,11 +177,16 @@ namespace djack.RogueSurvivor.Engine
       return DenormalizedProbability<int>.Apply(sk_prob*sk_prob,_Average);  // XXX \todo cache this
     }
 
-#nullable enable
     public int RollDamage(int damageValue)
     {
       if (damageValue <= 0) return 0;
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
+    }
+
+    public static DenormalizedProbability<int> DamageProbabilityDistribution(int damageValue)
+    {
+      if (damageValue <= 0) return ConstantDistribution<int>.Get(0);
+      return UniformDistribution.Get(damageValue / 2, damageValue);
     }
 
     static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point position)

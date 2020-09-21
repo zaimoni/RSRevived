@@ -173,5 +173,12 @@ retry:      if (target == Norm.Get) return;
             DenormalizedProbability<int> ret_src = DenormalizedProbability<int>.Apply(lhs * rhs, _less_than);
             return ret_src[1];
         }
+
+        static public float LessThan(this int lhs, DenormalizedProbability<int> rhs)
+        {
+            DenormalizedProbability<int> LHS = ConstantDistribution<int>.Get(lhs);
+            DenormalizedProbability<int> ret_src = DenormalizedProbability<int>.Apply(LHS * rhs, _less_than);
+            return ret_src[1];
+        }
     }
 }
