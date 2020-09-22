@@ -2936,6 +2936,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         void set_distance_estimate(Location test, in Location loc, Point range)
         {
           int dist = Rules.InteractionDistance(test,in loc);
+          if (short.MaxValue <= dist) {
+            var e = test.Exit;
+            if (null != e) dist = Rules.InteractionDistance(e.Location, in loc);
+            if (short.MaxValue > dist) dist += 1;
+          }
           if (short.MaxValue <= dist || short.MaxValue - dist <= range.X) return;
           int lb_dist = dist + range.X;
 //        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
@@ -2991,6 +2996,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 Restart:
         var dests = targets_at(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, dests.Count.to_s()+" for "+m);
+#endif
+        if (m != m_Actor.Location.Map) {
+          // do not cache if this triggers -- don't have enough information to prune
+          int m_code = District.UsesCrossDistrictView(m);
+          if (0 < m_code) {
+            if (!waypoint_dist.Any(x => District.UsesCrossDistrictView(x.Key.Map)==m_code)) return dests;
+          } else {
+            if (!waypoint_dist.Any(x => x.Key.Map==m)) return dests;
+          }
+        }
         if (0 < dests.Count) {
           try {
           foreach(var pt in dests) {
