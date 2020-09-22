@@ -963,6 +963,11 @@ retry:
       return GetZonesAt(pos)?.Any(zone=>zone.Name.Contains(partOfName)) ?? false;
     }
 
+    public ZoneLoc? ClearableZoneAt(Point pt) {
+      foreach (var x in m_ClearableZones!) if (x.Key.Contains(pt)) return x.Value;
+      return null;
+    }
+
     public void OnMapGenerated()
     { // coordinates with StdTownGenerator::Generate
       // 1) flush all NoCivSpawn zones

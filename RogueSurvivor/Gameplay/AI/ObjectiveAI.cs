@@ -918,20 +918,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
       if (null != ret) return ret;
       if (m_Actor.Location.Map.IsInsideAt(m_Actor.Location.Position)) {
-        Rectangle scan_this = m_Actor.Location.Map.Rect;
-        var z_list = m_Actor.Location.Map.GetZonesAt(m_Actor.Location.Position);    // non-null check in map generation
-        foreach(var z in z_list) {
-          if (scan_this.Width < z.Bounds.Width) continue;
-          if (scan_this.Height < z.Bounds.Height) continue;
-          if (RogueGame.HALF_VIEW_WIDTH <= m_Actor.Location.Position.X-z.Bounds.Left) continue;
-          if (RogueGame.HALF_VIEW_WIDTH < z.Bounds.Right - m_Actor.Location.Position.X) continue;
-          if (RogueGame.HALF_VIEW_HEIGHT <= m_Actor.Location.Position.Y-z.Bounds.Top) continue;
-          if (RogueGame.HALF_VIEW_HEIGHT < z.Bounds.Bottom - m_Actor.Location.Position.Y) continue;
-          if (scan_this.Width > z.Bounds.Width || scan_this.Height > z.Bounds.Height) scan_this = z.Bounds;
+        ret = m_Actor.Location.ClearableZone;
+        if (null != ret) {
+          _sparse.Set(SparseData.ClearingZone,ret);
+          return ret;
         }
-        ret = new ZoneLoc(m_Actor.Location.Map,scan_this);
-        _sparse.Set(SparseData.ClearingZone,ret);
-        return ret;
       };
       return null;
     }

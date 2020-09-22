@@ -98,6 +98,8 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    public ZoneLoc? ClearableZone { get { return Map.ClearableZoneAt(Position); } }
+
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
     public Rectangle ViewRect { get { return new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS)); } }
