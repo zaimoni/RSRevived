@@ -168,7 +168,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     protected ObjectiveAI(Actor src) : base(src) {
       // implicit police radio, and trained to use it properly
-      if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) FOVevents.Add(Session.Get.Police.implicitRadio);
+      if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) {
+        FOVevents.Add(Session.Get.Police.implicitRadio);
+        if (LookingForCHARBase.IsSecret && (1<=Session.Get.ScriptStage_PoliceStationPrisoner || 1<=Session.Get.ScriptStage_PoliceCHARrelations))
+          FOVevents.Add(new LookingForCHARBase(src));
+      }
     }
 
     public enum SparseData {
@@ -229,7 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // processing based on field of view
     public override void eventFOV() { FOVevents.update(FOVloc); }
-    protected void AddFOVevent(Observer<Location[]> src) { FOVevents.Add(src); }
+    public void AddFOVevent(Observer<Location[]> src) { FOVevents.Add(src); }
 
 
     public void ClearLastMove() { _last_move = null; }

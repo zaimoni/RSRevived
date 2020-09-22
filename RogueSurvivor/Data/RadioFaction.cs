@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Data
     {
         public readonly ThreatTracking Threats;
         public readonly LocationSet Investigate;
-        public readonly djack.RogueSurvivor.Gameplay.GameFactions.IDs FactionID;
+        public readonly Gameplay.GameFactions.IDs FactionID;
 
         public ImplicitRadio(RadioFaction faction)
         {
@@ -40,12 +40,14 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
+#if PROTOTYPE
+    // this should be re-implemented as a modifier
     [Serializable]
     class ExplicitRadio : Observer<Location[]>
     {
         public readonly ThreatTracking Threats;
         public readonly LocationSet Investigate;
-        public readonly djack.RogueSurvivor.Gameplay.GameFactions.IDs FactionID;
+        public readonly Gameplay.GameFactions.IDs FactionID;
         public readonly Item Radio;
 
         public ExplicitRadio(RadioFaction faction, Item radio)
@@ -74,15 +76,43 @@ namespace djack.RogueSurvivor.Data
             return false;
         }
     }
+#endif
+
+    [Serializable]
+    class LookingForCHARBase : Observer<Location[]>
+    {
+        [NonSerialized] private static Map? m = null;
+        public readonly Actor m_Actor; // for when we treat IsSecret per-faction, etc.
+
+        public LookingForCHARBase(Actor who)
+        {
+            m_Actor = who;
+        }
+
+        // \todo the whole concept of secret map should be per-faction (civilians and police are aligned here)
+        public static bool IsSecret { get { return (m ?? (m = Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap)).IsSecret; } }
+
+        public bool update(Location[] fov) {
+            if (!IsSecret) return true;  // already found
+            foreach (var e in m!.Exits) {
+                if (0 <= Array.IndexOf(fov, e.Location)) {
+                    m.Expose();
+                    // \todo faction-specific handling
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
     [Serializable]
     class RadioFaction
     {
-        public readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+        public readonly Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = new Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
         public readonly ThreatTracking Threats = new ThreatTracking();
         public readonly LocationSet Investigate = new LocationSet();
 #if PROTOTYPE
-        private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>();
+        private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>(); // \todo? migrate from RogueGame::KillActor?
 #endif
         static private ImplicitRadio? s_implicitRadio = null;
 
@@ -100,7 +130,9 @@ namespace djack.RogueSurvivor.Data
             return s_implicitRadio = new ImplicitRadio(this);
         } }
 
+#if PROTOTYPE
         public ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
+#endif
 
         public void Clear() {
             ItemMemory.Clear();

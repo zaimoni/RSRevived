@@ -7768,6 +7768,14 @@ namespace djack.RogueSurvivor.Engine
 #region 2) examine all CHAR offices
      Session.Get.World.DoForAllDistricts(District.DamnCHAROfficesToPoliceInvestigation);
 #endregion
+#region 3) signal police to look for CHAR base entrance
+     if (LookingForCHARBase.IsSecret) {
+        // \todo radio message, ultra-long range (repeater network); trigger could be confession, police trespass, or police takedown of murderer
+        Session.Get.World.DoForAllActors(a => {
+            if (a.IsFaction(GameFactions.IDs.ThePolice)) (a.Controller as ObjectiveAI)?.AddFOVevent(new LookingForCHARBase(a));
+        });
+     }
+#endregion
     }
 
     private void OnMakeEnemyOfCop(Actor aggressor, Actor cop, bool wasAlreadyEnemy)
