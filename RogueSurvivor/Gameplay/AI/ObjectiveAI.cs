@@ -4572,6 +4572,16 @@ restart_chokepoints:
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
       if (use_ok) {
+      // another behavior is responsible for pre-emptively eating perishable food
+      // canned food is normally eaten at the last minute
+
+      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Inventory.GetBestDestackable(it) is ItemFood food) {
+        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
+        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+        int num4 = m_Actor.CurrentNutritionOf(food);
+        if (num4 <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
+      }
+
       // use stimulants before dropping them
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
         if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
@@ -4579,6 +4589,12 @@ restart_chokepoints:
           int num4 = m_Actor.ScaleMedicineEffect(stim2.SleepBoost);
           if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
         }
+      }
+      if (it is ItemMedicine psych && 0 < psych.SanityCure && 2<=WantRestoreSAN) {
+        if (m_Actor.CanUse(psych)) return new ActionUseItem(m_Actor, psych);
+      }
+      if (it is ItemEntertainment fun && 2<=WantRestoreSAN) {
+        if (m_Actor.CanUse(fun)) return new ActionUseItem(m_Actor, fun);
       }
 
       // reload weapons before dropping ammo
@@ -5261,25 +5277,10 @@ restart_chokepoints:
       }
       }
 
-      // another behavior is responsible for pre-emptively eating perishable food
-      // canned food is normally eaten at the last minute
-      if (use_ok) {
       {
-      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && inv.GetBestDestackable(it) is ItemFood food) {
-        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-        int num4 = m_Actor.CurrentNutritionOf(food);
-        if (num4 <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
+      var act = _PrefilterDrop(it, use_ok);
+      if (null != act) return act;
       }
-      }
-      { // it should be ok to devour stimulants in a glut
-      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID && inv.GetBestDestackable(it) is ItemMedicine stim) {
-        int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = m_Actor.ScaleMedicineEffect(stim.SleepBoost);
-        if (num4 <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
-      }
-      }
-      } // if (use_ok)
 
       int it_rating = ItemRatingCode_no_recursion(it);
       if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
