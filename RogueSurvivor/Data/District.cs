@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Data
 
         // At the base space-time scale (30 turns/hour, 50x50 districts), we have
         // * maximum hearing range 15
-        // * maximum viewing radius (8-1)[early evening]+2(big flashlight)+1(on car)=10.
+        // * maximum viewing radius (8-1)[early evening]+2(big flashlight)+1(on car)=10.  We have problems if a ranged weapon can hit a visible target.
         // so the worst-cases are
         // * LOS: grenade explosion at grid distance 12 spills into view at grid distance 10
         // * sound: a ranged weapon user at grid distance 16 dashes to distance 15, then fires
@@ -228,8 +228,8 @@ namespace djack.RogueSurvivor.Data
         bool has_player(Actor player) { return test_scan.Contains(player.Location); };
 
         Map map = null;
-        Point surface_corner = new Point(Actor.MAX_VISION+2, Actor.MAX_VISION+2);
-        Point other_corner = new Point(Actor.MAX_VISION, Actor.MAX_VISION);
+        Point surface_corner = new Point(2*Actor.MAX_VISION+4, 2*Actor.MAX_VISION+4);
+        Point other_corner = new Point(2*Actor.MAX_VISION, 2*Actor.MAX_VISION);
         var world = Engine.Session.Get.World;
         // we ignore subway diagonals below due to obstruction by solid rock
         // NW/SE are dual
