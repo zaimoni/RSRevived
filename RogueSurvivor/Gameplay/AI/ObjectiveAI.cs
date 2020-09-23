@@ -1202,6 +1202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // either we don't have enough DPS, or we are in danger of return fire
           var damage_dist = Rules.DamageProbabilityDistribution(rangedAttack.DamageValue);
           var working = new Dictionary<int, float>();
+          var target_def = target.Defence;
 
           int normalHitChance = rangedAttack.ComputeChancesHit(target);
           working[1] = normalHitChance;
@@ -1223,19 +1224,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           var bothRapidDam = DenormalizedProbability<int>.Apply(rapidDam * rapidDam2, _Add);  // XXX \todo cache this
 
-          var normal_single = (target.HitPoints-1).LessThan(normalDam);
-          var rapid_double = (target.HitPoints-1).LessThan(bothRapidDam);
-          if (normal_single < rapid_double) {
-             if (0 >= normal_single || _damage_field.ContainsKey(m_Actor.Location.Position)) {
+          var threshold_kill = target.HitPoints - 1 + target_def.Protection_Shot;
+          var normal_single_kill = threshold_kill.LessThan(normalDam);
+          var rapid_double_kill = threshold_kill.LessThan(bothRapidDam);
+          if (normal_single_kill < rapid_double_kill) {
+             if (_damage_field.ContainsKey(m_Actor.Location.Position)) {
                fireMode = FireMode.RAPID;
              } else {
                var bothNormalDam = DenormalizedProbability<int>.Apply(normalDam * normalDam, _Add);  // XXX \todo cache this
-               var normal_double = (target.HitPoints - 1).LessThan(bothNormalDam);
-               if (1.5 > normal_double/rapid_double) {
+               var normal_double_kill = threshold_kill.LessThan(bothNormalDam);
+               if (1.5 > normal_double_kill/rapid_double_kill) {
                  fireMode = FireMode.RAPID;
                }
              }
           } else {
+             var threshold_progress = rangedAttack.DamageValue/2; // \todo revisit this when shatter plates/destructible ply for armor goes in
+             var normal_single_progress = threshold_progress.LessThan(normalDam);
+             var rapid_double_progress = threshold_progress.LessThan(bothRapidDam);
+             if (normal_single_progress < rapid_double_progress) {
+               var bothNormalDam = DenormalizedProbability<int>.Apply(normalDam * normalDam, _Add);  // XXX \todo cache this
+               var normal_double_progress = threshold_progress.LessThan(bothNormalDam);
+               if (1.5 > normal_double_progress / rapid_double_progress) {
+                 fireMode = FireMode.RAPID;
+               }
+             }
           // Legacy:
           // "good chances" = both hits at least 50%
           // typically the second shot has worse chances to hit (recoil) but a true burst fire weapon would reverse this;
@@ -1249,7 +1261,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // \todo when the army rifle is configured as a true burst fire weapon, ensure that the army sniper rifle gets 3x the shots from a clip.  Clip size 60(!), but reloading army rifle is 10 shots for 30 ammo.
           // \todo new burst fire weapon: machine pistol (uses light pistol ammo).  Uses 3 ammo at once (handwave last burst), so only gets 7 shots from a light pistol clip (but loads the entire clip!)
           // somewhat exotic (may only be available from survivalist caches as contraband, or possibly an unusual SWAT police weapon)
-            if (rapidHit1Chance >= 50 && rapidHit2Chance >= 50) fireMode = FireMode.RAPID;
+//          if (rapidHit1Chance >= 50 && rapidHit2Chance >= 50) fireMode = FireMode.RAPID;
           }
         }
       }
