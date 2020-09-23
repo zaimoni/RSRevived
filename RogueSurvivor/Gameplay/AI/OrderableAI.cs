@@ -3544,8 +3544,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != WouldUseAccessibleStack(in dest)) return true;
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return false;
-//      if (track_inv.Destinations.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return true;
+        var dests = track_inv.Destinations;
+        if (dests.Any()) {
+          if (dests.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > dests.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return false;
+//        if (dests.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < dests.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return true;
+        }
       }
       return true;
     }
@@ -3560,10 +3563,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
-        var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min();
-        var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min();
-        if (old_dist > new_dist) return false;
-        if (old_dist < new_dist) return true;
+        var dests = track_inv.Destinations;
+        if (dests.Any()) {
+          var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min();
+          var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min();
+          if (old_dist > new_dist) return false;
+          if (old_dist < new_dist) return true;
+        }
       }
 
       var already_near_actor = GetCloseToActor();

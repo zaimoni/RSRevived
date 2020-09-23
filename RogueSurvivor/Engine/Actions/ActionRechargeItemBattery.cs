@@ -9,18 +9,19 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionRechargeItemBattery : ActorAction
+  internal class ActionRechargeItemBattery : ActorAction,Use<Item>
   {
     private readonly Item m_Item;
 
-    public ActionRechargeItemBattery(Actor actor, Item it)
-      : base(actor)
+    public ActionRechargeItemBattery(Actor actor, Item it) : base(actor)
     {
 #if DEBUG
       if (!(it is BatteryPowered)) throw new ArgumentNullException(nameof(it));
 #endif
       m_Item = it;
     }
+
+    public Item Use { get { return m_Item; } }
 
     public override bool IsLegal()
     {
