@@ -2378,6 +2378,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (trap.IsSafeFor(m_Actor)) continue;
           if (0 < trap.Model.Damage) return 0;
         }
+        return 0;
       }
       if (m_Actor.Location!=loc && loc.StrictHasActorAt) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
