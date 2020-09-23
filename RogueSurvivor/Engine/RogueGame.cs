@@ -9062,6 +9062,8 @@ namespace djack.RogueSurvivor.Engine
     // disallowing dogs from eating canned food should be done at their level
     private void DoEat(Actor actor, ItemFood food, Inventory inv)
     {
+      const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
+
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.LivingEat(actor.CurrentNutritionOf(food));
       inv.Consume(food);
@@ -9072,8 +9074,7 @@ namespace djack.RogueSurvivor.Engine
       }
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, VERB_EAT.Conjugate(actor), food));
-      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
-        return;
+      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;
       actor.Vomit();
       if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", VERB_VOMIT.Conjugate(actor))));
     }
