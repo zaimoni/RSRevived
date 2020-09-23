@@ -220,10 +220,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction)  return tmpAction;
       }
 
-      // XXX this should lose to same-map threat hunting at close ETA
-      tmpAction = BehaviorRangedInventory();
-      if (null != tmpAction) return tmpAction;
-
       var rules = Rules.Get;
       if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
         tmpAction = BehaviorBuildLargeFortification(START_FORT_LINE_CHANCE);

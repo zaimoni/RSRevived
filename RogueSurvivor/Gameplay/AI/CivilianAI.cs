@@ -285,10 +285,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction)  return tmpAction;
       }
 
-      // XXX this should lose to same-map threat hunting at close ETA
-      tmpAction = BehaviorRangedInventory();
-      if (null != tmpAction) return tmpAction;
-
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (   RogueGame.Options.IsAggressiveHungryCiviliansOn

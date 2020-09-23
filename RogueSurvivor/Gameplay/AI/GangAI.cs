@@ -176,9 +176,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction)  return tmpAction;
       }
 
-      tmpAction = BehaviorRangedInventory();
-      if (null != tmpAction) return tmpAction;
-
       if (null == _enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>

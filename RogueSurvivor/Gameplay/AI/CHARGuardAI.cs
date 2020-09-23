@@ -236,10 +236,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction)  return tmpAction;
       }
 
-      // XXX this should lose to same-map threat hunting at close ETA
-      tmpAction = BehaviorRangedInventory();
-      if (null != tmpAction) return tmpAction;
-
       if (m_Actor.HasLeader && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
