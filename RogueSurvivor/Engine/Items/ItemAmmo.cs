@@ -54,9 +54,10 @@ namespace djack.RogueSurvivor.Engine.Items
       return "";
     }
     public bool UseBeforeDrop(Actor a) {
-      _rw = a.Inventory.GetCompatibleRangedWeapon(this);
+      _rw = a.Inventory!.GetCompatibleRangedWeapon(this);
       return null != _rw && _rw.Ammo < _rw.Model.MaxAmmo;
     }
+    public bool FreeSlotByUse(Actor a) { return false; } // handled by other behaviors
 #endregion
 
     static public ItemAmmo make(Gameplay.GameItems.IDs x)

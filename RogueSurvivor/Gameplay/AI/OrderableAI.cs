@@ -2841,8 +2841,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       exclude.ExceptWith(WhatDoINeedNow());
       exclude.ExceptWith(WhatDoIWantNow());
 #endif
-      IEnumerable<Item> tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
-      return (tmp.Any() ? tmp.ToList() : null);
+      var tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
+      if (!tmp.Any()) return null;
+      var tmp2 = tmp.Where(it => it is UsableItem use && use.FreeSlotByUse(m_Actor));
+      if (tmp2.Any()) return tmp2.ToList();
+      tmp2 = tmp.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
+      if (tmp2.Any()) return tmp2.ToList();
+      return tmp.ToList();
     }
 
     private List<Item>? InterestingItems(Inventory inv)

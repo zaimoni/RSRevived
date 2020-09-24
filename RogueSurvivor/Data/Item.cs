@@ -26,6 +26,7 @@ namespace djack.RogueSurvivor.Data
         void Use(Actor actor, Inventory inv);
         string ReasonCantUse(Actor actor);
         bool UseBeforeDrop(Actor a);
+        bool FreeSlotByUse(Actor a);
     }
 
 

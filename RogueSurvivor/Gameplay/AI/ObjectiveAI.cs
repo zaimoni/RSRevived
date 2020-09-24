@@ -4576,13 +4576,16 @@ restart_chokepoints:
 #if DEBUG
       if (rw.AmmoType != ammo.AmmoType) throw new InvalidOperationException("ammunition types must agree");
 #endif
-      rw.EquippedBy(m_Actor);
+      if (m_Actor.Inventory.Contains(ammo)) rw.EquippedBy(m_Actor);
       return new ActionUseItem(m_Actor, ammo);
     }
 #nullable restore
 
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
+#if DEBUG
+      if (!m_Actor.Inventory.Contains(it)) throw new InvalidOperationException("invariant violation");
+#endif
       if (use_ok) {
         if (it is UsableItem obj) {
           if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant
@@ -5262,9 +5265,10 @@ restart_chokepoints:
       }
       }
 
-      {
-      var act = _PrefilterDrop(it, use_ok);
-      if (null != act) return act;
+      var consume_to_free_slot = inv.Items.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
+      if (consume_to_free_slot.Any()) {
+        var act = _PrefilterDrop(consume_to_free_slot.First(), use_ok);
+        if (null != act) return act;
       }
 
       int it_rating = ItemRatingCode_no_recursion(it);

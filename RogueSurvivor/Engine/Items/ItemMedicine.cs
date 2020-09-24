@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Engine.Items
         return 2 <= oai.WantRestoreSAN;
 //      if (2 <= oai.WantRestoreSAN) return true;
       }
-      if (0<StaminaBoost) {
+      if (0< StaminaBoost && a.Inventory!.Contains(this)) {
         int need = a.MaxSTA - a.StaminaPoints;
         int num4 = a.ScaleMedicineEffect(StaminaBoost)+4; // plan on two turns after this
         return num4 <= need;
@@ -66,10 +66,37 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       // medikit is dual-function
       if (0<InfectionCure) {
-        if (a.Infection <= a.ScaleMedicineEffect(InfectionCure)) return true;
+        if (0 < a.Infection) return true;
       }
       if (0<Healing) {
-        return 0 < a.MaxHPs - a.HitPoints;
+        return a.HitPoints < a.MaxHPs;
+      }
+      return false;
+    }
+    public bool FreeSlotByUse(Actor a) {
+      // this will need re-visiting when building more more complex medicines
+      if (0<SleepBoost) {
+        int need = a.MaxSleep - a.SleepPoints;
+        int num4 = a.ScaleMedicineEffect(SleepBoost);
+        return Quantity <= need/num4;
+//      if (Quantity <= need/num4) return true;
+      }
+      if (0 < SanityCure && a.Controller is Gameplay.AI.ObjectiveAI oai) {
+        return 2 <= oai.WantRestoreSAN;
+//      if (2 <= oai.WantRestoreSAN) return true;
+      }
+      if (0<StaminaBoost && a.Inventory!.Contains(this)) {
+        int need = a.MaxSTA - a.StaminaPoints;
+        int num4 = a.ScaleMedicineEffect(StaminaBoost)+4; // plan on two turns after this
+        return Quantity <= need/num4;
+//      if (Quantity <= need/num4) return true;
+      }
+      // medikit is dual-function
+      if (0<InfectionCure && 0 < a.Infection) {
+        if (Quantity <= a.Infection/a.ScaleMedicineEffect(InfectionCure)) return true;
+      }
+      if (0<Healing && a.HitPoints < a.MaxHPs) {
+        return Quantity <= (a.MaxHPs - a.HitPoints + Healing -1)/Healing;
       }
       return false;
     }

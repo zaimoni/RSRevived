@@ -51,6 +51,7 @@ namespace djack.RogueSurvivor.Engine.Items
       if (a.Controller is ObjectiveAI oai) return 2<=oai.WantRestoreSAN;
       return false;
     }
+    public bool FreeSlotByUse(Actor a) { return false; } // not quite correct
 #endregion
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
