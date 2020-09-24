@@ -93,6 +93,13 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!CouldUse(a)) return "no ability to eat";
       return "";
     }
+    public bool UseBeforeDrop(Actor a) {
+      // other behaviors handle pre-emptive eating of perishables
+      if (IsPerishable) return false;
+      int need = a.MaxFood - a.FoodPoints;
+      int num4 = a.CurrentNutritionOf(this);
+      return num4 <= need;
+    }
 #endregion
 
     public override string ToString()

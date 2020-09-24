@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay.AI;
 using Zaimoni.Data;
 
 #nullable enable
@@ -45,6 +46,10 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!a.Model.Abilities.IsIntelligent) return "not intelligent";
       if (IsBoringFor(a)) return "bored by this";
       return "";
+    }
+    public bool UseBeforeDrop(Actor a) {
+      if (a.Controller is ObjectiveAI oai) return 2<=oai.WantRestoreSAN;
+      return false;
     }
 #endregion
 

@@ -14,8 +14,11 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemAmmo : Item,UsableItem
   {
+    [NonSerialized] private ItemRangedWeapon? _rw = null; // set by UseBeforeDrop
+
     new public ItemAmmoModel Model { get {return (base.Model as ItemAmmoModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
+    public ItemRangedWeapon rw { get { return _rw!; } }
 
     public ItemAmmo(ItemAmmoModel model) : base(model, model.MaxQuantity) {}
 
@@ -49,6 +52,10 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(a.GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != AmmoType) return "no compatible ranged weapon equipped";
       if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
       return "";
+    }
+    public bool UseBeforeDrop(Actor a) {
+      _rw = a.Inventory.GetCompatibleRangedWeapon(this);
+      return null != _rw && _rw.Ammo < _rw.Model.MaxAmmo;
     }
 #endregion
 

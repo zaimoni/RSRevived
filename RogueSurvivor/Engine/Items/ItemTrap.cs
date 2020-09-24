@@ -77,6 +77,9 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!CouldUse()) return "does not activate manually";
       return "";
     }
+
+    // Cf. ObjectiveAI::_PrefilterDrop for what can go wrong with this
+    public bool UseBeforeDrop(Actor a) { return false; }
 #endregion
 
     // alpha10

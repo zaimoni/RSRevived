@@ -20,11 +20,12 @@ namespace djack.RogueSurvivor.Data
     /// </summary>
     internal interface UsableItem
     {
-        bool CouldUse();
-        bool CouldUse(Actor actor);
-        bool CanUse(Actor actor);
+        bool CouldUse(); // i.e., Legal, item-only
+        bool CouldUse(Actor actor); // i.e. Legal, actor-dependent
+        bool CanUse(Actor actor);   // i.e. Performable
         void Use(Actor actor, Inventory inv);
         string ReasonCantUse(Actor actor);
+        bool UseBeforeDrop(Actor a);
     }
 
 

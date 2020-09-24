@@ -46,6 +46,33 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!CouldUse(a)) return "undeads cannot use medecine";
       return "";
     }
+    public bool UseBeforeDrop(Actor a) {
+      // this will need re-visiting when building more more complex medicines
+      if (0<SleepBoost) {
+        int need = a.MaxSleep - a.SleepPoints;
+        int num4 = a.ScaleMedicineEffect(SleepBoost);
+        return num4 <= need;
+//      if (num4 <= need) return true;
+      }
+      if (0 < SanityCure && a.Controller is Gameplay.AI.ObjectiveAI oai) {
+        return 2 <= oai.WantRestoreSAN;
+//      if (2 <= oai.WantRestoreSAN) return true;
+      }
+      if (0<StaminaBoost) {
+        int need = a.MaxSTA - a.StaminaPoints;
+        int num4 = a.ScaleMedicineEffect(StaminaBoost)+4; // plan on two turns after this
+        return num4 <= need;
+//      if (num4 <= need) return true;
+      }
+      // medikit is dual-function
+      if (0<InfectionCure) {
+        if (a.Infection <= a.ScaleMedicineEffect(InfectionCure)) return true;
+      }
+      if (0<Healing) {
+        return 0 < a.MaxHPs - a.HitPoints;
+      }
+      return false;
+    }
 #endregion
 
   }

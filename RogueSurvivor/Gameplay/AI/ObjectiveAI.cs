@@ -4584,40 +4584,14 @@ restart_chokepoints:
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
       if (use_ok) {
-      // another behavior is responsible for pre-emptively eating perishable food
-      // canned food is normally eaten at the last minute
-
-      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Inventory.GetBestDestackable(it) is ItemFood food) {
-        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-        int num4 = m_Actor.CurrentNutritionOf(food);
-        if (num4 <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
-      }
-
-      // use stimulants before dropping them
-      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
-          int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = m_Actor.ScaleMedicineEffect(stim2.SleepBoost);
-          if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
+        if (it is UsableItem obj) {
+          if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant
+            if (it is ItemAmmo ammo) { return UseAmmo(ammo, ammo.rw); }
+            else return new ActionUseItem(m_Actor, it);
+          }
         }
-      }
-      if (it is ItemMedicine psych && 0 < psych.SanityCure && 2<=WantRestoreSAN) {
-        if (m_Actor.CanUse(psych)) return new ActionUseItem(m_Actor, psych);
-      }
-      if (it is ItemEntertainment fun && 2<=WantRestoreSAN) {
-        if (m_Actor.CanUse(fun)) return new ActionUseItem(m_Actor, fun);
-      }
-
-      // reload weapons before dropping ammo
-      { // scoping brace
-      if (it is ItemAmmo ammo) {
-        foreach(Item obj in m_Actor.Inventory.Items) {
-          if (obj is ItemRangedWeapon rw && rw.AmmoType==ammo.AmmoType && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(ammo, rw);
-        }
-      }
 // does not work: infinite recursion issue, too vague
-#if PROTOTYPE
+#if OBSOLETE_PROTOTYPE
       if (!(it is ItemTrap)) {  // traps: try to use them explicitly
         var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
         if (use_trap.UrgentAction(out var ret) && null!=ret) {
@@ -4626,7 +4600,6 @@ restart_chokepoints:
         }
       }
 #endif
-      } // end scoping brace
       } // if (use_ok)
       return null;
     }
