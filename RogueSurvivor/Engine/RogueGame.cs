@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_DISCARD = new Verb("discard");
     private readonly Verb VERB_DRAG = new Verb("drag");
     private readonly Verb VERB_DROP = new Verb("drop");
-    private readonly Verb VERB_EAT = new Verb("eat");
+    public static readonly Verb VERB_EAT = new Verb("eat");
     private readonly Verb VERB_ENJOY = new Verb("enjoy");
     private readonly Verb VERB_ENTER = new Verb("enter");
     private readonly Verb VERB_ESCAPE = new Verb("escape");
@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_THROW = new Verb("throw");
     private readonly Verb VERB_TRANSFORM_INTO = new Verb("transform into", "transforms into");
     public static readonly Verb VERB_UNEQUIP = new Verb("unequip");
-    private readonly Verb VERB_VOMIT = new Verb("vomit");
+    public static readonly Verb VERB_VOMIT = new Verb("vomit");
     private readonly Verb VERB_WAIT = new Verb("wait");
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
     private bool m_IsGameRunning = true;
@@ -9059,32 +9059,10 @@ namespace djack.RogueSurvivor.Engine
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
-    // disallowing dogs from eating canned food should be done at their level
-    private void DoEat(Actor actor, ItemFood food, Inventory inv)
-    {
-      const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
-
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.LivingEat(actor.CurrentNutritionOf(food));
-      inv.Consume(food);
-      if (food.Model == GameItems.CANNED_FOOD) {
-        ItemTrap emptyCan = new ItemTrap(GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
-        emptyCan.Activate(actor);  // alpha10
-        actor.Location.Drop(emptyCan);
-      }
-      bool player = ForceVisibleToPlayer(actor);
-      if (player) AddMessage(MakeMessage(actor, VERB_EAT.Conjugate(actor), food));
-      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;
-      actor.Vomit();
-      if (player) AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", VERB_VOMIT.Conjugate(actor))));
-    }
-
-    public void DoEatFoodFromGround(Actor actor, ItemFood food) { DoEat(actor, food, actor.Location.Items); }
-
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
       if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) AddMessage(MakeErrorMessage("Don't waste food!"));
-      else DoEat(actor, food, actor.Inventory);
+      else food.Use(actor, actor.Inventory);
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)

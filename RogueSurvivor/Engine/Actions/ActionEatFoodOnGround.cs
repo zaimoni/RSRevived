@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoEatFoodFromGround(m_Actor, m_Item);
+      m_Item.Use(m_Actor, m_Actor.Location.Items!);
     }
   }
 }

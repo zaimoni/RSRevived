@@ -14,6 +14,15 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
+    internal interface UsableItem
+    {
+        bool CouldUse();
+        bool CouldUse(Actor actor);
+        bool CanUse(Actor actor);
+        void Use(Actor actor, Inventory inv);
+    }
+
+
 #if PROTOTYPE
   [Serializable]
   internal struct ItemStruct    // for item memmory
@@ -29,7 +38,7 @@ namespace djack.RogueSurvivor.Data
   }
 #endif
 
-  [Serializable]
+    [Serializable]
   internal class Item
   {
     private readonly int m_ModelID;

@@ -12,8 +12,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemFood : Item
-  {
+  internal class ItemFood : Item, UsableItem
+    {
     public readonly int Nutrition;
     public readonly WorldTime? BestBefore;
 
@@ -64,6 +64,29 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       Nutrition = model.Nutrition;
       BestBefore = new WorldTime(bestBefore);
+    }
+
+    public bool CouldUse() { return true; }
+    public bool CouldUse(Actor a) { return a.Model.Abilities.CanUseItems && a.Model.Abilities.HasToEat; }
+    public bool CanUse(Actor a) { return CouldUse(a); }
+    // disallowing dogs from eating canned food should be done at their level
+    public void Use(Actor actor, Inventory inv) {
+      const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
+
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.LivingEat(actor.CurrentNutritionOf(this));
+      inv.Consume(this); // does the "is in inventory check"
+      if (Model == Gameplay.GameItems.CANNED_FOOD) {
+        var emptyCan = new ItemTrap(Gameplay.GameItems.EMPTY_CAN);// alpha10 { IsActivated = true };
+        emptyCan.Activate(actor);  // alpha10
+        actor.Location.Drop(emptyCan);
+      }
+      var game = RogueForm.Game;
+      bool player = game.ForceVisibleToPlayer(actor);
+      if (player) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_EAT.Conjugate(actor), this));
+      if (!IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;
+      actor.Vomit();
+      if (player) game.AddMessage(RogueGame.MakeMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
     }
 
     public override string ToString()
