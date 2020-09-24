@@ -8923,7 +8923,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.Inventory.IsFull && !target.CanGet(gift)) {
         if (null == received) { // \todo refactor this -- repeat block from ActionGiveItem
           var ai = (target.Controller as Gameplay.AI.ObjectiveAI)!;
-          var recover = ai.BehaviorMakeRoomFor(gift,actor.Location.Position); // unsure if this works cross-map
+          var recover = ai.BehaviorMakeRoomFor(gift,actor.Location); // unsure if this works cross-map
           if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = ai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
 
           static Item? parse_recovery(ActorAction? act) {

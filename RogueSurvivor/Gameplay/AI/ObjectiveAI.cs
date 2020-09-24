@@ -5132,7 +5132,7 @@ restart_chokepoints:
     }
 
 #nullable enable
-    private ActorAction? _BehaviorDropOrExchange(Item give, Item take, Point? position, bool use_ok=true)
+    private ActorAction? _BehaviorDropOrExchange(Item give, Item take, Location? position, bool use_ok=true)
     {
       if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
       var tmp = _PrefilterDrop(give, use_ok);
@@ -5272,7 +5272,7 @@ restart_chokepoints:
       return worst;
     }
 
-    public ActorAction BehaviorMakeRoomFor(Item it, Point? position=null, bool use_ok=true)
+    public ActorAction BehaviorMakeRoomFor(Item it, Location? position=null, bool use_ok=true)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));

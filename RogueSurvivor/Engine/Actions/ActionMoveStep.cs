@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-
+using System;
 using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions

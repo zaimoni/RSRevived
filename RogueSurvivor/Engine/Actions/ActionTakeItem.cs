@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
-        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location.Position,false); // unsure if this works cross-map
+        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
         if (null == recover) return false;
         if (recover is ActionTradeWithActor trade && trade.Whom == m_Target) {
           if (trade.IsPerformable()) {

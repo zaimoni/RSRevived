@@ -2926,7 +2926,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc) : null);
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
@@ -2978,7 +2978,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc) : null);
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
