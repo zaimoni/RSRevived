@@ -15,16 +15,13 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemEntertainment : Item
-  {
+  internal class ItemEntertainment : Item, UsableItem
+    {
     List<Actor>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
     new public ItemEntertainmentModel Model { get {return (base.Model as ItemEntertainmentModel)!; } }
 
-    public ItemEntertainment(ItemEntertainmentModel model)
-      : base(model)
-    {
-    }
+    public ItemEntertainment(ItemEntertainmentModel model) : base(model) {}
 
     public void AddBoringFor(Actor a)
     {
@@ -33,6 +30,18 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public bool IsBoringFor(Actor a) { return m_BoringFor?.Contains(a) ?? false; }
+
+#region UsableItem implementation
+    public bool CouldUse() { return true; }
+    public bool CouldUse(Actor a) { return a.Model.Abilities.IsIntelligent && !IsBoringFor(a); }
+    public bool CanUse(Actor a) { return CouldUse(a); }
+    public void Use(Actor actor, Inventory inv) {
+#if DEBUG
+      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
+#endif
+      RogueForm.Game.DoUseEntertainmentItem(actor, this);   // forward to RogueGame -- CHAR manual is bloated
+    }
+#endregion
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {

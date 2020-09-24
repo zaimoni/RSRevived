@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine
     public static readonly Verb VERB_EQUIP = new Verb("equip");
     private readonly Verb VERB_HAVE = new Verb("have", "has");
     private readonly Verb VERB_HELP = new Verb("help");
-    private readonly Verb VERB_HEAL_WITH = new Verb("heal with", "heals with");
+    public static readonly Verb VERB_HEAL_WITH = new Verb("heal with", "heals with");
     private readonly Verb VERB_JUMP_ON = new Verb("jump on", "jumps on");
     private readonly Verb VERB_KILL = new Verb("kill");
     private readonly Verb VERB_LEAVE = new Verb("leave");
@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_PUT = new Verb("put", "puts");
     private readonly Verb VERB_RAISE_ALARM = new Verb("raise the alarm", "raises the alarm");
     private readonly Verb VERB_REFUSE_THE_DEAL = new Verb("refuse the deal", "refuses the deal");
-    private readonly Verb VERB_RELOAD = new Verb("reload");
+    public static readonly Verb VERB_RELOAD = new Verb("reload");
     private readonly Verb VERB_RECHARGE = new Verb("recharge");
     private readonly Verb VERB_REPAIR = new Verb("repair");
     private readonly Verb VERB_REVIVE = new Verb("revive");
@@ -9050,7 +9050,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (it is ItemFood food) DoUseFoodItem(actor, food);
       else if (it is ItemMedicine med) DoUseMedicineItem(actor, med);
-      else if (it is ItemAmmo am) DoUseAmmoItem(actor, am);
+      else if (it is ItemAmmo am) am.Use(actor, actor.Inventory);
       else if (it is ItemTrap trap) trap.Use(actor, actor.Inventory);
       else if (it is ItemEntertainment ent) DoUseEntertainmentItem(actor, ent);
 
@@ -9059,6 +9059,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
+#nullable enable
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
       if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) AddMessage(MakeErrorMessage("Don't waste food!"));
@@ -9079,32 +9080,10 @@ namespace djack.RogueSurvivor.Engine
           return;
         }
       }
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.RegenHitPoints(actor.ScaleMedicineEffect(med.Healing));
-      actor.RegenStaminaPoints(actor.ScaleMedicineEffect(med.StaminaBoost));
-      actor.Rest(actor.ScaleMedicineEffect(med.SleepBoost));
-      actor.Cure(actor.ScaleMedicineEffect(med.InfectionCure));
-      actor.RegenSanity(actor.ScaleMedicineEffect(med.SanityCure));
-      actor.Inventory.Consume(med);
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, VERB_HEAL_WITH.Conjugate(actor), med));
+      med.Use(actor, actor.Inventory);
     }
 
-#nullable enable
-    private void DoUseAmmoItem(Actor actor, ItemAmmo ammoItem)
-    {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      var itemRangedWeapon = (actor.GetEquippedWeapon() as ItemRangedWeapon)!;
-      sbyte num = (sbyte)Math.Min(itemRangedWeapon.Model.MaxAmmo - itemRangedWeapon.Ammo, ammoItem.Quantity);
-      itemRangedWeapon.Ammo += num;
-      var inv = actor.Inventory!;
-      if (0 >= (ammoItem.Quantity -= num)) inv.RemoveAllQuantity(ammoItem);
-      else inv.IncrementalDefrag(ammoItem);
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, VERB_RELOAD.Conjugate(actor), itemRangedWeapon));
-    }
-
-    private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
+    public void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);

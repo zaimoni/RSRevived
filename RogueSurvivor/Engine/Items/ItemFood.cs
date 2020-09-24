@@ -66,6 +66,7 @@ namespace djack.RogueSurvivor.Engine.Items
       BestBefore = new WorldTime(bestBefore);
     }
 
+#region UsableItem implementation
     public bool CouldUse() { return true; }
     public bool CouldUse(Actor a) { return a.Model.Abilities.HasToEat; }
     public bool CanUse(Actor a) { return CouldUse(a); }
@@ -88,6 +89,7 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.Vomit();
       if (player) game.AddMessage(RogueGame.MakeMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
     }
+#endregion
 
     public override string ToString()
     {

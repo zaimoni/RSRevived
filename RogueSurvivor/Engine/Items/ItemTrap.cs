@@ -58,12 +58,13 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrap(ItemTrapModel model) : base(model) {}
     public ItemTrap Clone() { return new ItemTrap(Model); }
 
+#region UsableItem implementation
     public bool CouldUse() { return Model.UseToActivate; }
     public bool CouldUse(Actor a) { return true; }
     public bool CanUse(Actor a) { return CouldUse(a); }
     public void Use(Actor actor, Inventory inv) {
 #if DEBUG
-      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain trap "+ToString());
+      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (IsActivated) Desactivate();
@@ -72,7 +73,7 @@ namespace djack.RogueSurvivor.Engine.Items
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
     }
-
+#endregion
 
     // alpha10
     public void Activate(Actor owner)

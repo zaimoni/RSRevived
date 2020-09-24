@@ -12,15 +12,40 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemAmmo : Item
+  internal class ItemAmmo : Item,UsableItem
   {
     new public ItemAmmoModel Model { get {return (base.Model as ItemAmmoModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
 
-    public ItemAmmo(ItemAmmoModel model)
-      : base(model, model.MaxQuantity)
-    {
+    public ItemAmmo(ItemAmmoModel model) : base(model, model.MaxQuantity) {}
+
+#region UsableItem implementation
+    public bool CouldUse() { return true; }
+    public bool CouldUse(Actor a) {
+      if (a.Model.Abilities.AI_NotInterestedInRangedWeapons) return false; // bikers
+      var rw = a.Inventory.GetCompatibleRangedWeapon(this);
+      return null != rw && rw.Ammo < rw.Model.MaxAmmo;
     }
+    public bool CanUse(Actor a) {
+      if (!(a.GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != AmmoType) return false;
+      if (rw.Ammo >= rw.Model.MaxAmmo) return false;
+      return true;
+    }
+    public void Use(Actor actor, Inventory inv) {
+#if DEBUG
+      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
+#endif
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      var rw = (actor.GetEquippedWeapon() as ItemRangedWeapon)!;
+      sbyte num = (sbyte)Math.Min(rw.Model.MaxAmmo - rw.Ammo, Quantity);
+      rw.Ammo += num;
+      if (0 >= (Quantity -= num)) inv.RemoveAllQuantity(this);
+      else inv.IncrementalDefrag(this);
+      var game = RogueForm.Game;
+      if (game.ForceVisibleToPlayer(actor))
+        game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
+    }
+#endregion
 
     static public ItemAmmo make(Gameplay.GameItems.IDs x)
     {

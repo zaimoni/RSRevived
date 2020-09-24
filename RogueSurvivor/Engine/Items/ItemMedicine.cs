@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemMedicine : Item
+  internal class ItemMedicine : Item,UsableItem
   {
     new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }
@@ -22,5 +22,27 @@ namespace djack.RogueSurvivor.Engine.Items
     public int SanityCure { get { return Model.SanityCure; } }
 
     public ItemMedicine(ItemMedicineModel model) : base(model) {}
+
+#region UsableItem implementation
+    public bool CouldUse() { return true; }
+    public bool CouldUse(Actor a) { return !a.Model.Abilities.IsUndead; } // currently redundant, but in RS Alpha 9
+    public bool CanUse(Actor a) { return CouldUse(a); }
+    public void Use(Actor actor, Inventory inv) {
+#if DEBUG
+      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
+#endif
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.RegenHitPoints(actor.ScaleMedicineEffect(Healing));
+      actor.RegenStaminaPoints(actor.ScaleMedicineEffect(StaminaBoost));
+      actor.Rest(actor.ScaleMedicineEffect(SleepBoost));
+      actor.Cure(actor.ScaleMedicineEffect(InfectionCure));
+      actor.RegenSanity(actor.ScaleMedicineEffect(SanityCure));
+      inv.Consume(this);
+      var game = RogueForm.Game;
+      if (game.ForceVisibleToPlayer(actor))
+        game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
+    }
+#endregion
+
   }
 }
