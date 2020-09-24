@@ -12300,7 +12300,8 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
-          // subway has a different geometry than the other two canonical maps
+          // Subway has a different geometry than the other two canonical maps.
+          // The diagonal corridors can have only of of two exits valid.
           var subwayMap1 = world[x1, y1].SubwayMap;
           if (null != subwayMap1) {
             var subway_W = world.At(x1 - 1, y1)?.SubwayMap;
@@ -12311,10 +12312,8 @@ namespace djack.RogueSurvivor.Engine
                   Point from2 = new Point(subway_W.Width, y2);
                   Point to1 = from2 + Direction.W;
                   Point to2 = new Point(0, y2);
-                  if (CheckIfExitIsGood(subway_W, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
-                    GenerateExit(subwayMap1, from1, subway_W, to1);
-                    GenerateExit(subway_W, from2, subwayMap1, to2);
-                  }
+                  if (CheckIfExitIsGood(subwayMap1, to2)) GenerateExit(subway_W, from2, subwayMap1, to2);
+                  if (CheckIfExitIsGood(subway_W, to1)) GenerateExit(subwayMap1, from1, subway_W, to1);
                 }
               }
             }
@@ -12326,10 +12325,8 @@ namespace djack.RogueSurvivor.Engine
                   Point from2 = new Point(x2, subway_N.Height);
                   Point to1 = from2+Direction.N;
                   Point to2 = new Point(x2, 0);
-                  if (CheckIfExitIsGood(subway_N, to1) && CheckIfExitIsGood(subwayMap1, to2)) {
-                    GenerateExit(subwayMap1, from1, subway_N, to1);
-                    GenerateExit(subway_N, from2, subwayMap1, to2);
-                  }
+                  if (CheckIfExitIsGood(subwayMap1, to2)) GenerateExit(subway_N, from2, subwayMap1, to2);
+                  if (CheckIfExitIsGood(subway_N, to1)) GenerateExit(subwayMap1, from1, subway_W, to1);
                 }
               }
             }
