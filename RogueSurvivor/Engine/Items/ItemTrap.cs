@@ -73,6 +73,10 @@ namespace djack.RogueSurvivor.Engine.Items
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
     }
+    public string ReasonCantUse(Actor a) {
+      if (!CouldUse()) return "does not activate manually";
+      return "";
+    }
 #endregion
 
     // alpha10

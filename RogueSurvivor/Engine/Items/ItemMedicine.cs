@@ -42,6 +42,10 @@ namespace djack.RogueSurvivor.Engine.Items
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
     }
+    public string ReasonCantUse(Actor a) {
+      if (!CouldUse(a)) return "undeads cannot use medecine";
+      return "";
+    }
 #endregion
 
   }

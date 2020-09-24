@@ -9031,17 +9031,6 @@ namespace djack.RogueSurvivor.Engine
       clone.Unequip();
     }
 
-    // XXX \todo arrange for ability to trigger messaging from anywhere, then make IsUsable and DoUseItem controlled by Item class subsystem
-    static public bool IsUsable(ItemModel it)
-    {
-      if (it is ItemFoodModel) return true;
-      else if (it is ItemMedicineModel) return true;
-      else if (it is ItemAmmoModel) return true;
-      else if (it is ItemTrapModel) return true;
-      else if (it is ItemEntertainmentModel) return true;
-      return false;
-    }
-
     // At low time resolutions, it would make sense to allow using from adjacent reachable inventories
     public void DoUseItem(Actor actor, Item it)
     {

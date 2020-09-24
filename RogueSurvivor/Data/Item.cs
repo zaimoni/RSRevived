@@ -24,6 +24,7 @@ namespace djack.RogueSurvivor.Data
         bool CouldUse(Actor actor);
         bool CanUse(Actor actor);
         void Use(Actor actor, Inventory inv);
+        string ReasonCantUse(Actor actor);
     }
 
 

@@ -45,6 +45,11 @@ namespace djack.RogueSurvivor.Engine.Items
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
     }
+    public string ReasonCantUse(Actor a) {
+      if (!(a.GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != AmmoType) return "no compatible ranged weapon equipped";
+      if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
+      return "";
+    }
 #endregion
 
     static public ItemAmmo make(Gameplay.GameItems.IDs x)

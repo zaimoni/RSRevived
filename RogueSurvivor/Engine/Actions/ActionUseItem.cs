@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
 #if DEBUG
-      if (!RogueGame.IsUsable(Models.Items[(int)it])) throw new ArgumentNullException(nameof(it));
+      if (!(Models.Items[(int)it].create() is UsableItem)) throw new ArgumentNullException(nameof(it));
 #endif
       m_ID = it;
     }

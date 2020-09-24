@@ -89,6 +89,10 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.Vomit();
       if (player) game.AddMessage(RogueGame.MakeMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
     }
+    public string ReasonCantUse(Actor a) {
+      if (!CouldUse(a)) return "no ability to eat";
+      return "";
+    }
 #endregion
 
     public override string ToString()

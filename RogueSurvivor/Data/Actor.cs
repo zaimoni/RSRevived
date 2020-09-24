@@ -3249,25 +3249,12 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemBodyArmor) return "to use armor, wear it";
       if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
 #if DEBUG
-      if (!Engine.RogueGame.IsUsable(it.Model)) throw new InvalidOperationException(it.Model.ToString()+" is not a usable item type");
+      if (!(it is UsableItem obj)) throw new InvalidOperationException(it.Model.ToString()+" is not a usable item type");
 #else
-      if (!Engine.RogueGame.IsUsable(it.Model)) return "not a usable item type";
+      if (!(it is UsableItem obj)) return "not a usable item type";
 #endif
-      if (it is ItemFood && !_has_to_eat) return "no ability to eat";
-      if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
-      if (it is ItemAmmo itemAmmo) {
-        if (!(GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
-        if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
-#if OBSOLETE
-      } else if (it is ItemSprayScent) {
-        if (it.IsUseless) return "no spray left.";
-#endif
-      } else if (it is ItemTrap trap) {
-        if (!trap.Model.UseToActivate) return "does not activate manually";
-      } else if (it is ItemEntertainment ent) {
-        if (!Model.Abilities.IsIntelligent) return "not intelligent";
-        if (ent.IsBoringFor(this)) return "bored by this";
-      }
+      var err = obj.ReasonCantUse(this);
+      if (!string.IsNullOrEmpty(err)) return err;
       if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }

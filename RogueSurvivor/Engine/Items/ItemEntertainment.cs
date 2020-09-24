@@ -41,6 +41,11 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       RogueForm.Game.DoUseEntertainmentItem(actor, this);   // forward to RogueGame -- CHAR manual is bloated
     }
+    public string ReasonCantUse(Actor a) {
+      if (!a.Model.Abilities.IsIntelligent) return "not intelligent";
+      if (IsBoringFor(a)) return "bored by this";
+      return "";
+    }
 #endregion
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
