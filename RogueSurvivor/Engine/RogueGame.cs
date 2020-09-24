@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Color TINT_SUNRISE = Color.FromArgb(225, 225, 225);
 */
     private readonly Verb VERB_ACCEPT_THE_DEAL = new Verb("accept the deal", "accepts the deal");
-    private readonly Verb VERB_ACTIVATE = new Verb("activate");
+    public static readonly Verb VERB_ACTIVATE = new Verb("activate");
     private readonly Verb VERB_AVOID = new Verb("avoid");
     private readonly Verb VERB_BARRICADE = new Verb("barricade");
     public static readonly Verb VERB_BASH = new Verb("bash", "bashes");
@@ -132,7 +132,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_CLOSE = new Verb("close");
     private readonly Verb VERB_COLLAPSE = new Verb("collapse");
     private readonly Verb VERB_CRUSH = new Verb("crush", "crushes");
-    private readonly Verb VERB_DESACTIVATE = new Verb("desactivate");
+    public static readonly Verb VERB_DESACTIVATE = new Verb("desactivate");
     private readonly Verb VERB_DESTROY = new Verb("destroy");
     private readonly Verb VERB_DIE = new Verb("die");
     private readonly Verb VERB_DIE_FROM_STARVATION = new Verb("die from starvation", "dies from starvation");
@@ -9051,7 +9051,7 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemFood food) DoUseFoodItem(actor, food);
       else if (it is ItemMedicine med) DoUseMedicineItem(actor, med);
       else if (it is ItemAmmo am) DoUseAmmoItem(actor, am);
-      else if (it is ItemTrap trap) DoUseTrapItem(actor, trap);
+      else if (it is ItemTrap trap) trap.Use(actor, actor.Inventory);
       else if (it is ItemEntertainment ent) DoUseEntertainmentItem(actor, ent);
 
       // alpha10 defrag ai inventories
@@ -9102,15 +9102,6 @@ namespace djack.RogueSurvivor.Engine
       else inv.IncrementalDefrag(ammoItem);
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, VERB_RELOAD.Conjugate(actor), itemRangedWeapon));
-    }
-
-    private void DoUseTrapItem(Actor actor, ItemTrap trap)
-    {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (trap.IsActivated) trap.Desactivate();
-      else trap.Activate(actor);
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, (trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE).Conjugate(actor), trap));
     }
 
     private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)

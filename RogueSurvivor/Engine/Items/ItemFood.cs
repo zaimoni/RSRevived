@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public bool CouldUse() { return true; }
-    public bool CouldUse(Actor a) { return a.Model.Abilities.CanUseItems && a.Model.Abilities.HasToEat; }
+    public bool CouldUse(Actor a) { return a.Model.Abilities.HasToEat; }
     public bool CanUse(Actor a) { return CouldUse(a); }
     // disallowing dogs from eating canned food should be done at their level
     public void Use(Actor actor, Inventory inv) {

@@ -13,7 +13,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemTrap : Item
+  internal class ItemTrap : Item,UsableItem
   {
 #nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
@@ -57,6 +57,22 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemTrap(ItemTrapModel model) : base(model) {}
     public ItemTrap Clone() { return new ItemTrap(Model); }
+
+    public bool CouldUse() { return Model.UseToActivate; }
+    public bool CouldUse(Actor a) { return true; }
+    public bool CanUse(Actor a) { return CouldUse(a); }
+    public void Use(Actor actor, Inventory inv) {
+#if DEBUG
+      if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain trap "+ToString());
+#endif
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (IsActivated) Desactivate();
+      else Activate(actor);
+      var game = RogueForm.Game;
+      if (game.ForceVisibleToPlayer(actor))
+        game.AddMessage(RogueGame.MakeMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
+    }
+
 
     // alpha10
     public void Activate(Actor owner)

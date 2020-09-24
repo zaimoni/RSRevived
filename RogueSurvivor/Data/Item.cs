@@ -14,6 +14,10 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
+    /// <summary>
+    /// actor.Model.Abilities.CanUseItems is assumed
+    /// for actual use, item is assumed to be in inv
+    /// </summary>
     internal interface UsableItem
     {
         bool CouldUse();
