@@ -1228,7 +1228,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var normal_single_kill = threshold_kill.LessThan(normalDam);
           var rapid_double_kill = threshold_kill.LessThan(bothRapidDam);
           if (normal_single_kill < rapid_double_kill) {
-             if (_damage_field.ContainsKey(m_Actor.Location.Position)) {
+             if (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position)) {
                fireMode = FireMode.RAPID;
              } else {
                var bothNormalDam = DenormalizedProbability<int>.Apply(normalDam * normalDam, _Add);  // XXX \todo cache this
