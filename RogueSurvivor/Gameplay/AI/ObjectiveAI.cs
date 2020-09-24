@@ -2231,7 +2231,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null == e || !ActorsNearby(e.Location, a => !a.IsSleeping);
     }
 
+    protected ActionTradeWithActor? BehaviorTradeWithinClan() {
+      // somewhat like BehaviorRequestCriticalFromGroup
+      var clan = m_Actor.ChainOfCommand;
+      if (null != clan) {
+         var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
+         foreach(var a in adj_clan) {
+            var they_want = m_Actor.Inventory.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a) && !use.UseBeforeDrop(m_Actor));
+            if (!they_want.Any()) continue;
+            var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            if (!i_want.Any()) continue;
+            return new ActionTradeWithActor(m_Actor, they_want.First(), i_want.First(), a);
+         }
+      }
+      return null;
+    }
+
+    protected ActionTradeWithActor? BehaviorTradeWithinClan(Item give) {
+      // somewhat like BehaviorRequestCriticalFromGroup
+      if (!(give is UsableItem use && !use.UseBeforeDrop(m_Actor))) return null;
+      var clan = m_Actor.ChainOfCommand;
+      if (null != clan) {
+         var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
+         foreach(var a in adj_clan) {
+            if (!use.UseBeforeDrop(a)) continue;
+            var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            if (!i_want.Any()) continue;
+            return new ActionTradeWithActor(m_Actor, give, i_want.First(), a);
+         }
+      }
+      return null;
+    }
+
     protected ActorAction? BehaviorMakeTime() {
+      // canned food is too valuable to just eat
+      var microoptimize_items = m_Actor.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
+      if (microoptimize_items.Any()) {
+        var obj = microoptimize_items.First();
+        if (obj is ItemAmmo ammo) return UseAmmo(ammo, ammo.rw);
+        else return new ActionUseItem(m_Actor, obj);
+      }
+
+      var trade = BehaviorTradeWithinClan();
+      if (null != trade) return trade;
+
       if (null == _legal_path) return null;
       var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
       // if very crowded, relax standards
@@ -5094,6 +5137,8 @@ restart_chokepoints:
       if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
       var tmp = _PrefilterDrop(give, use_ok);
       if (null != tmp) return tmp;
+      var trade = BehaviorTradeWithinClan(give);
+      if (null != trade) return trade;
       if (null != position) {
         var act = ActionTradeWith.Cast(position.Value, m_Actor, give, take);
         if (null != act) return act;
