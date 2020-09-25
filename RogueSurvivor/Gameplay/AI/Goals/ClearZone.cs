@@ -53,6 +53,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         public bool update(Location[] fov) {
+            if (null != m_Actor.Controller.enemies_in_FOV) { // expire immediately if enemy sighted
+                _isExpired = true;
+                return true;
+            }
+            if (!m_Zone.Contains(m_Actor.Location)) { // we left the zone for some reason
+                _isExpired = true;
+                return true;
+            }
             foreach (var loc in fov) {
               if (m_Zone.m == loc.Map) m_Unverified.Remove(loc.Position);
             }

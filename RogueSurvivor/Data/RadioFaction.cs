@@ -131,7 +131,9 @@ namespace djack.RogueSurvivor.Data
             bool threat = Threats.AnyThreatAt(clear_this);
             bool tourism = Investigate.ContainsAny(clear_this);
             if (threat || tourism) {
-                oai.SetObjective(new Gameplay.AI.Goals.ClearZone(Engine.Session.Get.WorldTime.TurnCounter, m_Actor, clear_this));
+                var goal = new Gameplay.AI.Goals.ClearZone(Engine.Session.Get.WorldTime.TurnCounter, m_Actor, clear_this);
+                oai.SetObjective(goal);
+                oai.AddFOVevent(goal);
             }
             return false;
         }

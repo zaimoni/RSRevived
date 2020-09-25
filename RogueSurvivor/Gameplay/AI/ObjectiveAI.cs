@@ -274,13 +274,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #nullable enable
     public Pathable? LivePathing() {
+      Pathable? ret = null;
       var ub = Objectives.Count;
       while (0 <= --ub) {
          var o = Objectives[ub];
          if (o.IsExpired) Objectives.RemoveAt(ub);
-         if (o is Pathable path) return path;  // the *last* one to be checked as a goal.
+         if (o is Pathable path) ret = path;
       }
-      return null;
+      return ret;
     }
 #nullable restore
 
