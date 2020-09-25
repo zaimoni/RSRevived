@@ -78,7 +78,16 @@ namespace djack.RogueSurvivor.Data
 		{
           lock(_ThreatWhere_cache) {
             if (_ThreatWhere_cache.TryGetValue(loc.Map, out var cache2)) return cache2.Contains(loc.Position);
-            return _ThreatWhere(loc.Map).Contains(loc.Position);    // race condition in code called from here
+            return _ThreatWhere(loc.Map).Contains(loc.Position);
+          }
+        }
+
+		public bool AnyThreatAt(ZoneLoc loc)
+		{
+          Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
+          lock(_ThreatWhere_cache) {
+            if (_ThreatWhere_cache.TryGetValue(loc.m, out var cache2)) return cache2.Any(ok);
+            return _ThreatWhere(loc.m).Any(ok);
           }
         }
 
@@ -491,6 +500,14 @@ namespace djack.RogueSurvivor.Data
       {
         lock(_locs) {
 		  return _locs.TryGetValue(loc.Map,out var test) && test.Contains(loc.Position);
+		}
+	  }
+
+      public bool ContainsAny(ZoneLoc loc)
+      {
+        Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
+        lock(_locs) {
+		  return _locs.TryGetValue(loc.m,out var cache) && cache.Any(ok);
 		}
 	  }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using djack.RogueSurvivor.Gameplay.AI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
@@ -100,6 +101,37 @@ namespace djack.RogueSurvivor.Data
                     // \todo faction-specific handling
                     return true;
                 }
+            }
+            return false;
+        }
+    }
+
+    // should run after ImplicitRadio, to ensure threat/tourism are accurate
+    // doesn't actually use fov, that's just to ensure it processes "early"
+    [Serializable]
+    class TryToClearZones : Observer<Location[]>
+    {
+        private readonly ThreatTracking Threats;
+        private readonly LocationSet Investigate;
+        private readonly Actor m_Actor;
+
+        public TryToClearZones(RadioFaction faction, Actor act)
+        {
+            Threats = faction.Threats;
+            Investigate = faction.Investigate;
+            m_Actor = act;
+        }
+
+        public bool update(Location[] fov) {
+            if (null != m_Actor.Controller.enemies_in_FOV) return false;
+            var clear_this = m_Actor.Location.ClearableZone;
+            if (null == clear_this) return false;
+            if (!(m_Actor.Controller is ObjectiveAI oai)) return false; // invariant violation
+            if (null != oai.LivePathing()) return false;
+            bool threat = Threats.AnyThreatAt(clear_this);
+            bool tourism = Investigate.ContainsAny(clear_this);
+            if (threat || tourism) {
+                oai.SetObjective(new Gameplay.AI.Goals.ClearZone(Engine.Session.Get.WorldTime.TurnCounter, m_Actor, clear_this));
             }
             return false;
         }

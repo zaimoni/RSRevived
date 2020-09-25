@@ -272,6 +272,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
+#nullable enable
+    public Pathable? LivePathing() {
+      var ub = Objectives.Count;
+      while (0 <= --ub) {
+         var o = Objectives[ub];
+         if (o.IsExpired) Objectives.RemoveAt(ub);
+         if (o is Pathable path) return path;  // the *last* one to be checked as a goal.
+      }
+      return null;
+    }
+#nullable restore
+
     public override bool IsEngaged { get {
       if (base.IsEngaged) return true;
       if (null != _enemies) return true;
