@@ -168,12 +168,19 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private static int _Average(int x, int y) { return x+y/2; }
+    // don't expect that many incoming values, so should be fine with this not expiring
+    private static Dictionary<int, DenormalizedProbability<int>> _SkillProbabilityDistribution_cache = new Dictionary<int, DenormalizedProbability<int>>();
 
     public static DenormalizedProbability<int> SkillProbabilityDistribution(int skillValue)
     {
       if (0 >= skillValue) return ConstantDistribution<int>.Get(0);
-      DenormalizedProbability<int> sk_prob = UniformDistribution.Get(0,skillValue);
-      return DenormalizedProbability<int>.Apply(sk_prob*sk_prob,_Average);  // XXX \todo cache this
+      lock(_SkillProbabilityDistribution_cache) {
+        if (_SkillProbabilityDistribution_cache.TryGetValue(skillValue, out var cache)) return cache;
+        DenormalizedProbability<int> sk_prob = UniformDistribution.Get(0,skillValue);
+        var ret = DenormalizedProbability<int>.Apply(sk_prob * sk_prob, _Average);
+        _SkillProbabilityDistribution_cache.Add(skillValue, ret);
+        return ret;
+      }
     }
 
     public int RollDamage(int damageValue)
