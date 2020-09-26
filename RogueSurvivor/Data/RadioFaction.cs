@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Data
                     Threats.Sighted(actorAt, loc);
                     continue;
                 }
-                Threats.Cleared(new Location[] { loc });
+                Threats.Cleared(loc);
             }
             return false;
         }

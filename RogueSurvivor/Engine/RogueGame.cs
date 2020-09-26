@@ -12326,7 +12326,7 @@ namespace djack.RogueSurvivor.Engine
                   Point to1 = from2+Direction.N;
                   Point to2 = new Point(x2, 0);
                   if (CheckIfExitIsGood(subwayMap1, to2)) GenerateExit(subway_N, from2, subwayMap1, to2);
-                  if (CheckIfExitIsGood(subway_N, to1)) GenerateExit(subwayMap1, from1, subway_W, to1);
+                  if (CheckIfExitIsGood(subway_N, to1)) GenerateExit(subwayMap1, from1, subway_N, to1);
                 }
               }
             }
@@ -12346,6 +12346,8 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
+
+      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
 
       Map? entryMap = null;
       if (!Session.Get.CMDoptionExists("no-spawn")) {
@@ -12386,7 +12388,6 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.World.DoForAllMaps(m=>m.RegenerateChokepoints());
 #endif
       Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
-      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
       Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
       m_UI.UI_Clear(Color.Black);

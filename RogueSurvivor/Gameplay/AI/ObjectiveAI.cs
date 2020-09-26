@@ -171,7 +171,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) {
         FOVevents.Add(new TryToClearZones(Session.Get.Police, src));
         FOVevents.Add(Session.Get.Police.implicitRadio); // want this to be lexically late to run early and update threats/tourism for others
-        if (LookingForCHARBase.IsSecret && (1<=Session.Get.ScriptStage_PoliceStationPrisoner || 1<=Session.Get.ScriptStage_PoliceCHARrelations))
+        if (   (1 <= Session.Get.ScriptStage_PoliceStationPrisoner || 1 <= Session.Get.ScriptStage_PoliceCHARrelations)
+            &&  LookingForCHARBase.IsSecret) // other order of tests crashes at game start
           FOVevents.Add(new LookingForCHARBase(src));
       }
     }
