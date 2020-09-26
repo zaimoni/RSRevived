@@ -3337,7 +3337,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool StackIsBlocked(in Location loc)
     {
-      var obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      if (Location == loc) return false;
+      var obj = loc.MapObject;    // XXX this check should affect BehaviorResupply
       if (null == obj) return false;
       if (!obj.IsContainer && !loc.IsWalkableFor(this)) {
         // Cf. Actor::CanOpen
@@ -3346,7 +3347,7 @@ namespace djack.RogueSurvivor.Data
         else if (!obj.IsMovable) return true; // would have to handle OnFire if that could happen
       }
       // e.g., inventory with both armed and unarmed bear traps
-      if (loc != Location && 2*loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
+      if (2*loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,this)>=m_HitPoints) return true;
       return false;
     }
 
