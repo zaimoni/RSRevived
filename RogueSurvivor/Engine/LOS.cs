@@ -263,12 +263,27 @@ namespace djack.RogueSurvivor.Engine
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     // the return of a cached value is assumed to be by value
 #nullable enable
+    private static Point VisibilityCheck(Point origin, Point dest, out Direction? alt)
+    {
+      alt = null;
+      int delta_x = dest.X - origin.X;
+      int delta_y = dest.Y - origin.Y;
+      Point ret = dest;
+      ret.X += (short)(0>delta_x ? 1 : -1);
+      ret.Y += (short)(0 >delta_y ? 1 : -1);
+      int abs_delta_x = 0 < delta_x ? delta_x : -delta_x;
+      int abs_delta_y = 0 < delta_y ? delta_y : -delta_y;
+      if      (abs_delta_x < abs_delta_y) alt = 0 < delta_x ? Direction.W : Direction.E;
+      else if (abs_delta_x > abs_delta_y) alt = 0 < delta_y ? Direction.N : Direction.S;
+      return ret;
+    }
+
     public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
-        var tmp = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
-        tmp.Now(Session.Get.WorldTime.TurnCounter);
-        FOVcache[a_loc.Map] = cache = tmp;
+        cache = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
+        cache.Now(Session.Get.WorldTime.TurnCounter);
+        FOVcache[a_loc.Map] = cache; // \todo? could use Add if using a lock
       }
       if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
@@ -295,23 +310,23 @@ namespace djack.RogueSurvivor.Engine
       { // if visibility is blocked for cardinal directions, post-processing merely makes what should be invisible, visible
         if (position.X == point2.X) continue;   // due N/S
         if (position.Y == point2.Y) continue;   // due E/W
+        Point diag = VisibilityCheck(position, point2, out var lateral);
+        if (null == lateral) continue;  // due NE/NW/SE/SW
+
         // tests for due NE/NW/SE/SW are more complex.  Unfortunately, the legacy postprocessing fails with barricaded glass doors
         // ..@.
         // #+++
         // S.Z.
 
-        int num = 0;
-        foreach (Point point3 in point2.Adjacent()) {
-          if (!visibleSet.Contains(point3)) continue;
+        if (!map.IsTransparent(diag)) continue;
+        if (!map.IsTransparent(point2 + lateral)) continue;
+        pointList2.Add(point2);
+
 #if OBSOLETE
           // unfortunately, a barricaded glass door is
           TileModel tileModel = map.GetTileModelAtExt(point3);
           if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
-#else
-          if (map.IsTransparent(point3)) ++num;  // RS alpha 9 does not have transparent walls.  Review at time of introduction.
 #endif
-        }
-        if (num >= 3) pointList2.Add(point2);
       }
       visibleSet.UnionWith(pointList2);
       FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
