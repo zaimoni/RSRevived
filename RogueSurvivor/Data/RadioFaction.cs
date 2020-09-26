@@ -125,6 +125,7 @@ namespace djack.RogueSurvivor.Data
         public bool update(Location[] fov) {
             if (null != m_Actor.Controller.enemies_in_FOV) return false;
             if (m_Actor.Location.Map.District.SewersMap == m_Actor.Location.Map) return false; // even in VTG not worth clearing zones in sewer -- flashlight burn
+            if (!m_Actor.Location.Map.IsInsideAt(m_Actor.Location.Position)) return false; // don't try to actively clear outside
             var clear_this = m_Actor.Location.ClearableZone;
             if (null == clear_this) return false;
             if (!(m_Actor.Controller is ObjectiveAI oai)) return false; // invariant violation
