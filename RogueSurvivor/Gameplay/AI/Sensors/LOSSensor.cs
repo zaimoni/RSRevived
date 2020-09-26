@@ -33,10 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public Actor Viewpoint { get { return m_Actor; } }
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
     public Location[] FOVloc { get {
-#if DEBUG
-      if (null == _normalized_FOV) throw new InvalidOperationException("need to default-initialize");
-#endif
-      return _normalized_FOV!;
+      return _normalized_FOV ?? (_normalized_FOV = _buildNormalizedFOV());
     } }
     public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
     public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
@@ -124,7 +121,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       return ret;
     }
 
-    public List<Percept> Sense()
+    private Location[] _buildNormalizedFOV()
     {
       var actor = Viewpoint;
       var _view_map = actor.Location.Map;
@@ -140,10 +137,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
       if (null != e) normalized_FOV[i] = e.Location;
       }
-      _normalized_FOV = normalized_FOV; // \todo stop thrashing GC (some sort of pooling)
+      return normalized_FOV;
+    }
+
+    public List<Percept> Sense()
+    {
+      _normalized_FOV = _buildNormalizedFOV(); // \todo stop thrashing GC (some sort of pooling)
       List<Percept> perceptList = new List<Percept>();
-      (_sense ?? (_sense = HowToSense()))(perceptList, normalized_FOV);
-      actor.Controller.eventFOV(); // trigger additional vision processing; rely on z processing being so trivial that their CPU wastage is negligible
+      (_sense ?? (_sense = HowToSense()))(perceptList, _normalized_FOV);
+      Viewpoint.Controller.eventFOV(); // trigger additional vision processing; rely on z processing being so trivial that their CPU wastage is negligible
       return perceptList;
     }
 

@@ -180,7 +180,6 @@ namespace djack.RogueSurvivor.Data
     public abstract Dictionary<Location, Actor>? friends_in_FOV { get; }
     public abstract Dictionary<Location, Actor>? enemies_in_FOV { get; }
     public virtual Dictionary<Location, Inventory>? items_in_FOV { get { return null; } }
-#nullable restore
 
     public virtual bool IsEngaged { get {
       return null!=enemies_in_FOV;
@@ -191,25 +190,13 @@ namespace djack.RogueSurvivor.Data
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
-#nullable enable
     public virtual ActorAction? ExecAryZeroBehavior(int code) { return null; }
-
-    /// <param name="x"></param>
-    private bool _CanSee(Point pos)
-    {
-      if (pos == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
-      return !m_Actor.IsSleeping && FOV.Contains(pos);
-    }
 #nullable restore
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
       if (null == x.Map) return false;     // convince Duckman to not superheroically crash many games on turn 0
-      if (x.Map != m_Actor.Location.Map) {
-        Location? test = m_Actor.Location.Map.Denormalize(in x);
-        return null!=test && _CanSee(test.Value.Position);
-      }
-      return _CanSee(x.Position);
+      return 0 <= Array.IndexOf(FOVloc, x);
     }
 
     // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases

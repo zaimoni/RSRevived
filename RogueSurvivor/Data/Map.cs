@@ -984,6 +984,7 @@ retry:
         var staging = new List<ZoneLoc>();
         ZoneLoc? test = null;
         foreach(var z in m_Zones) {
+          if (m_CanonicalZones.ContainsKey(z.Bounds)) continue;
           test = new ZoneLoc(this, z.Bounds);
           m_CanonicalZones.Add(z.Bounds, test);
           int ub = staging.Count;

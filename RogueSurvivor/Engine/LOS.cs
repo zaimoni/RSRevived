@@ -318,8 +318,9 @@ namespace djack.RogueSurvivor.Engine
         // #+++
         // S.Z.
 
-        if (!map.IsTransparent(diag)) continue;
-        if (!map.IsTransparent(point2 + lateral)) continue;
+        if (!visibleSet.Contains(diag) || !map.IsTransparent(diag)) continue;
+        diag = point2 + lateral; // XXX abuse variable name
+        if (!visibleSet.Contains(diag) || !map.IsTransparent(diag)) continue;
         pointList2.Add(point2);
 
 #if OBSOLETE
