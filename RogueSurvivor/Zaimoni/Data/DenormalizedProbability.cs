@@ -60,6 +60,14 @@ namespace Zaimoni.Data
             }
         }
 
+        public void Add(T key, float val)
+        {
+            if (0 < val) {
+                _weights.Add(key, val);
+                Norm.Recalc();
+            }
+        }
+
         public void Normalize(float target = 1f)
         {
 #if DEBUG
@@ -98,10 +106,8 @@ retry:      if (target == Norm.Get) return;
             var ret = new DenormalizedProbability<KeyValuePair<T, T>>();
             foreach (var x in lhs._weights) {
                 foreach (var y in rhs._weights) {
-                    // \todo reality-check tmp before risking overflow
-                    var tmp = x.Value * y.Value;
-                    if (0f >= tmp) continue;
-                    ret[new KeyValuePair<T, T>(x.Key, y.Key)] = tmp;
+                    // \todo reality-check before risking overflow
+                    ret.Add(new KeyValuePair<T, T>(x.Key, y.Key), x.Value * y.Value);
                 }
             }
             return ret;

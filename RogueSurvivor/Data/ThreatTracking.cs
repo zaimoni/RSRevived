@@ -382,21 +382,16 @@ namespace djack.RogueSurvivor.Data
 
         public void Cleared(Location loc)
         { // assume all values of locs are in canonical form
-          var staging = new Dictionary<Map, HashSet<Point>>();
-          Map? last_map = null;
-          HashSet<Point>? last_pts = null;
-          if (!staging.TryGetValue(loc.Map, out var cache)) staging.Add(loc.Map, (cache = new HashSet<Point>()));
-          cache.Add(loc.Position);
-
           lock(_threats) {
             _ThreatWhere_cache.Remove(loc.Map);   // XXX could be more selective
             Actor? amnesia = null;
             foreach(var x in _threats) {
-                if (!x.Value.TryGetValue(loc.Map, out var test)) continue;
-                test.Remove(loc.Position);
-                if (0 >= test.Count) {
-                  x.Value.Remove(loc.Map);
-                  if (0 >= x.Value.Count) amnesia = x.Key;
+                if (x.Value.TryGetValue(loc.Map, out var test)) {
+                  test.Remove(loc.Position);
+                  if (0 >= test.Count) {
+                    x.Value.Remove(loc.Map);
+                    if (0 >= x.Value.Count) amnesia = x.Key;
+                  }
                 }
             }
             if (null != amnesia) _threats.Remove(amnesia);

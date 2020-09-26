@@ -70,13 +70,15 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       Forget();
 
-      var tmp = new HashSet<Percept>(m_Sensor.Sense());   // time is m_Actor.Location.Map.LocalTime.TurnCounter
-      foreach (Percept percept in tmp.ToList()) { 
+      var tmp = m_Sensor.Sense();   // time is m_Actor.Location.Map.LocalTime.TurnCounter
+      int ub = tmp.Count;
+      while(0 <= --ub) {
+        var percept = tmp[ub];
         foreach (Percept mPercept in m_Percepts) {
           if (mPercept.Percepted == percept.Percepted) {
             mPercept.Location = percept.Location;
             mPercept.Turn = percept.Turn;
-            tmp.Remove(percept);
+            tmp.RemoveAt(ub);;
             break;
           }
         }
