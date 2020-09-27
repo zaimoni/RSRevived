@@ -93,6 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         public ActorAction? Pathing() {
+            if (m_Actor.IsPlayer) return null;  // just advise AIs, don't remove player agency
             var goals = new HashSet<Location>();
             foreach (var pt in m_Unverified) goals.Add(new Location(m_Zone.m, pt));
             return oai.BehaviorPathTo(goals); // would need value-copy anyway of goals
