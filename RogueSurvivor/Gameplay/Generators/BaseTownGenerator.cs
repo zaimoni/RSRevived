@@ -1743,11 +1743,11 @@ restart:
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
       if (isSurface) TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
-      DoForEachTile(b.BuildingRect,pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
-          Session.Get.Police.Investigate.Seen(map, pt);
-          map.SetIsInsideAt(pt);    // XXX this is a severe change -- combined with the early generation, it guarantees the subway is inside when the NPCs are placed.
-                                    // with late generation it was possible to overwrite a park
+      DoForEachTile(b.BuildingRect, map, loc => {
+          Session.Get.ForcePoliceKnown(loc);
+          Session.Get.Police.Investigate.Seen(in loc);
+          loc.Map.SetIsInsideAt(loc.Position);    // XXX this is a severe change -- combined with the early generation,
+          // it guarantees the subway is inside when the NPCs are placed.  With late generation, it was possible to overwrite a park
       });
       const int height = 4;
       Point rail = SubwayRail(map.District);  // both the N-S and E-W railways use this as their reference point

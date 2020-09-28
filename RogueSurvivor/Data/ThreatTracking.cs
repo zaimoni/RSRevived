@@ -51,15 +51,15 @@ namespace djack.RogueSurvivor.Data
 
 		public List<Actor> ThreatAt(in Location loc)
 		{
+          var ret = new List<Actor>();
 		  lock(_threats) {
-            var ret = new List<Actor>();
             foreach(var x in _threats) {
               if (!x.Value.TryGetValue(loc.Map,out var cache)) continue;
               if (!cache.Contains(loc.Position)) continue;
               ret.Add(x.Key);
             }
-            return ret;
 		  }
+          return ret;
 		}
 
 		private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
@@ -113,8 +113,8 @@ namespace djack.RogueSurvivor.Data
             // subway may be null
             if (0 > view.Left) {
               if (null != (test = world.At(pos + Direction.W))) {
-                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
-                foreach(Point pt in tmp) ret.Add(new Point(pt.X-map.Width,pt.Y));
+                foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(map.Width + view.Left, view.Top, -view.Left, view.Height)))
+                  ret.Add(new Point(pt.X-map.Width,pt.Y));
               }
               view.Width += view.Left;
               view.X = 0;
@@ -123,15 +123,15 @@ namespace djack.RogueSurvivor.Data
               var new_width = map.Width;
               new_width -= view.Left;
               if (null != (test = world.At(pos + Direction.E))) {
-                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
-                foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
+                foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(0, view.Top, view.Width - new_width, view.Height)))
+                  ret.Add(new Point(pt.X+map.Width,pt.Y));
               }
               view.Width = new_width;
             };
             if (0 > view.Top) {
               if (null != (test = world.At(pos + Direction.N))) {
-                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
-                foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
+                foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, map.Height + view.Top, view.Width, -view.Top)))
+                  ret.Add(new Point(pt.X,pt.Y-map.Height));
               }
               view.Height += view.Top;
               view.Y = 0;
@@ -140,22 +140,22 @@ namespace djack.RogueSurvivor.Data
               var new_height = map.Height;
               new_height -= view.Top;
               if (null != (test = world.At(pos + Direction.S))) {
-                HashSet<Point> tmp = ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
-                foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
+                foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, 0, view.Width, view.Height - new_height)))
+                  ret.Add(new Point(pt.X,pt.Y+map.Height));
               }
               view.Height = new_height;
             };
 	      }
+          var tmp = new HashSet<Point>();
     	  lock(_threats) {
-            var tmp = new HashSet<Point>();
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
               tmp.UnionWith(src);
             }
-            if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
-            if (0 >= ret.Count) ret = tmp;
-            else ret.UnionWith(tmp);
 		  }
+          if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
+          if (0 >= ret.Count) ret = tmp;
+          else ret.UnionWith(tmp);
 		  return ret;
 		}
 
@@ -199,15 +199,15 @@ namespace djack.RogueSurvivor.Data
               view.Height = new_height;
             };
 	      }
+          var tmp = new HashSet<Point>();
     	  lock(_threats) {
-            var tmp = new HashSet<Point>();
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
               tmp.UnionWith(src);
             }
-            if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
-            return 0<tmp.Count;
 		  }
+          if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
+          return 0<tmp.Count;
 		}
 
         public List<Actor> ThreatIn(Map map)
@@ -221,8 +221,8 @@ namespace djack.RogueSurvivor.Data
         {
           lock(_threats) {
             _ThreatWhere_cache.Remove(m);
-            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
-		    cache[m] = new HashSet<Point>(pts);
+            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
+		    cache.Add(m, new HashSet<Point>(pts));
           }
         }
 
@@ -230,9 +230,9 @@ namespace djack.RogueSurvivor.Data
         {
 		  lock(_threats) {
             _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
-            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
             if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
-            else cache[loc.Map] = new HashSet<Point> { loc.Position };
+            else cache.Add(loc.Map, new HashSet<Point> { loc.Position });
 		  }
         }
 
@@ -240,9 +240,9 @@ namespace djack.RogueSurvivor.Data
         {
 		  lock(_threats) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-            if (!_threats.TryGetValue(a,out var cache)) cache = _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
             if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
-            else _threats[a][m] = new HashSet<Point> { p };
+            else cache.Add(m, new HashSet<Point> { p });
 		  }
         }
 
@@ -409,7 +409,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public void Audit(Predicate<Actor> ok) {
-            List<Actor> discard = null;
+            List<Actor>? discard = null;
             lock (_threats) {
                 foreach (var x in _threats) {
                     if (ok(x.Key)) continue;
@@ -505,9 +505,7 @@ namespace djack.RogueSurvivor.Data
     {
       private readonly Dictionary<Map, HashSet<Point>> _locs = new Dictionary<Map, HashSet<Point>>();
 
-      public LocationSet()
-      {
-      }
+      public LocationSet() {}
 
       public void Clear()
       {
@@ -594,6 +592,7 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
       }
 
+#if DEAD_FUNC
       public void Record(Map m, IEnumerable<Point> pts)
       {
         lock(_locs) {
@@ -601,6 +600,7 @@ namespace djack.RogueSurvivor.Data
           _locs[m].UnionWith(pts.Where(pt => m.GetTileModelAt(pt).IsWalkable));
         }
       }
+#endif
 
       public void Record(Map m, in Point pt)
       {
@@ -629,12 +629,22 @@ namespace djack.RogueSurvivor.Data
         }
       }
 
-      public void Seen(Location loc)
-      {
-        if (Map.Canonical(ref loc))
-  		  lock(_locs) {
+      // duplicate signature rather than risk indirection through IEnumerable; the Location[] signature is on a profile-hot path 2020-09-27 zaimoni
+      public void Seen(List<Location> locs) {
+        // assume all of these are in canonical form
+        lock(_locs) {
+          foreach(var loc in locs) {
 		    if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
-		  }
+          }
+        }
+      }
+
+      public void Seen(in Location loc)
+      {
+        // assume loc is in canonical form
+		lock(_locs) {
+		  if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
+		}
       }
 
 #if DEAD_FUNC
@@ -642,8 +652,8 @@ namespace djack.RogueSurvivor.Data
       {
         foreach(Point pt in pts) Seen(new Location(m,pt));
       }
-#endif
 
       public void Seen(Map m, Point pt) { Seen(new Location(m,pt)); }
+#endif
     }
 }

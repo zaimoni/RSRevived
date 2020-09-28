@@ -425,7 +425,10 @@ namespace djack.RogueSurvivor.Data
        Map map = d.EntryMap;
        foreach(var zone in map.Zones) {
          if (!zone.Name.Contains("CHAR Office")) continue;
-         zone.Bounds.DoForEach(pt => { if (!Engine.Session.Get.Police.ItemMemory.HaveEverSeen(new Location(map, pt))) Engine.Session.Get.Police.Investigate.Record(map, in pt); });
+         zone.Bounds.DoForEach(pt => {
+             var loc = new Location(map, pt);
+             if (!Engine.Session.Get.Police.ItemMemory.HaveEverSeen(loc)) Engine.Session.Get.Police.Investigate.Record(in loc);
+         });
        }
     }
 #nullable restore
