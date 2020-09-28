@@ -658,12 +658,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_BreakBarricade : Objective
     {
       private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
+      private readonly Location[]? _alternates = null; // for when multiple doors are in a row
 
 #nullable enable
-      public Goal_BreakBarricade(Actor who, DoorWindow dest)
-      : base(who.Location.Map.LocalTime.TurnCounter, who)
+      public Goal_BreakBarricade(Actor who, DoorWindow dest) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         _dest = dest.Location;
+        var backup_plan = new List<Location>();
+        // \todo following doesn't properly handle 3-wide situation
+        var loc = dest.Location+Direction.N;
+        var door = loc.MapObject as DoorWindow;
+        if (null != door && door.IsBarricaded) backup_plan.Add(loc);
+        loc = dest.Location+Direction.S;
+        door = loc.MapObject as DoorWindow;
+        if (null != door && door.IsBarricaded) backup_plan.Add(loc);
+        loc = dest.Location+Direction.E;
+        door = loc.MapObject as DoorWindow;
+        if (null != door && door.IsBarricaded) backup_plan.Add(loc);
+        loc = dest.Location+Direction.W;
+        door = loc.MapObject as DoorWindow;
+        if (null != door && door.IsBarricaded) backup_plan.Add(loc);
+        if (backup_plan.Any()) _alternates = backup_plan.ToArray();
       }
 
       public DoorWindow? Target { get { return _dest.MapObject as DoorWindow; } }
@@ -676,6 +691,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!door?.IsBarricaded ?? true) {  // it's down now
           _isExpired = true;
           return true;
+        }
+        if (null != _alternates) {
+          foreach(var loc in _alternates) {
+            var bypass = door = loc.MapObject as DoorWindow;
+            if (null == bypass || !bypass.IsBarricaded) { // some other way through -- break off
+              _isExpired = true;
+              return true;
+            }
+          }
         }
         if (ObjectiveAI.ReactionCode.SLEEPY < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
           _isExpired = true;    // cancel: something urgent
