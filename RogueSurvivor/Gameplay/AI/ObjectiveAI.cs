@@ -3165,11 +3165,9 @@ Restart:
 #endif
         }
         if (1==maps.Count && 0==goals.Count) {
-          Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
-          foreach(var pos_exit in exits) {
-            Location loc = new Location(dest, pos_exit.Key);
-            if (!Map.Canonical(ref loc)) continue;
-            goals.Add(loc==m_Actor.Location ? pos_exit.Value.Location : loc);
+          var exits = dest.GetExits(e => maps.Contains(e.ToMap));
+          foreach(var loc_exit in exits) {
+            goals.Add(loc_exit.Key==m_Actor.Location ? loc_exit.Value.Location : loc_exit.Key);
           }
 #if TRACE_GOALS
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());

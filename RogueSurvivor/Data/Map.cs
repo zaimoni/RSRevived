@@ -612,10 +612,14 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public Dictionary<Point,Exit> GetExits(Predicate<Exit> test) {
-      var ret = new Dictionary<Point, Exit>();
+    public Dictionary<Location,Exit> GetExits(Predicate<Exit> test) {
+      var ret = new Dictionary<Location, Exit>();
       foreach(var x in m_Exits) {
-        if (test(x.Value)) ret.Add(x.Key, x.Value);
+        if (test(x.Value)) {
+          var loc = new Location(this, x.Key);
+          if (!Canonical(ref loc)) continue; // \todo invariant violation if this fails, but we need to guarantee normal form
+          ret.Add(loc, x.Value);
+        }
       }
       return ret;
     }
