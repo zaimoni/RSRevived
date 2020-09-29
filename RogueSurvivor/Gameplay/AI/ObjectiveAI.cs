@@ -5598,8 +5598,7 @@ restart_chokepoints:
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
       ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
       if (null != tmpRw2) {
-         bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
-         if (!reloadable) return _BehaviorDropOrExchange(tmpRw2, it, position, use_ok);
+         if (!(it is ItemAmmo am2) || am2.AmmoType != tmpRw2.AmmoType) return _BehaviorDropOrExchange(tmpRw2, it, position, use_ok);
       }
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
