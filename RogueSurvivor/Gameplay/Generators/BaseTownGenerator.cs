@@ -1028,9 +1028,7 @@ restart:
       }, pt => MakeRandomShopItem(shopType));
       map.AddZone(MakeUniqueZone(shop_name_image.Key, b.BuildingRect));
       MakeWalkwayZones(map, b);
-      DoForEachTile(b.BuildingRect,pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));  // XXX exceptionally cheating police AI
-      });
+      DoForEachTile(b.BuildingRect, map, loc => Session.Get.ForcePoliceKnown(loc)); // XXX exceptionally cheating police AI
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ shop_name_image.Key.GetHashCode();
         string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
@@ -1903,7 +1901,7 @@ restart:
         TileFill(map, GameTiles.FLOOR_CONCRETE, platform);
         platform.Edge((Compass.XCOMlike)(-direction).Index).DoForEach(pt => map.PlaceAt(MakeObjIronBench(), pt),
             pt => (CountAdjWalls(map, pt) >= 3));
-        DoForEachTile(platform,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+        DoForEachTile(platform, map, loc => Session.Get.ForcePoliceKnown(loc));
         map.AddZone(MakeUniqueZone("platform", platform));
         map.PlaceAt(MakeObjIronGate(), centralGateAt);
         map.PlaceAt(MakeObjIronGate(), centralGateAt + orthogonal);
@@ -1934,7 +1932,7 @@ restart:
           if (CountAdjWalls(map, pt) < 3 || map.AnyAdjacent<DoorWindow>(pt)) return null;
           return MakeObjPowerGenerator();
         });
-        DoForEachTile(rect2, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+        DoForEachTile(rect2, map, loc => Session.Get.ForcePoliceKnown(loc));
       }
       for (var left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
@@ -2861,7 +2859,7 @@ restart:
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
-      DoForEachTile(policeBlock.InsideRect,pt => Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt)));
+      DoForEachTile(policeBlock.InsideRect, surfaceMap, loc => Session.Get.ForcePoliceKnown(loc));
       Point entryDoorAt = policeBlock.BuildingRect.Anchor(Compass.XCOMlike.S);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.W);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.E);
@@ -3107,7 +3105,7 @@ restart:
       }
 #endif
 
-      DoForEachTile(map.Rect, pt => { Session.Get.ForcePoliceKnown(new Location(map, pt)); });
+      DoForEachTile(map.Rect, map, loc => Session.Get.ForcePoliceKnown(loc));
       return map;
     }
 
@@ -3145,7 +3143,7 @@ restart:
         }
         map.PlaceAt(newCivilian, in dest);
       }
-      DoForEachTile(map.Rect, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+      DoForEachTile(map.Rect, map, loc => Session.Get.ForcePoliceKnown(loc));
       return map;
     }
 
