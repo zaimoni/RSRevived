@@ -4888,7 +4888,7 @@ restart_chokepoints:
         if (null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
         if (null != inv.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
       }
-      if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
+      if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, ItemRangedWeapon.is_empty)) return 3;  // this replacement is ok; implies not having ammo
       var compatible = inv.GetCompatibleAmmoItem(rw);
       if (null == compatible) {
         if (0 >= rw.Ammo) return 1;
@@ -5596,7 +5596,7 @@ restart_chokepoints:
       }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
-      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
+      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(ItemRangedWeapon.is_empty);
       if (null != tmpRw2) {
          if (!(it is ItemAmmo am2) || am2.AmmoType != tmpRw2.AmmoType) return _BehaviorDropOrExchange(tmpRw2, it, position, use_ok);
       }
@@ -5674,7 +5674,7 @@ restart_chokepoints:
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = m_Actor.Inventory!;
       if (inv.Contains(rw)) {
         if (0 < rw.Ammo) return true;
         // should not have ammo in inventory at this point
@@ -5685,7 +5685,7 @@ restart_chokepoints:
         } else {
           if (null != inv.GetCompatibleAmmoItem(rw)) return true;
         }
-        if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
+        if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, ItemRangedWeapon.is_empty)) return true;  // this replacement is ok; implies not having ammo
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"

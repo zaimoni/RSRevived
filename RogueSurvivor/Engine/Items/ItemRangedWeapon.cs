@@ -18,15 +18,14 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int Ammo;
 
-    public ItemRangedWeapon(ItemRangedWeaponModel model)
-      : base(model)
-    {
-      Ammo = model.MaxAmmo;
-    }
+    public ItemRangedWeapon(ItemRangedWeaponModel model) : base(model) { Ammo = model.MaxAmmo; }
 
 #if PROTOTYPE
     public override Data.ItemStruct Struct { get { return new Data.ItemStruct(Model.ID, Ammo); } }
 #endif
+
+    // lambda function micro-optimizations for release-mode IL size
+    static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
 
     static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
     {
