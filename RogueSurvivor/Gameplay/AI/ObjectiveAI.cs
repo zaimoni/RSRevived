@@ -3130,20 +3130,20 @@ Restart:
         if (0 < obtain_goals(m).Count) return false;
         if (1 >= m.destination_maps.Get.Count) return true;
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
-          int my_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
-          if (District.UsesCrossDistrictView(m) != my_code) return true;
+          if (District.UsesCrossDistrictView(m) != District.UsesCrossDistrictView(m_Actor.Location.Map)) return true;
         };
-        bool is_surface = m == m.District.EntryMap;
-        if (is_surface) return false;
-        if (null != Session.Get.UniqueMaps.NavigateHospital(src)) return false;
-        if (null != Session.Get.UniqueMaps.NavigatePoliceStation(src)) return false;
+        if (m == m.District.EntryMap) return false; // surface map is always ok
+        var unique_maps = Session.Get.UniqueMaps;
+        if (   null != unique_maps.NavigateHospital(src)
+            || null != unique_maps.NavigatePoliceStation(src)) return false;
         foreach(var test in m.destination_maps.Get) {
           if (test == src) continue;
-          if (0 < obtain_goals(test).Count) return false;
-          if (test == test.District.EntryMap) return false;
-          if (!is_surface && test.destination_maps.Get.Contains(m.District.EntryMap)) return false;
-          if (null != Session.Get.UniqueMaps.NavigateHospital(test)) return false;
-          if (null != Session.Get.UniqueMaps.NavigatePoliceStation(test)) return false;
+          if (   0 < obtain_goals(test).Count
+              || test == test.District.EntryMap
+              || test.destination_maps.Get.Contains(m.District.EntryMap)
+              || null != unique_maps.NavigateHospital(test)
+              || null != unique_maps.NavigatePoliceStation(test))
+            return false;
         }
         return true;
       }
