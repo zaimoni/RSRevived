@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,8 +70,8 @@ namespace djack.RogueSurvivor.Data
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (0 >= tmp.Count) continue;
         if (Gameplay.GameItems.ranged.Contains(it)) {
-          Engine.Items.ItemRangedWeaponModel model = (Models.Items[(int)it] as Engine.Items.ItemRangedWeaponModel)!;
-          var ammo = m_Actor.Inventory.GetItemsByType < Engine.Items.ItemAmmo >(am => am.AmmoType== model.AmmoType);
+          ItemRangedWeaponModel model = (Models.Items[(int)it] as ItemRangedWeaponModel)!;
+          var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType== model.AmmoType);
           if (null == ammo) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
@@ -83,7 +84,7 @@ namespace djack.RogueSurvivor.Data
                 bool rebuild = true;
                 while (0 < ub) {
                     var itemsAt = allItems[--ub];
-                    if (null != itemsAt.GetFirstByModel<Engine.Items.ItemRangedWeapon>(model, rw => 0 < rw.Ammo)) return true;
+                    if (null != itemsAt.GetFirstByModel(model, ItemRangedWeapon.is_not_empty)) return true;
                     if (null != itemsAt.GetFirstByModel(model)) rebuild = false;
                 }
                 if (rebuild) {
@@ -101,7 +102,7 @@ namespace djack.RogueSurvivor.Data
           }
         }
         // cheating post-filter: reject boring entertainment
-        if (Models.Items[(int)it] is Engine.Items.ItemEntertainmentModel ent) {
+        if (Models.Items[(int)it] is ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
                 var allItems = Map.AllItemsAt(loc, m_Actor);
@@ -113,7 +114,7 @@ namespace djack.RogueSurvivor.Data
                 bool rebuild = true;
                 while (0 < ub) {
                     var itemsAt = allItems[--ub];
-                    if (null != itemsAt.GetFirstByModel<Engine.Items.ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
+                    if (null != itemsAt.GetFirstByModel<ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
                     if (null != itemsAt.GetFirstByModel(ent)) rebuild = false;
                 }
                 if (rebuild) {
@@ -130,7 +131,7 @@ namespace djack.RogueSurvivor.Data
         }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
         if (m_Actor.Inventory.IsFull) {
-          if (Models.Items[(int)it] is Engine.Items.ItemLightModel || Models.Items[(int)it] is Engine.Items.ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
+          if (Models.Items[(int)it] is ItemLightModel || Models.Items[(int)it] is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
                 var allItems = Map.AllItemsAt(loc, m_Actor);

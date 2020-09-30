@@ -25,7 +25,8 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
 
     // lambda function micro-optimizations for release-mode IL size
-    static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
+    static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo; // static function cost 7 more bytes release-mode IL per use
+    static public Predicate<ItemRangedWeapon> is_not_empty = rw => 0 < rw.Ammo; // static function cost 7 more bytes release-mode IL per use
 
     static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
     {

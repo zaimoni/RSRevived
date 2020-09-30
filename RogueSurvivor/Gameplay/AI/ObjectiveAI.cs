@@ -4883,12 +4883,12 @@ restart_chokepoints:
     { // similar to IsInterestingItem(rw)
       Inventory inv = m_Actor.Inventory;
       if (inv.Contains(rw)) return 0<rw.Ammo ? 3 : 1;
-      int rws_w_ammo = inv.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
+      int rws_w_ammo = inv.CountType(ItemRangedWeapon.is_not_empty);
       if (0 < rws_w_ammo) {
-        if (null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
+        if (null != inv.GetFirstByModel(rw.Model, ItemRangedWeapon.is_not_empty)) return 0;    // XXX
         if (null != inv.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
       }
-      if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, ItemRangedWeapon.is_empty)) return 3;  // this replacement is ok; implies not having ammo
+      if (0 < rw.Ammo && null != inv.GetFirstByModel(rw.Model, ItemRangedWeapon.is_empty)) return 3;  // this replacement is ok; implies not having ammo
       var compatible = inv.GetCompatibleAmmoItem(rw);
       if (null == compatible) {
         if (0 >= rw.Ammo) return 1;
@@ -5596,7 +5596,7 @@ restart_chokepoints:
       }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
-      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(ItemRangedWeapon.is_empty);
+      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching(ItemRangedWeapon.is_empty);
       if (null != tmpRw2) {
          if (!(it is ItemAmmo am2) || am2.AmmoType != tmpRw2.AmmoType) return _BehaviorDropOrExchange(tmpRw2, it, position, use_ok);
       }
@@ -5679,13 +5679,13 @@ restart_chokepoints:
         if (0 < rw.Ammo) return true;
         // should not have ammo in inventory at this point
       } else {
-        if (0< inv.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) {
-          if (null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+        if (0< inv.CountType(ItemRangedWeapon.is_not_empty)) {
+          if (null != inv.GetFirstByModel(rw.Model, ItemRangedWeapon.is_not_empty)) return false;    // XXX
           if (null != inv.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType && 0 < it.Ammo)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
         } else {
           if (null != inv.GetCompatibleAmmoItem(rw)) return true;
         }
-        if (0 < rw.Ammo && null != inv.GetFirstByModel<ItemRangedWeapon>(rw.Model, ItemRangedWeapon.is_empty)) return true;  // this replacement is ok; implies not having ammo
+        if (0 < rw.Ammo && null != inv.GetFirstByModel(rw.Model, ItemRangedWeapon.is_empty)) return true;  // this replacement is ok; implies not having ammo
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
@@ -5709,7 +5709,7 @@ restart_chokepoints:
         if (0< inv.CountType<ItemMeleeWeapon>()) limit--;
 
         if (limit <= inv.CountType<ItemAmmo>()) return true;
-        if (limit <= inv.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ inv.CountType<ItemAmmo>()) return true;
+        if (limit <= inv.CountType(ItemRangedWeapon.is_not_empty)+ inv.CountType<ItemAmmo>()) return true;
         return false;
       }
     }
@@ -6115,7 +6115,7 @@ restart_chokepoints:
         if (3 <= code) continue;
         // ranged weapons are problematic
         if (GameItems.ranged.Contains(i)) {
-          if (1 >= inv.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)) continue;    // really critical
+          if (1 >= inv.CountType(ItemRangedWeapon.is_not_empty)) continue;    // really critical
           if (null != inv.GetCompatibleAmmoItem(model as ItemRangedWeaponModel)) continue;
         }
         if (2 == code) want.Add(i);
