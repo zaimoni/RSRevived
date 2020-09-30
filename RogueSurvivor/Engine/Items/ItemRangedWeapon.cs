@@ -24,9 +24,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public override Data.ItemStruct Struct { get { return new Data.ItemStruct(Model.ID, Ammo); } }
 #endif
 
-    // lambda function micro-optimizations for release-mode IL size
-    static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo; // static function cost 7 more bytes release-mode IL per use
-    static public Predicate<ItemRangedWeapon> is_not_empty = rw => 0 < rw.Ammo; // static function cost 7 more bytes release-mode IL per use
+    // lambda function micro-optimizations for release-mode IL size.
+    // Match the intended consuming type exactly, to avoid 7 release-mode IL byte overhead. 2020-09-29 zaimoni
+    static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
+    static public Predicate<ItemRangedWeapon> is_not_empty = rw => 0 < rw.Ammo;
 
     static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
     {

@@ -18,6 +18,7 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -232,6 +233,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
+
+    // cached functions of m_Actor would go here, but that can easily be profile-negative
 
     // processing based on field of view
     public override void eventFOV() { FOVevents.update(FOVloc); }
@@ -4162,7 +4165,7 @@ restart_chokepoints:
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
         // XXX doesn't handle non-optimal ranged attacks
-        Dictionary<int,Attack> ranged_attacks = (a.Controller as ObjectiveAI)?.GetBestRangedAttacks(m_Actor);
+        var ranged_attacks = (a.Controller as ObjectiveAI)?.GetBestRangedAttacks(m_Actor);
 
         if (null == ranged_attacks) {
           foreach(var pt_dam in melee_damage_field) {
@@ -6261,7 +6264,7 @@ restart_chokepoints:
            }
         while(0 < --r);
       }
-      return ret;
+      return 0 < ret.Count ? ret : null;
     }
 
 #nullable enable
