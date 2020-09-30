@@ -6146,12 +6146,6 @@ restart_chokepoints:
       return true;
     }
 
-    protected static int ScoreRangedWeapon(ItemRangedWeapon w)
-    {
-      Attack rw_attack = w.Model.Attack;
-      return 1000 * rw_attack.Range + rw_attack.DamageValue;
-    }
-
     // conceptual difference between "doctrine" and "behavior" is that doctrine doesn't have contextual validity checks
     // that is, a null action return is defined to mean the doctrine is invalid
     public ActorAction? DoctrineRecoverSTA(int targetSTA)
@@ -6218,13 +6212,18 @@ restart_chokepoints:
       return new ActionButcher(m_Actor,c);
     }
 
+    protected static Func<ItemRangedWeapon, int> ScoreRangedWeapon = rw => {
+        Attack rw_attack = rw.Model.Attack;
+        return 1000 * rw_attack.Range + rw_attack.DamageValue;
+    };
+
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
     public ItemRangedWeapon? GetBestRangedWeaponWithAmmo()
     {
       var inv = m_Actor?.Inventory;  // PC zombies won't have inventory
       if (inv?.IsEmpty ?? true) return null;
       var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
-      return rws?.Maximize(w => ScoreRangedWeapon(w));
+      return rws?.Maximize(ScoreRangedWeapon);
     }
 
     public KeyValuePair<Actor,ItemRangedWeapon>? GetNearestTargetFor()
