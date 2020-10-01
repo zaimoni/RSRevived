@@ -2923,19 +2923,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
-        ActorAction tmp = new ActionTakeItem(m_Actor, in loc, obj); // FIX \todo fails if taking from a container
-        if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
-          if (null == recover) return null;
-          if (!recover.IsLegal()) return null;
+        var tmp = new ActionTakeItem(m_Actor, in loc, obj);
+        if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
+        if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
             if (obj.Model.ID == drop.Give.Model.ID) return null;
             if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
           }
-          if (is_real) Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
-          return recover;
+          return new ActionChain(recover, tmp);
         }
-        if (!tmp.IsLegal()) return null;    // in case this is the biker/trap pickup crash [cairo123]
-        return tmp;
+        return null;
     }
 
     public ActorAction? WouldGrabFromAccessibleStack(in Location loc, Inventory stack, bool is_real=false)
@@ -2949,7 +2946,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
-      bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
+      bool need_recover = cant_get && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc) : null);
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
@@ -2971,11 +2968,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the get item checks do not validate that inventory is not full
       var tmp = _takeThis(in loc, obj, recover, is_real);
       if (null == tmp) return null;
-#if DEBUG
-      if (is_real) {
-         if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
-      }
-#endif
       if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
       return tmp;
@@ -3028,11 +3020,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (may_take) {
         tmp = _takeThis(in loc, obj, recover, is_real);
         if (null == tmp) return null;
-#if DEBUG
-      if (is_real) {
-         if (1 < Rules.GridDistance(in loc,m_Actor.Location)) throw new InvalidOperationException("non-hypothetical telekinetic take");
-      }
-#endif
         if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
