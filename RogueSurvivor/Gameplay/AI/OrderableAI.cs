@@ -25,6 +25,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -463,18 +464,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_PathToStack : Objective,Pathable
     {
       private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
+      [NonSerialized] private OrderableAI ordai;
 
       public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Percepted); } }
       public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Location); } }
 
-      public Goal_PathToStack(int t0, Actor who, Location loc)
-      : base(t0,who)
+      public Goal_PathToStack(int t0, Actor who, Location loc) : base(t0,who)
       {
-#if DEBUG
-        if (!(who.Controller is OrderableAI)) throw new InvalidOperationException("need an ai with inventory");
-#endif
+        if (!(who.Controller is OrderableAI ai)) throw new InvalidOperationException("need an ai with inventory");
+        ordai = ai;
         if (!Map.Canonical(ref loc)) return;
         newStack(in loc);
+      }
+
+      [OnDeserialized] void OnDeserialized(StreamingContext context) {
+        ordai = m_Actor.Controller as OrderableAI;
       }
 
       /// <returns>true if and only if no stacks remain</returns>
@@ -482,20 +486,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         int i = _stacks.Count;
         while(0 < i--) {
+          Inventory? inv;
           { // scope var p
           var p = _stacks[i];
-          var inv = exemplarStack(p.Location);
+          inv = exemplarStack(p.Location);
           if (    null == inv    // can crash otherwise in presence of bugs
                || !m_Actor.CanEnter(p.Location)
                || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
               _stacks.RemoveAt(i);
-              (m_Actor.Controller as ObjectiveAI).ClearLastMove();
+              ordai.ClearLastMove();
               continue;
           }
           _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
           } // end scope var p
           
-          if (_stacks[i].Percepted.IsEmpty || !(m_Actor.Controller as OrderableAI).WouldGrabFromStack(_stacks[i].Location, _stacks[i].Percepted)) {
+          if (inv.IsEmpty || !ordai.WouldGrabFromStack(_stacks[i].Location, inv)) {
             _stacks.RemoveAt(i);
             continue;
           }
@@ -516,7 +521,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         var at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
         if (null != at_target) {
-          ActorAction tmpAction = (m_Actor.Controller as OrderableAI).BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted);
+          ActorAction tmpAction = ordai.BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted);
           if (tmpAction?.IsPerformable() ?? false) {
             ret = tmpAction;
             m_Actor.Activity = Activity.IDLE;
@@ -543,9 +548,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         var allItems = Map.AllItemsAt(loc, m_Actor);
         if (null == allItems) return null;
-        foreach(var inv in allItems) {
-          if ((m_Actor.Controller as OrderableAI).WouldGrabFromStack(in loc, inv)) return inv;
-        }
+        foreach(var inv in allItems) if (ordai.WouldGrabFromStack(in loc, inv)) return inv;
         return null;
       }
 
@@ -576,7 +579,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var _locs = _stacks.Select(p => p.Location).Where(loc => loc.StrictHasActorAt);
         if (!_locs.Any()) return null;
 
-        var ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(new HashSet<Location>(_locs));
+        var ret = ordai.BehaviorPathTo(new HashSet<Location>(_locs));
         return (ret?.IsPerformable() ?? false) ? ret : null;
       }
 

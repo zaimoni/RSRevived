@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_Location;
     private readonly Item m_Item;
-    private readonly MapObject m_Container = null;
+    private readonly MapObject? m_Container = null;
 
     public ActionTakeItem(Actor actor, in Location loc, Item it) : base(actor)
     {
@@ -26,9 +26,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       var ai = actor.Controller as Gameplay.AI.ObjectiveAI;
       if (null == ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
       if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
-#endif
-#if TRACER
-      if (actor.IsDebuggingTarget && Gameplay.GameItems.IDs.==it.Model.ID) throw new InvalidOperationException(actor.Name+": "+it.ToString());
 #endif
       m_Location = loc;
       m_Item = it;
