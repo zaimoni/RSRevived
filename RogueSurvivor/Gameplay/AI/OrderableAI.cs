@@ -465,6 +465,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
       [NonSerialized] private OrderableAI ordai;
+      [NonSerialized] private List<KeyValuePair<Location, ActorAction>>? _inventory_actions = null;
 
       public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Percepted); } }
       public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Location); } }
@@ -484,6 +485,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       /// <returns>true if and only if no stacks remain</returns>
       private bool _removeInvalidStacks()
       {
+        _inventory_actions = null;
         int i = _stacks.Count;
         while(0 < i--) {
           Inventory? inv;
@@ -503,6 +505,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (inv.IsEmpty || !ordai.WouldGrabFromStack(_stacks[i].Location, inv)) {
             _stacks.RemoveAt(i);
             continue;
+          } else {
+            var act = ordai.WouldGrabFromAccessibleStack(_stacks[i].Location, inv);
+            if (null == act || !act.IsLegal()) {
+              _stacks.RemoveAt(i);
+              continue;
+            }
+            if (m_Actor.MayTakeFromStackAt(_stacks[i].Location) && act.IsPerformable()) {
+              (_inventory_actions ?? (_inventory_actions = new List<KeyValuePair<Location, ActorAction>>())).Add(new KeyValuePair<Location, ActorAction>(_stacks[i].Location, act));
+            }
           }
         }
         return 0 >= _stacks.Count;
@@ -519,25 +530,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (m_Actor.Controller.InCombat) return false;
 
-        var at_target = _stacks.FirstOrDefault(p => m_Actor.MayTakeFromStackAt(p.Location));
-        if (null != at_target) {
-          ActorAction tmpAction = ordai.BehaviorGrabFromAccessibleStack(at_target.Location, at_target.Percepted);
-          if (tmpAction?.IsPerformable() ?? false) {
-            ret = tmpAction;
-            m_Actor.Activity = Activity.IDLE;
-            _isExpired = true;  // we don't play well with action chains
-            return true;
+        if (null != _inventory_actions) {
+          // prefilter
+          if (2 <= _inventory_actions.Count) {
+            var ub = _inventory_actions.Count;
+            while(1 <= --ub) {
+              var upper_take = _inventory_actions[ub].Value as ActorTake;
+              if (null == upper_take) {
+                if (_inventory_actions[ub].Value is ActionChain chain) upper_take = chain.LastAction as ActorTake;
+              }
+              if (null == upper_take) continue;
+              var i = ub;
+              while(0 <= --i) {
+                var take = _inventory_actions[i].Value as ActorTake;
+                if (null == take) {
+                  if (_inventory_actions[i].Value is ActionChain chain) take = chain.LastAction as ActorTake;
+                }
+                if (null == take) continue;
+                if (ordai.RHSMoreInteresting(take.Take, upper_take.Take)) {
+                  _inventory_actions.RemoveAt(i);
+                  break;
+                } else if (ordai.RHSMoreInteresting(upper_take.Take, take.Take)) {
+                  _inventory_actions.RemoveAt(ub);
+                  break;
+                }
+              }
+            }
           }
-          // invariant failure
-#if DEBUG
-          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+ret.to_s()+"; "+ at_target.Percepted.ToString()+"; "+ (m_Actor.Controller as OrderableAI).WouldGrabFromStack(at_target.Location, at_target.Percepted).ToString());
-#else
-          _stacks.Remove(at_target);
-          if (0 >= _stacks.Count) {
-            _isExpired = true;
-            return true;
-          }
-#endif
+          ret = _inventory_actions[0].Value;
+          m_Actor.Activity = Activity.IDLE;
+          _isExpired = true;  // we don't play well with action chains
+          return true;
         }
 
         // let other AI processing kick in before final pathing

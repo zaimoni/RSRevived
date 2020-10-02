@@ -12,6 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         private readonly List<ActorAction> m_Actions;
 
         public ActorAction ConcreteAction { get { return m_Actions[0]; } }
+        public ActorAction LastAction { get { return m_Actions[m_Actions.Count-1]; } }
 
         public ActionChain(Actor actor, List<ActorAction> actions)
         : base(actor)

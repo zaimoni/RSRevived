@@ -5163,7 +5163,7 @@ restart_chokepoints:
     }
 #nullable restore
 
-    protected bool RHSMoreInteresting(Item lhs, Item rhs)
+    public bool RHSMoreInteresting(Item lhs, Item rhs)
     {
 #if DEBUG
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
