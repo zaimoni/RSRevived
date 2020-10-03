@@ -5674,6 +5674,7 @@ namespace djack.RogueSurvivor.Engine
       var errors = new List<string>();
       Session.Get.World._RejectInventoryDamage(errors, aiActor);
       if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
+      if (actorAction is ActorDest && null != aiActor.Threats) aiActor.Controller.UpdateSensors(); // to trigger fast threat/tourism update
     }
 
     private void HandleAdvisor(Actor player)
