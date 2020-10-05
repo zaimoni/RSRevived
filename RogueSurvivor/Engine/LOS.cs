@@ -247,17 +247,6 @@ namespace djack.RogueSurvivor.Engine
       return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || !map.IsBlockingThrow(pt), line);
     }
 
-    private static bool FOVSub(in Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
-    {
-      Map map = fromLocation.Map;
-      HashSet<Point> visibleSetRef = visibleSet;
-      return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
-                bool flag = pt== toPosition || map.IsTransparent(pt);
-                if (flag) visibleSetRef.Add(pt);
-                return flag;
-      });
-    }
-
     // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
@@ -291,11 +280,22 @@ namespace djack.RogueSurvivor.Engine
       Map map = a_loc.Map;
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
+
+      bool FOVSub(in Location fromLocation, Point toPosition)
+      {
+        Map map = fromLocation.Map;
+        return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
+                bool flag = pt== toPosition || map.IsTransparent(pt);
+                if (flag) visibleSet.Add(pt);
+                return flag;
+        });
+      }
+
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
         if (visibleSet.Contains(point1)) continue;
         var tile_loc = map.GetTileModelLocation(point1);
         if (null == tile_loc.Key) continue;
-        if (!LOS.FOVSub(in a_loc, point1, maxRange, ref visibleSet)) {
+        if (!FOVSub(in a_loc, point1)) {
             bool flag = false;
             TileModel tileModel = tile_loc.Key;
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;

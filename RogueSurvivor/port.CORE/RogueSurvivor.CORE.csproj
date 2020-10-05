@@ -113,6 +113,7 @@
     <Compile Include="..\Data\Message.cs" />
     <Compile Include="..\Data\Exit.cs" />
     <Compile Include="..\Data\Map.cs" />
+    <Compile Include="..\Data\MapKripke.cs" />
     <Compile Include="..\Data\Actor.cs" />
     <Compile Include="..\Data\World.cs" />
     <Compile Include="..\Data\BlastAttack.cs" />
