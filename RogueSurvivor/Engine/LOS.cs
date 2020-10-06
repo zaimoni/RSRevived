@@ -335,9 +335,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static HashSet<Point> ComputeFOVFor(MapKripke map, in Location a_loc, short maxRange)
     {
-#if DEBUG
-      if (map.Map != a_loc.Map) throw new InvalidOperationException("contrafactual map should be anchored in target map location");
-#endif
+      var delta = map.Reanchor(a_loc);
       var visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
       Point position = a_loc.Position;
@@ -360,7 +358,7 @@ namespace djack.RogueSurvivor.Engine
             bool flag = false;
             TileModel tileModel = tile_loc.Key;
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
-            else if (null == map.GetMapObjectAt(tile_loc.Value)) flag = true;
+            else if (!map.HasMapObjectAt(tile_loc.Value)) flag = true;
             if (flag) pointList1.Add(point1);
         } else visibleSet.Add(point1);
       }
@@ -391,6 +389,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
       }
       visibleSet.UnionWith(pointList2);
+      if (delta != Point.Empty) {
+        var ret = new HashSet<Point>();
+        foreach(var pt in visibleSet) ret.Add(pt + delta);
+        return ret;
+      }
       return visibleSet;
     }
 

@@ -47,6 +47,20 @@ namespace djack.RogueSurvivor.Data
             return false;
         }
 
+        public Point Reanchor(Location loc)
+        {
+            if (m_Domain.m != loc.Map) {
+                var origin = m_Domain.Rect.Location;
+                var tl = new Location(m_Domain.m, origin);
+                var denorm = loc.Map.Denormalize(tl);
+                if (null == denorm) throw new InvalidOperationException("cannot re-anchor");
+                // \todo re-positioned Rectangle ideally would contain loc.Position
+                m_Domain = new ZoneLoc(loc.Map, new Rectangle(denorm.Value.Position, m_Domain.Rect.Size));
+                return origin - denorm.Value.Position;
+            }
+            return new Point(0, 0);
+        }
+
         public bool HasMapObjectAt(Location loc) { return _knownMapObjects?.ContainsKey(loc) ?? false; }
 
         public MapObject? GetMapObjectAt(Location loc)
