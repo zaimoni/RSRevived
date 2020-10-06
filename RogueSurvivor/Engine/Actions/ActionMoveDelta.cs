@@ -206,7 +206,10 @@ namespace djack.RogueSurvivor.Engine.Actions
                if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                var candidates = Rules.PreferNonAdjacent(push_dest, m_Actor.Location);
-               if (null != candidates) return new ActionPush(m_Actor,obj, rules.DiceRoller.Choose(candidates).Value);
+               if (null != candidates) {
+                 Rules.MaximizeVisibility(ref candidates, m_Actor, obj);
+                 return new ActionPush(m_Actor,obj, rules.DiceRoller.Choose(candidates).Value);
+               }
            }
            // proceed with pull if we can't push safely
            var possible = obj.Location.Position.Adjacent();

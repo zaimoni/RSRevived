@@ -283,7 +283,6 @@ namespace djack.RogueSurvivor.Engine
 
       bool FOVSub(in Location fromLocation, Point toPosition)
       {
-        Map map = fromLocation.Map;
         return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
                 bool flag = pt== toPosition || map.IsTransparent(pt);
                 if (flag) visibleSet.Add(pt);
@@ -331,6 +330,67 @@ namespace djack.RogueSurvivor.Engine
       }
       visibleSet.UnionWith(pointList2);
       FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
+      return visibleSet;
+    }
+
+    public static HashSet<Point> ComputeFOVFor(MapKripke map, in Location a_loc, short maxRange)
+    {
+#if DEBUG
+      if (map.Map != a_loc.Map) throw new InvalidOperationException("contrafactual map should be anchored in target map location");
+#endif
+      var visibleSet = new HashSet<Point>{ a_loc.Position };
+      if (0 >= maxRange) return visibleSet;
+      Point position = a_loc.Position;
+      List<Point> pointList1 = new List<Point>();
+
+      bool FOVSub(in Location fromLocation, Point toPosition)
+      {
+        return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
+                bool flag = pt== toPosition || map.IsTransparent(pt);
+                if (flag) visibleSet.Add(pt);
+                return flag;
+        });
+      }
+
+      foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
+        if (visibleSet.Contains(point1)) continue;
+        var tile_loc = map.GetTileModelLocation(point1);
+        if (null == tile_loc.Key) continue;
+        if (!FOVSub(in a_loc, point1)) {
+            bool flag = false;
+            TileModel tileModel = tile_loc.Key;
+            if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
+            else if (null == map.GetMapObjectAt(tile_loc.Value)) flag = true;
+            if (flag) pointList1.Add(point1);
+        } else visibleSet.Add(point1);
+      }
+
+      // Postprocess map objects and tiles whose edges would reasonably be seen
+      List<Point> pointList2 = new List<Point>(pointList1.Count);
+      foreach (Point point2 in pointList1)
+      { // if visibility is blocked for cardinal directions, post-processing merely makes what should be invisible, visible
+        if (position.X == point2.X) continue;   // due N/S
+        if (position.Y == point2.Y) continue;   // due E/W
+        Point diag = VisibilityCheck(position, point2, out var lateral);
+        if (null == lateral) continue;  // due NE/NW/SE/SW
+
+        // tests for due NE/NW/SE/SW are more complex.  Unfortunately, the legacy postprocessing fails with barricaded glass doors
+        // ..@.
+        // #+++
+        // S.Z.
+
+        if (!visibleSet.Contains(diag) || !map.IsTransparent(diag)) continue;
+        diag = point2 + lateral; // XXX abuse variable name
+        if (!visibleSet.Contains(diag) || !map.IsTransparent(diag)) continue;
+        pointList2.Add(point2);
+
+#if OBSOLETE
+          // unfortunately, a barricaded glass door is
+          TileModel tileModel = map.GetTileModelAtExt(point3);
+          if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
+#endif
+      }
+      visibleSet.UnionWith(pointList2);
       return visibleSet;
     }
 

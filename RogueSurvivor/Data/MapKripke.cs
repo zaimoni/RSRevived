@@ -20,9 +20,10 @@ namespace djack.RogueSurvivor.Data
         private Dictionary<Location, MapObject>? _knownMapObjects;
 
         public ref readonly Rectangle Rect { get { return ref m_Domain.Rect; } }
+        public Map Map { get { return m_Domain.m; }  }
 
         /// <param name="viewpoint">If non-null, used as default information source.  real map used if null.</param>
-        MapKripke(ZoneLoc z, Actor? viewpoint = null)
+        public MapKripke(ZoneLoc z, Actor? viewpoint = null)
         {
             m_Domain = z;
             _viewpoint = viewpoint;
@@ -39,18 +40,34 @@ namespace djack.RogueSurvivor.Data
         {
             foreach (var loc in src) {
                 var obj = loc.MapObject;
-                if (null != obj) (_knownMapObjects ??= new Dictionary<Location, MapObject>())[loc] = obj;
+                if (null != obj) Place(obj, loc);
                 else _knownMapObjects?.Remove(loc);
             }
             if (null != _knownMapObjects && 0 >= _knownMapObjects.Count) _knownMapObjects = null;
             return false;
         }
 
+        public bool HasMapObjectAt(Location loc) { return _knownMapObjects?.ContainsKey(loc) ?? false; }
+
         public MapObject? GetMapObjectAt(Location loc)
         {
             if (null == _knownMapObjects) return null;
             if (_knownMapObjects.TryGetValue(loc, out var obj)) return obj;
             return null;
+        }
+
+        public Location? Find(MapObject obj)
+        {
+            if (null == _knownMapObjects) return null;
+            foreach (var x in _knownMapObjects) if (x.Value == obj) return x.Key;
+            return null;
+        }
+
+        public void Place(MapObject obj, Location loc)
+        {
+            var old_loc = Find(obj);
+            if (null != old_loc) _knownMapObjects!.Remove(old_loc.Value);
+            (_knownMapObjects ??= new Dictionary<Location, MapObject>())[loc] = obj;
         }
 
         // to bring up LoS:

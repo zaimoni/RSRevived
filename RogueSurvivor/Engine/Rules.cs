@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
 
+using Rectangle = Zaimoni.Data.Box2D_short;
 using Point = Zaimoni.Data.Vector2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
 
@@ -366,6 +367,39 @@ namespace djack.RogueSurvivor.Engine
       if (test.Key.Any()) return test.Key.ToList();
       return null;
     }
+
+    public static void MaximizeVisibility<T>(ref List<KeyValuePair<Location, T>> candidates, Actor actor, MapObject obj)
+    {
+      var threat = actor.Threats; // assumed that Threats and InterestingLocs are either both null, or both non-null
+      if (null != threat && 2 <= candidates.Count) {
+        var delta = new Point(Actor.MAX_VISION + 1, Actor.MAX_VISION + 1);
+        var domain = new Rectangle(actor.Location.Position - delta, actor.Location.Position + delta); // \todo legalize this
+        var a_map = actor.Location.Map;
+        var dests = threat.ThreatWhere(a_map, domain);
+        dests.UnionWith(actor.InterestingLocs.In(a_map, domain));
+        if (0 < dests.Count) {
+          var z = new ZoneLoc(a_map, domain);
+          var mk = new MapKripke(z, actor);
+          var los = new Dictionary<Location, HashSet<Point>>();
+          var fov_range = actor.FOVrange(a_map.LocalTime, Session.Get.World.Weather);
+          int max_los = 0;
+          foreach (var x in candidates) {
+            mk.Place(obj, x.Key);
+            var vision = LOS.ComputeFOVFor(mk, obj.Location, fov_range);
+            vision.IntersectWith(dests);
+            if (vision.Count > max_los) {
+              max_los = vision.Count;
+              los.Clear();
+              los.Add(x.Key, vision);
+            } else if (vision.Count == max_los) {
+              los.Add(x.Key, vision);
+            }
+          }
+          candidates.OnlyIf(loc_dir => los.ContainsKey(loc_dir.Key));
+        }
+      }
+    }
+
 #nullable restore
 
     // Pathfindability is not quite the same as bumpability
@@ -526,7 +560,10 @@ namespace djack.RogueSurvivor.Engine
                if (null != self_block && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                var candidates = PreferNonAdjacent(push_dest, actor.Location);
-               if (null != candidates) return new ActionPush(actor,mapObjectAt, Get.DiceRoller.Choose(candidates).Value);
+               if (null != candidates) {
+                 MaximizeVisibility(ref candidates, actor, mapObjectAt);
+                 return new ActionPush(actor,mapObjectAt, Get.DiceRoller.Choose(candidates).Value);
+               }
              } else {
                // proceed with pull if we can't push safely
                var possible = mapObjectAt.Location.Position.Adjacent();
