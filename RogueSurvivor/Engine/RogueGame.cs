@@ -5671,9 +5671,11 @@ namespace djack.RogueSurvivor.Engine
       }
       if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
-      var errors = new List<string>();
-      Session.Get.World._RejectInventoryDamage(errors, aiActor);
-      if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
+      if (actorAction is ActorTake || actorAction is ActorGive || actorAction is Use<Item>) {
+        var errors = new List<string>();
+        Session.Get.World._RejectInventoryDamage(errors, aiActor);
+        if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
+      }
       if (actorAction is ActorDest && null != aiActor.Threats) aiActor.Controller.UpdateSensors(); // to trigger fast threat/tourism update
     }
 
