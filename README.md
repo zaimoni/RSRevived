@@ -14,12 +14,16 @@ The main licence is GPLv3 ( https://opensource.org/licenses/GPL-3.0 ), with spec
 
 Our siblings:
 
+RS Still Alive
+http://roguesurvivor.proboards.com/thread/377/rs-alive
+
+Rogue Survivor Rezombiefied
+http://www.bay12forums.com/smf/index.php?topic=177355.0
+https://github.com/GalacticChimp/RogueSurvivorRezombified
+
 UNIX build of RS Alpha 9
 http://roguesurvivor.proboards.com/thread/378/rogue-survivor-linux
 github.com/Stenodyon/Rogue-Survivor-Linux
-
-RS Still Alive
-http://roguesurvivor.proboards.com/thread/377/rs-alive
 
 ========
 
