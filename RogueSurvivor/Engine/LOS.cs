@@ -110,7 +110,9 @@ namespace djack.RogueSurvivor.Engine
 
         // center to center spread is: 2 4 6 8,...
         // but we cross over at 1,1 3, 1 3 5, ...
-
+#if PROTOTYPE
+        Direction last_dir = Direction.NEUTRAL;
+#endif
         int knightmove_parity = 0;
         int numerator = 0;  // denominator is need range
         var knight_moves = new List<int>();
@@ -121,6 +123,9 @@ namespace djack.RogueSurvivor.Engine
                 start += alt_step;
                 numerator -= 2*needRange;
                 if (!fn(start)) return false;
+#if PROTOTYPE
+                last_dir = alt_step;
+#endif
                 line?.Add(start);
                 continue;
                 }
@@ -128,9 +133,21 @@ namespace djack.RogueSurvivor.Engine
                 {
                 start += tmp;
                 if (!fn(start)) return false;
+#if PROTOTYPE
+                last_dir = tmp;
+#endif
                 line?.Add(start);
                 continue;
                 };
+#if PROTOTYPE
+            if (0==knightmove_parity && 1 == last_dir.Index%2) {
+              // our last move was diagonal.
+              if (last_dir == tmp) {
+              } else if (last_dir == alt_step) {
+              } /* else { // invariant violation
+              }*/
+            }
+#endif
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
