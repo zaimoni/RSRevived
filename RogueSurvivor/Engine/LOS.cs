@@ -74,10 +74,9 @@ namespace djack.RogueSurvivor.Engine
       return tmp2;
     }
 
-    private static bool AngbandlikeTrace(int maxSteps, in Point from, in Point to, Func<Point, bool> fn, List<Point> line = null)
+    private static bool AngbandlikeTrace(int maxSteps, in Point from, in Point to, Func<Point, bool> fn, List<Point>? line = null)
     {
 #if DEBUG
-        if (null == fn) throw new ArgumentNullException(nameof(fn));
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
 #endif
         Point start = from;
@@ -183,7 +182,107 @@ namespace djack.RogueSurvivor.Engine
         return start == to;
     }
 
-    public static bool CanTraceViewLine(in Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
+    // actual line maintenance cannot be done within the visible handler (knights move fixups, above)
+    private static bool AngbandlikeTrace(int maxSteps, in Point from, in Point to, Func<Point, bool> fn, Action<Point> visible)
+    {
+#if DEBUG
+        if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
+#endif
+        Point start = from;
+        visible(start);
+        if (0 == maxSteps) return true;
+
+        Point delta = to - from;
+        Point absDelta = delta.coord_xform(Math.Abs);
+        var needRange = (absDelta.X < absDelta.Y ? absDelta.Y : absDelta.X);
+        int actualRange = (needRange < maxSteps ? needRange : maxSteps);
+
+        Direction tmp = Direction.To(from.X, from.Y, to.X, to.Y);
+        Point end = start + needRange * tmp;
+        Direction offset = Direction.To(end.X, end.Y, to.X, to.Y);
+        int i = 0;
+        if (offset == Direction.NEUTRAL)
+            {  // cardinal direction
+            do  {
+                start += tmp;
+                if (!fn(start)) return false;
+                visible(start);
+                }
+            while (++i < actualRange);
+            return start == to;
+            }
+        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
+        var err = to - end;
+        int alt_count = (0 == err.X ? err.Y : err.X);
+        if (0 > alt_count) alt_count = -alt_count;
+
+        // center to center spread is: 2 4 6 8,...
+        // but we cross over at 1,1 3, 1 3 5, ...
+#if PROTOTYPE
+        Direction last_dir = Direction.NEUTRAL;
+#endif
+        int knightmove_parity = 0;
+        int numerator = 0;  // denominator is need range
+        do  {
+            numerator += 2*alt_count;
+            if (numerator>needRange)
+                {
+                start += alt_step;
+                numerator -= 2*needRange;
+                if (!fn(start)) return false;
+#if PROTOTYPE
+                last_dir = alt_step;
+#endif
+                visible(start);
+                continue;
+                }
+            else if (numerator < needRange)
+                {
+                start += tmp;
+                if (!fn(start)) return false;
+#if PROTOTYPE
+                last_dir = tmp;
+#endif
+                visible(start);
+                continue;
+                };
+#if PROTOTYPE
+            if (0==knightmove_parity && 1 == last_dir.Index%2) {
+              // our last move was diagonal.
+              if (last_dir == tmp) {
+              } else if (last_dir == alt_step) {
+              } /* else { // invariant violation
+              }*/
+            }
+#endif
+            if (0==knightmove_parity)
+                {   // chess knight's move paradox: for distance 2, we have +/1 +/2
+                Point test = start+tmp;
+                if (!fn(test)) knightmove_parity = -1;
+                }
+            if (0==knightmove_parity)
+                {   // chess knight's move paradox: for distance 2, we have +/1 +/2
+                Point test = start+alt_step;
+                if (!fn(test)) knightmove_parity = 1;
+                }
+            if (-1==knightmove_parity)
+                {
+                start += alt_step;
+                numerator -= 2 * needRange;
+                if (!fn(start)) return false;
+                visible(start);
+                continue;
+                }
+//          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
+            start += tmp;
+            if (!fn(start)) return false;
+            visible(start);
+            }
+        while (++i < actualRange);
+        return start == to;
+    }
+
+    public static bool CanTraceViewLine(in Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point>? line=null)
     {
       Map map = fromLocation.Map;
       return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
@@ -222,7 +321,7 @@ namespace djack.RogueSurvivor.Engine
       return IdealFireLine(in from, test.Value.Position, maxRange);
     }
 
-    public static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
+    public static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point>? line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -235,21 +334,21 @@ namespace djack.RogueSurvivor.Engine
             }, line);
     }
 
-    public static bool CanTraceHypotheticalFireLine(in Location from, Location to, int maxRange, Actor shooter, List<Point> line=null)
+    public static bool CanTraceHypotheticalFireLine(in Location from, Location to, int maxRange, Actor shooter, List<Point>? line=null)
     {
       Location? test = from.Map.Denormalize(in to);
       if (null == test) return false;
       return CanTraceHypotheticalFireLine(in from, test.Value.Position, maxRange, shooter, line);
     }
 
-    public static bool CanTraceFireLine(in Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
+    public static bool CanTraceFireLine(in Location fromLocation, Point toPosition, int maxRange, List<Point>? line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       return AngbandlikeTrace(maxRange, in start, in toPosition, pt => pt == start || pt == toPosition || !map.IsBlockingFire(pt), line);
     }
 
-    public static bool CanTraceFireLine(in Location fromLocation, in Location toLocation, int maxRange, List<Point> line=null)
+    public static bool CanTraceFireLine(in Location fromLocation, in Location toLocation, int maxRange, List<Point>? line=null)
     {
       if (fromLocation.Map==toLocation.Map) return CanTraceFireLine(in fromLocation, toLocation.Position, maxRange, line);
       Location? tmp = fromLocation.Map.Denormalize(in toLocation);
@@ -257,7 +356,7 @@ namespace djack.RogueSurvivor.Engine
       return CanTraceFireLine(in fromLocation, tmp.Value.Position, maxRange, line);
     }
 
-    public static bool CanTraceThrowLine(in Location fromLocation, in Point toPosition, int maxRange, List<Point> line=null)
+    public static bool CanTraceThrowLine(in Location fromLocation, in Point toPosition, int maxRange, List<Point>? line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -294,6 +393,9 @@ namespace djack.RogueSurvivor.Engine
       if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
+
+      void is_visible(Point pt) { visibleSet.Add(pt); }
+
       Map map = a_loc.Map;
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
@@ -301,10 +403,8 @@ namespace djack.RogueSurvivor.Engine
       bool FOVSub(in Location fromLocation, Point toPosition)
       {
         return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
-                bool flag = pt== toPosition || map.IsTransparent(pt);
-                if (flag) visibleSet.Add(pt);
-                return flag;
-        });
+                return pt == toPosition || map.IsTransparent(pt);
+        }, is_visible);
       }
 
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
@@ -358,13 +458,13 @@ namespace djack.RogueSurvivor.Engine
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
 
+      void is_visible(Point pt) { visibleSet.Add(pt); }
+
       bool FOVSub(in Location fromLocation, Point toPosition)
       {
         return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => {
-                bool flag = pt== toPosition || map.IsTransparent(pt);
-                if (flag) visibleSet.Add(pt);
-                return flag;
-        });
+                return pt == toPosition || map.IsTransparent(pt);
+        }, is_visible);
       }
 
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
