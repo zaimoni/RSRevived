@@ -109,48 +109,36 @@ namespace djack.RogueSurvivor.Engine
 
         // center to center spread is: 2 4 6 8,...
         // but we cross over at 1,1 3, 1 3 5, ...
-#if PROTOTYPE
-        Direction last_dir = Direction.NEUTRAL;
-#endif
+        var blacklist = new Point?[3]; // Point[]?[] in n-d case
         int knightmove_parity = 0;
         int numerator = 0;  // denominator is need range
         var knight_moves = new List<int>();
         do  {
+            blacklist[0] = blacklist[1];
+            blacklist[1] = blacklist[2];
+            blacklist[2] = null;
             numerator += 2*alt_count;
             if (numerator>needRange)
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
-                if (!fn(start)) return false;
-#if PROTOTYPE
-                last_dir = alt_step;
-#endif
+                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
                 line?.Add(start);
+                if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 }
             else if (numerator < needRange)
                 {
                 start += tmp;
-                if (!fn(start)) return false;
-#if PROTOTYPE
-                last_dir = tmp;
-#endif
+                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
                 line?.Add(start);
+                if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 };
-#if PROTOTYPE
-            if (0==knightmove_parity && 1 == last_dir.Index%2) {
-              // our last move was diagonal.
-              if (last_dir == tmp) {
-              } else if (last_dir == alt_step) {
-              } /* else { // invariant violation
-              }*/
-            }
-#endif
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
-                if (!fn(test)) {
+                if ((null != blacklist[0] && blacklist[0]==test) || !fn(test)) {
                   knightmove_parity = -1;
                   foreach(int fix_me in knight_moves) {
                     // earlier steps must be revised
@@ -162,7 +150,7 @@ namespace djack.RogueSurvivor.Engine
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+alt_step;
-                if (!fn(test)) knightmove_parity = 1;
+                if ((null != blacklist[0] && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
                 }
             if (0==knightmove_parity && null!=line) knight_moves.Add(line.Count);
             if (-1==knightmove_parity)
@@ -171,12 +159,14 @@ namespace djack.RogueSurvivor.Engine
                 numerator -= 2 * needRange;
                 if (!fn(start)) return false;
                 line?.Add(start);
+                if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 }
 //          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
             start += tmp;
             if (!fn(start)) return false;
             line?.Add(start);
+            if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
             }
         while (++i < actualRange);
         return start == to;
@@ -218,52 +208,40 @@ namespace djack.RogueSurvivor.Engine
 
         // center to center spread is: 2 4 6 8,...
         // but we cross over at 1,1 3, 1 3 5, ...
-#if PROTOTYPE
-        Direction last_dir = Direction.NEUTRAL;
-#endif
+        var blacklist = new Point?[3]; // Point[]?[] in n-d case
         int knightmove_parity = 0;
         int numerator = 0;  // denominator is need range
         do  {
+            blacklist[0] = blacklist[1];
+            blacklist[1] = blacklist[2];
+            blacklist[2] = null;
             numerator += 2*alt_count;
             if (numerator>needRange)
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
-                if (!fn(start)) return false;
-#if PROTOTYPE
-                last_dir = alt_step;
-#endif
+                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
                 visible(start);
+                if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 }
             else if (numerator < needRange)
                 {
                 start += tmp;
-                if (!fn(start)) return false;
-#if PROTOTYPE
-                last_dir = tmp;
-#endif
+                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
                 visible(start);
+                if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 };
-#if PROTOTYPE
-            if (0==knightmove_parity && 1 == last_dir.Index%2) {
-              // our last move was diagonal.
-              if (last_dir == tmp) {
-              } else if (last_dir == alt_step) {
-              } /* else { // invariant violation
-              }*/
-            }
-#endif
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
-                if (!fn(test)) knightmove_parity = -1;
+                if ((null != blacklist[0] && blacklist[0]==test) || !fn(test)) knightmove_parity = -1;
                 }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+alt_step;
-                if (!fn(test)) knightmove_parity = 1;
+                if ((null != blacklist[0] && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
                 }
             if (-1==knightmove_parity)
                 {
@@ -271,12 +249,14 @@ namespace djack.RogueSurvivor.Engine
                 numerator -= 2 * needRange;
                 if (!fn(start)) return false;
                 visible(start);
+                if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
                 }
 //          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
             start += tmp;
             if (!fn(start)) return false;
             visible(start);
+            if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
             }
         while (++i < actualRange);
         return start == to;
