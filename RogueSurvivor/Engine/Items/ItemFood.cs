@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public void Use(Actor actor, Inventory inv) {
       const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
 
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.LivingEat(actor.CurrentNutritionOf(this));
       inv.Consume(this); // does the "is in inventory check"
       if (Model == Gameplay.GameItems.CANNED_FOOD) {

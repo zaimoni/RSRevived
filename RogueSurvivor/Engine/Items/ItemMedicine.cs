@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.RegenHitPoints(actor.ScaleMedicineEffect(Healing));
       actor.RegenStaminaPoints(actor.ScaleMedicineEffect(StaminaBoost));
       actor.Rest(actor.ScaleMedicineEffect(SleepBoost));

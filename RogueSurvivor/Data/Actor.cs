@@ -46,6 +46,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Actor : IEquatable<Actor>
     {
+    public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
@@ -2305,7 +2306,7 @@ namespace djack.RogueSurvivor.Data
 #endif
 
     // event timing
-    public void SpendActionPoints(int actionCost)
+    public void SpendActionPoints(int actionCost = BASE_ACTION_COST)
     {
       Interlocked.Add(ref m_ActionPoints, -actionCost);
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
@@ -2325,7 +2326,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanActNextTurn {
       get {
-        if (CanActThisTurn) return 0 < m_ActionPoints + Speed - Rules.BASE_ACTION_COST;
+        if (CanActThisTurn) return 0 < m_ActionPoints + Speed - BASE_ACTION_COST;
         return 0 < m_ActionPoints + Speed;
       }
     }
@@ -2356,7 +2357,7 @@ namespace djack.RogueSurvivor.Data
       int my_ap = m_ActionPoints;
       int my_actions = 0;
       while(0 < my_ap) { // assuming this never gets very large
-        my_ap -= Rules.BASE_ACTION_COST;
+        my_ap -= BASE_ACTION_COST;
         my_actions++;
       }
       if (my_actions>n) return 0;
@@ -2364,20 +2365,20 @@ namespace djack.RogueSurvivor.Data
       int other_ap = other.m_ActionPoints+((Location.Map.District!=other.Location.Map.District || IsBefore(other)) ? 0 : other.Speed);
       int other_actions = 0;
       while(0 < other_ap) { // assuming this never gets very large
-        other_ap -= Rules.BASE_ACTION_COST;
+        other_ap -= BASE_ACTION_COST;
         other_actions++;
       }
       if (my_actions==n) return other_actions;
       while(my_actions<n) {
         my_ap += Speed;
         while(0 < my_ap) { // assuming this never gets very large
-          my_ap -= Rules.BASE_ACTION_COST;
+          my_ap -= BASE_ACTION_COST;
           my_actions++;
         }
         if (my_actions>n) break;
         other_ap += other.Speed;
         while(0 < other_ap) { // assuming this never gets very large
-          other_ap -= Rules.BASE_ACTION_COST;
+          other_ap -= BASE_ACTION_COST;
           other_actions++;
         }
       }
@@ -2388,7 +2389,7 @@ namespace djack.RogueSurvivor.Data
     public int InfectionHPs { get { return MaxHPs + MaxSTA; } }
 
     public void Infect(int i) {
-      if (Engine.Session.Get.HasInfection) m_Infection = Math.Min(InfectionHPs, m_Infection + i);    // intentional no-op if mode doesn't have infection
+      if (Session.Get.HasInfection) m_Infection = Math.Min(InfectionHPs, m_Infection + i);    // intentional no-op if mode doesn't have infection
     }
 
     public void Cure(int i) { m_Infection = Math.Max(0, m_Infection - i); }
@@ -2474,18 +2475,18 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantRun());
     }
 
-	public bool RunIsFreeMove { get { return Rules.BASE_ACTION_COST/2 < m_ActionPoints; } }
-	public bool WalkIsFreeMove { get { return Rules.BASE_ACTION_COST < m_ActionPoints; } }
-    public int EnergyDrain { get { return Rules.BASE_ACTION_COST - Model.DollBody.Speed; } }
+	public bool RunIsFreeMove { get { return BASE_ACTION_COST/2 < m_ActionPoints; } }
+	public bool WalkIsFreeMove { get { return BASE_ACTION_COST < m_ActionPoints; } }
+    public int EnergyDrain { get { return BASE_ACTION_COST - Model.DollBody.Speed; } }
 	public bool NextMoveLostWithoutRunOrWait { get { return EnergyDrain >= m_ActionPoints; } }
 
     /// <returns>0 have move, 1 would have move with one walk replaced by run, 2 no move</returns>
     public int MoveLost(int turns, int walk, int run) {
       int working = m_ActionPoints;
       working += turns* Model.DollBody.Speed;
-      working -= Rules.BASE_ACTION_COST* walk;
-      working -= (Rules.BASE_ACTION_COST/2)*run;
-      if (-(Rules.BASE_ACTION_COST / 2) >= working) return 2;   // positively lost
+      working -= BASE_ACTION_COST* walk;
+      working -= (BASE_ACTION_COST/2)*run;
+      if (-(BASE_ACTION_COST / 2) >= working) return 2;   // positively lost
       if (0 >= working) return 1;   // need to run to get a move
       return 0; // have move
     }
@@ -3662,18 +3663,17 @@ namespace djack.RogueSurvivor.Data
     public static event EventHandler<SayArgs>? Says;
 
     // experimental...testing an event approach to this
-    public void Say(Actor target, string text, Engine.RogueGame.Sayflags flags)
+    public void Say(Actor target, string text, RogueGame.Sayflags flags)
     {
-      Color sayColor = ((flags & Engine.RogueGame.Sayflags.IS_DANGER) != 0) ? Engine.RogueGame.SAYOREMOTE_DANGER_COLOR : Engine.RogueGame.SAYOREMOTE_NORMAL_COLOR;
+      Color sayColor = ((flags & RogueGame.Sayflags.IS_DANGER) != 0) ? RogueGame.SAYOREMOTE_DANGER_COLOR : RogueGame.SAYOREMOTE_NORMAL_COLOR;
 
-      if ((flags & Engine.RogueGame.Sayflags.IS_FREE_ACTION) == Engine.RogueGame.Sayflags.NONE)
-        SpendActionPoints(Engine.Rules.BASE_ACTION_COST);
+      if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE) SpendActionPoints();
 
       var handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
-        SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE);
-        tmp.messages.Add(Engine.RogueGame.MakeMessage(this, string.Format("to {0} : ", target.TheName), sayColor));
-        tmp.messages.Add(Engine.RogueGame.MakeMessage(this, string.Format("\"{0}\"", text), sayColor));
+        SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE);
+        tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("to {0} : ", target.TheName), sayColor));
+        tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("\"{0}\"", text), sayColor));
         handler(this,tmp);
       }
     }

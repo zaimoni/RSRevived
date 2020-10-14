@@ -303,6 +303,9 @@ namespace djack.RogueSurvivor.Engine
     private const int PLAYER_HEAR_BREAK_CHANCE = 50;
     private const int PLAYER_HEAR_EXPLOSION_CHANCE = 100;
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
+    private const double BASE_SPEED = Actor.BASE_ACTION_COST; // double triggers automatic promotion from integer to double
+    private const int JUMP_STUMBLE_CHANCE = 25;
+    private const int JUMP_STUMBLE_ACTION_COST = Actor.BASE_ACTION_COST;
 
 #nullable enable
 #if DEBUG
@@ -1987,7 +1990,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
         throw new InvalidOperationException("nextActorToAct.Controller == null");
 #else
-        nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
+        nextActorToAct.SpendActionPoints();
 #endif
       else if (nextActorToAct.Controller is PlayerController pc) {
         HandlePlayerActor(pc);
@@ -4008,7 +4011,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
       bool player = ForceVisibleToPlayer(a);
-      a.SpendActionPoints(Rules.BASE_ACTION_COST);
+      a.SpendActionPoints();
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = a.DamageVsCorpses;
@@ -4021,7 +4024,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoEatCorpse(Actor a, Corpse c)
     {
       bool player = ForceVisibleToPlayer(a);
-      a.SpendActionPoints(Rules.BASE_ACTION_COST);
+      a.SpendActionPoints();
       int num = a.DamageVsCorpses;
       if (player) {
         AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", VERB_FEAST_ON.Conjugate(a), c.DeadGuy.Name)));
@@ -4047,7 +4050,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoReviveCorpse(Actor actor, Corpse corpse)
     {
       bool player = ForceVisibleToPlayer(actor);
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       Map map = actor.Location.Map;
       var pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
       var revive = corpse.DeadGuy;
@@ -4256,7 +4259,7 @@ namespace djack.RogueSurvivor.Engine
             if (player.CanTradeWith(actorAt, out string reason)) {
               ClearOverlays();
               RedrawPlayScreen();
-              if (DoTrade(pc, inventoryItem, actorAt, true)) player.SpendActionPoints(Rules.BASE_ACTION_COST);
+              if (DoTrade(pc, inventoryItem, actorAt, true)) player.SpendActionPoints();
               return true;
             } else {
               AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
@@ -6598,7 +6601,7 @@ namespace djack.RogueSurvivor.Engine
       } // m_Player.IsEnemyOf(actor)
 
       // main stat block
-      lines.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
+      lines.Add(string.Format("Spd : {0:F2}", actor.Speed / BASE_SPEED));
       var stringBuilder = new StringBuilder();
       int max;
       int tmp_i;
@@ -7327,7 +7330,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.CanEnter(newLocation)) throw new InvalidOperationException(actor.Name+" tried to enter impassible "+newLocation+" from "+actor.Location);
 #endif
       if (!TryActorLeaveTile(actor)) {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         return;
       }
       Location location = actor.Location;
@@ -7342,7 +7345,7 @@ namespace djack.RogueSurvivor.Engine
         if (dest_seen || ForceVisibleToPlayer(in location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName)));
       }
-      int actionCost = Rules.BASE_ACTION_COST;
+      int actionCost = Actor.BASE_ACTION_COST;
       if (actor.IsRunning) {
         actionCost /= 2;
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
@@ -7351,8 +7354,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (dest_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));
-        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
-          actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
+        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(JUMP_STUMBLE_CHANCE)) {
+          actionCost += JUMP_STUMBLE_ACTION_COST;
           if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
@@ -7544,7 +7547,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (!TryActorLeaveTile(actor)) {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         if (Player==actor) RedrawPlayScreen();
         return false;
       }
@@ -7575,15 +7578,15 @@ namespace djack.RogueSurvivor.Engine
       bool is_running = actor.IsRunning;
       bool run_was_free_move = run_is_free_move && is_running;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
       bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && null!=exit_map.NextActorToAct;
-      actor.SpendActionPoints(is_running ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(is_running ? Actor.BASE_ACTION_COST/2 : Actor.BASE_ACTION_COST);
       if (is_running) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       bool origin_seen = ForceVisibleToPlayer(actor);
       var mapObjectAt = exitAt.Location.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (origin_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));   // XXX not quite right, cf. other jump usage
-        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
-          actor.SpendActionPoints(Rules.JUMP_STUMBLE_ACTION_COST);
+        if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(JUMP_STUMBLE_CHANCE)) {
+          actor.SpendActionPoints(JUMP_STUMBLE_ACTION_COST);
           if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
@@ -7615,7 +7618,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoSwitchPlace(Actor actor, Actor other)
     {
-      actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(2*Actor.BASE_ACTION_COST);
       Location a_loc = actor.Location;
       Location o_loc = other.Location;
       other.RemoveFromMap();
@@ -7627,7 +7630,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeLead(Actor actor, Actor other)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.AddFollower(other);
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
@@ -7640,7 +7643,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoCancelLead(Actor actor, Actor follower)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.RemoveFollower(follower);
       follower.SetTrustIn(actor, follower.TrustInLeader);
       follower.TrustInLeader = 0;
@@ -7872,7 +7875,7 @@ namespace djack.RogueSurvivor.Engine
       attacker.Aggress(defender);
       Attack attack = attacker.MeleeAttack(defender);
       Defence defence = defender.Defence;
-      attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      attacker.SpendActionPoints();
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       var rules = Rules.Get;
       int hitRoll = rules.RollSkill(attack.HitValue);
@@ -8003,11 +8006,11 @@ namespace djack.RogueSurvivor.Engine
       ai?.RecordLoF(LoF);
       switch (mode) {
         case FireMode.AIMED:
-          attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
+          attacker.SpendActionPoints();
           DoSingleRangedAttack(attacker, defender, LoF, 0);
           break;
         case FireMode.RAPID:
-          attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
+          attacker.SpendActionPoints();
           DoSingleRangedAttack(attacker, defender, LoF, 1);
           ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
           if (itemRangedWeapon.Ammo <= 0) break;
@@ -8156,7 +8159,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoThrowGrenadeUnprimed(Actor actor, in Point targetPos)
     {
       if (!(actor.GetEquippedWeapon() is ItemGrenade itemGrenade)) throw new InvalidOperationException("throwing grenade but no grenade equipped");
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.Inventory.Consume(itemGrenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
@@ -8173,7 +8176,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoThrowGrenadePrimed(Actor actor, in Point targetPos)
     {
       if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
       Map map = actor.Location.Map;
       map.DropItemAtExt(itemGrenadePrimed, in targetPos);
@@ -8318,7 +8321,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
       if (speaker.IsPlayer || !speaker.CanTradeWith(target)) {
-        speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+        speaker.SpendActionPoints();
         return;
       }
       DoTrade(speaker.Controller as OrderableAI, target.Controller as OrderableAI);
@@ -8536,7 +8539,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      speaker.SpendActionPoints();
       if (flag1) {
         AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
         RedrawPlayScreen();
@@ -8558,7 +8561,7 @@ namespace djack.RogueSurvivor.Engine
       inv.RejectCrossLink(dest);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.Remove(give);
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
@@ -8590,7 +8593,7 @@ namespace djack.RogueSurvivor.Engine
       var speaker = speaker_c.ControlledActor;
       var target = target_c.ControlledActor;
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
-      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);    // prevent hyper-active player trades
+      speaker.SpendActionPoints();    // prevent hyper-active player trades
       
       // bail on null item from speaker early
       if (null == trade) {
@@ -8791,7 +8794,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public void DoShout(Actor speaker, string? text)
     {
-      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      speaker.SpendActionPoints();
       OnLoudNoise(speaker.Location, "A SHOUT");
       if (!AreLinkedByPhone(speaker, Player) && !ForceVisibleToPlayer(speaker)) return;
       if (Player == speaker.Leader) {
@@ -8854,7 +8857,7 @@ namespace djack.RogueSurvivor.Engine
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
       actor.Inventory.RepairContains(it, "have already taken ");
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
       container.TransferFrom(it, actor.Inventory);   // invalidates g_inv if that was the last item
@@ -8874,7 +8877,7 @@ namespace djack.RogueSurvivor.Engine
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
       actor.Inventory.RepairContains(it, "have already taken ");
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
       loc.Map.TransferFrom(it, loc.Position, actor.Inventory);   // invalidates g_inv if that was the last item
@@ -8957,7 +8960,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (target.Leader == actor) {
         bool flag = (target.Controller as ObjectiveAI).IsInterestingItem(gift);
         DoSay(target, actor, flag ? "Thank you, I really needed that!" : "Thanks I guess...", Sayflags.IS_FREE_ACTION);
@@ -8969,7 +8972,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (gift is ItemTrap trap) trap.Desactivate();
       actor.Inventory.Transfer(gift, target.Inventory);
-      target.SpendActionPoints(Rules.BASE_ACTION_COST);
+      target.SpendActionPoints();
       if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) == null)
         gift.EquippedBy(target);
 
@@ -8979,7 +8982,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (container.PutItemIn(gift)) actor.Remove(gift, false);
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
@@ -8989,7 +8992,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoDropItem(Actor actor, Item it)
     {
       if (actor.CanUnequip(it)) it.UnequippedBy(actor,false);
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       Item obj = it;
       if (it is ItemTrap trap) {
         ItemTrap clone = trap.Clone();
@@ -9078,7 +9081,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
       bool player = ForceVisibleToPlayer(actor);
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
       switch(ent.Model.ID) {
       case GameItems.IDs.ENT_CHAR_GUARD_MANUAL:
@@ -9118,7 +9121,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       (it as BatteryPowered).Recharge();
       if (ForceVisibleToPlayer(actor)) {
         AddMessage(MakeMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
@@ -9129,7 +9132,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoOpenDoor(Actor actor, DoorWindow door)
     {
       door.SetState(DoorWindow.STATE_OPEN);
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
         RedrawPlayScreen();
@@ -9139,7 +9142,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityCritical] public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
-      if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (!free) actor.SpendActionPoints();
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
         RedrawPlayScreen();
@@ -9154,12 +9157,12 @@ namespace djack.RogueSurvivor.Engine
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
     }
 
     public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       var inv = actor.Inventory!;
       int num = actor.BarricadingMaterialNeedForFortification(isLarge);
       for (int index = 0; index < num; ++index) {
@@ -9177,7 +9180,7 @@ namespace djack.RogueSurvivor.Engine
       var inv = actor.Inventory!;
       var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
       inv.Consume(barricadeMaterial);
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort))
         AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
@@ -9185,7 +9188,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       bool have_messaged = false;
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen)) {
         AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
@@ -9211,7 +9214,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Attack attack = actor.MeleeAttack(mapObj);
       if (mapObj is DoorWindow doorWindow && doorWindow.IsBarricaded) {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.Barricade(-attack.DamageValue);
         OnLoudNoise(doorWindow.Location, "A loud *BASH*");
@@ -9241,7 +9244,7 @@ namespace djack.RogueSurvivor.Engine
         }
         return;
       } else {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         bool flag = mapObj.Damage(attack.DamageValue);
         if (!flag) OnLoudNoise(mapObj.Location, "A loud *CRASH*");
@@ -9299,7 +9302,7 @@ namespace djack.RogueSurvivor.Engine
         // share the sta cost.
         staCost = mapObj.Weight / (1 + helpers.Count);
         foreach (Actor h in helpers) {
-          h.SpendActionPoints(Rules.BASE_ACTION_COST);
+          h.SpendActionPoints();
           h.SpendStaminaPoints(staCost);
           if (isVisibleMobj || IsVisibleToPlayer(h)) AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
         }
@@ -9311,7 +9314,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, false, ref staminaCost); // alpha10
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.SpendStaminaPoints(staminaCost);
       Location o_loc = mapObj.Location;
       o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
@@ -9349,7 +9352,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoShove(Actor actor, Actor target, in Point toPos)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDragCorpse(target);
@@ -9385,7 +9388,7 @@ namespace djack.RogueSurvivor.Engine
       int staCost = mapObj.Weight;
 
       if (!TryActorLeaveTile(actor)) {  // try leaving tile
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         return;
       }
 
@@ -9393,7 +9396,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, true, ref staCost);
 
       // spend AP & STA.
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.SpendStaminaPoints(staCost);
 
       // do it : move actor then move object
@@ -9447,11 +9450,11 @@ namespace djack.RogueSurvivor.Engine
 
       // try leaving tile, both actors and target
       if (!TryActorLeaveTile(actor) || !TryActorLeaveTile(target)) {
-        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints();
         return;
       }
 
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
       target.StopDraggingCorpse();
 
@@ -9481,7 +9484,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoStartSleeping(Actor actor)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       DoStopDragCorpse(actor);
       actor.Activity = Data.Activity.SLEEPING;
       actor.IsSleeping = true;
@@ -9499,7 +9502,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       if (!ForceVisibleToPlayer(actor)) return;
@@ -9510,7 +9513,7 @@ namespace djack.RogueSurvivor.Engine
     // alpha10 new way to use spray scent
     public void DoSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);  // spend AP.
+      actor.SpendActionPoints();  // spend AP.
       --suppressor.SprayQuantity;   // spend spray.
       sprayOn.OdorSuppressorCounter += suppressor.Model.Strength; // add odor suppressor on spray target
 
@@ -9521,7 +9524,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
     {
-      master.SpendActionPoints(Rules.BASE_ACTION_COST);
+      master.SpendActionPoints();
       if (master != slave.Leader) DoSay(slave, master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
       else if (!slave.IsTrustingLeader) DoSay(slave, master, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
       else {
@@ -9534,7 +9537,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoCancelOrder(Actor master, Actor slave)
     {
-      master.SpendActionPoints(Rules.BASE_ACTION_COST);
+      master.SpendActionPoints();
       if (!(slave.Controller is OrderableAI ai)) return;
       ai.SetOrder(null);
       if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
@@ -11298,8 +11301,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Defence defence = actor.Defence;
       return (actor.Model.Abilities.IsUndead
-            ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
-            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
+            ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
     private string _gameStatus(Actor a) {

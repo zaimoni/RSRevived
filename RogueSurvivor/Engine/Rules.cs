@@ -47,15 +47,11 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
-    public const int BASE_ACTION_COST = 100;
-    public const int BASE_SPEED = 100;
     public const int STAMINA_COST_RUNNING = 4;
     public const int STAMINA_REGEN_PER_TURN = 2;
     public const int STAMINA_COST_JUMP = 8;
     public const int STAMINA_COST_MELEE_ATTACK = 8;
     public const int STAMINA_COST_MOVE_DRAGGED_CORPSE = 8;
-    public const int JUMP_STUMBLE_CHANCE = 25;
-    public const int JUMP_STUMBLE_ACTION_COST = 100;
     public const int BARRICADING_MAX = 80;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;

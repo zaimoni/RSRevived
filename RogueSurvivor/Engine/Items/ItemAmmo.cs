@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints();
       var rw = (actor.GetEquippedWeapon() as ItemRangedWeapon)!;
       sbyte num = (sbyte)Math.Min(rw.Model.MaxAmmo - rw.Ammo, Quantity);
       rw.Ammo += num;
