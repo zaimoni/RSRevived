@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsPerformable()
         {
             if (!base.IsPerformable()) return false;
-            return Rules.IsAdjacent(m_Actor.Location, m_obj.Location);
+            return m_Actor.MayTakeFromStackAt(m_obj.Location);
         }
 
         public override void Perform()
@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsPerformable()
         {
             if (!base.IsPerformable()) return false;
-            return Rules.IsAdjacent(m_Actor.Location, in m_Location);
+            return m_Actor.Location == m_Location;
         }
 
         public override void Perform()
