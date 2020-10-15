@@ -39,9 +39,6 @@ namespace djack.RogueSurvivor.Gameplay
     private const int NO_FOOD = 0;
     private const int NO_SLEEP = 0;
     private const int NO_SANITY = 0;
-    private const int NO_SMELL = 0;
-    private const int NO_AUDIO = 0;
-    private const int NO_STA = 99;  // XXX arguably should be Actor.STAMINA_INFINITE
 
 #nullable enable
     public ActorModel this[int id] { get { return m_Models[id]; } }

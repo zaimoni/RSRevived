@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Data
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
-    private const int STAMINA_INFINITE = 99;
+    private const int STAMINA_INFINITE = 99; // Marker.  !Abilities.CanTire typically is checked, so value is almost immaterial.
     public const int STAMINA_MIN_FOR_ACTIVITY = 10; // would space-time scale if stamina itself space-time scaled
     private const int NIGHT_STA_PENALTY = 2;
     public const int STAMINA_REGEN_WAIT = 2;
@@ -94,6 +94,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_TOUGH_HP_BONUS = 6;
     public static int SKILL_UNSUSPICIOUS_BONUS = 20;   // alpha10
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
+    public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
     public static double SKILL_ZINFECTOR_BONUS = 0.15f;
     public static double SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
@@ -3578,6 +3579,12 @@ namespace djack.RogueSurvivor.Data
       }
       return Math.Max(MINIMAL_FOV, FOV);
     }
+
+    public int ZGrabChance(Actor victim)
+    {
+      return Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
+    }
+
 
     // smell
     public double Smell {

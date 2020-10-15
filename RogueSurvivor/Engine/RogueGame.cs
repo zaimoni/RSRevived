@@ -4278,7 +4278,7 @@ namespace djack.RogueSurvivor.Engine
         } else if (next_to) {
           var obj = player.Location.Map.GetMapObjectAtExt(pos);
           if (null != obj && obj.IsContainer) ground_inv = obj.Inventory;
-          if (ground_inv.IsEmpty) ground_inv = null;
+          if (null != ground_inv && ground_inv.IsEmpty) ground_inv = null;
         }
         if (null != ground_inv) {
           DoTrade(pc, inventoryItem, ground_inv);
@@ -7265,7 +7265,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_EATER:
           return string.Format("+{0}% eating HP regen", (int)(100.0 * Actor.SKILL_ZEATER_REGEN_BONUS));
         case Skills.IDs.Z_GRAB:
-          return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
+          return string.Format("can grab enemies, +{0}% per level", Actor.SKILL_ZGRAB_CHANCE);
         case Skills.IDs.Z_INFECTOR:
           return string.Format("+{0}% infection damage", (int)(100.0 * Actor.SKILL_ZINFECTOR_BONUS));
         case Skills.IDs.Z_LIGHT_EATER:
@@ -7359,7 +7359,9 @@ namespace djack.RogueSurvivor.Engine
           if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
-      if (draggedCorpse != null) actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
+
+      const int STAMINA_COST_MOVE_DRAGGED_CORPSE = 8;
+      if (draggedCorpse != null) actor.SpendStaminaPoints(STAMINA_COST_MOVE_DRAGGED_CORPSE);
       actor.SpendActionPoints(actionCost);
 
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
@@ -7419,7 +7421,7 @@ namespace djack.RogueSurvivor.Engine
       // 2020-01-03: Z-grab extended to cross-exit
       actor.Location.ForEachAdjacent(loc => {
           var actorAt = loc.Actor;
-          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(Rules.ZGrabChance(actorAt, actor))) return;
+          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(actorAt.ZGrabChance(actor))) return;
           if (visible) AddMessage(MakeMessage(actorAt, VERB_GRAB.Conjugate(actorAt), actor));
           canLeave = false;
       });

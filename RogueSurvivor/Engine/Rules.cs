@@ -46,12 +46,10 @@ namespace djack.RogueSurvivor.Engine
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
-    public static int SKILL_ZGRAB_CHANCE = 4;   // alpha10
     public const int STAMINA_COST_RUNNING = 4;
     public const int STAMINA_REGEN_PER_TURN = 2;
     public const int STAMINA_COST_JUMP = 8;
     public const int STAMINA_COST_MELEE_ATTACK = 8;
-    public const int STAMINA_COST_MOVE_DRAGGED_CORPSE = 8;
     public const int BARRICADING_MAX = 80;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
@@ -768,11 +766,6 @@ namespace djack.RogueSurvivor.Engine
       if (trap.IsSafeFor(a)) return true;  // alpha10
       var skills = a.Sheet.SkillTable;
       return RollChance(0 + (skills.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
-    }
-
-    public static int ZGrabChance(Actor grabber, Actor victim)
-    {
-      return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
     }
 #nullable restore
 

@@ -181,7 +181,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[23];
       Actor.SKILL_ZINFECTOR_BONUS = skillData2.VALUE1;
       skillData2 = data[22];
-      Rules.SKILL_ZGRAB_CHANCE = (int) skillData2.VALUE1;
+      Actor.SKILL_ZGRAB_CHANCE = (int) skillData2.VALUE1;
       skillData2 = data[24];
       Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS = skillData2.VALUE1;
       Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = skillData2.VALUE2;
