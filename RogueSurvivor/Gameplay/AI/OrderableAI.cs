@@ -512,7 +512,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               continue;
             }
             if (m_Actor.MayTakeFromStackAt(_stacks[i].Location) && act.IsPerformable()) {
-              (_inventory_actions ?? (_inventory_actions = new List<KeyValuePair<Location, ActorAction>>())).Add(new KeyValuePair<Location, ActorAction>(_stacks[i].Location, act));
+              (_inventory_actions ??= new List<KeyValuePair<Location, ActorAction>>()).Add(new KeyValuePair<Location, ActorAction>(_stacks[i].Location, act));
             }
           }
         }
@@ -528,7 +528,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        if (m_Actor.Controller.InCombat) return false;
+        if (m_Actor.Controller.IsEngaged) return false;
 
         if (null != _inventory_actions) {
           // prefilter
