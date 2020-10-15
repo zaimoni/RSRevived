@@ -7803,11 +7803,7 @@ namespace djack.RogueSurvivor.Engine
       };
 
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => {
-        ClearMessages();
-        AddMessages(player_msgs);
-        AddMessagePressEnter();
-      }, a => {
-        (a.Controller as PlayerController).DeferMessages(player_msgs);
+        (a.Controller as PlayerController).AddMessagesForceRead(player_msgs);
       }, a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -7840,11 +7836,7 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => {
-        ClearMessages();
-        AddMessages(player_msgs);
-        AddMessagePressEnter();
-      }, a => {
-        (a.Controller as PlayerController).DeferMessages(player_msgs);
+        (a.Controller as PlayerController).AddMessagesForceRead(player_msgs);
       }, a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -7853,7 +7845,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test)
+    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> msg_player, Func<Actor, bool> msg_player_test)
     {
       // XXX this should actually be based on radio range
       // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
@@ -7868,7 +7860,7 @@ namespace djack.RogueSurvivor.Engine
         return a.Faction == faction;
       }
 
-      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, defer_msg_player, msg_player_test);
+      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, msg_player, msg_player_test);
     }
 #nullable restore
 
