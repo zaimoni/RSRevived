@@ -5540,8 +5540,28 @@ restart_chokepoints:
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
         Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => 1 >= ItemRatingCode(obj)));
-        if (null == worst) return null;
-        return _BehaviorDropOrExchange(worst, it, position, use_ok);
+        if (null != worst) return _BehaviorDropOrExchange(worst, it, position, use_ok);
+        // at this point...try finding something that loses importance when it's dropped
+        var rws = m_Actor.Inventory.Has<ItemLight>() ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
+        if (null != rws && 1 < rws.Count) {
+          var no_ammo_rws = rws.FindAll(rw => null == m_Actor.Inventory.GetCompatibleAmmoItem(rw));
+          if (0 < no_ammo_rws.Count) {
+            ItemRangedWeapon? drop = (1 == no_ammo_rws.Count ? no_ammo_rws[0] : null);
+            if (null != drop) return _BehaviorDropOrExchange(drop, it, position, use_ok);
+            // crossbows are hard to use if unskilled
+            foreach (var rw in no_ammo_rws) {
+              if (rw.Model.IsBow && 0 >= m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS)) {
+                if (null == drop || !drop.Model.IsBow || drop.Ammo > rw.Ammo) drop = rw;
+                continue;
+              }
+            }
+            if (null != drop) return _BehaviorDropOrExchange(drop, it, position, use_ok);
+#if DEBUG
+            throw new InvalidOperationException("test case");
+#endif
+          }
+        }
+        return null;
       }
 
       if (it is ItemMedicine) return null;
@@ -5792,13 +5812,13 @@ restart_chokepoints:
         if (best_rating.Value < rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
 #if DEBUG
-        if (0 >= melee_count) throw new InvalidOperationException("inconstent return values");
+        if (0 >= melee_count) throw new InvalidOperationException("inconsistent return values");
 #endif
         if (2<= melee_count) {
           ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
-        return true;
+        return !m_Actor.Inventory.IsFull;
       }
       if (it is ItemBodyArmor new_armor) {
         var armor = m_Actor.GetBestBodyArmor();
