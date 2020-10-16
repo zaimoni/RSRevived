@@ -5649,6 +5649,25 @@ restart_chokepoints:
         }
       }
 
+      if (it is ItemFood food && null != position) {
+        // if we can eat it *now* without wasting, consider more extreme measures
+        var val = m_Actor.ItemNutritionValue(food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter)); // \todo consider allowing for travel time
+        if (val > m_Actor.MaxFood-m_Actor.FoodPoints) return null;
+        // heuristic: find least interesting item, exchange it out for the food, eat food, take or exchange-out food for item
+        // flashlights tend to not be very disruptive to other pathing
+        var discard = inv.GetFirstMatching<ItemLight>();
+        if (null != discard) {
+          var initiate = ActionTradeWith.Cast(position.Value, m_Actor, discard, it);
+          if (null != initiate) {
+            var actions = new List<ActorAction> { initiate };
+            actions.Add(new ActionUseItem(m_Actor, it)); // won't be legal but would be after initiation
+            if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
+            else actions.Add(new ActionTake(m_Actor, discard.Model.ID));
+            return new ActionChain(m_Actor, actions);
+          }
+        }
+      }
+
 #if DEBUG
       // do not pick up trackers if it means dropping body armor or higher priority
       if (it is ItemTracker) return null;
