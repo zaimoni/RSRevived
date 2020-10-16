@@ -1300,6 +1300,7 @@ namespace djack.RogueSurvivor.Data
             if (player_initiated || simulating) defer_msg_player(actor);
             else {
               RogueForm.Game.PanViewportTo(actor);
+              player_initiated = true; // not really, but this prevents distracting re-pans for background police radio
               msg_player(actor);
             }
           }
