@@ -24,7 +24,7 @@ https://github.com/GalacticChimp/RogueSurvivorRezombified
 
 UNIX build of RS Alpha 9
 http://roguesurvivor.proboards.com/thread/378/rogue-survivor-linux
-github.com/Stenodyon/Rogue-Survivor-Linux
+https://github.com/Stenodyon/Rogue-Survivor-Linux
 
 ========
 
