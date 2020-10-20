@@ -3562,25 +3562,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-#nullable enable
-    protected bool HaveThreatsInCurrentMap()
-    {
-      var threats = m_Actor.Threats;
-      if (null == threats) return false;
-      var map = m_Actor.Location.Map;
-      if (District.IsSewersMap(map) && Session.Get.HasZombiesInSewers) return false;
-      return 0< threats.ThreatWhere(map).Count;   // XXX could be more efficient?
-    }
-
-    protected bool HaveTourismInCurrentMap()
-    {
-      var sights_to_see = m_Actor.InterestingLocs;
-      if (null == sights_to_see) return false;
-      HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
-      return 0<tainted.Count;   // XXX could be more efficient?
-    }
-#nullable restore
-
     public bool ProposeSwitchPlaces(Location dest)
     {
       if (null != WouldUseAccessibleStack(m_Actor.Location)) return false;

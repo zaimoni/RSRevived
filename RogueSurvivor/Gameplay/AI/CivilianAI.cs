@@ -470,7 +470,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         return tmpAction;
       }
-      if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) {
+      if (null == m_Actor.Threats && null == m_Actor.InterestingLocs) {
         if (rules.RollChance(USE_EXIT_CHANCE)) {
           tmpAction = BehaviorUseExit(UseExitFlags.DONT_BACKTRACK);
 #if TRACE_SELECTACTION
