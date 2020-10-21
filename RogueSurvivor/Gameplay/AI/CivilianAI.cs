@@ -20,6 +20,7 @@ using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using djack.RogueSurvivor.Engine.Actions;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -665,6 +666,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
 #endif
+            // object constancy: remember that we're going somewhere on the destination level
+            if (   tmpAction is ActionUseExit leaving && leaving.dest.Map.District == m_Actor.Location.Map.District
+                && 1==District.UsesCrossDistrictView(m_Actor.Location.Map) && 2!= District.UsesCrossDistrictView(leaving.dest.Map)) {
+                var dest_view = District.UsesCrossDistrictView(leaving.dest.Map);
+                if (2 != dest_view) {
+                  HashSet<Location>? dests = null;
+                  if (0<Session.Get.UniqueMaps.HospitalDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+                  if (0<Session.Get.UniqueMaps.PoliceStationDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+                  if (0 >= dest_view) dests = update_path.Unstage(loc => leaving.dest.Map != loc.Map);
+                  else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
+                  if (0 < dests.Count) {
+                    var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
+                    Objectives.Insert(0, goal);
+                    AddFOVevent(goal);
+                  }
+                }
+            }
             if (null!=tmpAction) return tmpAction;
             update_path.ForgetStaging();
           }

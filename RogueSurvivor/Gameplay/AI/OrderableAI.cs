@@ -246,73 +246,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    [Serializable]
-    internal class Goal_AcquireLineOfSight : Objective
-    {
-      readonly private HashSet<Location> _locs;
-
-      public Goal_AcquireLineOfSight(int t0, Actor who, in Location loc)
-      : base(t0,who)
-      {
-        _locs = new HashSet<Location>{loc};
-      }
-
-      public Goal_AcquireLineOfSight(int t0, Actor who, IEnumerable<Location> locs)
-      : base(t0,who)
-      {
-        _locs = new HashSet<Location>(locs);
-      }
-
-      public void NewTarget(Location target)
-      {
-        _locs.Add(target);
-      }
-
-      public void NewTarget(IEnumerable<Location> target)
-      {
-        _locs.UnionWith(target);
-      }
-
-      public void RemoveTarget(Location target)
-      {
-        _locs.Remove(target);
-      }
-
-      public void RemoveTarget(IEnumerable<Location> target)
-      {
-        _locs.ExceptWith(target);
-      }
-
-      public override bool UrgentAction(out ActorAction ret)
-      {
-        ret = null;
-        IEnumerable<Location> tmp = _locs.Where(loc => !m_Actor.Controller.CanSee(in loc));
-        if (!tmp.Any()) return true;
-        ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
-        // if any in-communication ally can see the location, clear it
-        foreach(Actor friend in m_Actor.Allies) {
-          if (!ai.InCommunicationWith(friend)) continue;
-          tmp = tmp.Where(loc => !friend.Controller.CanSee(in loc));
-          if (!tmp.Any()) return true;
-        }
-        if (_locs.Count > tmp.Count()) {
-          var relay = tmp.ToList();
-          _locs.Clear();
-          _locs.UnionWith(relay);
-          // once we are caching inverse-FOV, clear that here
-        }
-        if (0 < ai.InterruptLongActivity()) return false;
-        // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
-        ret = ai.BehaviorPathTo(m => new HashSet<Point>(_locs.Where(l => l.Map==m).Select(l => l.Position)));
-        return true;
-      }
-
-      public override string ToString()
-      {
-        return "Acquiring line of sight to "+_locs.to_s();
-      }
-    }
-
     // \todo re-implement as mini-threat tracking
     [Serializable]
     internal class Goal_Terminate : Objective
@@ -3527,6 +3460,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmp = BehaviorTrading();
       if (null != tmp) return tmp;
       tmp = Pathing<Goal_PathToStack>();
+      if (null != tmp) return tmp;
+      tmp = Pathing<Goals.AcquireLineOfSight>();
       if (null != tmp) return tmp;
       return null;
     }

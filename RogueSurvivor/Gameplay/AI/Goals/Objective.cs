@@ -89,6 +89,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach (var x in src) if (!stage_generators.Contains(x)) stage_generators.Add(x);
         }
 
+        public HashSet<Location> Unstage(Predicate<Location> reject) {
+            stage_view.RemoveWhere(reject);
+            stage_inventory.RemoveWhere(reject);
+            var ret = new HashSet<Location>();
+            ret.UnionWith(stage_view);
+            ret.UnionWith(stage_inventory);
+            var ub = stage_generators.Count;
+            while (0 <= --ub) {
+                if (reject(stage_generators[ub].Location)) stage_generators.RemoveAt(ub);
+                else ret.Add(stage_generators[ub].Location);
+            }
+            return ret;
+        }
+
         public void ForgetStaging() {
             stage_view.Clear();
             stage_inventory.Clear();
