@@ -136,6 +136,8 @@ namespace djack.RogueSurvivor.Data
       return !IsFull || HasAtLeastOneStackableWith(it);
     }
 
+    public void Clear() { m_Items.Clear(); }
+
     public void RemoveAllQuantity(Item it) {
 #if DEBUG
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");

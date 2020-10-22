@@ -3846,7 +3846,7 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
 
         if (Player.CanGet(it, out string reason2)) {
-          DoTakeItem(Player, Player.Location.Position, it);
+          DoTakeItem(Player, Player.Location, it);
           return true;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason2)));
@@ -4109,7 +4109,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       if (player.CanGet(it, out string reason)) {
-        DoTakeItem(player, player.Location.Position, it);
+        DoTakeItem(player, player.Location, it);
         return true;
       }
       AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
@@ -9653,6 +9653,7 @@ namespace djack.RogueSurvivor.Engine
           if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }
+        deadGuy.Inventory.Clear(); // will stay data-live through corpses otherwise
         Session.Get.Police.Investigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
       }
 
