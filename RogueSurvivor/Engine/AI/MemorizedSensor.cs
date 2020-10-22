@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -31,6 +32,31 @@ namespace djack.RogueSurvivor.Engine.AI
 #endif
       m_Sensor = noMemorySensor;
       m_Persistance = persistance;
+    }
+
+    // memorized sensor, etc. would need a rethinking if it was possible to debrief the recently revived
+    // (this is data-live for corpses through their controller)
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+      var ub = m_Percepts.Count;
+      while(0 <= --ub) {
+        var p = m_Percepts[ub];
+        if (p.GetAge(Session.Get.WorldTime.TurnCounter)>m_Persistance) {
+          m_Percepts.RemoveAt(ub);
+          continue;
+        }
+        if (p.Percepted is Inventory inv) {
+          if (inv.IsEmpty) {
+            m_Percepts.RemoveAt(ub);
+            continue;
+          }
+#if PROTOTYPE
+          if (null != p.Location.Items) {
+            if (p.Location.Items!=inv) throw new InvalidOperationException("tracing");
+          }
+#endif
+        }
+      }
     }
 
     public void Clear() { m_Percepts.Clear(); }
