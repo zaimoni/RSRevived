@@ -103,6 +103,9 @@ namespace djack.RogueSurvivor.Data
 
     public Item(ItemModel model, int qty = 1)
     {
+#if DEBUG
+      if (0 >= qty) throw new ArgumentOutOfRangeException(nameof(qty)); // reddit/Brasz 2020-10-23
+#endif
       m_ModelID = (int) model.ID;
       m_Quantity = qty;
       EquippedPart = DollPart.NONE;

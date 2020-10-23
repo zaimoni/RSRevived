@@ -201,6 +201,9 @@ namespace djack.RogueSurvivor.Data
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
+#if CPU_HOG_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "preparing to save: "+this);
+#endif
       info.AddValue("m_Seed", Seed);
       info.AddValue("m_District", District);
       info.AddValue("m_Name", Name);
@@ -219,6 +222,9 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_IsInside", m_IsInside);
       info.AddValue("m_Decorations", m_Decorations);
       info.AddValue("m_BgMusic", m_BgMusic);    // alpha10
+#if CPU_HOG_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "ready to save: "+this);
+#endif
      }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
@@ -1576,6 +1582,7 @@ retry:
     {
 #if DEBUG
       if (!GetTileModelAt(position).IsWalkable) throw new InvalidOperationException("tried to drop "+it+" on a wall at "+(new Location(this,position)));
+      if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
 #endif
       var itemsAt = GetItemsAt(position);
       itemsAt?.RepairContains(it, "already had ");
@@ -1643,6 +1650,7 @@ retry:
     public void TransferFrom(Item it, in Point position, Inventory dest) {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+      if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
 #endif
       var itemsAt = GetItemsAt(position);
 #if DEBUG
@@ -1662,6 +1670,7 @@ retry:
       if (null == doomed) return false;
       foreach(T it in doomed) itemsAt.RemoveAllQuantity(it);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
+      else itemsAt.RepairZeroQty(); // reddit/greenimba 2020-10-23
       return true;
     }
 

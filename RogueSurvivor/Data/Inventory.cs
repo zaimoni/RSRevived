@@ -80,6 +80,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool AddAll(Item it)
     {
+#if DEBUG
+      if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
+#endif
       RejectContains(it, "already had ");
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
       if (null != itemsStackableWith) { // also have 0<stackedQuantity
@@ -101,6 +104,9 @@ namespace djack.RogueSurvivor.Data
 
     public int AddAsMuchAsPossible(Item it)
     {
+#if DEBUG
+      if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
+#endif
       RepairContains(it, "already had ");
       int quantity = it.Quantity;
       int quantityAdded = 0;
