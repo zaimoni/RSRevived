@@ -316,6 +316,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 game.DoMakeAggression(m_Actor.TargetActor,m_Actor);
               } // XXX the target needs an AI modifier to handle this appropriately
             }
+            game.PropagateSight(m_Actor.Location, a => {
+              if (a.Leader != m_Actor && m_Actor.Leader != a) {
+                if (a.Faction.ID.ExtortionIsAggression()) {
+                  RogueGame.DoSay(a, m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+                  if (0 == m_Actor.MurdersOnRecord(a) || 0==m_Actor.MurdersCounter) m_Actor.HasMurdered(m_Actor.TargetActor); // XXX not really, but keeps things from going weird for civilian followers of police
+                  game.RadioNotifyAggression(a, m_Actor, "(police radio, {0}) Executing {1} for attempted murder."); // XXX \todo correct name for radio
+                  game.DoMakeAggression(a, m_Actor);
+                }
+              }
+            });
+
             return tmpAction;
           }
         }
