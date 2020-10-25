@@ -28,13 +28,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
       m_Location = loc;
+      if (!Map.Canonical(ref m_Location)) throw new ArgumentNullException(nameof(loc));
       m_Item = it;
-      var obj = loc.Map.GetMapObjectAtExt(loc.Position);
+      var obj = loc.MapObject;
       if (null != obj && obj.IsContainer && obj.Inventory.Contains(it)) m_Container = obj;
 
 #if DEBUG
       else {
-        var itemsAt = loc.Map.GetItemsAtExt(loc.Position);
+        var itemsAt = loc.Items;
         if (null == itemsAt || !itemsAt.Contains(it))
           throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
       }

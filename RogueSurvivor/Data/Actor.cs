@@ -3825,6 +3825,9 @@ namespace djack.RogueSurvivor.Data
         if (0 >= m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
         else m_SelfDefenceFrom.TrimExcess();
       }
+#if DEBUG
+      if (null != m_Inventory) m_Inventory.RepairZeroQty();
+#endif
     }
 
 #region IEquatable<>

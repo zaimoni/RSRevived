@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
@@ -48,6 +49,18 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       Filters = filters;
     }
 
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+      if (null != m_Actor && m_Actor.IsDead) {
+        _friends = null;
+        _enemies = null;
+        _items = null;
+      }
+#if DEBUG
+      if (null != _items) foreach(var x in _items) x.Value.RepairZeroQty();
+#endif
+    }
+
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
       _enemies = null;
@@ -58,8 +71,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
-        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Location, Actor>())).Add(loc, actorAt);
-        else (_friends ?? (_friends = new Dictionary<Location, Actor>())).Add(loc, actorAt);
+        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ??= new Dictionary<Location, Actor>()).Add(loc, actorAt);
+        else (_friends ??= new Dictionary<Location, Actor>()).Add(loc, actorAt);
       }
     }
 
@@ -73,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (null == allItems) continue;
         foreach(var inv in allItems) {
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc)); // \todo fix this
-          (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = inv; // \todo may have to retype this
+          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv; // \todo may have to retype this
         }
       }
     }
@@ -91,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         foreach(var inv in allItems) {
           staging.UnionWith(inv.Items.Select(x => x.Model.ID));
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc)); // \todo fix this
-          (_items ?? (_items = new Dictionary<Location, Inventory>()))[loc] = inv; // \todo may have to retype this
+          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv; // \todo may have to retype this
         }
         items.Set(loc, staging, loc.Map.LocalTime.TurnCounter);
       }

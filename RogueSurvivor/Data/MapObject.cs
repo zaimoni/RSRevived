@@ -6,6 +6,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
@@ -384,6 +385,13 @@ namespace djack.RogueSurvivor.Data
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = MaxHitPoints = hitPoints;
+    }
+
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+#if DEBUG
+      if (null != m_Inventory) m_Inventory.RepairZeroQty();
+#endif
     }
 
     private void _InitModel()

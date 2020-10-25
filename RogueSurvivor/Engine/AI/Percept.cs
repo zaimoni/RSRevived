@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
@@ -53,6 +54,13 @@ namespace djack.RogueSurvivor.Engine.AI
       if (null == percepted) throw new ArgumentNullException(nameof(percepted));
 #endif
       m_Percepted = percepted;
+    }
+
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+#if DEBUG
+      if (m_Percepted is Inventory inv) inv.RepairZeroQty();
+#endif
     }
 
     public override string ToString()
