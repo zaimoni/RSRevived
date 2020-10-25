@@ -26,6 +26,7 @@ using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
 using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
+using djack.RogueSurvivor.Gameplay;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -591,6 +592,14 @@ namespace djack.RogueSurvivor.Data
 
     public void HasMurdered(Actor victim)
     {
+#if DEBUG
+        if (!IsPlayer) { // oversimplify things.  Would not be true if the apocalypse ended.
+          if (Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("police do not murder");
+          var leader = LiveLeader;
+          if (null != leader && leader.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("deputies do not murder");
+          if (Faction.ID.ExtortionIsAggression()) throw new InvalidOperationException("authorities do not murder"); 
+        }
+#endif
         if (s_MurdersCounter.ContainsKey(this)) s_MurdersCounter[this]++; // bypasses hungry civilian adjustment
         else s_MurdersCounter.Add(this,1);
         ActorScoring.AddEvent(Engine.Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", victim.TheName, victim.Model.Name));
