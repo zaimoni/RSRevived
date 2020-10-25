@@ -3955,8 +3955,8 @@ namespace djack.RogueSurvivor.Engine
     {
       corpsePos = GDI_Point.Empty;
       if (Player == null) return null;
-      var corpsesAt = Player.Location.Map.GetCorpsesAt(Player.Location.Position);
-      if (corpsesAt == null) return null;
+      var corpsesAt = Player.Location.Corpses;
+      if (null == corpsesAt) return null;
       var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen);
       corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
       int index = inventorySlot.X + inventorySlot.Y * 10;
@@ -10508,7 +10508,7 @@ namespace djack.RogueSurvivor.Engine
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   DrawInventory(Player.Location.Items, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
-                  DrawCorpsesList(Player.Location.Map.GetCorpsesAt(Player.Location.Position), "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
+                  DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.Sheet.SkillTable.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);
                 }
@@ -10632,12 +10632,13 @@ namespace djack.RogueSurvivor.Engine
         point.X = x;
         for (var y = num3; y < num4; ++y) {
           point.Y = y;
-          if (!map.IsValid(x, y)) continue;
+          var loc = new Location(map,point);
+          if (!Map.Canonical(ref loc)) continue;
           MapViewRect.convert(point,ref working);   // likely a VM issue if this throws
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
-          var tile = map.GetTileAtExt(point);   // non-null for valid coordinates by construction
+          var tile = loc.Tile;
           tile.IsInView = player;
           tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
           DrawTile(tile, screen, tint);
@@ -10645,13 +10646,13 @@ namespace djack.RogueSurvivor.Engine
 
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
-            var corpsesAt = map.GetCorpsesAtExt(point);
-            if (corpsesAt != null) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
+            var corpsesAt = loc.Corpses;
+            if (null != corpsesAt) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
           }
           if (s_Options.ShowPlayerTargets && p_is_awake && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
-          var mapObjectAt = map.GetMapObjectAtExt(point);
-          if (mapObjectAt != null) {
+          var mapObjectAt = loc.MapObject;
+          if (null != mapObjectAt) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
             if (player && mapObjectAt.IsContainer) {
@@ -10677,13 +10678,13 @@ namespace djack.RogueSurvivor.Engine
           }
           if (player) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-            var itemsAt = map.GetItemsAtExt(point);
-            if (itemsAt != null) {
+            var itemsAt = loc.Items;
+            if (null != itemsAt) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            var actorAt = map.GetActorAtExt(point);
-            if (actorAt != null) {
+            var actorAt = loc.Actor;
+            if (null != actorAt) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
             }
@@ -10703,14 +10704,14 @@ namespace djack.RogueSurvivor.Engine
       if (null != e) {
         // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
         GDI_Point screen = MapToScreen(e.Location);
-        Tile tile = e.Location.Map.GetTileAt(e.Location.Position);   // non-null for valid coordinates by construction
+        var tile = e.Location.Tile;
         tile.IsInView = !Player.IsSleeping; // these two forced-true by adjacency, when awake
         tile.IsVisited = true;
         DrawTile(tile, screen, tint);   // mostly ignore overlays (tourism and line of fire auto-cleared, threat may be inferred by other means)
         if (tile.IsInView) {
           // XXX should be visible only if underlying AI sees corpses
-          var corpsesAt = e.Location.Map.GetCorpsesAt(e.Location.Position);
-          if (corpsesAt != null) foreach (var c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
+          var corpsesAt = e.Location.Corpses;
+          if (null != corpsesAt) foreach (var c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
         }
         // XXX DrawPlayerActorTargets should take account of threat at the exit
         bool flag2 = false;

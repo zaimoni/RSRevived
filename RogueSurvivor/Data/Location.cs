@@ -53,6 +53,8 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public Inventory? Items { get { return Map.GetItemsAt(Position); } }
     public Exit? Exit { get { return Map.GetExitAt(Position); } }
+    public List<Corpse>? Corpses { get { return Map.GetCorpsesAt(Position); } }
+    public Tile Tile { get { return Map.GetTileAt(Position); } }
     public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
 #nullable restore
     public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }

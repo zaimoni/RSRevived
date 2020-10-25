@@ -397,7 +397,7 @@ namespace djack.RogueSurvivor.Data
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
 
-      var corpses_at = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
+      var corpses_at = m_Actor.Location.Corpses;
       if (null != corpses_at) {
         foreach(Corpse c in corpses_at) ret.Add("Butcher "+c.ToString());
       }
@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Data
     public bool InterpretSelfOrder(int i, List<string> orders)
     {
       if (orders[i].StartsWith("Butcher corpse of ")) {
-        var corpses_at = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
+        var corpses_at = m_Actor.Location.Corpses;
 #if DEBUG
         if (null == corpses_at) throw new InvalidOperationException("no corpses here");
 #else

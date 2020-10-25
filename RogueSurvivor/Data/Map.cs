@@ -314,27 +314,7 @@ namespace djack.RogueSurvivor.Data
       if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (short)(test - nonstrict_ub);
     }
 
-    // placeholder for define-controlled redefinitions
-    public bool IsValid(int x, int y)
-    {
-      return IsInBounds(x,y) || IsStrictlyValid(x,y);
-    }
-
-    public bool IsValid(Point p)
-    {
-      return IsInBounds(p) || IsStrictlyValid(p);
-    }
-
-    public bool IsStrictlyValid(int x, int y)
-    {
-      return null != Normalize(new Point(x,y));
-    }
-
-    public bool IsStrictlyValid(Point p)
-    {
-      return null != Normalize(p);
-    }
-    // end placeholder for define-controlled redefinitions
+    public bool IsValid(Point p) { return IsInBounds(p) || null != Normalize(p); } // potentially obsolete; cf. Map::Canonical family
 
     /// <summary>
     /// Cf. Actor::_CanEnter and CanEnter
@@ -462,15 +442,6 @@ namespace djack.RogueSurvivor.Data
     {
       int i = p.Y*Width+p.X;
       return new Tile(m_TileIDs[p.X,p.Y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,p));
-    }
-
-    // for when coordinates may be denormalized
-    public Tile GetTileAtExt(Point p)
-    {
-      if (IsInBounds(p)) return GetTileAt(p);
-      Location? loc = _Normalize(p);
-      if (null == loc) throw new InvalidOperationException("non-normalizable coordinate for tile");
-      return loc.Value.Map.GetTileAt(loc.Value.Position);
     }
 
     public void SetIsInsideAt(int x, int y, bool inside=true)
@@ -1742,13 +1713,6 @@ retry:
     {
       if (m_aux_CorpsesByPosition.TryGetValue(p, out var corpseList)) return corpseList;
       return null;
-    }
-
-    public List<Corpse>? GetCorpsesAtExt(Point p)
-    {   // 2019-08-27 release mode IL Code size       72 (0x48)
-      if (IsInBounds(p)) return GetCorpsesAt(p);
-      Location? test = _Normalize(p);
-      return null == test ? null : test.Value.Map.GetCorpsesAt(test.Value.Position);
     }
 
     public bool HasCorpsesAt(Point p) { return m_aux_CorpsesByPosition.ContainsKey(p); }

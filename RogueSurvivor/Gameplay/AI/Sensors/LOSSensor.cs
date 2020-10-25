@@ -101,8 +101,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
       var turn = m_Actor.Location.Map.LocalTime.TurnCounter;
       foreach (var loc in normalized_FOV) {
-        var corpsesAt = loc.Map.GetCorpsesAt(loc.Position);
-        if (corpsesAt != null) perceptList.Add(new Percept(corpsesAt, turn, in loc));
+        var corpsesAt = loc.Corpses;
+        if (null != corpsesAt) perceptList.Add(new Percept(corpsesAt, turn, in loc));
       }
     }
 
