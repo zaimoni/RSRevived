@@ -520,6 +520,7 @@ namespace djack.RogueSurvivor.Data
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           Location.Drop(it);
         }
+        m_Inventory.Clear(); // if it wasn't dropped, it's gone; disallows cross-linking
       }
       _destroy();
       RogueForm.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
