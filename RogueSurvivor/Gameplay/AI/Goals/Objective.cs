@@ -98,7 +98,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var ub = stage_generators.Count;
             while (0 <= --ub) {
                 if (reject(stage_generators[ub].Location)) stage_generators.RemoveAt(ub);
-                else ret.Add(stage_generators[ub].Location);
+                else {
+                    foreach (var pt in stage_generators[ub].Location.Position.Adjacent()) {
+                        var loc = new Location(stage_generators[ub].Location.Map, pt);
+                        if (Map.CanEnter(ref loc)) ret.Add(loc); // never on map edge \todo? micro-optimize by inlining
+                    }
+                }
             }
             return ret;
         }
