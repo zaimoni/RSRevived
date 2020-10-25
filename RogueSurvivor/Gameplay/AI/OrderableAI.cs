@@ -782,6 +782,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected OrderableAI(Actor src) : base(src) {}
 
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+      // these (last-seen history) need rethinking anyway (as part of a reputation system, etc.)
+      if (m_Actor.IsDead) {
+        m_LastEnemySaw = null;
+        m_LastItemsSaw = null;
+        m_LastSoldierSaw = null;
+        m_LastRaidHeard = null;
+      }
+    }
+
     public ActorDirective Directives { get { return m_Directive ?? (m_Directive = new ActorDirective()); } }
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
 #nullable enable
