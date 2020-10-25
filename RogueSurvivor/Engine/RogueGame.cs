@@ -484,22 +484,11 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // more sophisticated variants would handle player-varying messages
-    public void PropagateSight(Location loc, Data.Message msg, Action<Actor> doFn, Predicate<Actor> player_knows)
+    public void PropagateSight(Location loc, Action<Actor> doFn)
     {
       void process_sight(Actor? a) {
-        ActorController ac;
+        ActorController? ac;
         if (null == a || a.IsDead || !(ac = a.Controller).CanSee(loc)) return;
-        if (ac is PlayerController player) {
-          if (player_knows(a)) return;
-          if (Player == a) {
-            AddMessage(msg);
-            RedrawPlayScreen();
-            return;
-          }
-          player.DeferMessage(msg);
-          return;
-        }
-        // NPC ai hooks go here
         doFn(a);
       }
 
@@ -7694,14 +7683,11 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public void DoMakeAggression(Actor aggressor, Actor target)
+    public void RadioNotifyAggression(Actor aggressor, Actor target, string raw_msg) // i18n target
     {
-      if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
-      bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
-
-      if (aggressor.Model.Abilities.IsLawEnforcer && 0<target.MurdersOnRecord(aggressor)) {
-        var msg = new Data.Message(string.Format("(police radio, {0}) Executing {1} for murder.", aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_NORMAL_COLOR);
-        var officer_msg = new Data.Message(string.Format("(police radio, {0}) Executing {1} for murder.", aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR);
+        bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
+        var msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_NORMAL_COLOR);
+        var officer_msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR);
         aggressor.MessageAllInDistrictByRadio(npc => {
             target.RecordAggression(npc);
         }, npc => {
@@ -7725,7 +7711,12 @@ namespace djack.RogueSurvivor.Engine
             if (wasAlreadyEnemy && player.IsEnemyOf(target)) return false;
             return true;
         });
-      }
+    }
+
+    public void DoMakeAggression(Actor aggressor, Actor target)
+    {
+      if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
+      bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
 
       aggressor.RecordAggression(target);
 
@@ -9698,12 +9689,16 @@ namespace djack.RogueSurvivor.Engine
           killer.HasMurdered(deadGuy);
           if (IsVisibleToPlayer(killer)) AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
 
-          PropagateSight(killer.Location, null, a => {
-            if (a.Model.Abilities.IsLawEnforcer && a != killer && a.Leader != killer && killer.Leader != a) {
-              DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
-              DoMakeAggression(a, killer);
+          // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
+          PropagateSight(killer.Location, a => {
+            if (a.Leader != killer && killer.Leader != a) {
+              if (a.Model.Abilities.IsLawEnforcer) {
+                DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+                RadioNotifyAggression(a, killer, "(police radio, {0}) Executing {1} for murder.");
+                DoMakeAggression(a, killer);
+              }
             }
-          }, TRUE);   // Action<Actor> doFn
+          });
         }
         if (killer.Model.Abilities.IsLawEnforcer) {
           if (!killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
