@@ -1493,7 +1493,7 @@ retry:
        var ret = (null == g_inv || g_inv.IsEmpty ? null : new List<Inventory> { g_inv });
        var obj = loc.MapObject;
        var o_inv = (null != obj && obj.IsContainer ? obj.Inventory : null);
-       if (null != o_inv && !o_inv.IsEmpty) (ret ?? (ret = new List<Inventory>())).Add(o_inv);
+       if (null != o_inv && !o_inv.IsEmpty) (ret ??= new List<Inventory>()).Add(o_inv);
        return ret;
     }
 
@@ -1504,7 +1504,7 @@ retry:
        var ret = (null == g_inv || g_inv.IsEmpty || !ok(g_inv) ? null : new List<Inventory> { g_inv });
        var obj = loc.MapObject;
        var o_inv = (null != obj && obj.IsContainer ? obj.Inventory : null);
-       if (null != o_inv && !o_inv.IsEmpty && ok(o_inv)) (ret ?? (ret = new List<Inventory>())).Add(o_inv);
+       if (null != o_inv && !o_inv.IsEmpty && ok(o_inv)) (ret ??= new List<Inventory>()).Add(o_inv);
        return ret;
     }
 
