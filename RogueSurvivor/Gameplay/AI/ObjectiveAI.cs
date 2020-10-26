@@ -2310,6 +2310,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction? RewriteAction(ActorAction x)
     {
+      if (x is ActionChain chain) x = chain.ConcreteAction; // other Resolvable classes are also ActorDest
       if (x is CombatAction) return null;   // do not second-guess combat actions
       if (x is ActorGive) return null; // start (noncombat) inventory manipulation block
       if (x is ActorTake) return null;
