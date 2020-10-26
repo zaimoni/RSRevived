@@ -3638,7 +3638,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       act = InventoryStackTactics();
       if (null != act) return act;
       act = BehaviorUseAdjacentStack();
-      if (null != act) return act;
+      if (null != act && act.IsPerformable()) return act;
 
       act = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
       if (null != act) return act;
