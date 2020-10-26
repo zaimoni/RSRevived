@@ -1972,6 +1972,10 @@ namespace djack.RogueSurvivor.Data
       if (mapObj.Location.StrictHasActorAt) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
       if (null != m_DraggedCorpse) return "dragging a corpse";
+      var code = District.UsesCrossDistrictView(Location.Map);
+      if (0 >= code) {
+        if (Location.Map != mapObj.Location.Map) return "hard to push vertically";
+      } else if (code != District.UsesCrossDistrictView(mapObj.Location.Map)) return "hard to push vertically";
       return "";
     }
 
