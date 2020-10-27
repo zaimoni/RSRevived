@@ -54,5 +54,20 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             foreach (var x in _blacklist) if (x.Value.Contains(e)) return true;
             return false;
         }
+
+        public void Censor(HashSet<Location> goals) {
+            bool code_2_gone = false;
+            foreach (var x in _blacklist) {
+                foreach (var e in x.Value) {
+                 var code = District.UsesCrossDistrictView(e.Location.Map);
+                  if (2 == code) {
+                    if (!code_2_gone) { // sewers
+                      goals.RemoveWhere(loc => 2== District.UsesCrossDistrictView(loc.Map));
+                      code_2_gone = true;
+                    }
+                  } else goals.Remove(e.Location);
+                }
+            }
+        }
     }
 }

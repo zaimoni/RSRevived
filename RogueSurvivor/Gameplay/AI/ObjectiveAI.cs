@@ -3776,6 +3776,7 @@ restart:
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
+      Goal<Goals.BlacklistExits>()?.Censor(goals);
       return _recordPathfinding(BehaviorPathTo(goals),goals);
     }
 
