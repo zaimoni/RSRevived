@@ -7718,6 +7718,10 @@ namespace djack.RogueSurvivor.Engine
       if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
 
+      // not really, but we don't have a good enough crime-tracking system
+#if DEBUG
+      if (aggressor.Faction.ID.ExtortionIsAggression() && Rules.IsMurder(aggressor,target)) throw new InvalidOperationException("authorities do not murder");
+#endif
       aggressor.RecordAggression(target);
 
       // XXX \todo check for allies who witness this
