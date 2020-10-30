@@ -53,6 +53,7 @@ namespace djack.RogueSurvivor.Engine.Items
         game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
     }
     public string ReasonCantUse(Actor a) {
+      if (!a.Inventory.Contains(_rw)) _rw = null;
       if (null != _rw) return "";   // already cleared
       if (null != test_rw(a)) return "";  // ok
       if (!(a.GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != AmmoType) return "no compatible ranged weapon equipped";
