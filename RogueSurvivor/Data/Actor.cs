@@ -3308,7 +3308,7 @@ namespace djack.RogueSurvivor.Data
        if (!suppressor.IsEquipped || (!m_Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
 
        // 4. SprayOn is not self or adjacent.
-       if (sprayOn != this && Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
+       if (sprayOn != this && !Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
             
        return "";  // all clear.
     }
