@@ -57,6 +57,7 @@ namespace djack.RogueSurvivor.Data
     }
   }
 
+  [Serializable]
   internal class UITracking : EventUnconditional
   {
     private readonly Actor who;
