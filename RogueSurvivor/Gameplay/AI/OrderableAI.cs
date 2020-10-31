@@ -3643,6 +3643,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       act = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
       if (null != act) return act;
 
+      // lifted here to break action loop 2020-10-30 zaimoni
+      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
+        act = BehaviorUseEntertainment();
+        if (null != act)  return act;
+      }
+
       // XXX this should lose to same-map threat hunting at close ETA
       act = BehaviorRangedInventory();
       if (null != act) return act;

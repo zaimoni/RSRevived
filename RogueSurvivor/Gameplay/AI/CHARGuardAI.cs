@@ -231,11 +231,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
-        tmpAction = BehaviorUseEntertainment();
-        if (null != tmpAction)  return tmpAction;
-      }
-
       if (m_Actor.HasLeader && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {

@@ -278,14 +278,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
-        tmpAction = BehaviorUseEntertainment();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
-#endif
-        if (null != tmpAction)  return tmpAction;
-      }
-
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (   RogueGame.Options.IsAggressiveHungryCiviliansOn

@@ -215,11 +215,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
-        tmpAction = BehaviorUseEntertainment();
-        if (null != tmpAction)  return tmpAction;
-      }
-
       var rules = Rules.Get;
       if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
         tmpAction = BehaviorBuildLargeFortification(START_FORT_LINE_CHANCE);

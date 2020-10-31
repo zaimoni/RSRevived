@@ -171,11 +171,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (2<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is want or higher
-        tmpAction = BehaviorUseEntertainment();
-        if (null != tmpAction)  return tmpAction;
-      }
-
       if (null == _enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
