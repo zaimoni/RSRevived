@@ -4873,11 +4873,12 @@ namespace djack.RogueSurvivor.Engine
       Point? pull_from(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
       bool pull(Point? pos) {
         if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
+        var loc = new Location(player.Location.Map, pos.Value);
+        if (!Map.Canonical(ref loc)) return false;
         string reason;
         MapObject? mapObj;
-        var other = player.Location.Map.GetActorAtExt(pos.Value);
-        if (other != null) {
+        var other = loc.Actor;
+        if (null != other) {
           // pull-shove.
           if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
             return HandlePlayerPullActor(player, other);
@@ -4885,7 +4886,7 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(MakeErrorMessage(string.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
             return false;
           }
-        } else if (null != (mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value))) { // pull.
+        } else if (null != (mapObj = loc.MapObject)) { // pull.
           if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
             return HandlePlayerPullObject(player, mapObj);
           } else {
