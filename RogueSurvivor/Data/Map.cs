@@ -476,7 +476,7 @@ namespace djack.RogueSurvivor.Data
     public void SetTileModelAt(int x, int y, TileModel model)
     {
 #if DEBUG
-      if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("("+nameof(x)+","+nameof(y)+")", "(" + x.ToString() + "," + y.ToString() + ")", "!IsInBounds(x,y)");
+      if (!IsInBounds(new Point(x, y))) throw new ArgumentOutOfRangeException("("+nameof(x)+","+nameof(y)+")", "(" + x.ToString() + "," + y.ToString() + ")", "!IsInBounds(x,y)");
 #endif
       m_TileIDs[x, y] = (byte)(model.ID);
     }
