@@ -724,7 +724,8 @@ restart:
       void lay_NW_SE_rail(Point pt)
       {
         if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW_WALL_W);
-        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+height, GameTiles.RAIL_SENW_WALL_E);
+        var pt2 = new Point(pt.X, pt.Y + height);
+        if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SENW_WALL_E);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
           if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW);
@@ -733,7 +734,8 @@ restart:
       void lay_NE_SW_rail(Point pt)
       {
         if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE_WALL_E);
-        if (subway.IsInBounds(pt.X,pt.Y+height)) subway.SetTileModelAt(pt.X, pt.Y+height, GameTiles.RAIL_SWNE_WALL_W);
+        var pt2 = new Point(pt.X, pt.Y + height);
+        if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SWNE_WALL_W);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
           if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);

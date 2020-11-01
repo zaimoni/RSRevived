@@ -248,11 +248,6 @@ namespace djack.RogueSurvivor.Data
     // IsValid will allow "translating" coordinates to adjacent maps in order to fulfil the dereference
     // IsStrictlyValid will *require* "translating" coordinates to adjacent maps in order to fulfil the dereference
     // That is, IsValid := IsInBounds XOR IsStrictlyValid
-    public bool IsInBounds(int x, int y)
-    {
-      return 0 <= x && x < Width && 0 <= y && y < Height;
-    }
-
     public bool IsInBounds(Point p)
     {
       int test;
