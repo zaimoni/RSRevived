@@ -560,7 +560,7 @@ namespace djack.RogueSurvivor.Engine
                // proceed with pull if we can't push safely
                var possible = mapObjectAt.Location.Position.Adjacent();
                var pull_dests = possible.Where(pt => 1==Rules.GridDistance(actor.Location,new Location(mapObjectAt.Location.Map,pt)));
-               if (pull_dests.Any()) return new ActionPull(actor,mapObjectAt, Get.DiceRoller.Choose(pull_dests));
+               if (pull_dests.Any()) return new ActionPull(actor,mapObjectAt, new Location(mapObjectAt.Location.Map, Get.DiceRoller.Choose(pull_dests)));
              }
            }
         }

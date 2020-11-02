@@ -4915,8 +4915,8 @@ namespace djack.RogueSurvivor.Engine
       bool pull(Point? pos) {
         if (null == pos) return false;
         if (!player.Location.Map.IsInBounds(pos.Value)) return false;   // \todo this is not cross-district
-        if (player.CanPull(mapObj, pos.Value, out string reason)) {
-          DoPull(player, mapObj, pos.Value);
+        if (player.CanPull(mapObj, new Location(player.Location.Map, pos.Value), out string reason)) {
+          DoPull(player, mapObj, new Location(player.Location.Map, pos.Value));
           return true;
         } else {
           AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
@@ -9373,7 +9373,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoPull(Actor actor, MapObject mapObj, in Point moveActorToPos) // alpha10
+    public void DoPull(Actor actor, MapObject mapObj, in Location actor_dest) // alpha10
     {
       bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staCost = mapObj.Weight;
@@ -9396,8 +9396,6 @@ namespace djack.RogueSurvivor.Engine
       Map map = mapObj.Location.Map;
       // actor...
       objDest.Map.Remove(actor);
-      var actor_dest = new Location(objDest.Map, moveActorToPos);
-      Map.Canonical(ref actor_dest);
       actor_dest.Place(actor);  // assumed to be walkable, checked by rules
       // ...object
       mapObj.Remove();

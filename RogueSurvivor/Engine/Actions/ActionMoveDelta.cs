@@ -215,7 +215,7 @@ namespace djack.RogueSurvivor.Engine.Actions
            var possible = obj.Location.Position.Adjacent();
            var pull_dests = possible.Where(pt => 1==Rules.GridDistance(m_Actor.Location,new Location(obj.Location.Map,pt)));
            if (pull_dests.Any()) {
-             return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
+             return new ActionPull(m_Actor,obj, new Location(obj.Location.Map, rules.DiceRoller.Choose(pull_dests)));
            }
          }
          return null;

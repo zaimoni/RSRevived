@@ -10,35 +10,29 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
         #region Fields
         readonly MapObject m_Object;
-        readonly Point m_MoveActorTo;
+        readonly Location m_MoveActorTo;
         #endregion
 
-        #region Properties
         // this can be null during pathfinding
-        public Direction MoveActorDirection { get { return Direction.FromVector(m_MoveActorTo - m_Actor.Location.Position); } }
-        public Point MoveActorTo { get { return m_MoveActorTo; } }
-        public Location dest { get { return new Location(m_Object.Location.Map, m_MoveActorTo); } }
-        #endregion
+        public Location dest { get { return m_MoveActorTo; } }
 
         #region Init
-        public ActionPull(Actor actor, MapObject pullObj, Direction moveActorDir)
-            : base(actor)
+        public ActionPull(Actor actor, MapObject pullObj, Direction moveActorDir) : base(actor)
         {
 #if DEBUG
             if (pullObj == null) throw new ArgumentNullException(nameof(pullObj));
 #endif
-
             m_Object = pullObj;
-            m_MoveActorTo = m_Actor.Location.Position + moveActorDir;
+            m_MoveActorTo = m_Actor.Location + moveActorDir;
+            if (!Map.Canonical(ref m_MoveActorTo)) throw new ArgumentNullException(nameof(m_MoveActorTo));
         }
 
-        public ActionPull(Actor actor, MapObject pullObj, Point moveActorTo)
-            : base(actor)
+        public ActionPull(Actor actor, MapObject pullObj, Location moveActorTo) : base(actor)
         {
 #if DEBUG
             if (pullObj == null) throw new ArgumentNullException(nameof(pullObj));
 #endif
-
+            if (!Map.Canonical(ref moveActorTo)) throw new ArgumentNullException(nameof(moveActorTo));
             m_Object = pullObj;
             m_MoveActorTo = moveActorTo;
         }
@@ -54,7 +48,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             if (!base.IsPerformable()) return false;
             return  1==Rules.GridDistance(m_Actor.Location, m_Object.Location)   // no pull/push through vertical exits
-                 && 1==Rules.GridDistance(m_Actor.Location, new Location(m_Object.Location.Map, m_MoveActorTo));
+                 && 1==Rules.GridDistance(m_Actor.Location, m_MoveActorTo);
         }
 
         public override void Perform()

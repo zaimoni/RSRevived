@@ -2035,7 +2035,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // alpha10: pull support
-    private string ReasonCantPull(MapObject mapObj, in Point moveToPos)
+    private string ReasonCantPull(MapObject mapObj, in Location moveTo)
     {
       string ret = ReasonCantPush(mapObj);
       if (!string.IsNullOrEmpty(ret)) return ret;
@@ -2043,19 +2043,19 @@ namespace djack.RogueSurvivor.Data
       var other = Location.MapObject;
       if (null != other) return string.Format("{0} is blocking", other.TheName);
 
-      Location.Map.IsWalkableFor(moveToPos, this, out ret);
+      moveTo.Map.IsWalkableFor(moveTo.Position, this, out ret);
       return ret;
     }
 
-    public bool CanPull(MapObject mapObj, in Point moveToPos, out string reason)
+    public bool CanPull(MapObject mapObj, Location moveTo)
     {
-      reason = ReasonCantPull(mapObj, in moveToPos);
-      return string.IsNullOrEmpty(reason);
+      return string.IsNullOrEmpty(ReasonCantPull(mapObj, in moveTo));
     }
 
-    public bool CanPull(MapObject mapObj, Point moveToPos)
+    public bool CanPull(MapObject mapObj, in Location moveTo, out string reason)
     {
-      return string.IsNullOrEmpty(ReasonCantPull(mapObj, in moveToPos));
+      reason = ReasonCantPull(mapObj, in moveTo);
+      return string.IsNullOrEmpty(reason);
     }
 
     private string ReasonCantPull(Actor other, in Location dest)
