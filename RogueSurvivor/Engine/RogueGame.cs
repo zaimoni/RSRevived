@@ -7454,13 +7454,14 @@ namespace djack.RogueSurvivor.Engine
 
     private void CheckMapObjectTriggersTraps(Map map, Point pos)
     {
-      var mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
-      if (null == mapObjectAt) return;
-      map.RemoveAt<ItemTrap>(trap => {
+      var obj = map.GetMapObjectAt(pos);
+      if (null != obj && obj.TriggersTraps) {
+        map.RemoveAt<ItemTrap>(trap => {
           if (!trap.IsActivated) return false;
-          DoTriggerTrap(trap, map, pos, mapObjectAt);
+          DoTriggerTrap(trap, map, pos, obj);
           return 0 >= trap.Quantity;
-      }, pos);
+        }, pos);
+      }
     }
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)

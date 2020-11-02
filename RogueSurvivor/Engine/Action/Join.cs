@@ -30,6 +30,18 @@ namespace djack.RogueSurvivor.Engine.Op
             return false;
         }
 
+        public override bool IsRelevant()
+        {
+            foreach (var act in m_options) if (act.IsRelevant()) return true;
+            return false;
+        }
+
+        public override bool IsRelevant(Location loc)
+        {
+            foreach (var act in m_options) if (act.IsRelevant(loc)) return true;
+            return false;
+        }
+
         public override ActorAction? Bind(Actor src)
         {
             var opts = new List<ActorAction>();

@@ -91,6 +91,7 @@ namespace djack.RogueSurvivor.Engine.Op
         private readonly Gameplay.GameItems.IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
         private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_memory;
+        [NonSerialized] private List<Location>? m_origin;
         [NonSerialized] private Item? m_Item;
 
         public TakeFromLocation_memory(Gameplay.GameItems.IDs id, Location loc, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
@@ -102,6 +103,8 @@ namespace djack.RogueSurvivor.Engine.Op
         }
 
         public override bool IsLegal() { return m_memory.WhatIsAt(m_loc)?.Contains(m_ID) ?? false; }
+        public override bool IsRelevant() { return false; }
+        public override bool IsRelevant(Location loc) { return (m_origin ??= origin_range).Contains(loc); }
         public override ActorAction? Bind(Actor src) { return new _Action.TakeFromLocation(src, m_ID, m_loc); }
 
         private List<Location> origin_range {

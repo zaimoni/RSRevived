@@ -1405,21 +1405,7 @@ retry:
 
     public bool IsTrapCoveringMapObjectAt(Point pos)
     {
-      var mapObjectAt = GetMapObjectAt(pos);
-      if (mapObjectAt == null) return false;
-      if (mapObjectAt is DoorWindow) return false;
-      if (mapObjectAt.IsJumpable) return true;
-      return mapObjectAt.IsWalkable;
-    }
-
-    public MapObject? GetTrapTriggeringMapObjectAt(Point pos)
-    {
-      var mapObjectAt = GetMapObjectAt(pos);
-      if (mapObjectAt == null) return null;
-      if (mapObjectAt is DoorWindow) return null;
-      if (mapObjectAt.IsJumpable) return null;
-      if (mapObjectAt.IsWalkable) return null;
-      return mapObjectAt;
+      return GetMapObjectAt(pos)?.CoversTraps ?? false;
     }
 
     public int TrapsMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target

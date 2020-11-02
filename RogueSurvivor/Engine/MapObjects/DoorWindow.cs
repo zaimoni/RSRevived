@@ -67,6 +67,9 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
+    public override bool CoversTraps { get { return false; } }
+    public override bool TriggersTraps { get { return false; } }
+
     public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
     public int BarricadePoints { get { return m_BarricadePoints; } }
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }

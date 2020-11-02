@@ -366,6 +366,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    virtual public bool CoversTraps { get { return IsJumpable || IsWalkable; } }
+    virtual public bool TriggersTraps { get { return !IsJumpable && !IsWalkable; } }
+
     public MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG

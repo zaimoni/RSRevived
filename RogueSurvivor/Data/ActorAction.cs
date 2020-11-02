@@ -58,6 +58,8 @@ namespace djack.RogueSurvivor.Data
         protected WorldUpdate() {}
 
         public abstract bool IsLegal();
+        public abstract bool IsRelevant();
+        public abstract bool IsRelevant(Location loc);
         public abstract ActorAction? Bind(Actor src);
     }
 }
