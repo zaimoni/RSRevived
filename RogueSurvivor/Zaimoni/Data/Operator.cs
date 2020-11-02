@@ -13,6 +13,5 @@ namespace Zaimoni.Data
     internal interface BackwardPlan<OP>
     {
       List<OP>? prequel();
-      Dictionary<OP,int>? backward();
     }
 }

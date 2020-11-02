@@ -3,15 +3,12 @@ using System.Collections.Generic;
 
 using djack.RogueSurvivor.Data;
 
-using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
-using BackwardPlanOp = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.WorldUpdate>;
-
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class TakeFromLocation : ActorAction,BackwardPlan    // similar to ActionTake
+    class TakeFromLocation : ActorAction,Zaimoni.Data.BackwardPlan<Actions.ActionMoveDelta>    // similar to ActionTake
     {
         private readonly Gameplay.GameItems.IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
@@ -70,43 +67,26 @@ namespace djack.RogueSurvivor.Engine._Action
             }
         }
 
-        public List<ActorAction>? prequel()
+        public List<Actions.ActionMoveDelta>? prequel()
         {
-            List<ActorAction>? ret = null;
+            List<Actions.ActionMoveDelta>? ret = null;
             var ok_dest = origin_range;
             foreach (var dest in ok_dest) {
                 foreach (var pt in dest.Position.Adjacent()) {
                     var test = new Location(m_loc.Map, pt);
                     if (m_Actor.CanEnter(ref test) && !ok_dest.Contains(test))
-                        (ret ?? (ret = new List<ActorAction>())).Add(new Actions.ActionMoveDelta(m_Actor, dest, test));
+                        (ret ??= new List<Actions.ActionMoveDelta>()).Add(new Actions.ActionMoveDelta(m_Actor, dest, test));
                 }
             }
             return ret;
         }
-
-        public Dictionary<ActorAction,int>? backward()
-        {
-            Dictionary<ActorAction, int>? ret = null;
-            var ok_dest = origin_range;
-            foreach (var dest in ok_dest) {
-                foreach (var pt in dest.Position.Adjacent()) {
-                    var test = new Location(m_loc.Map, pt);
-                    if (m_Actor.CanEnter(ref test) && !ok_dest.Contains(test)) {
-                        var move = new Actions.ActionMoveDelta(m_Actor, dest, test);
-                        (ret ?? (ret = new Dictionary<ActorAction, int>())).Add(move, Map.PathfinderMoveCosts(move));
-                    }
-                }
-            }
-            return ret;
-        }
-
     }
 }
 
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class TakeFromLocation_memory : WorldUpdate, BackwardPlanOp    // similar to ActionTake
+    class TakeFromLocation_memory : WorldUpdate    // similar to ActionTake
     {
         private readonly Gameplay.GameItems.IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
@@ -139,16 +119,5 @@ namespace djack.RogueSurvivor.Engine.Op
                 return ret;
             }
         }
-
-        public override List<WorldUpdate>? prequel()
-        {
-            return null;
-        }
-
-        public override Dictionary<WorldUpdate, int>? backward()
-        {
-            return null;
-        }
-
     }
 }

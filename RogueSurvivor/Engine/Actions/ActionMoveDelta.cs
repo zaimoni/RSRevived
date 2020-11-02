@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin
+  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, Zaimoni.Data.BackwardPlan<UpdateMoveDelta>
   {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -283,8 +283,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             return 0 < ret.Count ? ret : null;
         }
 
-        public override List<WorldUpdate>? prequel() {
-            var ret = new List<WorldUpdate>();
+        public List<UpdateMoveDelta>? prequel() {
+            var ret = new List<UpdateMoveDelta>();
             var e = m_NewLocation.Exit;
             if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location));
             foreach (var dir in Direction.COMPASS) {
@@ -292,20 +292,6 @@ namespace djack.RogueSurvivor.Engine.Actions
                 if (!Map.CanEnter(ref test)) continue;
                 if (test == m_Origin) continue;
                 ret.Add(new UpdateMoveDelta(m_NewLocation, test));
-            }
-            return 0 < ret.Count ? ret : null;
-        }
-
-        public override Dictionary<WorldUpdate, int>? backward() {
-            var ret = new Dictionary<WorldUpdate, int>();
-            var e = m_NewLocation.Exit;
-            // \todo want a better cost-of-entry estimator; something like Map.PathfinderMoveCosts(move)
-            if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location), 1);
-            foreach (var dir in Direction.COMPASS) {
-                var test = m_NewLocation + dir;
-                if (!Map.CanEnter(ref test)) continue;
-                if (test == m_Origin) continue;
-                ret.Add(new UpdateMoveDelta(m_NewLocation, test), 1);
             }
             return 0 < ret.Count ? ret : null;
         }

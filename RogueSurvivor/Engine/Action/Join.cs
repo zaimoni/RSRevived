@@ -43,9 +43,6 @@ namespace djack.RogueSurvivor.Engine.Op
             if (null != m_sequel && !m_sequel.IsLegal()) m_sequel = null;
             return new _Action.Join(src, opts, m_sequel);
         }
-
-        public override List<WorldUpdate>? prequel() { return null; }
-        public override Dictionary<WorldUpdate, int>? backward() { return null; }
     }
 }
 

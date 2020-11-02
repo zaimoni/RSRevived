@@ -53,14 +53,11 @@ namespace djack.RogueSurvivor.Data
   }
 
     [Serializable]
-    internal abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>, Zaimoni.Data.BackwardPlan<WorldUpdate>
+    internal abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>
     {
         protected WorldUpdate() {}
 
         public abstract bool IsLegal();
         public abstract ActorAction? Bind(Actor src);
-
-        public abstract List<WorldUpdate>? prequel();
-        public abstract Dictionary<WorldUpdate, int>? backward();
     }
 }
