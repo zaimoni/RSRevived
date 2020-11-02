@@ -58,6 +58,7 @@ namespace djack.RogueSurvivor.Engine._Action
         private readonly MapObject m_Object;
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
+        [NonSerialized] List<Location>? _dests = null;
 
         public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
         {
@@ -85,6 +86,17 @@ namespace djack.RogueSurvivor.Engine._Action
             if (1 != Rules.GridDistance(m_Actor.Location, m_Object.Location)) return false;
             if (!m_Actor.CanPush(m_Object, out m_FailReason)) return false;
             if (m_Actor.Location == m_NewLocation) { // pull
+                var dests = new List<Location>();
+                foreach (var pt in m_NewLocation.Position.Adjacent()) {
+                    var loc = new Location(m_NewLocation.Map, pt);
+                    if (!m_Actor.CanEnter(ref loc)) continue;
+                    if (loc == m_Origin) continue;
+                    if (!m_Actor.CanPull(m_Object, loc)) continue;
+                    dests.Add(loc);
+                }
+                if (0 >= dests.Count) return false;
+                _dests = dests;
+                return true;
             } else { // push
                 if (!m_Object.CanPushTo(in m_NewLocation)) return false;
             }
@@ -93,6 +105,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public override void Perform()
         {
             if (m_Actor.Location == m_NewLocation) { // pull
+                RogueForm.Game.DoPull(m_Actor, m_Object, Rules.Get.DiceRoller.Choose(_dests));
             } else { // push
             }
         }

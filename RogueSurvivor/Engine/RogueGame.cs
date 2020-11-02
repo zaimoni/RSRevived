@@ -9407,7 +9407,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       // loud noise.
-      OnLoudNoise(map, mapObj.Location.Position, "Something being pushed");
+      OnLoudNoise(mapObj.Location, "Something being pushed");
 
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(actor.Location) // we already checked the attacker visibility, he's the sound origin
