@@ -131,6 +131,7 @@
     <Compile Include="Engine\Actions\ActionButcher.cs" />
     <Compile Include="Engine\Actions\ActionSequence.cs" />
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
+    <Compile Include="Engine\Action\PushOnto.cs" />
     <Compile Include="Engine\Action\Join.cs" />
     <Compile Include="Engine\Action\TakeFromLocation.cs" />
     <Compile Include="Engine\Action\Fork.cs" />
