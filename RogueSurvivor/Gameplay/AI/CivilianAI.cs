@@ -761,6 +761,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+#if DEBUG
+      if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) throw new InvalidOperationException("test case");
+#endif
+
       tmpAction = BehaviorExplore(m_Exploration);
       if (null != tmpAction) {
 #if TRACE_SELECTACTION
