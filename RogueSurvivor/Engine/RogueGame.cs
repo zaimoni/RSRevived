@@ -4813,9 +4813,10 @@ namespace djack.RogueSurvivor.Engine
       Point? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(mapObj.Location.Position + dir); }
       bool push(Point? pos) {
         if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
-        if (mapObj.CanPushTo(pos.Value, out string reason)) {
-          DoPush(player, mapObj, pos.Value);
+        var loc = new Location(player.Location.Map, pos.Value);
+        if (!Map.Canonical(ref loc)) return false;
+        if (mapObj.CanPushTo(loc, out string reason)) {
+          DoPush(player, mapObj, loc);
           return true;
         } else {
           AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
@@ -9300,18 +9301,28 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoPush(Actor actor, MapObject mapObj, in Point toPos)
+    public void DoPush(Actor actor, MapObject mapObj, in Location toPos)
     {
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, false, ref staminaCost); // alpha10
       actor.SpendActionPoints();
       actor.SpendStaminaPoints(staminaCost);
-      Location o_loc = mapObj.Location;
-      o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
-      if (!Rules.IsAdjacent(mapObj.Location, actor.Location) && o_loc.IsWalkableFor(actor)) {
+
+      Map map = mapObj.Location.Map;
+
+      // do it : move object then move actor
+      Location actor_dest = mapObj.Location;
+      Location objDest = toPos;
+
+      // ...object
+      mapObj.Remove();
+      objDest.Place(mapObj);
+
+      if (!Rules.IsAdjacent(mapObj.Location, actor.Location) && actor_dest.IsWalkableFor(actor)) {
         if (TryActorLeaveTile(actor)) { // RS alpha 10
-          o_loc.Place(actor);
+          actor.Location.Map.Remove(actor);
+          actor_dest.Place(actor);  // assumed to be walkable, checked by rules
           OnActorEnterTile(actor);  // RS alpha 10
         }
       }
@@ -9319,7 +9330,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, VERB_PUSH.Conjugate(actor), mapObj));
         RedrawPlayScreen();
       }
-      OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
+      OnLoudNoise(objDest, "Something being pushed");
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(actor.Location) // we already checked the attacker visibility, he's the sound origin
                && !Rules.Get.RollChance(PLAYER_HEAR_PUSHPULL_CHANCE);  // not clear enough; no message
@@ -9338,7 +9349,7 @@ namespace djack.RogueSurvivor.Engine
         // \todo: get away from the fighting
       }
       PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
-      CheckMapObjectTriggersTraps(o_loc.Map, toPos);
+      CheckMapObjectTriggersTraps(objDest.Map, objDest.Position);
     }
 
     public void DoShove(Actor actor, Actor target, in Point toPos)

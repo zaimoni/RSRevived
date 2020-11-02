@@ -14,27 +14,25 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionPush : ActorAction, ActorDest
   {
     private readonly MapObject m_Object;
-    private readonly Direction m_Direction;
-    private readonly Point m_To;
+    private readonly Location m_To;
 
     public MapObject Target { get { return m_Object; } }
-    public Point To { get { return m_To; } }
+    public Location To { get { return m_To; } }
     public Location dest { get { return m_Object.Location; } }
 
-    public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
-      : base(actor)
+    public ActionPush(Actor actor, MapObject pushObj, Direction pushDir) : base(actor)
     {
 #if DEBUG
       if (null == pushObj) throw new ArgumentNullException(nameof(pushObj));
       if (null == pushDir) throw new ArgumentNullException(nameof(pushDir));
 #endif
       m_Object = pushObj;
-      m_Direction = pushDir;
-      m_To = pushObj.Location.Position + pushDir;
+      m_To = pushObj.Location + pushDir;
 #if DEBUG
       // will be ok when tactical pushing is implemented
-      if (actor.Controller is Gameplay.AI.OrderableAI && m_Object.Location.Map.HasExitAt(in m_To) && m_Object.Location.Map.IsInBounds(m_To) && !m_Object.IsJumpable) throw new InvalidOperationException("Blocking exit with push");
+      if (actor.Controller is Gameplay.AI.OrderableAI && m_To.Map.HasExitAt(m_To.Position) && m_To.Map.IsInBounds(m_To.Position) && !m_Object.IsJumpable) throw new InvalidOperationException("Blocking exit with push");
 #endif
+      if (!Map.Canonical(ref m_To)) throw new InvalidOperationException("pushed off map");
     }
 
     public override bool IsLegal()

@@ -483,13 +483,13 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+#if DEAD_FUNC
     public bool CanPushTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(toPos)); }
+#endif
     public bool CanPushTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantPushTo(toPos)); }
 
-#if DEAD_FUNC
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
     public bool CanPushTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantPushTo(in to)); }
-#endif
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
     public bool CanPushTo(in Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(in to)); }
     public void PlaceAt(Map m, in Point pos) {m.PlaceAt(this, pos);} // this guaranteed non-null so non-null precondition ok

@@ -613,8 +613,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= verified.Count && 0 >=unclear.Count) return null;
 
       static bool safe_push(ActionPush act) {
-        var loc = new Location(act.Target.Location.Map,act.To);
-        Map.Canonical(ref loc);
+        var loc = act.To;
         if (loc.Map.IsFlushNWall(loc.Position)) return true;
         if (loc.Map.IsFlushSWall(loc.Position)) return true;
         if (loc.Map.IsFlushWWall(loc.Position)) return true;
