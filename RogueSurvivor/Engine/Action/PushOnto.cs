@@ -8,10 +8,13 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Op
 {
-    class PushOnto : WorldUpdate
+    class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
+
+        public Location obj_origin { get { return m_Origin; } }
+        public Location obj_dest { get { return m_NewLocation; } }
 
         public PushOnto(Location from, Location to)
         {
@@ -53,12 +56,15 @@ namespace djack.RogueSurvivor.Engine.Op
 
 namespace djack.RogueSurvivor.Engine._Action
 {
-    class PushOnto : ActorAction
+    class PushOnto : ActorAction,Actions.ObjectOrigin,Actions.ObjectDest
     {
         private readonly MapObject m_Object;
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
         [NonSerialized] List<Location>? _dests = null;
+
+        public Location obj_origin { get { return m_Origin; } }
+        public Location obj_dest { get { return m_NewLocation; } }
 
         public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
         {

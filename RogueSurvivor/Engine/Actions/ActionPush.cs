@@ -11,13 +11,18 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionPush : ActorAction, ActorDest
+  internal interface ObjectDest
+  {
+    Location obj_dest { get; }
+  }
+
+  internal class ActionPush : ActorAction, ActorDest,ObjectDest
   {
     private readonly MapObject m_Object;
     private readonly Location m_To;
 
     public MapObject Target { get { return m_Object; } }
-    public Location To { get { return m_To; } }
+    public Location obj_dest { get { return m_To; } }
     public Location dest { get { return m_Object.Location; } }
 
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir) : base(actor)

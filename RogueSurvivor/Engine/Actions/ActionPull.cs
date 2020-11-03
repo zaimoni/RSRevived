@@ -5,16 +5,21 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+    internal interface ObjectOrigin
+    {
+        Location obj_origin { get; }  // of m_Actor
+    }
+
     [Serializable]
-    class ActionPull : ActorAction, ActorDest
+    class ActionPull : ActorAction, ActorDest, ObjectOrigin
     {
         #region Fields
         readonly MapObject m_Object;
         readonly Location m_MoveActorTo;
         #endregion
 
-        // this can be null during pathfinding
         public Location dest { get { return m_MoveActorTo; } }
+        public Location obj_origin { get { return m_Object.Location; } }
 
         #region Init
         public ActionPull(Actor actor, MapObject pullObj, Direction moveActorDir) : base(actor)
