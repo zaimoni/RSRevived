@@ -1415,11 +1415,10 @@ retry:
       }
     }
 
-    public double PowerRatio {
-      get {
-        return (double)(PowerGenerators.Get.Count(it => it.IsOn))/PowerGenerators.Get.Count;
-      }
-    }
+    public double PowerRatio { get {
+        var gens = PowerGenerators.Get;
+        return (double)(gens.Count(it => it.IsOn))/gens.Count;
+    } }
 
     public bool HasItemsAt(Point pos) { return m_GroundItemsByPosition.ContainsKey(pos); }
 
