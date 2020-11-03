@@ -275,6 +275,21 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int TrapsMaxDamageFor(Actor a)
+    {
+      int num = 0;
+      if (a.Controller.IsEngaged) {
+        foreach (var obj in m_Items) {
+          if (obj is ItemTrap trap && !trap.IsSafeFor(a)) num += trap.Model.Damage;
+        }
+      } else {
+        foreach (var obj in m_Items) {
+          if (obj is ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
+        }
+      }
+      return num;
+    }
+
     public bool Contains(Item it) { return m_Items.Contains(it); }
 
         // alpha10

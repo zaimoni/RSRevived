@@ -1403,33 +1403,8 @@ retry:
       m_aux_MapObjectsByPosition.Remove(pt);
     }
 
-    public bool IsTrapCoveringMapObjectAt(Point pos)
-    {
-      return GetMapObjectAt(pos)?.CoversTraps ?? false;
-    }
-
-    public int TrapsMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
-    {
-      var itemsAt = GetItemsAt(pos);
-      if (itemsAt == null) return 0;
-      int num = 0;
-      foreach (var obj in itemsAt.Items) {
-        if (obj is Engine.Items.ItemTrap trap && !trap.IsSafeFor(a)) num += trap.Model.Damage;
-      }
-      return num;
-    }
-
-    public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a)  // XXX exceptionally likely to be a nonserialized cache target
-    {
-      if (a.Controller.IsEngaged) return TrapsMaxDamageAtFor(pos, a);
-      var itemsAt = GetItemsAt(pos);
-      if (itemsAt == null) return 0;
-      int num = 0;
-      foreach (var obj in itemsAt.Items) {
-        if (obj is Engine.Items.ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
-      }
-      return num;
-    }
+    public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }
+    public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a) { return GetItemsAt(pos)?.TrapsMaxDamageFor(a) ?? 0; }
 
     public void OpenAllGates()
     {
