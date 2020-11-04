@@ -56,13 +56,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     {
         private SharedPlan m_Plan;
 
-        public Cooperate(int t0, Actor who, SharedPlan plan) : base(t0, who) {
+        public Cooperate(Actor who, SharedPlan plan) : base(who.Location.Map.LocalTime.TurnCounter, who) {
             m_Plan = plan;
         }
 
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
+            if (m_Plan.IsExpired) return true; // expired
             if (m_Plan.IsRelevant(m_Actor.Location)) {
                 ret = m_Plan.Bind(m_Actor);
                 if (null != ret) {
