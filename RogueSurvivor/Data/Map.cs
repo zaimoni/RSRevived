@@ -1403,8 +1403,13 @@ retry:
       m_aux_MapObjectsByPosition.Remove(pt);
     }
 
+    // this will need rethinking when off-ground inventory (chairs, tables) happens
     public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }
-    public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a) { return GetItemsAt(pos)?.TrapsMaxDamageFor(a) ?? 0; }
+
+    public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a) {
+      if (IsTrapCoveringMapObjectAt(pos)) return 0;
+      return GetItemsAt(pos)?.TrapsMaxDamageFor(a) ?? 0;
+    }
 
     public void OpenAllGates()
     {
