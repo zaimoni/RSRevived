@@ -764,6 +764,58 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) {
         Session.Get.World.DaimonMap(); // for accuracy
+        // test game is crashing here -- looks like issue is a death-trapped exit from the sewers that can be "fixed"
+        // start function extraction target
+        var same_floor_deathtraps = new Dictionary<Location,int>();
+        Location? exit_dest = m_Actor.Location.Exit?.Location;
+        foreach(var loc in FOVloc) {
+          if (exit_dest == loc) continue;
+          var fatal_in = FastestTrapKill(in loc);
+          // need some tests for bypassability here
+          if (int.MaxValue > fatal_in) same_floor_deathtraps.Add(loc, fatal_in);
+        }
+        if (0 < same_floor_deathtraps.Count) {
+          var now = new HashSet<Location>();
+          var next = new HashSet<Location>();
+          var plan = new Dictionary<Location, Engine.Op.Join>();
+//        var plan2 = new Dictionary<Location, Engine.Op.Fork>(); // doesn't exist yet
+          var working = new HashSet<Location>(same_floor_deathtraps.Keys);
+          while(0 < working.Count) {
+            foreach (var loc in working) {
+              var loc_scan = new List<Location>();
+              var act_scan = new List<WorldUpdate>(); // new List<Engine.Op.PushOnto>();, but this fails at Join
+              foreach (var pt in loc.Position.Adjacent()) {
+                var test = new Location(loc.Map, pt);
+                if (!m_Actor.CanEnter(ref test)) continue;
+                if (now.Contains(test)) continue;
+                if (working.Contains(test)) continue;
+                var obj = test.MapObject;
+                if (null != obj) {
+                  if (!obj.IsMovable || obj.IsOnFire) continue;
+                }
+                var staging = new Engine.Op.PushOnto(test, loc);
+                act_scan.Add(staging);
+                next.Add(test);
+                loc_scan.Add(test);
+              }
+              var join = new Engine.Op.Join(act_scan);
+              // would want to:
+              // append to fork, if exists
+              // if prior join exists, construct fork
+              // otherwise record as first time join
+              foreach (var loc2 in loc_scan) {
+                if (plan.ContainsKey(loc2)) throw new InvalidOperationException("implement");
+                plan.Add(loc2, join);
+              }
+            }
+            now.UnionWith(working);
+            working = next;
+            next = new HashSet<Location>();
+            throw new InvalidOperationException("test case");
+          }
+          throw new InvalidOperationException("test case");
+        }
+        // end function extraction target
         throw new InvalidOperationException("test case");
       }
 #endif

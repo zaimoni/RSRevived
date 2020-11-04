@@ -256,6 +256,8 @@
     <Compile Include="..\Engine\Actions\ActionBump.cs" />
     <Compile Include="..\Engine\Actions\ActionEatFoodOnGround.cs" />
     <Compile Include="..\Engine\Action\Fork.cs" />
+    <Compile Include="..\Engine\Action\Join.cs" />
+    <Compile Include="..\Engine\Action\PushOnto.cs" />
     <Compile Include="..\Engine\Action\TakeFromLocation.cs" />
     <Compile Include="..\Engine\AI\Sensor.cs" />
     <Compile Include="..\Engine\AI\Percept.cs" />
