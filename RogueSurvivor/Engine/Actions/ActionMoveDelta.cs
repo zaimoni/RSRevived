@@ -256,8 +256,12 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override ActorAction? Bind(Actor src) {
             if (!src.CanEnter(m_NewLocation)) return null;
             if (!src.CanEnter(m_Origin)) return null;
-            return new ActionMoveDelta(src, in m_NewLocation, in m_Origin);
+            var act = new ActionMoveDelta(src, in m_NewLocation, in m_Origin);
+            return act.IsPerformable() ? act : null;
         }
+
+        public override void Blacklist(HashSet<Location> goals) {} // intentional no-op; might be incorrect
+        public override void Goals(HashSet<Location> goals) { goals.Add(m_Origin); }
 
         static public List<UpdateMoveDelta>? toDest(Location _dest) {
             if (!Map.CanEnter(ref _dest)) return null;

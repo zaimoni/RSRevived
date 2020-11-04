@@ -59,13 +59,21 @@ namespace djack.RogueSurvivor.Engine.Op
             var opts = new List<ActorAction>();
             foreach (var x in m_options) {
                 var act = x.Bind(src);
-                if (null == act) continue;
-                if (!act.IsLegal()) continue;
-                opts.Add(act);
+                if (null != act) opts.Add(act);
             }
             if (0 >= opts.Count) return null;
             if (null != m_sequel && !m_sequel.IsLegal()) m_sequel = null;
             return new _Action.Join(src, opts, m_sequel);
+        }
+
+        public override void Blacklist(HashSet<Location> goals)
+        {
+            foreach (var act in m_options) act.Blacklist(goals);
+        }
+
+        public override void Goals(HashSet<Location> goals)
+        {
+            foreach (var act in m_options) act.Goals(goals);
         }
     }
 }

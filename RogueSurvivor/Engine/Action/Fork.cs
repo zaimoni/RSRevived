@@ -317,12 +317,22 @@ namespace djack.RogueSurvivor.Engine.Op
         foreach(var x in m_Candidates) {
           if (x.IsRelevant(src.Location)) {
             var act = x.Bind(src);
-            if (null != act && act.IsPerformable()) actions.Add(act);
+            if (null != act) actions.Add(act);
           }
         }
         if (0 >= actions.Count) return null;
         if (1 == actions.Count) return actions[0];
         return new _Action.Fork(src, actions);
+      }
+
+      public override void Blacklist(HashSet<Location> goals)
+      {
+        foreach (var act in m_Candidates) act.Blacklist(goals);
+      }
+
+      public override void Goals(HashSet<Location> goals)
+      {
+        foreach (var act in m_Candidates) act.Goals(goals);
       }
 
       public void Add(WorldUpdate src)

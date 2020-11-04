@@ -11,9 +11,10 @@ namespace djack.RogueSurvivor.Engine.Op
     class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest
     {
         private readonly Location m_NewLocation;
-        private readonly Location m_Origin;
+        private readonly Location m_From;
+        [NonSerialized] private Location[]? m_origin;
 
-        public Location obj_origin { get { return m_Origin; } }
+        public Location obj_origin { get { return m_From; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
         public PushOnto(Location from, Location to)
@@ -24,11 +25,11 @@ namespace djack.RogueSurvivor.Engine.Op
             if (!Map.CanEnter(ref from)) throw new InvalidOperationException("must be able to exist at the origin");
             if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
             m_NewLocation = to;
-            m_Origin = from;
+            m_From = from;
         }
 
         public override bool IsLegal() {
-            var obj = m_Origin.MapObject;
+            var obj = m_From.MapObject;
             if (null != obj) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
@@ -42,15 +43,36 @@ namespace djack.RogueSurvivor.Engine.Op
         }
         public override bool IsRelevant() {
             if (null != m_NewLocation.MapObject) return false;
-            var obj = m_Origin.MapObject;
+            var obj = m_From.MapObject;
             return null != obj && obj.IsMovable && !obj.IsOnFire;
         }
         public override bool IsRelevant(Location loc) {
-            return IsRelevant() && 1 == Rules.GridDistance(m_Origin, loc);
+            return IsRelevant() && 1 == Rules.GridDistance(m_From, loc);
         }
         public override ActorAction? Bind(Actor src) {
-            return new _Action.PushOnto(src, m_Origin, m_NewLocation);
+            var act = new _Action.PushOnto(src, m_From, m_NewLocation);
+            return act.IsPerformable() ? act : null;
         }
+
+        public override void Blacklist(HashSet<Location> goals) {
+            goals.Remove(m_From);  // don't want actor here
+        }
+
+        public override void Goals(HashSet<Location> goals) {
+            goals.UnionWith(m_origin ??= origin_range);
+        }
+
+        private Location[] origin_range {
+            get {
+                var ret = new List<Location>();
+                foreach (var pt in m_From.Position.Adjacent()) {
+                    var test = new Location(m_From.Map, pt);
+                    if (Map.Canonical(ref test) && test.TileModel.IsWalkable) ret.Add(test);
+                }
+                return ret.ToArray();
+            }
+        }
+
     }
 }
 
