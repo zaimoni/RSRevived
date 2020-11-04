@@ -327,7 +327,9 @@ namespace djack.RogueSurvivor.Engine.Op
 
       public void Add(WorldUpdate src)
       {
-        if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
+        if (src is Fork fork) {
+          foreach(var act in fork.m_Candidates) Add(act);
+        } else if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
       }
     }
 }

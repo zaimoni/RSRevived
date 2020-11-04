@@ -30,6 +30,12 @@ namespace djack.RogueSurvivor.Engine.Op
             m_sequel = sequel;
         }
 
+        public Join(WorldUpdate option, WorldUpdate sequel)
+        {
+            m_options = new List<WorldUpdate> { option };
+            m_sequel = sequel;
+        }
+
         public override bool IsLegal()
         {
             foreach (var act in m_options) if (act.IsLegal()) return true;
