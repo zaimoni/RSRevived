@@ -9,21 +9,21 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 #nullable enable
 
+// Case study in Many-Worlds interpretation of Quantum Mechanics.
+
 // namespace Action conflicts with C# STL Action<>
 namespace djack.RogueSurvivor.Engine._Action
 {
-    // Case study in Many-Worlds interpretation of Quantum Mechanics.
     [Serializable]
     class Fork : ActorAction
     {
       private readonly Dictionary<int, List<ActorAction>> m_Candidates = new Dictionary<int, List<ActorAction>>();
 
       // imports pre-existing legal path calculation as the "starting point"
-      public Fork(Actor actor, Dictionary<Location, ActorAction>? legal_path) : base(actor)
+      public Fork(Actor actor, Dictionary<Location, ActorAction> legal_path) : base(actor)
       {
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
-        if (null == legal_path) throw new ArgumentNullException(nameof(legal_path));
 #endif
         void record(KeyValuePair<Location, ActorAction> x) {
           if (x.Value is Actions.ActorDest) Add(x.Value is Actions.ActorOrigin ? x.Value : new Actions.ActionMoveDelta(m_Actor, x.Key));
@@ -34,11 +34,10 @@ namespace djack.RogueSurvivor.Engine._Action
         foreach(var x in legal_path) record(x);
       }
 
-      public Fork(Actor actor, List<ActorAction>? legal_path) : base(actor)
+      public Fork(Actor actor, List<ActorAction> legal_path) : base(actor)
       {
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
-        if (null == legal_path) throw new ArgumentNullException(nameof(legal_path));
 #endif
         foreach (var act in legal_path) Add(act);
       }
@@ -268,6 +267,61 @@ retry:
         if (null == args) return null;
         if (1 == args.Count) return args[0];
         return new Fork(m_Actor, args);
+      }
+    }
+}
+
+namespace djack.RogueSurvivor.Engine.Op
+{
+    [Serializable]
+    class Fork : WorldUpdate
+    {
+      private readonly List<WorldUpdate> m_Candidates = new List<WorldUpdate>();
+
+      public Fork(List<WorldUpdate> legal_path)
+      {
+        foreach (var act in legal_path) Add(act);
+      }
+
+      public override bool IsLegal()
+      {
+        var ub = m_Candidates.Count;
+        while(0 <= --ub) {
+          if (m_Candidates[ub].IsLegal()) return true;
+          m_Candidates.RemoveAt(ub);
+        }
+        return false;
+      }
+
+      public override bool IsRelevant() {
+        foreach(var x in m_Candidates) if (x.IsRelevant()) return true;
+        return false;
+      }
+
+      public override bool IsRelevant(Location loc) {
+        foreach(var x in m_Candidates) if (x.IsRelevant(loc)) return true;
+        return false;
+      }
+
+      public override ActorAction? Bind(Actor src) {
+#if DEBUG
+        if (!(src.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
+#endif
+        var actions = new List<ActorAction>();
+        foreach(var x in m_Candidates) {
+          if (x.IsRelevant(src.Location)) {
+            var act = x.Bind(src);
+            if (null != act && act.IsPerformable()) actions.Add(act);
+          }
+        }
+        if (0 >= actions.Count) return null;
+        if (1 == actions.Count) return actions[0];
+        return new _Action.Fork(src, actions);
+      }
+
+      private void Add(WorldUpdate src)
+      {
+        if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
       }
     }
 }
