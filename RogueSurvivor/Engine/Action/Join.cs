@@ -78,6 +78,12 @@ namespace djack.RogueSurvivor.Engine.Op
             foreach (var act in m_options) act.Goals(goals);
         }
 
+        public bool ForkMerge(Join rhs) {
+            if (m_sequel != rhs.m_sequel) return false;
+            foreach (var act in rhs.m_options) if (!m_options.Contains(act)) m_options.Add(act);
+            return true;
+        }
+
         public bool ForceRelevant(Location loc, ref WorldUpdate dest)
         {
             var staging = new List<WorldUpdate>();

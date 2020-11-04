@@ -850,6 +850,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             schedule.Blacklist(goals);
 //          goals.RemoveWhere(loc => !m_Actor.CanEnter(loc)); // matters for burning cars
             var immediate = goals.Contains(m_Actor.Location);
+            var do_this = new Goals.SharedPlan(schedule);
+            var coordinate_this = new Goals.Cooperate(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, do_this);
+            var tenable = coordinate_this.UrgentAction(out var next_action);
             throw new InvalidOperationException("test case");
           }
           throw new InvalidOperationException("test case");

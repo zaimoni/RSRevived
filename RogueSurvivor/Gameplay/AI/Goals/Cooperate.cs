@@ -36,10 +36,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return null;
         }
 
-        public HashSet<Location>? Goals() {
+        public HashSet<Location>? Goals(Actor actor) {
             var ret = new HashSet<Location>();
             m_Plan.Goals(ret);
             m_Plan.Blacklist(ret);
+            ret.RemoveWhere(loc => !actor.CanEnter(loc)); // matters for burning cars
             return 0 < ret.Count ? ret : null;
         }
 
@@ -71,8 +72,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 ret = new ActionWait(m_Actor); // not necessarily (crowd control issues)
                 return true;
             }
-            var goals = m_Plan.Goals();
-            if (null != goals) (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
+            var goals = m_Plan.Goals(m_Actor);
+            if (null != goals) {
+                ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
+                return null != ret;
+            }
             return false;
         }
     }

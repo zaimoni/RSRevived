@@ -339,7 +339,15 @@ namespace djack.RogueSurvivor.Engine.Op
       {
         if (src is Fork fork) {
           foreach(var act in fork.m_Candidates) Add(act);
-        } else if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
+        } else if (src.IsLegal() && !m_Candidates.Contains(src)) {
+          if (src is Join join) {
+            var ub = m_Candidates.Count;
+            while(0 <= --ub) {
+              if (m_Candidates[ub] is Join prior_join && prior_join.ForkMerge(join)) return;
+            }
+          }
+          m_Candidates.Add(src);
+        }
       }
 
       public bool ForceRelevant(Location loc, ref WorldUpdate dest) {
