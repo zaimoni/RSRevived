@@ -845,14 +845,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 < plan3.Count) act_list.AddRange(plan3.Values);
           if (1 <= act_list.Count) {
             var schedule = (1 == act_list.Count ? act_list[0] : new Engine.Op.Fork(act_list));
-            var goals = new HashSet<Location>();
-            schedule.Goals(goals);
-            schedule.Blacklist(goals);
-//          goals.RemoveWhere(loc => !m_Actor.CanEnter(loc)); // matters for burning cars
-            var immediate = goals.Contains(m_Actor.Location);
             var do_this = new Goals.SharedPlan(schedule);
             var coordinate_this = new Goals.Cooperate(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, do_this);
             var tenable = coordinate_this.UrgentAction(out var next_action);
+            if (null != next_action && !coordinate_this.IsExpired) {
+              var allies = m_Actor.Allies;
+              if (null != allies) {
+                ZoneLoc? zone = m_Actor.Location.Map.ClearableZoneAt(m_Actor.Location.Position);
+                foreach(var ally in allies) {
+                  if (!InCommunicationWith(ally)) continue;
+                  if (CanSee(ally.Location) && ally.Controller.CanSee(m_Actor.Location)) {
+                    (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally.Location.Map.LocalTime.TurnCounter, ally, do_this));
+                    continue;
+                  }
+                  if (null != zone) {
+                    var ally_zone = ally.Location.Map.ClearableZoneAt(ally.Location.Position);
+                    if (zone == ally_zone) {
+                      (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally.Location.Map.LocalTime.TurnCounter, ally, do_this));
+                      continue;
+                    }
+                  }
+                }
+              }
+              SetObjective(coordinate_this);
+              throw new InvalidOperationException("test case");
+              return next_action;
+            }
             throw new InvalidOperationException("test case");
           }
           throw new InvalidOperationException("test case");
