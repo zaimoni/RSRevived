@@ -283,6 +283,12 @@ namespace djack.RogueSurvivor.Engine.Op
         foreach (var act in legal_path) Add(act);
       }
 
+      public Fork(WorldUpdate x1, WorldUpdate x2)
+      {
+        Add(x1);
+        Add(x2);
+      }
+
       public override bool IsLegal()
       {
         var ub = m_Candidates.Count;
@@ -319,7 +325,7 @@ namespace djack.RogueSurvivor.Engine.Op
         return new _Action.Fork(src, actions);
       }
 
-      private void Add(WorldUpdate src)
+      public void Add(WorldUpdate src)
       {
         if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
       }

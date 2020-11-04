@@ -775,13 +775,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (int.MaxValue > fatal_in) same_floor_deathtraps.Add(loc, fatal_in);
         }
         if (0 < same_floor_deathtraps.Count) {
+          var plan = new Dictionary<Location, Engine.Op.Join>();
+          var plan2 = new Dictionary<Location, Engine.Op.Fork>();
+          var plan3 = new Dictionary<Location, WorldUpdate>();
+          { // scoping brace -- function target?
           var now = new HashSet<Location>();
           var next = new HashSet<Location>();
-          var plan = new Dictionary<Location, Engine.Op.Join>();
-//        var plan2 = new Dictionary<Location, Engine.Op.Fork>(); // doesn't exist yet
           var working = new HashSet<Location>(same_floor_deathtraps.Keys);
+          bool found = false;
           while(0 < working.Count) {
             foreach (var loc in working) {
+              WorldUpdate? sequel = null;
+              if (plan2.TryGetValue(loc, out var seq_fork)) sequel = seq_fork;
+              else if (plan.TryGetValue(loc, out var seq_join)) sequel = seq_join;
+              else if (plan3.TryGetValue(loc, out var seq_update)) sequel = seq_update;
+
               var loc_scan = new List<Location>();
               var act_scan = new List<WorldUpdate>(); // new List<Engine.Op.PushOnto>();, but this fails at Join
               foreach (var pt in loc.Position.Adjacent()) {
@@ -798,21 +806,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 next.Add(test);
                 loc_scan.Add(test);
               }
-              var join = new Engine.Op.Join(act_scan);
-              // would want to:
-              // append to fork, if exists
-              // if prior join exists, construct fork
-              // otherwise record as first time join
-              foreach (var loc2 in loc_scan) {
-                if (plan.ContainsKey(loc2)) throw new InvalidOperationException("implement");
-                plan.Add(loc2, join);
+              if (0 >= act_scan.Count) continue;
+              if (1 == act_scan.Count && null == sequel) { // only happens initially
+                foreach (var loc2 in loc_scan) plan3.Add(loc2, act_scan[0]);
+              } else {
+                var join = new Engine.Op.Join(act_scan, sequel);
+                foreach (var loc2 in loc_scan) {
+                  if (plan2.TryGetValue(loc2, out var fork)) {
+                    fork.Add(join);
+                  } else if (plan.TryGetValue(loc2, out var prior_join)) {
+                    plan2.Add(loc2, new Engine.Op.Fork(prior_join, join));
+                    plan.Remove(loc2);
+                  } else if (plan3.TryGetValue(loc2, out var prior_update)) {
+                    plan2.Add(loc2, new Engine.Op.Fork(prior_update, join));
+                    plan3.Remove(loc2);
+                  } else plan.Add(loc2, join);
+                }
+                if (join.IsRelevant()) found = true;
               }
             }
             now.UnionWith(working);
+            if (found) break;
             working = next;
             next = new HashSet<Location>();
-            throw new InvalidOperationException("test case");
           }
+          } // end scoping brace
+          plan.OnlyIf(update => update.IsRelevant());
+          plan2.OnlyIf(update => update.IsRelevant());
+          plan3.OnlyIf(update => update.IsRelevant());
           throw new InvalidOperationException("test case");
         }
         // end function extraction target
