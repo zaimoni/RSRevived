@@ -341,5 +341,19 @@ namespace djack.RogueSurvivor.Engine.Op
           foreach(var act in fork.m_Candidates) Add(act);
         } else if (src.IsLegal() && !m_Candidates.Contains(src)) m_Candidates.Add(src);
       }
+
+      public bool ForceRelevant(Location loc, ref WorldUpdate dest) {
+        var staging = new List<WorldUpdate>();
+        foreach(var act in m_Candidates) if (act.IsRelevant(loc)) staging.Add(act);
+        var staged = staging.Count;
+        if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
+        if (2 <= staged) {
+          if (m_Candidates.Count <= staged) return false;
+          dest = new Fork(staging);
+          return false;
+        }
+        dest = staging[0];
+        return true;
+      }
     }
 }

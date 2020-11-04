@@ -17,21 +17,24 @@ namespace djack.RogueSurvivor.Engine.Op
     class Join : WorldUpdate
     {
         private List<WorldUpdate> m_options;
-        private WorldUpdate? m_sequel = null;
+        private WorldUpdate m_sequel;
 
-        public Join(List<WorldUpdate> options)
-        {
-            m_options = options;
-        }
+        public WorldUpdate Sequel { get { return m_sequel; } }
 
         public Join(List<WorldUpdate> options, WorldUpdate sequel)
         {
+#if DEBUG
+            if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
+#endif
             m_options = options;
             m_sequel = sequel;
         }
 
         public Join(WorldUpdate option, WorldUpdate sequel)
         {
+#if DEBUG
+            if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
+#endif
             m_options = new List<WorldUpdate> { option };
             m_sequel = sequel;
         }
@@ -62,7 +65,6 @@ namespace djack.RogueSurvivor.Engine.Op
                 if (null != act) opts.Add(act);
             }
             if (0 >= opts.Count) return null;
-            if (null != m_sequel && !m_sequel.IsLegal()) m_sequel = null;
             return new _Action.Join(src, opts, m_sequel);
         }
 
@@ -74,6 +76,24 @@ namespace djack.RogueSurvivor.Engine.Op
         public override void Goals(HashSet<Location> goals)
         {
             foreach (var act in m_options) act.Goals(goals);
+        }
+
+        public bool ForceRelevant(Location loc, ref WorldUpdate dest)
+        {
+            var staging = new List<WorldUpdate>();
+            foreach (var act in m_options) if (act.IsRelevant(loc)) staging.Add(act);
+            var staged = staging.Count;
+            if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
+            if (null != m_sequel) {
+                if (m_options.Count > staged) dest = new Join(staging, m_sequel);
+                return false;
+            }
+            if (2 <= staged) {
+                dest = new Fork(staging);
+                return true;
+            }
+            dest = staging[0];
+            return true;
         }
     }
 }

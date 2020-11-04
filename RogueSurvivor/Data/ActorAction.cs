@@ -60,6 +60,8 @@ namespace djack.RogueSurvivor.Data
         public abstract bool IsLegal();
         public abstract bool IsRelevant();
         public abstract bool IsRelevant(Location loc);
+
+        /// <returns>null, or a Performable action</returns>
         public abstract ActorAction? Bind(Actor src);
         public abstract void Blacklist(HashSet<Location> goals);
         public abstract void Goals(HashSet<Location> goals);
