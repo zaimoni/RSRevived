@@ -4286,8 +4286,16 @@ restart_chokepoints:
         foreach(var loc in FOVloc) {
           if (exit_dest == loc) continue;
           var fatal_in = FastestTrapKill(in loc);
-          // need some tests for bypassability here
-          if (int.MaxValue > fatal_in) ret.Add(loc, fatal_in);
+//        if (int.MaxValue <= FastestTrapKill(in loc)) continue; // not deadly enough
+          if (5 <= FastestTrapKill(in loc)) continue; // not deadly enough
+          bool bypassable = null == loc.Exit;
+          if (bypassable) {
+            if (!m_Actor.CanEnter(loc + Direction.N) && !m_Actor.CanEnter(loc + Direction.S)) bypassable = false;
+          }
+          if (bypassable) {
+            if (!m_Actor.CanEnter(loc + Direction.E) && !m_Actor.CanEnter(loc + Direction.W)) bypassable = false;
+          }
+          if (!bypassable) ret.Add(loc, fatal_in);
         }
         return 0 < ret.Count ? ret : null;
     }
