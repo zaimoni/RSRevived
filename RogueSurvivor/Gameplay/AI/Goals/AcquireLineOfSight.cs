@@ -9,7 +9,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // only need to see one target to expire
     [Serializable]
-    class AcquireLineOfSight : Objective, Pathable, Observer<Location[]>
+    class AcquireLineOfSight : Objective, LatePathable, Observer<Location[]>
     {
         readonly private HashSet<Location> _locs;
         [NonSerialized] ObjectiveAI oai;

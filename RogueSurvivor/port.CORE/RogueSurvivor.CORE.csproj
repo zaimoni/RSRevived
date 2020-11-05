@@ -65,6 +65,7 @@
     <Compile Include="..\Gameplay\AI\Goals\AcquireLineOfSight.cs" />
     <Compile Include="..\Gameplay\AI\Goals\BlacklistExits.cs" />
     <Compile Include="..\Gameplay\AI\Goals\ClearZone.cs" />
+    <Compile Include="..\Gameplay\AI\Goals\Cooperate.cs" />
     <Compile Include="..\Gameplay\AI\Goals\StageAction.cs" />
     <Compile Include="..\Gameplay\AI\Goals\Trade.cs" />
     <Compile Include="..\Gameplay\AI\ObjectiveAI.cs" />

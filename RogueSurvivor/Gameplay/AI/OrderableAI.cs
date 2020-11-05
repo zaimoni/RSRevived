@@ -394,7 +394,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_PathToStack : Objective,Pathable
+    internal class Goal_PathToStack : Objective,LatePathable
     {
       private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
       [NonSerialized] private OrderableAI ordai;
@@ -3476,11 +3476,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmp = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
       if (null != tmp) return tmp;
       tmp = BehaviorTrading();
-      if (null != tmp) return tmp;
-      tmp = Pathing<Goal_PathToStack>();
-      if (null != tmp) return tmp;
-      tmp = Pathing<Goals.AcquireLineOfSight>();
-      if (null != tmp) return tmp;
+
+      foreach(var obj in Objectives) {
+        if (obj is LatePathable path) {
+          tmp = path.Pathing();
+          if (null != tmp) return tmp;
+        }
+      }
+
       return null;
     }
 #endregion

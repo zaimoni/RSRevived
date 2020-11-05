@@ -42,6 +42,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction? Pathing();
     }
 
+    // less important than trading; doesn't need exact sequencing
+    internal interface LatePathable
+    {
+        ActorAction? Pathing();
+    }
+
     [Serializable]
     internal class PathToTarget {
         enum What {
