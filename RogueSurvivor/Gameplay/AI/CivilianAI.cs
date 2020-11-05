@@ -766,86 +766,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Session.Get.World.DaimonMap(); // for accuracy
         // test game is crashing here -- looks like issue is a death-trapped exit from the sewers that can be "fixed"
         // start function extraction target
-        var same_floor_deathtraps = new Dictionary<Location,int>();
-        Location? exit_dest = m_Actor.Location.Exit?.Location;
-        foreach(var loc in FOVloc) {
-          if (exit_dest == loc) continue;
-          var fatal_in = FastestTrapKill(in loc);
-          // need some tests for bypassability here
-          if (int.MaxValue > fatal_in) same_floor_deathtraps.Add(loc, fatal_in);
-        }
-        if (0 < same_floor_deathtraps.Count) {
-          var plan = new Dictionary<Location, Engine.Op.Join>();
-          var plan2 = new Dictionary<Location, Engine.Op.Fork>();
-          var plan3 = new Dictionary<Location, WorldUpdate>();
-          { // scoping brace -- function target?
-          var now = new HashSet<Location>();
-          var next = new HashSet<Location>();
-          var working = new HashSet<Location>(same_floor_deathtraps.Keys);
-          bool found = false;
-          while(0 < working.Count) {
-            foreach (var loc in working) {
-              WorldUpdate? sequel = null;
-              if (plan2.TryGetValue(loc, out var seq_fork)) sequel = seq_fork;
-              else if (plan.TryGetValue(loc, out var seq_join)) sequel = seq_join;
-              else if (plan3.TryGetValue(loc, out var seq_update)) sequel = seq_update;
-
-              var act_index = new Dictionary<Location, WorldUpdate>();
-              var loc_scan = new List<Location>();
-              var act_scan = new List<WorldUpdate>(); // new List<Engine.Op.PushOnto>();, but this fails at Join
-              foreach (var pt in loc.Position.Adjacent()) {
-                var test = new Location(loc.Map, pt);
-                if (!m_Actor.CanEnter(ref test)) continue;
-                if (now.Contains(test)) continue;
-                if (working.Contains(test)) continue;
-                var obj = test.MapObject;
-                if (null != obj) {
-                  if (!obj.IsMovable || obj.IsOnFire) continue;
-                }
-                var staging = new Engine.Op.PushOnto(test, loc);
-                act_scan.Add(staging);
-                next.Add(test);
-                loc_scan.Add(test);
-                act_index.Add(test, staging);
-              }
-              if (0 >= act_index.Count) continue;
-              if (null == sequel) { // only happens initially
-                foreach(var x in act_index) {
-                  plan3.Add(x.Key, x.Value);
-                  if (x.Value.IsRelevant()) found = true;
-                }
-              } else {
-                foreach(var x in act_index) {
-                  var join = new Engine.Op.Join(x.Value, sequel);
-                  if (plan2.TryGetValue(x.Key, out var fork)) {
-                    fork.Add(join);
-                  } else if (plan.TryGetValue(x.Key, out var prior_join)) {
-                    plan2.Add(x.Key, new Engine.Op.Fork(prior_join, join));
-                    plan.Remove(x.Key);
-                  } else if (plan3.TryGetValue(x.Key, out var prior_update)) {
-                    plan2.Add(x.Key, new Engine.Op.Fork(prior_update, join));
-                    plan3.Remove(x.Key);
-                  } else plan.Add(x.Key, join);
-                  if (join.IsRelevant()) found = true;
-                }
-              }
-            }
-            now.UnionWith(working);
-            if (found) break;
-            working = next;
-            next = new HashSet<Location>();
-          }
-          } // end scoping brace
-          plan.OnlyIf(update => update.IsRelevant());
-          plan2.OnlyIf(update => update.IsRelevant());
-          plan3.OnlyIf(update => update.IsRelevant());
-          var act_list = new List<WorldUpdate>();
-          if (0 < plan.Count) act_list.AddRange(plan.Values);
-          if (0 < plan2.Count) act_list.AddRange(plan2.Values);
-          if (0 < plan3.Count) act_list.AddRange(plan3.Values);
-          if (1 <= act_list.Count) {
-            var schedule = (1 == act_list.Count ? act_list[0] : new Engine.Op.Fork(act_list));
-            var do_this = new Goals.SharedPlan(schedule);
+        var same_floor_deathtraps = DeathTrapsInSight();
+        if (null != same_floor_deathtraps) {
+          var do_this = CanDisarmDeathtrap(same_floor_deathtraps);
+          if (null != do_this) {
             var coordinate_this = new Goals.Cooperate(m_Actor, do_this);
             var tenable = coordinate_this.UrgentAction(out var next_action);
             if (null != next_action) {

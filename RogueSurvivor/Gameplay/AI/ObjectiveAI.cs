@@ -19,6 +19,7 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using System.Runtime.Serialization;
+using djack.RogueSurvivor.Gameplay.AI.Goals;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -4275,8 +4276,98 @@ restart_chokepoints:
         else damage_field[p.Location.Position] = damage;
       }
     }
-#nullable restore
 #endregion
+
+#region deathtrap disarming
+    protected Dictionary<Location, int>? DeathTrapsInSight()
+    {
+        var ret = new Dictionary<Location,int>();
+        Location? exit_dest = m_Actor.Location.Exit?.Location;
+        foreach(var loc in FOVloc) {
+          if (exit_dest == loc) continue;
+          var fatal_in = FastestTrapKill(in loc);
+          // need some tests for bypassability here
+          if (int.MaxValue > fatal_in) ret.Add(loc, fatal_in);
+        }
+        return 0 < ret.Count ? ret : null;
+    }
+
+    protected SharedPlan? CanDisarmDeathtrap(Dictionary<Location, int> same_floor_deathtraps)
+    {
+          var plan = new Dictionary<Location, Engine.Op.Join>();
+          var plan2 = new Dictionary<Location, Engine.Op.Fork>();
+          var plan3 = new Dictionary<Location, WorldUpdate>();
+          { // scoping brace -- function target?
+          var now = new HashSet<Location>();
+          var next = new HashSet<Location>();
+          var working = new HashSet<Location>(same_floor_deathtraps.Keys);
+          bool found = false;
+          while(0 < working.Count) {
+            foreach (var loc in working) {
+              WorldUpdate? sequel = null;
+              if (plan2.TryGetValue(loc, out var seq_fork)) sequel = seq_fork;
+              else if (plan.TryGetValue(loc, out var seq_join)) sequel = seq_join;
+              else if (plan3.TryGetValue(loc, out var seq_update)) sequel = seq_update;
+
+              var act_index = new Dictionary<Location, WorldUpdate>();
+              var loc_scan = new List<Location>();
+              var act_scan = new List<WorldUpdate>(); // new List<Engine.Op.PushOnto>();, but this fails at Join
+              foreach (var pt in loc.Position.Adjacent()) {
+                var test = new Location(loc.Map, pt);
+                if (!m_Actor.CanEnter(ref test)) continue;
+                if (now.Contains(test)) continue;
+                if (working.Contains(test)) continue;
+                var obj = test.MapObject;
+                if (null != obj) {
+                  if (!obj.IsMovable || obj.IsOnFire) continue;
+                }
+                var staging = new Engine.Op.PushOnto(test, loc);
+                act_scan.Add(staging);
+                next.Add(test);
+                loc_scan.Add(test);
+                act_index.Add(test, staging);
+              }
+              if (0 >= act_index.Count) continue;
+              if (null == sequel) { // only happens initially
+                foreach(var x in act_index) {
+                  plan3.Add(x.Key, x.Value);
+                  if (x.Value.IsRelevant()) found = true;
+                }
+              } else {
+                foreach(var x in act_index) {
+                  var join = new Engine.Op.Join(x.Value, sequel);
+                  if (plan2.TryGetValue(x.Key, out var fork)) {
+                    fork.Add(join);
+                  } else if (plan.TryGetValue(x.Key, out var prior_join)) {
+                    plan2.Add(x.Key, new Engine.Op.Fork(prior_join, join));
+                    plan.Remove(x.Key);
+                  } else if (plan3.TryGetValue(x.Key, out var prior_update)) {
+                    plan2.Add(x.Key, new Engine.Op.Fork(prior_update, join));
+                    plan3.Remove(x.Key);
+                  } else plan.Add(x.Key, join);
+                  if (join.IsRelevant()) found = true;
+                }
+              }
+            }
+            now.UnionWith(working);
+            if (found) break;
+            working = next;
+            next = new HashSet<Location>();
+          }
+          } // end scoping brace
+          plan.OnlyIf(update => update.IsRelevant());
+          plan2.OnlyIf(update => update.IsRelevant());
+          plan3.OnlyIf(update => update.IsRelevant());
+          var act_list = new List<WorldUpdate>();
+          if (0 < plan.Count) act_list.AddRange(plan.Values);
+          if (0 < plan2.Count) act_list.AddRange(plan2.Values);
+          if (0 < plan3.Count) act_list.AddRange(plan3.Values);
+          if (0 >= act_list.Count) return null;
+          var schedule = (1 == act_list.Count ? act_list[0] : new Engine.Op.Fork(act_list));
+          return new SharedPlan(schedule);
+    }
+#endregion
+#nullable restore
 
     public void Terminate(Actor a)
     {
