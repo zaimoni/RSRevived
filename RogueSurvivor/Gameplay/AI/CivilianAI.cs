@@ -766,41 +766,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Session.Get.World.DaimonMap(); // for accuracy
         // test game is crashing here -- looks like issue is a death-trapped exit from the sewers that can be "fixed"
         // start function extraction target
-        var same_floor_deathtraps = DeathTrapsInSight();
-        if (null != same_floor_deathtraps) {
-          var do_this = CanDisarmDeathtrap(same_floor_deathtraps);
-          if (null != do_this) {
-            var coordinate_this = new Goals.Cooperate(m_Actor, do_this);
-            var tenable = coordinate_this.UrgentAction(out var next_action);
-            if (null != next_action) {
-              if (!coordinate_this.IsExpired) {
-                var allies = m_Actor.Allies;
-                if (null != allies) {
-                  var zone = m_Actor.Location.Map.ClearableZoneAt(m_Actor.Location.Position);
-                  foreach(var ally in allies) {
-                    if (!InCommunicationWith(ally)) continue;
-                    if (CanSee(ally.Location) && ally.Controller.CanSee(m_Actor.Location)) {
-                      (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally, do_this));
-                      continue;
-                    }
-                    if (null != zone) {
-                      var ally_zone = ally.Location.Map.ClearableZoneAt(ally.Location.Position);
-                      if (zone == ally_zone) {
-                        (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally, do_this));
-                        continue;
-                      }
-                    }
-                  }
-                }
-                SetObjective(coordinate_this);
-              }
-              throw new InvalidOperationException("test case");
-              return next_action;
-            }
-            throw new InvalidOperationException("test case");
-          }
-          throw new InvalidOperationException("test case");
-        }
+        tmpAction = BehaviorHandleDeathTrap();
+        throw new InvalidOperationException("tracing");
+        if (null != tmpAction) return tmpAction;
         // end function extraction target
         throw new InvalidOperationException("test case");
       }

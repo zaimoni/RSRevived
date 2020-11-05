@@ -4374,6 +4374,45 @@ restart_chokepoints:
           var schedule = (1 == act_list.Count ? act_list[0] : new Engine.Op.Fork(act_list));
           return new SharedPlan(schedule);
     }
+
+    protected ActorAction? BehaviorHandleDeathTrap()
+    {
+        var same_floor_deathtraps = DeathTrapsInSight();
+        if (null == same_floor_deathtraps) return null;
+          // \todo maybe just build a small fortification on top of it?
+
+          // try pushing something onto it (either covers or destroys)
+          var do_this = CanDisarmDeathtrap(same_floor_deathtraps);
+          if (null != do_this) {
+            var coordinate_this = new Goals.Cooperate(m_Actor, do_this);
+            var tenable = coordinate_this.UrgentAction(out var next_action);
+            if (null != next_action) {
+              if (!coordinate_this.IsExpired) {
+                var allies = m_Actor.Allies;
+                if (null != allies) {
+                  var zone = m_Actor.Location.Map.ClearableZoneAt(m_Actor.Location.Position);
+                  foreach(var ally in allies) {
+                    if (!InCommunicationWith(ally)) continue;
+                    if (CanSee(ally.Location) && ally.Controller.CanSee(m_Actor.Location)) {
+                      (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally, do_this));
+                      continue;
+                    }
+                    if (null != zone) {
+                      var ally_zone = ally.Location.Map.ClearableZoneAt(ally.Location.Position);
+                      if (zone == ally_zone) {
+                        (ally.Controller as ObjectiveAI).SetObjective(new Goals.Cooperate(ally, do_this));
+                        continue;
+                      }
+                    }
+                  }
+                }
+                SetObjective(coordinate_this);
+              }
+              return next_action;
+            }
+          }
+        return null;
+    }
 #endregion
 #nullable restore
 
