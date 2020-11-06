@@ -320,19 +320,21 @@ namespace djack.RogueSurvivor.Engine.Op
             if (null != act) actions.Add(act);
           }
         }
-        if (0 >= actions.Count) return null;
-        if (1 == actions.Count) return actions[0];
+        var act_count = actions.Count;
+        if (1 >= act_count) return (0 >= act_count) ? null : actions[0];
         return new _Action.Fork(src, actions);
       }
 
       public override void Blacklist(HashSet<Location> goals)
       {
-        foreach (var act in m_Candidates) act.Blacklist(goals);
+        var ub = m_Candidates.Count;
+        while(0 <= --ub) m_Candidates[ub].Blacklist(goals);
       }
 
       public override void Goals(HashSet<Location> goals)
       {
-        foreach (var act in m_Candidates) act.Goals(goals);
+        var ub = m_Candidates.Count;
+        while(0 <= --ub) m_Candidates[ub].Goals(goals);
       }
 
       public void Add(WorldUpdate src)
@@ -356,8 +358,7 @@ namespace djack.RogueSurvivor.Engine.Op
         var staged = staging.Count;
         if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
         if (2 <= staged) {
-          if (m_Candidates.Count <= staged) return false;
-          dest = new Fork(staging);
+          if (m_Candidates.Count > staged) dest = new Fork(staging);
           return false;
         }
         dest = staging[0];
