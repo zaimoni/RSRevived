@@ -12,12 +12,13 @@ namespace djack.RogueSurvivor.Engine.Op
     {
         private readonly Location m_NewLocation;
         private readonly Location m_From;
+        private readonly int m_MaxWeight;
         [NonSerialized] private Location[]? m_origin;
 
         public Location obj_origin { get { return m_From; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        public PushOnto(Location from, Location to)
+        public PushOnto(Location from, Location to, int maxWeight=10)
         {
 #if DEBUG
             if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
@@ -26,6 +27,7 @@ namespace djack.RogueSurvivor.Engine.Op
             if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
             m_NewLocation = to;
             m_From = from;
+            m_MaxWeight = maxWeight; // default to ignoring cars as push targets
         }
 
         public override bool IsLegal() {
@@ -33,11 +35,13 @@ namespace djack.RogueSurvivor.Engine.Op
             if (null != obj) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
+                if (m_MaxWeight < obj.Weight) return false;
             }
             obj = m_NewLocation.MapObject;
             if (null != obj) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
+                if (m_MaxWeight < obj.Weight) return false;
             }
             return true;
         }

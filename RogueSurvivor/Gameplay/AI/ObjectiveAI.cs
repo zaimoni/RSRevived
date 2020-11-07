@@ -4305,6 +4305,7 @@ restart_chokepoints:
           var plan = new Dictionary<Location, Engine.Op.Join>();
           var plan2 = new Dictionary<Location, Engine.Op.Fork>();
           var plan3 = new Dictionary<Location, WorldUpdate>();
+          int tries = 0<District.UsesCrossDistrictView(m_Actor.Location.Map) ? 7 : int.MaxValue;
           { // scoping brace -- function target?
           var now = new HashSet<Location>();
           var next = new HashSet<Location>();
@@ -4359,6 +4360,7 @@ restart_chokepoints:
             }
             now.UnionWith(working);
             if (found) break;
+            if (0 >= --tries) break;
             working = next;
             next = new HashSet<Location>();
           }
