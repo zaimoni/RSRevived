@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
+using Zaimoni.Data;
 
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 using Goal_NextAction = djack.RogueSurvivor.Gameplay.AI.Goal_NextAction;
@@ -90,16 +91,10 @@ namespace djack.RogueSurvivor.Engine.Op
             foreach (var act in m_Options) if (act.IsRelevant(loc)) staging.Add(act);
             var staged = staging.Count;
             if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
-            if (null != m_Sequel) {
-                if (m_Options.Count > staged) dest = new Join(staging, m_Sequel);
-                return false;
-            }
-            if (2 <= staged) {
-                dest = new Fork(staging);
-                return true;
-            }
-            dest = staging[0];
-            return true;
+            // also of interest: maybe prefilter by whether actions are performable?
+            // Fork has a sifting stage here
+            if (m_Options.Count > staged) dest = new Join(staging, m_Sequel);
+            return false;
         }
     }
 }

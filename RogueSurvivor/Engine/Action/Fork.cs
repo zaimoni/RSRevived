@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using djack.RogueSurvivor.Data;
-
+using Zaimoni.Data;
 using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
@@ -357,6 +357,23 @@ namespace djack.RogueSurvivor.Engine.Op
         foreach(var act in m_Options) if (act.IsRelevant(loc)) staging.Add(act);
         var staged = staging.Count;
         if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
+        // also of interest: maybe prefilter by whether actions are performable?
+        if (2 <= staged) {
+          var should_sift = staging.HaveItBothWays(act => act is Join);
+          if (should_sift.Key) {
+            // have Join in here.  non-Join would be faster; would be more useful to retype as Join
+            if (should_sift.Value) {
+              // also have non-Join
+#if DEBUG
+              throw new InvalidOperationException("test case");
+#endif
+            } else {
+              // random-select a Join
+              dest = Rules.Get.DiceRoller.Choose(staging);
+              return true;
+            }
+          }
+        }
         if (2 <= staged) {
           if (m_Options.Count > staged) dest = new Fork(staging);
           return false;
