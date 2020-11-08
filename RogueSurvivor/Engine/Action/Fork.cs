@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine._Action
     [Serializable]
     class Fork : ActorAction
     {
-      private readonly Dictionary<int, List<ActorAction>> m_Candidates = new Dictionary<int, List<ActorAction>>();
+      private readonly Dictionary<int, List<ActorAction>> m_Options = new Dictionary<int, List<ActorAction>>();
 
       // imports pre-existing legal path calculation as the "starting point"
       public Fork(Actor actor, Dictionary<Location, ActorAction> legal_path) : base(actor)
@@ -55,11 +55,11 @@ namespace djack.RogueSurvivor.Engine._Action
 
       public override bool IsLegal()
       {
-        var doomed = new Zaimoni.Data.Stack<int>(stackalloc int[m_Candidates.Count]);
+        var doomed = new Zaimoni.Data.Stack<int>(stackalloc int[m_Options.Count]);
         bool ok = false;
         string? last_fail = null;
         int ub;
-        foreach(var x in m_Candidates) {
+        foreach(var x in m_Options) {
           ub = x.Value.Count;
           while(0 <= --ub) {
             if (x.Value[ub].IsLegal()) ok = true;
@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Engine._Action
           if (0 >= x.Value.Count) doomed.push(x.Key);
         }
         ub = doomed.Count;
-        while(0 <= --ub) m_Candidates.Remove(doomed[ub]);
+        while(0 <= --ub) m_Options.Remove(doomed[ub]);
         if (!ok) m_FailReason = last_fail;
         return ok;
       }
@@ -80,11 +80,11 @@ namespace djack.RogueSurvivor.Engine._Action
       // predicted to be CPU-expensive, so just assume components correctly implement performable => legal
       public override bool IsPerformable()
       {
-        var doomed = new Zaimoni.Data.Stack<int>(stackalloc int[m_Candidates.Count]);
+        var doomed = new Zaimoni.Data.Stack<int>(stackalloc int[m_Options.Count]);
         bool ok = false;
         string? last_fail = null;
         int ub;
-        foreach(var x in m_Candidates) {
+        foreach(var x in m_Options) {
           ub = x.Value.Count;
           while(0 <= --ub) {
             if (x.Value[ub].IsPerformable()) ok = true;
@@ -97,20 +97,20 @@ namespace djack.RogueSurvivor.Engine._Action
           if (0 >= x.Value.Count) doomed.push(x.Key);
         }
         ub = doomed.Count;
-        while(0 <= --ub) m_Candidates.Remove(doomed[ub]);
+        while(0 <= --ub) m_Options.Remove(doomed[ub]);
         if (!ok) m_FailReason = last_fail;
         return ok;
       }
 
       public override void Perform()
       {
-        int act_cost = m_Candidates.Keys.Min();
-        (m_Actor.Controller as ObjectiveAI).ExecuteActionFork(m_Candidates[act_cost]);
+        int act_cost = m_Options.Keys.Min();
+        (m_Actor.Controller as ObjectiveAI).ExecuteActionFork(m_Options[act_cost]);
       }
 
       public override bool Abort()  // \todo want to block double-processing to conserve CPU
       {
-        foreach(var x in m_Candidates) foreach(var act in x.Value) if (act.Abort()) return true;
+        foreach(var x in m_Options) foreach(var act in x.Value) if (act.Abort()) return true;
         return false;
       }
 
@@ -121,8 +121,8 @@ namespace djack.RogueSurvivor.Engine._Action
         return m_Candidates.Keys.Min();
 #else
 retry:
-        int act_cost = m_Candidates.Keys.Min();
-        var cache = m_Candidates[act_cost];
+        int act_cost = m_Options.Keys.Min();
+        var cache = m_Options[act_cost];
         int ub = cache.Count;
         bool recalc = false;
         while(0 <= --ub) {
@@ -135,10 +135,10 @@ retry:
           }
         }
         if (0 >= cache.Count) {
-          m_Candidates.Remove(act_cost);
+          m_Options.Remove(act_cost);
           if (!recalc) goto retry;
         }
-        if (recalc) return m_Candidates.Keys.Min();
+        if (recalc) return m_Options.Keys.Min();
         return act_cost;
 #endif
         }
@@ -153,14 +153,14 @@ retry:
       private void Add(ActorAction src)
       {
         int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src);
-        if (m_Candidates.TryGetValue(cost, out var cache)) cache.Add(src);
-        else m_Candidates.Add(cost, new List<ActorAction> { src });
+        if (m_Options.TryGetValue(cost, out var cache)) cache.Add(src);
+        else m_Options.Add(cost, new List<ActorAction> { src });
       }
 
       public ActorAction? Reduce()
       {
-        if (1 != m_Candidates.Count) return null;
-        var test = m_Candidates.First();
+        if (1 != m_Options.Count) return null;
+        var test = m_Options.First();
         return 1==test.Value.Count ? test.Value[0] : null;
       }
 
@@ -168,7 +168,7 @@ retry:
       {
         if (index < src.Count) {
           var test = src[index];
-          foreach(var x in m_Candidates) {
+          foreach(var x in m_Options) {
             foreach(var act in x.Value) {
               if (act is Actions.ActionChain chain) return chain.ContainsSuffix(src, index);
               else if (test.AreEquivalent(act)) return index+1==src.Count;
@@ -187,10 +187,10 @@ retry:
           return;
         }
 
-        var prefix_cache = m_Candidates[test.Key];
+        var prefix_cache = m_Options[test.Key];
         var prefix_match = prefix_cache[test.Value];
         prefix_cache.RemoveAt(test.Value);
-        if (0 >= prefix_cache.Count) m_Candidates.Remove(test.Key);
+        if (0 >= prefix_cache.Count) m_Options.Remove(test.Key);
         if (!(prefix_match is Actions.ActionChain chain)) {
           Add(wrapped);
           return;
@@ -201,7 +201,7 @@ retry:
 
       private KeyValuePair<int,int> FindFirst(ActorAction src) {
         var ret = new KeyValuePair<int,int>(int.MaxValue, int.MaxValue);
-        foreach(var x in m_Candidates) {
+        foreach(var x in m_Options) {
           int ub = x.Value.Count;
           while(0 <= --ub) {
             var test_act = x.Value[ub];
@@ -225,8 +225,8 @@ retry:
 
       bool backward_chain()
       {
-        int act_cost = m_Candidates.Keys.Min();
-        var cache = m_Candidates[act_cost];
+        int act_cost = m_Options.Keys.Min();
+        var cache = m_Options[act_cost];
         var working = new List<Actions.ActionChain>();
         int ub = cache.Count;
         while(0 <= --ub) {
@@ -249,7 +249,7 @@ retry:
       {
         List<ActorAction>? args = null;
         bool all_there = true;
-        foreach(var x in m_Candidates) {
+        foreach(var x in m_Options) {
           foreach (var act in x.Value) {
             if (act is Actions.ActorDest a_dest) {
               if (a_dest.dest == origin) {
@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Engine.Op
     [Serializable]
     class Fork : WorldUpdate
     {
-      private readonly List<WorldUpdate> m_Candidates = new List<WorldUpdate>();
+      private readonly List<WorldUpdate> m_Options = new List<WorldUpdate>();
 
       public Fork(List<WorldUpdate> legal_path)
       {
@@ -291,21 +291,21 @@ namespace djack.RogueSurvivor.Engine.Op
 
       public override bool IsLegal()
       {
-        var ub = m_Candidates.Count;
+        var ub = m_Options.Count;
         while(0 <= --ub) {
-          if (m_Candidates[ub].IsLegal()) return true;
-          m_Candidates.RemoveAt(ub);
+          if (m_Options[ub].IsLegal()) return true;
+          m_Options.RemoveAt(ub);
         }
         return false;
       }
 
       public override bool IsRelevant() {
-        foreach(var x in m_Candidates) if (x.IsRelevant()) return true;
+        foreach(var x in m_Options) if (x.IsRelevant()) return true;
         return false;
       }
 
       public override bool IsRelevant(Location loc) {
-        foreach(var x in m_Candidates) if (x.IsRelevant(loc)) return true;
+        foreach(var x in m_Options) if (x.IsRelevant(loc)) return true;
         return false;
       }
 
@@ -314,7 +314,7 @@ namespace djack.RogueSurvivor.Engine.Op
         if (!(src.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
 #endif
         var actions = new List<ActorAction>();
-        foreach(var x in m_Candidates) {
+        foreach(var x in m_Options) {
           if (x.IsRelevant(src.Location)) {
             var act = x.Bind(src);
             if (null != act) actions.Add(act);
@@ -327,38 +327,38 @@ namespace djack.RogueSurvivor.Engine.Op
 
       public override void Blacklist(HashSet<Location> goals)
       {
-        var ub = m_Candidates.Count;
-        while(0 <= --ub) m_Candidates[ub].Blacklist(goals);
+        var ub = m_Options.Count;
+        while(0 <= --ub) m_Options[ub].Blacklist(goals);
       }
 
       public override void Goals(HashSet<Location> goals)
       {
-        var ub = m_Candidates.Count;
-        while(0 <= --ub) m_Candidates[ub].Goals(goals);
+        var ub = m_Options.Count;
+        while(0 <= --ub) m_Options[ub].Goals(goals);
       }
 
       public void Add(WorldUpdate src)
       {
         if (src is Fork fork) {
-          foreach(var act in fork.m_Candidates) Add(act);
-        } else if (src.IsLegal() && !m_Candidates.Contains(src)) {
+          foreach(var act in fork.m_Options) Add(act);
+        } else if (src.IsLegal() && !m_Options.Contains(src)) {
           if (src is Join join) {
-            var ub = m_Candidates.Count;
+            var ub = m_Options.Count;
             while(0 <= --ub) {
-              if (m_Candidates[ub] is Join prior_join && prior_join.ForkMerge(join)) return;
+              if (m_Options[ub] is Join prior_join && prior_join.ForkMerge(join)) return;
             }
           }
-          m_Candidates.Add(src);
+          m_Options.Add(src);
         }
       }
 
       public bool ForceRelevant(Location loc, ref WorldUpdate dest) {
         var staging = new List<WorldUpdate>();
-        foreach(var act in m_Candidates) if (act.IsRelevant(loc)) staging.Add(act);
+        foreach(var act in m_Options) if (act.IsRelevant(loc)) staging.Add(act);
         var staged = staging.Count;
         if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
         if (2 <= staged) {
-          if (m_Candidates.Count > staged) dest = new Fork(staging);
+          if (m_Options.Count > staged) dest = new Fork(staging);
           return false;
         }
         dest = staging[0];

@@ -16,18 +16,18 @@ namespace djack.RogueSurvivor.Engine.Op
     [Serializable]
     class Join : WorldUpdate
     {
-        private List<WorldUpdate> m_options;
-        private WorldUpdate m_sequel;
+        private List<WorldUpdate> m_Options;
+        private WorldUpdate m_Sequel;
 
-        public WorldUpdate Sequel { get { return m_sequel; } }
+        public WorldUpdate Sequel { get { return m_Sequel; } }
 
         public Join(List<WorldUpdate> options, WorldUpdate sequel)
         {
 #if DEBUG
             if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
 #endif
-            m_options = options;
-            m_sequel = sequel;
+            m_Options = options;
+            m_Sequel = sequel;
         }
 
         public Join(WorldUpdate option, WorldUpdate sequel)
@@ -35,63 +35,63 @@ namespace djack.RogueSurvivor.Engine.Op
 #if DEBUG
             if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
 #endif
-            m_options = new List<WorldUpdate> { option };
-            m_sequel = sequel;
+            m_Options = new List<WorldUpdate> { option };
+            m_Sequel = sequel;
         }
 
         public override bool IsLegal()
         {
-            foreach (var act in m_options) if (act.IsLegal()) return true;
+            foreach (var act in m_Options) if (act.IsLegal()) return true;
             return false;
         }
 
         public override bool IsRelevant()
         {
-            foreach (var act in m_options) if (act.IsRelevant()) return true;
+            foreach (var act in m_Options) if (act.IsRelevant()) return true;
             return false;
         }
 
         public override bool IsRelevant(Location loc)
         {
-            foreach (var act in m_options) if (act.IsRelevant(loc)) return true;
+            foreach (var act in m_Options) if (act.IsRelevant(loc)) return true;
             return false;
         }
 
         public override ActorAction? Bind(Actor src)
         {
             var opts = new List<ActorAction>();
-            foreach (var x in m_options) {
+            foreach (var x in m_Options) {
                 var act = x.Bind(src);
                 if (null != act) opts.Add(act);
             }
             if (0 >= opts.Count) return null;
-            return new _Action.Join(src, opts, m_sequel);
+            return new _Action.Join(src, opts, m_Sequel);
         }
 
         public override void Blacklist(HashSet<Location> goals)
         {
-            foreach (var act in m_options) act.Blacklist(goals);
+            foreach (var act in m_Options) act.Blacklist(goals);
         }
 
         public override void Goals(HashSet<Location> goals)
         {
-            foreach (var act in m_options) act.Goals(goals);
+            foreach (var act in m_Options) act.Goals(goals);
         }
 
         public bool ForkMerge(Join rhs) {
-            if (m_sequel != rhs.m_sequel) return false;
-            foreach (var act in rhs.m_options) if (!m_options.Contains(act)) m_options.Add(act);
+            if (m_Sequel != rhs.m_Sequel) return false;
+            foreach (var act in rhs.m_Options) if (!m_Options.Contains(act)) m_Options.Add(act);
             return true;
         }
 
         public bool ForceRelevant(Location loc, ref WorldUpdate dest)
         {
             var staging = new List<WorldUpdate>();
-            foreach (var act in m_options) if (act.IsRelevant(loc)) staging.Add(act);
+            foreach (var act in m_Options) if (act.IsRelevant(loc)) staging.Add(act);
             var staged = staging.Count;
             if (1 > staged) throw new InvalidOperationException("tried to force-relevant a not-relevant objective");
-            if (null != m_sequel) {
-                if (m_options.Count > staged) dest = new Join(staging, m_sequel);
+            if (null != m_Sequel) {
+                if (m_Options.Count > staged) dest = new Join(staging, m_Sequel);
                 return false;
             }
             if (2 <= staged) {
@@ -109,8 +109,8 @@ namespace djack.RogueSurvivor.Engine._Action
     [Serializable]
     class Join : ActorAction
     {
-      private List<ActorAction> m_options;
-      private WorldUpdate? m_sequel = null;
+      private List<ActorAction> m_Options;
+      private WorldUpdate? m_Sequel = null;
       [NonSerialized] private List<ActorAction>? _real_options;
 
       public Join(Actor actor, List<ActorAction> options, WorldUpdate? sequel = null) : base(actor)
@@ -118,17 +118,17 @@ namespace djack.RogueSurvivor.Engine._Action
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
 #endif
-        m_options = options;
-        m_sequel = sequel;
+        m_Options = options;
+        m_Sequel = sequel;
       }
 
       public override bool IsLegal() {
-        foreach(var act in m_options) if (act.IsLegal()) return true;
+        foreach(var act in m_Options) if (act.IsLegal()) return true;
         return false;
       }
       
       public override bool IsPerformable() {
-        _real_options = m_options.FindAll(act => act.IsPerformable());
+        _real_options = m_Options.FindAll(act => act.IsPerformable());
         if (0 >= _real_options.Count) _real_options = null;
         return null != _real_options;
       }
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Engine._Action
         var act = Rules.Get.DiceRoller.Choose(_real_options); // \todo more sophisticated choice logic
         act.Perform();
        
-        var sequel = m_sequel?.Bind(m_Actor);
+        var sequel = m_Sequel?.Bind(m_Actor);
 
         if (null != sequel) {
           (m_Actor.Controller as ObjectiveAI).SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
