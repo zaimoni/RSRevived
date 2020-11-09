@@ -4311,12 +4311,16 @@ restart_chokepoints:
           var next = new HashSet<Location>();
           var working = new HashSet<Location>(same_floor_deathtraps.Keys);
           bool found = false;
+          bool first_iteration = true;
           while(0 < working.Count) {
             foreach (var loc in working) {
               WorldUpdate? sequel = null;
-              if (plan2.TryGetValue(loc, out var seq_fork)) sequel = seq_fork;
-              else if (plan.TryGetValue(loc, out var seq_join)) sequel = seq_join;
-              else if (plan3.TryGetValue(loc, out var seq_update)) sequel = seq_update;
+              if (!first_iteration) {
+                // do not infer default-recovery actions when bootstrapping from primary goals
+                if (plan2.TryGetValue(loc, out var seq_fork)) sequel = seq_fork;
+                else if (plan.TryGetValue(loc, out var seq_join)) sequel = seq_join;
+                else if (plan3.TryGetValue(loc, out var seq_update)) sequel = seq_update;
+              }
 
               var act_index = new Dictionary<Location, WorldUpdate>();
               var loc_scan = new List<Location>();
@@ -4360,6 +4364,7 @@ restart_chokepoints:
             if (0 >= --tries) break;
             working = next;
             next = new HashSet<Location>();
+            first_iteration = false;
           }
           } // end scoping brace
           plan.OnlyIf(update => update.IsRelevant());

@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Op
 {
+    [Serializable]
     class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest
     {
         private readonly Location m_NewLocation;
@@ -82,6 +83,7 @@ namespace djack.RogueSurvivor.Engine.Op
 
 namespace djack.RogueSurvivor.Engine._Action
 {
+    [Serializable]
     class PushOnto : ActorAction,Actions.ObjectOrigin,Actions.ObjectDest
     {
         private readonly MapObject m_Object;
