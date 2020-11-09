@@ -60,6 +60,9 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override ActorAction? Bind(Actor src)
         {
+#if DEBUG
+            throw new InvalidOperationException("tracing");
+#endif
             var opts = new List<ActorAction>();
             foreach (var x in m_Options) {
                 var act = x.Bind(src);

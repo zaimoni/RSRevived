@@ -316,6 +316,9 @@ namespace djack.RogueSurvivor.Engine.Op
         var actions = new List<ActorAction>();
         foreach(var x in m_Options) {
           if (x.IsRelevant(src.Location)) {
+#if DEBUG
+            if (x is Join) throw new InvalidOperationException("test case");
+#endif
             var act = x.Bind(src);
             if (null != act) actions.Add(act);
           }

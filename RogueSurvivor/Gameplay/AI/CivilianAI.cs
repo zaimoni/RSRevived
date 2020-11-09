@@ -764,12 +764,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) {
         Session.Get.World.DaimonMap(); // for accuracy
-        // test game is crashing here -- looks like issue is a death-trapped exit from the sewers that can be "fixed"
-        // start function extraction target
-        tmpAction = BehaviorHandleDeathTrap();
-        throw new InvalidOperationException("tracing");
-        if (null != tmpAction) return tmpAction;
-        // end function extraction target
+        // test game is crashing here -- lack of pathing persistence?
         throw new InvalidOperationException("test case");
       }
 #endif

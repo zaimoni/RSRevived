@@ -4326,11 +4326,8 @@ restart_chokepoints:
                 if (!m_Actor.CanEnter(ref test)) continue;
                 if (now.Contains(test)) continue;
                 if (working.Contains(test)) continue;
-                var obj = test.MapObject;
-                if (null != obj) {
-                  if (!obj.IsMovable || obj.IsOnFire) continue;
-                }
                 var staging = new Engine.Op.PushOnto(test, loc);
+                if (!staging.IsLegal()) continue;
                 act_scan.Add(staging);
                 next.Add(test);
                 loc_scan.Add(test);
@@ -4342,7 +4339,7 @@ restart_chokepoints:
                   plan3.Add(x.Key, x.Value);
                   if (x.Value.IsRelevant()) found = true;
                 }
-              } else {
+              } else if (sequel.IsLegal()) {
                 foreach(var x in act_index) {
                   var join = new Engine.Op.Join(x.Value, sequel);
                   if (plan2.TryGetValue(x.Key, out var fork)) {

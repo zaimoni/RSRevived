@@ -3484,6 +3484,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // heuristics that install late-pathing go here
+      tmp = BehaviorHandleDeathTrap();
+      if (null != tmp) return tmp;
+
       return null;
     }
 #endregion
