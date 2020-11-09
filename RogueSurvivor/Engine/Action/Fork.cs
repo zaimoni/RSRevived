@@ -117,9 +117,6 @@ namespace djack.RogueSurvivor.Engine._Action
       // assume the candidate indexing is mostly correct
       public int CumulativeMoveCost()
       {
-#if TOO_FAST
-        return m_Candidates.Keys.Min();
-#else
 retry:
         int act_cost = m_Options.Keys.Min();
         var cache = m_Options[act_cost];
@@ -140,8 +137,7 @@ retry:
         }
         if (recalc) return m_Options.Keys.Min();
         return act_cost;
-#endif
-        }
+      }
 
       private static void _add(Dictionary<int, List<Actions.ActionChain>> dest, Actions.ActionChain src)
       {
@@ -300,12 +296,14 @@ namespace djack.RogueSurvivor.Engine.Op
       }
 
       public override bool IsRelevant() {
-        foreach(var x in m_Options) if (x.IsRelevant()) return true;
+        var ub = m_Options.Count;
+        while(0 <= --ub) if (m_Options[ub].IsRelevant()) return true;
         return false;
       }
 
       public override bool IsRelevant(Location loc) {
-        foreach(var x in m_Options) if (x.IsRelevant(loc)) return true;
+        var ub = m_Options.Count;
+        while(0 <= --ub) if (m_Options[ub].IsRelevant(loc)) return true;
         return false;
       }
 
