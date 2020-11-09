@@ -42,19 +42,22 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override bool IsLegal()
         {
-            foreach (var act in m_Options) if (act.IsLegal()) return true;
+            var ub = m_Options.Count;
+            while (0 <= --ub) if (m_Options[ub].IsLegal()) return true;
             return false;
         }
 
         public override bool IsRelevant()
         {
-            foreach (var act in m_Options) if (act.IsRelevant()) return true;
+            var ub = m_Options.Count;
+            while (0 <= --ub) if (m_Options[ub].IsRelevant()) return true;
             return false;
         }
 
         public override bool IsRelevant(Location loc)
         {
-            foreach (var act in m_Options) if (act.IsRelevant(loc)) return true;
+            var ub = m_Options.Count;
+            while (0 <= --ub) if (m_Options[ub].IsRelevant(loc)) return true;
             return false;
         }
 
@@ -74,12 +77,14 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override void Blacklist(HashSet<Location> goals)
         {
-            foreach (var act in m_Options) act.Blacklist(goals);
+            var ub = m_Options.Count;
+            while (0 <= --ub) m_Options[ub].Blacklist(goals);
         }
 
         public override void Goals(HashSet<Location> goals)
         {
-            foreach (var act in m_Options) act.Goals(goals);
+            var ub = m_Options.Count;
+            while (0 <= --ub) m_Options[ub].Goals(goals);
         }
 
         public bool ForkMerge(Join rhs) {
@@ -121,7 +126,8 @@ namespace djack.RogueSurvivor.Engine._Action
       }
 
       public override bool IsLegal() {
-        foreach(var act in m_Options) if (act.IsLegal()) return true;
+        var ub = m_Options.Count;
+        while (0 <= --ub) if (m_Options[ub].IsLegal()) return true;
         return false;
       }
       
