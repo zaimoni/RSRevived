@@ -192,8 +192,8 @@ namespace djack.RogueSurvivor.Engine
     private readonly List<Overlay> m_Overlays = new List<Overlay>();
     private readonly object m_SimMutex = new object();  // 2018-08-20: almost dead
     readonly Object m_SimStateLock = new Object(); // alpha10 lock when reading sim thread state flags
-    bool m_SimThreadDoRun;  // alpha10 sim thread state: set by main thread to false to ask sim thread to stop.
-    bool m_SimThreadIsWorking;  // alpha10 sim thread state: set by sim thread to false when has exited loop. 
+    CancellationTokenSource? m_CancelSource = null; // migration of alpha10 sim thread state to .NET 5.0
+
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
     public const int MINIMAP_RADIUS = 50;
@@ -1836,6 +1836,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
         Actor? next;
         while(null != (next = current.NextActorToAct)) {
+          if (IsSimulating) { m_CancelSource.Token.ThrowIfCancellationRequested(); }
 #if DEBUG
           // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
           if (next.ActionPoints > next.Doll.Body.Speed) throw new InvalidOperationException(next.Name+" is hyperactive: energy limit, "+ next.Doll.Body.Speed.ToString() + " actual "+ next.ActionPoints.ToString());
@@ -12656,18 +12657,9 @@ namespace djack.RogueSurvivor.Engine
           Name = "Simulation Thread"
         };
       }
-      lock (m_SimStateLock) { m_SimThreadDoRun = true; }; // alpha10
+      lock (m_SimStateLock) { m_CancelSource = new CancellationTokenSource(); }; // alpha10
       m_SimThread.Start();
     }
-
-#if OBSOLETE
-    private void StopSimThread()
-    {
-      if (m_SimThread == null) return;
-      m_SimThread.Abort();
-      m_SimThread = null;
-    }
-#endif
 
     // alpha10 StopSimThread is now blocking until the sim thread has actually stopped
     // allowed to abort when ending a game or dying because of weird bug in release build where the sim thread 
@@ -12681,48 +12673,31 @@ namespace djack.RogueSurvivor.Engine
       if (null == m_SimThread) return;
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread...");
 
-      // abort thread if asked to otherwise stop it cleanly
-      if (abort) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...aborting sim thread");
-        try {
-          m_SimThread.Abort();
-        } catch (Exception e) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "...exception when aborting (ignored) " + e.Message);
-        }
-        m_SimThread = null;
-        m_SimThreadDoRun = false;
-      } else {
-        // try to stop cleanly
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
-        lock (m_SimStateLock) { m_SimThreadDoRun = false; };
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
-        while(true) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");
-          Thread.Sleep(100);
-          bool stopped = false;
-          lock (m_SimStateLock) { stopped = !m_SimThreadIsWorking; }
-          if (!stopped && !m_SimThread.IsAlive) {
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread is not alive and did not stop properly, consider it stopped");
-            stopped = true;
-          }
-          if (stopped) break;
-        }
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread has stopped");
-        m_SimThread = null;
-      }
+      // .NET 5.0: Thread::Abort() is unsupported
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
+      lock (m_SimStateLock) { m_CancelSource.Cancel(); };
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
+
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");
+retry:
+      bool _stopped = m_SimThread.Join(300); // outlast the Sleep call
+      if (_stopped) Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread has stopped");
+      else if (!m_SimThread.IsAlive) Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread is not alive and did not stop properly, consider it stopped");
+      else if (!abort) goto retry;
+      else Logger.WriteLine(Logger.Stage.RUN_MAIN, "...aborting sim thread"); // not really
+
+      m_SimThread = null;
+      m_CancelSource.Dispose();
+      m_CancelSource = null;
 
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread done!");
     }
 
     private void SimThreadProc()
     {
-       lock (m_SimStateLock) { m_SimThreadIsWorking = true; }  // alpha10
        bool have_simulated = false;
        while (m_SimThread.IsAlive) {
-         // alpha10
-         bool stop = false;
-         lock (m_SimStateLock) { stop = !m_SimThreadDoRun; }
-         if (stop) break;
+         lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // alpha10
 
          lock (m_SimMutex) {
 #if DEBUG
@@ -12730,6 +12705,8 @@ namespace djack.RogueSurvivor.Engine
 #else
            try {
              have_simulated = SimulateNearbyDistricts(Player.Location.Map.District);
+           } catch (OperationCanceledException ex) {
+             return;
            } catch (Exception e) {
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: exception while running sim thread!");
              Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: " + e.Message);
@@ -12737,6 +12714,7 @@ namespace djack.RogueSurvivor.Engine
            }
 #endif
          }
+         lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // .NET 5.0 conversion
          if (!have_simulated) Thread.Sleep(200);
        }
     }
