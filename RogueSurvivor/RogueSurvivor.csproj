@@ -1,32 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!--Project was exported from assembly: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe-->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AC4142F0-FD33-4735-B69D-6C90E11F4EE2}</ProjectGuid>
     <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms> <!-- unsure if this is correct -->
+
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> <!-- enables <Compile Include="AssemblyInfo.cs" /> -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <AssemblyName>RogueSurvivor</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <RootNamespace>djack.RogueSurvivor</RootNamespace>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkProfile />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.9.0.0</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>IconPNG.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="IconPNG.ico" />
+  </ItemGroup>
+
+  <!-- no target platforms other than AnyCPU for .NET Core 3.0 -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
@@ -51,76 +45,11 @@
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>IconPNG.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>RELEASE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>RELEASE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Memory.4.5.2\lib\netstandard2.0\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
-  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
-    <Compile Include="Data\MapKripke.cs" />
-    <Compile Include="Data\RadioFaction.cs" />
     <Compile Include="Data\LinearChokepoint.cs" />
+    <Compile Include="Data\RadioFaction.cs" />
     <Compile Include="Data\ThreatTracking.cs" />
     <Compile Include="Engine\Actions\ActionPull.cs" />
     <Compile Include="Engine\Actions\ActionPutInContainer.cs" />
@@ -131,32 +60,22 @@
     <Compile Include="Engine\Actions\ActionButcher.cs" />
     <Compile Include="Engine\Actions\ActionSequence.cs" />
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
-    <Compile Include="Engine\Action\PushOnto.cs" />
-    <Compile Include="Engine\Action\Join.cs" />
-    <Compile Include="Engine\Action\TakeFromLocation.cs" />
-    <Compile Include="Engine\Action\Fork.cs" />
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
-    <Compile Include="Gameplay\AI\Goals\BlacklistExits.cs" />
-    <Compile Include="Gameplay\AI\Goals\AcquireLineOfSight.cs" />
-    <Compile Include="Gameplay\AI\Goals\Cooperate.cs" />
-    <Compile Include="Gameplay\AI\Goals\ClearZone.cs" />
-    <Compile Include="Gameplay\AI\Goals\Trade.cs" />
-    <Compile Include="Gameplay\AI\Goals\StageAction.cs" />
-    <Compile Include="Gameplay\AI\Goals\SetTrap.cs" />
     <Compile Include="Gameplay\AI\Goals\Objective.cs" />
+    <Compile Include="Gameplay\AI\Goals\AcquireLineOfSight.cs" />
+    <Compile Include="Gameplay\AI\Goals\BlacklistExits.cs" />
+    <Compile Include="Gameplay\AI\Goals\ClearZone.cs" />
+    <Compile Include="Gameplay\AI\Goals\Cooperate.cs" />
+    <Compile Include="Gameplay\AI\Goals\StageAction.cs" />
+    <Compile Include="Gameplay\AI\Goals\Trade.cs" />
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />
     <Compile Include="Gameplay\AI\Tools\MinStepPath.cs" />
     <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
-    <Compile Include="Microsoft\Random.cs" />
-    <Compile Include="RogueForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="RogueForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SetupConfig.cs" />
-    <Compile Include="Bugreport.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Bugreport.cs" />
     <Compile Include="PointExtensions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Data\ActorController.cs" />
@@ -197,6 +116,7 @@
     <Compile Include="Data\Message.cs" />
     <Compile Include="Data\Exit.cs" />
     <Compile Include="Data\Map.cs" />
+    <Compile Include="Data\MapKripke.cs" />
     <Compile Include="Data\Actor.cs" />
     <Compile Include="Data\World.cs" />
     <Compile Include="Data\BlastAttack.cs" />
@@ -337,6 +257,10 @@
     <Compile Include="Engine\Actions\ActionSleep.cs" />
     <Compile Include="Engine\Actions\ActionBump.cs" />
     <Compile Include="Engine\Actions\ActionEatFoodOnGround.cs" />
+    <Compile Include="Engine\Action\Fork.cs" />
+    <Compile Include="Engine\Action\Join.cs" />
+    <Compile Include="Engine\Action\PushOnto.cs" />
+    <Compile Include="Engine\Action\TakeFromLocation.cs" />
     <Compile Include="Engine\AI\Sensor.cs" />
     <Compile Include="Engine\AI\Percept.cs" />
     <Compile Include="Engine\AI\MemorizedSensor.cs" />
@@ -346,47 +270,31 @@
     <Compile Include="Engine\MapObjects\PowerGenerator.cs" />
     <Compile Include="Engine\Tasks\TaskRemoveDecoration.cs" />
     <Compile Include="UI\IGameCanvas.cs" />
-    <Compile Include="UI\GDIPlusGameCanvas.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="UI\GDIPlusGameCanvas.cs" />
     <Compile Include="Properties\Resources.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
-    <Compile Include="Zaimoni\Data\Observer.cs" />
-    <Compile Include="Zaimoni\Data\Operator.cs" />
-    <Compile Include="Zaimoni\Data\Stack.cs" />
-    <Compile Include="Zaimoni\Data\Vector.cs" />
-    <Compile Include="Zaimoni\Data\UntypedCache.cs" />
     <Compile Include="Zaimoni\Data\Compass.cs" />
-    <Compile Include="Zaimoni\Data\NonSerializedCache.cs" />
-    <Compile Include="Zaimoni\Data\LangExt.cs" />
-    <Compile Include="Zaimoni\Data\TimeCache.cs" />
     <Compile Include="Zaimoni\Data\DrawingExt.cs" />
     <Compile Include="Zaimoni\Data\FileExt.cs" />
+    <Compile Include="Zaimoni\Data\FloodfillPathfinder.cs" />
+    <Compile Include="Zaimoni\Data\LangExt.cs" />
+    <Compile Include="Zaimoni\Data\NonSerializedCache.cs" />
+    <Compile Include="Zaimoni\Data\Observer.cs" />
+    <Compile Include="Zaimoni\Data\Operator.cs" />
     <Compile Include="Zaimoni\Data\OutTextFile.cs" />
     <Compile Include="Zaimoni\Data\DenormalizedProbability.cs" />
     <Compile Include="Zaimoni\Data\PlausibilityMap.cs" />
-    <Compile Include="Zaimoni\Data\FloodfillPathfinder.cs" />
+    <Compile Include="Zaimoni\Data\Stack.cs" />
+    <Compile Include="Zaimoni\Data\TimeCache.cs" />
+    <Compile Include="Zaimoni\Data\UntypedCache.cs" />
+    <Compile Include="Zaimoni\Data\Vector.cs" />
+    <Compile Include="Microsoft\Random.cs" />
   </ItemGroup>
-  <ItemGroup>
+<!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />
     <EmbeddedResource Include="Properties\Resources.resx" />
     <EmbeddedResource Include="RogueForm.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="IconPNG.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  </ItemGroup> -->
 </Project>

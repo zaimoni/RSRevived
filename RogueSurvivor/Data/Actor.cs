@@ -20,8 +20,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using LOS = djack.RogueSurvivor.Engine.LOS;
-using Rules = djack.RogueSurvivor.Engine.Rules;
+// using LOS = djack.RogueSurvivor.Engine.LOS;
 using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
 using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
