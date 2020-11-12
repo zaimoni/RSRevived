@@ -4240,7 +4240,6 @@ namespace djack.RogueSurvivor.Engine
 
       Point trade_where(Direction dir) { return player.Location.Position + dir; }
       bool trade(Point pos) {
-        if (null == pos) return false;
         if (!player.Location.Map.IsValid(pos)) return false;
         bool next_to = (player.Location.Position != pos);
         if (next_to) {
