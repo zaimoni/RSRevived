@@ -337,7 +337,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable restore
     private CharGen m_CharGen;
 #nullable enable
-    private TextFile? m_Manual;
+    private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
     private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
@@ -10573,18 +10573,11 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMap(Map map)    // XXX not at all clear why this and the functions it controls are public
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
-      string imageID;
-      switch (Session.Get.World.Weather) {
-        case Weather.RAIN:
-          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_RAIN1 : GameImages.WEATHER_RAIN2;
-          break;
-        case Weather.HEAVY_RAIN:
-          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_HEAVY_RAIN1 : GameImages.WEATHER_HEAVY_RAIN2;
-          break;
-        default:
-          imageID = null;
-          break;
-      }
+      var imageID = Session.Get.World.Weather switch {
+          Weather.RAIN => Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_RAIN1 : GameImages.WEATHER_RAIN2,
+          Weather.HEAVY_RAIN => Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_HEAVY_RAIN1 : GameImages.WEATHER_HEAVY_RAIN2,
+          _ => null
+      };
 
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
