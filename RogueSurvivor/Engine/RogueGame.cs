@@ -2116,7 +2116,7 @@ namespace djack.RogueSurvivor.Engine
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
                   if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple));
                 }
-                if (flag4) (actorList ?? (actorList = new List<Actor>())).Add(actor);
+                if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }
             }
           }
@@ -2141,13 +2141,13 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasToEat) {
             actor.Appetite(1);
             if (actor.IsStarving && (actor.IsPlayer || s_Options.NPCCanStarveToDeath) && rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE)) {
-              (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
+              (actorList1 ??= new List<Actor>()).Add(actor);
             }
           } else if (actor.Model.Abilities.IsRotting) {
             actor.Appetite(1);
             if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
               if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, "is rotting away."));
-              if (--actor.HitPoints <= 0) (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
+              if (--actor.HitPoints <= 0) (actorList1 ??= new List<Actor>()).Add(actor);
             }
             else if (actor.IsRotHungry && rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
@@ -7384,7 +7384,7 @@ namespace djack.RogueSurvivor.Engine
           int new_hp = actor.HitPoints;
           if (cur_hp > new_hp) {
               var owner = trap.Owner;
-              if (null != owner) (trap_owners ?? (trap_owners = new List<Actor>())).Add(owner);
+              if (null != owner) (trap_owners ??= new List<Actor>()).Add(owner);
               cur_hp = new_hp;
           }
           return trap_gone;
