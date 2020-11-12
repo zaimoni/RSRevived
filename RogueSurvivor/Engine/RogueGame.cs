@@ -10006,15 +10006,15 @@ namespace djack.RogueSurvivor.Engine
         bool flag = true;
         int num = 0;
         foreach (Actor actor in followers) {
-          if (flag) stringBuilder.Append(" ");
-          else if (num == count_followers) stringBuilder.Append(".");
+          if (flag) stringBuilder.Append(' ');
+          else if (num == count_followers) stringBuilder.Append('.');
           else if (num == count_followers - 1) stringBuilder.Append(" and ");
           else stringBuilder.Append(", ");
           stringBuilder.Append(actor.TheName);
           ++num;
           flag = false;
         }
-        stringBuilder.Append(".");
+        stringBuilder.Append('.');
         textFile.Append(stringBuilder.ToString());
         foreach (Actor actor in followers) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
