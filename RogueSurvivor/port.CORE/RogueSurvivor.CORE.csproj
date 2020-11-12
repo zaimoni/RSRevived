@@ -5,9 +5,14 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms> <!-- unsure if this is correct -->
 
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> <!-- enables <Compile Include="..\AssemblyInfo.cs" /> -->
-    <AssemblyName>RogueSurvivor</AssemblyName>
     <RootNamespace>djack.RogueSurvivor</RootNamespace>
+    <!-- configure automatic assembly info generation -->
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <AssemblyName>RogueSurvivor</AssemblyName>
+    <Company>Zaimoni.com</Company>
+    <Copyright>Copyright ©  2012 (roguedjack),2016-2020</Copyright>
+    <Version>0.9.1.0</Version>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
