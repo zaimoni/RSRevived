@@ -761,10 +761,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // Try to reuse previous goals before explore/wander 2020-11-20 zaimoni
+      var prev_goals = GetPreviousGoals();
+      if (null != prev_goals) {
+        if (prev_goals.Contains(m_Actor.Location)) {
+#if DEBUG
+          throw new InvalidOperationException("test case");
+#endif
+//        _sparse.Unset(SparseData.PathingTo); // ClearGoals body?  Won't build here (access control)
+        } else {
+          tmpAction = BehaviorPathTo(prev_goals);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+      }
+
 #if DEBUG
       if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) {
         Session.Get.World.DaimonMap(); // for accuracy
-        // test game is crashing here -- lack of pathing persistence?
         throw new InvalidOperationException("test case");
       }
 #endif

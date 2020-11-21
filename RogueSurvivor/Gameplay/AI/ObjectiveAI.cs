@@ -786,7 +786,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    protected ActorAction UsePreexistingPath(HashSet<Location> goals=null)
+#nullable enable
+    protected ActorAction? UsePreexistingPath(HashSet<Location>? goals=null)
     {
         var ret = UsePreexistingPath(GetMinStepPath<Point>(), goals);
         if (null != ret) return ret;
@@ -795,7 +796,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    protected ActorAction UsePreexistingLambdaPath() { return GetLambdaPath()?.WalkPath(this); }
+    protected ActorAction? UsePreexistingLambdaPath() { return GetLambdaPath()?.WalkPath(this); }
+#nullable restore
 
     private ActorAction _pathNear(Location loc)
     {
