@@ -2329,6 +2329,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionSwitchPowerGenerator) return null;
       if (x is ActionBuildFortification) return null; // \todo derive this from Use<Item>
       if (x is ActionEatCorpse) return null;
+      if (x is Engine._Action.PushOnto) return null;
 
       // exit-related processing.
       var e = m_Actor.Location.Exit;

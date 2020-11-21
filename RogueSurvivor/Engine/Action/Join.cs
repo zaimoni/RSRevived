@@ -64,15 +64,21 @@ namespace djack.RogueSurvivor.Engine.Op
         public override ActorAction? Bind(Actor src)
         {
 #if DEBUG
-            throw new InvalidOperationException("tracing");
+            if (!(src.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
 #endif
-            var opts = new List<ActorAction>();
-            foreach (var x in m_Options) {
-                var act = x.Bind(src);
-                if (null != act) opts.Add(act);
+            var actions = new List<ActorAction>();
+            foreach(var x in m_Options) {
+                if (x.IsRelevant(src.Location)) {
+#if DEBUG
+                    if (x is Join) throw new InvalidOperationException("test case");
+#endif
+                    var act = x.Bind(src);
+                    if (null != act) actions.Add(act);
+                }
             }
-            if (0 >= opts.Count) return null;
-            return new _Action.Join(src, opts, m_Sequel);
+            var act_count = actions.Count;
+            if (1 >= act_count) return (0 >= act_count) ? null : actions[0];
+            return new _Action.Fork(src, actions);
         }
 
         public override void Blacklist(HashSet<Location> goals)
