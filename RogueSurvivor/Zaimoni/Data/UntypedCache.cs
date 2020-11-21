@@ -25,7 +25,7 @@ namespace Zaimoni.Data
         }
 
         public void Set(K key, object val) {
-          (_map ?? (_map = new Dictionary<K, object>()))[key] = val;
+          (_map ??= new Dictionary<K, object>())[key] = val;
         }
     }
 }

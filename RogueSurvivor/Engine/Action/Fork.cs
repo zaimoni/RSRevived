@@ -256,7 +256,7 @@ retry:
               all_there = false;
               continue;
             }
-            (args ?? (args = new List<ActorAction>())).Add(act);
+            (args ??= new List<ActorAction>()).Add(act);
           }
         }
         if (all_there) return this;

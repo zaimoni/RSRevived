@@ -2622,7 +2622,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	}
 #nullable restore
 
-    private ActionMoveStep _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
+    private ActionMoveStep? _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
     {
       var range = new Dictionary<Point,IEnumerable<Point>>();
       foreach (var pt in src) {
@@ -2810,7 +2810,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            if (!move_plans.TryGetValue(x.Key,out var test)) continue;
            test.Value.Remove(dest);
            if (0 >= test.Value.Count) {
-             (staging ?? (staging = new List<Location>())).Add(x.Key);
+             (staging ??= new List<Location>()).Add(x.Key);
              move_plans[x.Key] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(test.Key,null);
            }
          }
@@ -3104,7 +3104,7 @@ Restart:
               List<Location> remove = null;
               foreach(var x in min_dist) {
                 if (ub < x.Value) {
-                  (remove ?? (remove = new List<Location>(min_dist.Count))).Add(x.Key);
+                  (remove ??= new List<Location>(min_dist.Count)).Add(x.Key);
 #if TRACE_GOALS
                   if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
 #endif
@@ -3250,7 +3250,7 @@ Restart:
       }
       goals.ExceptWith(replace_goals);
       goals.UnionWith(replace_with);
-      if (0 >= goals.Count()) goals.UnionWith(backup_replace_with);
+      if (0 >= goals.Count) goals.UnionWith(backup_replace_with);
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
 #endif
@@ -3277,9 +3277,7 @@ Restart:
         if (map_goals.TryGetValue(goal.Key.Map,out var cache)) {
           cache[goal.Key.Position] = goal.Value;
         } else {
-           var tmp = new Dictionary<Point, int>();
-           tmp[goal.Key.Position] = goal.Value;
-           map_goals[goal.Key.Map] = tmp;
+          map_goals.Add(goal.Key.Map, new Dictionary<Point, int>() { [goal.Key.Position] = goal.Value });
         }
       }
       return map_goals;
@@ -3455,7 +3453,7 @@ restart:
         }
         var denorm = m_Actor.Location.Map.Denormalize(x.Key);
         if (null != denorm && null != approach && approach.TryGetValue(denorm.Value.Position, out var cost)) {
-          (ok_path ?? (ok_path = new Dictionary<Location, KeyValuePair<ActorAction, int>>(_legal_path.Count))).Add(x.Key, new KeyValuePair<ActorAction, int>(x.Value, cost));
+          (ok_path ??= new Dictionary<Location, KeyValuePair<ActorAction, int>>(_legal_path.Count)).Add(x.Key, new KeyValuePair<ActorAction, int>(x.Value, cost));
         }
       }
       // \todo if _exit_map is null, may want to get more clever re push/pull
@@ -5610,11 +5608,10 @@ restart_chokepoints:
           if (null != drop) {
             if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
             if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
-            List<ActorAction> recover = new List<ActorAction>(2);
-            // 3a) drop target without triggering the no-pickup schema
-            recover.Add(new ActionDropItem(m_Actor,drop));
-            // 3b) pick up food
-            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            var recover = new List<ActorAction>{
+                new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+            };
             return new ActionChain(m_Actor,recover);
           }
       }
@@ -5750,11 +5747,10 @@ restart_chokepoints:
             if (null != drop) {
               if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
               if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
-              List<ActorAction> recover = new List<ActorAction>(2);
-              // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionDropItem(m_Actor,drop));
-              // 3b) pick up food
-              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              List<ActorAction> recover = new List<ActorAction> {
+                  new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                  new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+              };
               return new ActionChain(m_Actor,recover);
             }
           }
@@ -6247,10 +6243,9 @@ restart_chokepoints:
     /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
     public bool InventoryTradeVeto(Item mine, Item theirs)
     {
-      var rw_model = mine.Model as ItemRangedWeaponModel;
-
       // do not trade away weapon for own ammo
-      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
+      if (    mine.Model is ItemRangedWeaponModel rw_model
+          && (GameItems.IDs)((int)rw_model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
@@ -6331,7 +6326,7 @@ restart_chokepoints:
 
     public bool CombatUnready()
     {
-      if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(rw => null!=m_Actor.Inventory.GetCompatibleAmmoItem(rw))) return false;
+      if (null != m_Actor.Inventory!.GetFirst<ItemRangedWeapon>(rw => null!=m_Actor.Inventory.GetCompatibleAmmoItem(rw))) return false;
       // further one-on-one evaluation requires either an actor model, or an actor, as target
       return true;
     }
@@ -6344,7 +6339,7 @@ restart_chokepoints:
        if ((tmp = m_Actor.MaxSTA) < targetSTA) targetSTA = tmp;
        if ((tmp = m_Actor.StaminaPoints) >= targetSTA) return null;
        if (tmp < targetSTA - 4 && m_Actor.CanActNextTurn) {
-         var stim = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_STA);
+         var stim = m_Actor.Inventory!.GetBestDestackable(GameItems.PILLS_STA);
          if (null != stim) return new ActionUseItem(m_Actor,stim);
        }
        return new ActionWait(m_Actor);

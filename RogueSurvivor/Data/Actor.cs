@@ -1347,9 +1347,10 @@ namespace djack.RogueSurvivor.Data
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
       other.m_Leader = null;
-      if (!(other.Controller is Gameplay.AI.OrderableAI aiController)) return;
-      aiController.Directives.Reset();
-      aiController.SetOrder(null);
+      if (other.Controller is Gameplay.AI.OrderableAI ordai) {
+        ordai.Directives.Reset();
+        ordai.SetOrder(null);
+      }
     }
 
     public void RemoveAllFollowers()
@@ -1360,7 +1361,7 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTrustIn(Actor other, int trust)
     {
-      (m_TrustDict ?? (m_TrustDict = new Dictionary<Actor, int>()))[other] = trust;
+      (m_TrustDict ??= new Dictionary<Actor, int>())[other] = trust;
     }
 
     public int GetTrustIn(Actor other)
@@ -1603,7 +1604,7 @@ namespace djack.RogueSurvivor.Data
         List<Actor>? ret = null;
         foreach(var a in src) {
           if (!IsAlly(a)) continue;
-          if (null==test || test(a)) (ret ?? (ret = new List<Actor>(src.Count()))).Add(a);
+          if (null==test || test(a)) (ret ??= new List<Actor>(src.Count())).Add(a);
         }
         return ret;
     }
@@ -3702,10 +3703,10 @@ namespace djack.RogueSurvivor.Data
     public struct DieArgs
     {
       public readonly Actor _deadGuy;
-      public readonly Actor _killer;
+      public readonly Actor? _killer;
       public readonly string _reason;
 
-      public DieArgs(Actor deadGuy, Actor killer, string reason)
+      public DieArgs(Actor deadGuy, Actor? killer, string reason)
       {
         _deadGuy = deadGuy;
         _killer = killer;
@@ -3715,7 +3716,7 @@ namespace djack.RogueSurvivor.Data
 
     public static event EventHandler<DieArgs>? Dies;
 
-    public void Killed(string reason, Actor killer=null) {
+    public void Killed(string reason, Actor? killer=null) {
       var handler = Dies; // work around non-atomic test, etc.
       if (null != handler) {
         DieArgs tmp = new DieArgs(this,killer,reason);
@@ -3731,7 +3732,7 @@ namespace djack.RogueSurvivor.Data
     public void RecordKill(Actor victim)
     {
       ++m_KillsCount;
-      ActorScoring.AddKill(victim, Engine.Session.Get.WorldTime.TurnCounter);
+      ActorScoring.AddKill(victim, Session.Get.WorldTime.TurnCounter);
     }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
@@ -3852,7 +3853,7 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
       return obj is Actor tmp && Equals(tmp);
     }

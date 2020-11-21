@@ -96,7 +96,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <returns>non-null, action x for which x.IsPerformable() is true</returns>
 #nullable enable
     protected abstract ActorAction? SelectAction();
-#nullable restore
 
 /*
     NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down
@@ -105,7 +104,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     The only realistic mitigation is to pro-rate the capacity request.
  */
     // April 22, 2016: testing indicates this does not need micro-optimization
-#nullable enable
     protected List<Percept_<_T_>>? FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
@@ -114,33 +112,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != e) same_map = same_map.Or(p => e.Location==p.Location);
       return percepts.Filter(same_map);
     }
-#nullable restore
 
-#if DEAD_FUNC
-    // actually deploying this is time-intensive
-    protected static List<Percept_<_dest_>> FilterTo<_dest_,_src_>(List<Percept_<_src_>> percepts) where _dest_: class,_src_ where _src_:class
-    {
-      List<Percept_<_dest_>> tmp = new List<Percept_<_dest_>>();
-      foreach(Percept_<_src_> p in percepts) {
-        _dest_ tmp2 = p.Percepted as _dest_;
-        if (null == tmp2) continue;
-        tmp.Add(new Percept_<_dest_>(tmp2,p.Turn,p.Location));
-      }
-      return (0<tmp.Count ? tmp : null);
-    }
-#endif
-
-    protected List<Percept_<Actor>> FilterEnemies(List<Percept>? percepts)
+    protected List<Percept_<Actor>>? FilterEnemies(List<Percept>? percepts)
     {
       return percepts?.FilterCast<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
 
-    protected List<Percept_<Actor>> FilterNonEnemies(List<Percept>? percepts)
+    protected List<Percept_<Actor>>? FilterNonEnemies(List<Percept>? percepts)
     {
       return percepts?.FilterCast<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
     }
 
-#nullable enable
     protected List<Percept_<_T_>>? FilterCurrent<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
       return percepts?.FilterCurrent(m_Actor.Location.Map.LocalTime.TurnCounter);
@@ -157,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // the outside (Contracts saw a non-null return)
     protected Percept_<_T_>? FilterNearest<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
     {
-      return percepts?.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location)) ?? null;
+      return percepts?.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
     }
 
     public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T>? src)
@@ -651,7 +633,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected virtual ActorAction? BehaviorFollowActor(Actor other, int maxDist)
+#nullable enable
+    protected virtual ActorAction? BehaviorFollowActor(Actor? other, int maxDist)
     {
       if (null == other || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location, other.Location);
@@ -667,7 +650,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction? BehaviorTrackScent(List<Percept_<AIScent>> scents)
+    protected ActorAction? BehaviorTrackScent(List<Percept_<AIScent>>? scents)
     {
       if (null == scents || 0 >= scents.Count) return null;
       var percept = scents.Maximize(scent => scent.Percepted.Strength);
@@ -703,6 +686,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;
     }
+#nullable restore
 
     protected virtual ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
@@ -862,7 +846,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-#nullable restore
 
     protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept>? stacksPercepts)
     {
@@ -875,7 +858,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }
 
-#nullable enable
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 	  if (   !Session.Get.HasCorpses
@@ -1077,9 +1059,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.Controller as ObjectiveAI)?.IsInterestingItem(get_from.Item) ?? true;
       }
 */
-      if (!(this is OrderableAI downcast)) return false;
-      if (a is ActionChat chat) {
-        return downcast.Directives.CanTrade || chat.Target == m_Actor.Leader;
+      if (this is OrderableAI ordai) {
+        if (a is ActionChat chat) {
+          return ordai.Directives.CanTrade || chat.Target == m_Actor.Leader;
+        }
       }
       return false;
     }
@@ -1172,7 +1155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // XXX these two break down cross-map
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
-       (m_RouteFinder ?? (m_RouteFinder = new RouteFinder(this))).AllowedActions = allowedActions;
+       (m_RouteFinder ??= new RouteFinder(this)).AllowedActions = allowedActions;
        return m_RouteFinder.CanReachSimple(RogueForm.Game, in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 

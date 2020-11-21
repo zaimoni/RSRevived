@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
@@ -144,7 +145,7 @@ namespace djack.RogueSurvivor.Engine.AI
       List<Percept_<_T_>>? ret = null;
       foreach(var p in percepts) {
         // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
-        if (p.Percepted is _T_ test && fn(test)) (ret ?? (ret = new List<Percept_<_T_>>())).Add(new Percept_<_T_>(test, p.Turn, p.Location));
+        if (p.Percepted is _T_ test && fn(test)) (ret ??= new List<Percept_<_T_>>()).Add(new Percept_<_T_>(test, p.Turn, p.Location));
       }
 	  return ret;
 	}

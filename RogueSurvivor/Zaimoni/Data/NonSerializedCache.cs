@@ -53,7 +53,7 @@ namespace Zaimoni.Data
         }
     }   // Dataflow
 
-    public class Dataflow<src,Key,Value>
+    public class Dataflow<src,Key,Value> where Key:notnull
     {
         private readonly src m_src;
         private Dictionary<Key,Value>? m_cache;

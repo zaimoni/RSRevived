@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
-    class TimeCache<K,V>
+    class TimeCache<K,V> where K:notnull
     {
       private readonly Dictionary<int, Dictionary<K,V> > _map = new Dictionary<int, Dictionary<K, V>>();
       private int _now;

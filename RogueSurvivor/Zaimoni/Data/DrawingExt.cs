@@ -541,7 +541,7 @@ namespace Zaimoni.Data
     }
 
 #nullable enable
-    public static Dictionary<T,U> CloneOnly<T,U>(this Dictionary<T, U> src,Predicate<U> test)
+    public static Dictionary<T,U> CloneOnly<T,U>(this Dictionary<T, U> src,Predicate<U> test) where T:notnull
     {
       if (1 >= src.Count) return src;
       var ret = new Dictionary<T, U>();
@@ -549,14 +549,14 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src) where V:class
+    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src) where V:class where T:notnull
     {
       var ret = new Dictionary<T, V>();
       foreach(var x in src) if (x.Value is V ok) ret.Add(x.Key, ok);
       return ret;
     }
 
-    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src,Predicate<V> test) where V:class
+    public static Dictionary<T,V> CloneCast<T,U,V>(this Dictionary<T, U> src,Predicate<V> test) where V: class where T : notnull
     {
       var ret = new Dictionary<T, V>();
       foreach(var x in src) if (x.Value is V ok && test(ok)) ret.Add(x.Key, ok);
@@ -571,7 +571,7 @@ namespace Zaimoni.Data
     }
 
     // sorts in-place
-    public static List<T>? SortIncreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R>
+    public static List<T>? SortIncreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R> where T : notnull
     {
       var n = src.Count;
       if (0 >= n) return null;
@@ -583,7 +583,7 @@ namespace Zaimoni.Data
       return src;
     }
 
-    public static List<T>? SortDecreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R>
+    public static List<T>? SortDecreasing<T,R>(this List<T> src, Func<T,R> score) where R:IComparable<R> where T:notnull
     {
       var n = src.Count;
       if (0 >= n) return null;
