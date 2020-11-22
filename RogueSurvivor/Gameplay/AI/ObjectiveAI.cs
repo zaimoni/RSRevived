@@ -619,6 +619,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null!=_last_move && _last_move.dest!=m_Actor.Location) _last_move = null;
     }
 
+#nullable enable
+    public bool LegalPathingIsValid { get { return null != _legal_path; } }
+
+    public ActorAction? LegalPathing(Location loc)
+    {
+      if (null != _legal_path && _legal_path.TryGetValue(loc, out var act)) return act;
+      return null;
+    }
+#nullable restore
+
     protected override void RecordLastAction(ActorAction act) {
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action

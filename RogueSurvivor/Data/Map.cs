@@ -718,9 +718,14 @@ namespace djack.RogueSurvivor.Data
         if (Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt))) return true;
       }
 
-      if (actor.CanEnter(new Location(this,pt))) return false;
-      if (   1 == Engine.Rules.InteractionDistance(new Location(this,pt),actor.Location)
-          && null == Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return true;
+      var dest = new Location(this, pt);
+      if (1 == Engine.Rules.InteractionDistance(dest, actor.Location)) {
+        if (actor.Controller is Gameplay.AI.ObjectiveAI oai && oai.LegalPathingIsValid) return null == oai.LegalPathing(dest);
+      }
+
+      if (actor.CanEnter(dest)) return false;
+      if (   1 == Engine.Rules.InteractionDistance(dest, actor.Location) // \todo is this morally dead code?
+          && null == Engine.Rules.IsPathableFor(actor, dest)) return true;
       // generators may not be entered, but are still (unreliably) pathable
       if (GetMapObjectAtExt(pt) is Engine.MapObjects.PowerGenerator) return false;
 #if OBSOLETE
