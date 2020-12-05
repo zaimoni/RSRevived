@@ -4704,7 +4704,7 @@ restart_chokepoints:
 #nullable enable
     public List<Item>? GetTradeableItems()
     {
-      Inventory inv = m_Actor.Inventory;
+      var inv = m_Actor.Inventory;
       if (inv == null) return null;
       IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
       return ret.Any() ? ret.ToList() : null;
@@ -6427,9 +6427,9 @@ restart_chokepoints:
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
     public ItemRangedWeapon? GetBestRangedWeaponWithAmmo()
     {
-      var inv = m_Actor?.Inventory;  // PC zombies won't have inventory
-      if (inv?.IsEmpty ?? true) return null;
-      var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
+      var inv = m_Actor.Inventory;  // PC zombies won't have inventory
+      if (null == inv || inv.IsEmpty) return null;
+      var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
       return rws?.Maximize(ScoreRangedWeapon);
     }
 

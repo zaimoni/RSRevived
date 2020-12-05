@@ -6954,7 +6954,7 @@ namespace djack.RogueSurvivor.Engine
       var lines = new List<string>{ "> explosive" };
       if (itemExplosiveModel.BlastAttack.CanDamageObjects) lines.Add("Can damage objects.");
       if (itemExplosiveModel.BlastAttack.CanDestroyWalls) lines.Add("Can destroy walls.");
-      ItemPrimedExplosive primed = ex as ItemPrimedExplosive;
+      var primed = ex as ItemPrimedExplosive;
       lines.Add((null != primed) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
                                  : string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
       int tmp_i = itemExplosiveModel.BlastAttack.Radius;
@@ -8746,7 +8746,7 @@ namespace djack.RogueSurvivor.Engine
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
 
-      Item ret = null;
+      Item? ret = null;
       bool details(int index) {
         ret = objList[index];
         return true;

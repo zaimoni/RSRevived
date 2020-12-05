@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemTracker : Item, BatteryPowered
     {
-    new public ItemTrackerModel Model { get {return base.Model as ItemTrackerModel; } }
+    new public ItemTrackerModel Model { get {return (base.Model as ItemTrackerModel)!; } }
     private int m_Batteries;
 
     public ItemTrackerModel.TrackingFlags Tracking { get { return Model.Tracking; } }

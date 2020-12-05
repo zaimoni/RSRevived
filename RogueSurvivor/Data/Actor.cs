@@ -1070,7 +1070,7 @@ namespace djack.RogueSurvivor.Data
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
-    public Attack MeleeAttack(Actor target = null) {
+    public Attack MeleeAttack(Actor? target = null) {
       if (GetEquippedWeapon() is ItemMeleeWeapon tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
       return UnarmedMeleeAttack(target);
     }
@@ -1080,9 +1080,9 @@ namespace djack.RogueSurvivor.Data
       return UnarmedMeleeAttack();
     }
 
-    public Attack BestMeleeAttack(Actor target = null)
+    public Attack BestMeleeAttack(Actor? target = null)
     {
-      ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon();
+      var tmp_melee = GetBestMeleeWeapon();
       if (null!=tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
       return UnarmedMeleeAttack(target);
     }

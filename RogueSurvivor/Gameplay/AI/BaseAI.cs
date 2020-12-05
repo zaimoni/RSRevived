@@ -963,7 +963,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #nullable enable
     // isBetterThanEvalFn will never see NaN
-    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (null == listOfChoices || !listOfChoices.Any()) return null;
 

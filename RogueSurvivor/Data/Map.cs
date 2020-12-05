@@ -1451,7 +1451,7 @@ retry:
     /// <summary>
     /// All inventories at that position, regardless of type.  Actors are not meant to be equally efficient at noticing inventories.
     /// </summary>
-    static public List<Inventory>? AllItemsAt(Location loc, Actor a=null)
+    static public List<Inventory>? AllItemsAt(Location loc, Actor? a=null)
     {
        if (!Map.Canonical(ref loc)) return null;
        var g_inv = loc.Items;

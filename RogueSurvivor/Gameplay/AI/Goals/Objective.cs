@@ -265,7 +265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return null;
         }
 
-        public List<Location> WantToGoHere(in Location loc, ObjectiveAI ai) {
+        public List<Location>? WantToGoHere(in Location loc, ObjectiveAI ai) {
             var ret = WantToGoHere(loc_path, loc);
             if (null != ret) return ret;
             if (HomeMap(ai) == loc.Map) {
