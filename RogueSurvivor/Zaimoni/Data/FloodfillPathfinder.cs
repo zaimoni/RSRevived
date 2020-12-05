@@ -273,7 +273,8 @@ namespace Zaimoni.Data
             if (!_bootstrap(goals, _now)) throw new InvalidOperationException("must have at least one goal");
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
-            _prune(start);
+            var only_reachable = start.Where(pos => _map.ContainsKey(pos));
+            if (only_reachable.Any()) _prune(only_reachable);
         }
 
         public void GoalDistance(Dictionary<T,int> goal_costs, IEnumerable<T> start, int max_cost=int.MaxValue)
@@ -290,7 +291,8 @@ namespace Zaimoni.Data
             if (!_bootstrap(goal_costs, _now)) throw new InvalidOperationException("must have at least one goal");
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
-            _prune(start);
+            var only_reachable = start.Where(pos => _map.ContainsKey(pos));
+            if (only_reachable.Any()) _prune(only_reachable);
         }
 
         // \todo need to be able to checkpoint/resume this (CPU optimization)

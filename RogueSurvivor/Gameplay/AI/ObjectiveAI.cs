@@ -4394,6 +4394,18 @@ restart_chokepoints:
     {
         var same_floor_deathtraps = DeathTrapsInSight();
         if (null == same_floor_deathtraps) return null;
+
+        // breaking doors just to clear a deathtrap requires more work
+        same_floor_deathtraps.OnlyIf(loc => {
+            var obj = loc.MapObject;
+            return null == obj || !(obj is DoorWindow);
+        });
+        if (0 >= same_floor_deathtraps.Count) return null;
+#if DEBUG
+        foreach(var x in same_floor_deathtraps) {
+          if (null != x.Key.MapObject) throw new InvalidOperationException("test case");
+        }
+#endif
           // \todo maybe just build a small fortification on top of it?
 
           // try pushing something onto it (either covers or destroys)

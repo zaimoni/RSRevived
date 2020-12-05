@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Op
         public override bool IsRelevant() {
             if (null != m_NewLocation.MapObject) return false;
             var obj = m_From.MapObject;
-            return null != obj && obj.IsMovable && !obj.IsOnFire;
+            return null != obj && obj.IsMovable && !obj.IsOnFire && obj.CoversTraps; // breaking traps is more work to get right
         }
         public override bool IsRelevant(Location loc) {
             return IsRelevant() && 1 == Rules.GridDistance(m_From, loc);
