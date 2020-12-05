@@ -30,6 +30,9 @@ namespace djack.RogueSurvivor.Data
       Position = position;
     }
 
+    // projection functions for Linq
+    [NonSerialized] public static Func<Location, Point> pos = loc => loc.Position;
+
     public static Location operator +(Location lhs, Direction rhs)
     {
       return new Location(lhs.Map, lhs.Position+rhs);

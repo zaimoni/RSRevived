@@ -3863,7 +3863,7 @@ restart:
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing point path: "+(path_pt?.to_s() ?? "null") );
 #endif
       if (null != path_pt) {
-        var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(loc => loc.Position);
+        var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(Location.pos);
         int path_contains_our_goals_pt(List<List<Point>> path) {
           if (this_map_goals.Any()) {
             int n = -1;
@@ -3920,7 +3920,7 @@ restart:
        if (   !District.IsSewersMap(m_Actor.Location.Map)
            && !goals.Any(loc => loc.Map!= m_Actor.Location.Map)) {
          _current_goals = goals;
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
        }
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past single map pathfinder reduction");
@@ -4004,14 +4004,14 @@ restart_single_exit:
         var tmp = x.Key.destination_maps.Get;
         if (1==tmp.Count && m_Actor.Location.Map!=tmp.First()) {
           if (GoalRewrite(goals, goal_costs, map_goals, x.Key, tmp.First(),excluded))
-            return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+            return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
           goto restart_single_exit;
         }
         if (excluded.Any(m => tmp.Contains(m))) {
           var restricted = tmp.Where(m => !excluded.Contains(m));
           if (1== restricted.Count() && m_Actor.Location.Map!= restricted.First()) {
             if (GoalRewrite(goals, goal_costs, map_goals, x.Key, restricted.First(),excluded))
-              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
             goto restart_single_exit;
           }
         }
@@ -4085,7 +4085,7 @@ restart_chokepoints:
       if (0 == my_police_map_code && 0 < goals_police_map_code) {
           do {
             if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code), Session.Get.UniqueMaps.PoliceStationMap(goals_police_map_code - 1), excluded))
-              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
             var next_code = goals.Max(loc => Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
             if (goals_police_map_code <= next_code) break;
             goals_police_map_code = next_code;
@@ -4097,7 +4097,7 @@ restart_chokepoints:
       if (0 == my_hospital_map_code && 0 < goals_hospital_map_code) {
           do {
             if (GoalRewrite(goals, goal_costs, map_goals, Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code), Session.Get.UniqueMaps.HospitalMap(goals_hospital_map_code - 1), excluded))
-              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(loc => loc.Position))),goals);
+              return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
             var next_code = goals.Max(loc => Session.Get.UniqueMaps.HospitalDepth(loc.Map));
             if (goals_hospital_map_code <= next_code) break;
             goals_hospital_map_code = next_code;
