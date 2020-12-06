@@ -599,10 +599,9 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    private string TruncateString(string s, int maxLength)
+    static private string Truncate(string s, int maxLength)
     {
-      if (s.Length > maxLength) return s.Substring(0, maxLength);
-      return s;
+      return (s.Length > maxLength) ? s.Substring(0, maxLength) : s;
     }
 
     private void AnimDelay(int msecs)
@@ -1329,7 +1328,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(color, hr, 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
         HiScore hiScore = m_HiScoreTable[index];
-        string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", index + 1, TruncateString(hiScore.Name, 25), hiScore.TotalPoints, hiScore.DifficultyPercent, hiScore.SurvivalPoints, hiScore.KillPoints, hiScore.AchievementPoints, new WorldTime(hiScore.TurnSurvived).ToString(), TimeSpanToString(hiScore.PlayingTime));
+        string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", index + 1, Truncate(hiScore.Name, 25), hiScore.TotalPoints, hiScore.DifficultyPercent, hiScore.SurvivalPoints, hiScore.KillPoints, hiScore.AchievementPoints, new WorldTime(hiScore.TurnSurvived).ToString(), TimeSpanToString(hiScore.PlayingTime));
         m_UI.UI_DrawStringBold(color, str, 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", hiScore.SkillsDescription), 0, gy1, new Color?());
@@ -2629,7 +2628,6 @@ namespace djack.RogueSurvivor.Engine
          && !HasRaidHappenedSince(RaidType.SURVIVORS, map, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
     }
-#nullable restore
 
     private void FireEvent_BandOfSurvivors(Map map)
     {
@@ -2668,7 +2666,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private Actor? SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
+    static private Actor? SpawnActorNear(Location near, Actor actorToSpawn, int minDistToPlayer, int maxDistToPoint)
     {
       Map map = near.Map;
       Point nearPoint = near.Position;

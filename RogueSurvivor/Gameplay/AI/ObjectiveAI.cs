@@ -5925,7 +5925,7 @@ restart_chokepoints:
     public bool IsInterestingItem(ItemAmmo am)
     {
       Inventory inv = m_Actor.Inventory;
-      ItemRangedWeapon rw = inv.GetCompatibleRangedWeapon(am);
+      var rw = inv.GetCompatibleRangedWeapon(am);
       if (null == rw) {
         if (0 < inv.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
         if (KnowRelevantInventory(am) && !AmmoAtLimit) return true;

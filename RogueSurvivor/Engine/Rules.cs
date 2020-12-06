@@ -208,8 +208,8 @@ namespace djack.RogueSurvivor.Engine
     static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
 #if DEBUG
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (it == null) throw new ArgumentNullException("item");
+      if (actor == null) throw new ArgumentNullException(nameof(actor));
+      if (it == null) throw new ArgumentNullException(nameof(it));
 #endif
       if (!(it is ItemFood))
       {

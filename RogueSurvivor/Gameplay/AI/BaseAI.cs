@@ -984,7 +984,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else choiceEvalDict.Add(f, new List<ChoiceEval<_T_>>{ tmp2 });
       }
 
-      if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
+      if (!choiceEvalDict.TryGetValue(num, out var ret_from)) return null;
       if (1 == ret_from.Count) return ret_from[0];
       return Rules.Get.DiceRoller.Choose(ret_from);
     }
@@ -1032,7 +1032,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else choiceEvalDict.Add(f, new List<ChoiceEval<_DATA_>>{ tmp2 });
       }
 
-      if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;
+      if (!choiceEvalDict.TryGetValue(num, out var ret_from)) return null;
       return Rules.Get.DiceRoller.Choose(ret_from);
     }
 

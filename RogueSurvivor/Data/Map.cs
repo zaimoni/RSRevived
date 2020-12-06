@@ -1462,7 +1462,7 @@ retry:
        return ret;
     }
 
-    static public List<Inventory>? AllItemsAt(Location loc, Predicate<Inventory> ok, Actor a=null)
+    static public List<Inventory>? AllItemsAt(Location loc, Predicate<Inventory> ok, Actor? a=null)
     {
        if (!Map.Canonical(ref loc)) return null;
        var g_inv = loc.Items;
