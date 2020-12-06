@@ -1755,9 +1755,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
       if (!m_Actor.WillActAgainBefore(target1)) {
-        var targ_ai = target1.Controller as OrderableAI;   // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
+        // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
         // need an after-action "hint" to the target on where/who to go to
-        if (null == targ_ai) return null;
+        if (!(target1.Controller is OrderableAI targ_ai)) return null;
         targ_ai.CancelPathTo(m_Actor);  // do not count pathing to *me* as focused
         if (targ_ai.IsFocused) return null;
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);

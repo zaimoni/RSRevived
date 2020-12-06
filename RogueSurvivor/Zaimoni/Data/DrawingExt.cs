@@ -937,85 +937,99 @@ namespace Zaimoni.Data
     // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
     public static string to_s<T>(this HashSet<T> x) {
       if (null == x) return "null";
-      if (0 >= x.Count) return "{}";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "{}";
+      var tmp = new List<string>(ub);
       foreach(T iter in x) {
         tmp.Add(iter.to_s());
       }
       tmp[0] = "{"+ tmp[0];
-      tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "} ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T>(this List<List<T>> x) {  // would be redundant in C++
       if (null == x) return "null";
-      if (0 >= x.Count) return "[]";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "[]";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.to_s());
       }
       tmp[0] = "["+ tmp[0];
-      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "] ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T>(this List<T[]> x) {
       if (null == x) return "null";
-      if (0 >= x.Count) return "[]";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "[]";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.to_s());
       }
       tmp[0] = "["+ tmp[0];
-      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "] ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T>(this T[] x) {
       if (null == x) return "null";
-      if (0 >= x.Length) return "[]";
-      var tmp = new List<string>(x.Length);
+      var ub = x.Length;
+      if (0 >= ub) return "[]";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.to_s());
       }
       tmp[0] = "["+ tmp[0];
-      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "] ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T>(this List<T> x) {
       if (null == x) return "null";
-      if (0 >= x.Count) return "[]";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "[]";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.to_s());
       }
       tmp[0] = "["+ tmp[0];
-      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "] ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T,U>(this Dictionary<T,List<U>> x) {
       if (null == x) return "null";
-      if (0 >= x.Count) return "{}";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "{}";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.Key.to_s()+":"+iter.Value.to_s());
       }
       tmp[0] = "{"+ tmp[0];
-      tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "} ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
     public static string to_s<T,U>(this Dictionary<T,U> x) {
       if (null == x) return "null";
-      if (0 >= x.Count) return "{}";
-      var tmp = new List<string>(x.Count);
+      var ub = x.Count;
+      if (0 >= ub) return "{}";
+      var tmp = new List<string>(ub);
       foreach(var iter in x) {
         tmp.Add(iter.Key.to_s()+":"+iter.Value.to_s());
       }
       tmp[0] = "{"+ tmp[0];
-      tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "} ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 
@@ -1028,7 +1042,8 @@ namespace Zaimoni.Data
         tmp.Add(iter.to_s());
       }
       tmp[0] = "["+ tmp[0];
-      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      ub = tmp.Count;
+      tmp[ub - 1] += "] ("+ ub.ToString()+")";
       return string.Join(",\n",tmp);
     }
 

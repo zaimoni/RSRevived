@@ -21,17 +21,24 @@ namespace Zaimoni.Data
 
         public FloodfillPathfinder(Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
         {
-#if DEBUG
-            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
-            if (null == Inverse) throw new ArgumentNullException(nameof(Inverse));
-            if (null == InDomain) throw new ArgumentNullException(nameof(InDomain));
-#endif
             _blacklist = new HashSet<T>();
             _blacklist_fn = null;
-            _inDomain = InDomain;   // required
+            _inDomain = InDomain // required
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(InDomain))
+#endif
+            ;
             _map = new Dictionary<T, int>();
-            _forward = Forward; // required
-            _inverse = Inverse; // useful but not required
+            _forward = Forward // required
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(Forward))
+#endif
+            ;
+            _inverse = Inverse // useful but not required
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(Inverse))
+#endif
+            ;
         }
 
         // Need a value copy constructor for typical uses
@@ -51,17 +58,24 @@ namespace Zaimoni.Data
         // retain domain and blacklist, change specification of forward and inverse which invalidates the map itself
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
+
 #if DEBUG
-            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
-            if (null == Inverse) throw new ArgumentNullException(nameof(Inverse));
             if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
             _blacklist = new HashSet<T>(src._blacklist);
             _blacklist_fn = src._blacklist_fn;
             _inDomain = src._inDomain;
             _map = new Dictionary<T, int>();
-            _forward = Forward;
-            _inverse = Inverse;
+            _forward = Forward
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(Forward))
+#endif
+            ;
+            _inverse = Inverse
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(Inverse))
+#endif
+            ;
         }
 
         // blacklist manipulation

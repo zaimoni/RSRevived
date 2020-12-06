@@ -41,8 +41,9 @@ namespace djack.RogueSurvivor.Data
 
     public Item? TopItem {
       get {
-        if (m_Items.Count == 0) return null;
-        return m_Items[m_Items.Count - 1];
+        var ub = m_Items.Count;
+        if (0 >= ub) return null;
+        return m_Items[ub - 1];
       }
     }
 

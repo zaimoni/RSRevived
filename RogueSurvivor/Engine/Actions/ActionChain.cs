@@ -12,10 +12,9 @@ namespace djack.RogueSurvivor.Engine.Actions
         private readonly List<ActorAction> m_Actions;
 
         public ActorAction ConcreteAction { get { return m_Actions[0]; } }
-        public ActorAction LastAction { get { return m_Actions[m_Actions.Count-1]; } }
+        public ActorAction LastAction { get { return m_Actions[^1]; } }
 
-        public ActionChain(Actor actor, List<ActorAction> actions)
-        : base(actor)
+        public ActionChain(Actor actor, List<ActorAction> actions) : base(actor)
         {
 #if DEBUG
             if (null == actions || 2 > actions.Count) throw new ArgumentNullException(nameof(actions));
@@ -26,8 +25,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             m_FailReason = actions[0].FailReason;
         }
 
-        public ActionChain(ActorAction act0, ActorAction act1)
-        : base(act0)
+        public ActionChain(ActorAction act0, ActorAction act1) : base(act0)
         {
 #if DEBUG
             if (!act0.PerformedBy(act1)) throw new ArgumentOutOfRangeException(nameof(act1), act1, "should have same target as " + act0);
@@ -150,9 +148,10 @@ namespace djack.RogueSurvivor.Engine.Actions
                     fork_right.splice(new ActionChain(m_Actions, i));
                     return src;
                   } else {
-                    var args = new List<ActorAction>();
-                    args.Add(i + 1 == m_Actions.Count ? m_Actions[i] : new ActionChain(m_Actions, i));
-                    args.Add(i + 1 == src.m_Actions.Count ? src.m_Actions[i] : new ActionChain(src.m_Actions, i));
+                    var args = new List<ActorAction> {
+                      i + 1 == m_Actions.Count ? m_Actions[i] : new ActionChain(m_Actions, i),
+                      i + 1 == src.m_Actions.Count ? src.m_Actions[i] : new ActionChain(src.m_Actions, i)
+                    };
                     var fork = new _Action.Fork(m_Actor, args);
                     if (i + 1 == m_Actions.Count) {
                       m_Actions[i] = fork;
