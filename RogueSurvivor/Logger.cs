@@ -26,24 +26,23 @@ namespace djack.RogueSurvivor
 
     public static void CreateFile()
     {
-      lock (Logger.s_Mutex) {
-        if (File.Exists(Logger.LogFilePath()))
-          File.Delete(Logger.LogFilePath());
+      lock (s_Mutex) {
+        var path = LogFilePath();
+        if (File.Exists(path)) File.Delete(path);
         Directory.CreateDirectory(SetupConfig.DirPath);
-        using (StreamWriter text = File.CreateText(Logger.LogFilePath()));
+        using var text = File.CreateText(path);
       }
     }
 
     public static void WriteLine(Logger.Stage stage, string text)
     {
-      lock (Logger.s_Mutex) {
-        string str = string.Format("{0} {1} : {2}", (object)Logger.s_Lines.Count, (object)Logger.StageToString(stage), (object)text);
-        Logger.s_Lines.Add(str);
+      lock (s_Mutex) {
+        string str = string.Format("{0} {1} : {2}", s_Lines.Count, StageToString(stage), text);
+        s_Lines.Add(str);
         Console.Out.WriteLine(str);
-        using (StreamWriter streamWriter = File.AppendText(Logger.LogFilePath())) {
-          streamWriter.WriteLine(str);
-          streamWriter.Flush();
-        }
+        using var streamWriter = File.AppendText(Logger.LogFilePath());
+        streamWriter.WriteLine(str);
+        streamWriter.Flush();
       }
     }
 

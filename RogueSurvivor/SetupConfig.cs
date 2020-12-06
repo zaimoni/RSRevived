@@ -37,27 +37,21 @@ namespace djack.RogueSurvivor
 
     public static void Save()
     {
-      using (StreamWriter text = File.CreateText(SetupConfig.FilePath))
-      {
-        text.WriteLine(SetupConfig.toString(SetupConfig.Video));
-        text.WriteLine(SetupConfig.toString(SetupConfig.Sound));
-      }
+      using var text = File.CreateText(SetupConfig.FilePath);
+      text.WriteLine(SetupConfig.toString(SetupConfig.Video));
+      text.WriteLine(SetupConfig.toString(SetupConfig.Sound));
     }
 
     public static void Load()
     {
-      if (File.Exists(SetupConfig.FilePath))
-      {
-        using (StreamReader streamReader = File.OpenText(SetupConfig.FilePath))
-        {
-          SetupConfig.Video = SetupConfig.toVideo(streamReader.ReadLine());
-          SetupConfig.Sound = SetupConfig.toSound(streamReader.ReadLine());
-        }
-      }
-      else
-      {
-        if (!Directory.Exists(SetupConfig.DirPath))
-          Directory.CreateDirectory(SetupConfig.DirPath);
+      var path = FilePath;
+      if (File.Exists(path)) {
+        using var streamReader = File.OpenText(path);
+        SetupConfig.Video = SetupConfig.toVideo(streamReader.ReadLine());
+        SetupConfig.Sound = SetupConfig.toSound(streamReader.ReadLine());
+      } else {
+        path = DirPath;
+        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         SetupConfig.Video = SetupConfig.eVideo.VIDEO_GDI_PLUS;
         SetupConfig.Sound = SetupConfig.eSound.SOUND_NOSOUND;
         SetupConfig.Save();

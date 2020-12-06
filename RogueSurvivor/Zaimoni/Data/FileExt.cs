@@ -25,19 +25,17 @@ namespace Zaimoni.Data
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-            using (Stream stream = filepath.CreateStream(true)) {
-				(new BinaryFormatter()).Serialize(stream, src);
-				stream.Flush();
-			}
+            using var stream = filepath.CreateStream(true);
+			(new BinaryFormatter()).Serialize(stream, src);
+			stream.Flush();
 		}
 		public static _T_ BinaryDeserialize<_T_>(this string filepath)
 		{
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-            using (Stream stream = filepath.CreateStream(false)) {
-				return (_T_)(new BinaryFormatter()).Deserialize(stream);
-			}
+            using var stream = filepath.CreateStream(false);
+    		return (_T_)(new BinaryFormatter()).Deserialize(stream);
 		}
 
 #nullable enable
