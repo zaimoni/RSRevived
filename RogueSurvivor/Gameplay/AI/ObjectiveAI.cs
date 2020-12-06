@@ -143,13 +143,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     private readonly Corpse _corpse;
 
-    public Goal_Butcher(int t0, Actor who, Corpse target)
-    : base(t0,who)
+    public Goal_Butcher(int t0, Actor who, Corpse target) : base(t0,who)
     {
+      _corpse = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      _corpse = target;
+      ;
     }
 
     public override bool UrgentAction(out ActorAction ret)

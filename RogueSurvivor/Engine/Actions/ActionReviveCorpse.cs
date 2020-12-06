@@ -14,13 +14,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionReviveCorpse(Actor actor, Corpse target)
-      : base(actor)
+    public ActionReviveCorpse(Actor actor, Corpse target) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
     }
 
     public Corpse What { get { return m_Target; } }

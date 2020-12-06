@@ -28,10 +28,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir) : base(actor)
     {
 #if DEBUG
-      if (null == pushObj) throw new ArgumentNullException(nameof(pushObj));
       if (null == pushDir) throw new ArgumentNullException(nameof(pushDir));
 #endif
-      m_Object = pushObj;
+      m_Object = pushObj
+#if DEBUG
+        ?? throw new ArgumentNullException(nameof(pushObj))
+#endif
+      ;
       m_To = pushObj.Location + pushDir;
 #if DEBUG
       // will be ok when tactical pushing is implemented

@@ -15,13 +15,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly string m_Text;
     private readonly RogueGame.Sayflags m_Flags;
 
-    public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags)
-      : base(actor)
+    public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
       m_Text = text;
       m_Flags = flags;
     }

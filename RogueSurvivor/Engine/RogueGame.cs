@@ -5737,7 +5737,7 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.MOVE_RESTING: return Player.IsTired;
         case AdvisorHint.MOVE_JUMP:
-          return Player.IsTired ? false : map.AnyAdjacent<MapObject>(position, obj => obj.IsJumpable);
+          return !Player.IsTired && map.AnyAdjacent<MapObject>(position, obj => obj.IsJumpable);
         case AdvisorHint.ITEM_GRAB_CONTAINER:
           return map.HasAnyAdjacentInMap(position, pt => (Player.Controller as PlayerController).CanGetFromContainer(pt));
         case AdvisorHint.ITEM_GRAB_FLOOR:
@@ -7187,8 +7187,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private List<string> DescribeItemEntertainment(ItemEntertainment ent)
     {
-      var lines = new List<string>();
-      lines.Add("> entertainment");
+      var lines = new List<string> { "> entertainment" };
       if (ent.IsBoringFor(Player)) lines.Add("* BORED OF IT! *");
       ItemEntertainmentModel entertainmentModel = ent.Model;
       int ent_value = entertainmentModel.Value;
@@ -11173,9 +11172,8 @@ namespace djack.RogueSurvivor.Engine
         var friends = Player.Controller.friends_in_FOV;
         if (null != friends) foreach(var fr in friends) {
           if (fr.Value.IsSleeping) continue;
-          var oai = fr.Value.Controller as ObjectiveAI;
-          if (null == oai) continue;
-          var rw = (fr.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
+          if (!(fr.Value.Controller is ObjectiveAI oai)) continue;
+          var rw = oai.GetBestRangedWeaponWithAmmo();
           int detection_range = (null != rw ? rw.Model.Attack.Range : 1);
           var fr_enemies = fr.Value.Controller.enemies_in_FOV;
           if (null == fr_enemies) continue;
@@ -11196,8 +11194,7 @@ namespace djack.RogueSurvivor.Engine
         bool find_undead = false;
         bool find_blackops = false;
         bool find_police = Player.IsFaction(GameFactions.IDs.ThePolice);
-        var itemTracker1 = Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        if (null != itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
+        if (Player.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
           find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
 //        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
           find_undead = itemTracker1.CanTrackUndeads;
@@ -13726,11 +13723,11 @@ retry:
 
     static public string[] Describe(this List<Corpse> corpses)
     {
-      var lines = new List<string>(corpses.Count + 2);
-      lines.Add(1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.");
-      lines.Add(" ");
-      foreach (Corpse corpse in corpses)
-        lines.Add("- "+corpse.ToString().Capitalize()+".");
+      var lines = new List<string>(corpses.Count + 2) {
+        1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.",
+        " "
+      };
+      foreach (Corpse corpse in corpses) lines.Add("- "+corpse.ToString().Capitalize()+".");
       return lines.ToArray();
     }
 

@@ -485,11 +485,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      var percept1 = current?.FilterFirst(p =>
-      {
-        var actor = p.Percepted as Actor;
-        if (actor == null || actor == m_Actor) return false;
-        return actor.Controller is SoldierAI;
+      var percept1 = current?.FilterFirst(p => {
+          if (p.Percepted is not Actor actor || actor == m_Actor) return false;
+          return actor.Controller is SoldierAI;
       });
       if (percept1 != null) m_LastSoldierSaw = percept1;
 

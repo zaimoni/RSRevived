@@ -14,13 +14,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Fortification m_Fort;
 
-    public ActionRepairFortification(Actor actor, Fortification fort)
-      : base(actor)
+    public ActionRepairFortification(Actor actor, Fortification fort) : base(actor)
     {
+      m_Fort = fort
 #if DEBUG
-      if (null == fort) throw new ArgumentNullException(nameof(fort));
+        ?? throw new ArgumentNullException(nameof(fort))
 #endif
-      m_Fort = fort;
+      ;
     }
 
     public override bool IsLegal()
