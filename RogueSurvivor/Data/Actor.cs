@@ -660,7 +660,7 @@ namespace djack.RogueSurvivor.Data
       m_SpawnTime = spawnTime;
       IsUnique = false;
       IsDead = false;
-      ActorScoring = new Engine.ActorScoring(this);
+      ActorScoring = new ActorScoring(this);
       CommandLinePlayer();
       OnModelSet();
       Controller = Model.InstanciateController(this);

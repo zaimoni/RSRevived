@@ -88,10 +88,10 @@ namespace djack.RogueSurvivor.Engine
     private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
     private readonly List<KeyValuePair<int,string>> m_Events = new List<KeyValuePair<int, string>>();
     private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
-    private string m_DeathReason;
+    private string? m_DeathReason;
 
     public string DeathReason {
-      get { return m_DeathReason; }
+      get { return m_DeathReason ?? (m_Actor.Model.Abilities.IsUndead ? "Still undead" : "Still alive"); }
       set { if (!string.IsNullOrEmpty(m_DeathReason)) m_DeathReason = value; }
     }
 

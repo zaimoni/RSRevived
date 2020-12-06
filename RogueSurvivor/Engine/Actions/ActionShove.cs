@@ -11,13 +11,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Direction m_Direction;
     private readonly Point m_To;
 
-    public ActionShove(Actor actor, Actor target, Direction pushDir)
-      : base(actor)
+    public ActionShove(Actor actor, Actor target, Direction pushDir) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
       m_Direction = pushDir;
       m_To = target.Location.Position + pushDir;
     }

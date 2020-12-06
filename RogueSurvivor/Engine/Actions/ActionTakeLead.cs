@@ -13,13 +13,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
 
-    public ActionTakeLead(Actor actor, Actor target)
-      : base(actor)
+    public ActionTakeLead(Actor actor, Actor target) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
       actor.Activity = Activity.IDLE;
     }
 

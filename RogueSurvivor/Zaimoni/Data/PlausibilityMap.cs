@@ -24,11 +24,12 @@ namespace Zaimoni.Data
 
         public PlausbilityMap(Func<T, Dictionary<T, int>> Forward, int TargetCount)
         {
-#if DEBUG
-            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
-#endif
             _map = new Dictionary<T, int>();
-            _forward = Forward; // required
+            _forward = Forward // required
+#if DEBUG
+                ?? throw new ArgumentNullException(nameof(Forward))
+#endif
+            ;
             _target_count = TargetCount;
         }
 

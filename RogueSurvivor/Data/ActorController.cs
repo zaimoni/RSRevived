@@ -212,11 +212,6 @@ namespace djack.RogueSurvivor.Data
       return map.IsValid(position) && FOV.Contains(position);
     }
 
-    private bool _IsVisibleTo(in Location location)
-    {
-      return _IsVisibleTo(location.Map, location.Position);
-    }
-
 #nullable enable
     public bool IsVisibleTo(Map? map, in Point position)
     {

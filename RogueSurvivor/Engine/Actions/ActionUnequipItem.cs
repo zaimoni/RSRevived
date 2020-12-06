@@ -13,13 +13,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Item m_Item;
 
-    public ActionUnequipItem(Actor actor, Item it)
-      : base(actor)
+    public ActionUnequipItem(Actor actor, Item it) : base(actor)
     {
+      m_Item = it
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
+        ?? throw new ArgumentNullException(nameof(it))
 #endif
-      m_Item = it;
+      ;
     }
 
     public override bool IsLegal()

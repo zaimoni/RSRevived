@@ -14,15 +14,14 @@ namespace djack.RogueSurvivor.Engine.Actions
         #endregion
 
         #region Init
-        public ActionSprayOdorSuppressor(Actor actor, ItemSprayScent spray, Actor sprayOn)
-            : base(actor)
+        public ActionSprayOdorSuppressor(Actor actor, ItemSprayScent spray, Actor sprayOn) : base(actor)
         {
-#if DEBUG
-            if (null == sprayOn) throw new ArgumentNullException(nameof(sprayOn));
-#endif
-
             m_Spray = spray;
-            m_SprayOn = sprayOn;
+            m_SprayOn = sprayOn
+#if DEBUG
+                ?? throw new ArgumentNullException(nameof(sprayOn))
+#endif
+            ;
         }
         #endregion
 

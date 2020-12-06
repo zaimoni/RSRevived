@@ -13,13 +13,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
 
-    public ActionSwitchPlace(Actor actor, Actor target)
-      : base(actor)
+    public ActionSwitchPlace(Actor actor, Actor target) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
     }
 
     public override bool IsLegal()
@@ -37,13 +37,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
 
-    public ActionSwitchPlaceEmergency(Actor actor, Actor target)
-      : base(actor)
+    public ActionSwitchPlaceEmergency(Actor actor, Actor target) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+      ;
     }
 
     public override bool IsLegal()
