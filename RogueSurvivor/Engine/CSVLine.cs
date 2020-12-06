@@ -18,16 +18,22 @@ namespace djack.RogueSurvivor.Engine
       get {
 #if DEBUG
         if (0 > field) throw new InvalidOperationException("0 > field");
-        if (null == m_Fields[field]) throw new InvalidOperationException("m_Fields[field]");
 #endif
-        return m_Fields[field];
+        return m_Fields[field]
+#if DEBUG
+          ?? throw new InvalidOperationException("m_Fields[field]")
+#endif
+        ;
       }
       set {
 #if DEBUG
         if (0 > field) throw new InvalidOperationException("0 > field");
-        if (null == value) throw new InvalidOperationException(nameof(value));
 #endif
-        m_Fields[field] = value;
+        m_Fields[field] = value
+#if DEBUG
+          ?? throw new InvalidOperationException(nameof(value))
+#endif
+        ;
       }
     }
 

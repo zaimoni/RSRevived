@@ -18,10 +18,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemGrenadePrimedModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
       : base(_id, aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage, grenadeModel.FlavorDescription)
     {
+        GrenadeModel = grenadeModel
 #if DEBUG
-      if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));
+            ?? throw new ArgumentNullException(nameof(grenadeModel))
 #endif
-      GrenadeModel = grenadeModel;
+        ;
     }
 
     public override Item create() { return new ItemGrenade(GrenadeModel,this); }

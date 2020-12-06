@@ -19,13 +19,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
     private readonly Item m_Item;
 
-    public ActionUseItem(Actor actor, Item it)
-      : base(actor)
+    public ActionUseItem(Actor actor, Item it) : base(actor)
     {
+      m_Item = it
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));  // insane action items need not be usable
+        ?? throw new ArgumentNullException(nameof(it))
 #endif
-      m_Item = it;
+      ;
       actor.Activity = Activity.IDLE;
     }
 

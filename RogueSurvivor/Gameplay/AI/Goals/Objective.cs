@@ -23,11 +23,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       protected Objective(int t0, Actor who)
       {
-#if DEBUG
-         if (null == who) throw new ArgumentNullException(nameof(who));
-#endif
          turn = t0;
-         m_Actor = who;
+         m_Actor = who
+#if DEBUG
+           ?? throw new ArgumentNullException(nameof(who))
+#endif
+         ;
       }
 
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>

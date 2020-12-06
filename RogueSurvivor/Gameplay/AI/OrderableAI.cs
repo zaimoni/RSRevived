@@ -50,13 +50,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       public readonly ActorAction Intent;
 
-      public Goal_NextAction(int t0, Actor who, ActorAction intent)
-      : base(t0,who)
+      public Goal_NextAction(int t0, Actor who, ActorAction intent) : base(t0,who)
       {
+        Intent = intent
 #if DEBUG
-        if (null == intent) throw new ArgumentNullException(nameof(intent));
+          ?? throw new ArgumentNullException(nameof(intent))
 #endif
-        Intent = intent;
+        ;
       }
 
       // always execute.  Expire on execution
@@ -117,13 +117,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       public readonly ActorAction Intent;
 
-      public Goal_NonCombatComplete(int t0, Actor who, ActorAction intent)
-      : base(t0,who)
+      public Goal_NonCombatComplete(int t0, Actor who, ActorAction intent) : base(t0,who)
       {
+        Intent = intent
 #if DEBUG
-        if (null == intent) throw new ArgumentNullException(nameof(intent));
+          ?? throw new ArgumentNullException(nameof(intent))
 #endif
-        Intent = intent;
+        ;
       }
 
       // always execute.  Expire on inability to continue
@@ -854,7 +854,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
           return ExecuteBuildFortification(order.Location, true);
         case ActorTasks.REPORT_EVENTS:
-          return ExecuteReport(game, percepts);  // cancelled by enamies sighted
+          return ExecuteReport(percepts);  // cancelled by enamies sighted
         case ActorTasks.SLEEP_NOW:
           return ExecuteSleepNow(game, percepts);  // cancelled by enamies sighted
         case ActorTasks.FOLLOW_TOGGLE:
@@ -974,7 +974,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
+    private ActorAction ExecuteReport(List<Percept> percepts)
     {
       var enemies = FilterEnemies(percepts);
       if (enemies != null) {
@@ -1547,7 +1547,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>true if and only if a cell phone is required to be equipped</returns>
-    protected bool BehaviorEquipCellPhone(RogueGame game)
+    protected bool BehaviorEquipCellPhone()
     {
       var phone = m_Actor.Inventory.GetBestMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless, (lhs, rhs) => {
           if (lhs.IsEquipped) return false;

@@ -16,10 +16,11 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVField(string rawString)
     {
+      m_RawString = rawString
 #if DEBUG
-      if (null == rawString) throw new ArgumentNullException(nameof(rawString));
+        ?? throw new ArgumentNullException(nameof(rawString))
 #endif
-      m_RawString = rawString;
+      ;
     }
 
     public int ParseInt() { return int.Parse(m_RawString); }
