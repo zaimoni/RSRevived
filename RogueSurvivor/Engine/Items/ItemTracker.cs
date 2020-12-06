@@ -64,7 +64,5 @@ namespace djack.RogueSurvivor.Engine.Items
 #if PROTOTYPE
     public override ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Batteries); } }
 #endif
-
-    public void Recharge() { Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8); }
   }
 }
