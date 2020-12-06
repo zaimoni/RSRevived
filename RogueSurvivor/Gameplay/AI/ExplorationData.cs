@@ -82,10 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (-1 < i) {
         if (m_ZonesQueue.Count - 1 <= i) return;
         m_ZonesQueue.RemoveAt(i);   // prevent duplicates
-      } else {
-        if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
-      }
+      } else if (m_ZonesQueue.Count >= EXPLORATION_ZONES) m_ZonesQueue.RemoveAt(0);
       m_ZonesQueue.Add(zone);
+      new_zone_handler(zone);
     }
 
     // alpha10.1
