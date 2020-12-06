@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         // \todo the whole concept of secret map should be per-faction (civilians and police are aligned here)
-        public static bool IsSecret { get { return (m ?? (m = Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap)).IsSecret; } }
+        public static bool IsSecret { get { return (m ??= Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap).IsSecret; } }
 
         public bool update(Location[] fov) {
             if (!IsSecret) return true;  // already found

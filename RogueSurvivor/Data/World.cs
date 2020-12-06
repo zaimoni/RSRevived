@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Data
               if (a.Location == loc) continue;
               if (null!=test && !test(a)) continue;
               Location other_radio_pos = Engine.Rules.PoliceRadioLocation(a.Location);
-              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ?? (ret = new HashSet<Actor>())).Add(a); //  \todo change target for range reduction from being underground
+              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<Actor>()).Add(a); //  \todo change target for range reduction from being underground
           }
       });
       return ret;
@@ -208,7 +208,7 @@ namespace djack.RogueSurvivor.Data
               if (!a.HasActivePoliceRadio) continue;
               if (null!=test && !test(a)) continue;
               Location other_radio_pos = Engine.Rules.PoliceRadioLocation(a.Location);
-              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ?? (ret = new HashSet<Actor>())).Add(a); //  \todo change target for range reduction from being underground
+              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<Actor>()).Add(a); //  \todo change target for range reduction from being underground
           }
       });
       return ret;

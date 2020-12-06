@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       if (!percepts.Any()) return null;
       List<Percept_<_T_>>? ret = null;
-      foreach(var p in percepts) if (test(p.Percepted)) (ret ?? (ret = new List<Percept_<_T_>>())).Add(p);
+      foreach(var p in percepts) if (test(p.Percepted)) (ret ??= new List<Percept_<_T_>>()).Add(p);
       return ret;
     }
 
@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       if (!percepts.Any()) return null;
       List<_T_>? ret = null;
-      foreach(var p in percepts) if (turn == p.Turn) (ret ?? (ret = new List<_T_>())).Add(p);
+      foreach(var p in percepts) if (turn == p.Turn) (ret ??= new List<_T_>()).Add(p);
       return ret;
     }
 
@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       if (!percepts.Any()) return null;
       List<_T_>? ret = null;
-      foreach(var p in percepts) if (turn > p.Turn) (ret ?? (ret = new List<_T_>())).Add(p);
+      foreach(var p in percepts) if (turn > p.Turn) (ret ??= new List<_T_>()).Add(p);
       return ret;
     }
 
@@ -109,7 +109,7 @@ namespace djack.RogueSurvivor.Engine.AI
 	{
       if (!percepts.Any()) return null;
       List<Percept_<object>>? ret = null;
-      foreach(var p in percepts) if (p.Percepted is _T_) (ret ?? (ret = new List<Percept_<object>>())).Add(p);
+      foreach(var p in percepts) if (p.Percepted is _T_) (ret ??= new List<Percept_<object>>()).Add(p);
       return ret;
 	}
 
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Engine.AI
 	{
       if (null == percepts || !percepts.Any()) return null;
       List<Percept_<object>>? ret = null;
-      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) (ret ?? (ret = new List<Percept_<object>>())).Add(p);
+      foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) (ret ??= new List<Percept_<object>>()).Add(p);
       return ret;
 	}
 

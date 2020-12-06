@@ -28,12 +28,12 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             if (_AP <= m_Actor.ActionPoints && _turn >= m_Actor.Location.Map.LocalTime.TurnCounter) return true;
             if (0 < _handler_codes.Count && !m_Actor.Controller.IsMyTurn()) return true;    // XXX i.e., this ActionSequence class will not work for PlayerController
-            return (_result ?? (_result = _resolve()))?.IsPerformable() ?? false;
+            return (_result ??= _resolve())?.IsPerformable() ?? false;
         }
 
         public override void Perform()
         {
-            (_result ?? (_result = _resolve()))?.Perform();
+            (_result ??= _resolve())?.Perform();
             _result = null;
         }
 

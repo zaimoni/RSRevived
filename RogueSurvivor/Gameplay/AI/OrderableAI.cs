@@ -793,7 +793,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public ActorDirective Directives { get { return m_Directive ?? (m_Directive = new ActorDirective()); } }
+    public ActorDirective Directives { get { return m_Directive ??= new ActorDirective(); } }
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
 #nullable enable
     public ActorOrder? Order { get { return m_Order; } }
@@ -1332,7 +1332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (!shove.Target.CanBeShovedTo(dest.Position)) continue;
               // _damage_field expected to be non-null as we have at least one enemy in sight
               int incoming = RiskAt(in dest);
-              if (0 >= incoming) (norisk ?? (norisk = new List<Location>())).Add(dest);
+              if (0 >= incoming) (norisk ??= new List<Location>()).Add(dest);
             }
             if (null != norisk) {
               var target_rw = (shove.Target.Controller as ObjectiveAI).GetBestRangedWeaponWithAmmo();
@@ -1831,7 +1831,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (rw.Model.Attack.Range < Rules.GridDistance(x.Key, target.Location)) continue;
             var line = new List<Point>();
             if (!LOS.CanTraceHypotheticalFireLine(x.Key, target.Location, rw.Model.Attack.Range, x.Value, line)) continue;
-            (LoF ?? (LoF = new List<List<Point>>())).Add(line);
+            (LoF ??= new List<List<Point>>()).Add(line);
           }
           if (null != LoF) {
             close_in = close_in.Postprocess((ptA,ptB,dist) => {
@@ -1933,9 +1933,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.Location.Map!=enemy.Location.Map || !IsBetween(m_Actor.Location.Position, in pt, enemy.Location.Position)) continue;
           // magic constant 4 is the maximum number of doors that may reasonably be adjacent to a point with our map generation
           if (m_Actor.CanClose(door)) {
-            if ((!Rules.IsAdjacent(in pt, enemy.Location.Position) || !enemy.CanClose(door))) (close_doors ?? (close_doors = new List<DoorWindow>(4))).Add(door);
+            if (!Rules.IsAdjacent(in pt, enemy.Location.Position) || !enemy.CanClose(door)) (close_doors ??= new List<DoorWindow>(4)).Add(door);
           } else if (could_barricade && door.CanBarricade()) {
-            (barricade_doors ?? (barricade_doors = new List<DoorWindow>(4))).Add(door);
+            (barricade_doors ??= new List<DoorWindow>(4)).Add(door);
           }
         }
         if (null != close_doors) {
@@ -2272,7 +2272,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // \todo release block; next savegame; A murderer should not do an action that enables detection.
       foreach(var x in friends) {
         if (0 >= x.Value.MurdersOnRecord(m_Actor)) continue;
-        (murderers ?? (murderers = new Dictionary<Location, Actor>()))[x.Key] = x.Value;
+        (murderers ??= new Dictionary<Location, Actor>())[x.Key] = x.Value;
       }
       if (null == murderers) return null;
       var rules = Rules.Get;
@@ -3361,7 +3361,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var rw = a.Inventory.GetCompatibleRangedWeapon(x);
                   if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                 }
-                if (critical.Contains(x)) (precious ?? (precious = new List<GameItems.IDs>())).Add(x);
+                if (critical.Contains(x)) (precious ??= new List<GameItems.IDs>()).Add(x);
             }
           }
           if (null != have.Value) {
@@ -3370,7 +3370,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var rw = a.Inventory.GetCompatibleRangedWeapon(x);
                   if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                 }
-                if (critical.Contains(x)) (precious ?? (precious = new List<GameItems.IDs>())).Add(x);
+                if (critical.Contains(x)) (precious ??= new List<GameItems.IDs>()).Add(x);
             }
           }
           if (null != precious) foreach(var it in precious) {

@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Engine
     private static Rules? s_Rules;
     private DiceRoller m_DiceRoller;
 
-    public static Rules Get { get { return s_Rules ?? (s_Rules = new Rules()); } }
+    public static Rules Get { get { return s_Rules ??= new Rules(); } }
     public static void Reset() { s_Rules = null; }
 
 #region Session save/load assistants

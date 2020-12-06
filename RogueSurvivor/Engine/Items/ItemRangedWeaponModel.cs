@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemRangedWeapon Example {   // don't use this in real inventories; this object needs to be C++ const but C# doesn't have const correctness
       get {
-        return (_rw ?? (_rw = instantiate()));
+        return _rw ??= instantiate();
       }
     }
   }

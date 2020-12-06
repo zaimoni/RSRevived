@@ -224,7 +224,7 @@ namespace djack.RogueSurvivor.Data
 
     public void InstallAfterAction(EventUnconditional e)
     {
-      (s_AfterAction ?? (s_AfterAction = new List<EventUnconditional>())).Add(e);
+      (s_AfterAction ??= new List<EventUnconditional>()).Add(e);
     }
 
     public bool KnowsWhere(Actor a)

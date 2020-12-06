@@ -251,7 +251,7 @@ namespace djack.RogueSurvivor.Data
           var local = new List<Point>(pts.Count());
           List<Point> other = null;
           foreach(Point pt in pts) {
-            (m.IsInBounds(pt) ? local : (other ?? (other = new List<Point>(pts.Count())))).Add(pt);
+            (m.IsInBounds(pt) ? local : (other ??= new List<Point>(pts.Count()))).Add(pt);
           }
 		  lock(_threats) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Data
             lock (_threats) {
                 foreach (var x in _threats) {
                     if (ok(x.Key)) continue;
-                    (discard ?? (discard = new List<Actor>(_threats.Count))).Add(x.Key);
+                    (discard ??= new List<Actor>(_threats.Count)).Add(x.Key);
                 }
             }
             if (null != discard) foreach (var a in discard) Cleared(a);

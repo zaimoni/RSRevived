@@ -33,9 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public Actor Viewpoint { get { return m_Actor; } }
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
-    public Location[] FOVloc { get {
-      return _normalized_FOV ?? (_normalized_FOV = _buildNormalizedFOV());
-    } }
+    public Location[] FOVloc { get { return _normalized_FOV ??= _buildNormalizedFOV(); } }
     public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
     public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
     public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
@@ -157,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
       _normalized_FOV = _buildNormalizedFOV(); // \todo stop thrashing GC (some sort of pooling)
       List<Percept> perceptList = new List<Percept>();
-      (_sense ?? (_sense = HowToSense()))(perceptList, _normalized_FOV);
+      (_sense ??= HowToSense())(perceptList, _normalized_FOV);
       Viewpoint.Controller.eventFOV(); // trigger additional vision processing; rely on z processing being so trivial that their CPU wastage is negligible
       return perceptList;
     }

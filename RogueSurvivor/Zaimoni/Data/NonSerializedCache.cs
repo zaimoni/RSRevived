@@ -19,7 +19,7 @@ namespace Zaimoni.Data
             m_invalidate = invalidate;
         }
 
-        public U Get { get { return m_cache ?? (m_cache = m_bootstrap(m_src)); } }
+        public U Get { get { return m_cache ??= m_bootstrap(m_src); } }
         public void Recalc() {
             m_cache = null;
             m_invalidate?.Invoke(m_src);
@@ -67,7 +67,7 @@ namespace Zaimoni.Data
             m_invalidate = invalidate;
         }
 
-        public Dictionary<Key, Value> Get { get { return new Dictionary<Key,Value>(m_cache ?? (m_cache = m_bootstrap(m_src))); } }
+        public Dictionary<Key, Value> Get { get { return new Dictionary<Key,Value>(m_cache ??= m_bootstrap(m_src)); } }
 
         public void Recalc() {
             m_cache = null;

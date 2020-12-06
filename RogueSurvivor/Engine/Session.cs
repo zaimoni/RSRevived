@@ -33,10 +33,7 @@ namespace djack.RogueSurvivor.Engine
 
     [NonSerialized] private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
 
-    static public int Seed {
-            get { return s_seed; }
-    }
-
+    static public int Seed { get { return s_seed; } }
     public World World { get; private set; }
     public UniqueActors UniqueActors { get; private set; }
     public UniqueItems UniqueItems { get; private set; }
@@ -49,7 +46,7 @@ namespace djack.RogueSurvivor.Engine
     public int ScriptStage_PoliceCHARrelations;
     public int ScriptStage_HospitalPowerup;
 
-    public static Session Get { get { return s_TheSession ?? (s_TheSession = new Session()); } }
+    public static Session Get { get { return s_TheSession ??= new Session(); } }
 
     // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
     // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.

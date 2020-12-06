@@ -65,19 +65,19 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return false;
       }
       if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return true;
-      return (_result ?? (_result = _resolve()))?.IsLegal() ?? false;
+      return (_result ??= _resolve())?.IsLegal() ?? false;
     }
 
     public override bool IsPerformable()
     {
       if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return false;
       if (!base.IsPerformable()) return false;
-      return (_result ?? (_result = _resolve()))?.IsPerformable() ?? false;
+      return (_result ??= _resolve())?.IsPerformable() ?? false;
     }
 
     public override void Perform()
     {
-        (_result ?? (_result = _resolve()))?.Perform();
+        (_result ??= _resolve())?.Perform();
         _result = null;
         if (1 == Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) {
             // reschedule ourselves

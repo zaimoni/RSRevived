@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Engine.Items
       if (null != m_Owner) {
         if (a == m_Owner) return true;
         if (a.IsInGroupWith(m_Owner)) { // XXX telepathy
-          (m_Known ?? (m_Known = new List<Actor>())).Add(a);
+          (m_Known ??= new List<Actor>()).Add(a);
           return true;
         }
       }
@@ -125,14 +125,14 @@ namespace djack.RogueSurvivor.Engine.Items
       // \todo register die handler which auto-cleans m_Owner and m_KnownBy?
       // \todo global-scan ground inventories and request invalidation?
       var allies = a.FilterAllies(m_Known, may_ask);
-      if (null != m_Owner && may_ask(m_Owner)) (allies ?? (allies = new List<Actor>(1))).Add(m_Owner);
+      if (null != m_Owner && may_ask(m_Owner)) (allies ??= new List<Actor>(1)).Add(m_Owner);
       if (null == allies) return false; // intentionally unrealistically don't burn UI on automatic failure
       if (null == is_real) return true;
       void overheard_trap_instructions(Actor overhear) {
         // The complexity of the instructions is roughly comparable to the plausibility of triggering the trap without help
         // cf. Rules::CheckTrapTriggers (we intentionally allow a low plausibility even for 100% trigger chance)
         if ((null== m_Known || !m_Known.Contains(overhear)) && !Rules.Get.RollChance(TriggerChanceFor(overhear) + 1)) {
-          (m_Known ?? (m_Known = new List<Actor>(1))).Add(overhear);
+          (m_Known ??= new List<Actor>(1)).Add(overhear);
           if (overhear.Model.Abilities.HasSanity) overhear.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE / 15);
         }
       }
@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
       // check for whether an ally is within chat range first
       if (RogueForm.Game.DoBackgroundChat(a, allies, question, answer, overheard_trap_instructions)) {
-        (m_Known ?? (m_Known = new List<Actor>(1))).Add(a);
+        (m_Known ??= new List<Actor>(1)).Add(a);
         return true;
       }
       // initiate contact w/ally re trap (ideally cellphone or radio needed)
@@ -152,11 +152,11 @@ namespace djack.RogueSurvivor.Engine.Items
       // \todo reimplement/extend when either army radios or cellphone rewrite lands (police would prefer police radios, Nat guard prefers army radios, etc.)
       if (a.HasActivePoliceRadio) {
         if (RogueForm.Game.DoBackgroundPoliceRadioChat(a, allies, question, answer, overheard_trap_instructions)) {
-          (m_Known ?? (m_Known = new List<Actor>(1))).Add(a);
+          (m_Known ??= new List<Actor>(1)).Add(a);
           return true;
         }
       }
-      (m_Known ?? (m_Known = new List<Actor>(1))).Add(a);
+      (m_Known ??= new List<Actor>(1)).Add(a);
       return true;
     }
 
@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Engine.Items
       var rules = Rules.Get;
       if (rules.RollChance(chance)) return true;
       if (0 < chance && a.Controller is Gameplay.AI.ObjectiveAI && a.Model.Abilities.CanUseItems) {
-        if (!rules.RollChance(chance)) (m_Known ?? (m_Known = new List<Actor>())).Add(a);   // learned, now safe
+        if (!rules.RollChance(chance)) (m_Known ??= new List<Actor>()).Add(a);   // learned, now safe
       }
       return false;
     }

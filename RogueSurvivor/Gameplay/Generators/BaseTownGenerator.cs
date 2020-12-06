@@ -415,7 +415,7 @@ restart:
             &&  mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 
             && !IsThereASpecialBuilding(surface, mSurfaceBlock.InsideRect)
             && !mSurfaceBlock.Rectangle.Any(pt => sewers.GetTileModelAt(pt).IsWalkable)) {
-          (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
+          (blockList ??= new List<Block>(m_SurfaceBlocks.Count)).Add(mSurfaceBlock);
         }
       }
       if (blockList != null) {
@@ -574,7 +574,7 @@ restart:
         if (   want_critical_X
             && mSurfaceBlock.Rectangle.Left - minDistToRails <= rail.X-1+height  // left below critical x
             && mSurfaceBlock.Rectangle.Right + minDistToRails-1 >= rail.X) continue;   // right above critical x
-        (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
+        (blockList ??= new List<Block>(m_SurfaceBlocks.Count)).Add(mSurfaceBlock);
         Point exitPosition = mSurfaceBlock.InsideRect.Anchor(Compass.XCOMlike.N);
         if (want_critical_Y) {
           if (mSurfaceBlock.Rectangle.Bottom < rail.Y) costs[mSurfaceBlock.Rectangle] = rail.Y- exitPosition.Y;

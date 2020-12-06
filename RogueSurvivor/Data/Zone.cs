@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 #endif
-      (m_Attributes ?? (m_Attributes = new Dictionary<string, object>(1)))[key] = value;
+      (m_Attributes ??= new Dictionary<string, object>(1))[key] = value;
     }
 
     public _T_ Get<_T_>(string key)

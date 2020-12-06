@@ -138,12 +138,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           } else if (shed_claimed.Contains(newCivilian.Location.Position)) {
             int i = unclaimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
             if (0 <= i) {
-              (claimed_sheds ?? (claimed_sheds = new List<Zone>())).Add(unclaimed_sheds[i]);
+              (claimed_sheds ??= new List<Zone>()).Add(unclaimed_sheds[i]);
               unclaimed_sheds.RemoveAt(i);
             } else {
               i = claimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
               if (0 <= i) {
-                (full_sheds ?? (full_sheds = new List<Zone>())).Add(claimed_sheds[i]);
+                (full_sheds ??= new List<Zone>()).Add(claimed_sheds[i]);
                 claimed_sheds.RemoveAt(i);
               }
             }
