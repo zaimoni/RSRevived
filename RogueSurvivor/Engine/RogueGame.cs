@@ -3878,10 +3878,7 @@ namespace djack.RogueSurvivor.Engine
       return itemsAt[index2];
     }
 
-    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv)
-    {
-      return MouseToInventoryItem(screen, out inv, out var itemPos);
-    }
+    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv) { return MouseToInventoryItem(screen, out inv, out _); }
 #nullable restore
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
@@ -3952,10 +3949,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    private Corpse? MouseToCorpse(GDI_Point screen)
-    {
-      return MouseToCorpse(screen, out var corpsePos);
-    }
+    private Corpse? MouseToCorpse(GDI_Point screen) { return MouseToCorpse(screen, out _); }
 
     private bool HandlePlayerEatCorpse(Actor player, GDI_Point mousePos)
     {
@@ -11656,7 +11650,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
 
       do {
-        WaitKeyOrMouse(out KeyEventArgs key, out var point, out var mouseButtons);
+        WaitKeyOrMouse(out KeyEventArgs key, out _, out _);
         if (null != key) {
           switch(key.KeyCode) {
           case Keys.Escape: // cancel

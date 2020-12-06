@@ -895,7 +895,7 @@ restart:
     // district size 50: raw split range 16..33. railY=25; tolerances 17,35 (moderately difficult)
     private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
     {
-      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out _, out _, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         if (makeRoads) {
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Top, rect.Width, 1));
@@ -1959,7 +1959,7 @@ restart:
     protected void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0)
     {
       if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
-      QuadSplit(rect, minRoomsXSize, minRoomsYSize, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      QuadSplit(rect, minRoomsXSize, minRoomsYSize, out _, out _, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
       } else {

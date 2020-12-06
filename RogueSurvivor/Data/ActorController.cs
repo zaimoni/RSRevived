@@ -46,9 +46,7 @@ namespace djack.RogueSurvivor.Data
       return null != memory && Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
     }
 
-    public bool IsKnown(Location x) {
-      return LastSeen(x, out int discard);
-    }
+    public bool IsKnown(Location x) { return LastSeen(x, out _); }
 
     public void ForceKnown(Point x) {   // for world creation
       var map = m_Actor.Location.Map;
