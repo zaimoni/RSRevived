@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       if (null != _rw && !_rw.IsEquipped) actor.Equip(_rw);
       actor.SpendActionPoints();
-      var rw = null != _rw ? _rw : (actor.GetEquippedWeapon() as ItemRangedWeapon)!;
+      var rw = (_rw ?? (actor.GetEquippedWeapon() as ItemRangedWeapon))!;
       sbyte num = (sbyte)Math.Min(rw.Model.MaxAmmo - rw.Ammo, Quantity);
       rw.Ammo += num;
       if (0 >= (Quantity -= num)) inv.RemoveAllQuantity(this);

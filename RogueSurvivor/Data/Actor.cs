@@ -641,7 +641,7 @@ namespace djack.RogueSurvivor.Data
         if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
           _force_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
         } else {
-          _force_PC_names = new string[0];
+          _force_PC_names = Array.Empty<string>();
         }
       }
       if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController(this);

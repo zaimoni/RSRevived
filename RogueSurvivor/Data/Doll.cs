@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<string>? GetDecorations(DollPart part)
     {
-      return null!= m_Decorations ? m_Decorations[(int) part] : null;
+      return m_Decorations?[(int) part];
     }
 
     public void AddDecoration(DollPart part, string imageID)

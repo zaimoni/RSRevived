@@ -24,21 +24,23 @@ namespace djack.RogueSurvivor.Engine.Actions
         #region Init
         public ActionPull(Actor actor, MapObject pullObj, Direction moveActorDir) : base(actor)
         {
+            m_Object = pullObj
 #if DEBUG
-            if (pullObj == null) throw new ArgumentNullException(nameof(pullObj));
+                ?? throw new ArgumentNullException(nameof(pullObj))
 #endif
-            m_Object = pullObj;
+            ;
             m_MoveActorTo = m_Actor.Location + moveActorDir;
             if (!Map.Canonical(ref m_MoveActorTo)) throw new ArgumentNullException(nameof(m_MoveActorTo));
         }
 
         public ActionPull(Actor actor, MapObject pullObj, Location moveActorTo) : base(actor)
         {
-#if DEBUG
-            if (pullObj == null) throw new ArgumentNullException(nameof(pullObj));
-#endif
             if (!Map.Canonical(ref moveActorTo)) throw new ArgumentNullException(nameof(moveActorTo));
-            m_Object = pullObj;
+            m_Object = pullObj
+#if DEBUG
+                ?? throw new ArgumentNullException(nameof(pullObj))
+#endif
+            ;
             m_MoveActorTo = moveActorTo;
         }
         #endregion

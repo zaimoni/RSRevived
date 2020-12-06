@@ -14,13 +14,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly MapObject m_Obj;
     public MapObject Target { get { return m_Obj; } }
 
-    public ActionBreak(Actor actor, MapObject obj)
-      : base(actor)
+    public ActionBreak(Actor actor, MapObject obj) : base(actor)
     {
+      m_Obj = obj
 #if DEBUG
-      if (null == obj) throw new ArgumentNullException(nameof(obj));
+        ?? throw new ArgumentNullException(nameof(obj))
 #endif
-      m_Obj = obj;
+      ;
       actor.Activity = Activity.IDLE;
     }
 

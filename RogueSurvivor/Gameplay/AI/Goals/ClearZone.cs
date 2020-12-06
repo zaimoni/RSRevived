@@ -26,14 +26,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         [NonSerialized] private LocationSet tourism;
 
         public ClearZone(int t0, Actor who, ZoneLoc dest) : base(t0, who) {
-#if DEBUG
-            if (null == who.Threats) throw new ArgumentNullException("who.Threats");
-            if (null == who.InterestingLocs) throw new ArgumentNullException("who.InterestingLocs");
-            if (!(who.Controller is ObjectiveAI)) throw new ArgumentNullException("who.Controller is ObjectiveAI");
-#endif
             m_Zone = dest;
-            threats = who.Threats!;    // these two should agree on whether they're null or not
-            tourism = who.InterestingLocs!;
+            threats = who.Threats    // these two should agree on whether they're null or not
+#if DEBUG
+              ?? throw new ArgumentNullException("who.Threats")
+#endif
+            ;
+            tourism = who.InterestingLocs
+#if DEBUG
+              ?? throw new ArgumentNullException("who.InterestingLocs")
+#endif
+            ;
             Func<Point,bool> ok = pt => m_Zone.Rect.Contains(pt);
             m_Unverified.UnionWith(threats.ThreatWhere(dest.m).Where(ok));
             m_Unverified.UnionWith(tourism.In(dest.m).Where(ok));
@@ -44,7 +47,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
 #endif
             // nonserialized fields
-            oai = (m_Actor.Controller as ObjectiveAI)!;
+            oai = (m_Actor.Controller as ObjectiveAI)
+#if DEBUG
+              ?? throw new ArgumentNullException("who.Controller is ObjectiveAI")
+#endif
+            ;
         }
 
         [OnDeserialized] private void OnDeserialized(StreamingContext context)

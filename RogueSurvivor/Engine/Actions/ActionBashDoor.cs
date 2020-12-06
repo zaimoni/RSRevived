@@ -15,13 +15,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly DoorWindow m_Door;
     public DoorWindow Target { get { return m_Door; } }
 
-    public ActionBashDoor(Actor actor, DoorWindow door)
-      : base(actor)
+    public ActionBashDoor(Actor actor, DoorWindow door) : base(actor)
     {
+       m_Door = door
 #if DEBUG
-      if (null == door) throw new ArgumentNullException(nameof(door));
+         ?? throw new ArgumentNullException(nameof(door))
 #endif
-      m_Door = door;
+       ;
     }
 
     public override bool IsLegal()

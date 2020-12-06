@@ -18,10 +18,11 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public ActionDropItem(Actor actor, Item it) : base(actor)
     {
+      m_Item = it
 #if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
+        ?? throw new ArgumentNullException(nameof(it))
 #endif
-      m_Item = it;
+      ;
       actor.Activity = Activity.IDLE;
     }
 

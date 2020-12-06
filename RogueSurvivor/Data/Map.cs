@@ -149,12 +149,15 @@ namespace djack.RogueSurvivor.Data
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
 #if DEBUG
-      if (null == name) throw new ArgumentNullException(nameof(name));
       if (0 >= width) throw new ArgumentOutOfRangeException(nameof(width), width, "0 >= width");
       if (0 >= height) throw new ArgumentOutOfRangeException(nameof(height), height, "0 >= height");
 #endif
       Seed = seed;
-      Name = name;
+      Name = name
+#if DEBUG
+        ?? throw new ArgumentNullException(nameof(name))
+#endif
+      ;
       Extent = new Size(width,height);
 	  District = d;
       Rect = new Rectangle(Point.Empty, Extent);

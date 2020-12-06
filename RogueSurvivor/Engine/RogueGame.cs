@@ -7380,7 +7380,7 @@ namespace djack.RogueSurvivor.Engine
           }
           return trap_gone;
       }, pos);
-      if (0 >= cur_hp) KillActor(null == trap_owners ? null : trap_owners[0], actor, "trap");
+      if (0 >= cur_hp) KillActor(trap_owners?[0], actor, "trap");
     }
 #nullable restore
 

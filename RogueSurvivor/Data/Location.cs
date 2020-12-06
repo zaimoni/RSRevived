@@ -23,10 +23,11 @@ namespace djack.RogueSurvivor.Data
 
     public Location(Map map, Point position)
     {
+      Map = map
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
+        ?? throw new ArgumentNullException(nameof(map))
 #endif
-      Map = map;
+      ;
       Position = position;
     }
 

@@ -13,13 +13,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionEatCorpse(Actor actor, Corpse target)
-      : base(actor)
+    public ActionEatCorpse(Actor actor, Corpse target) : base(actor)
     {
+      m_Target = target
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+        ?? throw new ArgumentNullException(nameof(target))
 #endif
-      m_Target = target;
+     ;
     }
 
     public override bool IsLegal()

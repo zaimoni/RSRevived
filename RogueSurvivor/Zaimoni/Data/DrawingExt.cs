@@ -1021,8 +1021,9 @@ namespace Zaimoni.Data
 
     public static string to_s<T>(this IEnumerable<T> x) {
       if (null == x) return "null";
-      if (0 >= x.Count()) return "[]";
-      var tmp = new List<string>(x.Count());
+      var ub = x.Count();
+      if (0 >= ub) return "[]";
+      var tmp = new List<string>(ub);
       foreach(T iter in x) {
         tmp.Add(iter.to_s());
       }
