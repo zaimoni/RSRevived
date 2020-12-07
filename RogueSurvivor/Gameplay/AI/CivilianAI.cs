@@ -354,12 +354,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           want.IntersectWith(items);
           critical.UnionWith(want);
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+critical.to_s());
+          if (m_Actor.IsDebuggingTarget) {
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+critical.to_s());
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "previous goals: "+(GetPreviousGoals()?.to_s() ?? "null"));
+          }
 #endif
           tmpAction = BehaviorResupply(critical);
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok; "+(tmpAction?.ToString() ?? "null"));
+          if (m_Actor.IsDebuggingTarget) {
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok; "+(tmpAction?.ToString() ?? "null"));
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "goals: "+(GetPreviousGoals()?.to_s() ?? "null"));
+          }
 #endif
           if (null != tmpAction) return tmpAction;
         }

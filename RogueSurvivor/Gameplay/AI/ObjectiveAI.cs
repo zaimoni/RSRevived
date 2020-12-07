@@ -1054,7 +1054,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         throw new InvalidOperationException("self-pathing?");
       }
 #endif
+      var old_goals = GetPreviousGoals()?.ToHashSet();
       act = BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
+      if (null != old_goals) {
+        var now_goals = GetPreviousGoals();
+        if (null!=now_goals && old_goals.Count < now_goals.Count && !old_goals.Any(goal => !now_goals.Contains(goal))) {
+          // proper subset: plausible object constancy issue
+          var act2 = BehaviorPathTo(old_goals);
+          if (null != act2) return act2;
+        }
+      }
       _caller = CallChain.NONE;
       return act;
     }
