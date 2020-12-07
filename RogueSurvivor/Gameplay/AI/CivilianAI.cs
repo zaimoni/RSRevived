@@ -766,7 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // Try to reuse previous goals before explore/wander 2020-11-20 zaimoni
-      var prev_goals = GetPreviousGoals();
+      var prev_goals = GetPreviousGoals(m_Actor.Location);
       if (null != prev_goals) {
         if (prev_goals.Contains(m_Actor.Location)) {
 #if DEBUG

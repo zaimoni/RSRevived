@@ -922,6 +922,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public HashSet<Location> GetPreviousGoals() { return _sparse.Get<HashSet<Location>>(SparseData.PathingTo); }
+    public HashSet<Location> GetPreviousGoals(Location suppress) {
+      var ret = _sparse.Get<HashSet<Location>>(SparseData.PathingTo); // reference-return
+      if (null != ret) {
+        ret.Remove(suppress);
+        if (1 <= ret.Count) return ret;
+        _sparse.Unset(SparseData.PathingTo);
+      }
+      return null;
+    }
 
     protected void RecordGoals(HashSet<Location> src) {
       if (null == src) return;
@@ -1061,6 +1070,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null!=now_goals && old_goals.Count < now_goals.Count && !old_goals.Any(goal => !now_goals.Contains(goal))) {
           // proper subset: plausible object constancy issue
           var act2 = BehaviorPathTo(old_goals);
+          _caller = CallChain.NONE;
           if (null != act2) return act2;
         }
       }
