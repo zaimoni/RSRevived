@@ -785,7 +785,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if DEBUG
+#if FALSE_POSITIVE
       if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) {
         Session.Get.World.DaimonMap(); // for accuracy
         throw new InvalidOperationException("test case");

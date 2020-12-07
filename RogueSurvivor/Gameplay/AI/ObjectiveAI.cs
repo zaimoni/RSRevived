@@ -2281,14 +2281,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null == e || !ActorsNearby(e.Location, a => !a.IsSleeping);
     }
 
-    protected ActionTradeWithActor? BehaviorTradeWithinClan() {
+    protected ActorAction? BehaviorTradeWithinClan() {
       // somewhat like BehaviorRequestCriticalFromGroup
       var clan = m_Actor.ChainOfCommand;
       if (null != clan) {
          var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
          foreach(var a in adj_clan) {
-            var they_want = m_Actor.Inventory.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a) && !use.UseBeforeDrop(m_Actor));
+            var they_want = m_Actor.Inventory.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
             if (!they_want.Any()) continue;
+            var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
+            if (defend.Any()) {
+               var act = new ActionUseItem(m_Actor, defend.First());
+               if (act.IsPerformable()) return act;
+               continue;
+            }
             var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return new ActionTradeWithActor(m_Actor, they_want.First(), i_want.First(), a);
@@ -2364,12 +2370,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var e = m_Actor.Location.Exit;
       if (x is ActorDest a_dest) {
         if (null == e) {
-          var dest_e = a_dest.dest.Exit;
-            // crowd control
+          // crowd control
           var gasping = NeedsAir(a_dest.dest, m_Actor);
+          if (null != gasping && x is ActionOpenDoor) return null;
+          var act = BehaviorTradeWithinClan();
+          if (null != act) return act;
           if (null != gasping) {
-            if (x is ActionOpenDoor) return null;
-            var act = BehaviorMakeTime();
+            act = BehaviorMakeTime();
             if (null != act) return act;
           }
         }
