@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
@@ -105,6 +106,11 @@ namespace djack.RogueSurvivor.Data
     {
       WorldPosition = worldPos;
       Kind = kind;
+    }
+
+    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    {
+      foreach(var m in m_Maps) m.AfterLoad(this);
     }
 
     // map manipulation

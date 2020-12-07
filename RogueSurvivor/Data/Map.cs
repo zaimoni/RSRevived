@@ -40,8 +40,12 @@ namespace djack.RogueSurvivor.Data
   {
     public const int GROUND_INVENTORY_SLOTS = 10;
     public readonly int Seed;
-    public readonly District District;
-	public readonly string Name;
+    public readonly Point DistrictPos;
+#nullable enable
+    [NonSerialized] private District? m_District; // keep reference cycle out of savefile
+    public District District { get { return m_District!; } }
+#nullable restore
+    public readonly string Name;
     private string m_BgMusic;  // alpha10
 #nullable enable
     private Lighting m_Lighting;
@@ -159,7 +163,8 @@ namespace djack.RogueSurvivor.Data
 #endif
       ;
       Extent = new Size(width,height);
-	  District = d;
+	  m_District = d;
+      DistrictPos = d.WorldPosition;
       Rect = new Rectangle(Point.Empty, Extent);
       LocalTime = new WorldTime();
       m_Lighting = light;
@@ -177,7 +182,7 @@ namespace djack.RogueSurvivor.Data
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = info.GetInt32("m_Seed");
-      info.read(ref District, "m_District");
+      info.read_s(ref DistrictPos, "m_DistrictPos");
       Name = info.GetString("m_Name");
       info.read(ref LocalTime, "m_LocalTime");
       info.read_s(ref Extent, "m_Extent");
@@ -208,7 +213,7 @@ namespace djack.RogueSurvivor.Data
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "preparing to save: "+this);
 #endif
       info.AddValue("m_Seed", Seed);
-      info.AddValue("m_District", District);
+      info.AddValue("m_DistrictPos", DistrictPos);
       info.AddValue("m_Name", Name);
       info.AddValue("m_LocalTime", LocalTime);
       info.AddValue("m_Extent", Extent);
@@ -235,6 +240,13 @@ namespace djack.RogueSurvivor.Data
       ReconstructAuxiliaryFields();
       RegenerateMapGeometry();
       OnConstructed(ref _hash);
+    }
+
+    public void AfterLoad(District d) {
+      if (DistrictPos == d.WorldPosition) m_District = d;
+#if DEBUG
+      else throw new InvalidOperationException("district backpointer repair rejected");
+#endif
     }
 
     private void OnConstructed(ref int hash)
