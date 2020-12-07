@@ -607,7 +607,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m==m_Actor.Location.Map) return false;
             if (0 >= map_code) return true;
             if (map_code != District.UsesCrossDistrictView(m)) return true;
-            return !d_span.Contains(m.District.WorldPosition);
+            return !d_span.Contains(m.DistrictPos);
           }
 
           // these two may need to be new parameters for BehaviorPathTo
@@ -638,7 +638,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             bool prefilter_minimap(Map m) {
               if (m==m_Actor.Location.Map) return false;
               if (0 >= map_code) return true;  // CHAR underground base and basements are their own minimaps
-              if (!d_span.Contains(m.District.WorldPosition)) return true;
+              if (!d_span.Contains(m.DistrictPos)) return true;
               // entry map is code 1, and is promiscuous (want to respond to basements, etc.)
               int other_map_code = District.UsesCrossDistrictView(m);
               if (map_code == other_map_code) return false;
@@ -669,7 +669,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
 #endif
             // object constancy: remember that we're going somewhere on the destination level
-            if (   tmpAction is ActionUseExit leaving && leaving.dest.Map.District == m_Actor.Location.Map.District
+            if (   tmpAction is ActionUseExit leaving && leaving.dest.Map.DistrictPos == m_Actor.Location.Map.DistrictPos
                 && 1==District.UsesCrossDistrictView(m_Actor.Location.Map) && 2!= District.UsesCrossDistrictView(leaving.dest.Map)) {
                 var dest_view = District.UsesCrossDistrictView(leaving.dest.Map);
                 if (2 != dest_view) {

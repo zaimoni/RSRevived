@@ -1767,7 +1767,7 @@ namespace djack.RogueSurvivor.Data
           ret[src] = new Engine.Actions.ActionMoveDelta(this, dest, src);
         }
         var e = Model.Abilities.AI_CanUseAIExits ? dest.Exit : null;
-        if (null != e && e.ToMap.District == dest.Map.District && CanEnter(e.Location)) {
+        if (null != e && e.ToMap.DistrictPos == dest.Map.DistrictPos && CanEnter(e.Location)) {
           // we are assuming this is a two-way exit.  \todo fix when introducing rooftops, e.g. helipads
           ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, dest, e.Location);
         }
@@ -1785,7 +1785,7 @@ namespace djack.RogueSurvivor.Data
           ret[dest] = new Engine.Actions.ActionMoveDelta(this, dest, src);
         }
         var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
-        if (null != e && e.ToMap.District == src.Map.District && CanEnter(e.Location)) {
+        if (null != e && e.ToMap.DistrictPos == src.Map.DistrictPos && CanEnter(e.Location)) {
           // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
           ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, e.Location, src);
         }
@@ -1803,7 +1803,7 @@ namespace djack.RogueSurvivor.Data
           ret.Add(dest);
         }
         var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
-        if (null != e && e.ToMap.District == src.Map.District && CanEnter(e.Location)) {
+        if (null != e && e.ToMap.DistrictPos == src.Map.DistrictPos && CanEnter(e.Location)) {
           // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
           ret.Add(e.Location);
         }
@@ -2377,7 +2377,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (my_actions>n) return 0;
       // if in another district, AP is current and does not need prediction
-      int other_ap = other.m_ActionPoints+((Location.Map.District!=other.Location.Map.District || IsBefore(other)) ? 0 : other.Speed);
+      int other_ap = other.m_ActionPoints + ((Location.Map.DistrictPos != other.Location.Map.DistrictPos || IsBefore(other)) ? 0 : other.Speed);
       int other_actions = 0;
       while(0 < other_ap) { // assuming this never gets very large
         other_ap -= BASE_ACTION_COST;

@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Data
           if (null == map) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           if (0 < crossdistrict_ok) {
-            Point pos = map.District.WorldPosition;   // only used in denormalized cases
+            Point pos = map.DistrictPos;   // only used in denormalized cases
             var world = Engine.Session.Get.World;
             District test = null;
             // subway may be null
@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Data
           if (null == map) return false;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           if (0 < crossdistrict_ok) {
-            Point pos = map.District.WorldPosition;   // only used in denormalized cases
+            Point pos = map.DistrictPos;   // only used in denormalized cases
             var world = Engine.Session.Get.World;
             District? test = null;
             // subway may be null
@@ -299,7 +299,7 @@ namespace djack.RogueSurvivor.Data
           // FOV is small compared to district size so will not overflow both ways
           int crossdistrict_ok = District.UsesCrossDistrictView(m);
           if (0 >= crossdistrict_ok) return;
-          Point pos = m.District.WorldPosition;   // only used in denormalized cases
+          Point pos = m.DistrictPos;   // only used in denormalized cases
           var invalid_xy = new List<Point>(pts.Count());
           var invalid_x = new List<Point>(pts.Count());
           var invalid_y = new List<Point>(pts.Count());
@@ -539,7 +539,7 @@ namespace djack.RogueSurvivor.Data
           var ret = new HashSet<Point>();
           if (null == map) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
-          Point pos = map.District.WorldPosition;   // only used in denormalized cases
+          Point pos = map.DistrictPos;   // only used in denormalized cases
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok) {
               HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.W].CrossDistrictViewing(crossdistrict_ok),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));

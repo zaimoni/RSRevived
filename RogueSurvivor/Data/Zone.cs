@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public Rectangle DistrictSpan { get {
-      var ret = new Rectangle(m.District.WorldPosition,new Size(1,1));
+      var ret = new Rectangle(m.DistrictPos, new Size(1, 1));
       if (0 < District.UsesCrossDistrictView(m)) {
         int test = Rect.Left;
         int delta = m.Width;

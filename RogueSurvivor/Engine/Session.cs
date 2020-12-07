@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void SetLastRaidTime(RaidType raid, Map map)
     {
-      var w_pos = map.District.WorldPosition;
+      var w_pos = map.DistrictPos;
       m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = map.LocalTime.TurnCounter;
     }
 #nullable restore

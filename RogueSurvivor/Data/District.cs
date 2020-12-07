@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Data
 
     public static bool IsBefore(Map lhs, Map rhs)
     {
-      if (lhs.District!=rhs.District) return lhs.District.IsBefore(rhs.District);
+      if (lhs.DistrictPos != rhs.DistrictPos) return lhs.District.IsBefore(rhs.District);
       var maps = lhs.District.m_Maps;
       return maps.IndexOf(lhs)<maps.IndexOf(rhs);
     }
@@ -426,7 +426,7 @@ namespace djack.RogueSurvivor.Data
     public static void DamnCHAROfficesToPoliceInvestigation(District d)
     {
        if (   2 == Engine.Session.Get.ScriptStage_PoliceStationPrisoner
-           && d.WorldPosition == Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition)
+           && d.WorldPosition == Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.DistrictPos)
          return;    // already tagged
        Map map = d.EntryMap;
        foreach(var zone in map.Zones) {

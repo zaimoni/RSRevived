@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       if (m_Actor.Location.Map==m_NewLocation.Map) RogueForm.Game.DoMoveActor(m_Actor, in m_NewLocation);
-      else if (m_Actor.Location.Map.District!=m_NewLocation.Map.District) {
+      else if (m_Actor.Location.Map.DistrictPos!=m_NewLocation.Map.DistrictPos) {
         var test = m_Actor.Location.Map.Denormalize(in m_NewLocation);
         RogueForm.Game.DoLeaveMap(m_Actor, test.Value.Position);
       } else RogueForm.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position);

@@ -234,7 +234,7 @@ restart:
         m_SurfaceBlocks.Add(new Block(copyFrom));
 
       // give subway fairly high priority
-      Point world_pos = map.District.WorldPosition;
+      Point world_pos = map.DistrictPos;
       if (0 < Session.Get.World.SubwayLayout(world_pos)) {
         if (ForceSubwayStation.Contains(world_pos)) {
           var test = GetSubwayStationBlocks(map, Session.Get.World.SubwayLayout(world_pos));
@@ -979,9 +979,6 @@ restart:
 
     protected virtual bool MakeShopBuilding(Map map, Block b)
     {
-#if DEBUG
-      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
-#endif
       if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_STONE, b.BuildingRect);
@@ -1948,7 +1945,7 @@ restart:
         if (Session.Get.CMDoptionExists("subway-cop")) {
           var home_district_xy = Session.Get.World.Size;
           home_district_xy /= 2;
-          if (map.District.WorldPosition == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController(newPoliceman);
+          if (map.DistrictPos == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController(newPoliceman);
         }
         ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect);
       }
@@ -2485,9 +2482,6 @@ restart:
 
     private Map GenerateHouseBasementMap(Map map, Block houseBlock)
     {
-#if DEBUG
-      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
-#endif
       Rectangle buildingRect = houseBlock.BuildingRect;
       Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
@@ -3151,9 +3145,6 @@ restart:
 
     private void MakeHospital(Map map, List<Block> freeBlocks)
     {
-#if DEBUG
-      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
-#endif
       Block hospitalBlock = m_DiceRoller.ChooseWithoutReplacement(freeBlocks);
       GenerateHospitalEntryHall(map, hospitalBlock);
       Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);

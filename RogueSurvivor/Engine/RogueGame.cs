@@ -3371,13 +3371,13 @@ namespace djack.RogueSurvivor.Engine
       gy += BOLD_LINE_SPACING;
       int num2 = gy + BOLD_LINE_SPACING;
       for (int index = 0; index < Session.Get.World.Size; ++index) {
-        Color color = index == Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White;
+        Color color = index == Player.Location.Map.DistrictPos.Y ? Color.LightGreen : Color.White;
         m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING, new Color?());
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING + 2* BOLD_LINE_SPACING, new Color?());
       }
       for (int index = 0; index < Session.Get.World.Size; ++index)
-        m_UI.UI_DrawStringBold(index == Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy, new Color?());
+        m_UI.UI_DrawStringBold(index == Player.Location.Map.DistrictPos.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy, new Color?());
 
       static ColorString DistrictToColorCode(DistrictKind d)
       {
@@ -3590,13 +3590,13 @@ namespace djack.RogueSurvivor.Engine
         tmp.Sort((lhs,rhs) => distances[lhs].CompareTo(distances[rhs]));
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 <= tmp.Count) break;
-          if (loc_qty.Key.Map.District != CurrentMap.District) continue;
+          if (loc_qty.Key.Map.DistrictPos != CurrentMap.DistrictPos) continue;
           if (loc_qty.Key.Map == CurrentMap) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-1 <= tmp.Count) break;
-          if (loc_qty.Key.Map.District == CurrentMap.District) continue;
+          if (loc_qty.Key.Map.DistrictPos == CurrentMap.DistrictPos) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         tmp.Insert(0, "W)alk or R)un to the item class, or walk 1) to 9) steps.");
@@ -7549,10 +7549,10 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
       Map exit_map = exitAt.ToMap;
-      bool is_cross_district = map.District != exit_map.District;
+      bool is_cross_district = map.DistrictPos != exit_map.DistrictPos;
       bool run_is_free_move = actor.RunIsFreeMove;
       if (   is_cross_district && run_is_free_move && actor.IsRunning
-          && map.District.WorldPosition.IsScheduledBefore(in exit_map.District.WorldPosition)) {   // check for movement speed artifacts
+          && map.DistrictPos.IsScheduledBefore(in exit_map.DistrictPos)) {   // check for movement speed artifacts
           // the move itself is a free move; do not want to burn a run-is-free move on this
           // XXX \todo but if the free move denies an attack from a known attacker in the destination we'd want it anyway; it just won't do so for the source district.
           // Consider delegating to ObjectiveAI.
@@ -11714,7 +11714,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (null == tmp) continue;
           if (    !Player.Controller.IsKnown(tmp.Value)                             // disallow not-known
-              && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.District!=tmp.Value.Map.District))    // but ok if same-district different map i.e. stairway
+              && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.DistrictPos!=tmp.Value.Map.DistrictPos))    // but ok if same-district different map i.e. stairway
               continue;    // XXX probably should have some feedback here
           if (null != inspect) {
             RemoveOverlay(inspect);
@@ -13004,7 +13004,7 @@ retry:
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
+      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.IsFaction(GameFactions.IDs.TheCivilians));
@@ -13738,7 +13738,7 @@ retry:
       foreach(Actor fo in followers) {
         var fo_map = fo.Location.Map;
         if (fo_map == map) continue;  // already in destination, ok
-        if (fo_map.District != map.District) continue;  // cross-district change
+        if (fo_map.DistrictPos != map.DistrictPos) continue;  // cross-district change
         pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
                                                         : null;
         var game = RogueForm.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase

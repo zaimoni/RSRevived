@@ -3003,7 +3003,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       void install_waypoint(Location loc, Point dists) {
         if (!waypoint_dist.ContainsKey(loc)) waypoint_dist[loc] = dists;
         var e = loc.Exit;
-        if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.District==loc.Map.District) e = null;
+        if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.DistrictPos == loc.Map.DistrictPos) e = null;
         if (null != e && !waypoint_dist.ContainsKey(e.Location) && (null == exit_veto || !exit_veto.Veto(e))) {
           if (VetoExit(m_Actor, e)) {
             if (1 < loc.Map.destination_maps.Get.Count) {
@@ -3042,7 +3042,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // no restrictions causes problems w/hospital ground floor 2020-09-07 zaimoni
           if (test != m_Actor.Location && 0 < actor_mapcode) {
             var e = test.Exit;
-            if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.District==loc.Map.District) e = null;
+            if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.DistrictPos == loc.Map.DistrictPos) e = null;
             if (null != e) {
               int loc_mapcode = District.UsesCrossDistrictView(loc.Map);
               if (0 < loc_mapcode) {
@@ -3366,7 +3366,7 @@ restart:
             excluded.Add(test);
             continue;
           }
-          if (!district_span.Contains(test.District.WorldPosition)) {
+          if (!district_span.Contains(test.DistrictPos)) {
             excluded.Add(test);
             continue;
           }

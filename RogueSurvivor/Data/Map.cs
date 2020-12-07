@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Data
   {
     public const int GROUND_INVENTORY_SLOTS = 10;
     public readonly int Seed;
-    public readonly Point DistrictPos;
+    public readonly Point DistrictPos; // should be District.WorldPosition by construction
 #nullable enable
     [NonSerialized] private District? m_District; // keep reference cycle out of savefile
     public District District { get { return m_District!; } }
@@ -354,7 +354,7 @@ namespace djack.RogueSurvivor.Data
       if (0>=map_code) return null;
       int delta_code = DistrictDeltaCode(pt);
       if (0==delta_code) return null;
-      Point new_district = District.WorldPosition;    // System.Drawing.Point is a struct: this is a value copy
+      Point new_district = DistrictPos;    // System.Drawing.Point is a struct: this is a value copy
       Vector2D_int_stack district_delta = new Vector2D_int_stack(0,0);
       while(0!=delta_code) {
         var tmp = Zaimoni.Data.ext_Drawing.sgn_from_delta_code(ref delta_code);
@@ -396,7 +396,7 @@ namespace djack.RogueSurvivor.Data
       }
       int map_code = District.UsesCrossDistrictView(this);
       if (0>=map_code || map_code != District.UsesCrossDistrictView(loc.Map)) return null;
-      Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
+      Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.DistrictPos.X- DistrictPos.X, loc.Map.DistrictPos.Y - DistrictPos.Y);
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
@@ -835,7 +835,7 @@ retry:
       }
       }
 
-      if (dest.District != District) {
+      if (dest.DistrictPos != DistrictPos) {
         int dest_extended = District.UsesCrossDistrictView(dest);
         if (0 == dest_extended) {
           dest = dest.District.EntryMap;
@@ -867,26 +867,26 @@ retry:
           goto retry;
         }
         if (1==dest_extended && 1==this_extended) {
-          int x_delta = dest.District.WorldPosition.X - District.WorldPosition.X;
-          int y_delta = dest.District.WorldPosition.Y - District.WorldPosition.Y;
+          int x_delta = dest.DistrictPos.X - DistrictPos.X;
+          int y_delta = dest.DistrictPos.Y - DistrictPos.Y;
           int abs_x_delta = (0<=x_delta ? x_delta : -x_delta);
           int abs_y_delta = (0<=y_delta ? y_delta : -y_delta);
           int sgn_x_delta = (0<=x_delta ? (0 == x_delta ? 0 : 1) : -1);
           int sgn_y_delta = (0<=y_delta ? (0 == y_delta ? 0 : 1) : -1);
           if (abs_x_delta<abs_y_delta) {
-            dest = Engine.Session.Get.World[District.WorldPosition.X, District.WorldPosition.Y + sgn_y_delta].EntryMap;
+            dest = Engine.Session.Get.World[DistrictPos.X, DistrictPos.Y + sgn_y_delta].EntryMap;
             goto retry;
           } else if (abs_x_delta > abs_y_delta) {
-            dest = Engine.Session.Get.World[District.WorldPosition.X + sgn_x_delta, District.WorldPosition.Y].EntryMap;
+            dest = Engine.Session.Get.World[DistrictPos.X + sgn_x_delta, DistrictPos.Y].EntryMap;
             goto retry;
           } else if (2 <= abs_x_delta) {
-            dest = Engine.Session.Get.World[District.WorldPosition.X + sgn_x_delta, District.WorldPosition.Y + sgn_y_delta].EntryMap;
+            dest = Engine.Session.Get.World[DistrictPos.X + sgn_x_delta, DistrictPos.Y + sgn_y_delta].EntryMap;
             goto retry;
           } else return exit_maps;  // no particular insight, not worth a debug crash
         }
       }
 #if DEBUG
-      if (dest.District != District) throw new InvalidOperationException("test case: cross-district map not handled");
+      if (dest.DistrictPos != DistrictPos) throw new InvalidOperationException("test case: cross-district map not handled");
 #endif
       // no particular insight
       return exit_maps;
@@ -2080,9 +2080,9 @@ retry:
     // pathfinding support
     public Rectangle NavigationScope {
       get {
-       if (District.IsSewersMap(this)) return new Rectangle(District.WorldPosition+Direction.NW,new Size(3,3)); // sewers are not well-connected...next district over may be needed
-       if (District.IsSubwayMap(this) && 0>= PowerGenerators.Get.Count) return new Rectangle(District.WorldPosition+Direction.NW,new Size(3,3)); // subway w/o generators should have an entrance "close by"
-       return new Rectangle(District.WorldPosition, new Size(1, 1));
+       if (District.IsSewersMap(this)) return new Rectangle(DistrictPos + Direction.NW, new Size(3, 3)); // sewers are not well-connected...next district over may be needed
+       if (District.IsSubwayMap(this) && 0>= PowerGenerators.Get.Count) return new Rectangle(DistrictPos + Direction.NW, new Size(3, 3)); // subway w/o generators should have an entrance "close by"
+       return new Rectangle(DistrictPos, new Size(1, 1));
      }
     }
 #nullable restore
