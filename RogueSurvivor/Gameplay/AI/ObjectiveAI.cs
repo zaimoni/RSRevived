@@ -4377,7 +4377,12 @@ restart_chokepoints:
               if (0 >= act_index.Count) continue;
               if (null == sequel) { // only happens initially
                 foreach(var x in act_index) {
-                  plan3.Add(x.Key, x.Value);
+                  if (plan2.TryGetValue(x.Key, out var fork)) {
+                    fork.Add(x.Value);
+                  } else if (plan3.TryGetValue(x.Key, out var prior_update)) {
+                    plan2.Add(x.Key, new Engine.Op.Fork(prior_update, x.Value));
+                    plan3.Remove(x.Key);
+                  } else plan3.Add(x.Key, x.Value);
                   if (x.Value.IsRelevant()) found = true;
                 }
               } else if (sequel.IsLegal()) {
