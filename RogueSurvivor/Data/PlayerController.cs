@@ -471,7 +471,7 @@ namespace djack.RogueSurvivor.Data
 
     private void _raidMsg(Data.Message desc_msg, Data.Message where_msg, string music)
     {
-        if (RogueGame.IsPlayer(m_Actor)) {
+        if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
             var game = RogueForm.Game;
             game.PlayEventMusic(music);
             game.ClearMessages();
