@@ -773,6 +773,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
+          tmpAction = BehaviorMakeTime();
+          if (null != tmpAction) return tmpAction;
+          return new ActionWait(m_Actor);
         }
       }
 
