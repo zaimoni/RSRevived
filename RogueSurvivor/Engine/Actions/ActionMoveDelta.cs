@@ -208,7 +208,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                var candidates = Rules.PreferNonAdjacent(push_dest, m_Actor.Location);
                if (null != candidates) {
                  Rules.MaximizeVisibility(ref candidates, m_Actor, obj);
-                 return new ActionPush(m_Actor,obj, rules.DiceRoller.Choose(candidates).Value);
+                 return ActionPush.Random(m_Actor, obj);
                }
            }
            // proceed with pull if we can't push safely

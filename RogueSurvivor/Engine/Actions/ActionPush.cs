@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 
-using Point = Zaimoni.Data.Vector2D_short;
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal interface ObjectDest
@@ -43,6 +41,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!Map.Canonical(ref m_To)) throw new InvalidOperationException("pushed off map");
     }
 
+#nullable enable
+
     public override bool IsLegal()
     {
       if (m_Actor.CanPush(m_Object))
@@ -53,6 +53,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       RogueForm.Game.DoPush(m_Actor, m_Object, in m_To);
+    }
+
+    static public ActionPush? Random(Actor m_Actor, MapObject obj) {
+      var rules = Rules.Get;
+      var dir = rules.RollDirection();
+      var dest = obj.Location + dir;
+      // don't block exit with push
+      if (m_Actor.Controller is Gameplay.AI.OrderableAI && dest.Map.HasExitAt(dest.Position) && dest.Map.IsInBounds(dest.Position) && !obj.IsJumpable) return null;
+      if (!Map.Canonical(ref dest)) return null;
+      var tmp = new ActionPush(m_Actor, obj, dir);
+      return tmp.IsPerformable() ? tmp : null;
     }
   }
 }

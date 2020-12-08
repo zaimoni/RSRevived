@@ -270,9 +270,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             var mapObjectAt = next.MapObject;
             if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
-              Direction pushDir = Rules.Get.RollDirection();
-              if (mapObjectAt.CanPushTo(mapObjectAt.Location.Position + pushDir))
-                return new ActionPush(m_Actor, mapObjectAt, pushDir);
+              var push = ActionPush.Random(m_Actor, mapObjectAt);
+              if (null != push) return push;
             }
           }
 
@@ -537,8 +536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (0 >= objs.Count) return null;
       var rules = Rules.Get;
-      var tmp = new ActionPush(m_Actor, rules.DiceRoller.Choose(objs).Value, rules.RollDirection());
-      return (tmp.IsPerformable() ? tmp : null);
+      return ActionPush.Random(m_Actor, rules.DiceRoller.Choose(objs).Value);
     }
 #nullable restore
 
