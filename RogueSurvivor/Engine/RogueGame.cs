@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -466,7 +465,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // XXX just about everything that rates this is probable cause for police investigation
-    [SecurityCritical] public void AddMessageIfAudibleForPlayer(Location loc, string text)
+    public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
       if (!Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
         AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
@@ -571,7 +570,7 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
 
-    [SecurityCritical] public void AddMessagePressEnter()
+    public void AddMessagePressEnter()
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
@@ -585,7 +584,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    [SecurityCritical] public void AddMessagePressEnter(Action<KeyEventArgs> filter)
+    public void AddMessagePressEnter(Action<KeyEventArgs> filter)
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
@@ -676,7 +675,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DoQuit();
     }
 
-    [SecurityCritical] private void GameLoop()
+    private void GameLoop()
     {
       HandleMainMenu();
       var world = Session.Get.World;
@@ -807,7 +806,7 @@ namespace djack.RogueSurvivor.Engine
       } while(true);
     }
 
-    [SecurityCritical] private void HandleMainMenu()
+    private void HandleMainMenu()
     {
       bool flag2 = File.Exists(GetUserSave());
       string[] entries = new string[] {
@@ -1389,7 +1388,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    [SecurityCritical] private void StartNewGame()
+    private void StartNewGame()
     {
       GenerateWorld(true);
       bool isUndead = Player.Model.Abilities.IsUndead;
@@ -1813,7 +1812,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    [SecurityCritical] private void AdvancePlay(District district, SimFlags sim)
+    private void AdvancePlay(District district, SimFlags sim)
     {
       var sess = Session.Get;
       var world = sess.World;
@@ -1942,7 +1941,7 @@ namespace djack.RogueSurvivor.Engine
       OrderableAI.AfterRaid();
     }
 
-    [SecurityCritical] private void AdvancePlay(Map map)
+    private void AdvancePlay(Map map)
     {
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
@@ -8180,7 +8179,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
     }
 
-    [SecurityCritical] private void DoBlast(Location location, BlastAttack blastAttack)
+    private void DoBlast(Location location, BlastAttack blastAttack)
     {
       OnLoudNoise(in location, "A loud EXPLOSION");
       bool isVisible = ForceVisibleToPlayer(in location);
@@ -8769,7 +8768,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    [SecurityCritical] static public void DoSay(Actor speaker, Actor target, string text, Sayflags flags)
+    static public void DoSay(Actor speaker, Actor target, string text, Sayflags flags)
     {
       speaker.Say(target,text,flags);
     }
@@ -9122,7 +9121,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    [SecurityCritical] public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
+    public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
       if (!free) actor.SpendActionPoints();
@@ -9186,7 +9185,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    [SecurityCritical] public void DoBreak(Actor actor, MapObject mapObj)
+    public void DoBreak(Actor actor, MapObject mapObj)
     {
       // NPCs know to use their best melee weapon
       if (!actor.IsPlayer) {
@@ -10469,7 +10468,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    [SecurityCritical] public void RedrawPlayScreen()
+    public void RedrawPlayScreen()
     {
             if (IsSimulating) return;   // deadlocks otherwise
             lock (m_UI) {
@@ -11120,7 +11119,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    [SecurityCritical] private void DrawMiniMap(Rectangle view)
+    private void DrawMiniMap(Rectangle view)
     {
       if (null == m_Player) return;   // fail-safe.
       Map map = CurrentMap;
@@ -11871,7 +11870,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
 
-    [SecurityCritical] private bool LoadGame(string saveName)
+    private bool LoadGame(string saveName)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
@@ -12538,7 +12537,7 @@ namespace djack.RogueSurvivor.Engine
 //    Session.Get.CurrentMap.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
     }
 
-    [SecurityCritical] private void BeforePlayerEnterDistrict(District district)
+    private void BeforePlayerEnterDistrict(District district)
     {
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
         m_MusicManager.Stop();
@@ -12750,7 +12749,7 @@ retry:
     }
 #nullable restore
 
-    [SecurityCritical] private void CheckSpecialPlayerEventsAfterAction(Actor player)
+    private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
       // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
       if (!player.Model.Abilities.IsUndead && !player.IsFaction(GameFactions.IDs.TheCHARCorporation) && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && IsInCHAROffice(player.Location)))
