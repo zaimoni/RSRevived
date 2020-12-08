@@ -11180,6 +11180,7 @@ namespace djack.RogueSurvivor.Engine
           if (1 == detection_range && null != fr.Value.Inventory?.GetFirst(GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
           foreach(var en in fr_enemies) {
             if (detection_range < Rules.InteractionDistance(fr.Value.Location, en.Value.Location)) continue;
+            if (en.Value.IsDead) continue;
             // \todo more relevant icons (likely want CGI generation)
             if (en.Value.IsFaction(GameFactions.IDs.TheUndeads)) DrawDetected(en.Value, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
             else { // \todo respond to viewer's own faction; definitely "wrong" for blackops to have out-of-sight enemies labeled as blackops
