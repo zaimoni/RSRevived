@@ -3,6 +3,9 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* Z-detectors can clear threat tracking caused by Z.
+
+2020-11-09 and earlier
 * Cf. main manual's commands section for how self-orders work.
 * Friends are now enemy detectors.
 ** Handwavium: you're reading off where they want to shoot or melee, from their body language.  You must be able to see them; detection isn't enough.
