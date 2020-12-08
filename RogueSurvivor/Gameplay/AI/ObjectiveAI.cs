@@ -3858,15 +3858,19 @@ restart:
         var e = m_Actor.Location.Exit;
         if (null!=e && goals.Contains(e.Location)) {
           // copied from BaseAI::BehaviorUseExit
-          var mapObjectAt = e.Location.MapObject;
-          if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
-            return new ActionBreak(m_Actor, mapObjectAt);
           var actorAt = e.Location.Actor;
-          if (null != actorAt && !m_Actor.IsEnemyOf(actorAt)) {
-            var act = BehaviorMakeTime();
-            if (null != act) return act;
+          if (null == actorAt) {
+            var mapObjectAt = e.Location.MapObject;
+            if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt)) return new ActionBreak(m_Actor, mapObjectAt);
+          } else if (!m_Actor.IsEnemyOf(actorAt)) {
+              var act = BehaviorMakeTime();
+              if (null != act) return act;
 #if DEBUG
-            throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+              throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+#endif
+          } else {
+#if DEBUG
+              throw new InvalidProgramException("need to handle enemy blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
           }
           // needs implementation
