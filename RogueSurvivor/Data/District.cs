@@ -230,123 +230,13 @@ namespace djack.RogueSurvivor.Data
         // PC rising as a zombie is a UI trigger now that PCs are not Specially Vulnerable
         if (0 < PlayerCorpseCount) return true;
 
-        ZoneLoc test_scan = null;
-        bool has_player(Actor player) { return test_scan.Contains(player.Location); };
-
-        Map map = null;
+        // take rectangular hull of actor positions for the three maps that can be a problem
         Point surface_corner = new Point(2*Actor.MAX_VISION+4, 2*Actor.MAX_VISION+4);
         Point other_corner = new Point(2*Actor.MAX_VISION, 2*Actor.MAX_VISION);
-        var world = Engine.Session.Get.World;
-        // we ignore subway diagonals below due to obstruction by solid rock
-        // NW/SE are dual
-        var test = world.At(WorldPosition + Direction.NW);
-        if (null != test && 0<test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SE)-surface_corner, surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SE)-other_corner, other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        if (null != (test = world.At(WorldPosition + Direction.SE)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        // NE/SW are dual
-        if (null != (test = world.At(WorldPosition + Direction.NE)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION + 2), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        if (null != (test = world.At(WorldPosition + Direction.SW)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE)+ new Point(-Actor.MAX_VISION + 2, 0), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE)+ new Point(-Actor.MAX_VISION, 0), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        // N/S are dual
-        int tmp_e_map = EntryMap.Width;
-        surface_corner = new Point(tmp_e_map, Actor.MAX_VISION+2);
-        other_corner = new Point(tmp_e_map, Actor.MAX_VISION);
 
-        if (null != (test = world.At(WorldPosition + Direction.N)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION + 2), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (null!=(map = test.m_SubwayMap) && 0<map.PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.SW)+ new Point(0, -Actor.MAX_VISION), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        if (null != (test = world.At(WorldPosition + Direction.S)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (null!=(map = test.m_SubwayMap) && 0<map.PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        // E/W are dual
-        int tmp_e_map_2 = EntryMap.Height;
-        surface_corner = new Point(Actor.MAX_VISION+2, tmp_e_map_2);
-        other_corner = new Point(Actor.MAX_VISION, tmp_e_map_2);
-
-        if (null != (test = world.At(WorldPosition + Direction.W)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE)+ new Point(-Actor.MAX_VISION + 2, 0), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE) + new Point(-Actor.MAX_VISION, 0), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (null!=(map = test.m_SubwayMap) && 0<map.PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NE) + new Point(-Actor.MAX_VISION, 0), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
-        if (null != (test = world.At(WorldPosition + Direction.E)) && 0 < test.PlayerCount) {
-          if (0<(map = test.EntryMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), surface_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (0<(map = test.m_SewersMap).PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-          if (null!=(map = test.m_SubwayMap) && 0<map.PlayerCount) {
-            test_scan = new ZoneLoc(map, new Rectangle(map.Rect.Anchor(Compass.XCOMlike.NW), other_corner));
-            if (map.Players.Get.Any(has_player)) return true;
-          }
-        }
+        if (EntryMap.RequiresUI(surface_corner)) return true;
+        if (SewersMap.RequiresUI(other_corner)) return true;
+        if (SubwayMap?.RequiresUI(other_corner) ?? false) return true;
 
         return false;
       }

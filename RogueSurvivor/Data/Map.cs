@@ -1035,6 +1035,38 @@ retry:
       }
     }
 
+    public void ActorPositionHull(ref Span<Point> hull)
+    {
+        hull[0] = Extent;
+        hull[1] = Point.Empty;
+        foreach(Actor a in m_ActorsList) {
+            if (a.Location.Position.X < hull[0].X) hull[0].X = a.Location.Position.X;
+            if (a.Location.Position.X > hull[1].X) hull[1].X = a.Location.Position.X;
+            if (a.Location.Position.Y < hull[0].Y) hull[0].Y = a.Location.Position.Y;
+            if (a.Location.Position.Y > hull[1].Y) hull[1].Y = a.Location.Position.Y;
+        }
+        if (hull[0].X <= hull[1].X) hull[1] += Direction.SE;
+    }
+
+    public bool RequiresUI(Point delta) {
+        Span<Point> hull = stackalloc Point[2];
+        ActorPositionHull(ref hull);
+        if (hull[0].X <= hull[1].X) {
+            var zone = new ZoneLoc(this, new Rectangle(hull[0] - delta, (hull[1] - hull[0]) + 2*delta));
+            var canon = zone.GetCanonical;
+            if (null != canon) {
+                foreach(var z in canon) {
+                    if (z.m == this) continue;
+                    var players = z.m.Players.Get;
+                    foreach(var a in players) {
+                        if (z.Contains(a.Location)) return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
 
     public void DoForAllInventory(Action<Inventory> op)
