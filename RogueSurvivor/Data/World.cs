@@ -488,6 +488,14 @@ restart:
       });
     }
 
+    private void _RejectActorInventoryMultiEquipped(List<string> errors)
+    {
+      DoForAllActors(a => {
+        var err = a.Inventory?._HasMultiEquippedItems();
+        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + a.Inventory);
+      });
+    }
+
     private void _RejectGroundInventoryZero(List<string> errors)    // multi-thread sensitive
     {
       DoForAllGroundInventories((loc,inv) => {
@@ -506,6 +514,13 @@ RestartActorZeroCheck:
         _RejectActorInventoryZero(errors);
       } catch (InvalidOperationException e) {
         if (e.Message.Contains("Collection was modified")) goto RestartActorZeroCheck;
+        throw;
+      }
+RestartActorMultiEquippedCheck:
+      try {
+        _RejectActorInventoryMultiEquipped(errors);
+      } catch (InvalidOperationException e) {
+        if (e.Message.Contains("Collection was modified")) goto RestartActorMultiEquippedCheck;
         throw;
       }
 RestartGroundZeroCheck:

@@ -530,6 +530,26 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public string? _HasMultiEquippedItems()
+    {
+      Span<int> seen = stackalloc int[(int)DollPart.HIP_HOLSTER]; // +1 for strict ub, -1 for systematic bias
+      int i = m_Items.Count;
+      while (0 <= --i) {
+        var part = m_Items[i].EquippedPart;
+        if (DollPart.NONE == part) continue;
+#if REPAIR_MULTIEQUIP
+        if (0 < seen[(int)part - 1]) {
+          m_Items[i].Unequip();
+          continue;
+        }
+#else
+        if (0 < seen[(int)part - 1]) return "multi-equipped "+part;
+#endif
+        seen[(int)part - 1] = i + 1;
+      }
+      return null;
+    }
+
     [Conditional("DEBUG")]
     private void _RejectZeroQty()
     {
