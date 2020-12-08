@@ -13,6 +13,7 @@ using System.Linq;
 using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
+using Rectangle = Zaimoni.Data.Box2D_short;
 using Color = System.Drawing.Color;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;
@@ -235,9 +236,32 @@ namespace djack.RogueSurvivor.Data
 
     public override List<Percept> UpdateSensors()
     {
-      var ret = m_LOSSensor.Sense();
-      if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
-      return ret;
+        var ret = m_LOSSensor.Sense();
+        if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
+
+        // function extraction target
+        Span<bool> find_us = stackalloc bool[(int)Engine.Items.ItemTrackerModel.TrackingOffset.STRICT_UB];
+        m_Actor.Tracks(ref find_us);
+        var threat = m_Actor.Threats;
+
+        if (find_us[(int)Engine.Items.ItemTrackerModel.TrackingOffset.UNDEADS]) {
+            var scan = new ZoneLoc(m_Actor.Location.Map, new Rectangle(m_Actor.Location.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
+            if (null != threat) {
+                var could_find = threat.ThreatAt(scan, a => a.Model.Abilities.IsUndead);
+                var reject = new List<Actor>();
+                foreach (var x in could_find) {
+                    if (scan.ContainsExt(x.Key.Location)) {
+                        threat.Sighted(x.Key, x.Key.Location);
+                        reject.Add(x.Key);
+                    }
+                }
+                foreach (var actor in reject) could_find.Remove(actor);
+                if (0 < could_find.Count) threat.Cleared(could_find);
+            }
+        }
+        // end function extraction target
+
+        return ret;
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }

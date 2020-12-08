@@ -11190,14 +11190,7 @@ namespace djack.RogueSurvivor.Engine
 
 	    // normal detectors/lights
         Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
-        find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = Player.IsFaction(GameFactions.IDs.ThePolice);
-        if (Player.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker track && !track.IsUseless) track.Model.Tracks(ref find_us);
-
-        // the police radio
-        track = Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-        if (null != track && !track.IsUseless) track.Model.Tracks(ref find_us);
-        // Tracking leaders makes sense, but not in single PC mode
-        if (0 >= Player.CountFollowers) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
+        Player.Tracks(ref find_us);
 
         // do not assume tracker capabilities are mutually exclusive.
         if (find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER]) {

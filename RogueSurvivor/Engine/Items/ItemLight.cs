@@ -27,6 +27,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int MaxBatteries { get { return Model.MaxBatteries; } }
     public short FovBonus { get { return Model.FovBonus; } }
+    public bool AugmentsSenses(Actor a) { return true; }
 
     public override string ImageID {
       get {

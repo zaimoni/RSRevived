@@ -48,8 +48,8 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) { return 0<_threats.Count; }
         }
 
-
-		public List<Actor> ThreatAt(in Location loc)
+#nullable enable
+        public List<Actor> ThreatAt(in Location loc)
 		{
           var ret = new List<Actor>();
 		  lock(_threats) {
@@ -62,32 +62,69 @@ namespace djack.RogueSurvivor.Data
           return ret;
 		}
 
-        private List<Actor> threatAt(ZoneLoc zone)
+        private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog)
         {
           Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
-          var ret = new List<Actor>();
 		  lock(_threats) {
             foreach(var x in _threats) {
               if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
               if (!cache.Any(ok)) continue;
-              ret.Add(x.Key);
+              if (catalog.TryGetValue(x.Key, out var cache2)) {
+                cache2.Add(zone.m, cache.Where(ok).ToArray());
+              } else {
+                catalog.Add(x.Key, new Dictionary<Map, Point[]> {
+                    [zone.m] = cache.Where(ok).ToArray()
+                });;
+              }
             }
 		  }
-          return ret;
         }
 
-		public List<Actor> ThreatAt(ZoneLoc zone)
+        private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog, Func<Actor, bool> pred)
+        {
+          Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
+		  lock(_threats) {
+            foreach(var x in _threats) {
+              if (!pred(x.Key)) continue;
+              if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
+              if (!cache.Any(ok)) continue;
+              if (catalog.TryGetValue(x.Key, out var cache2)) {
+                cache2.Add(zone.m, cache.Where(ok).ToArray());
+              } else {
+                catalog.Add(x.Key, new Dictionary<Map, Point[]> {
+                    [zone.m] = cache.Where(ok).ToArray()
+                });;
+              }
+            }
+		  }
+        }
+
+		public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone)
 		{
+          var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
           var canon = zone.GetCanonical;
-          if (null == canon) return threatAt(zone);
-          var ret = new HashSet<Actor>();
-          foreach(var z in canon) {
-            ret.UnionWith(threatAt(z));
+          if (null == canon) {
+            threatAt(zone, catalog);
+          } else {
+            foreach(var z in canon) threatAt(z, catalog);
           }
-          return ret.ToList();
+          return catalog;
 		}
 
-		private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
+		public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone, Func<Actor, bool> pred)
+		{
+          var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
+          var canon = zone.GetCanonical;
+          if (null == canon) {
+            threatAt(zone, catalog, pred);
+          } else {
+            foreach(var z in canon) threatAt(z, catalog, pred);
+          }
+          return catalog;
+		}
+#nullable restore
+
+        private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
         {
           var ret = new HashSet<Point>();
 		  lock(_threats) {
@@ -300,6 +337,9 @@ namespace djack.RogueSurvivor.Data
         {
           lock(_threats) {
             _ThreatWhere_cache.Remove(loc.Map);
+            if (_threats.TryGetValue(a, out var cache)) {
+              foreach(var x in cache) _ThreatWhere_cache.Remove(x.Key);
+            }
             _threats[a] = new Dictionary<Map, HashSet<Point>>(1) {
               [loc.Map] = new HashSet<Point> { loc.Position }
             };
@@ -403,6 +443,27 @@ namespace djack.RogueSurvivor.Data
               foreach(Actor a in amnesia) _threats.Remove(a);
             }
           }
+        }
+
+        public void Cleared(Dictionary<Actor, Dictionary<Map, Point[]>> catalog) {
+            lock (_threats) {
+                foreach (var x in catalog) {
+                    if (_threats.TryGetValue(x.Key, out var cache)) {
+                        foreach (var y in x.Value) {
+                            if (cache.TryGetValue(y.Key, out var cache2)) {
+                                var former = cache2.Count;
+                                cache2.ExceptWith(y.Value);
+                                var now = cache2.Count;
+                                if (former > now) {
+                                    _ThreatWhere_cache.Remove(y.Key);
+                                    if (0 >= now) cache.Remove(y.Key);
+                                }
+                            }
+                        }
+                        if (0 >= cache.Count) _threats.Remove(x.Key);
+                    }
+                }
+            }
         }
 
         public void Cleared(Location loc)

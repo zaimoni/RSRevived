@@ -1166,6 +1166,19 @@ namespace djack.RogueSurvivor.Data
       return HypotheticalRangedAttack(m_CurrentRangedAttack, distance, target);
     }
 
+#region Tracker management
+    public void Tracks(ref Span<bool> find_us)
+    {
+        find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = IsFaction(GameFactions.IDs.ThePolice);
+        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker track && !track.IsUseless) track.Model.Tracks(ref find_us);
+
+        // the police radio
+        track = GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
+        if (null != track && !track.IsUseless) track.Model.Tracks(ref find_us);
+        // Tracking leaders makes sense, but not in single PC mode
+        if (0 >= CountFollowers) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
+    }
+
     public bool HasActiveCellPhone {
       get {
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
@@ -1271,6 +1284,7 @@ namespace djack.RogueSurvivor.Data
     {
       return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
+#endregion
 
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
@@ -3634,7 +3648,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is BatteryPowered powered) {
         --powered.Batteries;
-        if (it is ItemLight) Controller.UpdateSensors();
+        if (powered.AugmentsSenses(this)) Controller.UpdateSensors();
         return;
       }
     }

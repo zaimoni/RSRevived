@@ -55,6 +55,11 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int MaxBatteries { get { return Model.MaxBatteries; } }
     public override bool IsUseless { get { return 0 >= m_Batteries; } }
+    public bool AugmentsSenses(Actor a) {
+        if (null == a.Threats) return false;
+        return (Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != ItemTrackerModel.TrackingFlags.NONE;
+    }
+
 
     public ItemTracker(ItemTrackerModel model) : base(model)
     {
