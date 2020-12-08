@@ -62,6 +62,31 @@ namespace djack.RogueSurvivor.Data
           return ret;
 		}
 
+        private List<Actor> threatAt(ZoneLoc zone)
+        {
+          Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
+          var ret = new List<Actor>();
+		  lock(_threats) {
+            foreach(var x in _threats) {
+              if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
+              if (!cache.Any(ok)) continue;
+              ret.Add(x.Key);
+            }
+		  }
+          return ret;
+        }
+
+		public List<Actor> ThreatAt(ZoneLoc zone)
+		{
+          var canon = zone.GetCanonical;
+          if (null == canon) return threatAt(zone);
+          var ret = new HashSet<Actor>();
+          foreach(var z in canon) {
+            ret.UnionWith(threatAt(z));
+          }
+          return ret.ToList();
+		}
+
 		private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
         {
           var ret = new HashSet<Point>();
@@ -82,7 +107,7 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
-		public bool AnyThreatAt(ZoneLoc loc)
+        public bool AnyThreatAt(ZoneLoc loc)
 		{
           Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
           lock(_ThreatWhere_cache) {

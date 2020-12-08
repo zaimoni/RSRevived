@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Zaimoni.Data
 {
-    public ref struct Stack<T>
+    public ref struct Stack<T>  // note namespace collision w/C# standard library
     {
         private Span<T> _x;
         private int ub;

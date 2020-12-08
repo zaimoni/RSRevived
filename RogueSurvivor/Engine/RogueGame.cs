@@ -11189,31 +11189,18 @@ namespace djack.RogueSurvivor.Engine
         }
 
 	    // normal detectors/lights
-        bool find_followers = false;
-//      bool find_leader = false; // may need this, but not for single PC
-        bool find_undead = false;
-        bool find_blackops = false;
-        bool find_police = Player.IsFaction(GameFactions.IDs.ThePolice);
-        if (Player.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
-          find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
-//        find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
-          find_undead = itemTracker1.CanTrackUndeads;
-          find_blackops = itemTracker1.CanTrackBlackOps;
-          if (!find_police) find_police = itemTracker1.CanTrackPolice;
-        }
+        Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
+        find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = Player.IsFaction(GameFactions.IDs.ThePolice);
+        if (Player.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker track && !track.IsUseless) track.Model.Tracks(ref find_us);
 
         // the police radio
-        itemTracker1 = Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-        if (null != itemTracker1 && !itemTracker1.IsUseless) {    // require batteries > 0
-          if (!find_followers) find_followers = (Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
-//        if (!find_leader) find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
-          if (!find_undead) find_undead = itemTracker1.CanTrackUndeads;
-          if (!find_blackops) find_blackops = itemTracker1.CanTrackBlackOps;
-          if (!find_police) find_police = itemTracker1.CanTrackPolice;
-        }
+        track = Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
+        if (null != track && !track.IsUseless) track.Model.Tracks(ref find_us);
+        // Tracking leaders makes sense, but not in single PC mode
+        if (0 >= Player.CountFollowers) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
 
         // do not assume tracker capabilities are mutually exclusive.
-        if (find_followers) {
+        if (find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER]) {
           // VAPORWARE Cell phones are due for a major rethinking anyway.
           // We would like the AI to be able to defend key objectives (e.g. police should want to defend any building w/generators)
           // we then could include cell phone towers as a defensible objective and make the phones actually working depending on that.
@@ -11231,19 +11218,26 @@ namespace djack.RogueSurvivor.Engine
           if (IsPlayer(actor)) return null;
           return actor;
         }
-        if (find_blackops || find_police) {
-          view.DoForEach(actor => {
-              if (find_undead && actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
-              if (find_blackops && actor.IsFaction(GameFactions.IDs.TheBlackOps)) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
-              if (find_police && actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
-//            if (find_police && actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
-          }, non_self);
-        } else if (find_undead) {
-          Rectangle z_view = new Rectangle(Player.Location.Position, 1+2*Rules.ZTRACKINGRADIUS, 1+2*Rules.ZTRACKINGRADIUS);
-          z_view.DoForEach(actor => {
-              DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
-          }, non_self);
+
+        Action<Actor> draw = null;
+        if (find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) {
+            draw = actor => {
+                if (actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
+            };
         }
+        if (find_us[(int)ItemTrackerModel.TrackingOffset.BLACKOPS_FACTION]) {
+            draw = draw.Compose(actor => {
+                if (actor.IsFaction(GameFactions.IDs.TheBlackOps)) DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
+            });
+        }
+        if (find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION]) {
+            draw = draw.Compose(actor => {
+                if (actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
+  //            if (actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
+            });
+        }
+        if (null != draw) view.DoForEach(draw, non_self);
+
       }	// end if (!Player.IsSleeping)
       minimap_delta = (Player.Location.Position - view.Location)*MINITILE_SIZE;
       m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);

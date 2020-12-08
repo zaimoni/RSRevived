@@ -39,6 +39,22 @@ namespace djack.RogueSurvivor.Engine.Items
     public override Item create() { return new ItemTracker(this); }
     public ItemTracker instantiate() { return new ItemTracker(this); }
 
+    public void Tracks(ref Span<bool> flags) {
+      if (TrackingFlags.NONE != (Tracking & TrackingFlags.FOLLOWER_AND_LEADER)) { flags[(int)TrackingOffset.FOLLOWER_AND_LEADER] = true; }
+      if (TrackingFlags.NONE != (Tracking & TrackingFlags.UNDEADS)) { flags[(int)TrackingOffset.UNDEADS] = true; }
+      if (TrackingFlags.NONE != (Tracking & TrackingFlags.BLACKOPS_FACTION)) { flags[(int)TrackingOffset.BLACKOPS_FACTION] = true; }
+      if (TrackingFlags.NONE != (Tracking & TrackingFlags.POLICE_FACTION)) { flags[(int)TrackingOffset.POLICE_FACTION] = true; }
+    }
+
+    public enum TrackingOffset
+    {
+      FOLLOWER_AND_LEADER = 0,
+      UNDEADS,
+      BLACKOPS_FACTION,
+      POLICE_FACTION,
+      STRICT_UB
+    }
+
     [System.Flags]
     public enum TrackingFlags
     {

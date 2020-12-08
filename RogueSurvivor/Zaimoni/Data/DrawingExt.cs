@@ -745,6 +745,22 @@ namespace Zaimoni.Data
     }
 
 #nullable enable
+    public static Action<T> Compose<T>(this Action<T>? rhs, Action<T>? lhs)
+    {
+      var l = lhs;  // local copies needed to get true lambda calculus
+      if (null == rhs) {
+        if (null == l) throw new ArgumentNullException(nameof(lhs));
+        return l;
+      }
+      var r = rhs;
+      if (null == l) return r;
+      void ret(T src) {
+        l(src);
+        r(src);
+      }
+      return ret;
+    }
+
     public static Action<T,U> Compose<T, U>(this Action<T, U>? rhs, Action<T, U>? lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
