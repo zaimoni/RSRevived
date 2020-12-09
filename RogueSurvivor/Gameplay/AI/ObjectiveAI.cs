@@ -4329,6 +4329,9 @@ restart_chokepoints:
           var fatal_in = FastestTrapKill(in loc);
 //        if (int.MaxValue <= FastestTrapKill(in loc)) continue; // not deadly enough
           if (5 <= FastestTrapKill(in loc)) continue; // not deadly enough
+          var e = loc.Exit;
+          if (null != e && e.Location.Map == e.Location.Map.District.SewersMap) continue; // need cars for this
+
           bool bypassable = null == loc.Exit;
           if (bypassable) {
             if (!m_Actor.CanEnter(loc + Direction.N) && !m_Actor.CanEnter(loc + Direction.S)) bypassable = false;
