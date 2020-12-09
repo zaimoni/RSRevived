@@ -765,8 +765,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
       if (trap.IsSafeFor(a)) return true;  // alpha10
-      var skills = a.Sheet.SkillTable;
-      return RollChance(0 + (skills.GetSkillLevel(Skills.IDs.LIGHT_FEET) * SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
+      return RollChance(trap.EscapeChanceFor(a));
     }
 #nullable restore
 

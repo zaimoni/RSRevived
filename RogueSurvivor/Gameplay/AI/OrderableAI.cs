@@ -2167,7 +2167,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsPerformable() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
       if (0 >= adjacent.Count) return null;
       adjacent.OnlyIf(loc => range.ContainsKey(loc));
-      if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(Map.PathfinderMoveCosts));
+      if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(act => Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor)));
 
 #if OBSOLETE
       var init_costs = new Dictionary<Location,int>();
@@ -3003,6 +3003,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       { // scoping brace
       if (null == _legal_steps) return null;
+      var tmpAction = BehaviorPathTo(in loc);
+      if (null != tmpAction) return tmpAction;
+
+      // following prone to stepping into traps
       int current_distance = Rules.GridDistance(m_Actor.Location, in loc);
       Location? denorm = m_Actor.Location.Map.Denormalize(in loc);
       var costs = new Dictionary<Point,int>();
@@ -3037,8 +3041,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      ActorAction tmpAction = DecideMove(vis_costs.Keys);
+      tmpAction = DecideMove(vis_costs.Keys);
       if (null != tmpAction) {
+#if DEBUG
+        throw new InvalidOperationException("test case?");
+#endif
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
         if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
@@ -3047,6 +3054,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = DecideMove(costs.Keys);
       if (null != tmpAction) {
+#if DEBUG
+        throw new InvalidOperationException("test case?");
+#endif
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
         if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))

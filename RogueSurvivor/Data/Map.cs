@@ -701,6 +701,17 @@ namespace djack.RogueSurvivor.Data
         return 1;  // normal case
     }
 
+    public int TrapTurnsFor(Point pos, Actor a) {
+      if (IsTrapCoveringMapObjectAt(pos)) return 0;
+      return GetItemsAt(pos)?.TrapTurnsFor(a) ?? 0;
+    }
+
+    public static int TrapMoveCostFor(ActorAction act, Actor a)
+    {
+      if (act is Engine.Actions.ActorDest move) return move.dest.Map.TrapTurnsFor(move.dest.Position, a);
+      return 0;
+    }
+
     private static Dictionary<Location,int> OneStepForPathfinder(in Location loc, Actor a, Dictionary<Location,ActorAction> already)
 	{  // 2019-08-26 release mode IL Code size       99 (0x63) [invalidated]
 	  var ret = new Dictionary<Location, int>();
@@ -708,7 +719,7 @@ namespace djack.RogueSurvivor.Data
       foreach(var move in moves) {
         var pt = move.Key;
         if (1>= a.Controller.FastestTrapKill(in pt)) continue;
-        ret.Add(pt, PathfinderMoveCosts(move.Value));
+        ret.Add(pt, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
       }
 	  return ret;
 	}
@@ -720,7 +731,7 @@ namespace djack.RogueSurvivor.Data
       foreach(var move in moves) {
         var pt2 = move.Key;
         if (1>= a.Controller.FastestTrapKill(new Location(a.Location.Map, pt2))) continue;
-        ret.Add(pt2, PathfinderMoveCosts(move.Value));
+        ret.Add(pt2, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
       }
 	  return ret;
 	}

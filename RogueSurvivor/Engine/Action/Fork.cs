@@ -124,7 +124,7 @@ retry:
         bool recalc = false;
         while(0 <= --ub) {
           var act = cache[ub];
-          int test = (act is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(act);
+          int test = (act is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
           if (test != act_cost) {
             cache.RemoveAt(ub);
             Add(act);
@@ -141,14 +141,14 @@ retry:
 
       private static void _add(Dictionary<int, List<Actions.ActionChain>> dest, Actions.ActionChain src)
       {
-        int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src);
+        int cost = src.CumulativeMoveCost();
         if (dest.TryGetValue(cost, out var cache)) cache.Add(src);
         else dest.Add(cost, new List<Actions.ActionChain> { src });
       }
 
       private void Add(ActorAction src)
       {
-        int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src);
+        int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src) + Map.TrapMoveCostFor(src, m_Actor);
         if (m_Options.TryGetValue(cost, out var cache)) cache.Add(src);
         else m_Options.Add(cost, new List<ActorAction> { src });
       }

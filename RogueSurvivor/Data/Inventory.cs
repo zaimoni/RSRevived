@@ -291,6 +291,44 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
+    public int TrapTurnsFor(Actor a)
+    {
+      const int CIVILIAN_STARVE = 2 * Actor.FOOD_HUNGRY_LEVEL;
+
+      double trap_threat(ItemTrap trap) {
+          var triggered = trap.TriggerChanceFor(a);
+          if (0 >= triggered) return 0;
+          var damage = Math.Min(trap.Model.Damage, a.HitPoints);
+          if (0 >= damage) return 0;
+          // handwavium: how debilitating is the injury expectation?
+          var annoyance = (double)(damage)/a.HitPoints;
+          annoyance *= annoyance;
+          annoyance *= CIVILIAN_STARVE;  // automatic starvation for civilians.
+          var escape = trap.EscapeChanceFor(a);
+          if (0 >= escape) return CIVILIAN_STARVE; // don't want to risk arithmetic overflow.  Automatic starvation should be decisive enough.
+          if (100 > escape) annoyance += 2*(100.0/(100-escape) - 1);  // overestimate how much time we wasted escaping from this trap
+          return annoyance;
+      }
+
+      double cost = 0;
+      if (a.Controller.IsEngaged) {
+        foreach (var obj in m_Items) {
+          if (obj is ItemTrap trap && !trap.IsSafeFor(a)) {
+            cost += trap_threat(trap);
+            if (CIVILIAN_STARVE <= cost) return CIVILIAN_STARVE;
+          }
+        }
+      } else {
+        foreach (var obj in m_Items) {
+          if (obj is ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) {
+            cost += trap_threat(trap);
+            if (CIVILIAN_STARVE <= cost) return CIVILIAN_STARVE;
+          }
+        }
+      }
+      return (int)cost;
+    }
+
     public bool Contains(Item it) { return m_Items.Contains(it); }
 
         // alpha10

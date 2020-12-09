@@ -119,10 +119,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public int CumulativeMoveCost()
         {
-            int cost = Map.PathfinderMoveCosts(m_Actions[0]);
+            int cost = Map.PathfinderMoveCosts(m_Actions[0]) + Map.TrapMoveCostFor(m_Actions[0], m_Actor);
             int ub = m_Actions.Count;
             while (1 <= --ub) {
-                int test = (m_Actions[ub] is _Action.Fork fork) ? fork.CumulativeMoveCost() : Map.PathfinderMoveCosts(m_Actions[ub]);
+                int test = (m_Actions[ub] is _Action.Fork fork) ? fork.CumulativeMoveCost() : Map.PathfinderMoveCosts(m_Actions[ub]) + Map.TrapMoveCostFor(m_Actions[ub], m_Actor);
                 if (int.MaxValue - cost >= test) cost += test;
                 else return int.MaxValue;
             }

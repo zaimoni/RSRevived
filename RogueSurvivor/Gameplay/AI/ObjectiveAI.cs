@@ -716,9 +716,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
               foreach(var pt in path_pt[0]) {
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                if (1<Map.PathfinderMoveCosts(considering) + Map.TrapMoveCostFor(considering, m_Actor)) continue;
                 foreach(var act in stage2) {
-                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor)) continue;
                   costs[loc] = 1;
                   break;
                 }
@@ -732,7 +732,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               foreach(var pt in path_pt[0]) {
                 var loc = new Location(m_Actor.Location.Map, pt);
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                costs[loc] = Map.PathfinderMoveCosts(considering);
+                costs[loc] = Map.PathfinderMoveCosts(considering) + Map.TrapMoveCostFor(considering, m_Actor);
               }
               if (1==costs.Count) return _legal_path[costs.First().Key];
               if (0 < costs.Count) return DecideMove(costs);
@@ -773,9 +773,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var costs = new Dictionary<Location,int>();
               foreach(var loc in path_pt[0]) {
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                if (1<Map.PathfinderMoveCosts(considering)) continue;
+                if (1<Map.PathfinderMoveCosts(considering) + Map.TrapMoveCostFor(considering, m_Actor)) continue;
                 foreach(var act in stage2) {
-                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act)) continue;
+                  if (act.origin != loc || 1<Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor)) continue;
                   costs[loc] = 1;
                   break;
                 }
@@ -788,7 +788,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var costs = new Dictionary<Location,int>();
               foreach(var loc in path_pt[0]) {
                 if (!_legal_path.TryGetValue(loc,out var considering)) continue;
-                costs[loc] = Map.PathfinderMoveCosts(considering);
+                costs[loc] = Map.PathfinderMoveCosts(considering) + Map.TrapMoveCostFor(considering, m_Actor);
               }
               if (1==costs.Count) return _legal_path[costs.First().Key];
               if (0 < costs.Count) return DecideMove(costs);
@@ -3040,7 +3040,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           } else {
             var move = new ActionMoveDelta(m_Actor, e.Location, loc);
-            int cost = Map.PathfinderMoveCosts(move);
+            int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
             if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
           }
         }
@@ -3663,7 +3663,7 @@ restart:
       move_scores.OnlyIfMaximal();
       legal_steps.OnlyIf(loc => move_scores.ContainsKey(loc));
 
-      legal_steps = legal_steps.CloneOnlyMinimal(Map.PathfinderMoveCosts);
+      legal_steps = legal_steps.CloneOnlyMinimal(act => Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor));
 
       ActorAction tmp = DecideMove(legal_steps.CloneOnlyMinimal(minimize));
 #if FALSE_POSITIVE

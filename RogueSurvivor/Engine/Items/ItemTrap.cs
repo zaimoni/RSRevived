@@ -198,6 +198,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool CheckStepOnBreaks(MapObject mobj) { return Rules.Get.RollChance(Model.BreakChance * mobj.Weight); }
     public bool CheckStepOnBreaks() { return Rules.Get.RollChance(Model.BreakChance); }
 
+    public int EscapeChanceFor(Actor a) {
+      var skills = a.Sheet.SkillTable;
+      return (skills.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - Model.BlockChance * Quantity);
+    }
+
     public override string ToString()
     {
       var ret = base.ToString();
