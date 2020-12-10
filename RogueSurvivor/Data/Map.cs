@@ -1046,23 +1046,27 @@ retry:
       }
     }
 
-    public void ActorPositionHull(ref Span<Point> hull)
+    public bool ActorPositionHull(ref Span<Point> hull)
     {
         hull[0] = Extent;
         hull[1] = Point.Empty;
+        short tmp;
         foreach(Actor a in m_ActorsList) {
-            if (a.Location.Position.X < hull[0].X) hull[0].X = a.Location.Position.X;
-            if (a.Location.Position.X > hull[1].X) hull[1].X = a.Location.Position.X;
-            if (a.Location.Position.Y < hull[0].Y) hull[0].Y = a.Location.Position.Y;
-            if (a.Location.Position.Y > hull[1].Y) hull[1].Y = a.Location.Position.Y;
+            if ((tmp = a.Location.Position.X) < hull[0].X) hull[0].X = tmp;
+            if (tmp > hull[1].X) hull[1].X = tmp;
+            if ((tmp = a.Location.Position.Y) < hull[0].Y) hull[0].Y = tmp;
+            if (tmp > hull[1].Y) hull[1].Y = tmp;
         }
-        if (hull[0].X <= hull[1].X) hull[1] += Direction.SE;
+        if (hull[0].X <= hull[1].X) {
+            hull[1] += Direction.SE;
+            return true;
+        }
+        return false;
     }
 
     public bool RequiresUI(Point delta) {
         Span<Point> hull = stackalloc Point[2];
-        ActorPositionHull(ref hull);
-        if (hull[0].X <= hull[1].X) {
+        if (ActorPositionHull(ref hull)) {
             var zone = new ZoneLoc(this, new Rectangle(hull[0] - delta, (hull[1] - hull[0]) + 2*delta));
             var canon = zone.GetCanonical;
             if (null != canon) {

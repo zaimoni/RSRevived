@@ -3006,6 +3006,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmpAction = BehaviorPathTo(in loc);
       if (null != tmpAction) return tmpAction;
 
+#if OBSOLETE
       // following prone to stepping into traps
       int current_distance = Rules.GridDistance(m_Actor.Location, in loc);
       Location? denorm = m_Actor.Location.Map.Denormalize(in loc);
@@ -3063,6 +3064,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
         return tmpAction;
       }
+#endif
       } // end scoping brace
       return null;
     }
