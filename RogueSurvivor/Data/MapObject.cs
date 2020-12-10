@@ -18,6 +18,7 @@ namespace djack.RogueSurvivor.Data
   internal class MapObject
   {
     public const int CAR_WEIGHT = 100;
+    public const int MAX_NORMAL_WEIGHT = 10;
 
     private IDs m_ID;
     private Flags m_Flags;

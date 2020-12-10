@@ -11,13 +11,13 @@ namespace djack.RogueSurvivor.Engine.Op
     {
         private readonly Location m_NewLocation;
         private readonly Location m_From;
-        private readonly int m_MaxWeight;
+        private readonly int m_ObjCode; // what we want on the destination
         [NonSerialized] private Location[]? m_origin;
 
         public Location obj_origin { get { return m_From; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        public PushOnto(Location from, Location to, int maxWeight=10)
+        public PushOnto(Location from, Location to, int code)
         {
 #if DEBUG
             if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Op
             if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
             m_NewLocation = to;
             m_From = from;
-            m_MaxWeight = maxWeight; // default to ignoring cars as push targets
+            m_ObjCode = code;
         }
 
         public override bool IsLegal() {
@@ -34,24 +34,79 @@ namespace djack.RogueSurvivor.Engine.Op
             if (null != obj) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
-                if (m_MaxWeight < obj.Weight) return false;
+                return DisarmOk(obj, m_ObjCode);
             }
             obj = m_NewLocation.MapObject;
             if (null != obj) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
-                if (m_MaxWeight < obj.Weight) return false;
+                if (0 == (4 & m_ObjCode) && MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
             }
             return true;
         }
+
+        // should be flag enum return value
+        // 0: do not disarm
+        // 1: typical jumpable i.e. trap-covering object [formally includes direct-constructing a small fortification]
+        // 2: typical non-jumpable i.e. destroying object (but need recovery code for when it doesn't destroy)
+        // 4: cars and other trap-covering zombie-proof map objects
+        // 8: bed (trap-covering)
+        // 16: only if pathfinding
+        static public int DisarmWith(in Location loc)
+        {
+            var e = loc.Exit;
+            if (null != e)
+            {
+                if (e.Location.Map == e.Location.Map.District.SewersMap) return loc.Map.IsInsideAt(loc.Position) ? 1 + 16 : 4;
+                if (e.Location.Map == e.Location.Map.District.EntryMap) return 1;
+                if (e.Location.Map == e.Location.Map.District.SubwayMap) return 1;
+                if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 1;
+                if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 1;
+                if (0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map)) return 1;
+                if (0 < Session.Get.UniqueMaps.PoliceStationDepth(e.Location.Map)) return 1;
+                if (loc.Map == loc.Map.District.EntryMap) return 1 + 16; // typically a basement
+            }
+            // not an exit.
+            return loc.Map.IsInsideAt(loc.Position) ? 9 : 1;
+        }
+
+        static public int DisarmWithAlt(in Location loc)
+        {
+            var e = loc.Exit;
+            if (null != e) {
+                if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 8;
+                if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 8;
+                // no movable beds in police station 2020-12-09 zaimoni
+            }
+            // not an exit.
+            return 0;
+        }
+
+        // unclear whether AI needs to see this
+        static private bool DisarmOk(MapObject obj, int code)
+        {
+#if PROTOTYPE
+            if (!obj.IsMovable) return false;
+            if (obj.IsOnFire) return false;
+#endif
+            if (0 != (4 & code) && obj.CoversTraps && !obj.IsBreakable) return true;
+            if (0 == (4 & code) && MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
+            if (0 == (8 & code) && obj.IsCouch) return false;
+            if (0 != (1 & code) && obj.CoversTraps) return true;
+            if (0 != (2 & code) && obj.TriggersTraps) return true;
+            return false;
+        }
+
         public override bool IsRelevant() {
             if (null != m_NewLocation.MapObject) return false;
             var obj = m_From.MapObject;
-            return null != obj && obj.IsMovable && !obj.IsOnFire && obj.CoversTraps; // breaking traps is more work to get right
+            return null != obj && obj.IsMovable && !obj.IsOnFire && DisarmOk(obj, m_ObjCode); // breaking traps is more work to get right
         }
+
         public override bool IsRelevant(Location loc) {
             return IsRelevant() && 1 == Rules.GridDistance(m_From, loc);
         }
+
         public override ActorAction? Bind(Actor src) {
             var act = new _Action.PushOnto(src, m_From, m_NewLocation);
             return act.IsPerformable() ? act : null;

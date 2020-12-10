@@ -4320,54 +4320,6 @@ restart_chokepoints:
 #endregion
 
 #region deathtrap disarming
-    // should be flag enum return value
-    // 0: do not disarm
-    // 1: typical jumpable i.e. trap-covering object [formally includes direct-constructing a small fortification]
-    // 2: typical non-jumpable i.e. destroying object (but need recovery code for when it doesn't destroy)
-    // 4: cars and other trap-covering zombie-proof map objects
-    // 8: bed (trap-covering)
-    // 16: only if pathfinding
-    static protected int DisarmWith(in Location loc)
-    {
-        var e = loc.Exit;
-        if (null != e) {
-            if (e.Location.Map == e.Location.Map.District.SewersMap) return loc.Map.IsInsideAt(loc.Position) ? 1+16 : 4;
-            if (e.Location.Map == e.Location.Map.District.EntryMap) return 1;
-            if (e.Location.Map == e.Location.Map.District.SubwayMap) return 1;
-            if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 1;
-            if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 1;
-            if (0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map)) return 1;
-            if (0 < Session.Get.UniqueMaps.PoliceStationDepth(e.Location.Map)) return 1;
-            if (loc.Map == loc.Map.District.EntryMap) return 1+16; // typically a basement
-        }
-        // not an exit.
-        return loc.Map.IsInsideAt(loc.Position) ? 9 : 1;
-    }
-
-    static protected int DisarmWithAlt(in Location loc)
-    {
-        var e = loc.Exit;
-        if (null != e) {
-            if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 8;
-            if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 8;
-            // no movable beds in police station 2020-12-09 zaimoni
-        }
-        // not an exit.
-        return 0;
-    }
-
-    static protected bool DisarmOk(MapObject obj, int code, bool pathfinding = false)
-    {
-        if (!obj.IsMovable) return false;
-        if (0 != (16 & code) && !pathfinding) return false;
-        if (0 != (4 & code) && obj.CoversTraps && !obj.IsBreakable) return true;
-        if (0 == (4 & code) && 10 < obj.Weight) return false;
-        if (0 == (8 & code) && obj.IsCouch) return false;
-        if (0 != (1 & code) && obj.CoversTraps) return true;
-        if (0 != (2 & code) && obj.TriggersTraps) return true;
-        return false;
-    }
-
     protected Dictionary<Location, int>? DeathTrapsInSight()
     {
         var ret = new Dictionary<Location,int>();
@@ -4378,7 +4330,7 @@ restart_chokepoints:
 //        if (int.MaxValue <= FastestTrapKill(in loc)) continue; // not deadly enough
           if (5 <= fatal_in) continue; // not deadly enough
 
-          var code = DisarmWith(loc);
+          var code = Engine.Op.PushOnto.DisarmWith(loc);
           if (0 != (code & (4 | 16))) continue; // reject cars-only and pathfinding-only
 
           bool bypassable = null == loc.Exit;
@@ -4407,12 +4359,11 @@ restart_chokepoints:
           bool first_iteration = true;
           while(0 < working.Count) {
             foreach (var loc in working) {
-#if PROTOTYPE
-              int disarm_code = DisarmWith(in loc);
+              int disarm_code = Engine.Op.PushOnto.DisarmWith(in loc);
               if (0 == disarm_code) continue;
               if (0 != (disarm_code & 16)) continue; // \todo handle pathfinding-driven later
-              if (allow_beds) disarm_code = DisarmWithAlt(in loc);
-#endif
+              if (allow_beds) disarm_code = Engine.Op.PushOnto.DisarmWithAlt(in loc);
+              if (0 == disarm_code) continue;
 
               WorldUpdate? sequel = null;
               if (!first_iteration) {
@@ -4430,7 +4381,7 @@ restart_chokepoints:
                 if (!m_Actor.CanEnter(ref test)) continue;
                 if (now.Contains(test)) continue;
                 if (working.Contains(test)) continue;
-                var staging = new Engine.Op.PushOnto(test, loc);
+                var staging = new Engine.Op.PushOnto(test, loc, disarm_code);
                 if (!staging.IsLegal()) continue;
                 act_scan.Add(staging);
                 next.Add(test);
