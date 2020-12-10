@@ -317,7 +317,23 @@ restart:
 restart:
       Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
-      TileFill(sewers, GameTiles.WALL_SEWER, true);
+
+      // Building codes require that all passages be 2 wide, even those on the edge of the city.
+      var edge_code = Session.Get.World.CHAR_CityLimits.EdgeCode(district.WorldPosition);
+      var dev_rect = sewers.Rect;
+      if (0 != (edge_code & 1)) {
+        dev_rect.Y += 1;
+        dev_rect.Height -= 1;
+      }
+      if (0 != (edge_code & 2)) dev_rect.Width -= 1;
+      if (0 != (edge_code & 4)) dev_rect.Height -= 1;
+      if (0 != (edge_code & 8)) {
+        dev_rect.X += 1;
+        dev_rect.Width -= 1;
+      }
+
+      if (0 != edge_code) TileFill(sewers, GameTiles.FLOOR_SEWER_WATER, true);
+      TileFill(sewers, GameTiles.WALL_SEWER, dev_rect, true);
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: baseline");
 #endif
@@ -339,7 +355,7 @@ restart:
 
       // 1. Make blocks.
       List<Block> list = new List<Block>(m_SurfaceBlocks.Count);
-      MakeBlocks(sewers, false, ref list, sewers.Rect);
+      MakeBlocks(sewers, false, ref list, dev_rect);
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #1 ok");
 #endif
@@ -488,7 +504,7 @@ restart:
 
       // technically inappropriate for a generic library
       if (district.WorldPosition == World.CHAR_City_Origin) {
-        Point graffiti = new Point(1,1);
+        Point graffiti = dev_rect.Location + Direction.SE;
         sewers.RemoveMapObjectAt(graffiti);
         var graffiti_tile = sewers.GetTileAt(graffiti);
         graffiti_tile.RemoveAllDecorations();

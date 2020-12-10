@@ -385,6 +385,17 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D_int src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_int src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
 
+        // closely related to compass rose ordering
+        public int EdgeCode(Vector2D_int src)
+        {
+            int ret = 0;
+            if (_anchor.X == src.X) ret += 8;
+            if (Right - 1 == src.X) ret += 2;
+            if (_anchor.Y == src.Y) ret += 1;
+            if (Bottom - 1 == src.Y) ret += 4;
+            return ret;
+        }
+
 #nullable enable
     public Vector2D_int? FirstOrDefault(Predicate<Vector2D_int> testFn)
     {
@@ -933,6 +944,16 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D_short src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_short src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
 
+        // closely related to compass rose ordering
+        public int EdgeCode(Vector2D_short src) {
+            int ret = 0;
+            if (_anchor.X == src.X) ret += 8;
+            if (Right - 1 == src.X) ret += 2;
+            if (_anchor.Y == src.Y) ret += 1;
+            if (Bottom - 1 == src.Y) ret += 4;
+            return ret;
+        }
+
 #nullable enable
     public Vector2D_short? FirstOrDefault(Predicate<Vector2D_short> testFn)
     {
@@ -1450,6 +1471,17 @@ namespace Zaimoni.Data
         public bool Contains(long x, long y) { return _anchor.X <= x && x < Right && _anchor.Y <= y && y < Bottom; }
         public bool Contains(Vector2D_long src) { return _anchor.X <= src.X && src.X < Right && _anchor.Y <= src.Y && src.Y < Bottom; }
         public bool Contains(Box2D_long src) { return Left <= src.Left && src.Right <= Right && Top <= src.Top && src.Bottom <= Bottom; }
+
+        // closely related to compass rose ordering
+        public int EdgeCode(Vector2D_short src)
+        {
+            int ret = 0;
+            if (_anchor.X == src.X) ret += 8;
+            if (Right - 1 == src.X) ret += 2;
+            if (_anchor.Y == src.Y) ret += 1;
+            if (Bottom - 1 == src.Y) ret += 4;
+            return ret;
+        }
 
 #nullable enable
     public Vector2D_long? FirstOrDefault(Predicate<Vector2D_long> testFn)

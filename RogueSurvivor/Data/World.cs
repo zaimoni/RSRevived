@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using Zaimoni.Data;
 
@@ -27,7 +28,9 @@ namespace djack.RogueSurvivor.Data
     private const int WEATHER_MAX_DURATION = 3 * WorldTime.TURNS_PER_DAY;
 
     // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
-    static public readonly Point CHAR_City_Origin = new Point(0,0);  // may need to be a proper Rectangle?
+    static public readonly Point CHAR_City_Origin = new Point(0,0);
+    [NonSerialized] private Rectangle m_CHAR_City;
+    public Rectangle CHAR_CityLimits { get { return m_CHAR_City; } }
 
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
@@ -181,6 +184,13 @@ namespace djack.RogueSurvivor.Data
       Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
       m_Ready = new Queue<District>(size*size);
+
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+    }
+
+    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    {
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
     }
 
     public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
