@@ -486,6 +486,15 @@ restart:
       }
 #endregion
 
+      // technically inappropriate for a generic library
+      if (district.WorldPosition == World.CHAR_City_Origin) {
+        Point graffiti = new Point(1,1);
+        sewers.RemoveMapObjectAt(graffiti);
+        var graffiti_tile = sewers.GetTileAt(graffiti);
+        graffiti_tile.RemoveAllDecorations();
+        graffiti_tile.AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
+      }
+
       // alpha10
       // 10. Music.
       sewers.BgMusic = GameMusics.SEWERS;

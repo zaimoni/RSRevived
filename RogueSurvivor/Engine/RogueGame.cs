@@ -12314,14 +12314,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      { // scoping brace
-      Map sewersMap = world[0, 0].SewersMap;
-      Point graffiti = new Point(1,1);
-      sewersMap.RemoveMapObjectAt(graffiti);
-      var graffiti_tile = sewersMap.GetTileAt(graffiti);
-      graffiti_tile.RemoveAllDecorations();
-      graffiti_tile.AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
-      } // end scoping brace
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());

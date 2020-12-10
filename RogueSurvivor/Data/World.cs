@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     private const int WEATHER_MAX_DURATION = 3 * WorldTime.TURNS_PER_DAY;
 
     // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
-    // static public readonly Point CHAR_CIty_Origin = new Point(0,0);  // VAPORWARE (may need to be a proper Rectangle
+    static public readonly Point CHAR_City_Origin = new Point(0,0);  // may need to be a proper Rectangle?
 
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
