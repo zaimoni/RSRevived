@@ -317,7 +317,7 @@ restart:
 restart:
       Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
-      TileFill(sewers, GameTiles.FLOOR_SEWER_WATER, true); // historically GameTiles.WALL_SEWER, but completely overwritten
+      TileFill(sewers, GameTiles.WALL_SEWER, true);
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: baseline");
 #endif
@@ -345,7 +345,8 @@ restart:
 #endif
 
 #region 2. Make tunnels.
-      // This stage can empirically infinite-loop
+      foreach (Block block in list)
+        TileRectangle(sewers, GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
       foreach (Block block in list) {
         if (!m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE)) continue;
         do {
