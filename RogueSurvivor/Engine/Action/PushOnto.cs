@@ -55,16 +55,16 @@ namespace djack.RogueSurvivor.Engine.Op
         static public int DisarmWith(in Location loc)
         {
             var e = loc.Exit;
-            if (null != e)
-            {
-                if (e.Location.Map == e.Location.Map.District.SewersMap) return loc.Map.IsInsideAt(loc.Position) ? 1 + 16 : 4;
-                if (e.Location.Map == e.Location.Map.District.EntryMap) return 1;
-                if (e.Location.Map == e.Location.Map.District.SubwayMap) return 1;
-                if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 1;
-                if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 1;
-                if (0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map)) return 1;
-                if (0 < Session.Get.UniqueMaps.PoliceStationDepth(e.Location.Map)) return 1;
-                if (loc.Map == loc.Map.District.EntryMap) return 1 + 16; // typically a basement
+            if (null != e) {
+                var exit_map = e.Location.Map;
+                var exit_district = exit_map.District;
+                if (exit_map == exit_district.SewersMap) return loc.Map.IsInsideAt(loc.Position) ? 1 + 16 : 4;
+                if (exit_map == exit_district.EntryMap || exit_map == exit_district.SubwayMap) return 1;
+                var unique_maps = Session.Get.UniqueMaps;
+                if (0 < unique_maps.HospitalDepth(exit_map) || 0 < unique_maps.PoliceStationDepth(exit_map)) return 1;
+                var map = loc.Map;
+                if (0 < unique_maps.HospitalDepth(map) || 0 < unique_maps.PoliceStationDepth(map)) return 1;
+                if (map == map.District.EntryMap) return 1 + 16; // typically a basement
             }
             // not an exit.
             return loc.Map.IsInsideAt(loc.Position) ? 9 : 1;
@@ -74,9 +74,8 @@ namespace djack.RogueSurvivor.Engine.Op
         {
             var e = loc.Exit;
             if (null != e) {
-                if (0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map)) return 8;
-                if (0 < Session.Get.UniqueMaps.HospitalDepth(e.Location.Map)) return 8;
-                // no movable beds in police station 2020-12-09 zaimoni
+                var unique_maps = Session.Get.UniqueMaps;
+                if (0 < unique_maps.HospitalDepth(loc.Map) || 0 < unique_maps.HospitalDepth(e.Location.Map)) return 8;
             }
             // not an exit.
             return 0;
@@ -89,8 +88,11 @@ namespace djack.RogueSurvivor.Engine.Op
             if (!obj.IsMovable) return false;
             if (obj.IsOnFire) return false;
 #endif
-            if (0 != (4 & code) && obj.CoversTraps && !obj.IsBreakable) return true;
-            if (0 == (4 & code) && MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
+            if (0 != (4 & code)) {
+                if (obj.CoversTraps && !obj.IsBreakable) return true;
+            } else {
+                if (MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
+            }
             if (0 == (8 & code) && obj.IsCouch) return false;
             if (0 != (1 & code) && obj.CoversTraps) return true;
             if (0 != (2 & code) && obj.TriggersTraps) return true;
