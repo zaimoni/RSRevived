@@ -213,11 +213,58 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       HospitalWorldPos = dr.ChooseWithoutReplacement(essential_services_acceptable);
     }
 
+    public District GetCHARbaseDistrict()
+    {
+      var districtList = new List<KeyValuePair<District, int>>();
+      Session.Get.World.DoForAllDistricts(d=>{
+        if (DistrictKind.BUSINESS != d.Kind) return;
+        foreach(var zone in d.EntryMap.Zones) {
+          if (!zone.Attribute.HasKey("CHAR Office")) continue;
+          districtList.Add(new KeyValuePair<District,int>(d, Rules.GridDistance(d.WorldPosition, PoliceStationWorldPos)));
+          return;
+        }
+      });
+      int ub = districtList.Count;
+      if (0 >= ub) throw new InvalidOperationException("world has no business districts with offices");
+      // close to, but not on top of, the police station
+      if (2 <= ub) {
+        var bounds = districtList.MinMax();
+        while (bounds.Key < bounds.Value) {
+          if (0 == bounds.Key) {
+            while(0 <= --ub) {
+              if (0 == districtList[ub].Value) {
+                districtList.RemoveAt(ub);
+                break;
+              }
+            }
+          } else {
+            while(0 <= --ub) {
+              if (bounds.Value == districtList[ub].Value) districtList.RemoveAt(ub);
+            }
+          }
+          bounds = districtList.MinMax();
+          ub = districtList.Count;
+        }
+      }
+      // as far away from the hospital as possible
+      if (2 <= ub) {
+        while (0 <= --ub) districtList[ub] = new KeyValuePair<District, int>(districtList[ub].Key, Rules.GridDistance(districtList[ub].Key.WorldPosition, HospitalWorldPos));
+        var bounds = districtList.MinMax();
+        while (bounds.Key < bounds.Value) {
+          ub = districtList.Count;
+          while(0 <= --ub) {
+            if (bounds.Key == districtList[ub].Value) districtList.RemoveAt(ub);
+          }
+          bounds = districtList.MinMax();
+        }
+      }
+
+      return Rules.Get.DiceRoller.Choose(districtList).Key;
+    }
+
     protected void AddWreckedCarsOutside(Map map)
     {
-      MapObjectFill(map, map.Rect, (Func<Point, MapObject>) (pt =>
-      {
-        // \todo next mapgen break: conserve RNG
+      MapObjectFill(map, map.Rect, pt => {
         if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
           Tile tileAt = map.GetTileAt(pt);
           if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != GameTiles.FLOOR_GRASS) {
@@ -227,7 +274,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
         return null;
-      }));
+      });
     }
 
     protected void DecorateOutsideWallsWithPosters(Map map, int chancePerWall)

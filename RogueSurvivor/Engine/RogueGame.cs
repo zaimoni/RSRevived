@@ -12400,23 +12400,12 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
-      var districtList = new List<District>();
-      world.DoForAllDistricts(d=>{
-        if (DistrictKind.BUSINESS != d.Kind) return;
-        foreach(var zone in d.EntryMap.Zones) {
-          if (!zone.Attribute.HasKey("CHAR Office")) continue;
-          districtList.Add(d);
-          return;
-        }
-      });
-      if (0 >= districtList.Count) throw new InvalidOperationException("world has no business districts with offices");
-      var rules = Rules.Get;
-      District district = rules.DiceRoller.Choose(districtList);
+      District district = m_TownGenerator.GetCHARbaseDistrict();
       var zoneList = new List<Zone>();
       foreach (var zone in district.EntryMap.Zones) {
         if (zone.Attribute.HasKey("CHAR Office")) zoneList.Add(zone);
       }
-      Zone officeZone = rules.DiceRoller.Choose(zoneList);
+      Zone officeZone = Rules.Get.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);

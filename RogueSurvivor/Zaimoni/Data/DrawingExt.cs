@@ -179,6 +179,17 @@ namespace Zaimoni.Data
       return new KeyValuePair<bool, bool>(yes, no);
     }
 
+    public static KeyValuePair<Value, Value> MinMax<Key, Value>(this List<KeyValuePair<Key, Value>> src) where Value : IComparable<Value>
+    {
+      var min = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
+      var max = (Value)typeof(Value).GetField("MinValue").GetValue(default(Value));
+      foreach(var x in src) {
+        if (0 < min.CompareTo(x.Value)) min = x.Value;
+        if (0 > max.CompareTo(x.Value)) max = x.Value;
+      }
+      return new KeyValuePair<Value, Value>(min, max);
+    }
+
     // Angband-style rarity table support
     public static T UseRarityTable<T>(this IEnumerable<KeyValuePair<T,int>> src, int r)
     {
