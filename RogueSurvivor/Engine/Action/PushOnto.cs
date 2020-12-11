@@ -29,6 +29,17 @@ namespace djack.RogueSurvivor.Engine.Op
             m_ObjCode = code;
         }
 
+        // disallow cars for this
+        public static bool PushDestOk(in Location loc) {
+            var obj = loc.MapObject;
+            if (null != obj) {
+                if (!obj.IsMovable) return false;
+                if (obj.IsOnFire) return false;
+                if (MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
+            }
+            return true;
+        }
+
         public override bool IsLegal() {
             var obj = m_From.MapObject;
             if (null != obj) {

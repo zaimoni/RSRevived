@@ -4332,6 +4332,7 @@ restart_chokepoints:
 
           var code = Engine.Op.PushOnto.DisarmWith(loc);
           if (0 != (code & (4 | 16))) continue; // reject cars-only and pathfinding-only
+          if (!Engine.Op.PushOnto.PushDestOk(in loc)) continue;
 
           bool bypassable = null == loc.Exit;
           if (bypassable) {
