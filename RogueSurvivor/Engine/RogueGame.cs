@@ -13238,11 +13238,12 @@ retry:
 
     static private void DoHospitalPowerOn()
     {
-      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Illuminate(true);
-      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(true);
-      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(true);
-      Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(true);
-      Map storage = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
+      var unique_maps = Session.Get.UniqueMaps;
+      unique_maps.Hospital_Admissions.TheMap.Illuminate(true);
+      unique_maps.Hospital_Offices.TheMap.Illuminate(true);
+      unique_maps.Hospital_Patients.TheMap.Illuminate(true);
+      unique_maps.Hospital_Power.TheMap.Illuminate(true);
+      Map storage = unique_maps.Hospital_Storage.TheMap;
       storage.Illuminate(true);
       storage.OpenAllGates();    // other hospital maps do not have gates so no-op
 
@@ -13264,12 +13265,14 @@ retry:
 
     private void DoHospitalPowerOff()
     {
-      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Illuminate(false);
-      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(false);
-      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(false);
-      Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(false);
-      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Illuminate(false);
-      CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
+      var unique_maps = Session.Get.UniqueMaps;
+      unique_maps.Hospital_Admissions.TheMap.Illuminate(false);
+      unique_maps.Hospital_Offices.TheMap.Illuminate(false);
+      unique_maps.Hospital_Patients.TheMap.Illuminate(false);
+      unique_maps.Hospital_Power.TheMap.Illuminate(false);
+      Map storage = unique_maps.Hospital_Storage.TheMap;
+      storage.Illuminate(false);
+      CloseAllGates(storage, "gate");
     }
 
     static private void DoTurnAllGeneratorsOn(Map map, Actor victor)
