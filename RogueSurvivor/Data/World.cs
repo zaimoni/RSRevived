@@ -193,6 +193,10 @@ namespace djack.RogueSurvivor.Data
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
     }
 
+    public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
+    public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
+    public int fromWorldPos(int x, int y) { return x + m_Size*y; }
+
     public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
     {
       Location radio_pos = Engine.Rules.PoliceRadioLocation(loc);
@@ -317,6 +321,134 @@ namespace djack.RogueSurvivor.Data
         }
         return ret;
       }
+    }
+
+    // world-building support
+    private void Rezone(Span<short> stats, DistrictKind[] zoning, Point view, DistrictKind dest, DistrictKind src) {
+        var rules = Engine.Rules.Get;
+        var plan = new List<int>();
+        int plan_radius = int.MaxValue;
+        int ub = m_Size*m_Size;
+        while(0 <= --ub) {
+            if (src == zoning[ub]) {
+                var dist = Engine.Rules.GridDistance(view, toWorldPos(ub));
+                if (dist <= plan_radius) {
+                     if (dist < plan_radius) {
+                         plan.Clear();
+                         plan_radius = dist;
+                     }
+                     plan.Add(ub);
+                }
+            }
+        }
+        int rezone = rules.DiceRoller.Choose(plan);
+        stats[(int)src]--;
+        stats[(int)dest]++;
+        zoning[rezone] = dest;
+    }
+
+    private void Rezone(Span<short> stats, DistrictKind[] zoning, DistrictKind dest, DistrictKind src) {
+        var plan = new List<int>();
+        int ub = m_Size*m_Size;
+        while(0 <= --ub) {
+            if (src == zoning[ub]) plan.Add(ub);
+        }
+        int rezone = Engine.Rules.Get.DiceRoller.Choose(plan);
+        stats[(int)src]--;
+        stats[(int)dest]++;
+        zoning[rezone] = dest;
+    }
+
+    private void SwapZones(DistrictKind[] zoning, Point view, DistrictKind dest, DistrictKind src) {
+        var scan = new Rectangle(view + Direction.NW, (Point)3);
+        var plan_dest = new List<int>();
+        var plan_src = new List<int>();
+        int ub = m_Size*m_Size;
+        while(0 <= --ub) {
+            if (src == zoning[ub] && scan.Contains(toWorldPos(ub))) plan_src.Add(ub);
+            else if (dest == zoning[ub]) plan_dest.Add(ub);
+            }
+        var dr = Engine.Rules.Get.DiceRoller;
+        int rezone_src = dr.Choose(plan_src);
+        int rezone_dest = dr.Choose(plan_dest);
+        zoning[rezone_src] = dest;
+        zoning[rezone_dest] = src;
+    }
+
+    // General priority order.
+    private static DistrictKind[] ZonePriority = { DistrictKind.SHOPPING, DistrictKind.GENERAL, DistrictKind.RESIDENTIAL, DistrictKind.BUSINESS, DistrictKind.GREEN };
+
+    private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats) {
+        var max = new KeyValuePair<int, int>(0,int.MinValue);
+        var min = new KeyValuePair<int, int>(0,int.MaxValue);
+        int ub = stats.Length;
+        while(0 <= --ub) {
+            if (max.Value < stats[ub]) max = new KeyValuePair<int, int>(ub, stats[ub]);
+            if (min.Value >= stats[ub]) min = new KeyValuePair<int, int>(ub, stats[ub]);
+        }
+        return new KeyValuePair<DistrictKind, DistrictKind>((DistrictKind)min.Key,(DistrictKind)max.Key);
+    }
+
+    private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats, DistrictKind[] zoning, Point view) {
+        var scan = new Rectangle(view + Direction.NW, (Point)3);
+        if (!CHAR_CityLimits.Contains(scan.Location) || !CHAR_CityLimits.Contains(scan.Location+scan.Size+Direction.NW)) return default;
+        stats.Fill(0);
+        stats[(int)zoning[fromWorldPos(view)]]++;
+        foreach(var dir in Direction.COMPASS) stats[(int)zoning[fromWorldPos(view+dir)]]++;
+
+        var max = new KeyValuePair<int, int>(0,int.MinValue);
+        var min = new KeyValuePair<int, int>(0,int.MaxValue);
+        int ub = stats.Length;
+        while(0 <= --ub) {
+            if (max.Value < stats[ub]) max = new KeyValuePair<int, int>(ub, stats[ub]);
+            if (min.Value >= stats[ub]) min = new KeyValuePair<int, int>(ub, stats[ub]);
+        }
+        return new KeyValuePair<DistrictKind, DistrictKind>((DistrictKind)min.Key,(DistrictKind)max.Key);
+    }
+
+    public DistrictKind[] PreliminaryZoning {
+        get {
+            Span<short> stats = stackalloc short[(int)DistrictKind._COUNT];
+            Span<short> sample = stackalloc short[(int)DistrictKind._COUNT];
+            var ret = new DistrictKind[m_Size*m_Size];
+            var rules = Engine.Rules.Get;
+            foreach(ref var x in new Span<DistrictKind>(ret)) {
+                var staging = rules.Roll(0, (int)DistrictKind._COUNT);
+                stats[staging]++;
+                x = (DistrictKind)staging;
+            }
+
+            var expected_all = m_Size*m_Size/(int)DistrictKind._COUNT;
+            var unbalanced = ExtremeZoning(stats);
+            var rare_priority = Array.IndexOf(ZonePriority, unbalanced.Key);
+            var glut_priority = Array.IndexOf(ZonePriority, unbalanced.Value);
+            while(expected_all > stats[(int)unbalanced.Key]) {
+                int delta = stats[(int)unbalanced.Value] - stats[(int)unbalanced.Key];
+                if (rare_priority > glut_priority && expected_all/2 >= delta) break;
+                Rezone(stats, ret, unbalanced.Key, unbalanced.Value);
+                unbalanced = ExtremeZoning(stats);
+                rare_priority = Array.IndexOf(ZonePriority, unbalanced.Key);
+                glut_priority = Array.IndexOf(ZonePriority, unbalanced.Value);
+            }
+
+            var city_center = CHAR_City_Origin + CHAR_CityLimits.Size / 2;
+            const int expected_neighborhood = 9/(int)DistrictKind._COUNT;
+            const int require_neighborhood = (expected_neighborhood+1)/2;
+
+            var translation = new Rectangle(CHAR_City_Origin + Direction.SE, CHAR_CityLimits.Size + 2 * Direction.NW);
+            Point pt_relay = default;
+            int ub = translation.Size.X*translation.Size.Y;
+            while(0 <= -- ub) {
+                translation.convert(ub, ref pt_relay);
+                unbalanced = ExtremeZoning(sample, ret, pt_relay);
+                if (require_neighborhood <= sample[(int)unbalanced.Key]) continue;
+                SwapZones(ret, pt_relay, unbalanced.Key, unbalanced.Value);
+                ub = translation.Size.X*translation.Size.Y;
+            }
+
+            // business district is plot-critical, but is covered by above
+            return ret;
+        }
     }
 
     // Simulation support

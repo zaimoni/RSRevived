@@ -12130,6 +12130,7 @@ namespace djack.RogueSurvivor.Engine
       Direction_ext.Now();
       BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;
+      var zoning = world.PreliminaryZoning;
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {
@@ -12137,7 +12138,7 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());
             m_UI.UI_Repaint();
           }
-          District district = new District(new Point(index1, index2), GenerateDistrictKind(index1, index2));
+          District district = new District(new Point(index1, index2), zoning[world.fromWorldPos(index1, index2)]);
           world[index1, index2] = district;
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, district.Kind.ToString());
@@ -12419,12 +12420,6 @@ namespace djack.RogueSurvivor.Engine
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);
-    }
-
-    private DistrictKind GenerateDistrictKind(int gridX, int gridY)
-    {
-      if (gridX == 0 && gridY == 0) return DistrictKind.BUSINESS;
-      return (DistrictKind) Rules.Get.Roll(0, (int) DistrictKind._COUNT);
     }
 
     private void GenerateDistrictSewersMap(District district)
