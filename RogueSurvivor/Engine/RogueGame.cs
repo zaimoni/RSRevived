@@ -12128,9 +12128,9 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Reset();
       Rules.Reset();
       Direction_ext.Now();
-      BaseTownGenerator.WorldGenInit();
       World world = Session.Get.World;
       var zoning = world.PreliminaryZoning;
+      BaseTownGenerator.WorldGenInit(zoning);
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {

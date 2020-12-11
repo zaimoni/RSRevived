@@ -160,18 +160,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       survivalist_ranged_candidates = working_survivalist.ToArray();
     }
 
-    static public void WorldGenInit()
+    static public void WorldGenInit(DistrictKind[] zoning)
     {
       // subway city planning.  Each subway station can electrify the subway rails not just for its district, but one district away.
       // make sure all subway rails can be electrified by at least one subway station.
       SubwayElectrifyPlans.Clear(); 
       ForceSubwayStation.Clear();
 
-      var world = Engine.Session.Get.World;
-      var pointList = new List<Point>();
+      var world = Session.Get.World;
       Rectangle world_bounds = new Rectangle(0,0, world.Size, world.Size);
       world_bounds.DoForEach(pt => {
-        pointList.Add(pt);
         if (0<world.SubwayLayout(pt)) {
           var working = new List<Point>();
           if (CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(pt))) working.Add(pt);
@@ -186,10 +184,33 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           SubwayElectrifyPlans.Add(working);
         }
       });
+      // generally speaking:
+      // police and hospital both strongly prefer one of shopping, business, or general districts and do not like residential or green
+      // they also both like a central location
+      static bool essential_services_ok(DistrictKind k) {
+         switch(k) {
+         case DistrictKind.GENERAL: return true;
+         case DistrictKind.SHOPPING: return true;
+         case DistrictKind.BUSINESS: return true;
+         default: return false;
+         }
+      }
+
+      var anchor = World.CHAR_City_Origin+ world.CHAR_CityLimits.Size/2;
+      var scan = new Rectangle(anchor + Direction.NW, (Point)3);
+      var essential_services_acceptable = new List<Point>();
+
+      if (essential_services_ok(zoning[world.fromWorldPos(anchor)])) essential_services_acceptable.Add(anchor);
+
+      foreach(var dir in Direction.COMPASS) {
+        var w_pos = anchor+dir;
+        if (essential_services_ok(zoning[world.fromWorldPos(w_pos)])) essential_services_acceptable.Add(w_pos);
+      }
+
       // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
       var dr = Rules.Get.DiceRoller;
-      PoliceStationWorldPos = dr.ChooseWithoutReplacement(pointList);
-      HospitalWorldPos = dr.ChooseWithoutReplacement(pointList);
+      PoliceStationWorldPos = dr.ChooseWithoutReplacement(essential_services_acceptable);
+      HospitalWorldPos = dr.ChooseWithoutReplacement(essential_services_acceptable);
     }
 
     protected void AddWreckedCarsOutside(Map map)
