@@ -8631,14 +8631,14 @@ namespace djack.RogueSurvivor.Engine
       DoTrade(speaker_c, PickItemsToTrade(speaker_c, target), target_c, false);
     }
 
-    private KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
+    static private KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
     {
       var negotiate = speaker_c.TradeOptions(buyer);
       if (null == negotiate) return null;
       return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
-    public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
+    static public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
     {
       var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
       if (null == buyer_offers || 0 >= buyer_offers.Count) return null;
@@ -9831,7 +9831,7 @@ namespace djack.RogueSurvivor.Engine
 	  return (index != undead.Model.ID ? GameActors[index] : null);
     }
 
-    private void SplatterBlood(Map map, Point position)
+    static private void SplatterBlood(Map map, Point position)
     {
       const int BLOOD_WALL_SPLAT_CHANCE = 20;
 
@@ -9852,7 +9852,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    public void DropCorpse(Actor deadGuy)
+    static private void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
       var rules = Rules.Get;
@@ -10256,7 +10256,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private List<Skills.IDs> RollSkillsToUpgrade(Actor actor, int maxTries)
+    static private List<Skills.IDs> RollSkillsToUpgrade(Actor actor, int maxTries)
     {
       int capacity = actor.Model.Abilities.IsUndead ? Rules.UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM : Rules.UPGRADE_SKILLS_TO_CHOOSE_FROM;
       var idsList = new List<Skills.IDs>(capacity);
@@ -10273,7 +10273,7 @@ namespace djack.RogueSurvivor.Engine
       return idsList;
     }
 
-    private void RollSkillsToUpgrade(Actor actor, int maxTries, Zaimoni.Data.Stack<Skills.IDs> idsList, int capacity)
+    static private void RollSkillsToUpgrade(Actor actor, int maxTries, Zaimoni.Data.Stack<Skills.IDs> idsList, int capacity)
     {
       for (int index = 0; index < capacity; ++index) {
         int num = 0;
@@ -10287,7 +10287,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private Skills.IDs? NPCPickSkillToUpgrade(Actor npc)
+    static private Skills.IDs? NPCPickSkillToUpgrade(Actor npc)
     {
       int capacity = npc.Model.Abilities.IsUndead ? Rules.UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM : Rules.UPGRADE_SKILLS_TO_CHOOSE_FROM;
       var chooseFrom = new Zaimoni.Data.Stack<Skills.IDs>(stackalloc Skills.IDs[capacity]);
@@ -10368,7 +10368,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
+    static private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
     {
       int num = 0;
       bool isUndead = actor.Model.Abilities.IsUndead;
@@ -11276,7 +11276,7 @@ namespace djack.RogueSurvivor.Engine
             : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
-    private string _gameStatus(Actor a) {
+    static private string _gameStatus(Actor a) {
       if (a != m_PlayerInTurn) return "SIMULATING";
       if (!string.IsNullOrEmpty(m_Status)) return m_Status;
       if (a.Controller.InCombat) return "IN COMBAT";
@@ -12375,7 +12375,7 @@ namespace djack.RogueSurvivor.Engine
       fromMap.SetExitAt(from, new Exit(toMap, in to));
     }
 
-    private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
+    static private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
     {
       Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE);
       // we intentionally do not take advantage of the current subway layout algorithm
@@ -12970,7 +12970,7 @@ retry:
       return a.Model.Abilities.IsUndead && (s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
     }
 
-    private Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
+    static private Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
     {
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
@@ -13011,7 +13011,7 @@ retry:
           var actorList2 = CurrentMap.District.FilterActors(actor => IsSuitableReincarnation(actor, asLiving));
           matchingActors = actorList2.Count;
           return 0 >= matchingActors ? null : Rules.Get.DiceRoller.Choose(actorList2);
-        default: throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
+        default: throw new ArgumentOutOfRangeException(nameof(reincMode), reincMode, "unhandled reincarnation mode");
       }
     }
 

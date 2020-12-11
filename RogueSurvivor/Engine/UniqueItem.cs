@@ -12,8 +12,8 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class UniqueItem
   {
-    private Item m_it;
-    private bool m_isSpawned;
+    private readonly Item m_it;
+    private readonly bool m_isSpawned;
 
     public UniqueItem(Item src, bool spawn=true)
     {

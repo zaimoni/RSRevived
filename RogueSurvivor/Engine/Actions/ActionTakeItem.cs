@@ -151,13 +151,12 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionGiveTo : ActorAction,ActorGive,TargetActor
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Actor m_Target;
+    private readonly Actor m_Target;
     [NonSerialized] Item? gift;
     [NonSerialized] Item? received;
     [NonSerialized] ActorAction? m_ConcreteAction; // not meant to be Resolvable
 
-    public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it)
-      : base(actor)
+    public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it) : base(actor)
     {
       m_ID = it;
       m_Target = target;

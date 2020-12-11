@@ -12,24 +12,21 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionMoveStep : ActorAction, ActorDest
     {
-    private Location m_NewLocation;
+    private readonly Location m_NewLocation;
 
 	public Location dest { get { return m_NewLocation; } }
 
-    public ActionMoveStep(Actor actor, Direction direction)
-      : base(actor)
+    public ActionMoveStep(Actor actor, Direction direction) : base(actor)
     {
       m_NewLocation = actor.Location + direction;
     }
 
-    public ActionMoveStep(Actor actor, in Point to)
-      : base(actor)
+    public ActionMoveStep(Actor actor, in Point to) : base(actor)
     {
       m_NewLocation = new Location(actor.Location.Map, to);
     }
 
-    public ActionMoveStep(Actor actor, in Location to)
-      : base(actor)
+    public ActionMoveStep(Actor actor, in Location to) : base(actor)
     {
       m_NewLocation = to;
     }

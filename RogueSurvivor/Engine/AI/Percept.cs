@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Engine.AI
       return ret;
     }
 
-	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts) where _T_:class
+	internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>> percepts) where _T_:class
 	{
       if (!percepts.Any()) return null;
       List<Percept_<object>>? ret = null;

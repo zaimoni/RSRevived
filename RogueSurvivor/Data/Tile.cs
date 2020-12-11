@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   {
     public readonly byte ID;
     private Flags m_Flags;
-    private Location m_Location;
+    private readonly Location m_Location;
 
     public TileModel Model { get { return Models.Tiles[ID]; } }
 

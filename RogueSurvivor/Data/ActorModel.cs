@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // should be private, but savefile auto-repair contraindicates
-    static private Type[] _controller_signature = new Type[] { typeof(Actor) };
+    static readonly private Type[] _controller_signature = new Type[] { typeof(Actor) };
     public ActorController InstanciateController(Actor a)
     {
       return (DefaultController.GetConstructor(_controller_signature).Invoke(new object[] { a }) as ActorController)!;

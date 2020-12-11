@@ -8,9 +8,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionSequence : ActorAction
     {
-        private int _AP;
-        private int _turn;
-        private List<int> _handler_codes;
+        private readonly int _AP;
+        private readonly int _turn;
+        private readonly List<int> _handler_codes;
         [NonSerialized] private ActorAction _result;
 
         public ActionSequence(Actor actor, IEnumerable<int> codes)

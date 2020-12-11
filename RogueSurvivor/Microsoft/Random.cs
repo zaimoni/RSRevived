@@ -48,7 +48,7 @@ namespace Microsoft
         // Member Variables
         private int inext;
         private int inextp;
-        private int[] SeedArray = new int[BUFFER_LEN];
+        private readonly int[] SeedArray = new int[BUFFER_LEN];
 
         // Constructors
         public Random() : this(Environment.TickCount) { }

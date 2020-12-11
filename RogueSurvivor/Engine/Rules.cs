@@ -162,7 +162,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static int _Average(int x, int y) { return x+y/2; }
     // don't expect that many incoming values, so should be fine with this not expiring
-    private static Dictionary<int, DenormalizedProbability<int>> _SkillProbabilityDistribution_cache = new Dictionary<int, DenormalizedProbability<int>>();
+    private readonly static Dictionary<int, DenormalizedProbability<int>> _SkillProbabilityDistribution_cache = new Dictionary<int, DenormalizedProbability<int>>();
 
     public static DenormalizedProbability<int> SkillProbabilityDistribution(int skillValue)
     {

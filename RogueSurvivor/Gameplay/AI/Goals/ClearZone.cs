@@ -19,8 +19,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     [Serializable]
     class ClearZone : Objective,Pathable,Observer<Location[]>
     {
-        private ZoneLoc m_Zone;
-        private HashSet<Point> m_Unverified = new HashSet<Point>();
+        private readonly ZoneLoc m_Zone;
+        private readonly HashSet<Point> m_Unverified = new HashSet<Point>();
         [NonSerialized] private ObjectiveAI oai;
         [NonSerialized] private ThreatTracking threats;
         [NonSerialized] private LocationSet tourism;
