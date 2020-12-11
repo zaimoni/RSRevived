@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       HospitalWorldPos = dr.ChooseWithoutReplacement(essential_services_acceptable);
     }
 
-    public District GetCHARbaseDistrict()
+    static public District GetCHARbaseDistrict()
     {
       var districtList = new List<KeyValuePair<District, int>>();
       Session.Get.World.DoForAllDistricts(d=>{
@@ -3287,7 +3287,7 @@ restart:
       Session.Get.UniqueMaps.Hospital_Power = new UniqueMap(power);
     }
 
-    private void GenerateHospitalEntryHall(Map surfaceMap, Block block)
+    static private void GenerateHospitalEntryHall(Map surfaceMap, Block block)
     {
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, block.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_HOSPITAL, block.BuildingRect);

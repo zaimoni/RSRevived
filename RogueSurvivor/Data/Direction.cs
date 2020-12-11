@@ -68,11 +68,11 @@ namespace djack.RogueSurvivor.Data
         int yDeltaSgn = (0 == yDelta ? 0 : (0 < yDelta ? 1 : -1));
         int dirCode = 3 * xDeltaSgn + yDeltaSgn;
         switch (dirCode) {
-        case -3: return Direction.W;
-        case -1: return Direction.N;
-        case 0: return Direction.NEUTRAL;
-        case 1: return Direction.S;
-        case 3: return Direction.E;
+        case -3: return W;
+        case -1: return N;
+        case 0: return NEUTRAL;
+        case 1: return S;
+        case 3: return E;
         }
         int xAbsDelta = (1 == xDeltaSgn ? xDelta : -xDelta);
         int yAbsDelta = (1 == yDeltaSgn ? yDelta : -yDelta);
@@ -86,29 +86,29 @@ namespace djack.RogueSurvivor.Data
             // y dominant: N/S
             switch (dirCode)
             {
-            default: throw new ArgumentOutOfRangeException("dirCode (N/S); legal range -4..4", dirCode.ToString());
-            case -4: return Direction.N;
-            case -2: return Direction.S;
-            case 2: return Direction.N;
-            case 4: return Direction.S;
+            default: throw new ArgumentOutOfRangeException(nameof(dirCode), dirCode, "(N/S) legal range -4..4");
+            case -4: return N;
+            case -2: return S;
+            case 2: return N;
+            case 4: return S;
             };
         // x dominant: E/W
         switch (dirCode)
         {
-        default: throw new ArgumentOutOfRangeException("dirCode (E/W); legal range -4..4", dirCode.ToString());
-        case -4: return Direction.W;
-        case -2: return Direction.W;
-        case 2: return Direction.E;
-        case 4: return Direction.E;
+        default: throw new ArgumentOutOfRangeException(nameof(dirCode), dirCode, "(E/W) legal range -4..4");
+        case -4: return W;
+        case -2: return W;
+        case 2: return E;
+        case 4: return E;
         };
 diagonalExit:
         switch (dirCode)
         {
-        default: throw new ArgumentOutOfRangeException("dirCode (diagonal); legal range -4..4", dirCode.ToString());
-        case -4: return Direction.NW;
-        case -2: return Direction.SW;
-        case 2: return Direction.NE;
-        case 4: return Direction.SE;
+        default: throw new ArgumentOutOfRangeException(nameof(dirCode), dirCode, "(diagonal) legal range -4..4");
+        case -4: return NW;
+        case -2: return SW;
+        case 2: return NE;
+        case 4: return SE;
         }
     }
 

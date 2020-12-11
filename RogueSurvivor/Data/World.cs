@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Data
     /// <returns>district is on south edge of world</returns>
     public bool Edge_S(District d) { return d.WorldPosition.Y == m_Size - 1; }
     /// <returns>district is on north or east edge of world</returns>
-    public bool Edge_N_or_E(District d) { return 0 >= d.WorldPosition.X || 0 >= d.WorldPosition.Y; }    // arguably should be 0 ==
+    static public bool Edge_N_or_E(District d) { return 0 >= d.WorldPosition.X || 0 >= d.WorldPosition.Y; }    // arguably should be 0 ==
 
     // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE
     // supported layouts are: E-W, N-S, 
@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Data
     // General priority order.
     private static DistrictKind[] ZonePriority = { DistrictKind.SHOPPING, DistrictKind.GENERAL, DistrictKind.RESIDENTIAL, DistrictKind.BUSINESS, DistrictKind.GREEN };
 
-    private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats) {
+    static private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats) {
         var max = new KeyValuePair<int, int>(0,int.MinValue);
         var min = new KeyValuePair<int, int>(0,int.MaxValue);
         int ub = stats.Length;

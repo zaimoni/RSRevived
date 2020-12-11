@@ -308,7 +308,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 game.DoMakeAggression(m_Actor.TargetActor,m_Actor);
               } // XXX the target needs an AI modifier to handle this appropriately
             }
-            game.PropagateSight(m_Actor.Location, a => {
+            RogueGame.PropagateSight(m_Actor.Location, a => {
               if (a.Leader != m_Actor && m_Actor.Leader != a) {
                 if (a.Faction.ID.ExtortionIsAggression()) {
                   RogueGame.DoSay(a, m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);

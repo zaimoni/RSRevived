@@ -483,7 +483,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // more sophisticated variants would handle player-varying messages
-    public void PropagateSight(Location loc, Action<Actor> doFn)
+    static public void PropagateSight(Location loc, Action<Actor> doFn)
     {
       void process_sight(Actor? a) {
         ActorController? ac;
@@ -1903,7 +1903,7 @@ namespace djack.RogueSurvivor.Engine
       //   arrive by road (i.e. arrive on the outer edge of the outer districts)
 
       // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
-      if (!world.Edge_N_or_E(district)) {
+      if (!World.Edge_N_or_E(district)) {
         EndTurnDistrictEvents(world[district.WorldPosition+Direction.NW]);
         if (world.Edge_S(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.W]);
         if (world.Edge_E(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.N]);
@@ -6811,20 +6811,19 @@ namespace djack.RogueSurvivor.Engine
     }
 
 	// UI functions ... do not belong in Corpse class for now
-	static private string DescribeCorpseLong_DescInfectionPercent(int num)
-	{
-	  return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
-	}
+    static private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
+    {
+	  static string DescribeCorpseLong_DescInfectionPercent(int num) {
+	    return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
+	  }
 
-	static private string DescribeCorpseLong_DescRiseProbability(int num)
-	{
-	  return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
-	}
+ 	  static string DescribeCorpseLong_DescRiseProbability(int num) {
+	    return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
+	  }
 
-	static private string DescribeCorpseLong_DescRotLevel(int num)
-	{
-      switch (num)
-      {
+	  static string DescribeCorpseLong_DescRotLevel(int num) {
+        switch (num)
+        {
         case 0: return "The corpse looks fresh.";
         case 1: return "The corpse is bruised and smells.";
         case 2: return "The corpse is damaged.";
@@ -6837,16 +6836,13 @@ namespace djack.RogueSurvivor.Engine
 #else
 		  return "The corpse is infested with software bugs.";
 #endif
-      }
-	}
+        }
+	  }
 
-	static private string DescribeCorpseLong_DescReviveChance(int num)
-	{
-			return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
-	}
+	  static string DescribeCorpseLong_DescReviveChance(int num) {
+		 return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
+	  }
 
-    private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
-    {
       var skills = Player.Sheet.SkillTable;
       int skillLevel = skills.GetSkillLevel(Skills.IDs.NECROLOGY);
       var lines = new List<string>(10){
@@ -12400,7 +12396,7 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
-      District district = m_TownGenerator.GetCHARbaseDistrict();
+      District district = BaseTownGenerator.GetCHARbaseDistrict();
       var zoneList = new List<Zone>();
       foreach (var zone in district.EntryMap.Zones) {
         if (zone.Attribute.HasKey("CHAR Office")) zoneList.Add(zone);
@@ -13276,7 +13272,7 @@ retry:
       CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
     }
 
-    private void DoTurnAllGeneratorsOn(Map map, Actor victor)
+    static private void DoTurnAllGeneratorsOn(Map map, Actor victor)
     {
       foreach (var powGen in map.PowerGenerators.Get) {
         if (powGen.IsOn) continue;
@@ -13294,7 +13290,7 @@ retry:
       return location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || IsInCHAROffice(location);
     }
 
-    private bool AreLinkedByPhone(Actor speaker, Actor target)
+    static private bool AreLinkedByPhone(Actor speaker, Actor target)
     {
       if (speaker.Leader != target && target.Leader != speaker) return false;
       ItemTracker itemTracker1 = speaker.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
