@@ -7,6 +7,7 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI;
+using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

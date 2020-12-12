@@ -18,6 +18,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.Generators;
+using djack.RogueSurvivor.UI;
 using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;

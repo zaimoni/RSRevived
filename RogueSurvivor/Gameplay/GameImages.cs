@@ -7,6 +7,7 @@
 #define CGI_ICONS
 
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

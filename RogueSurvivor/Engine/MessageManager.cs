@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < (count = m_Messages.Count)) m_Messages.RemoveAt(count - 1);
     }
 
-    public void Draw(IRogueUI ui, int freshMessagesTurn, int gx, int gy) {
+    public void Draw(UI.IRogueUI ui, int freshMessagesTurn, int gx, int gy) {
       for (int index = 0; index < m_Messages.Count; ++index) {
         Message message = m_Messages[index];
         int alpha = Math.Max(64, (int) byte.MaxValue - m_FadeoutFactor * (m_Messages.Count - 1 - index));

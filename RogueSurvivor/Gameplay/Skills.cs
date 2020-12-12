@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
