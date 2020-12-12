@@ -122,6 +122,33 @@ namespace djack.RogueSurvivor.Data
           }
           return catalog;
 		}
+
+        private void imageThreat(ZoneLoc zone, Dictionary<Map, Point[]> catalog, Func<Actor, bool> pred)
+        {
+          Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
+		  lock(_threats) {
+            var staging = new HashSet<Point>();
+            foreach(var x in _threats) {
+              if (!pred(x.Key)) continue;
+              if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
+              if (!cache.Any(ok)) continue;
+              staging.UnionWith(cache.Where(ok));
+            }
+            catalog.Add(zone.m, staging.ToArray());
+		  }
+        }
+
+        public Dictionary<Map, Point[]>? ImageThreat(ZoneLoc zone, Func<Actor, bool> pred)
+        {
+          var catalog = new Dictionary<Map, Point[]>();
+          var canon = zone.GetCanonical;
+          if (null == canon) {
+            imageThreat(zone, catalog, pred);
+          } else {
+            foreach(var z in canon) imageThreat(z, catalog, pred);
+          }
+          return 0 < catalog.Count ? catalog : null;
+        }
 #nullable restore
 
         private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache

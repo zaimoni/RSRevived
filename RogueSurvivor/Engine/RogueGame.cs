@@ -11279,8 +11279,12 @@ namespace djack.RogueSurvivor.Engine
     static private string _gameStatus(Actor a) {
       if (a != m_PlayerInTurn) return "SIMULATING";
       if (!string.IsNullOrEmpty(m_Status)) return m_Status;
+      var ai = a.Controller as ObjectiveAI;
+      if (null != ai) {
+        if (null != ai.ContrafactualZTracker(a.Location)) return "WANT ZTRACKER";
+      }
       if (a.Controller.InCombat) return "IN COMBAT";
-      if (a.Controller is ObjectiveAI ai) {
+      if (null != ai) {
         var code = ai.InterruptLongActivity();
         if (ObjectiveAI.ReactionCode.NONE != code) {
           if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ENEMY)) return "THREAT NEAR";

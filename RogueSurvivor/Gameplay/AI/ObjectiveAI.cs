@@ -6534,6 +6534,17 @@ restart_chokepoints:
     }
 #nullable restore
 
+    /// <summary>Cheating AI: asks Threat tracking to estimate how much detectable threat would be scanned</summary>
+    public Dictionary<Map, Point[]>? ContrafactualZTracker(Location origin) {
+        var threat = m_Actor.Threats;
+        if (null == threat) return null;
+        Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
+        m_Actor.Tracks(ref find_us);
+        if (!find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) return null;
+        var scan = new ZoneLoc(origin.Map, new Rectangle(origin.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
+        return threat.ImageThreat(scan, a => a.Model.Abilities.IsUndead);
+    }
+
     /// <summary>
     /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.
     /// </summary>
