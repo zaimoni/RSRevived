@@ -303,7 +303,8 @@ namespace djack.RogueSurvivor.Data
           // handwavium: how debilitating is the injury expectation?
           var annoyance = (double)(damage)/a.HitPoints;
           annoyance *= annoyance;
-          annoyance *= CIVILIAN_STARVE;  // automatic starvation for civilians.
+          // a bear trap should be significantly worse than 3 standard 4-turn moves, but not an outright deterrent
+          annoyance *= 30;  // 30 hp thinks beartrap is move cost 15 on damage alone
           var escape = trap.EscapeChanceFor(a);
           if (0 >= escape) return CIVILIAN_STARVE; // don't want to risk arithmetic overflow.  Automatic starvation should be decisive enough.
           if (100 > escape) annoyance += 2*(100.0/(100-escape) - 1);  // overestimate how much time we wasted escaping from this trap
