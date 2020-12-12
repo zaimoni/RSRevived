@@ -3683,7 +3683,8 @@ namespace djack.RogueSurvivor.Engine
               // full knowledge: police storyline
               if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should have NPC start-of-game district chief
-                display.Add("Aurora warning was called at noon, based on NASA forecast.  Confidence of breakers tripping on the magnetosphere generators between 21:00 and 3:00 is two in five.");
+                display.Add("Aurora warning was called at noon, based on NASA forecast.  Confidence of breakers tripping on the magnetosphere generators");
+                display.Add(" between 21:00 and 3:00 is two in five.");
                 display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
                 display.Add("The Metro Transit Authority confirmed that the subway has been shut down and the trains put in storage at 20:17.");
               }
@@ -3745,7 +3746,6 @@ namespace djack.RogueSurvivor.Engine
             }
             break;
         }
-
         ShowSpecialDialogue(Player,display.ToArray());
         return false;
       };
