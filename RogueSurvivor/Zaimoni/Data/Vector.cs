@@ -1625,4 +1625,25 @@ namespace Zaimoni.Data
         }
 
     }
+
+    public static class ext_Vector {
+
+        public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
+        {
+            hull[0] = new Vector2D_short(short.MaxValue, short.MaxValue);
+            hull[1] = new Vector2D_short(short.MinValue, short.MinValue);
+            short tmp;
+            foreach(var pt in src) {
+                if ((tmp = pt.X) < hull[0].X) hull[0].X = tmp;
+                if (tmp > hull[1].X) hull[1].X = tmp;
+                if ((tmp = pt.Y) < hull[0].Y) hull[0].Y = tmp;
+                if (tmp > hull[1].Y) hull[1].Y = tmp;
+            }
+            if (hull[0].X <= hull[1].X) {
+                hull[1] += (Vector2D_short)1;
+                return true;
+            }
+            return false;
+        }
+    }
 }

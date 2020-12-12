@@ -1538,7 +1538,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return lhs.IsLessUsableThan(rhs);
       });
       if (null == light) return false;
-      if (NeedsLight()) {
+      if (Needs(light)) {
         light.EquippedBy(m_Actor);
         return true;
       }
@@ -3574,53 +3574,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
 
       return true;
-    }
-
-    protected bool NeedsLight()
-    {
-      switch (m_Actor.Location.Map.Lighting)
-      {
-        case Lighting.DARKNESS: return true;
-        case Lighting.LIT: return false;
-#if DEBUG
-        case Lighting.OUTSIDE:
-#else
-        default:
-#endif
-          if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
-
-          // use threat tracking/tourism when available
-          ThreatTracking threats = m_Actor.Threats;
-          LocationSet sights_to_see = m_Actor.InterestingLocs;
-          if (null != threats || null != sights_to_see) {
-            var no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
-            HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range);
-            HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range+3);
-            danger_point_FOV.ExceptWith(no_light_FOV);
-
-            var tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)+1;
-            Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
-
-            if (null!=threats) {
-              HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map, view);
-              tainted.IntersectWith(danger_point_FOV);
-              if (0<tainted.Count) return true;
-            }
-            if (null!=sights_to_see) {
-              HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map, view);
-              tainted.IntersectWith(danger_point_FOV);
-              if (0<tainted.Count) return true;
-            }
-            if (null!=threats && null!=sights_to_see) return false;
-          }
-
-          // resume legacy implementation
-          if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
-          return true;
-#if DEBUG
-        default: throw new ArgumentOutOfRangeException("unhandled lighting");
-#endif
-      }
     }
 
 #nullable enable

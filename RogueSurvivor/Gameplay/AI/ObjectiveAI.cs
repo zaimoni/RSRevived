@@ -6377,6 +6377,48 @@ restart_chokepoints:
       return new KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
+    public bool Needs(ItemLight light)
+    {
+      switch(m_Actor.Location.Map.Lighting)
+      {
+      case Lighting.LIT: return false;
+      case Lighting.OUTSIDE: if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
+        break;
+      }
+
+          // use threat tracking/tourism when available
+          ThreatTracking threats = m_Actor.Threats;
+          LocationSet sights_to_see = m_Actor.InterestingLocs;
+          if (null != threats || null != sights_to_see) {
+            var no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+            HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range);
+            HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range + light.FovBonus + 1);
+            danger_point_FOV.ExceptWith(no_light_FOV);
+
+            Span<Point> hull = stackalloc Point[2];
+            if (danger_point_FOV.Hull(ref hull)) {
+                Rectangle view = new Rectangle(hull[0], hull[1]-hull[0]);
+
+                if (null!=threats) {
+                    HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map, view);
+                    tainted.IntersectWith(danger_point_FOV);
+                    if (0<tainted.Count) return true;
+                }
+                if (null!=sights_to_see) {
+                    HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map, view);
+                    tainted.IntersectWith(danger_point_FOV);
+                    if (0<tainted.Count) return true;
+                }
+            }
+            if (null!=threats && null!=sights_to_see) return false;
+          }
+
+      // resume legacy implementation
+      if (Lighting.DARKNESS == m_Actor.Location.Map.Lighting) return true;
+      if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
+      return true;
+    }
+
     // arguable whether these twp should be public in Map
     static protected IEnumerable<Engine.MapObjects.PowerGenerator>? GeneratorsToTurnOn(Map m)
     {

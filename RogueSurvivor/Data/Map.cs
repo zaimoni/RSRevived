@@ -1048,20 +1048,7 @@ retry:
 
     public bool ActorPositionHull(ref Span<Point> hull)
     {
-        hull[0] = Extent;
-        hull[1] = Point.Empty;
-        short tmp;
-        foreach(Actor a in m_ActorsList) {
-            if ((tmp = a.Location.Position.X) < hull[0].X) hull[0].X = tmp;
-            if (tmp > hull[1].X) hull[1].X = tmp;
-            if ((tmp = a.Location.Position.Y) < hull[0].Y) hull[0].Y = tmp;
-            if (tmp > hull[1].Y) hull[1].Y = tmp;
-        }
-        if (hull[0].X <= hull[1].X) {
-            hull[1] += Direction.SE;
-            return true;
-        }
-        return false;
+        return m_ActorsList.Select(a => a.Location.Position).Hull(ref hull);
     }
 
     public bool RequiresUI(Point delta) {
