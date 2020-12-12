@@ -170,7 +170,6 @@
     <Compile Include="Engine\UniqueMap.cs" />
     <Compile Include="Engine\UniqueMaps.cs" />
     <Compile Include="Engine\Session.cs" />
-    <Compile Include="Engine\IRogueUI.cs" />
     <Compile Include="Engine\TextFile.cs" />
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Engine\LOS.cs" />
@@ -274,6 +273,7 @@
     <Compile Include="Engine\MapObjects\Board.cs" />
     <Compile Include="Engine\MapObjects\PowerGenerator.cs" />
     <Compile Include="Engine\Tasks\TaskRemoveDecoration.cs" />
+    <Compile Include="UI\IRogueUI.cs" />
     <Compile Include="UI\IGameCanvas.cs" />
     <Compile Include="UI\GDIPlusGameCanvas.cs" />
     <Compile Include="Properties\Resources.cs" />

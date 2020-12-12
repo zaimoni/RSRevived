@@ -13,7 +13,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows.Forms; // causes lock-in to System.Drawing
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
