@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Data
 		  }
         }
 
-        public Dictionary<Map, Point[]>? ImageThreat(ZoneLoc zone, Func<Actor, bool> pred)
+        public List<KeyValuePair<Map, Point[]>>? ImageThreat(ZoneLoc zone, Func<Actor, bool> pred)
         {
           var catalog = new Dictionary<Map, Point[]>();
           var canon = zone.GetCanonical;
@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Data
           } else {
             foreach(var z in canon) imageThreat(z, catalog, pred);
           }
-          return 0 < catalog.Count ? catalog : null;
+          return 0 < catalog.Count ? catalog.ToList() : null;
         }
 #nullable restore
 

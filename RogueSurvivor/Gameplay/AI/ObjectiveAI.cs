@@ -6532,18 +6532,32 @@ restart_chokepoints:
           if (InCommunicationWith(fo) && fo.Controller is OrderableAI ai) install_break(ai);   // excludes players
       });
     }
-#nullable restore
 
     /// <summary>Cheating AI: asks Threat tracking to estimate how much detectable threat would be scanned</summary>
-    public Dictionary<Map, Point[]>? ContrafactualZTracker(Location origin) {
+    public List<KeyValuePair<Map, Point[]>>? ContrafactualZTracker(Location origin) {
         var threat = m_Actor.Threats;
         if (null == threat) return null;
         Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
         m_Actor.Tracks(ref find_us);
         if (!find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) return null;
         var scan = new ZoneLoc(origin.Map, new Rectangle(origin.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
-        return threat.ImageThreat(scan, a => a.Model.Abilities.IsUndead);
+        var image = threat.ImageThreat(scan, a => a.Model.Abilities.IsUndead);
+        if (null == image) return null;
+        // eliminate locations in view
+        int ub = image.Count;
+        while(0 <= --ub) {
+          List<Point>? staging = null;
+          foreach(var pt in image[ub].Value) {
+            var loc = new Location(image[ub].Key, pt);
+            if (!CanSee(loc)) (staging ??= new List<Point>()).Add(pt);
+          }
+          if (null == staging) image.RemoveAt(ub);
+          else if (staging.Count < image[ub].Value.Length) image[ub] = new KeyValuePair<Map, Point[]>(image[ub].Key, staging.ToArray());
+        }
+
+        return 0 < image.Count ? image : null;
     }
+#nullable restore
 
     /// <summary>
     /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.
