@@ -59,8 +59,10 @@ namespace djack.RogueSurvivor
       m_NormalFont = new Font("Lucida Console", 8.25f, FontStyle.Regular);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 2...");
       m_BoldFont = new Font("Lucida Console", 8.25f, FontStyle.Bold);
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "register with IRogueUI...");
+      IRogueUI.UI = this;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create RogueGame...");
-      Game = new RogueGame((IRogueUI) this);
+      Game = new RogueGame(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
       m_GameCanvas.BindForm(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
@@ -70,7 +72,7 @@ namespace djack.RogueSurvivor
     {
       // \todo this has to detect mods and provide them in strictly increasing order
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images...");
-      GameImages.LoadResources((IRogueUI) this);
+      GameImages.LoadResources(this);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images done");
     }
 
@@ -79,16 +81,17 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "new ComponentResourceManager...");
       ComponentResourceManager componentResourceManager = new ComponentResourceManager(typeof (RogueForm));
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating GameCanvas...");
-//      if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
-//      {
-//        Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
-//        this.m_GameCanvas = (IGameCanvas) new DXGameCanvas();
-//      }
-//      else
-//     {
-        Logger.WriteLine(Logger.Stage.INIT_MAIN, "GDIPlusGameCanvas implementation...");
-            m_GameCanvas = (IGameCanvas) new GDIPlusGameCanvas();
-//      }
+#if OBSOLETE
+     if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX) {
+       Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
+       m_GameCanvas = new DXGameCanvas();
+     } else {
+#endif
+       Logger.WriteLine(Logger.Stage.INIT_MAIN, "GDIPlusGameCanvas implementation...");
+       m_GameCanvas = new GDIPlusGameCanvas();
+#if OBSOLETE
+     }
+#endif
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "SuspendLayout...");
       SuspendLayout();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup GameCanvas...");
