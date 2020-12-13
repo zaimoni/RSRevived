@@ -82,8 +82,8 @@ namespace djack.RogueSurvivor.Data
 
 	public PlayerController(Actor src) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
-      m_itemMemory = m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
-                                                                            : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+      m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
+                                                                   : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
     public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Data
     // i.e. a full migration of legacy code merely ends up relocating the complexity; rationale needed to proceed
     public override string AggressedBy(Actor aggressor)
     {
-      if (aggressor.IsFaction(Gameplay.GameFactions.IDs.ThePolice) && m_Actor.IsFaction(Gameplay.GameFactions.IDs.TheCHARCorporation) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+      if (aggressor.IsFaction(GameFactions.IDs.ThePolice) && m_Actor.IsFaction(GameFactions.IDs.TheCHARCorporation) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
         // same technical issues as DoMakeEnemyOfCop
         Session.Get.ScriptStage_PoliceCHARrelations = 1;
 //      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
@@ -556,7 +556,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
-      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
+      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.IsFaction(GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
       return true;
     }
 

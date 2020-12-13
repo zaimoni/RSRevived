@@ -7,6 +7,8 @@
 using System;
 using Zaimoni.Data;
 
+using GameFactions = djack.RogueSurvivor.Data.GameFactions;
+
 namespace djack.RogueSurvivor.Engine
 {
 /*
@@ -567,9 +569,9 @@ namespace djack.RogueSurvivor.Engine
             m_ShamblersUpgrade = false;
     }
 
-    public float DifficultyRating(Gameplay.GameFactions.IDs side)
+    public float DifficultyRating(GameFactions.IDs side)
     { // Historically supported factions are civilians and zombies
-      var us = Gameplay.GameFactions.From(side);
+      var us = GameFactions.From(side);
       float rating = 1f;
 
       ///////////////////
@@ -585,18 +587,18 @@ namespace djack.RogueSurvivor.Engine
       //////////////////
       if (!RevealStartingDistrict) rating += 0.1f;    // theoretically affects everyone
 
-      if (!NPCCanStarveToDeath) rating += (!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? -0.1f : 0.1f);  // very arguable
-      if (NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR && Gameplay.GameFactions.TheBlackOps!=us) {
+      if (!NPCCanStarveToDeath) rating += (!GameFactions.TheCivilians.IsEnemyOf(us) ? -0.1f : 0.1f);  // very arguable
+      if (NatGuardFactor != DEFAULT_NATGUARD_FACTOR && GameFactions.TheBlackOps!=us) {
         // blackops are strictly after national guard so they don't care aobut this setting either way
-        float k = (float) (NatGuardFactor - GameOptions.DEFAULT_NATGUARD_FACTOR) / (float)GameOptions.DEFAULT_NATGUARD_FACTOR;
-        rating += 0.5f*(!Gameplay.GameFactions.TheArmy.IsEnemyOf(us) ? -k : k);
+        float k = (float) (NatGuardFactor - DEFAULT_NATGUARD_FACTOR) / (float)DEFAULT_NATGUARD_FACTOR;
+        rating += 0.5f*(!GameFactions.TheArmy.IsEnemyOf(us) ? -k : k);
       }
-      if (SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) {
+      if (SuppliesDropFactor != DEFAULT_SUPPLIESDROP_FACTOR) {
         // while almost everyone can use medikits, the main influence of this is on food supply
-        float k = (float) (SuppliesDropFactor - GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) / (float)GameOptions.DEFAULT_SUPPLIESDROP_FACTOR;
-        rating += 0.5f*(!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? -k : k);
+        float k = (float) (SuppliesDropFactor - DEFAULT_SUPPLIESDROP_FACTOR) / (float)DEFAULT_SUPPLIESDROP_FACTOR;
+        rating += 0.5f*(!GameFactions.TheCivilians.IsEnemyOf(us) ? -k : k);
       }
-      if (ZombifiedsUpgradeDays != GameOptions.ZupDays.THREE) {
+      if (ZombifiedsUpgradeDays != ZupDays.THREE) {
         static float DeltaDifficulty(ZupDays x) {
           switch (x) {
             case ZupDays.ONE: return 0.5f;
@@ -614,7 +616,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 
-        rating += DeltaDifficulty(ZombifiedsUpgradeDays)*(Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 0.5f : -0.5f);
+        rating += DeltaDifficulty(ZombifiedsUpgradeDays)*(GameFactions.TheUndeads.IsEnemyOf(us) ? 0.5f : -0.5f);
       }
 
       //////////////////
@@ -632,7 +634,7 @@ namespace djack.RogueSurvivor.Engine
       float reference = (float) Math.Sqrt(DEFAULT_MAX_UNDEADS+ DEFAULT_MAX_CIVILIANS) / (DEFAULT_DISTRICT_SIZE * DEFAULT_DISTRICT_SIZE);
       float relative_deviation = ((float) Math.Sqrt((double) (MaxCivilians + MaxUndeads)) / (float) (DistrictSize * DistrictSize) - reference) / reference;
 #endif
-      rating += relative_deviation * (!Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? - 0.99f :  0.99f);
+      rating += relative_deviation * (!GameFactions.TheUndeads.IsEnemyOf(us) ? - 0.99f :  0.99f);
       }
 
       {
@@ -641,7 +643,7 @@ namespace djack.RogueSurvivor.Engine
       float relative_deviation_start = (float) (DayZeroUndeadsPercent - DEFAULT_DAY_ZERO_UNDEADS_PERCENT) / (float)DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
       float relative_deviation_speed = (float) (ZombieInvasionDailyIncrease - 5) / 5f;
       float k = (float)(0.3*relative_deviation + 0.05*relative_deviation_start + 0.15*relative_deviation_speed);
-      rating += Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? k : -k;
+      rating += GameFactions.TheUndeads.IsEnemyOf(us) ? k : -k;
       }
 
       if (!Session.Get.HasInfection) {  // starvation zombification chance only affects classic and z-war modes.  Does affect difficulty vacuously in RS Alpha 9
@@ -650,7 +652,7 @@ namespace djack.RogueSurvivor.Engine
         const float reference_scale = (float)(DEFAULT_MAX_CIVILIANS* DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
         float relative_deviation_scale = NPCCanStarveToDeath ? ((float) (MaxCivilians * StarvedZombificationChance) - reference_scale) / reference_scale : -1f;
         float k = (float)(0.3*relative_deviation + 0.2*relative_deviation_scale);
-        rating += Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ?  k : -k;
+        rating += GameFactions.TheUndeads.IsEnemyOf(us) ?  k : -k;
       }
 
       /////////////
@@ -663,14 +665,14 @@ namespace djack.RogueSurvivor.Engine
       // - Skeletons Upgrade          : x1.20 / x0.80
       // - Shamblers Upgrade          : x1.25 / x0.75
       ////////////
-      if (!AllowUndeadsEvolution && Session.Get.HasEvolution) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 0.5f : 2f);
+      if (!AllowUndeadsEvolution && Session.Get.HasEvolution) rating *= (GameFactions.TheUndeads.IsEnemyOf(us) ? 0.5f : 2f);
       if (IsCombatAssistantOn) rating *= 0.75f;
       if (IsPermadeathOn) rating *= 2f;
-      if (!IsAggressiveHungryCiviliansOn) rating *= (!Gameplay.GameFactions.TheCivilians.IsEnemyOf(us) ? 0.5f : 2f);
+      if (!IsAggressiveHungryCiviliansOn) rating *= (!GameFactions.TheCivilians.IsEnemyOf(us) ? 0.5f : 2f);
       if (Session.Get.HasAllZombies) {
-        if (RatsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.1f : 0.9f);
-        if (SkeletonsUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.2f : 0.8f);
-        if (ShamblersUpgrade) rating *= (Gameplay.GameFactions.TheUndeads.IsEnemyOf(us) ? 1.25f : 0.75f);
+        if (RatsUpgrade) rating *= (GameFactions.TheUndeads.IsEnemyOf(us) ? 1.1f : 0.9f);
+        if (SkeletonsUpgrade) rating *= (GameFactions.TheUndeads.IsEnemyOf(us) ? 1.2f : 0.8f);
+        if (ShamblersUpgrade) rating *= (GameFactions.TheUndeads.IsEnemyOf(us) ? 1.25f : 0.75f);
       }
 
       return Math.Max(rating, 0.0f);

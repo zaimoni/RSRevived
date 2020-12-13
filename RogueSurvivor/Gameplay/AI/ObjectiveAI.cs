@@ -170,7 +170,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     protected ObjectiveAI(Actor src) : base(src) {
       // implicit police radio, and trained to use it properly
-      if (m_Actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) {
+      if (m_Actor.IsFaction(GameFactions.IDs.ThePolice)) {
         FOVevents.Add(new TryToClearZones(Session.Get.Police, src));
         FOVevents.Add(Session.Get.Police.implicitRadio); // want this to be lexically late to run early and update threats/tourism for others
         if (   (1 <= Session.Get.ScriptStage_PoliceStationPrisoner || 1 <= Session.Get.ScriptStage_PoliceCHARrelations)

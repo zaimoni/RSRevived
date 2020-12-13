@@ -8,18 +8,13 @@ using djack.RogueSurvivor.Data;
 
 #nullable enable
 
-namespace djack.RogueSurvivor.Gameplay
+namespace djack.RogueSurvivor.Data
 {
-  internal class GameFactions : FactionDB
+  internal class GameFactions
   {
     private static readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
-    public Faction this[int id] {
-      get {
-        return m_Factions[id];
-      }
-    }
-
+    static public Faction From(int id) { return m_Factions[id]; }
     static public Faction From(IDs id) { return m_Factions[(int)id]; }
 
     static public Faction TheArmy { get { return m_Factions[(int) IDs.TheArmy]; } }
@@ -34,7 +29,7 @@ namespace djack.RogueSurvivor.Gameplay
     static public Faction TheSurvivors { get { return m_Factions[(int) IDs.TheSurvivors]; } }
     static public Faction TheFerals { get { return m_Factions[(int) IDs.TheFerals]; } }
 
-    public GameFactions()
+    static GameFactions()
     {
       m_Factions[(int)IDs.TheArmy] = new Faction("Army", "soldier", (int)IDs.TheArmy, true);
       m_Factions[(int)IDs.TheBikers] = new Faction("Bikers", "biker", (int)IDs.TheBikers, true);

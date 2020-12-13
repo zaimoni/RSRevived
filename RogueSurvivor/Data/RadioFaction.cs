@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Data
     {
         public readonly ThreatTracking Threats;
         public readonly LocationSet Investigate;
-        public readonly Gameplay.GameFactions.IDs FactionID;
+        public readonly GameFactions.IDs FactionID;
 
         public ImplicitRadio(RadioFaction faction)
         {
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool update(Location[] fov) {
-            var my_faction = Gameplay.GameFactions.From(FactionID);
+            var my_faction = GameFactions.From(FactionID);
             Investigate.Seen(fov);
             foreach (var loc in fov) {
                 var actorAt = loc.Actor;
@@ -152,10 +152,10 @@ namespace djack.RogueSurvivor.Data
 #endif
         static private ImplicitRadio? s_implicitRadio = null;
 
-        public readonly djack.RogueSurvivor.Gameplay.GameFactions.IDs FactionID;
-        public readonly djack.RogueSurvivor.Gameplay.GameItems.IDs RadioID;
+        public readonly GameFactions.IDs FactionID;
+        public readonly Gameplay.GameItems.IDs RadioID;
 
-        public RadioFaction(djack.RogueSurvivor.Gameplay.GameFactions.IDs faction, djack.RogueSurvivor.Gameplay.GameItems.IDs radio)
+        public RadioFaction(GameFactions.IDs faction, Gameplay.GameItems.IDs radio)
         {
             FactionID = faction;
             RadioID = radio;
@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
-        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Gameplay.GameFactions.From(FactionID)) || Threats.IsThreat(a); }
+        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a); }
 
         public void TrackThroughExitSpawn(Actor a)
         {

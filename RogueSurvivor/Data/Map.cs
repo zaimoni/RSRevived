@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Data
 
     private static ReadOnlyCollection<Actor> _findPolice(List<Actor> src)
     {
-      return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsFaction(Gameplay.GameFactions.IDs.ThePolice) && !a.IsDead));
+      return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsFaction(GameFactions.IDs.ThePolice) && !a.IsDead));
     }
 
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
@@ -1142,7 +1142,7 @@ retry:
     public void Recalc(Actor actor)
     {
       if (actor.IsPlayer) Players.Recalc();
-      if (actor.IsFaction(Gameplay.GameFactions.IDs.ThePolice)) Police.Recalc();
+      if (actor.IsFaction(GameFactions.IDs.ThePolice)) Police.Recalc();
     }
 
     public void PlaceAt(Actor actor, in Point position)

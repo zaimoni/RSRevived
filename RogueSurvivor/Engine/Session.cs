@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
-    public readonly RadioFaction Police = new RadioFaction(Gameplay.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
+    public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
 
     [NonSerialized] private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
 

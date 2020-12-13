@@ -13,11 +13,8 @@ namespace djack.RogueSurvivor.Data
 {
   internal static class Models
   {
-    readonly private static FactionDB m_Factions = new Gameplay.GameFactions();
-
     // Actors and Items should also be static-contructed, but those require a UI parameter to report back on file load success/failure
     public static ActorModelDB Actors { get; set; }
-    public static FactionDB Factions { get { return m_Factions; } }
     public static ItemModelDB Items { get; set; }
   }
 }

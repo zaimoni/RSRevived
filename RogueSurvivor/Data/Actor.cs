@@ -114,7 +114,7 @@ namespace djack.RogueSurvivor.Data
 
     private Flags m_Flags;
     private Gameplay.GameActors.IDs m_ModelID;
-    private int m_FactionID;
+    private int m_FactionID; // savefile break: retype to proper faction id
     private Gameplay.GameGangs.IDs m_GangID;  // sparse field
 #nullable enable
     private string m_Name;
@@ -179,11 +179,11 @@ namespace djack.RogueSurvivor.Data
 
     public Faction Faction
     {
-      get { return Models.Factions[m_FactionID]; }
+      get { return GameFactions.From(m_FactionID); }
       set { m_FactionID = value.ID; }
     }
 
-    public bool IsFaction(Gameplay.GameFactions.IDs f) { return m_FactionID == (int)f; }
+    public bool IsFaction(GameFactions.IDs f) { return m_FactionID == (int)f; }
     public bool IsFaction(Actor other) { return m_FactionID == other.m_FactionID; }
 
 #nullable enable
@@ -551,13 +551,13 @@ namespace djack.RogueSurvivor.Data
       // retain general-purpose code within the cases
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
         int bonus() {
-          switch((Gameplay.GameFactions.IDs)observer.Faction.ID) {
-            case Gameplay.GameFactions.IDs.ThePolice:
+          switch((GameFactions.IDs)observer.Faction.ID) {
+            case GameFactions.IDs.ThePolice:
               if (armor.IsHostileForCops()) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
               else if (armor.IsFriendlyForCops()) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
               break;
-            case Gameplay.GameFactions.IDs.TheBikers:
-            case Gameplay.GameFactions.IDs.TheGangstas:
+            case GameFactions.IDs.TheBikers:
+            case GameFactions.IDs.TheGangstas:
               if (armor.IsHostileForBiker(observer.GangID)) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
               else if (armor.IsFriendlyForBiker(observer.GangID)) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
             break;
@@ -1193,14 +1193,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasActivePoliceRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
+        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return true;
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
 
     public bool HasPoliceRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
+        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return true;
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
@@ -1208,21 +1208,21 @@ namespace djack.RogueSurvivor.Data
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
     public bool HasActiveArmyRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
+        if ((int)GameFactions.IDs.TheArmy==m_FactionID) return true;
         return false;
       }
     }
 
     public bool HasArmyRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
+        if ((int)GameFactions.IDs.TheArmy==m_FactionID) return true;
         return false;
       }
     }
 
     public bool NeedActivePoliceRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
+        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
         // XXX disallow murderers under certain conditions, etc
         var leader = LiveLeader;
         if (null != leader) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
@@ -1243,7 +1243,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool WantPoliceRadio {
       get {
-        if ((int)Gameplay.GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
+        if ((int)GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
         bool have_cellphone = HasCellPhone;
         bool have_army = HasArmyRadio;
         if (!have_cellphone && !have_army) return true;
@@ -1393,14 +1393,14 @@ namespace djack.RogueSurvivor.Data
 
     public ThreatTracking? Threats {
       get {
-        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.Police.Threats;
+        if (IsFaction(GameFactions.IDs.ThePolice)) return Session.Get.Police.Threats;
         return null;
       }
     }
 
     public LocationSet? InterestingLocs {
       get {
-        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return Session.Get.Police.Investigate;
+        if (IsFaction(GameFactions.IDs.ThePolice)) return Session.Get.Police.Investigate;
         return null;
       }
     }
@@ -1561,7 +1561,7 @@ namespace djack.RogueSurvivor.Data
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
+        if (IsFaction(GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
         if (0 < CountFollowers) ret.UnionWith(m_Followers);
         var leader = LiveLeader;
@@ -1608,7 +1608,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsAlly(Actor other)
     {
       if (IsInGroupWith(other)) return true;
-      if (IsFaction(Gameplay.GameFactions.IDs.ThePolice)) return other.IsFaction(Gameplay.GameFactions.IDs.ThePolice);
+      if (IsFaction(GameFactions.IDs.ThePolice)) return other.IsFaction(GameFactions.IDs.ThePolice);
       return false;
     }
 
@@ -3221,18 +3221,18 @@ namespace djack.RogueSurvivor.Data
       // RS Revived: no trading with differing treacherous factions; should be "by AI controller" but player controller would need to simulate underlying target
       switch(m_FactionID)
       {
-      case (int)Gameplay.GameFactions.IDs.TheCHARCorporation:
-      case (int)Gameplay.GameFactions.IDs.TheBikers:
-      case (int)Gameplay.GameFactions.IDs.TheGangstas:
+      case (int)GameFactions.IDs.TheCHARCorporation:
+      case (int)GameFactions.IDs.TheBikers:
+      case (int)GameFactions.IDs.TheGangstas:
         if (target.m_FactionID!=m_FactionID) return "untrustworthy";
         break;
       }
 
       switch(target.m_FactionID)
       {
-      case (int)Gameplay.GameFactions.IDs.TheCHARCorporation:
-      case (int)Gameplay.GameFactions.IDs.TheBikers:
-      case (int)Gameplay.GameFactions.IDs.TheGangstas:
+      case (int)GameFactions.IDs.TheCHARCorporation:
+      case (int)GameFactions.IDs.TheBikers:
+      case (int)GameFactions.IDs.TheGangstas:
         if (target.m_FactionID!=m_FactionID) return "anticipates treachery";
         break;
       }

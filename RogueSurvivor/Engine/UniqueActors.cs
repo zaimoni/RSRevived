@@ -11,6 +11,7 @@ using Actor = djack.RogueSurvivor.Data.Actor;
 using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerator;
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
+using GameFactions = djack.RogueSurvivor.Data.GameFactions;
 using ItemModel = djack.RogueSurvivor.Data.ItemModel;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
