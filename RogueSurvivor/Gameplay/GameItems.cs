@@ -95,12 +95,6 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.ENT_MAGAZINE,
         IDs.ENT_CHAR_GUARD_MANUAL});
 
-    private MedecineData DATA_MEDICINE_BANDAGE;
-    private MedecineData DATA_MEDICINE_MEDIKIT;
-    private MedecineData DATA_MEDICINE_PILLS_STA;
-    private MedecineData DATA_MEDICINE_PILLS_SLP;
-    private MedecineData DATA_MEDICINE_PILLS_SAN;
-    private MedecineData DATA_MEDICINE_PILLS_ANTIVIRAL;
     private FoodData DATA_FOOD_ARMY_RATION;
     private FoodData DATA_FOOD_GROCERIES;
     private FoodData DATA_FOOD_CANNED_FOOD;
@@ -612,7 +606,7 @@ namespace djack.RogueSurvivor.Gameplay
 #endif
       Models.Items = this;
 
-      LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
+      var med_data = LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
       LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
       LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
       LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
@@ -625,10 +619,10 @@ namespace djack.RogueSurvivor.Gameplay
       LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
       LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
       LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
-      CreateModels();
+      CreateModels(med_data);
     }
 
-    private void CreateModels()
+    private void CreateModels(MedecineData[] med_data)
     {
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
@@ -665,6 +659,14 @@ namespace djack.RogueSurvivor.Gameplay
       if (origin.IsScheduledBefore(origin+Direction.S)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
       if (origin.IsScheduledBefore(origin+Direction.SW)) throw new InvalidOperationException("IsScheduledBefore does not agree with no-skew scheduler");
 #endif
+      // backward compatibility
+      MedecineData DATA_MEDICINE_BANDAGE = med_data[(int)IDs.MEDICINE_BANDAGES - (int)IDs.MEDICINE_BANDAGES];
+      MedecineData DATA_MEDICINE_MEDIKIT = med_data[(int)IDs.MEDICINE_MEDIKIT - (int)IDs.MEDICINE_BANDAGES];
+      MedecineData DATA_MEDICINE_PILLS_STA = med_data[(int)IDs.MEDICINE_PILLS_STA - (int)IDs.MEDICINE_BANDAGES];
+      MedecineData DATA_MEDICINE_PILLS_SLP = med_data[(int)IDs.MEDICINE_PILLS_SLP - (int)IDs.MEDICINE_BANDAGES];
+      MedecineData DATA_MEDICINE_PILLS_SAN = med_data[(int)IDs.MEDICINE_PILLS_SAN - (int)IDs.MEDICINE_BANDAGES];
+      MedecineData DATA_MEDICINE_PILLS_ANTIVIRAL = med_data[(int)IDs.MEDICINE_PILLS_ANTIVIRAL - (int)IDs.MEDICINE_BANDAGES];
+
       // Medicine
       _setModel(new ItemMedicineModel(IDs.MEDICINE_BANDAGES, DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
       _setModel(new ItemMedicineModel(IDs.MEDICINE_MEDIKIT, DATA_MEDICINE_MEDIKIT.NAME, DATA_MEDICINE_MEDIKIT.PLURAL, GameImages.ITEM_MEDIKIT, DATA_MEDICINE_MEDIKIT.HEALING, DATA_MEDICINE_MEDIKIT.STAMINABOOST, DATA_MEDICINE_MEDIKIT.SLEEPBOOST, DATA_MEDICINE_MEDIKIT.INFECTIONCURE, DATA_MEDICINE_MEDIKIT.SANITYCURE, DATA_MEDICINE_MEDIKIT.FLAVOR));
@@ -806,7 +808,7 @@ namespace djack.RogueSurvivor.Gameplay
       Notify(ui, kind, "done!");
     }
 
-    private void LoadMedicineFromCSV(IRogueUI ui, string path)
+    private static MedecineData[] LoadMedicineFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -814,17 +816,12 @@ namespace djack.RogueSurvivor.Gameplay
       LoadDataFromCSV(ui, path, "medicine items", MedecineData.COUNT_FIELDS, new Func<CSVLine, MedecineData>(MedecineData.FromCSVLine), new IDs[6] {
         IDs.MEDICINE_BANDAGES,
         IDs.MEDICINE_MEDIKIT,
-        IDs.MEDICINE_PILLS_SLP,
         IDs.MEDICINE_PILLS_STA,
+        IDs.MEDICINE_PILLS_SLP,
         IDs.MEDICINE_PILLS_SAN,
         IDs.MEDICINE_PILLS_ANTIVIRAL
       }, out MedecineData[] data);
-      DATA_MEDICINE_BANDAGE = data[0];
-      DATA_MEDICINE_MEDIKIT = data[1];
-      DATA_MEDICINE_PILLS_SLP = data[2];
-      DATA_MEDICINE_PILLS_STA = data[3];
-      DATA_MEDICINE_PILLS_SAN = data[4];
-      DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
+      return data;
     }
 
     private void LoadFoodFromCSV(IRogueUI ui, string path)
