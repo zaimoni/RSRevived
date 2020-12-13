@@ -101,6 +101,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
+    public static ItemModel From(int id) { return m_Models[id];  }
     public static ItemModel From(IDs id) { return m_Models[(int)id];  }
 
     private static void _setModel(ItemModel model) {
@@ -565,7 +566,7 @@ namespace djack.RogueSurvivor.Gameplay
       CreateModels(med_data, food_data, melee_data, ranged_data, exp_data, bar_data, armor_data, tracker_data, spray_data, light_data, scent_data, trap_data, ent_data);
     }
 
-    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, MeleeWeaponData[] melee_data, RangedWeaponData[] ranged_data,
+    private static void CreateModels(MedecineData[] med_data, FoodData[] food_data, MeleeWeaponData[] melee_data, RangedWeaponData[] ranged_data,
                               ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data, ArmorData[] armor_data,
                               TrackerData[] tracker_data, SprayPaintData[] spray_data, LightData[] light_data,
                               ScentSprayData[] scent_data, TrapData[] trap_data, EntData[] ent_data)

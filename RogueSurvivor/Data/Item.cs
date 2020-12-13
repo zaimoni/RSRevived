@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Data
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
-    public ItemModel Model { get { return Models.Items[m_ModelID]; } }
+    public ItemModel Model { get { return Gameplay.GameItems.From(m_ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
 
     public string TheName {
