@@ -16,7 +16,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay
 {
-  internal class GameActors : ActorModelDB
+  internal static class GameActors
   {
     // since these are in the Attack records which get serialized, we do have a structural systematic saveload file bloat cycle
     // as there is one generation for each game load.
@@ -42,8 +42,6 @@ namespace djack.RogueSurvivor.Gameplay
     private const int NO_SANITY = 0;
 
 #nullable enable
-    public ActorModel this[int id] { get { return m_Models[id]; } }
-
     static public ActorModel From(IDs id) { return m_Models[(int)id]; }
 
     private static void _setModel(ActorModel model)
@@ -81,17 +79,11 @@ namespace djack.RogueSurvivor.Gameplay
     static public ActorModel Policeman { get { return m_Models[(int) IDs.POLICEMAN]; } }
     static public ActorModel BlackOps { get { return m_Models[(int) IDs.BLACKOPS_MAN]; } }
     static public ActorModel JasonMyers { get { return m_Models[(int) IDs.JASON_MYERS]; } }
-#nullable restore
 
-    public GameActors(IRogueUI ui)
-    {
-#if DEBUG
-      if (null == ui) throw new ArgumentNullException(nameof(ui));
-#endif
-      Models.Actors = this;
-
+    public static void Init(IRogueUI ui) {
       LoadFromCSV(ui, "Resources\\Data\\Actors.csv");
     }
+#nullable restore
 
 /*
 to transform from MALE_CIVILIAN to POLICEMAN:

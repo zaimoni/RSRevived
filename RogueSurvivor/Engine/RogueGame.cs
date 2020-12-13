@@ -348,7 +348,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
-    private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
 #nullable restore
     private Thread m_SimThread;
@@ -362,7 +361,6 @@ namespace djack.RogueSurvivor.Engine
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
-    public GameActors GameActors { get { return m_GameActors; } }
 
     static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
 
@@ -433,7 +431,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating keys, hints.");
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
-      m_GameActors = new GameActors(m_UI);
+      GameActors.Init(m_UI);
       m_GameItems = new GameItems(m_UI);
       m_Manual = LoadManual();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
