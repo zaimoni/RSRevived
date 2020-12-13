@@ -93,7 +93,6 @@
     <Compile Include="Data\Item.cs" />
     <Compile Include="Data\ActorSheet.cs" />
     <Compile Include="Data\Inventory.cs" />
-    <Compile Include="Data\TileModelDB.cs" />
     <Compile Include="Data\Models.cs" />
     <Compile Include="Data\Location.cs" />
     <Compile Include="Data\DollPart.cs" />
