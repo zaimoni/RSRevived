@@ -504,12 +504,12 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs[pt.X, pt.Y] = (byte)(model.ID);
     }
 
-    public TileModel GetTileModelAt(int x, int y) { return Models.Tiles[m_TileIDs[x,y]]; }
-    public TileModel GetTileModelAt(Point pt) { return Models.Tiles[m_TileIDs[pt.X, pt.Y]]; }
+    public TileModel GetTileModelAt(int x, int y) { return GameTiles.From(m_TileIDs[x,y]); }
+    public TileModel GetTileModelAt(Point pt) { return GameTiles.From(m_TileIDs[pt.X, pt.Y]); }
 
     public KeyValuePair<TileModel?,Location> GetTileModelLocation(Point pt)
     {
-      if (IsInBounds(pt)) return new KeyValuePair<TileModel?, Location>(Models.Tiles[m_TileIDs[pt.X, pt.Y]], new Location(this,pt));
+      if (IsInBounds(pt)) return new KeyValuePair<TileModel?, Location>(GameTiles.From(m_TileIDs[pt.X, pt.Y]), new Location(this,pt));
       Location? loc = _Normalize(pt);   // XXX would have to handle out-of-bounds exits when building with peace walls
       if (null == loc) return default;
       return new KeyValuePair<TileModel?, Location>(loc.Value.Map.GetTileModelAt(loc.Value.Position), loc.Value);
@@ -519,7 +519,7 @@ namespace djack.RogueSurvivor.Data
     /// <returns>null if and only if location is invalid rather than merely denormalized</returns>
     public TileModel? GetTileModelAtExt(Point pt)
     {
-      if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]];   //      return GetTileModelAt(x,y);
+      if (IsInBounds(pt)) return GameTiles.From(m_TileIDs[pt.X, pt.Y]);   //      return GetTileModelAt(x,y);
       Location? loc = _Normalize(pt);
       if (null == loc) return null;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
@@ -528,7 +528,7 @@ namespace djack.RogueSurvivor.Data
     public bool TileIsWalkable(Point pt)
     {   // 2019-8-27 release mode IL Code size       108 (0x6c)
       // should evaluate: IsValid(pt) && GetTileModelAtExt(pt).IsWalkable
-      if (IsInBounds(pt)) return Models.Tiles[m_TileIDs[pt.X, pt.Y]].IsWalkable;
+      if (IsInBounds(pt)) return GameTiles.From(m_TileIDs[pt.X, pt.Y]).IsWalkable;
       Location? loc = _Normalize(pt);
       return null != loc && loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
     }

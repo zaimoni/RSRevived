@@ -4,12 +4,12 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay;
 using System.Drawing;
 
-namespace djack.RogueSurvivor.Gameplay
+namespace djack.RogueSurvivor.Data
 {
-  internal class GameTiles : TileModelDB
+  internal static class GameTiles
   {
     private static readonly Color DRK_GRAY1 = Color.DimGray;
     private static readonly Color DRK_GRAY2 = Color.DarkGray;
@@ -54,11 +54,7 @@ namespace djack.RogueSurvivor.Gameplay
       new TileModel(IDs.RAIL_SENW_WALL_E, GameImages.TILE_RAIL_SENW_WALL_E, Color.Blue, false, false),
     };
 
-    public TileModel this[int id] {
-      get {
-        return m_Models[id];
-      }
-    }
+    static public TileModel From(int id) { return m_Models[id]; }
 
 #region static forwarders
     static public TileModel FLOOR_ASPHALT { get { return m_Models[(int)IDs.FLOOR_ASPHALT]; } }
@@ -87,10 +83,6 @@ namespace djack.RogueSurvivor.Gameplay
     static public TileModel RAIL_SENW_WALL_W { get { return m_Models[(int)IDs.RAIL_SENW_WALL_W]; } }
     static public TileModel RAIL_SENW_WALL_E { get { return m_Models[(int)IDs.RAIL_SENW_WALL_E]; } }
 #endregion
-
-    public GameTiles()
-    {
-    }
 
     static public bool IsRoadModel(TileModel model)
     {

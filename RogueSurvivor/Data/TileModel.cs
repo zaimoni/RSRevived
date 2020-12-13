@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
 {
   internal class TileModel
   {
-    public static readonly TileModel UNDEF = new TileModel(Gameplay.GameTiles.IDs.UNDEF, "", Color.Pink, false, true);
+    public static readonly TileModel UNDEF = new TileModel(GameTiles.IDs.UNDEF, "", Color.Pink, false, true);
 
     public readonly int ID;
     public readonly string ImageID;
@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Data
     public readonly bool IsWater;   // 2020-05-09 should be ok to pay RAM for CPU here
     public readonly string? WaterCoverImageID;
 
-    public TileModel(Gameplay.GameTiles.IDs id, string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string? waterCoverImageID=null)
+    public TileModel(GameTiles.IDs id, string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string? waterCoverImageID=null)
     { // the undef tile is empty-string imageID
       ID = (int)id;
       ImageID = imageID;

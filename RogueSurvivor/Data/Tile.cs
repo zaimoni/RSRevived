@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Data
     private Flags m_Flags;
     private readonly Location m_Location;
 
-    public TileModel Model { get { return Models.Tiles[ID]; } }
+    public TileModel Model { get { return GameTiles.From(ID); } }
 
     public bool IsInside {
       get {
