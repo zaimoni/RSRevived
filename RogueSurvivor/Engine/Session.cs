@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Engine
     {
       s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString());
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
       RogueGame.Reset();
       m_Scoring = new Scoring();

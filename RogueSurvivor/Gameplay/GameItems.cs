@@ -133,19 +133,6 @@ namespace djack.RogueSurvivor.Gameplay
     private TrackerData DATA_TRACKER_CELL_PHONE;
     private TrackerData DATA_TRACKER_ZTRACKER;
     private TrackerData DATA_TRACKER_POLICE_RADIO;
-    private SprayPaintData DATA_SPRAY_PAINT1;
-    private SprayPaintData DATA_SPRAY_PAINT2;
-    private SprayPaintData DATA_SPRAY_PAINT3;
-    private SprayPaintData DATA_SPRAY_PAINT4;
-    private LightData DATA_LIGHT_FLASHLIGHT;
-    private LightData DATA_LIGHT_BIG_FLASHLIGHT;
-    private ScentSprayData DATA_SCENT_SPRAY_STENCH_KILLER;
-    private TrapData DATA_TRAP_EMPTY_CAN;
-    private TrapData DATA_TRAP_BEAR_TRAP;
-    private TrapData DATA_TRAP_SPIKES;
-    private TrapData DATA_TRAP_BARBED_WIRE;
-    private EntData DATA_ENT_BOOK;
-    private EntData DATA_ENT_MAGAZINE;
 
     public ItemModel this[int id] {
       get {
@@ -609,15 +596,16 @@ namespace djack.RogueSurvivor.Gameplay
       var bar_data = LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
       LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
       LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
-      LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
-      LoadLightsFromCSV(ui, "Resources\\Data\\Items_Lights.csv");
-      LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
-      LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
-      LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
-      CreateModels(med_data, food_data, exp_data, bar_data);
+      var spray_data = LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
+      var light_data = LoadLightsFromCSV(ui, "Resources\\Data\\Items_Lights.csv");
+      var scent_data = LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
+      var trap_data = LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
+      var ent_data = LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
+      CreateModels(med_data, food_data, exp_data, bar_data, spray_data, light_data, scent_data, trap_data, ent_data);
     }
 
-    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data)
+    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data,
+                              SprayPaintData[] spray_data, LightData[] light_data, ScentSprayData[] scent_data, TrapData[] trap_data, EntData[] ent_data)
     {
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
@@ -669,6 +657,24 @@ namespace djack.RogueSurvivor.Gameplay
       ExplosiveData DATA_EXPLOSIVE_GRENADE = exp_data[0];
 
       BarricadingMaterialData DATA_BAR_WOODEN_PLANK = bar_data[0];
+
+      SprayPaintData DATA_SPRAY_PAINT1 = spray_data[(int)IDs.SPRAY_PAINT1 - (int)IDs.SPRAY_PAINT1];
+      SprayPaintData DATA_SPRAY_PAINT2 = spray_data[(int)IDs.SPRAY_PAINT2 - (int)IDs.SPRAY_PAINT1];
+      SprayPaintData DATA_SPRAY_PAINT3 = spray_data[(int)IDs.SPRAY_PAINT3 - (int)IDs.SPRAY_PAINT1];
+      SprayPaintData DATA_SPRAY_PAINT4 = spray_data[(int)IDs.SPRAY_PAINT4 - (int)IDs.SPRAY_PAINT1];
+
+      LightData DATA_LIGHT_FLASHLIGHT = light_data[(int)IDs.LIGHT_FLASHLIGHT - (int)IDs.LIGHT_FLASHLIGHT];
+      LightData DATA_LIGHT_BIG_FLASHLIGHT = light_data[(int)IDs.LIGHT_BIG_FLASHLIGHT - (int)IDs.LIGHT_FLASHLIGHT];
+
+      ScentSprayData DATA_SCENT_SPRAY_STENCH_KILLER = scent_data[0];
+
+      TrapData DATA_TRAP_EMPTY_CAN = trap_data[(int)IDs.TRAP_EMPTY_CAN - (int)IDs.TRAP_EMPTY_CAN];
+      TrapData DATA_TRAP_BEAR_TRAP = trap_data[(int)IDs.TRAP_BEAR_TRAP - (int)IDs.TRAP_EMPTY_CAN];
+      TrapData DATA_TRAP_SPIKES = trap_data[(int)IDs.TRAP_SPIKES - (int)IDs.TRAP_EMPTY_CAN];
+      TrapData DATA_TRAP_BARBED_WIRE = trap_data[(int)IDs.TRAP_BARBED_WIRE - (int)IDs.TRAP_EMPTY_CAN];
+
+      EntData DATA_ENT_BOOK = ent_data[(int)IDs.ENT_BOOK - (int)IDs.ENT_BOOK];
+      EntData DATA_ENT_MAGAZINE = ent_data[(int)IDs.ENT_MAGAZINE - (int)IDs.ENT_BOOK];
 
       // Medicine
       _setModel(new ItemMedicineModel(IDs.MEDICINE_BANDAGES, DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
@@ -974,7 +980,7 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_TRACKER_POLICE_RADIO = data[3];
     }
 
-    private void LoadSpraypaintsFromCSV(IRogueUI ui, string path)
+    private static SprayPaintData[] LoadSpraypaintsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -985,13 +991,10 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.SPRAY_PAINT3,
         IDs.SPRAY_PAINT4
       }, out SprayPaintData[] data);
-      DATA_SPRAY_PAINT1 = data[0];
-      DATA_SPRAY_PAINT2 = data[1];
-      DATA_SPRAY_PAINT3 = data[2];
-      DATA_SPRAY_PAINT4 = data[3];
+      return data;
     }
 
-    private void LoadLightsFromCSV(IRogueUI ui, string path)
+    private static LightData[] LoadLightsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1000,11 +1003,10 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.LIGHT_FLASHLIGHT,
         IDs.LIGHT_BIG_FLASHLIGHT
       }, out LightData[] data);
-      DATA_LIGHT_FLASHLIGHT = data[0];
-      DATA_LIGHT_BIG_FLASHLIGHT = data[1];
+      return data;
     }
 
-    private void LoadScentspraysFromCSV(IRogueUI ui, string path)
+    private static ScentSprayData[] LoadScentspraysFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1012,10 +1014,10 @@ namespace djack.RogueSurvivor.Gameplay
       LoadDataFromCSV(ui, path, "scentsprays items", ScentSprayData.COUNT_FIELDS, new Func<CSVLine, ScentSprayData>(ScentSprayData.FromCSVLine), new IDs[1] {
         IDs.SCENT_SPRAY_STENCH_KILLER
       }, out ScentSprayData[] data);
-      DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
+      return data;
     }
 
-    private void LoadTrapsFromCSV(IRogueUI ui, string path)
+    private static TrapData[] LoadTrapsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1026,13 +1028,10 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.TRAP_SPIKES,
         IDs.TRAP_BARBED_WIRE
       }, out TrapData[] data);
-      DATA_TRAP_EMPTY_CAN = data[0];
-      DATA_TRAP_BEAR_TRAP = data[1];
-      DATA_TRAP_SPIKES = data[2];
-      DATA_TRAP_BARBED_WIRE = data[3];
+      return data;
     }
 
-    private void LoadEntertainmentFromCSV(IRogueUI ui, string path)
+    private static EntData[] LoadEntertainmentFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1041,8 +1040,7 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.ENT_BOOK,
         IDs.ENT_MAGAZINE
       }, out EntData[] data);
-      DATA_ENT_BOOK = data[0];
-      DATA_ENT_MAGAZINE = data[1];
+      return data;
     }
 
     public enum IDs
