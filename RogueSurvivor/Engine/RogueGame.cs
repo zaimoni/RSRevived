@@ -1240,7 +1240,7 @@ namespace djack.RogueSurvivor.Engine
           case 0:
             GameActors.IDs modelID = roller.Choose(undead).ID;
             int gy3 = gy1 + BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors[modelID].Name), gx, gy3);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors.From(modelID).Name), gx, gy3);
             int gy4 = gy3 + BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
             m_UI.UI_Repaint();
@@ -2715,7 +2715,7 @@ namespace djack.RogueSurvivor.Engine
           if (rules.RollChance(chance)) {
             fromModelID = fromModelID.NextUndeadEvolution();
             if (rules.RollChance(chance)) fromModelID = fromModelID.NextUndeadEvolution();
-            newUndead.Model = GameActors[fromModelID];
+            newUndead.Model = GameActors.From(fromModelID);
           }
         }
       }
@@ -9848,7 +9848,7 @@ namespace djack.RogueSurvivor.Engine
           return null;
       }
       GameActors.IDs index = undead.Model.ID.NextUndeadEvolution();
-	  return (index != undead.Model.ID ? GameActors[index] : null);
+	  return (index != undead.Model.ID ? GameActors.From(index) : null);
     }
 
     static private void SplatterBlood(Map map, Point position)

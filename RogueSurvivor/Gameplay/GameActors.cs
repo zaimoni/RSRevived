@@ -43,7 +43,8 @@ namespace djack.RogueSurvivor.Gameplay
 
 #nullable enable
     public ActorModel this[int id] { get { return m_Models[id]; } }
-    public ActorModel this[IDs id] { get { return this[(int) id]; } }
+
+    static public ActorModel From(IDs id) { return m_Models[(int)id]; }
 
     private static void _setModel(ActorModel model)
     {

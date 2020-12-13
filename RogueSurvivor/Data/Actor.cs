@@ -163,7 +163,7 @@ namespace djack.RogueSurvivor.Data
 
     public ActorModel Model
     {
-      get { return Models.Actors[(int)m_ModelID]; }
+      get { return GameActors.From(m_ModelID); }
       set { // this must be public due to undead evolution
         m_ModelID = value.ID;
         OnModelSet();

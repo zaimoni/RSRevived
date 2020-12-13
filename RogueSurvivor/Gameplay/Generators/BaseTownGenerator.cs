@@ -2800,7 +2800,7 @@ restart:
           while (true) {
             GameActors.IDs index2 = newUndead.Model.ID.NextUndeadEvolution();
             if (index2 == newUndead.Model.ID) break;
-            newUndead.Model = m_Game.GameActors[index2];
+            newUndead.Model = GameActors.From(index2);
           }
         }
         ActorPlace(m_DiceRoller, underground, newUndead, actor_ok_here);

@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Engine
       if (!m_FirstKills.ContainsKey(id)) {
         m_FirstKills[id] = turn;
         m_KillCounts[id] = 1;
-        AddEvent(turn, string.Format("Killed first {0}.", Models.Actors[(int)id].Name));
+        AddEvent(turn, string.Format("Killed first {0}.", GameActors.From(id).Name));
       } else m_KillCounts[id]++;
     }
 
@@ -118,8 +118,9 @@ namespace djack.RogueSurvivor.Engine
       const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
       int ret = 0;
       foreach(var x in m_KillCounts) {  // XXX only works correctly for civilians
-        ret += Models.Actors[(int)x.Key].ScoreValue*x.Value;
-        if (Models.Actors[(int)x.Key].Abilities.IsUndead) continue;
+        var model = GameActors.From(x.Key);
+        ret += model.ScoreValue*x.Value;
+        if (model.Abilities.IsUndead) continue;
         if (!m_Actor.Model.Abilities.IsUndead) continue;
         ret += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD*x.Value;
       }
@@ -132,7 +133,8 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", he_or_she));
       } else {
         foreach (var kill in m_KillCounts) {
-          string str3 = kill.Value > 1 ? Models.Actors[(int)kill.Key].PluralName : Models.Actors[(int)kill.Key].Name;
+          var model = GameActors.From(kill.Key);
+          string str3 = kill.Value > 1 ? model.PluralName : model.Name;
           textFile.Append(string.Format("{0,4} {1}.", kill.Value, str3));
         }
       }
@@ -165,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_Sightings.Contains(actorModelID)) return;
       int turn = Session.Get.WorldTime.TurnCounter;
       m_Sightings.Add(actorModelID);
-      AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
+      AddEvent(turn, string.Format("Sighted first {0}.", GameActors.From(actorModelID).Name));
     }
 
     public bool HasSighted(GameActors.IDs actorModelID) // this only *has* to work for Jason Myers, and it controls UI text

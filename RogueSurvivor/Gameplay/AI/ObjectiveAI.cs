@@ -6658,7 +6658,7 @@ restart_chokepoints:
       m_Actor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
       m_Actor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
       m_Actor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
-      m_Actor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
+      m_Actor.Retype(GameActors.From(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN));
       m_Actor.Location.Map.Police.Recalc();
       return regenerate_controller;
     }

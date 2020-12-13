@@ -3,6 +3,7 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* The city planners have improved zoning regulations for districts
 * Z-detectors can clear threat tracking caused by Z.
 
 2020-11-09 and earlier
