@@ -20,12 +20,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public Faction this[IDs id]
-    {
-      get {
-        return this[(int) id];
-      }
-    }
+    static public Faction From(IDs id) { return m_Factions[(int)id]; }
 
     static public Faction TheArmy { get { return m_Factions[(int) IDs.TheArmy]; } }
     static public Faction TheBikers { get { return m_Factions[(int) IDs.TheBikers]; } }
@@ -55,71 +50,71 @@ namespace djack.RogueSurvivor.Gameplay
 
       // set up faction-level enemies
       // XXX now we have a working reflexive AddEnemy we can simplify this considerably
-      this[IDs.TheArmy].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.TheArmy].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheArmy].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.TheArmy].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheArmy].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.TheCHARCorporation]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.ThePolice]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheBikers].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheCHARCorporation]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheCivilians]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.ThePolice]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheBlackOps].AddEnemy(this[IDs.TheSurvivors]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheCHARCorporation].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheCivilians].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheCivilians].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheCivilians].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.TheCHARCorporation]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.ThePolice]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheGangstas].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.ThePolice].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.ThePolice].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.ThePolice].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.ThePolice].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.ThePolice].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheCHARCorporation]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheCivilians]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.ThePolice]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheSurvivors]);
-      this[IDs.TheUndeads].AddEnemy(this[IDs.TheFerals]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheArmy]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheBikers]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheCHARCorporation]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheCivilians]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheGangstas]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.ThePolice]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.ThePsychopaths].AddEnemy(this[IDs.TheSurvivors]);
-      this[IDs.TheSurvivors].AddEnemy(this[IDs.TheBlackOps]);
-      this[IDs.TheSurvivors].AddEnemy(this[IDs.TheUndeads]);
-      this[IDs.TheSurvivors].AddEnemy(this[IDs.ThePsychopaths]);
-      this[IDs.TheFerals].AddEnemy(this[IDs.TheUndeads]);
+      From(IDs.TheArmy).AddEnemy(From(IDs.TheBikers));
+      From(IDs.TheArmy).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheArmy).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.TheArmy).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheArmy).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheBikers).AddEnemy(From(IDs.TheArmy));
+      From(IDs.TheBikers).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheBikers).AddEnemy(From(IDs.TheCHARCorporation));
+      From(IDs.TheBikers).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.TheBikers).AddEnemy(From(IDs.ThePolice));
+      From(IDs.TheBikers).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheBikers).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheArmy));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheBikers));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheCHARCorporation));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheCivilians));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.ThePolice));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheBlackOps).AddEnemy(From(IDs.TheSurvivors));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.TheArmy));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.TheBikers));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheCHARCorporation).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheCivilians).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheCivilians).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheCivilians).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.TheArmy));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.TheBikers));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.TheCHARCorporation));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.ThePolice));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheGangstas).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.ThePolice).AddEnemy(From(IDs.TheBikers));
+      From(IDs.ThePolice).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.ThePolice).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.ThePolice).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.ThePolice).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheArmy));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheBikers));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheCHARCorporation));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheCivilians));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.ThePolice));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheSurvivors));
+      From(IDs.TheUndeads).AddEnemy(From(IDs.TheFerals));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheArmy));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheBikers));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheCHARCorporation));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheCivilians));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheGangstas));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.ThePolice));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.ThePsychopaths).AddEnemy(From(IDs.TheSurvivors));
+      From(IDs.TheSurvivors).AddEnemy(From(IDs.TheBlackOps));
+      From(IDs.TheSurvivors).AddEnemy(From(IDs.TheUndeads));
+      From(IDs.TheSurvivors).AddEnemy(From(IDs.ThePsychopaths));
+      From(IDs.TheFerals).AddEnemy(From(IDs.TheUndeads));
 
       // backstop.
       foreach (Faction mFaction in m_Factions)

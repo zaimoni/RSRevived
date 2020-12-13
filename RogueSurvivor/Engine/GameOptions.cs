@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Engine
 
     public float DifficultyRating(Gameplay.GameFactions.IDs side)
     { // Historically supported factions are civilians and zombies
-      Data.Faction us = Data.Models.Factions[(int)side];
+      var us = Gameplay.GameFactions.From(side);
       float rating = 1f;
 
       ///////////////////

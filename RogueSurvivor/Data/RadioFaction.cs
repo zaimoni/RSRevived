@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool update(Location[] fov) {
-            var my_faction = Models.Factions[(int)FactionID];
+            var my_faction = Gameplay.GameFactions.From(FactionID);
             Investigate.Seen(fov);
             foreach (var loc in fov) {
                 var actorAt = loc.Actor;
@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
-        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Models.Factions[(int)FactionID]) || Threats.IsThreat(a); }
+        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(Gameplay.GameFactions.From(FactionID)) || Threats.IsThreat(a); }
 
         public void TrackThroughExitSpawn(Actor a)
         {
