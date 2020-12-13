@@ -95,45 +95,6 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.ENT_MAGAZINE,
         IDs.ENT_CHAR_GUARD_MANUAL});
 
-    private MeleeWeaponData DATA_MELEE_CROWBAR;
-    private MeleeWeaponData DATA_MELEE_BASEBALLBAT;
-    private MeleeWeaponData DATA_MELEE_COMBAT_KNIFE;
-    private MeleeWeaponData DATA_MELEE_UNIQUE_JASON_MYERS_AXE;
-    private MeleeWeaponData DATA_MELEE_GOLFCLUB;
-    private MeleeWeaponData DATA_MELEE_HUGE_HAMMER;
-    private MeleeWeaponData DATA_MELEE_SMALL_HAMMER;
-    private MeleeWeaponData DATA_MELEE_IRON_GOLFCLUB;
-    private MeleeWeaponData DATA_MELEE_SHOVEL;
-    private MeleeWeaponData DATA_MELEE_SHORT_SHOVEL;
-    private MeleeWeaponData DATA_MELEE_TRUNCHEON;
-    private MeleeWeaponData DATA_MELEE_IMPROVISED_CLUB;
-    private MeleeWeaponData DATA_MELEE_IMPROVISED_SPEAR;
-    private MeleeWeaponData DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
-    private MeleeWeaponData DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE;
-    private MeleeWeaponData DATA_MELEE_UNIQUE_BIGBEAR_BAT;
-    private MeleeWeaponData DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
-    private RangedWeaponData DATA_RANGED_ARMY_PISTOL;
-    private RangedWeaponData DATA_RANGED_ARMY_RIFLE;
-    private RangedWeaponData DATA_RANGED_HUNTING_CROSSBOW;
-    private RangedWeaponData DATA_RANGED_HUNTING_RIFLE;
-    private RangedWeaponData DATA_RANGED_KOLT_REVOLVER;
-    private RangedWeaponData DATA_RANGED_PISTOL;
-    private RangedWeaponData DATA_RANGED_PRECISION_RIFLE;
-    private RangedWeaponData DATA_RANGED_SHOTGUN;
-    private RangedWeaponData DATA_UNIQUE_SANTAMAN_SHOTGUN;
-    private RangedWeaponData DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
-    private ArmorData DATA_ARMOR_ARMY;
-    private ArmorData DATA_ARMOR_CHAR;
-    private ArmorData DATA_ARMOR_HELLS_SOULS_JACKET;
-    private ArmorData DATA_ARMOR_FREE_ANGELS_JACKET;
-    private ArmorData DATA_ARMOR_POLICE_JACKET;
-    private ArmorData DATA_ARMOR_POLICE_RIOT;
-    private ArmorData DATA_ARMOR_HUNTER_VEST;
-    private TrackerData DATA_TRACKER_BLACKOPS_GPS;
-    private TrackerData DATA_TRACKER_CELL_PHONE;
-    private TrackerData DATA_TRACKER_ZTRACKER;
-    private TrackerData DATA_TRACKER_POLICE_RADIO;
-
     public ItemModel this[int id] {
       get {
         return m_Models[id];
@@ -590,22 +551,24 @@ namespace djack.RogueSurvivor.Gameplay
 
       var med_data = LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
       var food_data = LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
-      LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
-      LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
+      var melee_data = LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
+      var ranged_data = LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
       var exp_data = LoadExplosivesFromCSV(ui, "Resources\\Data\\Items_Explosives.csv");
       var bar_data = LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
-      LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
-      LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
+      var armor_data = LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
+      var tracker_data = LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
       var spray_data = LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
       var light_data = LoadLightsFromCSV(ui, "Resources\\Data\\Items_Lights.csv");
       var scent_data = LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
       var trap_data = LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
       var ent_data = LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
-      CreateModels(med_data, food_data, exp_data, bar_data, spray_data, light_data, scent_data, trap_data, ent_data);
+      CreateModels(med_data, food_data, melee_data, ranged_data, exp_data, bar_data, armor_data, tracker_data, spray_data, light_data, scent_data, trap_data, ent_data);
     }
 
-    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data,
-                              SprayPaintData[] spray_data, LightData[] light_data, ScentSprayData[] scent_data, TrapData[] trap_data, EntData[] ent_data)
+    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, MeleeWeaponData[] melee_data, RangedWeaponData[] ranged_data,
+                              ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data, ArmorData[] armor_data,
+                              TrackerData[] tracker_data, SprayPaintData[] spray_data, LightData[] light_data,
+                              ScentSprayData[] scent_data, TrapData[] trap_data, EntData[] ent_data)
     {
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
@@ -654,9 +617,51 @@ namespace djack.RogueSurvivor.Gameplay
       FoodData DATA_FOOD_GROCERIES = food_data[(int)IDs.FOOD_GROCERIES - (int)IDs.FOOD_ARMY_RATION];
       FoodData DATA_FOOD_CANNED_FOOD = food_data[(int)IDs.FOOD_CANNED_FOOD - (int)IDs.FOOD_ARMY_RATION];
 
+      MeleeWeaponData DATA_MELEE_BASEBALLBAT = melee_data[(int)IDs.MELEE_BASEBALLBAT - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_COMBAT_KNIFE = melee_data[(int)IDs.MELEE_COMBAT_KNIFE - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_CROWBAR = melee_data[(int)IDs.MELEE_CROWBAR - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_UNIQUE_JASON_MYERS_AXE = melee_data[(int)IDs.UNIQUE_JASON_MYERS_AXE - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_HUGE_HAMMER = melee_data[(int)IDs.MELEE_HUGE_HAMMER - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_SMALL_HAMMER = melee_data[(int)IDs.MELEE_SMALL_HAMMER - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_GOLFCLUB = melee_data[(int)IDs.MELEE_GOLFCLUB - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_IRON_GOLFCLUB = melee_data[(int)IDs.MELEE_IRON_GOLFCLUB - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_SHOVEL = melee_data[(int)IDs.MELEE_SHOVEL - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_SHORT_SHOVEL = melee_data[(int)IDs.MELEE_SHORT_SHOVEL - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_TRUNCHEON = melee_data[(int)IDs.MELEE_TRUNCHEON - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_IMPROVISED_CLUB = melee_data[(int)IDs.MELEE_IMPROVISED_CLUB - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_IMPROVISED_SPEAR = melee_data[(int)IDs.MELEE_IMPROVISED_SPEAR - (int)IDs.MELEE_BASEBALLBAT];
+      MeleeWeaponData DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = melee_data[(int)IDs.UNIQUE_FAMU_FATARU_KATANA - (int)IDs.UNIQUE_FAMU_FATARU_KATANA + ((int)IDs.MELEE_IMPROVISED_SPEAR - (int)IDs.MELEE_BASEBALLBAT + 1)];
+      MeleeWeaponData DATA_MELEE_UNIQUE_BIGBEAR_BAT = melee_data[(int)IDs.UNIQUE_BIGBEAR_BAT - (int)IDs.UNIQUE_FAMU_FATARU_KATANA + ((int)IDs.MELEE_IMPROVISED_SPEAR - (int)IDs.MELEE_BASEBALLBAT + 1)];
+      MeleeWeaponData DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = melee_data[(int)IDs.UNIQUE_ROGUEDJACK_KEYBOARD - (int)IDs.UNIQUE_FAMU_FATARU_KATANA + ((int)IDs.MELEE_IMPROVISED_SPEAR - (int)IDs.MELEE_BASEBALLBAT + 1)];
+      MeleeWeaponData DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE = melee_data[16];
+
+      RangedWeaponData DATA_RANGED_ARMY_PISTOL = ranged_data[(int)IDs.RANGED_ARMY_PISTOL - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_ARMY_RIFLE = ranged_data[(int)IDs.RANGED_ARMY_RIFLE - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_HUNTING_CROSSBOW = ranged_data[(int)IDs.RANGED_HUNTING_CROSSBOW - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_HUNTING_RIFLE = ranged_data[(int)IDs.RANGED_HUNTING_RIFLE - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_PISTOL = ranged_data[(int)IDs.RANGED_PISTOL - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_KOLT_REVOLVER = ranged_data[(int)IDs.RANGED_KOLT_REVOLVER - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_PRECISION_RIFLE = ranged_data[(int)IDs.RANGED_PRECISION_RIFLE - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_RANGED_SHOTGUN = ranged_data[(int)IDs.RANGED_SHOTGUN - (int)IDs.RANGED_ARMY_PISTOL];
+      RangedWeaponData DATA_UNIQUE_SANTAMAN_SHOTGUN = ranged_data[(int)IDs.UNIQUE_SANTAMAN_SHOTGUN - (int)IDs.UNIQUE_SANTAMAN_SHOTGUN + ((int)IDs.RANGED_SHOTGUN - (int)IDs.RANGED_ARMY_PISTOL + 1)];
+      RangedWeaponData DATA_UNIQUE_HANS_VON_HANZ_PISTOL = ranged_data[(int)IDs.UNIQUE_HANS_VON_HANZ_PISTOL - (int)IDs.UNIQUE_SANTAMAN_SHOTGUN + ((int)IDs.RANGED_SHOTGUN - (int)IDs.RANGED_ARMY_PISTOL + 1)];
+
       ExplosiveData DATA_EXPLOSIVE_GRENADE = exp_data[0];
 
       BarricadingMaterialData DATA_BAR_WOODEN_PLANK = bar_data[0];
+
+      ArmorData DATA_ARMOR_HUNTER_VEST = armor_data[(int)IDs.ARMOR_HUNTER_VEST - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_CHAR = armor_data[(int)IDs.ARMOR_CHAR_LIGHT_BODYARMOR - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_ARMY = armor_data[(int)IDs.ARMOR_ARMY_BODYARMOR - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_POLICE_JACKET = armor_data[(int)IDs.ARMOR_POLICE_JACKET - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_POLICE_RIOT = armor_data[(int)IDs.ARMOR_POLICE_RIOT - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_HELLS_SOULS_JACKET = armor_data[(int)IDs.ARMOR_HELLS_SOULS_JACKET - (int)IDs.ARMOR_HUNTER_VEST];
+      ArmorData DATA_ARMOR_FREE_ANGELS_JACKET = armor_data[(int)IDs.ARMOR_FREE_ANGELS_JACKET - (int)IDs.ARMOR_HUNTER_VEST];
+
+      TrackerData DATA_TRACKER_BLACKOPS_GPS = tracker_data[(int)IDs.TRACKER_BLACKOPS - (int)IDs.TRACKER_BLACKOPS];
+      TrackerData DATA_TRACKER_CELL_PHONE = tracker_data[(int)IDs.TRACKER_CELL_PHONE - (int)IDs.TRACKER_BLACKOPS];
+      TrackerData DATA_TRACKER_ZTRACKER = tracker_data[(int)IDs.TRACKER_ZTRACKER - (int)IDs.TRACKER_BLACKOPS];
+      TrackerData DATA_TRACKER_POLICE_RADIO = tracker_data[(int)IDs.TRACKER_POLICE_RADIO - (int)IDs.TRACKER_BLACKOPS];
 
       SprayPaintData DATA_SPRAY_PAINT1 = spray_data[(int)IDs.SPRAY_PAINT1 - (int)IDs.SPRAY_PAINT1];
       SprayPaintData DATA_SPRAY_PAINT2 = spray_data[(int)IDs.SPRAY_PAINT2 - (int)IDs.SPRAY_PAINT1];
@@ -846,7 +851,7 @@ namespace djack.RogueSurvivor.Gameplay
       return data;
     }
 
-    private void LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
+    private static MeleeWeaponData[] LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -855,41 +860,25 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.MELEE_BASEBALLBAT,
         IDs.MELEE_COMBAT_KNIFE,
         IDs.MELEE_CROWBAR,
-        IDs.MELEE_GOLFCLUB,
+        IDs.UNIQUE_JASON_MYERS_AXE,
         IDs.MELEE_HUGE_HAMMER,
+        IDs.MELEE_SMALL_HAMMER,
+        IDs.MELEE_GOLFCLUB,
         IDs.MELEE_IRON_GOLFCLUB,
         IDs.MELEE_SHOVEL,
         IDs.MELEE_SHORT_SHOVEL,
         IDs.MELEE_TRUNCHEON,
-        IDs.UNIQUE_JASON_MYERS_AXE,
         IDs.MELEE_IMPROVISED_CLUB,
         IDs.MELEE_IMPROVISED_SPEAR,
-        IDs.MELEE_SMALL_HAMMER,
         IDs.UNIQUE_FAMU_FATARU_KATANA,
         IDs.UNIQUE_BIGBEAR_BAT,
         IDs.UNIQUE_ROGUEDJACK_KEYBOARD,
-        IDs.UNIQUE_FATHER_TIME_SCYTHE
+        IDs.UNIQUE_FATHER_TIME_SCYTHE   // savefile break: reposition this id
       }, out MeleeWeaponData[] data);
-      DATA_MELEE_BASEBALLBAT = data[0];
-      DATA_MELEE_COMBAT_KNIFE = data[1];
-      DATA_MELEE_CROWBAR = data[2];
-      DATA_MELEE_GOLFCLUB = data[3];
-      DATA_MELEE_HUGE_HAMMER = data[4];
-      DATA_MELEE_IRON_GOLFCLUB = data[5];
-      DATA_MELEE_SHOVEL = data[6];
-      DATA_MELEE_SHORT_SHOVEL = data[7];
-      DATA_MELEE_TRUNCHEON = data[8];
-      DATA_MELEE_UNIQUE_JASON_MYERS_AXE = data[9];
-      DATA_MELEE_IMPROVISED_CLUB = data[10];
-      DATA_MELEE_IMPROVISED_SPEAR = data[11];
-      DATA_MELEE_SMALL_HAMMER = data[12];
-      DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
-      DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
-      DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
-      DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE = data[16];
+      return data;
     }
 
-    private void LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
+    private static RangedWeaponData[] LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -899,23 +888,14 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.RANGED_ARMY_RIFLE,
         IDs.RANGED_HUNTING_CROSSBOW,
         IDs.RANGED_HUNTING_RIFLE,
-        IDs.RANGED_KOLT_REVOLVER,
         IDs.RANGED_PISTOL,
+        IDs.RANGED_KOLT_REVOLVER,
         IDs.RANGED_PRECISION_RIFLE,
         IDs.RANGED_SHOTGUN,
         IDs.UNIQUE_SANTAMAN_SHOTGUN,
         IDs.UNIQUE_HANS_VON_HANZ_PISTOL
       }, out RangedWeaponData[] data);
-      DATA_RANGED_ARMY_PISTOL = data[0];
-      DATA_RANGED_ARMY_RIFLE = data[1];
-      DATA_RANGED_HUNTING_CROSSBOW = data[2];
-      DATA_RANGED_HUNTING_RIFLE = data[3];
-      DATA_RANGED_KOLT_REVOLVER = data[4];
-      DATA_RANGED_PISTOL = data[5];
-      DATA_RANGED_PRECISION_RIFLE = data[6];
-      DATA_RANGED_SHOTGUN = data[7];
-      DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
-      DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
+      return data;
     }
 
     private static ExplosiveData[] LoadExplosivesFromCSV(IRogueUI ui, string path)
@@ -940,30 +920,24 @@ namespace djack.RogueSurvivor.Gameplay
       return data;
     }
 
-    private void LoadArmorsFromCSV(IRogueUI ui, string path)
+    private static ArmorData[] LoadArmorsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
       LoadDataFromCSV(ui, path, "armors items", ArmorData.COUNT_FIELDS, new Func<CSVLine, ArmorData>(ArmorData.FromCSVLine), new IDs[7] {
-        IDs.ARMOR_ARMY_BODYARMOR,
+        IDs.ARMOR_HUNTER_VEST,
         IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
-        IDs.ARMOR_HELLS_SOULS_JACKET,
-        IDs.ARMOR_FREE_ANGELS_JACKET,
+        IDs.ARMOR_ARMY_BODYARMOR,
         IDs.ARMOR_POLICE_JACKET,
         IDs.ARMOR_POLICE_RIOT,
-        IDs.ARMOR_HUNTER_VEST
+        IDs.ARMOR_HELLS_SOULS_JACKET,
+        IDs.ARMOR_FREE_ANGELS_JACKET
       }, out ArmorData[] data);
-      DATA_ARMOR_ARMY = data[0];
-      DATA_ARMOR_CHAR = data[1];
-      DATA_ARMOR_HELLS_SOULS_JACKET = data[2];
-      DATA_ARMOR_FREE_ANGELS_JACKET = data[3];
-      DATA_ARMOR_POLICE_JACKET = data[4];
-      DATA_ARMOR_POLICE_RIOT = data[5];
-      DATA_ARMOR_HUNTER_VEST = data[6];
+      return data;
     }
 
-    private void LoadTrackersFromCSV(IRogueUI ui, string path)
+    private static TrackerData[] LoadTrackersFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -974,10 +948,7 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.TRACKER_ZTRACKER,
         IDs.TRACKER_POLICE_RADIO
       }, out TrackerData[] data);
-      DATA_TRACKER_BLACKOPS_GPS = data[0];
-      DATA_TRACKER_CELL_PHONE = data[1];
-      DATA_TRACKER_ZTRACKER = data[2];
-      DATA_TRACKER_POLICE_RADIO = data[3];
+      return data;
     }
 
     private static SprayPaintData[] LoadSpraypaintsFromCSV(IRogueUI ui, string path)
