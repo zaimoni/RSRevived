@@ -308,6 +308,15 @@ namespace djack.RogueSurvivor.Engine
     private const int JUMP_STUMBLE_ACTION_COST = Actor.BASE_ACTION_COST;
 
 #nullable enable
+    // we cannot actually *be* a singleton since we need to guarantee that IRogueUI.UI is set up before we are alive
+    static private RogueGame? s_ooao = null;
+
+    static public RogueGame Game {
+        get { return s_ooao!; }
+    }
+#nullable restore
+
+#nullable enable
 #if DEBUG
     public static bool IsDebugging;
 #endif
@@ -386,6 +395,10 @@ namespace djack.RogueSurvivor.Engine
 
     public RogueGame(IRogueUI UI)
     {
+#if DEBUG
+      if (!IRogueUI.IsConstructed) throw new InvalidOperationException("UI not set up");
+      if (null != s_ooao) throw new InvalidOperationException("tried to double-construct a moral singleton");
+#endif
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame()");
       m_UI = UI;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
@@ -418,6 +431,7 @@ namespace djack.RogueSurvivor.Engine
       m_GameActors = new GameActors(m_UI);
       m_GameItems = new GameItems(m_UI);
       m_Manual = LoadManual();
+      s_ooao = this;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
