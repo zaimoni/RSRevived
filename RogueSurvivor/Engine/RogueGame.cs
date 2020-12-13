@@ -3617,7 +3617,8 @@ namespace djack.RogueSurvivor.Engine
       List<Actor> allies = player_allies.ToList();
       allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
 
-      string label(int index) { return allies[index].Name + (allies[index].HasLeader ? "(leader " + allies[index].Leader.Name + ")" : ""); }
+      string label_a(Actor a) { return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (a.HasLeader ? "(leader " + a.Leader.Name + ")" : ""); }
+      string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
         Actor a = allies[index];
         var tmp = new List<string>{a.Name};
