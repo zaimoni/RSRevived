@@ -95,9 +95,6 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.ENT_MAGAZINE,
         IDs.ENT_CHAR_GUARD_MANUAL});
 
-    private FoodData DATA_FOOD_ARMY_RATION;
-    private FoodData DATA_FOOD_GROCERIES;
-    private FoodData DATA_FOOD_CANNED_FOOD;
     private MeleeWeaponData DATA_MELEE_CROWBAR;
     private MeleeWeaponData DATA_MELEE_BASEBALLBAT;
     private MeleeWeaponData DATA_MELEE_COMBAT_KNIFE;
@@ -125,8 +122,6 @@ namespace djack.RogueSurvivor.Gameplay
     private RangedWeaponData DATA_RANGED_SHOTGUN;
     private RangedWeaponData DATA_UNIQUE_SANTAMAN_SHOTGUN;
     private RangedWeaponData DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
-    private ExplosiveData DATA_EXPLOSIVE_GRENADE;
-    private BarricadingMaterialData DATA_BAR_WOODEN_PLANK;
     private ArmorData DATA_ARMOR_ARMY;
     private ArmorData DATA_ARMOR_CHAR;
     private ArmorData DATA_ARMOR_HELLS_SOULS_JACKET;
@@ -607,11 +602,11 @@ namespace djack.RogueSurvivor.Gameplay
       Models.Items = this;
 
       var med_data = LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
-      LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
+      var food_data = LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
       LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
       LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
-      LoadExplosivesFromCSV(ui, "Resources\\Data\\Items_Explosives.csv");
-      LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
+      var exp_data = LoadExplosivesFromCSV(ui, "Resources\\Data\\Items_Explosives.csv");
+      var bar_data = LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
       LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
       LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
       LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
@@ -619,10 +614,10 @@ namespace djack.RogueSurvivor.Gameplay
       LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
       LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
       LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
-      CreateModels(med_data);
+      CreateModels(med_data, food_data, exp_data, bar_data);
     }
 
-    private void CreateModels(MedecineData[] med_data)
+    private void CreateModels(MedecineData[] med_data, FoodData[] food_data, ExplosiveData[] exp_data, BarricadingMaterialData[] bar_data)
     {
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
@@ -666,6 +661,14 @@ namespace djack.RogueSurvivor.Gameplay
       MedecineData DATA_MEDICINE_PILLS_SLP = med_data[(int)IDs.MEDICINE_PILLS_SLP - (int)IDs.MEDICINE_BANDAGES];
       MedecineData DATA_MEDICINE_PILLS_SAN = med_data[(int)IDs.MEDICINE_PILLS_SAN - (int)IDs.MEDICINE_BANDAGES];
       MedecineData DATA_MEDICINE_PILLS_ANTIVIRAL = med_data[(int)IDs.MEDICINE_PILLS_ANTIVIRAL - (int)IDs.MEDICINE_BANDAGES];
+
+      FoodData DATA_FOOD_ARMY_RATION = food_data[(int)IDs.FOOD_ARMY_RATION - (int)IDs.FOOD_ARMY_RATION];
+      FoodData DATA_FOOD_GROCERIES = food_data[(int)IDs.FOOD_GROCERIES - (int)IDs.FOOD_ARMY_RATION];
+      FoodData DATA_FOOD_CANNED_FOOD = food_data[(int)IDs.FOOD_CANNED_FOOD - (int)IDs.FOOD_ARMY_RATION];
+
+      ExplosiveData DATA_EXPLOSIVE_GRENADE = exp_data[0];
+
+      BarricadingMaterialData DATA_BAR_WOODEN_PLANK = bar_data[0];
 
       // Medicine
       _setModel(new ItemMedicineModel(IDs.MEDICINE_BANDAGES, DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
@@ -824,19 +827,17 @@ namespace djack.RogueSurvivor.Gameplay
       return data;
     }
 
-    private void LoadFoodFromCSV(IRogueUI ui, string path)
+    private static FoodData[] LoadFoodFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
       LoadDataFromCSV(ui, path, "food items", FoodData.COUNT_FIELDS, new Func<CSVLine, FoodData>(FoodData.FromCSVLine), new IDs[3] {
         IDs.FOOD_ARMY_RATION,
-        IDs.FOOD_CANNED_FOOD,
-        IDs.FOOD_GROCERIES
+        IDs.FOOD_GROCERIES,
+        IDs.FOOD_CANNED_FOOD
       }, out FoodData[] data);
-      DATA_FOOD_ARMY_RATION = data[0];
-      DATA_FOOD_CANNED_FOOD = data[1];
-      DATA_FOOD_GROCERIES = data[2];
+      return data;
     }
 
     private void LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
@@ -911,7 +912,7 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
     }
 
-    private void LoadExplosivesFromCSV(IRogueUI ui, string path)
+    private static ExplosiveData[] LoadExplosivesFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -919,10 +920,10 @@ namespace djack.RogueSurvivor.Gameplay
       LoadDataFromCSV(ui, path, "explosives items", ExplosiveData.COUNT_FIELDS, new Func<CSVLine, ExplosiveData>(ExplosiveData.FromCSVLine), new IDs[1] {
         IDs.EXPLOSIVE_GRENADE
       }, out ExplosiveData[] data);
-      DATA_EXPLOSIVE_GRENADE = data[0];
+      return data;
     }
 
-    private void LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
+    private static BarricadingMaterialData[] LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -930,7 +931,7 @@ namespace djack.RogueSurvivor.Gameplay
       LoadDataFromCSV(ui, path, "barricading items", BarricadingMaterialData.COUNT_FIELDS, new Func<CSVLine, BarricadingMaterialData>(BarricadingMaterialData.FromCSVLine), new IDs[1] {
         IDs.BAR_WOODEN_PLANK
       }, out BarricadingMaterialData[] data);
-      DATA_BAR_WOODEN_PLANK = data[0];
+      return data;
     }
 
     private void LoadArmorsFromCSV(IRogueUI ui, string path)
