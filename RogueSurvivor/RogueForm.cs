@@ -314,13 +314,21 @@ namespace djack.RogueSurvivor
       m_GameCanvas.AddFilledRect(color, rect);
     }
 
+    // This arguably should be in the IGameCanvas API, but looks like a live context is needed to avoid empirical corrections
+    private Size Measure(string src, Font font)
+    {
+      Size ret = TextRenderer.MeasureText(src, font);
+      ret.Width -= src.Length; // XXX empirical correction
+      return ret;
+    }
+
     public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
     {
       int num1 = 0;
       int num2 = 0;
       Size[] sizeArray = new Size[lines.Length];
       for (int index = 0; index < lines.Length; ++index) {
-        sizeArray[index] = TextRenderer.MeasureText(lines[index], m_BoldFont);
+        sizeArray[index] = Measure(lines[index], m_BoldFont);
         if (sizeArray[index].Width > num1)
           num1 = sizeArray[index].Width;
         num2 += sizeArray[index].Height;
@@ -402,13 +410,13 @@ namespace djack.RogueSurvivor
             Size[] linesSize = new Size[lines.Length];
             for (int i = 0; i < lines.Length; i++)
             {
-                linesSize[i] = TextRenderer.MeasureText(lines[i], m_BoldFont);
+                linesSize[i] = Measure(lines[i], m_BoldFont);
                 if (linesSize[i].Width > longestLineWidth)
                     longestLineWidth = linesSize[i].Width;
                 totalLineHeight += linesSize[i].Height;
             }
 
-            Size titleSize = TextRenderer.MeasureText(title, m_BoldFont);
+            Size titleSize = Measure(title, m_BoldFont);
             if (titleSize.Width > longestLineWidth)
                 longestLineWidth = titleSize.Width;
             totalLineHeight += titleSize.Height;
@@ -462,13 +470,13 @@ namespace djack.RogueSurvivor
             Size[] linesSize = new Size[lines.Length];
             for (int i = 0; i < lines.Length; i++)
             {
-                linesSize[i] = TextRenderer.MeasureText(lines[i], m_BoldFont);
+                linesSize[i] = Measure(lines[i], m_BoldFont);
                 if (linesSize[i].Width > longestLineWidth)
                     longestLineWidth = linesSize[i].Width;
                 totalLineHeight += linesSize[i].Height;
             }
 
-            Size titleSize = TextRenderer.MeasureText(title, m_BoldFont);
+            Size titleSize = Measure(title, m_BoldFont);
             if (titleSize.Width > longestLineWidth)
                 longestLineWidth = titleSize.Width;
             totalLineHeight += titleSize.Height;
