@@ -2522,7 +2522,7 @@ namespace djack.RogueSurvivor.Engine
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
       survey.DoForEach(pt => {
-          map.DropItemAt(Models.Items[(int)army_supply_drop_stock.UseRarityTable(Rules.Get.DiceRoller.Roll(0, army_supply_drop_checksum))].create(), in pt);
+          map.DropItemAt(GameItems.From(army_supply_drop_stock.UseRarityTable(Rules.Get.DiceRoller.Roll(0, army_supply_drop_checksum))).create(), in pt);
           Session.Get.Police.Investigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures proper prioritzation

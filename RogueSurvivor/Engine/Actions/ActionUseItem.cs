@@ -48,11 +48,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Gameplay.GameItems.IDs m_ID;
     [NonSerialized] private Item? m_Item = null;
 
-    public ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-      : base(actor)
+    public ActionUse(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
     {
 #if DEBUG
-      if (!(Models.Items[(int)it].create() is UsableItem)) throw new ArgumentNullException(nameof(it));
+      if (!(Gameplay.GameItems.From(it).create() is UsableItem)) throw new ArgumentNullException(nameof(it));
 #endif
       m_ID = it;
     }
@@ -61,7 +60,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Item? Use {
       get {
-        if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Models.Items[(int) m_ID]);
+        if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Gameplay.GameItems.From(m_ID));
         return m_Item;
       }
     }

@@ -267,7 +267,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemRangedWeapon? GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
     {
-      return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
+      return GetCompatibleRangedWeapon(Gameplay.GameItems.From(am) as ItemAmmoModel);
     }
 
     public void UntriggerAllTraps() {

@@ -546,7 +546,7 @@ restart:
 
 #region 8. Items.
       Item sewers_stock() {
-          return PostprocessQuantity(Models.Items[(int)sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))].create());
+          return PostprocessQuantity(GameItems.From(sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))).create());
       };
       sewers.Rect.DoForEach(pt => {
         sewers.DropItemAt(sewers_stock(), in pt);
@@ -2255,7 +2255,7 @@ restart:
 
     private Item MakeShopPharmacyItem()
     {
-      return PostprocessQuantity(Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hospital_shop_checksum-1))].create());
+      return PostprocessQuantity(GameItems.From(hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hospital_shop_checksum-1))).create());
     }
 
     // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
@@ -2272,7 +2272,7 @@ restart:
 
     private Item MakeShopSportsWearItem()
     {
-      return Models.Items[(int)sportswear_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, sportswear_shop_checksum))].create();
+      return GameItems.From(sportswear_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, sportswear_shop_checksum))).create();
     }
 
     // original was 1..24 in groups of 3, with some 50-50 splits
@@ -2292,7 +2292,7 @@ restart:
 
     private Item MakeShopConstructionItem()
     {
-      return PostprocessQuantity(Models.Items[(int)construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, construction_shop_checksum))].create());
+      return PostprocessQuantity(GameItems.From(construction_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, construction_shop_checksum))).create());
     }
 
     // RS Alpha 9: 40% ranged weapons, 60% ammo
@@ -2311,7 +2311,7 @@ restart:
 
     private Item MakeShopGunshopItem()
     {
-      return Models.Items[(int)gunshop_stock.UseRarityTable(m_DiceRoller.Roll(0, gunshop_checksum))].create();
+      return GameItems.From(gunshop_stock.UseRarityTable(m_DiceRoller.Roll(0, gunshop_checksum))).create();
     }
 
     // RS Alpha 9: 50% weapons, 50% other.  Why no stench killer?
@@ -2327,7 +2327,7 @@ restart:
 
     private Item MakeHuntingShopItem()
     {
-      return Models.Items[(int)hunting_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hunting_shop_checksum))].create();
+      return GameItems.From(hunting_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, hunting_shop_checksum))).create();
     }
 
     private Item MakeShopGeneralItem()
@@ -2349,7 +2349,7 @@ restart:
 
     private Item MakeHospitalItem()
     {
-      return PostprocessQuantity(Models.Items[(int)hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, (Session.Get.HasInfection ? hospital_shop_checksum : hospital_shop_checksum-1)))].create());
+      return PostprocessQuantity(GameItems.From(hospital_shop_stock.UseRarityTable(m_DiceRoller.Roll(0, (Session.Get.HasInfection ? hospital_shop_checksum : hospital_shop_checksum-1)))).create());
     }
 
 //  This should be influenced by pre-apocalypse politics.  This is the reference red state, red city set the other politics post-process
@@ -2380,7 +2380,7 @@ restart:
 
     private Item MakeRandomBedroomItem()
     {
-      return PostprocessQuantity(Models.Items[(int)bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))].create());
+      return PostprocessQuantity(GameItems.From(bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))).create());
     }
 
     private ItemFood MakeRandomKitchenItem()    // not obviously the same as grocery item
@@ -2406,7 +2406,7 @@ restart:
     {
       int choice = m_DiceRoller.Roll(0, CHAR_office_checksum/45*100);   // historically 45% chance of an item
       if (CHAR_office_checksum <= choice) return null;
-      return PostprocessQuantity(Models.Items[(int)CHAR_office_stock.UseRarityTable(choice)].create());
+      return PostprocessQuantity(GameItems.From(CHAR_office_stock.UseRarityTable(choice)).create());
     }
 
     private const int park_checksum = 32;
@@ -2426,7 +2426,7 @@ restart:
 
     public Item MakeRandomParkItem()
     {
-      return PostprocessQuantity(Models.Items[(int)park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))].create());
+      return PostprocessQuantity(GameItems.From(park_stock.UseRarityTable(m_DiceRoller.Roll(0, park_checksum))).create());
     }
 
     // CHAR building codes have accounted for the possibility of a Z apocalypse.
@@ -2845,7 +2845,7 @@ restart:
         int choice = m_DiceRoller.Roll(0, CHAR_armory_checksum / 4*5);   // historically 80% chance of an item
         if (CHAR_armory_checksum <= choice) return null;
         var shelf = MakeObjShelf();
-        shelf.Inventory.AddAll(PostprocessQuantity(Models.Items[(int)CHAR_armory_stock.UseRarityTable(choice)].create()));
+        shelf.Inventory.AddAll(PostprocessQuantity(GameItems.From(CHAR_armory_stock.UseRarityTable(choice)).create()));
         return shelf;
       }));
     }
@@ -3592,7 +3592,7 @@ restart:
     {
       Item equip_this() {
         if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
-          return PostprocessQuantity(Models.Items[(int)rare_random_item[roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))]].create());
+          return PostprocessQuantity(GameItems.From(rare_random_item[roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))]).create());
         }
 
         int choice = roller.Roll(0, (int)ShopType._COUNT + 3);
@@ -3644,7 +3644,7 @@ restart:
       inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.Model.ID) : MakeItemGrenade());
       }
       inv.AddAll(GameItems.MEDIKIT.instantiate());
-      inv.AddAll(PostprocessQuantity(Models.Items[(int)m_DiceRoller.Choose(survivor_pills)].create()));
+      inv.AddAll(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
       inv.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep();

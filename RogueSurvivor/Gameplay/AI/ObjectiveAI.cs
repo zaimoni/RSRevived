@@ -5313,7 +5313,7 @@ restart_chokepoints:
     private int ItemRatingCode(GameItems.IDs x)
     {
        // \todo location-based inferences
-       return ItemRatingCode(Models.Items[(int)x]);
+       return ItemRatingCode(GameItems.From(x));
     }
 
     protected void ReviewItemRatings()
@@ -5715,7 +5715,7 @@ restart_chokepoints:
       // medicine glut ... drop it
       foreach(GameItems.IDs x in GameItems.medicine) {
         if (it.Model.ID == x) continue;
-        ItemModel model = Models.Items[(int)x];
+        ItemModel model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
         if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
@@ -5839,7 +5839,7 @@ restart_chokepoints:
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(GameItems.IDs x in GameItems.ammo) {
-          ItemModel model = Models.Items[(int)x];
+          ItemModel model = GameItems.From(x);
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, position, use_ok);
@@ -5848,7 +5848,7 @@ restart_chokepoints:
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo test = null;
         foreach(GameItems.IDs x in GameItems.ammo) {
-          if (inv.GetBestDestackable(Models.Items[(int)x]) is ItemAmmo ammo) {
+          if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
@@ -6363,7 +6363,7 @@ restart_chokepoints:
       Inventory inv = m_Actor.Inventory;
       ItemModel model;
       while(0 < i--) {
-        if (null == inv.GetBestDestackable((model = Models.Items[(int)i]))) continue;   // not really in inventory
+        if (null == inv.GetBestDestackable((model = GameItems.From(i)))) continue;   // not really in inventory
         var code = ItemRatingCode(i);
         if (3 <= code) continue;
         // ranged weapons are problematic

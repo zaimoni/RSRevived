@@ -3078,10 +3078,10 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
 
-    public bool HasAtLeastFullStackOf(Gameplay.GameItems.IDs it, int n)
+    public bool HasAtLeastFullStackOf(GameItems.IDs it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      ItemModel model = Models.Items[(int)it];
+      ItemModel model = GameItems.From(it);
       if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
       return m_Inventory.Count(model) >= n; // XXX assumes each model goes with a specific item type
     }

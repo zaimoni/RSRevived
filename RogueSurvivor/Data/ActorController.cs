@@ -67,8 +67,9 @@ namespace djack.RogueSurvivor.Data
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
         // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (0 >= tmp.Count) continue;
+        var it_model = Gameplay.GameItems.From(it);
         if (Gameplay.GameItems.ranged.Contains(it)) {
-          ItemRangedWeaponModel model = (Models.Items[(int)it] as ItemRangedWeaponModel)!;
+          ItemRangedWeaponModel model = (it_model as ItemRangedWeaponModel)!;
           var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType== model.AmmoType);
           if (null == ammo) {
             tmp.OnlyIf(loc => {
@@ -100,7 +101,7 @@ namespace djack.RogueSurvivor.Data
           }
         }
         // cheating post-filter: reject boring entertainment
-        if (Models.Items[(int)it] is ItemEntertainmentModel ent) {
+        if (it_model is ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
                 var allItems = Map.AllItemsAt(loc, m_Actor);
@@ -129,7 +130,7 @@ namespace djack.RogueSurvivor.Data
         }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
         if (m_Actor.Inventory.IsFull) {
-          if (Models.Items[(int)it] is ItemLightModel || Models.Items[(int)it] is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
+          if (it_model is ItemLightModel || it_model is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp.OnlyIf(loc => {
                 // Cf. LOSSensor::_seeItems
                 var allItems = Map.AllItemsAt(loc, m_Actor);
@@ -141,11 +142,11 @@ namespace djack.RogueSurvivor.Data
                 bool rebuild = true;
                 while (0 < ub) {
                     var itemsAt = allItems[--ub];
-                    var test = itemsAt.GetFirstByModel(Models.Items[(int)it]);
+                    var test = itemsAt.GetFirstByModel(it_model);
                     if (null == test) rebuild = true;
                     else {
                         if (!test.IsUseless
-                          || null != itemsAt.GetFirstByModel<Item>(Models.Items[(int)it], obj => !obj.IsUseless)) return true;   // actualy want this one
+                          || null != itemsAt.GetFirstByModel<Item>(it_model, obj => !obj.IsUseless)) return true;   // actualy want this one
                     }
                 }
                 if (rebuild) {

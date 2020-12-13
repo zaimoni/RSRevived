@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       var stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
       if (0 >= stacks.Count) return;
 
-      ItemModel model = Models.Items[(int)m_ID];
+      ItemModel model = Gameplay.GameItems.From(m_ID);
 
       foreach(var x in stacks) {
         m_Item = x.Value.GetFirstByModel(model);
@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Gameplay.GameItems.IDs ID { get { return m_ID; } }
 
     public Item? Give { get {
-      gift = m_Actor.Inventory.GetBestDestackable(Models.Items[(int)m_ID]); // force regeneration
+      gift = m_Actor.Inventory.GetBestDestackable(Gameplay.GameItems.From(m_ID)); // force regeneration
       return gift;
     } }
 

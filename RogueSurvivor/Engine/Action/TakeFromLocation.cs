@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (0 >= stacks.Count) return false;
             var denorm = m_Actor.Location.Map.Denormalize(in m_loc);
             if (null == denorm || !stacks.ContainsKey(denorm.Value.Position)) return false;
-            m_Item = m_loc.Items?.GetBestDestackable(Models.Items[(int)m_ID]);
+            m_Item = m_loc.Items?.GetBestDestackable(Gameplay.GameItems.From(m_ID));
             return null != m_Item;
         }
 

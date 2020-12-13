@@ -164,11 +164,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public ItemModel this[IDs id] {
-      get {
-        return this[(int) id];
-      }
-    }
+    public static ItemModel From(IDs id) { return m_Models[(int)id];  }
 
     private static void _setModel(ItemModel model) {
 #if DEBUG
@@ -727,7 +723,7 @@ namespace djack.RogueSurvivor.Gameplay
         damage[index] = DATA_EXPLOSIVE_GRENADE.DMG[index];   // XXX explosiveData.DMG is returned with a mismatched length
 
       _setModel(new ItemGrenadeModel(IDs.EXPLOSIVE_GRENADE, DATA_EXPLOSIVE_GRENADE.NAME, DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE, DATA_EXPLOSIVE_GRENADE.FUSE, new BlastAttack(DATA_EXPLOSIVE_GRENADE.RADIUS, damage, true, false), GameImages.ICON_BLAST, DATA_EXPLOSIVE_GRENADE.MAXTHROW, DATA_EXPLOSIVE_GRENADE.STACKLINGLIMIT, DATA_EXPLOSIVE_GRENADE.FLAVOR));
-      _setModel(new ItemGrenadePrimedModel(IDs.EXPLOSIVE_GRENADE_PRIMED, "primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel));
+      _setModel(new ItemGrenadePrimedModel(IDs.EXPLOSIVE_GRENADE_PRIMED, "primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, From(IDs.EXPLOSIVE_GRENADE) as ItemGrenadeModel));
 
       // carpentry
       _setModel(new ItemBarricadeMaterialModel(IDs.BAR_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.NAME, DATA_BAR_WOODEN_PLANK.PLURAL, GameImages.ITEM_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.VALUE, DATA_BAR_WOODEN_PLANK.STACKINGLIMIT, DATA_BAR_WOODEN_PLANK.FLAVOR));

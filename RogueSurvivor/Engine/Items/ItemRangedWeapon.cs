@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
     {
-      if (Data.Models.Items[(int)x] is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
+      if (Gameplay.GameItems.From(x) is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
       throw new ArgumentOutOfRangeException(nameof(x), x, "not a ranged weapon");
     }
 

@@ -388,7 +388,7 @@ namespace djack.RogueSurvivor.Data
       if (!in_combat) {
       if (m_Actor.IsTired && null == enemies_in_FOV) ret.Add("Rest in place");
 
-      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
+      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) as ItemMedicine);
       if (null != stim) {
         MapObject car = null;
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
@@ -466,7 +466,7 @@ namespace djack.RogueSurvivor.Data
         return true;
       case "Brace for pushing car in place":
         {
-        ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
+        ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) as ItemMedicine);
         if (null == stim) return false; // actually invariant failure
         int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
         // currently all wrecked cars have weight 100

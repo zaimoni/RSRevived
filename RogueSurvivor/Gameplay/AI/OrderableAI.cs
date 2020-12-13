@@ -2495,14 +2495,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       // \todo precalculate sleep-relevant medicines at game start
       // use SLP-relevant medicines from inventory (2019-07-29: caught by BehaviorUseMedecine, but we want to be more precise)
-      var med_slp = m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
+      var med_slp = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP);
       if (null != med_slp) return new ActionUseItem(m_Actor, med_slp);
 
       // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
 
       // go to SLP-relevant medicines in inventory stacks that are in sight
       static bool has_SLP_relevant(Inventory inv) {
-        return null!=inv.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_SLP]);
+        return null!=inv.GetBestDestackable(GameItems.PILLS_SLP);
       }
 
       var stacks = GetInterestingInventoryStacks(has_SLP_relevant);
