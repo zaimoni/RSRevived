@@ -93,7 +93,6 @@
     <Compile Include="Data\Item.cs" />
     <Compile Include="Data\ActorSheet.cs" />
     <Compile Include="Data\Inventory.cs" />
-    <Compile Include="Data\Models.cs" />
     <Compile Include="Data\Location.cs" />
     <Compile Include="Data\DollPart.cs" />
     <Compile Include="Data\DollBody.cs" />
@@ -104,7 +103,6 @@
     <Compile Include="Data\Corpse.cs" />
     <Compile Include="Data\StateMapObject.cs" />
     <Compile Include="Data\TimedTask.cs" />
-    <Compile Include="Data\ItemModelDB.cs" />
     <Compile Include="Data\Verb.cs" />
     <Compile Include="Data\SkillTable.cs" />
     <Compile Include="Data\Faction.cs" />

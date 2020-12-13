@@ -348,7 +348,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
-    private readonly GameItems m_GameItems;
 #nullable restore
     private Thread m_SimThread;
 
@@ -432,7 +431,7 @@ namespace djack.RogueSurvivor.Engine
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
       GameActors.Init(m_UI);
-      m_GameItems = new GameItems(m_UI);
+      GameItems.Init(m_UI);
       m_Manual = LoadManual();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }

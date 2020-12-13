@@ -17,7 +17,7 @@ using Color = System.Drawing.Color;
 
 namespace djack.RogueSurvivor.Gameplay
 {
-  internal class GameItems : ItemModelDB
+  internal static class GameItems
   {
     // like GameActors, these Verbs trigger a saveload file bloat cycle
     private static readonly Verb FIRE_SALVO_AT = new Verb("fire a salvo at", "fires a salvo at");
@@ -94,12 +94,6 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.ENT_BOOK,
         IDs.ENT_MAGAZINE,
         IDs.ENT_CHAR_GUARD_MANUAL});
-
-    public ItemModel this[int id] {
-      get {
-        return m_Models[id];
-      }
-    }
 
     public static ItemModel From(int id) { return m_Models[id];  }
     public static ItemModel From(IDs id) { return m_Models[(int)id];  }
@@ -543,13 +537,11 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public GameItems(IRogueUI ui)
+    public static void Init(IRogueUI ui)
     {
 #if DEBUG
       if (null == ui) throw new ArgumentNullException(nameof(ui));
 #endif
-      Models.Items = this;
-
       var med_data = LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
       var food_data = LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
       var melee_data = LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
