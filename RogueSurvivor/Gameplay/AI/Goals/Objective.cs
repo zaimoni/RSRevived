@@ -263,7 +263,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     var ret = new List<Location>(working.Count);
                     foreach (var pt in working) ret.Add(new Location(loc.Map, pt));
                     return ret;
-                };
+                }
             }
             return null;
         }
@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
            if (null == min_path) return false;
            Location loc = ai.ControlledActor.Location;
-           bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, in pt); };
+           bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, in pt); }
 
            int i = min_path.Count;
            while(0 < i--) {
@@ -314,7 +314,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            Location loc = ai.ControlledActor.Location;
            Map map = loc.Map;
            Point pos = loc.Position;
-           bool is_adjacent(Point pt) { return 1 == Engine.Rules.InteractionDistance(in loc, new Location(map, pt)); };
+           bool is_adjacent(Point pt) { return 1 == Engine.Rules.InteractionDistance(in loc, new Location(map, pt)); }
 
            int i = min_path.Count;
            while(0 < i--) {
