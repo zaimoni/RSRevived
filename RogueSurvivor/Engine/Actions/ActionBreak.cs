@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoBreak(m_Actor, m_Obj);
+      RogueGame.Game.DoBreak(m_Actor, m_Obj);
     }
   }
 }

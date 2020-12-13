@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
-      RogueForm.Game.DoUseEntertainmentItem(actor, this);   // forward to RogueGame -- CHAR manual is bloated
+      RogueGame.Game.DoUseEntertainmentItem(actor, this);   // forward to RogueGame -- CHAR manual is bloated
     }
     public string ReasonCantUse(Actor a) {
       if (!a.Model.Abilities.IsIntelligent) return "not intelligent";

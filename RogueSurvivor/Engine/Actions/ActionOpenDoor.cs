@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoOpenDoor(m_Actor, m_Door);
+      RogueGame.Game.DoOpenDoor(m_Actor, m_Door);
     }
   }
 }

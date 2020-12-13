@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoPush(m_Actor, m_Object, in m_To);
+      RogueGame.Game.DoPush(m_Actor, m_Object, in m_To);
     }
 
     static public ActionPush? Random(Actor m_Actor, MapObject obj) {

@@ -1257,7 +1257,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
 #endif
 
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
 
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
@@ -1912,7 +1912,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
     {
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       var rules = Rules.Get;
       ActorAction? tmpAction = null;
       if (rules.RollChance(EMOTE_FLEE_CHANCE))
@@ -2278,7 +2278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var rules = Rules.Get;
       if (!rules.RollChance(LAW_ENFORCE_CHANCE)) return null;  // \todo but should be 100% for hungry civilians attacking for food, that is in-progress
       friends = null;  // enable auto GC
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       foreach(var x in murderers) {
         if (0 >= x.Value.MurdersInProgress && x.Value.IsUnsuspiciousFor(m_Actor)) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
         else (friends ?? new Dictionary<Location, Actor>())[x.Key] = x.Value;
@@ -2946,7 +2946,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = _takeThis(in loc, obj, recover, is_real);
       if (null == tmp) return null;
       if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
+        RogueGame.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
       return tmp;
     }
 
@@ -2998,7 +2998,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmp = _takeThis(in loc, obj, recover, is_real);
         if (null == tmp) return null;
         if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
+          RogueGame.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
       }
       { // scoping brace

@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoSprayOdorSuppressor(m_Actor, m_Spray, m_SprayOn);
+            RogueGame.Game.DoSprayOdorSuppressor(m_Actor, m_Spray, m_SprayOn);
         }
         #endregion
     }

@@ -36,8 +36,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".
-    public PowerGenerator()
-      : base(m_imageIDs[0])
+    public PowerGenerator() : base(m_imageIDs[0])
     {
     }
 
@@ -57,7 +56,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public void TogglePower(Actor a)
     {
       SetState(State == STATE_OFF ? STATE_ON : STATE_OFF);
-      RogueForm.Game.OnMapPowerGeneratorSwitch(Location.Map, a);
+      RogueGame.Game.OnMapPowerGeneratorSwitch(Location.Map, a);
     }
     }
 }

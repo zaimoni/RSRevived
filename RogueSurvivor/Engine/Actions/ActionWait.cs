@@ -21,6 +21,6 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public override bool IsLegal() { return true; }
-    public override void Perform() { RogueForm.Game.DoWait(m_Actor); }
+    public override void Perform() { RogueGame.Game.DoWait(m_Actor); }
   }
 }

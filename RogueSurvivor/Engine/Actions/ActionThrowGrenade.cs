@@ -34,9 +34,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       if (m_Actor.GetEquippedWeapon() is ItemPrimedExplosive)
-        RogueForm.Game.DoThrowGrenadePrimed(m_Actor, in m_ThrowPos);
+        RogueGame.Game.DoThrowGrenadePrimed(m_Actor, in m_ThrowPos);
       else
-        RogueForm.Game.DoThrowGrenadeUnprimed(m_Actor, in m_ThrowPos);
+        RogueGame.Game.DoThrowGrenadeUnprimed(m_Actor, in m_ThrowPos);
     }
   }
 }

@@ -1321,7 +1321,7 @@ namespace djack.RogueSurvivor.Data
             // otherwise: pan and live display
             if (player_initiated || simulating) defer_msg_player(actor);
             else {
-              RogueForm.Game.PanViewportTo(actor);
+              RogueGame.Game.PanViewportTo(actor);
               player_initiated = true; // not really, but this prevents distracting re-pans for background police radio
               msg_player(actor);
             }
@@ -1428,7 +1428,7 @@ namespace djack.RogueSurvivor.Data
     public void Aggress(Actor defender) { 
       Activity = Activity.FIGHTING;
       m_TargetActor = defender;
-      if (!IsEnemyOf(defender)) RogueForm.Game.DoMakeAggression(this, defender);
+      if (!IsEnemyOf(defender)) RogueGame.Game.DoMakeAggression(this, defender);
     }
 
     // No UI updates here (that differs by context)
@@ -3003,7 +3003,7 @@ namespace djack.RogueSurvivor.Data
 
       HitPoints -= dmg;
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         Remove(equippedItem);
         if (game.ForceVisibleToPlayer(this)) {
@@ -3817,10 +3817,10 @@ namespace djack.RogueSurvivor.Data
        if (IsRunning && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) {
          Walk();
          if (Controller is PlayerController pc) {
-           var msg = Engine.RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this)));
-           if (Engine.RogueGame.IsPlayer(this)) {
-             RogueForm.Game.AddMessage(msg);
-             RogueForm.Game.RedrawPlayScreen();
+           var msg = RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this)));
+           if (RogueGame.IsPlayer(this)) {
+             RogueGame.Game.AddMessage(msg);
+             RogueGame.Game.RedrawPlayScreen();
            } else {
              pc.DeferMessage(msg);
            }

@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction? SelectAction()
     {
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
 
       m_Actor.Walk();    // alpha 10: don't run by default
       var tmpAction = BehaviorEquipWeapon();

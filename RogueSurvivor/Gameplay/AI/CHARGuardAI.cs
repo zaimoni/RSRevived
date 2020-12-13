@@ -76,7 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction()
     {
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 
@@ -267,7 +267,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void Aggress(Actor target)
     {
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       game.DoMakeAggression(m_Actor, target);   // XXX needs to be more effective
       foreach(var guard in _squad) {
         if (m_Actor==guard) continue;

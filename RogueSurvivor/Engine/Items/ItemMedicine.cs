@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.Cure(actor.ScaleMedicineEffect(InfectionCure));
       actor.RegenSanity(actor.ScaleMedicineEffect(SanityCure));
       inv.Consume(this);
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
     }

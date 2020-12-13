@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoDropItem(m_Actor, m_Item);
+      RogueGame.Game.DoDropItem(m_Actor, m_Item);
     }
   }
 }

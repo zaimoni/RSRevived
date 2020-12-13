@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoRechargeItemBattery(m_Actor, m_Item);
+      RogueGame.Game.DoRechargeItemBattery(m_Actor, m_Item);
     }
   }
 }

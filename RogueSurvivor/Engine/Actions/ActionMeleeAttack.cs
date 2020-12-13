@@ -19,8 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
     private readonly Actor m_Target;
 
-    public ActionMeleeAttack(Actor actor, Actor target)
-      : base(actor)
+    public ActionMeleeAttack(Actor actor, Actor target) : base(actor)
     {
       m_Target = target;
       actor.Activity = Activity.IDLE;   // transition to fighting is in DoMeleeAttack
@@ -35,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoMeleeAttack(m_Actor, m_Target);
+      RogueGame.Game.DoMeleeAttack(m_Actor, m_Target);
     }
   }
 }

@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoEatCorpse(m_Actor, m_Target);
+      RogueGame.Game.DoEatCorpse(m_Actor, m_Target);
     }
   }
 }

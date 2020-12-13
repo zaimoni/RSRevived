@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.SpendActionPoints();
       if (IsActivated) Desactivate();
       else Activate(actor);
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
     }
@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Engine.Items
       string answer = "That " + TheName + " is ....";
 
       // check for whether an ally is within chat range first
-      if (RogueForm.Game.DoBackgroundChat(a, allies, question, answer, overheard_trap_instructions)) {
+      if (RogueGame.Game.DoBackgroundChat(a, allies, question, answer, overheard_trap_instructions)) {
         (m_Known ??= new List<Actor>(1)).Add(a);
         return true;
       }
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Engine.Items
       // querent is guaranteed
       // \todo reimplement/extend when either army radios or cellphone rewrite lands (police would prefer police radios, Nat guard prefers army radios, etc.)
       if (a.HasActivePoliceRadio) {
-        if (RogueForm.Game.DoBackgroundPoliceRadioChat(a, allies, question, answer, overheard_trap_instructions)) {
+        if (RogueGame.Game.DoBackgroundPoliceRadioChat(a, allies, question, answer, overheard_trap_instructions)) {
           (m_Known ??= new List<Actor>(1)).Add(a);
           return true;
         }

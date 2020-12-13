@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoBarricadeDoor(m_Actor, m_Door);
+      RogueGame.Game.DoBarricadeDoor(m_Actor, m_Door);
     }
   }
 }

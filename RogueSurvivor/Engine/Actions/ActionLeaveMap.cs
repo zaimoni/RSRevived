@@ -15,8 +15,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Point m_ExitPoint;
 
-    public ActionLeaveMap(Actor actor, in Point exitPoint)
-      : base(actor)
+    public ActionLeaveMap(Actor actor, in Point exitPoint) : base(actor)
     {
 #if DEBUG
        if (actor.Location.Map.IsInBounds(exitPoint)) throw new ArgumentOutOfRangeException(nameof(exitPoint), exitPoint, "must not be InBounds");
@@ -31,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoLeaveMap(m_Actor, m_ExitPoint);
+      RogueGame.Game.DoLeaveMap(m_Actor, m_ExitPoint);
     }
 
     public override string ToString()

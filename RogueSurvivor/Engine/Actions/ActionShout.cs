@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoShout(m_Actor, m_Text);
+      RogueGame.Game.DoShout(m_Actor, m_Text);
     }
   }
 }

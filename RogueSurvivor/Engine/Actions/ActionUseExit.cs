@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoLeaveMap(m_Actor, m_ExitPoint.Position);
+      RogueGame.Game.DoLeaveMap(m_Actor, m_ExitPoint.Position);
     }
   }
 }

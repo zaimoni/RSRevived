@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoStartSleeping(m_Actor);
+      RogueGame.Game.DoStartSleeping(m_Actor);
     }
   }
 }

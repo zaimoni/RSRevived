@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoSwitchPlace(m_Actor, m_Target);
+      RogueGame.Game.DoSwitchPlace(m_Actor, m_Target);
     }
   }
 
@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoSwitchPlace(m_Actor, m_Target);
+      RogueGame.Game.DoSwitchPlace(m_Actor, m_Target);
     }
   }
 }

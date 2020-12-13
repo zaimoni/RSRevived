@@ -206,9 +206,9 @@ namespace djack.RogueSurvivor.Engine._Action
         public override void Perform()
         {
             if (m_Actor.Location == m_NewLocation) { // pull
-                RogueForm.Game.DoPull(m_Actor, m_Object, Rules.Get.DiceRoller.Choose(_dests));
+                RogueGame.Game.DoPull(m_Actor, m_Object, Rules.Get.DiceRoller.Choose(_dests));
             } else { // push
-                RogueForm.Game.DoPush(m_Actor, m_Object, in m_NewLocation);
+                RogueGame.Game.DoPush(m_Actor, m_Object, in m_NewLocation);
             }
         }
     }

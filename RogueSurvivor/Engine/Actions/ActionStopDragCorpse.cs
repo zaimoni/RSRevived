@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoStopDragCorpse(m_Actor);
+      RogueGame.Game.DoStopDragCorpse(m_Actor);
     }
   }
 }

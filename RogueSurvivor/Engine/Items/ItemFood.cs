@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Engine.Items
         emptyCan.Activate(actor);  // alpha10
         actor.Location.Drop(emptyCan);
       }
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       bool player = game.ForceVisibleToPlayer(actor);
       if (player) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_EAT.Conjugate(actor), this));
       if (!IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;

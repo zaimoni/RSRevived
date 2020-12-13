@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoReviveCorpse(m_Actor, m_Target);
+      RogueGame.Game.DoReviveCorpse(m_Actor, m_Target);
     }
   }
 }

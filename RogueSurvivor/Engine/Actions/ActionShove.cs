@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoShove(m_Actor, m_Target, in m_To);
+      RogueGame.Game.DoShove(m_Actor, m_Target, in m_To);
     }
   }
 }

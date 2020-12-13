@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override void Perform()
         {
-            RogueForm.Game.DoTakeItem(m_Actor, m_loc, m_Item!); // \todo fix should be the more general handling
+            RogueGame.Game.DoTakeItem(m_Actor, m_loc, m_Item!); // \todo fix should be the more general handling
         }
 
         public override bool AreEquivalent(ActorAction? src)

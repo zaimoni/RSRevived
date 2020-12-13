@@ -31,8 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Actor m_Target;
     private readonly FireMode m_Mode;
 
-    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default)
-      : base(actor)
+    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor)
     {
       m_Target = target;
       m_Mode = mode;
@@ -48,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
+      RogueGame.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
     }
   }
 }

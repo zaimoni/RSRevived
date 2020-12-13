@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoCloseDoor(m_Actor, m_Door, m_IsFreeAction);
+      RogueGame.Game.DoCloseDoor(m_Actor, m_Door, m_IsFreeAction);
     }
   }
 }

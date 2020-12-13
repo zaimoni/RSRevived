@@ -65,8 +65,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 #if DEBUG
       if (!m_Actor.MayTakeFromStackAt(in m_Location)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + m_Location + " at " + m_Actor.Location);
 #endif
-      if (null != m_Container) RogueForm.Game.DoTakeItem(m_Actor, m_Container, m_Item);
-      else if (m_Location.Map==m_Actor.Location.Map) RogueForm.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
+      if (null != m_Container) RogueGame.Game.DoTakeItem(m_Actor, m_Container, m_Item);
+      else if (m_Location.Map==m_Actor.Location.Map) RogueGame.Game.DoTakeItem(m_Actor, m_Location.Position, m_Item);    // would fail for cross-district containers
     }
 
     public override string ToString()
@@ -136,8 +136,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       Item it = Take!;  // cf IsLegal(), above
       m_Actor.Inventory.RejectCrossLink(_inv!);
-      if (null != m_Container) RogueForm.Game.DoTakeItem(m_Actor, m_Container, m_Item);
-      else RogueForm.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
+      if (null != m_Container) RogueGame.Game.DoTakeItem(m_Actor, m_Container, m_Item);
+      else RogueGame.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
       _inv?.RejectCrossLink(m_Actor.Inventory);
     }
 
@@ -230,7 +230,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       if (null != m_ConcreteAction) m_ConcreteAction.Perform();
-      else RogueForm.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
+      else RogueGame.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
     }
 
     public override string ToString()

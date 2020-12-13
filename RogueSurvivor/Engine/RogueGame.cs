@@ -393,12 +393,17 @@ namespace djack.RogueSurvivor.Engine
     }
 #endregion
 
-    public RogueGame(IRogueUI UI)
+    public static void Init()
     {
 #if DEBUG
       if (!IRogueUI.IsConstructed) throw new InvalidOperationException("UI not set up");
       if (null != s_ooao) throw new InvalidOperationException("tried to double-construct a moral singleton");
 #endif
+      s_ooao = new RogueGame(IRogueUI.UI);
+    }
+
+    private RogueGame(IRogueUI UI)
+    {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame()");
       m_UI = UI;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
@@ -431,7 +436,6 @@ namespace djack.RogueSurvivor.Engine
       m_GameActors = new GameActors(m_UI);
       m_GameItems = new GameItems(m_UI);
       m_Manual = LoadManual();
-      s_ooao = this;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -13723,7 +13727,7 @@ retry:
         if (fo_map.DistrictPos != map.DistrictPos) continue;  // cross-district change
         pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
                                                         : null;
-        var game = RogueForm.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase
+        var game = RogueGame.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase
         if (null != pointList && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
           map.PlaceAt(fo, Rules.Get.DiceRoller.Choose(pointList));
           map.MoveActorToFirstPosition(fo);

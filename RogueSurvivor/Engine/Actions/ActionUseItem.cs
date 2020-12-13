@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoUseItem(m_Actor, m_Item);
+      RogueGame.Game.DoUseItem(m_Actor, m_Item);
     }
   } // ActionUseItem
 
@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       m_Actor.Activity = Activity.IDLE;
-      RogueForm.Game.DoUseItem(m_Actor, Use);
+      RogueGame.Game.DoUseItem(m_Actor, Use);
     }
   } // ActionUse
 }

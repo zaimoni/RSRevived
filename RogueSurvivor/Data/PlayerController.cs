@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
         if (null == viewpoint.Sees(who)) return false;
         expired = true; // just in case of severe multithreading bug
         (viewpoint.Controller as PlayerController)?.InstallAfterAction(new UITracking(who));
-        var game = RogueForm.Game;
+        var game = RogueGame.Game;
         game.PlayEventMusic(music);
         game.ClearMessages();
         game.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
@@ -99,18 +99,18 @@ namespace djack.RogueSurvivor.Data
 
     // forwarder system for to RogueGame::AddMessage
     public override void AddMessage(Data.Message msg) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueForm.Game.AddMessage(msg);
+      if (RogueGame.IsPlayer(m_Actor)) RogueGame.Game.AddMessage(msg);
       else DeferMessage(msg);
     }
 
     public void AddMessages(IEnumerable<Data.Message> msgs) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueForm.Game.AddMessages(msgs);
+      if (RogueGame.IsPlayer(m_Actor)) RogueGame.Game.AddMessages(msgs);
       else DeferMessages(msgs);
     }
 
     public override void AddMessageForceRead(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
-        var game = RogueForm.Game;
+        var game = RogueGame.Game;
         game.ClearMessages();
         game.AddMessage(msg);
         game.AddMessagePressEnter();
@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Data
     }
     public void AddMessagesForceRead(IEnumerable<Data.Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor)) {
-        var game = RogueForm.Game;
+        var game = RogueGame.Game;
         game.ClearMessages();
         game.AddMessages(msgs);
         game.AddMessagePressEnter();
@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Data
     }
     public override void AddMessageForceReadClear(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
-        var game = RogueForm.Game;
+        var game = RogueGame.Game;
         game.ClearMessages();
         game.AddMessage(msg);
         game.AddMessagePressEnter();
@@ -496,7 +496,7 @@ namespace djack.RogueSurvivor.Data
     private void _raidMsg(Data.Message desc_msg, Data.Message where_msg, string music)
     {
         if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
-            var game = RogueForm.Game;
+            var game = RogueGame.Game;
             game.PlayEventMusic(music);
             game.ClearMessages();
             AddMessage(desc_msg);
@@ -591,7 +591,7 @@ namespace djack.RogueSurvivor.Data
         if (m_Actor!= e._target && e._target.IsPlayer) return;
         e.shown = true;
       }
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       game.PanViewportTo(m_Actor);
 
       if (e._important) game.ClearMessages();

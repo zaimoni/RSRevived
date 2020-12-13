@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Engine.Items
       rw.Ammo += num;
       if (0 >= (Quantity -= num)) inv.RemoveAllQuantity(this);
       else inv.IncrementalDefrag(this);
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
       if (game.ForceVisibleToPlayer(actor))
         game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
     }

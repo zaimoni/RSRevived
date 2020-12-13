@@ -8,8 +8,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionButcher(Actor actor, Corpse target)
-      : base(actor)
+    public ActionButcher(Actor actor, Corpse target) : base(actor)
     {
       m_Target = target;
     }
@@ -21,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoButcherCorpse(m_Actor, m_Target);
+      RogueGame.Game.DoButcherCorpse(m_Actor, m_Target);
     }
   }
 }

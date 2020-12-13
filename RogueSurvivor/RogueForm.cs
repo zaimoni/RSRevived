@@ -30,7 +30,6 @@ namespace djack.RogueSurvivor
     private IGameCanvas m_GameCanvas;
     private List<string> m_Mods = new List<string>();
 
-    internal static RogueGame Game { get; private set; }    // de-facto singleton
     public IEnumerable<string> Mods { get { return new List<string>(m_Mods); } }  // value-copy for const correctness.
 
 #region Init
@@ -62,7 +61,7 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "register with IRogueUI...");
       IRogueUI.UI = this;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create RogueGame...");
-      Game = new RogueGame(this);
+      RogueGame.Init();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
       m_GameCanvas.BindForm(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
@@ -125,7 +124,7 @@ namespace djack.RogueSurvivor
       } catch (Exception) { // just eat the exception, not a problem if there are no mods
       }
       LoadResources();
-      Game.Run();
+      RogueGame.Game.Run();
     }
 
     protected override void OnSizeChanged(EventArgs e)
@@ -137,8 +136,8 @@ namespace djack.RogueSurvivor
 
     protected override void OnClosing(CancelEventArgs e)
     {
-      if (!Game.IsGameRunning) return;
-      Game.StopTheWorld();
+      var game = RogueGame.Game;
+      if (game.IsGameRunning) game.StopTheWorld();
     }
 #endregion
 

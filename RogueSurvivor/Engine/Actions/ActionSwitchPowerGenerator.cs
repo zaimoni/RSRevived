@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoSwitchPowerGenerator(m_Actor, m_PowGen);
+      RogueGame.Game.DoSwitchPowerGenerator(m_Actor, m_PowGen);
     }
   }
 }

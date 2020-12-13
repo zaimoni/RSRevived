@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.HandlePlayerTakeItemFromContainer(m_Actor.Controller as PlayerController, m_Container);
+      RogueGame.Game.HandlePlayerTakeItemFromContainer(m_Actor.Controller as PlayerController, m_Container);
     }
   }
 }

@@ -112,7 +112,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoTradeWithContainer(m_Actor,in m_obj,m_GiveItem,m_TakeItem);
+            RogueGame.Game.DoTradeWithContainer(m_Actor,in m_obj,m_GiveItem,m_TakeItem);
         }
     }
 
@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoTradeWithGround(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
+            RogueGame.Game.DoTradeWithGround(m_Actor, in m_Location, m_GiveItem, m_TakeItem);
         }
     }
 
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueForm.Game.DoTrade(m_Actor.Controller as OrderableAI, m_Whom.Controller as OrderableAI, m_GiveItem, m_TakeItem);
+            RogueGame.Game.DoTrade(m_Actor.Controller as OrderableAI, m_Whom.Controller as OrderableAI, m_GiveItem, m_TakeItem);
         }
     }
 }

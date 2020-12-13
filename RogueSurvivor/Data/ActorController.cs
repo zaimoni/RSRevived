@@ -30,9 +30,9 @@ namespace djack.RogueSurvivor.Data
     public virtual void LeaveControl() {}
 
     // forwarder system for to RogueGame::AddMessage
-    public virtual void AddMessage(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
-    public virtual void AddMessageForceRead(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
-    public virtual void AddMessageForceReadClear(Data.Message msg) { RogueForm.Game.AddMessage(msg); }
+    public virtual void AddMessage(Data.Message msg) { RogueGame.Game.AddMessage(msg); }
+    public virtual void AddMessageForceRead(Data.Message msg) { RogueGame.Game.AddMessage(msg); }
+    public virtual void AddMessageForceReadClear(Data.Message msg) { RogueGame.Game.AddMessage(msg); }
 
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {

@@ -1376,7 +1376,7 @@ retry:
     public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool>? pred =null)
     {
       void pan_to(Actor a) {
-          RogueForm.Game.PanViewportTo(a);
+          Engine.RogueGame.Game.PanViewportTo(a);
           fn(a);
       };
 
@@ -1470,7 +1470,7 @@ retry:
       foreach(var obj in m_MapObjectsList) {
         if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_OPEN;
-        RogueForm.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
+        Engine.RogueGame.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
       }
     }
 

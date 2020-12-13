@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoTakeLead(m_Actor, m_Target);
+      RogueGame.Game.DoTakeLead(m_Actor, m_Target);
     }
 
     public override string ToString()

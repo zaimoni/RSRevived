@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoRepairFortification(m_Actor, m_Fort);
+      RogueGame.Game.DoRepairFortification(m_Actor, m_Fort);
     }
   }
 }

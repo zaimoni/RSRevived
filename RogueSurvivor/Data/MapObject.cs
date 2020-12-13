@@ -527,7 +527,7 @@ namespace djack.RogueSurvivor.Data
         m_Inventory.Clear(); // if it wasn't dropped, it's gone; disallows cross-linking
       }
       _destroy();
-      RogueForm.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
+      Engine.RogueGame.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
     }
 
     // flag handling

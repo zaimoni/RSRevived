@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction()
     {
-      var game = RogueForm.Game;
+      var game = RogueGame.Game;
 
       ActorAction? tmpAction;
 

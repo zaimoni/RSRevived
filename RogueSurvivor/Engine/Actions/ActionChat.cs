@@ -16,8 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Actor Target { get { return m_Target; } }
 
-    public ActionChat(Actor actor, Actor target)
-      : base(actor)
+    public ActionChat(Actor actor, Actor target) : base(actor)
     {
       m_Target = target;
     }
@@ -29,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoChat(m_Actor, m_Target);
+      RogueGame.Game.DoChat(m_Actor, m_Target);
     }
   }
 }

@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoTrade(m_Actor.Controller as Gameplay.AI.OrderableAI, m_Target.Controller as Gameplay.AI.OrderableAI);
+      RogueGame.Game.DoTrade(m_Actor.Controller as Gameplay.AI.OrderableAI, m_Target.Controller as Gameplay.AI.OrderableAI);
     }
   }
 }
