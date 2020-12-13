@@ -113,6 +113,11 @@ namespace djack.RogueSurvivor.Data
       foreach(var m in m_Maps) m.AfterLoad(this);
     }
 
+    public void RepairLoad()
+    {
+      foreach(var m in m_Maps) m.RepairLoad();
+    }
+
     // map manipulation
     protected void AddMap(Map map)
     {

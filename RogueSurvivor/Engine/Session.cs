@@ -226,6 +226,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    private void RepairLoad()
+    {
+      World.RepairLoad();
+    }
+
     public static bool Load(string filepath, SaveFormat format)
     {
 #if DEBUG
@@ -268,6 +273,7 @@ namespace djack.RogueSurvivor.Engine
       try {
 #endif
         s_TheSession = filepath.BinaryDeserialize<Session>();
+        s_TheSession.RepairLoad();
 #if DEBUG
 #else
       } catch (Exception ex) {

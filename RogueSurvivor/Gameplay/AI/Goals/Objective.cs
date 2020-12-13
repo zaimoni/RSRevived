@@ -31,6 +31,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
          ;
       }
 
+      public virtual void RepairLoad() {}
+
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
       /// <returns>true to take action</returns>
       public abstract bool UrgentAction(out ActorAction? ret);

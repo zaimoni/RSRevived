@@ -57,6 +57,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         [OnDeserialized] private void OnDeserialized(StreamingContext context)
         {
             oai = (m_Actor.Controller as ObjectiveAI)!;
+        }
+
+        public override void RepairLoad()
+        {
             threats = m_Actor.Threats!;
             tourism = m_Actor.InterestingLocs!;
         }
@@ -74,6 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 return true;
             }
             m_Unverified.RemoveWhere(is_cleared);
+            m_Unverified.Remove(m_Actor.Location.Position);
             if (0 >= m_Unverified.Count) {
                 _isExpired = true;
                 return true;
@@ -92,6 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             foreach (var loc in fov) {
               if (m_Zone.m == loc.Map) m_Unverified.Remove(loc.Position);
             }
+            m_Unverified.Remove(m_Actor.Location.Position);
             if (0 >= m_Unverified.Count) {
                 _isExpired = true;
                 return true;

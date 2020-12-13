@@ -25,6 +25,8 @@ namespace djack.RogueSurvivor.Data
 
     protected ActorController(Actor src) { m_Actor = src; }
 
+    public virtual void RepairLoad() { }
+
     public Actor ControlledActor { get { return m_Actor; } } // alpha10
     public virtual void TakeControl() {}
     public virtual void LeaveControl() {}

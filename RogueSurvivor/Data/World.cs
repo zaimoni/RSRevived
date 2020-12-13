@@ -193,6 +193,11 @@ namespace djack.RogueSurvivor.Data
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
     }
 
+    public void RepairLoad()
+    {
+      foreach(var d in m_DistrictsGrid) d.RepairLoad();
+    }
+
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
     public int fromWorldPos(int x, int y) { return x + m_Size*y; }

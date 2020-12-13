@@ -249,6 +249,11 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+    public void RepairLoad()
+    {
+      foreach(var a in m_ActorsList) a.Controller.RepairLoad();
+    }
+
     private void OnConstructed(ref int hash)
     {
       pathing_exits_to_goals.Now(LocalTime.TurnCounter);
