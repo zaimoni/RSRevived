@@ -109,7 +109,6 @@
     <Compile Include="Data\SkillTable.cs" />
     <Compile Include="Data\Faction.cs" />
     <Compile Include="Data\District.cs" />
-    <Compile Include="Data\FactionDB.cs" />
     <Compile Include="Data\Tile.cs" />
     <Compile Include="Data\Zone.cs" />
     <Compile Include="Data\ActorModelDB.cs" />
