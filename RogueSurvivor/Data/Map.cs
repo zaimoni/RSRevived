@@ -1187,7 +1187,6 @@ retry:
 #endif
           if (!knows_on_map) actor.RemoveFromMap();
           m_ActorsList.Add(actor);
-          Engine.LOS.Now(this);
           Recalc(actor);
         }
         m_aux_ActorsByPosition.Add(position, actor);
@@ -1823,7 +1822,6 @@ retry:
       ++LocalTime.TurnCounter;
       bool isDay = !LocalTime.IsNight;
 
-      if (0 < m_ActorsList.Count) Engine.LOS.Now(this);
       Engine.LOS.Expire(this);
       return new KeyValuePair<bool,bool>(wasNight == isDay, isDay);
     }
@@ -2846,7 +2844,6 @@ retry:
 
     private void ReconstructAuxiliaryFields()
     {
-      Engine.LOS.Now(this);
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList) {
         // XXX defensive coding: it is possible for actors to duplicate, apparently

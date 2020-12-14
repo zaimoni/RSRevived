@@ -21,13 +21,15 @@ namespace djack.RogueSurvivor.Engine
     // makes sense.
     // 2019-04-14: while we would like to lock access to FOVcache (there is a multi-threading crash issue manifesting as an "impossible" null cache value,
     // this deadlocks on PC district change
-    private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
+    private static readonly Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>>();
 
-    public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
+    public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire()) FOVcache.Remove(m); }
+#if OBSOLETE
     public static void Now(Map map) {
-      if (!FOVcache.TryGetValue(map,out var cache)) FOVcache[map] = cache = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
+      if (!FOVcache.TryGetValue(map,out var cache)) FOVcache[map] = cache = new Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>();
       cache.Now(map.LocalTime.TurnCounter);
     }
+#endif
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
       if (FOVcache.TryGetValue(map,out var target)) target.Validate(fn);
@@ -366,11 +368,10 @@ namespace djack.RogueSurvivor.Engine
     public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
-        cache = new Zaimoni.Data.TimeCache<KeyValuePair<Point, int>, HashSet<Point>>();
-        cache.Now(Session.Get.WorldTime.TurnCounter);
+        cache = new Zaimoni.Data.Cache.Associative<KeyValuePair<Point, int>, HashSet<Point>>();
         FOVcache[a_loc.Map] = cache; // \todo? could use Add if using a lock
       }
-      if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
+      if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out var visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
 
