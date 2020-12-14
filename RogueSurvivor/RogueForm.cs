@@ -324,19 +324,26 @@ namespace djack.RogueSurvivor
       return ret;
     }
 
+    private Size[] Measure(IEnumerable<string> src, Font font)
+    {
+      var hull = Size.Empty;
+      var ret = new List<Size>();
+      foreach(var str in src) {
+        var box = Measure(str, font);
+        if (hull.Width < box.Width) hull.Width = box.Width;
+        hull.Height += box.Height;
+        ret.Add(box);
+      }
+      ret.Add(hull);
+      return ret.ToArray();
+    }
+
     public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
     {
-      int num1 = 0;
-      int num2 = 0;
-      Size[] sizeArray = new Size[lines.Length];
-      for (int index = 0; index < lines.Length; ++index) {
-        sizeArray[index] = Measure(lines[index], m_BoldFont);
-        if (sizeArray[index].Width > num1)
-          num1 = sizeArray[index].Width;
-        num2 += sizeArray[index].Height;
-      }
+      Size[] sizeArray = Measure(lines, m_BoldFont);
+
       Point location = new Point(gx, gy);
-      Size size = new Size(num1 + 4, num2 + 4);
+      Size size = new Size(sizeArray[^1].Width + 4, sizeArray[^1].Height + 4);
       Rectangle rect = new Rectangle(location, size);
       const int x_margin = 10;
       if (RogueGame.CANVAS_WIDTH - x_margin <= rect.Right) {
@@ -407,30 +414,20 @@ namespace djack.RogueSurvivor
             /////////////////
             // Measure lines
             /////////////////
-            int longestLineWidth = 0;
-            int totalLineHeight = 0;
-            Size[] linesSize = new Size[lines.Length];
-            for (int i = 0; i < lines.Length; i++)
-            {
-                linesSize[i] = Measure(lines[i], m_BoldFont);
-                if (linesSize[i].Width > longestLineWidth)
-                    longestLineWidth = linesSize[i].Width;
-                totalLineHeight += linesSize[i].Height;
-            }
+            Size[] linesSize = Measure(lines, m_BoldFont);
 
             Size titleSize = Measure(title, m_BoldFont);
-            if (titleSize.Width > longestLineWidth)
-                longestLineWidth = titleSize.Width;
-            totalLineHeight += titleSize.Height;
+            if (titleSize.Width > linesSize[^1].Width) linesSize[^1].Width = titleSize.Width;
+            linesSize[^1].Height += titleSize.Height;
             const int TITLE_BAR_LINE = 1;
-            totalLineHeight += TITLE_BAR_LINE;
+            linesSize[^1].Height += TITLE_BAR_LINE;
 
             ///////////////////
             // Setup popup box
             ///////////////////
             const int BOX_MARGIN = 2;
             Point boxPos = new Point(gx, gy);
-            Size boxSize = new Size(longestLineWidth + 2 * BOX_MARGIN, totalLineHeight + 2 * BOX_MARGIN);
+            Size boxSize = new Size(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
             Rectangle boxRect = new Rectangle(boxPos, boxSize);
 
             //////////////////
@@ -442,7 +439,7 @@ namespace djack.RogueSurvivor
             //////////////
             // Draw title
             //////////////
-            int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.Width) / 2;
+            int titleX = boxPos.X + BOX_MARGIN + (linesSize[^1].Width - titleSize.Width) / 2;
             int titleY = boxPos.Y + BOX_MARGIN;
             int titleLineY = titleY + titleSize.Height + TITLE_BAR_LINE;
             m_GameCanvas.AddString(m_BoldFont, titleColor, title, titleX, titleY);
@@ -467,30 +464,20 @@ namespace djack.RogueSurvivor
             /////////////////
             // Measure lines
             /////////////////
-            int longestLineWidth = 0;
-            int totalLineHeight = 0;
-            Size[] linesSize = new Size[lines.Length];
-            for (int i = 0; i < lines.Length; i++)
-            {
-                linesSize[i] = Measure(lines[i], m_BoldFont);
-                if (linesSize[i].Width > longestLineWidth)
-                    longestLineWidth = linesSize[i].Width;
-                totalLineHeight += linesSize[i].Height;
-            }
+            Size[] linesSize = Measure(lines, m_BoldFont);
 
             Size titleSize = Measure(title, m_BoldFont);
-            if (titleSize.Width > longestLineWidth)
-                longestLineWidth = titleSize.Width;
-            totalLineHeight += titleSize.Height;
+            if (titleSize.Width > linesSize[^1].Width) linesSize[^1].Width = titleSize.Width;
+            linesSize[^1].Height += titleSize.Height;
             const int TITLE_BAR_LINE = 1;
-            totalLineHeight += TITLE_BAR_LINE;
+            linesSize[^1].Height += TITLE_BAR_LINE;
 
             ///////////////////
             // Setup popup box
             ///////////////////
             const int BOX_MARGIN = 2;
             Point boxPos = new Point(gx, gy);
-            Size boxSize = new Size(longestLineWidth + 2 * BOX_MARGIN, totalLineHeight + 2 * BOX_MARGIN);
+            Size boxSize = new Size(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
             Rectangle boxRect = new Rectangle(boxPos, boxSize);
 
             //////////////////
@@ -502,7 +489,7 @@ namespace djack.RogueSurvivor
             //////////////
             // Draw title
             //////////////
-            int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.Width) / 2;
+            int titleX = boxPos.X + BOX_MARGIN + (linesSize[^1].Width - titleSize.Width) / 2;
             int titleY = boxPos.Y + BOX_MARGIN;
             int titleLineY = titleY + titleSize.Height + TITLE_BAR_LINE;
             m_GameCanvas.AddString(m_BoldFont, titleColor, title, titleX, titleY);
