@@ -23,6 +23,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             m_Plan = src;
         }
 
+        public bool IsSuppressed(Actor a) {
+            // we ask the plan, because combat plans would not be suppressed just by enemies in sight
+            return m_Plan.IsSuppressed(a);
+        }
+
         public bool IsRelevant(Location loc) {
 #if DEBUG
             if (!m_Plan.IsLegal()) throw new InvalidOperationException("illegal objective");

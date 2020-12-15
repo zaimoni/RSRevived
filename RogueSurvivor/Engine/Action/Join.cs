@@ -61,6 +61,13 @@ namespace djack.RogueSurvivor.Engine.Op
             return false;
         }
 
+        public override bool IsSuppressed(Actor a)
+        {
+            var ub = m_Options.Count;
+            while (0 <= --ub) if (!m_Options[ub].IsSuppressed(a)) return false;
+            return true;
+        }
+
         public override ActorAction? Bind(Actor src)
         {
 #if DEBUG
@@ -68,7 +75,7 @@ namespace djack.RogueSurvivor.Engine.Op
 #endif
             var actions = new List<ActorAction>();
             foreach(var x in m_Options) {
-                if (x.IsRelevant(src.Location)) {
+                if (x.IsRelevant(src.Location) && !x.IsSuppressed(src)) {
 #if DEBUG
                     if (x is Join) throw new InvalidOperationException("test case");
 #endif

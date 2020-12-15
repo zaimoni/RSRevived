@@ -120,6 +120,11 @@ namespace djack.RogueSurvivor.Engine.Op
             return IsRelevant() && 1 == Rules.GridDistance(m_From, loc);
         }
 
+        public override bool IsSuppressed(Actor a)
+        {   // \todo more sophisticated non-combat response to enemies in sight
+            return null != a.Controller.enemies_in_FOV;
+        }
+
         public override ActorAction? Bind(Actor src) {
             var act = new _Action.PushOnto(src, m_From, m_NewLocation);
             return act.IsPerformable() ? act : null;

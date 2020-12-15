@@ -252,6 +252,10 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsLegal() { return true; }
         public override bool IsRelevant() { return false; }
         public override bool IsRelevant(Location loc) { return m_Origin == loc; }
+        public override bool IsSuppressed(Actor a)
+        {   // \todo more sophisticated response to enemies in sight (might need configuring)
+            return null != a.Controller.enemies_in_FOV;
+        }
 
         public override ActorAction? Bind(Actor src) {
             if (!src.CanEnter(m_NewLocation)) return null;

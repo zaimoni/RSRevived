@@ -105,6 +105,12 @@ namespace djack.RogueSurvivor.Engine.Op
         public override bool IsLegal() { return m_memory.WhatIsAt(m_loc)?.Contains(m_ID) ?? false; }
         public override bool IsRelevant() { return false; }
         public override bool IsRelevant(Location loc) { return 0 <= Array.IndexOf(m_origin ??= origin_range, loc); }
+
+        public override bool IsSuppressed(Actor a)
+        {   // \todo more sophisticated response to enemies in sight
+            return null != a.Controller.enemies_in_FOV;
+        }
+
         public override ActorAction? Bind(Actor src) {
             var act = new _Action.TakeFromLocation(src, m_ID, m_loc);
             return act.IsPerformable() ? act : null;

@@ -3505,6 +3505,49 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
+    private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
+    {
+      var all_labels = new List<string>();
+      int i = 0;
+      while(i < strict_ub) all_labels.Add(label(i++));
+
+      OverlayPopupTitle? working = null;
+      var staging = new List<string>();
+
+      int turn = Session.Get.WorldTime.TurnCounter;
+      int num1 = 0;
+      int num2 = 0;
+      do {
+        staging.Clear();
+        if (null == working) {
+          for (num2 = 0; num2 < MAX_MESSAGES-2 && num1 + num2 < strict_ub; ++num2) {
+            int index = num1 + num2;
+            staging.Add((1 + num2).ToString() + " " + all_labels[index]);
+          }
+          if (num2 < strict_ub) {
+            staging.Add("9. next");
+          }
+          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point(64, 64));
+          AddOverlay(working);
+        }
+        RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        if (Keys.Escape == keyEventArgs.KeyCode) break;
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
+        if (choiceNumber == 9) {
+          num1 += MAX_MESSAGES-2;
+          if (num1 >= strict_ub) num1 = 0;
+          RemoveOverlay(working);
+          working = null;
+        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
+          int index = num1 + choiceNumber - 1;
+          if (details(index)) break;
+        }
+      }
+      while(true);
+      RemoveOverlay(working);
+    }
+
     private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
     {
       int turn = Session.Get.WorldTime.TurnCounter;
@@ -3682,7 +3725,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       };
 
-      PagedMenu("Reviewing...", allies.Count, label, details);
+      PagedPopup("Reviewing...", allies.Count, label, details);
     }
 
     private void HandleFactionInfo()
@@ -12732,11 +12775,14 @@ retry:
     {
       m_MusicManager.Stop();
       m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-      AddOverlay(new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
-      AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
+      var content = new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty);
+      var who = new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR));
+      AddOverlay(content);
+      AddOverlay(who);
       ClearMessages();
       if (null == filter) AddMessagePressEnter(); else AddMessagePressEnter(filter);
-      ClearOverlays();  // alpha10 fix
+      RemoveOverlay(who);   // alpha10 fix
+      RemoveOverlay(content);
       m_MusicManager.Stop();
     }
 #nullable restore

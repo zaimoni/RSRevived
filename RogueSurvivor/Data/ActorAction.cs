@@ -60,6 +60,7 @@ namespace djack.RogueSurvivor.Data
         public abstract bool IsLegal();
         public abstract bool IsRelevant();
         public abstract bool IsRelevant(Location loc);
+        public abstract bool IsSuppressed(Actor a);
 
         /// <returns>null, or a Performable action</returns>
         public abstract ActorAction? Bind(Actor src);
