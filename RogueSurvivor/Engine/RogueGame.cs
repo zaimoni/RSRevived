@@ -3507,12 +3507,11 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
     {
-      bool flag1 = true;
       int turn = Session.Get.WorldTime.TurnCounter;
       int num1 = 0;
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
         AddMessage(new Data.Message(header, turn, Color.Yellow));
         int num2;
@@ -3523,17 +3522,17 @@ namespace djack.RogueSurvivor.Engine
         if (num2 < strict_ub) AddMessage(new Data.Message("9. next", turn, Color.LightGreen));
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        if (Keys.Escape == keyEventArgs.KeyCode) break;
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
-        else if (choiceNumber == 9) {
+        if (choiceNumber == 9) {
           num1 += MAX_MESSAGES-2;
           if (num1 >= strict_ub) num1 = 0;
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index = num1 + choiceNumber - 1;
-          if (details(index)) flag1 = false;
+          if (details(index)) break;
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
     }
 #nullable restore

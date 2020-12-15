@@ -17,10 +17,23 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public bool IsExpired { get { return m_Expired; } }
 
         public SharedPlan(WorldUpdate src) {
+#if DEBUG
+            if (!src.IsLegal()) throw new InvalidOperationException("illegal objective");
+#endif
             m_Plan = src;
         }
 
-        public bool IsRelevant(Location loc) { return m_Plan.IsRelevant(loc); }
+        public bool IsRelevant(Location loc) {
+#if DEBUG
+            if (!m_Plan.IsLegal()) throw new InvalidOperationException("illegal objective");
+#else
+            if (!m_Plan.IsLegal()) {
+                m_Expired = true;
+                return false;
+            }
+#endif
+            return m_Plan.IsRelevant(loc);
+        }
 
         public ActorAction? Bind(Actor who) {
             if (m_Plan.IsRelevant(who.Location)) {
@@ -37,6 +50,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         public HashSet<Location>? Goals(Actor actor) {
+#if DEBUG
+            if (!m_Plan.IsLegal()) throw new InvalidOperationException("illegal objective");
+#else
+            if (!m_Plan.IsLegal()) return null;
+#endif
             var ret = new HashSet<Location>();
             m_Plan.Goals(ret);
             m_Plan.Blacklist(ret);
