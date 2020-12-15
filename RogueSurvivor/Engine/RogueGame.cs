@@ -3505,7 +3505,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
+    private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
       var all_labels = new List<string>();
       int i = 0;
@@ -3513,35 +3513,55 @@ namespace djack.RogueSurvivor.Engine
 
       OverlayPopupTitle? working = null;
       var staging = new List<string>();
+      var header_size = RogueForm.Get.Measure(header);
+      header_size.Height += 1;
+      var all_size = RogueForm.Get.Measure(all_labels);
+      var nominal_size = new Point(Math.Max(header_size.Width, all_size[^1].Width), header_size.Height+all_size[^1].Height);
 
-      int turn = Session.Get.WorldTime.TurnCounter;
+      int delta = EXTENDED_CHOICE_UB;
       int num1 = 0;
       int num2 = 0;
       do {
         staging.Clear();
         if (null == working) {
-          for (num2 = 0; num2 < MAX_MESSAGES-2 && num1 + num2 < strict_ub; ++num2) {
+          for (num2 = 0; num2 < delta && num1 + num2 < strict_ub; ++num2) {
             int index = num1 + num2;
-            staging.Add((1 + num2).ToString() + " " + all_labels[index]);
+            staging.Add(ExtendedChoiceNumberToChar(num2) + " " + all_labels[index]);
           }
-          if (num2 < strict_ub) {
-            staging.Add("9. next");
+          if (delta < strict_ub) {
+            staging.Add("prev <- -> next");
           }
-          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point(64, 64));
+          var staging_size = RogueForm.Get.Measure(staging);
+          staging_size[^1].Height += header_size.Height;
+          if (header_size.Width > staging_size[^1].Width) staging_size[^1].Width = header_size.Width;
+#if DEBUG
+          if (   CANVAS_HEIGHT-4 < staging_size[^1].Height 
+              || CANVAS_WIDTH-4  < staging_size[^1].Width)
+            throw new InvalidOperationException("test case");
+#endif
+          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
           AddOverlay(working);
         }
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         if (Keys.Escape == keyEventArgs.KeyCode) break;
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (choiceNumber == 9) {
-          num1 += MAX_MESSAGES-2;
-          if (num1 >= strict_ub) num1 = 0;
-          RemoveOverlay(working);
-          working = null;
-        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-          int index = num1 + choiceNumber - 1;
-          if (details(index)) break;
+        if (delta < strict_ub) {
+          if (Keys.Left == keyEventArgs.KeyCode) {
+            if (0 < num1) num1 -= delta;
+            else num1 = ((strict_ub - 1) / delta) * delta;
+            RemoveOverlay(working);
+            working = null;
+          } else if (Keys.Right == keyEventArgs.KeyCode) {
+            num1 += delta;
+            if (num1 >= strict_ub) num1 = 0;
+            RemoveOverlay(working);
+            working = null;
+          }
+        }
+        int choiceNumber = KeyToExtendedChoiceNumber(keyEventArgs.KeyCode);
+        if (choiceNumber >= 0 && choiceNumber < delta) {
+          int index = num1 + choiceNumber;
+          if (strict_ub > index && details(index)) break;
         }
       }
       while(true);
@@ -6518,6 +6538,70 @@ namespace djack.RogueSurvivor.Engine
           return 9;
         default:
           return -1;
+      }
+    }
+
+    private const int EXTENDED_CHOICE_UB = 36;
+    static private int KeyToExtendedChoiceNumber(Keys key)
+    {
+      if (Keys.A <= key && Keys.Z >=key) return 10 + (key - Keys.A);
+      switch (key)
+      {
+        case Keys.D0:
+        case Keys.NumPad0:
+          return 0;
+        case Keys.D1:
+        case Keys.NumPad1:
+          return 1;
+        case Keys.D2:
+        case Keys.NumPad2:
+          return 2;
+        case Keys.D3:
+        case Keys.NumPad3:
+          return 3;
+        case Keys.D4:
+        case Keys.NumPad4:
+          return 4;
+        case Keys.D5:
+        case Keys.NumPad5:
+          return 5;
+        case Keys.D6:
+        case Keys.NumPad6:
+          return 6;
+        case Keys.D7:
+        case Keys.NumPad7:
+          return 7;
+        case Keys.D8:
+        case Keys.NumPad8:
+          return 8;
+        case Keys.D9:
+        case Keys.NumPad9:
+          return 9;
+        default:
+          return -1;
+      }
+    }
+
+    static private char ExtendedChoiceNumberToChar(int src)
+    {
+      if (10 <= src && 35 >= src) return (char)((int)'A' + (src - 10));
+      switch (src)
+      {
+        case 0: return '0';
+        case 1: return '1';
+        case 2: return '2';
+        case 3: return '3';
+        case 4: return '4';
+        case 5: return '5';
+        case 6: return '6';
+        case 7: return '7';
+        case 8: return '8';
+        case 9: return '9';
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException(nameof(src),src.ToString());
+#else
+        default: return ' ';
+#endif
       }
     }
 

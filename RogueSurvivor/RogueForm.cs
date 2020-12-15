@@ -29,12 +29,18 @@ namespace djack.RogueSurvivor
     private IContainer components;
     private IGameCanvas m_GameCanvas;
     private List<string> m_Mods = new List<string>();
+    private static RogueForm? s_ooao = null;
+
+    public static RogueForm Get { get { return s_ooao; } }
 
     public IEnumerable<string> Mods { get { return new List<string>(m_Mods); } }  // value-copy for const correctness.
 
 #region Init
     public RogueForm()
     {
+#if DEBUG
+      if (null != s_ooao) throw new InvalidOperationException("only one main form");
+#endif
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::InitializeComponent...");
       InitializeComponent();
@@ -65,6 +71,7 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
       m_GameCanvas.BindForm(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
+      s_ooao = this;
     }
 
     private void LoadResources()
@@ -337,6 +344,9 @@ namespace djack.RogueSurvivor
       ret.Add(hull);
       return ret.ToArray();
     }
+
+    public Size Measure(string src) { return Measure(src, m_BoldFont); }
+    public Size[] Measure(IEnumerable<string> src) { return Measure(src, m_BoldFont); }
 
     public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
     {
