@@ -292,6 +292,7 @@
     <Compile Include="Zaimoni\Data\UntypedCache.cs" />
     <Compile Include="Zaimoni\Data\Vector.cs" />
     <Compile Include="Microsoft\Random.cs" />
+    <Compile Include="Zaimoni\Data\Virtual.cs" />
   </ItemGroup>
 <!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />

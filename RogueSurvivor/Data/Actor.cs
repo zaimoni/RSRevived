@@ -3864,6 +3864,8 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+    public override string ToString() { return Name; }
+
 #region IEquatable<>
 	// C# docs indicate using Actor as a key wants these
     public bool Equals(Actor x)
