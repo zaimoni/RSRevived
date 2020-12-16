@@ -360,6 +360,12 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+#nullable enable
+    // \todo? eliminate this in favor of something more secure
+    public Objective[]? CurrentSelfOrders { get { return 0 >= Objectives.Count ? null : Objectives.ToArray(); }  }
+    public void Countermand(Objective o) { Objectives.Remove(o); }
+#nullable restore
+
     public void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
       Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));

@@ -26,6 +26,7 @@ namespace djack.RogueSurvivor.Engine
       if (key.KeyData == (orders | Keys.Shift)) return PlayerCommand.OPTIONS_MODE;
       if (key.KeyData == (orders | Keys.Control)) return PlayerCommand.ALLIES_INFO;
       if (key.KeyData == (orders | Keys.Control | Keys.Shift)) return PlayerCommand.ORDER_PC_MODE;
+      if (key.KeyData == (orders | Keys.Alt | Keys.Shift)) return PlayerCommand.COUNTERMAND_PC;
 
       if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 

@@ -597,6 +597,8 @@ See the Followers section for more details.
 Give orders or directives to yourself.  Only immediately relevant orders will appear.  
 See the Followers section for more details
 
+> COUNTERMAND PC  (Alt-Shift-[Order]; default Ctrl-Shift-O)
+Countermand orders or directives to yourself.  These may have been given by AI.
 
 > SHOUTING  (default S)
 Make a lot of noise.

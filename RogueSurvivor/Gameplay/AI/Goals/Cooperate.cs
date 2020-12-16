@@ -23,6 +23,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             m_Plan = src;
         }
 
+        public bool IsLegal() { return m_Plan.IsLegal(); }
+
         public bool IsSuppressed(Actor a) {
             // we ask the plan, because combat plans would not be suppressed just by enemies in sight
             return m_Plan.IsSuppressed(a);
@@ -80,6 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         private SharedPlan m_Plan;
 
         public Cooperate(Actor who, SharedPlan plan) : base(who.Location.Map.LocalTime.TurnCounter, who) {
+#if DEBUG
+            if (!plan.IsLegal()) throw new InvalidOperationException("tried to cooperate with illegal plan");
+#endif
             m_Plan = plan;
         }
 
@@ -87,6 +92,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             ret = null;
             if (m_Plan.IsExpired) return true; // expired
+            if (!m_Plan.IsLegal()) {
+                _isExpired = true;
+                return true;
+            }
             if (m_Plan.IsRelevant(m_Actor.Location)) {
                 ret = m_Plan.Bind(m_Actor);
                 if (null != ret) {

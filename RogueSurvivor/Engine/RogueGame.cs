@@ -3034,6 +3034,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.ORDER_PC_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(pc);
                 break;
+              case PlayerCommand.COUNTERMAND_PC:
+                HandlePlayerCountermandPC(pc);
+                break;
               case PlayerCommand.PULL_MODE: // alpha10
                 flag1 = !TryPlayerInsanity() && !HandlePlayerPull(player);
                 break;
@@ -3505,6 +3508,42 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
+    private void ErrorPopup(string[] msg)
+    {
+      var staging_size = RogueForm.Get.Measure(msg);
+#if DEBUG
+      if (   CANVAS_HEIGHT-4 < staging_size[^1].Height
+          || CANVAS_WIDTH-4  < staging_size[^1].Width)
+        throw new InvalidOperationException("test case");
+#endif
+
+      var working = new OverlayPopup(msg, Color.Red, Color.Red, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
+      AddOverlay(working);
+      RedrawPlayScreen();
+      WaitEscape();
+      RemoveOverlay(working);
+    }
+    private void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
+
+
+    private bool YesNoPopup(string[] msg)
+    {
+      var staging_size = RogueForm.Get.Measure(msg);
+#if DEBUG
+      if (   CANVAS_HEIGHT-4 < staging_size[^1].Height
+          || CANVAS_WIDTH-4  < staging_size[^1].Width)
+        throw new InvalidOperationException("test case");
+#endif
+
+      var working = new OverlayPopup(msg, Color.White, MODE_BORDERCOLOR, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
+      AddOverlay(working);
+      RedrawPlayScreen();
+      var ret = WaitYesOrNo();
+      RemoveOverlay(working);
+      return ret;
+    }
+    private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg }); }
+
     private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
       var all_labels = new List<string>();
@@ -3515,8 +3554,6 @@ namespace djack.RogueSurvivor.Engine
       var staging = new List<string>();
       var header_size = RogueForm.Get.Measure(header);
       header_size.Height += 1;
-      var all_size = RogueForm.Get.Measure(all_labels);
-      var nominal_size = new Point(Math.Max(header_size.Width, all_size[^1].Width), header_size.Height+all_size[^1].Height);
 
       int delta = EXTENDED_CHOICE_UB;
       int num1 = 0;
@@ -5138,6 +5175,23 @@ namespace djack.RogueSurvivor.Engine
 
       PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
       return pc.AutoPilotIsOn;
+    }
+
+    private void HandlePlayerCountermandPC(PlayerController pc) {
+      var orders = pc.CurrentSelfOrders;
+      if (null == orders) {
+        ErrorPopup("No current self-orders.");
+        return;
+      }
+
+      string label(int index) { return orders[index].ToString(); };
+      bool details(int index) {
+        var ret = YesNoPopup("Countermand '"+orders[index].ToString()+"'? (Y/N)");
+        if (ret) pc.Countermand(orders[index]);
+        return ret;
+      };
+
+      PagedPopup("Current self-orders", orders.Length, label, details);
     }
 
     private bool HandlePlayerOrderMode(Actor player)

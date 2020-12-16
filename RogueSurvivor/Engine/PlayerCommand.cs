@@ -69,6 +69,7 @@ namespace djack.RogueSurvivor.Engine
     ORDER_PC_MODE,
     SET_WAYPOINT,
     CLEAR_WAYPOINT,
-    PULL_MODE  // alpha10
-   }
+    PULL_MODE, // alpha10
+    COUNTERMAND_PC
+    }
 }
