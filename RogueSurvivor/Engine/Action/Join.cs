@@ -24,26 +24,26 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public Join(List<WorldUpdate> options, WorldUpdate sequel)
         {
-#if DEBUG
-            if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
-#endif
             m_Options = options;
             m_Sequel = sequel;
+#if DEBUG
+            if (!IsLegal()) throw new InvalidProgramException("created illegal Join");
+#endif
         }
 
         public Join(WorldUpdate option, WorldUpdate sequel)
         {
-#if DEBUG
-            if (!sequel.IsLegal()) throw new InvalidOperationException("illegal sequel");
-#endif
             m_Options = new List<WorldUpdate> { option };
             m_Sequel = sequel;
+#if DEBUG
+            if (!IsLegal()) throw new InvalidProgramException("created illegal Join");
+#endif
         }
 
         public override bool IsLegal()
         {
             var ub = m_Options.Count;
-            while (0 <= --ub) if (m_Options[ub].IsLegal()) return true;
+            while (0 <= --ub) if (m_Options[ub].IsLegal()) return m_Sequel.IsLegal();
             return false;
         }
 

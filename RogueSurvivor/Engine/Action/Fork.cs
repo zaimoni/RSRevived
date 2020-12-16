@@ -277,12 +277,18 @@ namespace djack.RogueSurvivor.Engine.Op
       public Fork(List<WorldUpdate> legal_path)
       {
         foreach (var act in legal_path) Add(act);
+#if DEBUG
+        if (!IsLegal()) throw new InvalidProgramException("created illegal Join");
+#endif
       }
 
       public Fork(WorldUpdate x1, WorldUpdate x2)
       {
         Add(x1);
         Add(x2);
+#if DEBUG
+        if (!IsLegal()) throw new InvalidProgramException("created illegal Join");
+#endif
       }
 
       public override bool IsLegal()

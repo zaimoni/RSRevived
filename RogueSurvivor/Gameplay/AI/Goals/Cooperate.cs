@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 while(ForceRelevant(who.Location, ref test));
                 var act = test.Bind(who);
                 if (null != act) {
-                    if (test is Engine.Op.Join join) m_Plan = join.Sequel;
+                    if (test is Engine.Op.Join join && join.Sequel.IsLegal()) m_Plan = join.Sequel;
                     else m_Expired = true;
                     return act;
                 }
