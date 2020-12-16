@@ -87,6 +87,9 @@ namespace djack.RogueSurvivor.Engine
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
       info.read(ref Police, "Police");
+#if DEBUG
+      if (Police.FactionID != GameFactions.IDs.ThePolice) throw new InvalidOperationException("police faction id is not police");
+#endif
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
