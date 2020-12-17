@@ -12,15 +12,20 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class UniqueActor
   {
-    public bool IsSpawned;  // savefile break \todo convert to accessor so we can enforce TheActor.IsDead => IsSpawned
+    private bool m_Spawned;
     public readonly Actor TheActor;
     public readonly bool IsWithRefugees;
     public readonly string EventThemeMusic;
     public readonly string EventMessage;
 
-	public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string music=null, string msg=null)
+    public bool IsSpawned {
+      get { return m_Spawned;  }
+      set { if (!m_Spawned) m_Spawned = value; } // \todo? eliminate this outright
+    }
+
+    public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string music=null, string msg=null)
 	{
-	  IsSpawned = spawn_now;
+	  m_Spawned = spawn_now;
 	  TheActor = a;
 	  IsWithRefugees = refugee;
 	  EventThemeMusic = music;
