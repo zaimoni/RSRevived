@@ -11989,9 +11989,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
       m_UI.UI_Repaint();
       Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
-#if DEBUG
-      File.Copy(saveName, RogueGame.GetUserSaveBackup(),true);
-#endif
+      File.Copy(saveName, GetUserSaveBackup(),true);
       m_Status = null;
       RedrawPlayScreen();
       m_UI.UI_Repaint();
@@ -12145,12 +12143,14 @@ namespace djack.RogueSurvivor.Engine
     public static string GetUserSavesPath() { return GetUserBasePath() + "Saves\\"; }
     public static string GetUserSave() { return GetUserSavesPath() + "save.dat"; }
 
-#if DEBUG
     public static string GetUserSaveBackup()
     {
+#if DEBUG
       return GetUserSavesPath() + "save." + Session.Get.WorldTime.TurnCounter.ToString();
-    }
+#else
+      return GetUserSavesPath() + "save.bak";
 #endif
+    }
 
     public static string GetUserDocsPath() { return GetUserBasePath() + "Docs\\"; }
     public static string GetUserGraveyardPath() { return GetUserBasePath() + "Graveyard\\"; }
