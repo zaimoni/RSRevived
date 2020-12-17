@@ -61,19 +61,18 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Zone> m_Zones = new List<Zone>(5);
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
-    private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
+    private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5); // The end-of-turn timers.
     // position inverting caches
     [NonSerialized] private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-    [NonSerialized] private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     // AI support caches, etc.
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
-    [NonSerialized] public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
+    [NonSerialized] public readonly NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
     [NonSerialized] public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
     // map geometry
 #if PRERELEASE_MOTHBALL
@@ -143,7 +142,7 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsFaction(GameFactions.IDs.ThePolice) && !a.IsDead));
     }
 
-    private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
+    private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(Dictionary<Point, MapObject> src)
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList());
     }
@@ -172,7 +171,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = new byte[width*height-1/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
-      PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
+      PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       OnConstructed(ref _hash);
     }
@@ -189,7 +188,7 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
       info.read(ref m_ActorsList, "m_ActorsList");
-      info.read(ref m_MapObjectsList, "m_MapObjectsList");
+      info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
       info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
       info.read(ref m_CorpsesList, "m_CorpsesList");
       info.read_s(ref m_Lighting, "m_Lighting");
@@ -202,7 +201,7 @@ namespace djack.RogueSurvivor.Data
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
-      PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
+      PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
     }
 
@@ -219,7 +218,7 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
-      info.AddValue("m_MapObjectsList", m_MapObjectsList);
+      info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
       info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
       info.AddValue("m_CorpsesList", m_CorpsesList);
       info.AddValue("m_Lighting", m_Lighting);
@@ -1394,12 +1393,12 @@ retry:
     }
 
     // map object manipulation functions
-    public void DoForAllMapObjects(Action<MapObject> op) { foreach(var x in m_aux_MapObjectsByPosition) op(x.Value); }
-    public bool HasMapObject(MapObject x) { return m_aux_MapObjectsByPosition.ContainsValue(x); }
+    public void DoForAllMapObjects(Action<MapObject> op) { foreach(var x in m_MapObjectsByPosition) op(x.Value); }
+    public bool HasMapObject(MapObject x) { return m_MapObjectsByPosition.ContainsValue(x); }
 
     public MapObject? GetMapObjectAt(Point pos)
     {
-      if (m_aux_MapObjectsByPosition.TryGetValue(pos, out var mapObject)) {
+      if (m_MapObjectsByPosition.TryGetValue(pos, out var mapObject)) {
 #if DEBUG
         // existence check for bugs relating to map object location
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
@@ -1419,7 +1418,7 @@ retry:
 
     public bool HasMapObjectAt(Point position)
     {
-      return m_aux_MapObjectsByPosition.ContainsKey(position);
+      return m_MapObjectsByPosition.ContainsKey(position);
     }
 
     public void PlaceAt(MapObject mapObj, Point position)
@@ -1448,13 +1447,12 @@ retry:
           if (Engine.Session.Get.Police.ItemMemory.HaveEverSeen(mapObj.Location))
             Engine.Session.Get.Police.Investigate.Record(mapObj.Location);   // XXX \todo should message based on item memories
         }
-        m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
+        m_MapObjectsByPosition.Remove(mapObj.Location.Position);
       }
       else {
         if (null != mapObj.Location.Map && this != mapObj.Location.Map) mapObj.Remove();
-        m_MapObjectsList.Add(mapObj);
       }
-      m_aux_MapObjectsByPosition.Add(position, mapObj);
+      m_MapObjectsByPosition.Add(position, mapObj);
       mapObj.Location = new Location(this, position);
       if (update_item_memory) Engine.Session.Get.Police.Investigate.Record(mapObj.Location);
     }
@@ -1463,8 +1461,7 @@ retry:
     {
       var mapObjectAt = GetMapObjectAt(pt);
       if (mapObjectAt == null) return;
-      m_MapObjectsList.Remove(mapObjectAt);
-      m_aux_MapObjectsByPosition.Remove(pt);
+      m_MapObjectsByPosition.Remove(pt);
     }
 
     // this will need rethinking when off-ground inventory (chairs, tables) happens
@@ -1478,7 +1475,7 @@ retry:
     public void OpenAllGates()
     {
       var noise_name = this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening";
-      foreach(var x in m_aux_MapObjectsByPosition) {
+      foreach(var x in m_MapObjectsByPosition) {
         if (MapObject.IDs.IRON_GATE_CLOSED != x.Value.ID) continue;
         x.Value.ID = MapObject.IDs.IRON_GATE_OPEN;
         Engine.RogueGame.Game.OnLoudNoise(x.Value.Location, noise_name);
@@ -1570,7 +1567,7 @@ retry:
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
-      foreach (var x in m_aux_MapObjectsByPosition) if (x.Value.IsContainer && x.Value.Inventory.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, x.Value.Inventory);
+      foreach (var x in m_MapObjectsByPosition) if (x.Value.IsContainer && x.Value.Inventory.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, x.Value.Inventory);
       return null;
     }
 
@@ -2863,8 +2860,6 @@ retry:
         }
         (mActors.Controller as PlayerController)?.InstallHandlers();
       }
-      m_aux_MapObjectsByPosition.Clear();
-      foreach (var obj in m_MapObjectsList) m_aux_MapObjectsByPosition.Add(obj.Location.Position, obj);
       m_aux_CorpsesByPosition.Clear();
       foreach (var mCorpses in m_CorpsesList) {
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out var corpseList))
@@ -2879,7 +2874,6 @@ retry:
       m_ActorsList.OnlyIfNot(Actor.IsDeceased);
 
       m_ActorsList.TrimExcess();    // 2019-09-28: unsure if these actually do anything useful (inherited from Alpha 9)
-      m_MapObjectsList.TrimExcess();
       m_Zones.TrimExcess();
       m_CorpsesList.TrimExcess();
       m_Timers.TrimExcess();
