@@ -3537,7 +3537,7 @@ namespace djack.RogueSurvivor.Engine
       RemoveOverlay(working);
       return ret;
     }
-    private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg }); }
+    private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg+"? (Y/N)" }); }
 
     private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
@@ -5173,7 +5173,7 @@ namespace djack.RogueSurvivor.Engine
 
       string label(int index) { return orders[index].ToString(); };
       bool details(int index) {
-        var ret = YesNoPopup("Countermand '"+orders[index].ToString()+"'? (Y/N)");
+        var ret = YesNoPopup("Countermand '"+orders[index].ToString()+"'");
         if (ret) pc.Countermand(orders[index]);
         return ret;
       };
