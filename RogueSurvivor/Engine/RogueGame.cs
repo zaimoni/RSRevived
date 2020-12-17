@@ -7629,7 +7629,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != obj && obj.TriggersTraps) {
         map.RemoveAt<ItemTrap>(trap => {
           if (!trap.IsActivated) return false;
-          DoTriggerTrap(trap, map, pos, obj);
+          DoTriggerTrap(trap, obj);
           return 0 >= trap.Quantity;
         }, pos);
       }
@@ -7670,19 +7670,19 @@ namespace djack.RogueSurvivor.Engine
       --trap.Quantity;
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, MapObject mobj)
+    private void DoTriggerTrap(ItemTrap trap, MapObject obj)
     {
       ItemTrapModel trapModel = trap.Model;
-      bool player = ForceVisibleToPlayer(map, in pos);
+      bool player = ForceVisibleToPlayer(obj);
       trap.IsTriggered = true;
       if (trapModel.IsNoisy) {
-        if (player) AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
-        OnLoudNoise(map, pos, trapModel.NoiseName);
+        if (player) AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), obj.Location.Map.LocalTime.TurnCounter));
+        OnLoudNoise(obj.Location, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
-      if (!trap.CheckStepOnBreaks(mobj)) return;
-      if (player) AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));   // XXX \todo remove risk of the the
+      if (!trap.CheckStepOnBreaks(obj)) return;
+      if (player) AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", obj.TheName.Capitalize(), trap.TheName), obj.Location.Map.LocalTime.TurnCounter));
       --trap.Quantity;
     }
 
