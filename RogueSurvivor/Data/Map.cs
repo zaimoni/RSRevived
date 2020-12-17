@@ -235,7 +235,6 @@ namespace djack.RogueSurvivor.Data
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
-      foreach(var x in m_MapObjectsByPosition) x.Value.AfterLoad(this, x.Key);
       ReconstructAuxiliaryFields();
       RegenerateMapGeometry();
       OnConstructed(ref _hash);

@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
-    [NonSerialized] private Location m_Location;
+    private Location m_Location;
     private Inventory? m_Inventory = null;
 
     public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
@@ -396,12 +396,6 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null != m_Inventory) m_Inventory.RepairZeroQty();
 #endif
-    }
-
-    public void AfterLoad(Map m, Point pos) {
-      if (null != m_Location.Map) throw new InvalidOperationException("only can after-load repair once");
-      if (null == m) throw new InvalidOperationException("after-load repair with null not useful");
-      m_Location = new Location(m, pos); // bypass FOV cache invalidation -- it should be empty
     }
 
     private void _InitModel()
