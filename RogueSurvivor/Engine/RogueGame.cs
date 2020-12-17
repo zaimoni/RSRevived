@@ -518,11 +518,6 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
 
-    private static Data.Message MakeYesNoMessage(string question)
-    {
-      return new Data.Message(string.Format("{0}? Y to confirm, N to cancel", question), Session.Get.WorldTime.TurnCounter, Color.Yellow);
-    }
-
     private static string ActorVisibleIdentity(Actor actor)
     {
       return IsVisibleToPlayer(actor) ? actor.TheName : "someone";
@@ -3145,9 +3140,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleQuitGame()
     {
-      AddMessage(MakeYesNoMessage("REALLY QUIT GAME"));
-      RedrawPlayScreen();
-      bool flag = WaitYesOrNo();
+      bool flag = YesNoPopup("REALLY QUIT GAME");
       AddMessage(new Data.Message(flag ? "Bye!"
                                        : "Good. Keep roguing!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       return flag;
@@ -3155,9 +3148,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleAbandonGame()
     {
-      AddMessage(MakeYesNoMessage("REALLY KILL YOURSELF"));
-      RedrawPlayScreen();
-      bool flag = WaitYesOrNo();
+      bool flag = YesNoPopup("REALLY KILL YOURSELF");
       AddMessage(new Data.Message(flag ? "You can't bear the horror anymore..."
                                        : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       return flag;
@@ -3167,11 +3158,9 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleAbandonPC(Actor player)
     {
 #if DEBUG
-      if (player?.IsPlayer ?? true) throw new InvalidOperationException("Cannot abandon NPC");
+      if (!player.IsPlayer) throw new InvalidOperationException("Cannot abandon NPC");
 #endif
-      AddMessage(MakeYesNoMessage("REALLY ABANDON "+player.UnmodifiedName+" TO FATE"));
-      RedrawPlayScreen();
-      bool confirm = WaitYesOrNo();
+      bool confirm = YesNoPopup("REALLY ABANDON " + player.UnmodifiedName + " TO FATE");
       AddMessage(new Data.Message(confirm ? "You can't bear the horror anymore..."
                                           : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       if (!confirm) return false;
@@ -4720,13 +4709,7 @@ namespace djack.RogueSurvivor.Engine
           if (flag3) {
             bool flag4 = true;
             if (Rules.GridDistance(player.Location.Position, in point1) <= itemGrenadeModel.BlastAttack.Radius) {
-              ClearMessages();
-              AddMessage(new Data.Message("You are in the blast radius!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-              AddMessage(MakeYesNoMessage("Really throw there"));
-              RedrawPlayScreen();
-              flag4 = WaitYesOrNo();
-              ClearMessages();
-              RedrawPlayScreen();
+              flag4 = YesNoPopup(new string[] { "You are in the blast radius!", "Really throw there? (Y/N)" });
             }
             if (flag4) {
               if (itemGrenade != null)
@@ -4760,9 +4743,7 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup(string.Format("Cannot sleep now : {0}.", reason));
         return false;
       }
-      AddMessage(MakeYesNoMessage("Really sleep there"));
-      RedrawPlayScreen();
-      bool yes = WaitYesOrNo();
+      bool yes = YesNoPopup("Really sleep there");
       var sess = Session.Get;
       AddMessage(new Data.Message(yes ? "Goodnight, happy nightmares!" : "Good, keep those eyes wide open.", sess.WorldTime.TurnCounter, Color.Yellow));
       if (!yes) return false;
@@ -4824,10 +4805,8 @@ namespace djack.RogueSurvivor.Engine
             return true;
           } else if (actorAt.Leader == player) {
             if (player.CanCancelLead(actorAt, out reason)) {
-              AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", actorAt.TheName)));
-              RedrawPlayScreen();
               int turn = Session.Get.WorldTime.TurnCounter;
-              if (WaitYesOrNo()) {
+              if (YesNoPopup(string.Format("Really ask {0} to leave", actorAt.TheName))) {
                 DoCancelLead(player, actorAt);
                 player.ActorScoring.AddEvent(turn, string.Format("Fired {0}.", actorAt.TheName));
                 actorAt.ActorScoring.AddEvent(turn, string.Format("Fired by {0}.", player.TheName));
@@ -7701,10 +7680,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
       if (isPlayer && askForConfirmation) {
-        ClearMessages();
-        AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", map.Name)));
-        RedrawPlayScreen();
-        if (!WaitYesOrNo()) {
+        if (!YesNoPopup(string.Format("REALLY LEAVE {0}", map.Name))) {
           AddMessage(new Data.Message("Let's stay here a bit longer...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           RedrawPlayScreen();
           return false;
@@ -7839,9 +7815,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (player.Location.Map.GetMapObjectAt(player.Location.Position + direction) is DoorWindow doorWindow && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
         if (!player.IsTired) {
-          AddMessage(MakeYesNoMessage("Really tear down the barricade"));
-          RedrawPlayScreen();
-          if (WaitYesOrNo()) {
+          if (YesNoPopup("Really tear down the barricade")) {
             DoBreak(player, doorWindow);
             return true;
           }
@@ -9930,9 +9904,7 @@ namespace djack.RogueSurvivor.Engine
         // this may need to be multi-thread aware
         Actor reinc = killer.LiveLeader ?? killer;
         if (!reinc.IsPlayer && Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
-          AddMessage(MakeYesNoMessage("Use a reincarnation on your "+(killer==reinc ? " killer " : " killer's leader ")+reinc.Name));
-          RedrawPlayScreen();
-          if (WaitYesOrNo()) {
+          if (YesNoPopup("Use a reincarnation on your " + (killer == reinc ? " killer " : " killer's leader ") + reinc.Name)) {
             reinc.Controller = new PlayerController(reinc);
             Session.Get.Scoring.UseReincarnation();
           }
@@ -10390,9 +10362,7 @@ namespace djack.RogueSurvivor.Engine
       // this is the change target for becoming a cop
       if (upgradeActor.Controller is ObjectiveAI oai) {
         if (oai.CanBecomeCop()) {
-          AddMessage(MakeYesNoMessage("Become a cop"));
-          RedrawPlayScreen();
-          if (WaitYesOrNo() && oai.BecomeCop()) {
+          if (YesNoPopup("Become a cop") && oai.BecomeCop()) {
             // 2020-09-12: NPC CivilianAI do not have pre-existing item memory and upgrade theirs without help.
             upgradeActor.Controller = new PlayerController(upgradeActor);
           }
@@ -10598,9 +10568,7 @@ namespace djack.RogueSurvivor.Engine
       if (deadVictim.IsPlayer) {
         Session.Get.Scoring_fatality?.SetZombifiedPlayer(actor);
         if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
-          AddMessage(MakeYesNoMessage(deadVictim.Name+" rises as a zombie.  Use a reincarnation"));
-          RedrawPlayScreen();
-          if (WaitYesOrNo()) {
+          if (YesNoPopup(deadVictim.Name + " rises as a zombie.  Use a reincarnation")) {
             actor.Controller = new PlayerController(actor);
             Session.Get.Scoring.UseReincarnation();
           }
