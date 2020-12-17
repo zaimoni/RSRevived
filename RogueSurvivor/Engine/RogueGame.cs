@@ -2536,7 +2536,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
 #endif
-      return !map.IsInsideAt(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,in pt,SPAWN_DISTANCE_TO_PLAYER);
+      return !map.IsInsideAt(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt) && map.NoPlayersNearerThan(in pt,SPAWN_DISTANCE_TO_PLAYER);
     }
 
     static private bool AirdropWithoutIncident(Map map, in Point pt)  // XXX should be able to partially precalculate
@@ -2661,17 +2661,12 @@ namespace djack.RogueSurvivor.Engine
 	  return players.Min(p=> Rules.GridDistance(p.Location.Position, pos));
     }
 
-    static private bool NoPlayersNearerThan(Map map, in Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
-    {
-        return !(new Rectangle(pos - (Point)(min_distance - 1), (Point)(-1 + 2 * min_distance))).Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
-    }
-
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
     {
       var tmp = new Zaimoni.Data.Stack<Point>(stackalloc Point[2 * (map.Rect.Width + map.Rect.Height - 2)]);
       map.Rect.WhereOnEdge(ref tmp, pt => {
          if (!map.IsWalkableFor(pt, actorToSpawn)) return false;
-         if (!NoPlayersNearerThan(map, in pt, minDistToPlayer)) return false;
+         if (!map.NoPlayersNearerThan(in pt, minDistToPlayer)) return false;
          if (actorToSpawn.WouldBeAdjacentToEnemy(map, pt)) return false;
          return true;
       });

@@ -1377,6 +1377,12 @@ retry:
       }
     }
 
+    public bool NoPlayersNearerThan(in Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
+    {
+        return !(new Rectangle(pos - (Point)(min_distance - 1), (Point)(-1 + 2 * min_distance))).Any(pt => GetActorAtExt(pt)?.IsPlayer ?? false);
+    }
+
+
     public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool>? pred =null)
     {
       void pan_to(Actor a) {
