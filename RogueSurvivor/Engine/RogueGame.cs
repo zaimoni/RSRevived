@@ -2295,13 +2295,13 @@ namespace djack.RogueSurvivor.Engine
 #region 7. Check fires.
         // \todo implement per-map weather, then use it here
         if (Session.Get.World.Weather.IsRain() && rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
-          foreach (MapObject mapObject in map.MapObjects) {
-            if (mapObject.IsOnFire && rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
-              mapObject.Extinguish();
-              if (ForceVisibleToPlayer(mapObject))
-                AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
-            }
-          }
+          map.DoForAllMapObjects(obj => {
+              if (obj.IsOnFire && rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
+                  obj.Extinguish();
+                  if (ForceVisibleToPlayer(obj))
+                      AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
+              }
+          });
         }
 #endregion
       } // skipped in lodetail turns.
@@ -13381,22 +13381,28 @@ retry:
       }
     }
 
+#nullable enable
     private void CloseAllGates(Map map,string gate_name)
     {
-      foreach (MapObject obj in map.MapObjects) {
-        if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) continue;
-        obj.ID = MapObject.IDs.IRON_GATE_CLOSED;
-        OnLoudNoise(obj.Location,map== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell closing" : "gate closing");
+      string singular_gate = gate_name;
+      if (singular_gate.EndsWith("s")) singular_gate = singular_gate.Substring(0, singular_gate.Length-1);
+      var closing = singular_gate+" closing";
+      map.DoForAllMapObjects(obj => {
+          if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) return;
+          obj.ID = MapObject.IDs.IRON_GATE_CLOSED;
+          OnLoudNoise(obj.Location, closing);
 
-        Actor actorAt = map.GetActorAt(obj.Location.Position);
-        if (null == actorAt) continue;
-        KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
-        if (0<map.PlayerCount) {    // XXX \todo should be visibility check on top of this
-          AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
-          RedrawPlayScreen();
-        }
-      }
+          Actor? actorAt = map.GetActorAt(obj.Location.Position);
+          if (null == actorAt) return;
+          KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
+          if (0 < map.PlayerCount)
+          {    // XXX \todo should be visibility check on top of this
+              AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
+              RedrawPlayScreen();
+          }
+      });
     }
+#nullable restore
 
     static private void DoHospitalPowerOn()
     {

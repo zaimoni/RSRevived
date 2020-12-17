@@ -128,7 +128,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
-    public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
 
@@ -1395,6 +1394,10 @@ retry:
     }
 
     // map object manipulation functions
+    public void DoForAllMapObjects(Action<MapObject> op) {
+      foreach(var x in m_aux_MapObjectsByPosition) op(x.Value);
+    }
+
     public bool HasMapObject(MapObject x) { return m_MapObjectsList.Contains(x); }
 
     public MapObject? GetMapObjectAt(Point pos)
