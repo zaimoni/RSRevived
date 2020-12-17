@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
-    private Location m_Location;
+    [NonSerialized] private Location m_Location;
     private Inventory? m_Inventory = null;
 
     public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
@@ -395,6 +395,14 @@ namespace djack.RogueSurvivor.Data
     {
 #if DEBUG
       if (null != m_Inventory) m_Inventory.RepairZeroQty();
+#endif
+    }
+
+    public void RepairLoad(Map m, Point pos)
+    {
+      if (null == m_Location.Map && null != m) m_Location = new Location(m, pos);
+#if DEBUG
+      else throw new InvalidOperationException("location repair rejected");
 #endif
     }
 
