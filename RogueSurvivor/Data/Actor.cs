@@ -3868,8 +3868,9 @@ namespace djack.RogueSurvivor.Data
 
 #region IEquatable<>
 	// C# docs indicate using Actor as a key wants these
-    public bool Equals(Actor x)
+    public bool Equals(Actor? x)
     {
+      if (null == x) return false;
       if (m_SpawnTime != x.m_SpawnTime) return false;
       if (m_Name != x.m_Name) return false;
       if (Location!=x.Location) return false;
