@@ -1394,11 +1394,8 @@ retry:
     }
 
     // map object manipulation functions
-    public void DoForAllMapObjects(Action<MapObject> op) {
-      foreach(var x in m_aux_MapObjectsByPosition) op(x.Value);
-    }
-
-    public bool HasMapObject(MapObject x) { return m_MapObjectsList.Contains(x); }
+    public void DoForAllMapObjects(Action<MapObject> op) { foreach(var x in m_aux_MapObjectsByPosition) op(x.Value); }
+    public bool HasMapObject(MapObject x) { return m_aux_MapObjectsByPosition.ContainsValue(x); }
 
     public MapObject? GetMapObjectAt(Point pos)
     {
@@ -1480,10 +1477,11 @@ retry:
 
     public void OpenAllGates()
     {
-      foreach(var obj in m_MapObjectsList) {
-        if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
-        obj.ID = MapObject.IDs.IRON_GATE_OPEN;
-        Engine.RogueGame.Game.OnLoudNoise(obj.Location,this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening");
+      var noise_name = this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening";
+      foreach(var x in m_aux_MapObjectsByPosition) {
+        if (MapObject.IDs.IRON_GATE_CLOSED != x.Value.ID) continue;
+        x.Value.ID = MapObject.IDs.IRON_GATE_OPEN;
+        Engine.RogueGame.Game.OnLoudNoise(x.Value.Location, noise_name);
       }
     }
 
