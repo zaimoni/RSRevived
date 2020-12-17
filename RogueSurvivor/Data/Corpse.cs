@@ -5,6 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Runtime.Serialization;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
@@ -13,7 +15,7 @@ using Point = Zaimoni.Data.Vector2D_short;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Corpse
+  internal class Corpse : ISerializable
   {
     public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
 
@@ -37,6 +39,32 @@ namespace djack.RogueSurvivor.Data
       Rotation = rotation;
       Scale = Math.Max(0.0f, Math.Min(1f, scale));
     }
+
+#region Implement ISerializable
+    protected Corpse(SerializationInfo info, StreamingContext context)
+    {
+      info.read(ref DeadGuy, "DeadGuy");
+      info.read_nullsafe(ref DraggedBy, "DraggedBy");
+      info.read_s(ref Position, "Position");
+      Turn = info.GetInt32("Turn");
+      MaxHitPoints = info.GetInt32("MaxHitPoints");
+      HitPoints = info.GetSingle("HitPoints");
+      Rotation = info.GetSingle("Rotation");
+      Scale = info.GetSingle("Scale");
+    }
+
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("DeadGuy", DeadGuy);
+      info.AddValue("DraggedBy", DraggedBy);
+      info.AddValue("Position", Position);
+      info.AddValue("Turn", Turn);
+      info.AddValue("MaxHitPoints", MaxHitPoints);
+      info.AddValue("HitPoints", HitPoints);
+      info.AddValue("Rotation", Rotation);
+      info.AddValue("Scale", Scale);
+     }
+#endregion
 
     public int FreshnessPercent {
       get {
