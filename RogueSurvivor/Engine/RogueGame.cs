@@ -3906,7 +3906,7 @@ namespace djack.RogueSurvivor.Engine
           it.UnequippedBy(Player);
           return false;
         }
-        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
+        ErrorPopup(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason));
         return false;
       }
       if (it.Model.IsEquipable) {
@@ -3914,7 +3914,7 @@ namespace djack.RogueSurvivor.Engine
           it.EquippedBy(player);
           return false;
         }
-        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
+        ErrorPopup(string.Format("Cannot equip {0} : {1}.", it.TheName, reason));
         return false;
       }
       // Above strictly implies that an equippable item that also can be used, is not used by mouse click
@@ -3922,7 +3922,7 @@ namespace djack.RogueSurvivor.Engine
         DoUseItem(player, it);
         return true;
       }
-      AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
+      ErrorPopup(string.Format("Cannot use {0} : {1}.", it.TheName, reason1));
       return false;
     }
 
@@ -3940,7 +3940,7 @@ namespace djack.RogueSurvivor.Engine
           DoDropItem(Player, it);
           return true;
         }
-        AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
+        ErrorPopup(string.Format("Cannot drop {0} : {1}.", it.TheName, reason));
         return false;
       }
 
@@ -3952,7 +3952,7 @@ namespace djack.RogueSurvivor.Engine
           DoTakeItem(Player, Player.Location, it);
           return true;
         }
-        AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason2)));
+        ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, reason2));
         return false;
       }
 
@@ -4009,14 +4009,14 @@ namespace djack.RogueSurvivor.Engine
             DoEatCorpse(Player, c);
             return true;
           }
-          AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+          ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason));
           return false;
         }
         if (Player.CanButcher(c, out string reason1)) {
           DoButcherCorpse(Player, c);
           return true;
         }
-       AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
+       ErrorPopup(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason1));
        return false;
      }
 
@@ -4027,14 +4027,14 @@ namespace djack.RogueSurvivor.Engine
            DoStopDragCorpse(Player);
            return false;
          }
-         AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+         ErrorPopup(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason));
          return false;
        }
        if (Player.CanStartDrag(c, out string reason1)) {
          DoStartDragCorpse(Player, c);
          return false;
        }
-       AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
+       ErrorPopup(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason1));
        return false;
      }
 
@@ -4071,7 +4071,7 @@ namespace djack.RogueSurvivor.Engine
       var corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanEatCorpse(out string reason)) {
-        AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
+        ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason));
         return false;
       }
       DoEatCorpse(player, corpse);
@@ -4083,7 +4083,7 @@ namespace djack.RogueSurvivor.Engine
       var corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
       if (!player.CanRevive(corpse, out string reason)) {
-        AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
+        ErrorPopup(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason));
         return false;
       }
       DoReviveCorpse(player, corpse);
@@ -4187,7 +4187,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var it = player.Inventory[slot];
       if (it == null) {
-        AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
+        ErrorPopup(string.Format("No item at inventory slot {0}.", slot + 1));
         return false;
       }
       return _HandlePlayerInventory(player, it);
@@ -4197,19 +4197,19 @@ namespace djack.RogueSurvivor.Engine
     {
       var itemsAt = player.Location.Items;
       if (itemsAt == null) {
-        AddMessage(MakeErrorMessage("No items on ground."));
+        ErrorPopup("No items on ground.");
         return false;
       }
       var it = itemsAt[slot];
       if (it == null) {
-        AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", slot + 1)));
+        ErrorPopup(string.Format("No item at ground slot {0}.", slot + 1));
         return false;
       }
       if (player.CanGet(it, out string reason)) {
         DoTakeItem(player, player.Location, it);
         return true;
       }
-      AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
+      ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, reason));
       return false;
     }
 
@@ -4217,14 +4217,14 @@ namespace djack.RogueSurvivor.Engine
     {
       var it = player.Inventory[slot];
       if (it == null) {
-        AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
+        ErrorPopup(string.Format("No item at inventory slot {0}.", slot + 1));
         return false;
       }
       if (player.CanDrop(it, out string reason)) {
         DoDropItem(player, it);
         return true;
       }
-      AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
+      ErrorPopup(string.Format("Cannot drop {0} : {1}.", it.TheName, reason));
       return false;
     }
 
@@ -4232,7 +4232,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerShout(Actor player, string? text)
     {
       if (!player.CanShout(out string reason)) {
-        AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", reason)));
+        ErrorPopup(string.Format("Can't shout : {0}.", reason));
         return false;
       }
       DoShout(player, text);
@@ -4273,7 +4273,7 @@ namespace djack.RogueSurvivor.Engine
             DoGiveItemTo(player, actorAt, inventoryItem);
             return true;
           }
-          AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason)));
+          ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason));
           return false;
         } else {
           var container = Rules.CanActorPutItemIntoContainer(player, pos.Value);
@@ -4282,7 +4282,7 @@ namespace djack.RogueSurvivor.Engine
             return true;
           }
         }
-        AddMessage(MakeErrorMessage("Noone there."));
+        ErrorPopup("Noone there.");
         return false;
       }
 
@@ -4296,15 +4296,14 @@ namespace djack.RogueSurvivor.Engine
     {
       var player = pc.ControlledActor;
       if (!player.Model.Abilities.CanTrade) {
-        AddMessage(MakeErrorMessage("Incapable of trading."));
+        ErrorPopup("Incapable of trading.");
         return;
       }
-      var can_trade_with = pc.GetTradingTargets(player.Controller.friends_in_FOV); // this should only return legal trading targets
+      var can_trade_with = pc.GetTradingTargets(pc.friends_in_FOV); // this should only return legal trading targets
 
       // \todo filter these
       if (null == can_trade_with) {
-        AddMessage(MakeErrorMessage("No visible non-enemy actors to trade with."));
-        RedrawPlayScreen();
+        ErrorPopup("No visible non-enemy actors to trade with.");
         return;
       }
 
@@ -4358,7 +4357,7 @@ namespace djack.RogueSurvivor.Engine
               if (DoTrade(pc, inventoryItem, actorAt, true)) player.SpendActionPoints();
               return true;
             } else {
-              AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
+              ErrorPopup(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason));
               return false;
             }
           }
@@ -4380,7 +4379,7 @@ namespace djack.RogueSurvivor.Engine
           DoTrade(pc, inventoryItem, ground_inv);
           return true;
         }
-        AddMessage(MakeErrorMessage("Noone there."));
+        ErrorPopup("Noone there.");
         return false;
       }
 
@@ -4393,7 +4392,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerRunToggle(Actor player)
     {
       if (!player.CanRun(out string reason) && !player.IsRunning) {
-        AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", reason)));
+        ErrorPopup(string.Format("Cannot run now : {0}.", reason));
       } else {
         player.IsRunning = !player.IsRunning;
         AddMessage(MakeMessage(player, string.Format("{0} running.", (player.IsRunning ? VERB_START : VERB_STOP).Conjugate(player))));
@@ -4414,14 +4413,13 @@ namespace djack.RogueSurvivor.Engine
         if (mapObjectAt is DoorWindow door) {
           if (player.CanClose(door, out string reason)) {
             DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
-            RedrawPlayScreen();
             return true;
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
+            ErrorPopup(string.Format("Can't close {0} : {1}.", door.TheName, reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Nothing to close there."));
+          ErrorPopup("Nothing to close there.");
           return false;
         }
       }
@@ -4447,27 +4445,25 @@ namespace djack.RogueSurvivor.Engine
           if (mapObjectAt is DoorWindow door) {
             if (player.CanBarricade(door, out string reason)) {
               DoBarricadeDoor(player, door);
-              RedrawPlayScreen();
               return true;
             } else {
-              AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
+              ErrorPopup(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason));
               return false;
             }
           } else if (mapObjectAt is Fortification fort) {
             if (player.CanRepairFortification(fort, out string reason)) {
               DoRepairFortification(player, fort);
-              RedrawPlayScreen();
               return true;
             } else {
-              AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
+              ErrorPopup(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason));
               return false;
             }
           } else {
-            AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", mapObjectAt.TheName)));
+            ErrorPopup(string.Format("{0} cannot be repaired or barricaded.", mapObjectAt.TheName));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Nothing to barricade there."));
+          ErrorPopup("Nothing to barricade there.");
           return false;
         }
       }
@@ -4490,7 +4486,7 @@ namespace djack.RogueSurvivor.Engine
         if (pos == player.Location.Position) {
           var exitAt = player.Location.Exit;
           if (exitAt == null) {
-            AddMessage(MakeErrorMessage("No exit there."));
+            ErrorPopup("No exit there.");
             return false;
           }
           var actorAt = exitAt.Location.Actor;
@@ -4500,11 +4496,11 @@ namespace djack.RogueSurvivor.Engine
                 DoMeleeAttack(player, actorAt);
                 return true;
               } else {
-                AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", actorAt.Name, reason)));
+                ErrorPopup(string.Format("Cannot attack {0} : {1}.", actorAt.Name, reason));
                 return false;
               }
             } else {
-              AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", actorAt.Name)));
+              ErrorPopup(string.Format("{0} is not your enemy.", actorAt.Name));
               return false;
             }
           } else {
@@ -4514,11 +4510,11 @@ namespace djack.RogueSurvivor.Engine
                 DoBreak(player, obj);
                 return true;
               } else {
-                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", obj.TheName, reason)));
+                ErrorPopup(string.Format("Cannot break {0} : {1}.", obj.TheName, reason));
                 return false;
               }
             } else {
-              AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
+              ErrorPopup("Nothing to break or attack on the other side.");
               return false;
             }
           }
@@ -4533,11 +4529,11 @@ namespace djack.RogueSurvivor.Engine
             RedrawPlayScreen();
             return true;
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", obj.TheName, reason)));
+            ErrorPopup(string.Format("Cannot break {0} : {1}.", obj.TheName, reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Nothing to break there."));
+          ErrorPopup("Nothing to break there.");
           return false;
         }
       }
@@ -4551,12 +4547,12 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
     {
       if (player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) {
-        AddMessage(MakeErrorMessage("need carpentry skill."));
+        ErrorPopup("need carpentry skill.");
         return false;
       }
       int num = player.BarricadingMaterialNeedForFortification(isLarge);
       if (player.CountItems<ItemBarricadeMaterial>() < num) {
-        AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", num)));
+        ErrorPopup(string.Format("not enough barricading material, need {0}.", num));
         return false;
       }
       ClearOverlays();
@@ -4568,10 +4564,9 @@ namespace djack.RogueSurvivor.Engine
         if (!player.Location.Map.IsValid(pos.Value)) return false;
         if (player.CanBuildFortification(pos.Value, isLarge, out string reason)) {
           DoBuildFortification(player, pos.Value, isLarge);
-          RedrawPlayScreen();
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", reason)));
+          ErrorPopup(string.Format("Cannot build here : {0}.", reason));
           return false;
         }
       }
@@ -4585,30 +4580,26 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerFireMode(Actor player)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
         return HandlePlayerThrowGrenade(player);
       if (!(player.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) {
-        AddMessage(MakeErrorMessage("No weapon ready to fire."));
-        RedrawPlayScreen();
+        ErrorPopup("No weapon ready to fire.");
         return false;
       }
       if (itemRangedWeapon.Ammo <= 0) {
-        AddMessage(MakeErrorMessage("No ammo left."));
-        RedrawPlayScreen();
+        ErrorPopup("No ammo left.");
         return false;
       }
       var enemiesInFov = player.GetEnemiesInFov(player.Controller.FOVloc);
       if (null == enemiesInFov || 0 >= enemiesInFov.Count) {
-        AddMessage(MakeErrorMessage("No targets to fire at."));
-        RedrawPlayScreen();
+        ErrorPopup("No targets to fire at.");
         return false;
       }
       Attack attack = player.RangedAttack(0);
       int index = 0;
       var LoF = new List<Point>(attack.Range);
       FireMode mode = default;
+      bool flag2 = false;
       do {
         Actor currentTarget = enemiesInFov[index];
         LoF.Clear();
@@ -4640,7 +4631,7 @@ namespace djack.RogueSurvivor.Engine
         KeyEventArgs key = m_UI.UI_WaitKey();
 
         // 3. Handle input
-        if (key.KeyCode == Keys.Escape) flag1 = false;
+        if (key.KeyCode == Keys.Escape) break;
         else if (key.KeyCode == Keys.T) index = (index + 1) % enemiesInFov.Count;
         else if (key.KeyCode == Keys.M) {
           mode = (FireMode) ((int) (mode + 1) % 2);
@@ -4649,13 +4640,13 @@ namespace djack.RogueSurvivor.Engine
           if (flag3) {
             DoRangedAttack(player, currentTarget, LoF, mode);
             RedrawPlayScreen();
-            flag1 = false;
             flag2 = true;
+            break;
           } else
-            AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason)));
+            ErrorPopup(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason));
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
@@ -4663,40 +4654,44 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerMarkEnemies(Actor player)
     {
       if (player.Model.Abilities.IsUndead) {
-        AddMessage(MakeErrorMessage("Undeads can't have personal enemies."));
+        ErrorPopup("Undeads can't have personal enemies.");
         return;
       }
       var non_enemies = player.Controller.friends_in_FOV;
       if (null == non_enemies) {
-        AddMessage(MakeErrorMessage("No visible non-enemy actors to mark."));
-        RedrawPlayScreen();
+        ErrorPopup("No visible non-enemy actors to mark.");
         return;
       }
+
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+
+      OverlayImage? nominate;
       var actorList = non_enemies.Values.ToList();
       int index = 0;
       do {
         Actor target = actorList[index];
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
+        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        AddOverlay(nominate);
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
         if (key.KeyCode == Keys.Escape) break;
         else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
         else if (key.KeyCode == Keys.E) {
           if (target.Leader == player) {
-            AddMessage(MakeErrorMessage("Can't make a follower your enemy."));
+            ErrorPopup("Can't make a follower your enemy.");
             continue;
           } else if (player.Leader == target) {
-            AddMessage(MakeErrorMessage("Can't make your leader your enemy."));
+            ErrorPopup("Can't make your leader your enemy.");
             continue;
           } else if (player.IsEnemyOf(target)) {
-            AddMessage(MakeErrorMessage("Already enemies."));
+            ErrorPopup("Already enemies.");
             continue;
           }
           AddMessage(new Data.Message(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
           DoMakeAggression(player, target);
         }
+        RemoveOverlay(nominate);
       } while(true);
       ClearOverlays();
     }
@@ -4708,7 +4703,6 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
 #endif
-      bool flag1 = true;
       bool flag2 = false;
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       Map map = player.Location.Map;
@@ -4726,7 +4720,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
         PlayerCommand command = InputTranslator.KeyToCommand(key);
-        if (key.KeyCode == Keys.Escape) flag1 = false;
+        if (key.KeyCode == Keys.Escape) break;
         else if (key.KeyCode == Keys.F) {
           if (flag3) {
             bool flag4 = true;
@@ -4745,11 +4739,11 @@ namespace djack.RogueSurvivor.Engine
               else
                 DoThrowGrenadePrimed(player, in point1);
               RedrawPlayScreen();
-              flag1 = false;
               flag2 = true;
+              break;
             }
           } else
-            AddMessage(MakeErrorMessage(string.Format("Can't throw there : {0}.", reason)));
+            ErrorPopup(string.Format("Can't throw there : {0}.", reason));
         } else {
           Direction direction = CommandToDirection(command);
           if (direction != null) {
@@ -4759,7 +4753,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
@@ -4768,7 +4762,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerSleep(Actor player)
     {
       if (!player.CanSleep(out string reason)) {
-        AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", reason)));
+        ErrorPopup(string.Format("Cannot sleep now : {0}.", reason));
         return false;
       }
       AddMessage(MakeYesNoMessage("Really sleep there"));
@@ -4799,11 +4793,11 @@ namespace djack.RogueSurvivor.Engine
             DoSwitchPlace(player, actorAt);
             return true;
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", reason)));
+            ErrorPopup(string.Format("Can't switch place : {0}", reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Noone there."));
+          ErrorPopup("Noone there.");
           return false;
         }
       }
@@ -4848,15 +4842,15 @@ namespace djack.RogueSurvivor.Engine
                 return false;
               }
             } else {
-              AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", actorAt.TheName, reason)));
+              ErrorPopup(string.Format("{0} can't leave : {1}.", actorAt.TheName, reason));
               return false;
             }
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", actorAt.TheName, reason)));
+            ErrorPopup(string.Format("Can't lead {0} : {1}.", actorAt.TheName, reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Noone there."));
+          ErrorPopup("Noone there.");
           return false;
         }
       }
@@ -4871,7 +4865,7 @@ namespace djack.RogueSurvivor.Engine
     {
       string err = player.ReasonCantPush();
       if (!string.IsNullOrEmpty(err)) {
-        AddMessage(MakeErrorMessage(err));
+        ErrorPopup(err);
         return false;
       }
 
@@ -4889,18 +4883,18 @@ namespace djack.RogueSurvivor.Engine
           if (player.CanShove(other,out reason)) {
             return HandlePlayerShoveActor(player, other);
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", other.TheName, reason)));
+            ErrorPopup(string.Format("Cannot shove {0} : {1}.", other.TheName, reason));
             return false;
           }
         } else if (null != (mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value))) {
           if (player.CanPush(mapObj, out reason)) {
             return HandlePlayerPushObject(player, mapObj);
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+            ErrorPopup(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Nothing to push there."));
+          ErrorPopup("Nothing to push there.");
           return false;
         }
       }
@@ -4926,7 +4920,7 @@ namespace djack.RogueSurvivor.Engine
           DoPush(player, mapObj, loc);
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
+          ErrorPopup(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason));
           return false;
         }
       }
@@ -4955,7 +4949,7 @@ namespace djack.RogueSurvivor.Engine
           DoShove(player, other, pos.Value);
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
+          ErrorPopup(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason));
           return false;
         }
       }
@@ -4971,7 +4965,7 @@ namespace djack.RogueSurvivor.Engine
       // fail immediately for stupid cases.
       string err = player.ReasonCantPull();
       if (!string.IsNullOrEmpty(err)) {
-        AddMessage(MakeErrorMessage(err));
+        ErrorPopup(err);
         return false;
       }
 
@@ -4991,18 +4985,18 @@ namespace djack.RogueSurvivor.Engine
           if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
             return HandlePlayerPullActor(player, other);
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
+            ErrorPopup(string.Format("Cannot pull {0} : {1}.", other.TheName, reason));
             return false;
           }
         } else if (null != (mapObj = loc.MapObject)) { // pull.
           if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
             return HandlePlayerPullObject(player, mapObj);
           } else {
-            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+            ErrorPopup(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason));
             return false;
           }
         } else {
-          AddMessage(MakeErrorMessage("Nothing to pull there.")); // nothing to pull.
+          ErrorPopup("Nothing to pull there."); // nothing to pull.
           return false;
         }
       }
@@ -5027,7 +5021,7 @@ namespace djack.RogueSurvivor.Engine
           DoPull(player, mapObj, new Location(player.Location.Map, pos.Value));
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
+          ErrorPopup(string.Format("Cannot pull there : {0}.", reason));
           return false;
         }
       }
@@ -5053,7 +5047,7 @@ namespace djack.RogueSurvivor.Engine
           DoPullActor(player, other, _dest);
           return true;
         } else {
-          AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+          ErrorPopup(string.Format("Cannot pull there : {0}.", reason));
           return false;
         }
       }
@@ -5073,7 +5067,7 @@ namespace djack.RogueSurvivor.Engine
           return HandlePlayerSprayOdorSuppressor(player, spray);
         }
       }
-      AddMessage(MakeErrorMessage("No spray equipped."));
+      ErrorPopup("No spray equipped.");
       RedrawPlayScreen();
       return false;
     }
@@ -5081,8 +5075,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerTag(Actor player, ItemSprayPaint spray)
     {
       if (spray.PaintQuantity <= 0) {
-        AddMessage(MakeErrorMessage("No paint left."));
-        RedrawPlayScreen();
+        ErrorPopup("No paint left.");
         return false;
       }
       ClearOverlays();
@@ -5097,7 +5090,7 @@ namespace djack.RogueSurvivor.Engine
           DoTag(player, spray, pos.Value);
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", reason)));
+          ErrorPopup(string.Format("Can't tag there : {0}.", reason));
           return false;
         }
       }
@@ -5132,8 +5125,7 @@ namespace djack.RogueSurvivor.Engine
     {
       // Check if has odor suppressor.
       if (0 >= spray.SprayQuantity) {
-        AddMessage(MakeErrorMessage("No spray left."));
-        RedrawPlayScreen();
+        ErrorPopup("No spray left.");
         return false;
       }
 
@@ -5144,13 +5136,13 @@ namespace djack.RogueSurvivor.Engine
       Actor? spray_who(Direction dir) { return dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir); }
       bool spray_on(Actor? who) {
         if (null == who) {
-          AddMessage(MakeErrorMessage("No one to spray on here."));
+          ErrorPopup("No one to spray on here.");
           return false;
         } else if (player.CanSprayOdorSuppressor(spray, who, out string reason)) {
           DoSprayOdorSuppressor(player, spray, who);
           return true;
         } else {
-          AddMessage(MakeErrorMessage(string.Format("Can't spray here : {0}.", reason)));
+          ErrorPopup(string.Format("Can't spray here : {0}.", reason));
           return false;
         }
       }
@@ -5166,7 +5158,7 @@ namespace djack.RogueSurvivor.Engine
       // check for meaningful tasks to automate
       var orders = pc.GetValidSelfOrders();
       if (0 >= orders.Count) {
-        AddMessage(MakeErrorMessage("No applicable orders for yourself."));
+        ErrorPopup("No applicable orders for yourself.");
         return false;
       }
 
@@ -7707,7 +7699,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = origin.Map;
       var exitAt = map.GetExitAt(exitPoint);
       if (exitAt == null) {
-        if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
+        if (isPlayer) ErrorPopup("There is nowhere to go there.");
 #if DEBUG
         else throw new ArgumentNullException(nameof(exitAt));   // going to crash out anyway on the free move trap
 #endif
@@ -7734,7 +7726,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       string reason = exitAt.ReasonIsBlocked(actor);
       if (!string.IsNullOrEmpty(reason)) {
-        if (isPlayer) AddMessage(MakeErrorMessage(reason));
+        if (isPlayer) ErrorPopup(reason);
 #if DEBUG
         else throw new InvalidOperationException(reason);   // going to crash out anyway on the free move trap
 #endif
@@ -7861,11 +7853,10 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message("Good, keep everything secure.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           return false;
         }
-        AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
-        RedrawPlayScreen();
+        ErrorPopup("Too tired to tear down the barricade.");
         return false;
       }
-      AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", actionBump.FailReason)));
+      ErrorPopup(string.Format("Cannot do that : {0}.", actionBump.FailReason));
       return false;
     }
 
@@ -9015,9 +9006,7 @@ namespace djack.RogueSurvivor.Engine
           DoTakeItem(player, container, obj);
           return true;
         }
-        ClearMessages();
-        AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason)));
-        AddMessagePressEnter();
+        ErrorPopup(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason));
         return false;
       };
 
@@ -9232,7 +9221,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
-      if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) AddMessage(MakeErrorMessage("Don't waste food!"));
+      if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) ErrorPopup("Don't waste food!");
       else food.Use(actor, actor.Inventory);
     }
 
@@ -9246,7 +9235,7 @@ namespace djack.RogueSurvivor.Engine
         int num4 = actor.MaxSanity - actor.Sanity;
         if ((num1 <= 0 || med.Healing <= 0) && (num2 <= 0 || med.StaminaBoost <= 0) && ((num3 <= 0 || med.SleepBoost <= 0) && (infection <= 0 || med.InfectionCure <= 0)) && (num4 <= 0 || med.SanityCure <= 0))
         {
-          AddMessage(MakeErrorMessage("Don't waste medicine!"));
+          ErrorPopup("Don't waste medicine!");
           return;
         }
       }
@@ -9330,9 +9319,11 @@ namespace djack.RogueSurvivor.Engine
       var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
       inv.Consume(barricadeMaterial);
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
-        AddMessage(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
       actor.SpendActionPoints();
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
+        AddMessage(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
+        RedrawPlayScreen();
+      }
     }
 
     public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
@@ -9345,9 +9336,11 @@ namespace djack.RogueSurvivor.Engine
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
+
+      bool is_visible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification);
+      if (is_visible) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
+      if (is_visible) RedrawPlayScreen();
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
@@ -9357,8 +9350,10 @@ namespace djack.RogueSurvivor.Engine
       inv.Consume(barricadeMaterial);
       actor.SpendActionPoints();
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort)) {
         AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
+        RedrawPlayScreen();
+      }
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
@@ -10337,11 +10332,12 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
+      if (0 >= upgrade.Count) {
+        ErrorPopup(str + " can't learn anything new!");
+        return;
+      }
       var skills = upgradeActor.Sheet.SkillTable;
-      if (0 >= upgrade.Count) { 
-        AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
-      } else {
-        do {
+      do {
           ClearMessages();
           var popupLines = new List<string> { "" };
 
@@ -10394,9 +10390,8 @@ namespace djack.RogueSurvivor.Engine
             break;
           }
           RemoveOverlay(popup);
-        }
-        while(true);
-      }
+      } while(true);
+
       // this is the change target for becoming a cop
       if (upgradeActor.Controller is ObjectiveAI oai) {
         if (oai.CanBecomeCop()) {

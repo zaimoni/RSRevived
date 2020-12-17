@@ -5,6 +5,7 @@ REVIVED 0.10.0 CHANGES
 ------------------
 * The city planners have improved zoning regulations for districts
 * Z-detectors can clear threat tracking caused by Z.
+* New command Countermand PC, default key ALT-SHIFT-O.  Use this to inspect which self-orders are active, and cancel them.
 
 2020-11-09 and earlier
 * Cf. main manual's commands section for how self-orders work.
