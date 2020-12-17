@@ -15,14 +15,14 @@ namespace djack.RogueSurvivor.Data
   {
     private readonly List<Faction> m_Enemies = new List<Faction>(1);
 
-    public readonly int ID;
+    public readonly GameFactions.IDs ID;
     public readonly string Name;
     public readonly string MemberName;
     public readonly bool LeadOnlyBySameFaction;
 
     public IEnumerable<Faction> Enemies { get { return m_Enemies; } }
 
-    public Faction(string name, string memberName, int id, bool leadOnlyBySameFaction = false)
+    public Faction(string name, string memberName, GameFactions.IDs id, bool leadOnlyBySameFaction = false)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));

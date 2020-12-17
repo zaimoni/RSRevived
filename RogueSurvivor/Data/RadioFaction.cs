@@ -179,7 +179,7 @@ namespace djack.RogueSurvivor.Data
 #endif
         }
 
-        public bool IsMine(Actor a) { return (int)FactionID == a.Faction.ID; }
+        public bool IsMine(Actor a) { return FactionID == a.Faction.ID; }
         public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a); }
 
         public void TrackThroughExitSpawn(Actor a)

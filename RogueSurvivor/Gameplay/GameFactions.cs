@@ -31,17 +31,17 @@ namespace djack.RogueSurvivor.Data
 
     static GameFactions()
     {
-      m_Factions[(int)IDs.TheArmy] = new Faction("Army", "soldier", (int)IDs.TheArmy, true);
-      m_Factions[(int)IDs.TheBikers] = new Faction("Bikers", "biker", (int)IDs.TheBikers, true);
-      m_Factions[(int)IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", (int)IDs.TheCHARCorporation, true);
-      m_Factions[(int)IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", (int)IDs.TheBlackOps, true);
-      m_Factions[(int)IDs.TheCivilians] = new Faction("Civilians", "civilian", (int)IDs.TheCivilians);
-      m_Factions[(int)IDs.TheGangstas] = new Faction("Gangstas", "gangsta", (int)IDs.TheGangstas, true);
-      m_Factions[(int)IDs.ThePolice] = new Faction("Police", "police officer", (int)IDs.ThePolice, true);
-      m_Factions[(int)IDs.TheUndeads] = new Faction("Undeads", "undead", (int)IDs.TheUndeads);
-      m_Factions[(int)IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath", (int)IDs.ThePsychopaths);
-      m_Factions[(int)IDs.TheSurvivors] = new Faction("Survivors", "survivor", (int)IDs.TheSurvivors);
-      m_Factions[(int)IDs.TheFerals] = new Faction("Ferals", "feral", (int)IDs.TheFerals, true);
+      m_Factions[(int)IDs.TheArmy] = new Faction("Army", "soldier", IDs.TheArmy, true);
+      m_Factions[(int)IDs.TheBikers] = new Faction("Bikers", "biker", IDs.TheBikers, true);
+      m_Factions[(int)IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", IDs.TheCHARCorporation, true);
+      m_Factions[(int)IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", IDs.TheBlackOps, true);
+      m_Factions[(int)IDs.TheCivilians] = new Faction("Civilians", "civilian", IDs.TheCivilians);
+      m_Factions[(int)IDs.TheGangstas] = new Faction("Gangstas", "gangsta", IDs.TheGangstas, true);
+      m_Factions[(int)IDs.ThePolice] = new Faction("Police", "police officer", IDs.ThePolice, true);
+      m_Factions[(int)IDs.TheUndeads] = new Faction("Undeads", "undead", IDs.TheUndeads);
+      m_Factions[(int)IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath", IDs.ThePsychopaths);
+      m_Factions[(int)IDs.TheSurvivors] = new Faction("Survivors", "survivor", IDs.TheSurvivors);
+      m_Factions[(int)IDs.TheFerals] = new Faction("Ferals", "feral", IDs.TheFerals, true);
 
       // set up faction-level enemies
       // XXX now we have a working reflexive AddEnemy we can simplify this considerably
@@ -156,17 +156,17 @@ namespace djack.RogueSurvivor.Data
 
   static internal class GameFactions_ext
   {
-    static public bool ExtortionIsAggression(this int x)
+    static public bool ExtortionIsAggression(this GameFactions.IDs x)
     {
-      if ((int)GameFactions.IDs.ThePolice==x) return true;   // law enforcement
-      if ((int)GameFactions.IDs.TheArmy==x) return true;     // martial law enforcement
+      if (GameFactions.IDs.ThePolice==x) return true;   // law enforcement
+      if (GameFactions.IDs.TheArmy==x) return true;     // martial law enforcement
       return false;
     }
-    static public bool LawIgnoresExtortion(this int x)
+    static public bool LawIgnoresExtortion(this GameFactions.IDs x)
     {
-      if ((int)GameFactions.IDs.TheBikers==x) return true;   // enemy of police
-      if ((int)GameFactions.IDs.TheGangstas==x) return true; // enemy of police
-      if ((int)GameFactions.IDs.TheFerals==x) return true;   // people are more important than dogs
+      if (GameFactions.IDs.TheBikers==x) return true;   // enemy of police
+      if (GameFactions.IDs.TheGangstas==x) return true; // enemy of police
+      if (GameFactions.IDs.TheFerals==x) return true;   // people are more important than dogs
       return false;
     }
   }

@@ -113,9 +113,9 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     private Flags m_Flags;
-    private Gameplay.GameActors.IDs m_ModelID;
-    private int m_FactionID; // savefile break: retype to proper faction id
-    private Gameplay.GameGangs.IDs m_GangID;  // sparse field
+    private GameActors.IDs m_ModelID;
+    private GameFactions.IDs m_FactionID;
+    private GameGangs.IDs m_GangID;  // sparse field
 #nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
@@ -183,7 +183,7 @@ namespace djack.RogueSurvivor.Data
       set { m_FactionID = value.ID; }
     }
 
-    public bool IsFaction(GameFactions.IDs f) { return m_FactionID == (int)f; }
+    public bool IsFaction(GameFactions.IDs f) { return m_FactionID == f; }
     public bool IsFaction(Actor other) { return m_FactionID == other.m_FactionID; }
 
 #nullable enable
@@ -1193,14 +1193,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasActivePoliceRadio {
       get {
-        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return true;
+        if (GameFactions.IDs.ThePolice==m_FactionID) return true;
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
 
     public bool HasPoliceRadio {
       get {
-        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return true;
+        if (GameFactions.IDs.ThePolice==m_FactionID) return true;
         return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
@@ -1208,21 +1208,21 @@ namespace djack.RogueSurvivor.Data
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
     public bool HasActiveArmyRadio {
       get {
-        if ((int)GameFactions.IDs.TheArmy==m_FactionID) return true;
+        if (GameFactions.IDs.TheArmy==m_FactionID) return true;
         return false;
       }
     }
 
     public bool HasArmyRadio {
       get {
-        if ((int)GameFactions.IDs.TheArmy==m_FactionID) return true;
+        if (GameFactions.IDs.TheArmy==m_FactionID) return true;
         return false;
       }
     }
 
     public bool NeedActivePoliceRadio {
       get {
-        if ((int)GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
+        if (GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
         // XXX disallow murderers under certain conditions, etc
         var leader = LiveLeader;
         if (null != leader) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
@@ -1243,7 +1243,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool WantPoliceRadio {
       get {
-        if ((int)GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
+        if (GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
         bool have_cellphone = HasCellPhone;
         bool have_army = HasArmyRadio;
         if (!have_cellphone && !have_army) return true;
@@ -3221,18 +3221,18 @@ namespace djack.RogueSurvivor.Data
       // RS Revived: no trading with differing treacherous factions; should be "by AI controller" but player controller would need to simulate underlying target
       switch(m_FactionID)
       {
-      case (int)GameFactions.IDs.TheCHARCorporation:
-      case (int)GameFactions.IDs.TheBikers:
-      case (int)GameFactions.IDs.TheGangstas:
+      case GameFactions.IDs.TheCHARCorporation:
+      case GameFactions.IDs.TheBikers:
+      case GameFactions.IDs.TheGangstas:
         if (target.m_FactionID!=m_FactionID) return "untrustworthy";
         break;
       }
 
       switch(target.m_FactionID)
       {
-      case (int)GameFactions.IDs.TheCHARCorporation:
-      case (int)GameFactions.IDs.TheBikers:
-      case (int)GameFactions.IDs.TheGangstas:
+      case GameFactions.IDs.TheCHARCorporation:
+      case GameFactions.IDs.TheBikers:
+      case GameFactions.IDs.TheGangstas:
         if (target.m_FactionID!=m_FactionID) return "anticipates treachery";
         break;
       }
