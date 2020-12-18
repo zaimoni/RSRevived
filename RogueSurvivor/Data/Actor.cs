@@ -142,7 +142,6 @@ namespace djack.RogueSurvivor.Data
     private int m_ActionPoints;
     private Actor? m_TargetActor;
     private int m_AudioRangeMod;
-    private Attack m_CurrentMeleeAttack;    // dataflow candidate
     private Defence m_CurrentDefence;    // dataflow candidate
     private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
     private List<Actor>? m_Followers;
@@ -156,6 +155,7 @@ namespace djack.RogueSurvivor.Data
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
     static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
+    [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
     [NonSerialized] private bool _has_to_eat;
     [NonSerialized] private string[]? _force_PC_names = null;
@@ -696,7 +696,6 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("s_MurdersCounter", s_MurdersCounter);
     }
 #endregion
-#nullable restore
 
     // don't worry about CPU cost as long as this is profile-cold
     static private bool PossiblyAlive(Actor a)
@@ -709,8 +708,11 @@ namespace djack.RogueSurvivor.Data
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       _has_to_eat = Model.Abilities.HasToEat;
-      var rw = GetEquippedWeapon() as ItemRangedWeapon;
+      var w = GetEquippedWeapon();
+      var rw = w as ItemRangedWeapon;
       m_CurrentRangedAttack = (null != rw) ? rw.Model.Attack : Attack.BLANK;
+      var melee = w as ItemMeleeWeapon;
+      m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(in Sheet) : Sheet.UnarmedAttack;
 
       CommandLinePlayer();
       // Support savefile hacking.
@@ -718,6 +720,7 @@ namespace djack.RogueSurvivor.Data
       // Give them AI controllers here.
       if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
+#nullable restore
 
 	public void PrefixName(string prefix)
 	{
