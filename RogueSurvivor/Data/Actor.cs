@@ -141,7 +141,6 @@ namespace djack.RogueSurvivor.Data
     private Location m_Location;
     private int m_ActionPoints;
     private Actor? m_TargetActor;
-    private int m_AudioRangeMod;
     private List<Actor>? m_Followers; // leadership fields are AI-specific (ObjectiveAI and dogs).
     private int m_TrustInLeader;
     private Dictionary<Actor,int>? m_TrustDict;
@@ -338,8 +337,7 @@ namespace djack.RogueSurvivor.Data
       set { m_TargetActor = value; }
     }
 
-    public int AudioRange { get { return m_Sheet.BaseAudioRange + m_AudioRangeMod; } }
-    public int AudioRangeMod { get { return m_AudioRangeMod; } }
+    public int AudioRange { get { return m_Sheet.BaseAudioRange; } } // might be useful for e.g. deafness from being too close to an explosion
 
     public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
     public ref Attack CurrentRangedAttack { get { return ref m_CurrentRangedAttack; } }
