@@ -140,7 +140,6 @@ namespace djack.RogueSurvivor.Data
     private int m_previousSanity;
     private Location m_Location;
     private int m_ActionPoints;
-    private int m_LastActionTurn;
     private Actor? m_TargetActor;
     private int m_AudioRangeMod;
     private Attack m_CurrentMeleeAttack;    // dataflow candidate
@@ -323,8 +322,6 @@ namespace djack.RogueSurvivor.Data
 
     public int ActionPoints { get { return m_ActionPoints; } }
     public void APreset() { m_ActionPoints = 0; }
-
-    public int LastActionTurn { get { return m_LastActionTurn; } }
 
     public Location Location { // \todo replace this with a field if setting up access controls is not worth it
       get { return m_Location; }
@@ -2338,20 +2335,10 @@ namespace djack.RogueSurvivor.Data
     public void SpendActionPoints(int actionCost = BASE_ACTION_COST)
     {
       Interlocked.Add(ref m_ActionPoints, -actionCost);
-      m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
     }
 
-    public void Wait()
-    {
-      m_ActionPoints = 0;
-      m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
-    }
-
-    public bool CanActThisTurn {
-      get {
-        return 0 < m_ActionPoints;
-      }
-    }
+    public void Wait() { m_ActionPoints = 0; }
+    public bool CanActThisTurn { get { return 0 < m_ActionPoints; } }
 
     public bool CanActNextTurn {
       get {
