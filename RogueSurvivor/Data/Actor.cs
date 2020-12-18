@@ -142,8 +142,7 @@ namespace djack.RogueSurvivor.Data
     private int m_ActionPoints;
     private Actor? m_TargetActor;
     private int m_AudioRangeMod;
-    private Defence m_CurrentDefence;    // dataflow candidate
-    private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs)
+    private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs).  Backpointer
     private List<Actor>? m_Followers;
     private int m_TrustInLeader;
     private Dictionary<Actor,int>? m_TrustDict;
@@ -157,6 +156,7 @@ namespace djack.RogueSurvivor.Data
     static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
+    [NonSerialized] private Defence m_CurrentDefence;    // dataflow candidate
     [NonSerialized] private bool _has_to_eat;
     [NonSerialized] private string[]? _force_PC_names = null;
 
@@ -713,6 +713,9 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = (null != rw) ? rw.Model.Attack : Attack.BLANK;
       var melee = w as ItemMeleeWeapon;
       m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(in Sheet) : Sheet.UnarmedAttack;
+
+      m_CurrentDefence = Sheet.BaseDefence;
+      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) m_CurrentDefence += armor.Model.ToDefence();
 
       CommandLinePlayer();
       // Support savefile hacking.
