@@ -4006,20 +4006,18 @@ namespace djack.RogueSurvivor.Engine
 
      bool OnLMBCorpse(Corpse c)
      {
-       if (c.IsDragged) {
-         if (Player.CanStopDrag(c, out string reason)) {
+       switch(Player.CanStartStopDrag(c, out var reason))
+       {
+       case 2: // legal to stop drag
            DoStopDragCorpse(Player);
            return false;
-         }
-         ErrorPopup(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason));
-         return false;
+       case 1: // legal to start drag
+           DoStartDragCorpse(Player, c);
+           return false;
+       default: // interpret as illegal to start drag, as that's what all of the surviving legacy reason strings are for
+           ErrorPopup(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason));
+           return false;
        }
-       if (Player.CanStartDrag(c, out string reason1)) {
-         DoStartDragCorpse(Player, c);
-         return false;
-       }
-       ErrorPopup(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason1));
-       return false;
      }
 
       ClearOverlays();

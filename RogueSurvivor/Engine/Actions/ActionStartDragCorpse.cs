@@ -24,7 +24,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanStartDrag(m_Target, out m_FailReason);
+      bool ret = 1 == m_Actor.CanStartStopDrag(m_Target, out m_FailReason); // actually IsPerformable implementation
+      if (!ret && string.IsNullOrEmpty(m_FailReason)) m_FailReason = "already dragging corpse";
+      return ret;
     }
 
     public override void Perform()

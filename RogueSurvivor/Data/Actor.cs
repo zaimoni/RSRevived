@@ -2796,52 +2796,32 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantButcher(corpse));
     }
 
-    private string ReasonCantStartDrag(Corpse corpse)
-    {
-      if (corpse.IsDragged) return "corpse is already being dragged";
-      if (IsTired) return "tired";
-      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
-      if (null != m_DraggedCorpse) return "already dragging a corpse";
-      return "";
+    // theoretically should be returning an enumeration
+    // 0: failed to start dragging
+    // 1: ok to start dragging
+    // 2: ok to stop dragging
+    private KeyValuePair<int, string> ReasonCantStartStopDrag(Corpse corpse) {
+      if (null != m_DraggedCorpse) {
+        if (corpse == m_DraggedCorpse) return new KeyValuePair<int, string>(2, string.Empty); // we may stop dragging this
+        return new KeyValuePair<int, string>(0, "already dragging a corpse");
+      }
+      if (corpse.IsDragged) return new KeyValuePair<int, string>(0, "corpse is already being dragged");
+      if (IsTired) return new KeyValuePair<int, string>(0, "tired");
+      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return new KeyValuePair<int, string>(0, "not in same location");
+      return new KeyValuePair<int, string>(1, string.Empty); // we may start dragging this;
     }
 
-    public bool CanStartDrag(Corpse corpse, out string reason) // XXX \todo AI needs to learn how to drag corpses
+    public int CanStartStopDrag(Corpse corpse, out string reason) // XXX \todo AI needs to learn how to drag corpses, but this likely will go through
     {
-      reason = ReasonCantStartDrag(corpse);
-      return string.IsNullOrEmpty(reason);
+      var encode = ReasonCantStartStopDrag(corpse);
+      reason = encode.Value;
+      return encode.Key;
     }
-
-#if DEAD_FUNC
-    public bool CanStartDrag(Corpse corpse)
-    {
-      return string.IsNullOrEmpty(ReasonCantStartDrag(corpse));
-    }
-#endif
-
-    private string ReasonCantStopDrag(Corpse corpse)
-    {
-      if (this != corpse.DraggedBy) return "not dragging this corpse";
-      return "";
-    }
-
-    public bool CanStopDrag(Corpse corpse, out string reason) // XXX \todo AI needs to learn how to drag corpses
-    {
-      reason = ReasonCantStopDrag(corpse);
-      return string.IsNullOrEmpty(reason);
-    }
-
-#if DEAD_FUNC
-    public bool CanStopDrag(Corpse corpse)
-    {
-      return string.IsNullOrEmpty(ReasonCantStopDrag(corpse));
-    }
-#endif
 
     public int ScaleMedicineEffect(int baseEffect)
     {
       return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
     }
-
 
     private string ReasonCantRevive(Corpse corpse)
     {
