@@ -249,7 +249,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RepairLoad()
     {
-      foreach(var a in m_ActorsList) a.Controller.RepairLoad();
+      foreach(var a in m_ActorsList) a.RepairLoad();
       foreach(var x in m_MapObjectsByPosition) x.Value.RepairLoad(this, x.Key);
     }
 

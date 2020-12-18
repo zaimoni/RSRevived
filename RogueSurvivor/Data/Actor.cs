@@ -142,8 +142,7 @@ namespace djack.RogueSurvivor.Data
     private int m_ActionPoints;
     private Actor? m_TargetActor;
     private int m_AudioRangeMod;
-    private Actor? m_Leader;              // leadership fields are AI-specific (ObjectiveAI and dogs).  Backpointer
-    private List<Actor>? m_Followers;
+    private List<Actor>? m_Followers; // leadership fields are AI-specific (ObjectiveAI and dogs).
     private int m_TrustInLeader;
     private Dictionary<Actor,int>? m_TrustDict;
     private int m_KillsCount;
@@ -153,12 +152,13 @@ namespace djack.RogueSurvivor.Data
     private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
+
     static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
+    [NonSerialized] private Actor? m_Leader;              // Backpointer
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
     [NonSerialized] private Defence m_CurrentDefence;    // dataflow candidate
     [NonSerialized] private bool _has_to_eat;
-    [NonSerialized] private string[]? _force_PC_names = null;
 
     public ActorModel Model
     {
@@ -631,6 +631,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    [NonSerialized] private string[]? _force_PC_names = null; // only used below
     public void CommandLinePlayer() // would prefer private
     {
       // command-line option override
@@ -722,6 +723,12 @@ namespace djack.RogueSurvivor.Data
       // If the controller is null, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
       if (null == m_Controller) Controller = Model.InstanciateController(this);
+    }
+
+    public void RepairLoad()
+    {
+      Controller.RepairLoad();
+      if (null != m_Followers) foreach(var fo in m_Followers) fo.m_Leader = this;
     }
 #nullable restore
 
