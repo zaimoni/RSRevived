@@ -19,7 +19,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class Session : ISerializable
+  internal class Session : ISerializable,IDeserializationCallback
   {
     public static int COMMAND_LINE_SEED;
     public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Engine
       m_Scoring_fatality = null;
     }
 
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    void IDeserializationCallback.OnDeserialization(object sender)
     {
       RogueGame.AfterLoad();
     }
