@@ -2741,7 +2741,7 @@ retry:
           Actor a = GetActorAt(pt);
           if (null!=a && !a.IsDead) {
             string p_txt = '('+a.Location.Position.X.ToString()+','+ a.Location.Position.Y.ToString()+')';
-            string a_str = a.Faction.ID.ToString(); // default to the faction numeral
+            string a_str = ((int)a.Faction.ID).ToString(); // default to the faction numeral
             string pos_css = "";
             if (a.Controller is PlayerController) {
               a_str = "@";

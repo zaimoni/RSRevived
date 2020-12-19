@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Engine
     public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
     private static bool s_IsLoading = false;
+    [NonSerialized] private static Map.ActorCode s_Player;
 
     [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
     private Scoring m_Scoring;
@@ -32,9 +33,9 @@ namespace djack.RogueSurvivor.Engine
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
     public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
 
-    [NonSerialized] private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
-
+    private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
     static public int Seed { get { return s_seed; } }
+
     public World World { get; private set; }
     public UniqueActors UniqueActors { get; private set; }
     public UniqueItems UniqueItems { get; private set; }
@@ -90,7 +91,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerController.Load(info,context);
       // end load other classes' static variables
       World = (World) info.GetValue("World",typeof(World));
-      RogueGame.Load(info, context);
+      info.read_s(ref s_Player, "s_Player");
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
@@ -130,7 +131,7 @@ namespace djack.RogueSurvivor.Engine
 
     void IDeserializationCallback.OnDeserialization(object sender)
     {
-      RogueGame.AfterLoad();
+      RogueGame.AfterLoad(s_Player);
     }
 #endregion
 
@@ -456,8 +457,8 @@ namespace djack.RogueSurvivor.Engine
     public enum SaveFormat
     {
       FORMAT_BIN,
-      FORMAT_SOAP,
-      FORMAT_XML,
+      FORMAT_SOAP, // dropped from .NET Core
+      FORMAT_XML,  // incompatible with access control
     }
   }
 }

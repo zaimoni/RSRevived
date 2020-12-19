@@ -369,19 +369,15 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #region Session save/load assistants
-    static public void Load(SerializationInfo info, StreamingContext context)
+    static public void AfterLoad(Map.ActorCode src)
     {
-      info.read(ref m_Player, "m_Player");
-    }
-
-    static public void AfterLoad()
-    {
+      m_Player = Map.decode(src);
       m_MapView = m_Player.Location.View;
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
     {
-      info.AddValue("m_Player",Player,typeof(Actor));
+      info.AddValue("s_Player",Map.encode(Player));
     }
 
     static public void Reset()  // very severe access control issue...should be called only from Session::Reset()

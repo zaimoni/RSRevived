@@ -165,13 +165,13 @@ namespace djack.RogueSurvivor.Data
       return new MapCode(m.District.WorldPosition, (short)code);
     }
 
+    // should work if called at or after IDeserializationCallback.OnDeserialization for World
     public static Map decode(MapCode src) {
       var d = World.Get.At(src.Key);
       if (null == d) throw new ArgumentNullException(nameof(d));
       if (0 > src.Value || d.m_Maps.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
       return d.m_Maps[src.Value];
     }
-
 #nullable restore
 
     /// <returns>positive: cross-district viewing
