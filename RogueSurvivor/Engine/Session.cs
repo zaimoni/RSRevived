@@ -83,10 +83,12 @@ namespace djack.RogueSurvivor.Engine
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
+      // load other classes' static variables
       ActorModel.Load(info,context);
       Actor.Load(info,context);
       Rules.Get.Load(info,context);
       PlayerController.Load(info,context);
+      // end load other classes' static variables
       World = (World) info.GetValue("World",typeof(World));
       RogueGame.Load(info, context);
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
