@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public static Map decode(MapCode src) {
-      var d = Engine.Session.Get.World.At(src.Key);
+      var d = World.Get.At(src.Key);
       if (null == d) throw new ArgumentNullException(nameof(d));
       if (0 > src.Value || d.m_Maps.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
       return d.m_Maps[src.Value];

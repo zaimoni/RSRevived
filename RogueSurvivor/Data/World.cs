@@ -27,6 +27,9 @@ namespace djack.RogueSurvivor.Data
     private const int WEATHER_MIN_DURATION = 1 * WorldTime.TURNS_PER_HOUR;
     private const int WEATHER_MAX_DURATION = 3 * WorldTime.TURNS_PER_DAY;
 
+    private static World? s_Recent = null; // most recently constructed World; our owner Session is a Singleton
+    public static World Get { get { return s_Recent ?? throw new ArgumentNullException(nameof(s_Recent)); } }
+
     // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
     static public readonly Point CHAR_City_Origin = new Point(0,0);
     [NonSerialized] private Rectangle m_CHAR_City;
@@ -186,11 +189,13 @@ namespace djack.RogueSurvivor.Data
       m_Ready = new Queue<District>(size*size);
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+      s_Recent = this;
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+      s_Recent = this;
     }
 
     public void RepairLoad()
