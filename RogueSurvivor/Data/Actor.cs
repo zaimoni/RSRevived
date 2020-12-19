@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data
     }
 
   [Serializable]
-  internal class Actor : IEquatable<Actor>
+  internal class Actor : IEquatable<Actor>, IDeserializationCallback
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -723,10 +723,14 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
+    void IDeserializationCallback.OnDeserialization(object sender)
+    {
+      if (null != m_Followers) foreach(var fo in m_Followers) fo.m_Leader = this;
+    }
+
     public void RepairLoad()
     {
       Controller.RepairLoad();
-      if (null != m_Followers) foreach(var fo in m_Followers) fo.m_Leader = this;
     }
 #nullable restore
 
