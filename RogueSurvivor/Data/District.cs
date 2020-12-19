@@ -146,26 +146,37 @@ namespace djack.RogueSurvivor.Data
       AddMap(map);
     }
 
-#if DEAD_FUNC
-    public Map GetMap(int index)
-    {
-      return m_Maps[index];
-    }
-#endif
-
     protected void RemoveMap(Map map) { m_Maps.Remove(map); }
+
+    [Serializable]
+    public struct MapCode {
+        public readonly Point Key;
+        public readonly short Value;
+
+        public MapCode(Point k, short v) {
+            Key = k;
+            Value = v;
+        }
+    }
+
+    public static MapCode encode(Map m) {
+      var code = m.District.m_Maps.IndexOf(m);
+      if (0 > code) throw new InvalidOperationException("map unknown by its district");
+      return new MapCode(m.District.WorldPosition, (short)code);
+    }
+
+    public static Map decode(MapCode src) {
+      var d = Engine.Session.Get.World.At(src.Key);
+      if (null == d) throw new ArgumentNullException(nameof(d));
+      if (0 > src.Value || d.m_Maps.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
+      return d.m_Maps[src.Value];
+    }
+
 #nullable restore
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="m"></param>
     /// <returns>positive: cross-district viewing
     /// zero: not at all
-    /// negative: large map that doesn't actually go cross-district</returns>
-    // positive return codes are cross-district viewing
-    // zero is "not at all"
-    // negative values are "large maps, but no going off edges" (maps close to police radio radius e.g. CHAR Undergound base)
+    /// negative: large map that doesn't actually go cross-district i.e. "no going off edges", e.g CHAR Underground base</returns>
     private int CrossDistrictView_code(Map m)
     {
       if (m==m_EntryMap) return 1;
