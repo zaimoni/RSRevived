@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -241,7 +242,7 @@ namespace djack.RogueSurvivor.Data
     public void DaimonMap()
     {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
-      Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
+      OutTextFile dest = new OutTextFile(Path.Combine(SetupConfig.DirPath, "daimon_map.html"));
 
       // initiate HTML page so we can style things properly
       dest.WriteLine("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");

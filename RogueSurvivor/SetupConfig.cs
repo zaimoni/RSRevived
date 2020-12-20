@@ -15,31 +15,17 @@ namespace djack.RogueSurvivor
     public const string GAME_NAME_CAPS = "ROGUE SURVIVOR REVIVED";
     public const string GAME_VERSION = "0.10.0 unstable";
 
-    public static SetupConfig.eVideo Video { get; set; }
+    public static eVideo Video { get; set; }
+    public static eSound Sound { get; set; }
 
-    public static SetupConfig.eSound Sound { get; set; }
-
-    public static string DirPath
-    {
-      get
-      {
-        return Environment.CurrentDirectory + "\\Config\\";
-      }
-    }
-
-    private static string FilePath
-    {
-      get
-      {
-        return SetupConfig.DirPath + "\\setup.dat";
-      }
-    }
+    public static string DirPath { get { return Path.Combine(Environment.CurrentDirectory, "Config") + Path.DirectorySeparatorChar; } }
+    private static string FilePath { get { return Path.Combine(DirPath, "setup.dat"); } }
 
     public static void Save()
     {
-      using var text = File.CreateText(SetupConfig.FilePath);
-      text.WriteLine(SetupConfig.toString(SetupConfig.Video));
-      text.WriteLine(SetupConfig.toString(SetupConfig.Sound));
+      using var text = File.CreateText(FilePath);
+      text.WriteLine(toString(Video));
+      text.WriteLine(toString(Sound));
     }
 
     public static void Load()
@@ -47,41 +33,33 @@ namespace djack.RogueSurvivor
       var path = FilePath;
       if (File.Exists(path)) {
         using var streamReader = File.OpenText(path);
-        SetupConfig.Video = SetupConfig.toVideo(streamReader.ReadLine());
-        SetupConfig.Sound = SetupConfig.toSound(streamReader.ReadLine());
+        Video = toVideo(streamReader.ReadLine());
+        Sound = toSound(streamReader.ReadLine());
       } else {
         path = DirPath;
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        SetupConfig.Video = SetupConfig.eVideo.VIDEO_GDI_PLUS;
-        SetupConfig.Sound = SetupConfig.eSound.SOUND_NOSOUND;
-        SetupConfig.Save();
+        Video = eVideo.VIDEO_GDI_PLUS;
+        Sound = eSound.SOUND_NOSOUND;
+        Save();
       }
     }
 
-    public static string toString(SetupConfig.eVideo v)
-    {
-      return v.ToString();
-    }
+    public static string toString(eVideo v) { return v.ToString(); }
+    public static string toString(eSound s) { return s.ToString(); }
 
-    public static string toString(SetupConfig.eSound s)
-    {
-      return s.ToString();
-    }
-
-    public static SetupConfig.eVideo toVideo(string s)
+    public static eVideo toVideo(string s)
     {
 //      if (s == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX.ToString())
 //        return SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
-      return s == SetupConfig.eVideo.VIDEO_GDI_PLUS.ToString() ? SetupConfig.eVideo.VIDEO_GDI_PLUS : SetupConfig.eVideo.VIDEO_INVALID;
+      return s == eVideo.VIDEO_GDI_PLUS.ToString() ? eVideo.VIDEO_GDI_PLUS : eVideo.VIDEO_INVALID;
     }
 
     public static SetupConfig.eSound toSound(string s)
     {
 //      if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
 //        return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
-      if (s == SetupConfig.eSound.SOUND_WAV.ToString())
-        return SetupConfig.eSound.SOUND_WAV;
-      return s == SetupConfig.eSound.SOUND_NOSOUND.ToString() ? SetupConfig.eSound.SOUND_NOSOUND : SetupConfig.eSound.SOUND_INVALID;
+      if (s == eSound.SOUND_WAV.ToString()) return eSound.SOUND_WAV;
+      return s == eSound.SOUND_NOSOUND.ToString() ? eSound.SOUND_NOSOUND : eSound.SOUND_INVALID;
     }
 
     public enum eVideo

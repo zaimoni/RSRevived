@@ -12065,7 +12065,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      s_KeyBindings = Keybindings.Load(GetUserConfigPath() + "keys.dat");
+      s_KeyBindings = Keybindings.Load(Path.Combine(GetUserConfigPath(), "keys.dat"));
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -12076,7 +12076,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      Keybindings.Save(s_KeyBindings, GetUserConfigPath() + "keys.dat");
+      Keybindings.Save(s_KeyBindings, Path.Combine(GetUserConfigPath(), "keys.dat"));
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -12087,7 +12087,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      s_Hints = GameHintsStatus.Load(GetUserConfigPath() + "hints.dat");
+      s_Hints = GameHintsStatus.Load(Path.Combine(GetUserConfigPath(), "hints.dat"));
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
@@ -12095,7 +12095,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void SaveHints()
     {
-      GameHintsStatus.Save(s_Hints, GetUserConfigPath() + "hints.dat");
+      GameHintsStatus.Save(s_Hints, Path.Combine(GetUserConfigPath(), "hints.dat"));
     }
 
     private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
@@ -12134,20 +12134,22 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public static string GetUserBasePath() { return SetupConfig.DirPath; }
-    public static string GetUserSavesPath() { return GetUserBasePath() + "Saves\\"; }
-    public static string GetUserSave() { return GetUserSavesPath() + "save.dat"; }
+    public static string GetUserSavesPath() { return Path.Combine(GetUserBasePath(), "Saves"); }
+    public static string GetUserSave() { return Path.Combine(GetUserSavesPath(), "save.dat"); }
 
     public static string GetUserSaveBackup()
     {
+      return Path.Combine(GetUserSavesPath(),
 #if DEBUG
-      return GetUserSavesPath() + "save." + Session.Get.WorldTime.TurnCounter.ToString();
+          "save." + Session.Get.WorldTime.TurnCounter.ToString()
 #else
-      return GetUserSavesPath() + "save.bak";
+          "save.bak"
 #endif
+      );
     }
 
-    public static string GetUserDocsPath() { return GetUserBasePath() + "Docs\\"; }
-    public static string GetUserGraveyardPath() { return GetUserBasePath() + "Graveyard\\"; }
+    public static string GetUserDocsPath() { return Path.Combine(GetUserBasePath(), "Docs") + Path.DirectorySeparatorChar; }
+    public static string GetUserGraveyardPath() { return Path.Combine(GetUserBasePath(), "Graveyard") + Path.DirectorySeparatorChar; }
 
     static private string GetUserNewGraveyardName()
     {
@@ -12159,10 +12161,10 @@ namespace djack.RogueSurvivor.Engine
       return graveName;
     }
 
-    public static string GraveFilePath(string graveName) { return GetUserGraveyardPath() + graveName + ".txt"; }
-    public static string GetUserConfigPath() { return GetUserBasePath() + "Config\\"; }
-    public static string GetUserOptionsFilePath() { return GetUserConfigPath() + "options.dat"; }
-    public static string GetUserScreenshotsPath() { return GetUserBasePath() + "Screenshots\\"; }
+    public static string GraveFilePath(string graveName) { return Path.Combine(GetUserGraveyardPath(), graveName + ".txt"); }
+    public static string GetUserConfigPath() { return Path.Combine(GetUserBasePath(), "Config") + Path.DirectorySeparatorChar; }
+    public static string GetUserOptionsFilePath() { return Path.Combine(GetUserConfigPath(), "options.dat"); }
+    public static string GetUserScreenshotsPath() { return Path.Combine(GetUserBasePath(), "Screenshots") + Path.DirectorySeparatorChar; }
 
     public string GetUserNewScreenshotName()
     {
@@ -12178,7 +12180,7 @@ namespace djack.RogueSurvivor.Engine
       return shotname;
     }
 
-    public string ScreenshotFilePath(string shotname) { return GetUserScreenshotsPath() + shotname + "." + m_UI.UI_ScreenshotExtension(); }
+    public string ScreenshotFilePath(string shotname) { return Path.Combine(GetUserScreenshotsPath(), shotname + "." + m_UI.UI_ScreenshotExtension()); }
 
     private static bool CreateDirectory(string path)
     {
@@ -12209,25 +12211,23 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool CheckCopyOfManual()
     {
-      const string str1 = "Resources\\Manual\\";
-      string userDocsPath = GetUserDocsPath();
-      const string str2 = "RS Manual.txt";
+      string manualDest = Path.Combine(GetUserDocsPath(), _manualFile);
       bool flag = false;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual...");
-      if (!File.Exists(userDocsPath + _manualFile)) {
+      if (!File.Exists(manualDest)) {
         Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual...");
         flag = true;
-        File.Copy(str1 + str2, userDocsPath + _manualFile);
+        File.Copy(Path.Combine("Resources", "Manual", _manualFile), manualDest);
         Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual... done!");
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual... done!");
       return flag;
     }
 
-    static private string GetUserManualFilePath() { return GetUserDocsPath() + _manualFile; }
+    static private string GetUserManualFilePath() { return Path.Combine(GetUserDocsPath(), _manualFile); }
     static private string GetUserHiScorePath() { return GetUserSavesPath(); }
-    static private string GetUserHiScoreFilePath() { return GetUserHiScorePath() + "hiscores.dat"; }
-    static private string GetUserHiScoreTextFilePath() { return GetUserHiScorePath() + "hiscores.txt"; }
+    static private string GetUserHiScoreFilePath() { return Path.Combine(GetUserHiScorePath(), "hiscores.dat"); }
+    static private string GetUserHiScoreTextFilePath() { return Path.Combine(GetUserHiScorePath(), "hiscores.txt"); }
 
     private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content
     {
@@ -13562,7 +13562,7 @@ retry:
 
     private void LoadDataSkills()
     {
-      Skills.LoadSkillsFromCSV(m_UI, "Resources\\Data\\Skills.csv");
+      Skills.LoadSkillsFromCSV(m_UI, Path.Combine("Resources", "Data", "Skills.csv"));
     }
 
     // alpha10

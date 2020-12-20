@@ -542,19 +542,20 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (null == ui) throw new ArgumentNullException(nameof(ui));
 #endif
-      var med_data = LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
-      var food_data = LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
-      var melee_data = LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
-      var ranged_data = LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
-      var exp_data = LoadExplosivesFromCSV(ui, "Resources\\Data\\Items_Explosives.csv");
-      var bar_data = LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
-      var armor_data = LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
-      var tracker_data = LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
-      var spray_data = LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
-      var light_data = LoadLightsFromCSV(ui, "Resources\\Data\\Items_Lights.csv");
-      var scent_data = LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
-      var trap_data = LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
-      var ent_data = LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
+      var dataDir = Path.Combine("Resources", "Data") + Path.DirectorySeparatorChar;
+      var med_data = LoadMedicineFromCSV(ui, dataDir + "Items_Medicine.csv");
+      var food_data = LoadFoodFromCSV(ui, dataDir + "Items_Food.csv");
+      var melee_data = LoadMeleeWeaponsFromCSV(ui, dataDir + "Items_MeleeWeapons.csv");
+      var ranged_data = LoadRangedWeaponsFromCSV(ui, dataDir + "Items_RangedWeapons.csv");
+      var exp_data = LoadExplosivesFromCSV(ui, dataDir + "Items_Explosives.csv");
+      var bar_data = LoadBarricadingMaterialFromCSV(ui, dataDir + "Items_Barricading.csv");
+      var armor_data = LoadArmorsFromCSV(ui, dataDir + "Items_Armors.csv");
+      var tracker_data = LoadTrackersFromCSV(ui, dataDir + "Items_Trackers.csv");
+      var spray_data = LoadSpraypaintsFromCSV(ui, dataDir + "Items_Spraypaints.csv");
+      var light_data = LoadLightsFromCSV(ui, dataDir + "Items_Lights.csv");
+      var scent_data = LoadScentspraysFromCSV(ui, dataDir + "Items_Scentsprays.csv");
+      var trap_data = LoadTrapsFromCSV(ui, dataDir + "Items_Traps.csv");
+      var ent_data = LoadEntertainmentFromCSV(ui, dataDir + "Items_Entertainment.csv");
       CreateModels(med_data, food_data, melee_data, ranged_data, exp_data, bar_data, armor_data, tracker_data, spray_data, light_data, scent_data, trap_data, ent_data);
     }
 

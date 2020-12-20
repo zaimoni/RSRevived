@@ -80,9 +80,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-#if LINUX
-        filepath = filepath.Replace("\\", "/");
-#endif
 	    hiScoreTable = filepath.BinaryDeserialize<HiScoreTable>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");

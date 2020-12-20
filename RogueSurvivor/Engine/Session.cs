@@ -218,9 +218,6 @@ namespace djack.RogueSurvivor.Engine
       session.World._RejectInventoryDamage(errors);
       if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
 #endif
-#if LINUX
-      filename = filename.Replace("\\", "/");
-#endif
       switch (format) {
         case SaveFormat.FORMAT_BIN:
           SaveBin(session, filepath);
@@ -247,9 +244,6 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-#if LINUX
-      filepath = filepath.Replace("\\", "/");
 #endif
       switch (format) {
         case SaveFormat.FORMAT_BIN: return LoadBin(filepath);

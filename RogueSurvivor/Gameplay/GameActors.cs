@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Gameplay
     static public ActorModel JasonMyers { get { return m_Models[(int) IDs.JASON_MYERS]; } }
 
     public static void Init(IRogueUI ui) {
-      LoadFromCSV(ui, "Resources\\Data\\Actors.csv");
+      LoadFromCSV(ui, Path.Combine("Resources", "Data", "Actors.csv"));
     }
 #nullable restore
 
