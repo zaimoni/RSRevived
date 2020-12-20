@@ -15,6 +15,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.UI
 {

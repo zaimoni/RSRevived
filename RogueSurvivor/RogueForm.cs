@@ -14,6 +14,8 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms; // causes lock-in to System.Drawing
+using Zaimoni.Data;
+
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
@@ -324,7 +326,7 @@ namespace djack.RogueSurvivor
     }
 
     // This arguably should be in the IGameCanvas API, but looks like a live context is needed to avoid empirical corrections
-    private Size Measure(string src, Font font)
+    static private Size Measure(string src, Font font)
     {
       Size ret = TextRenderer.MeasureText(src, font);
       ret.Width -= src.Length; // XXX empirical correction

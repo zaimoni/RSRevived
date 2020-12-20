@@ -7,6 +7,7 @@
 using System;
 using System.Media;
 using System.Collections.Generic;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {

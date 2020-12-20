@@ -7,6 +7,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Forms;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor
 {
@@ -61,7 +62,6 @@ namespace djack.RogueSurvivor
         }
       }
 
-      Logger.CreateFile();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "starting program...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, string.Format("date : {0}.", (object) DateTime.Now.ToString()));
       Logger.WriteLine(Logger.Stage.INIT_MAIN, string.Format("game version : {0}.", (object) SetupConfig.GAME_VERSION));

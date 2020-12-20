@@ -77,12 +77,12 @@
     <Compile Include="Gameplay\AI\ObjectiveAI.cs" />
     <Compile Include="Gameplay\AI\Tools\MinStepPath.cs" />
     <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
+    <Compile Include="Logger_mock.cs" />
     <Compile Include="RogueForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SetupConfig.cs" />
     <Compile Include="Bugreport.cs" />
     <Compile Include="PointExtensions.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Data\ActorController.cs" />
     <Compile Include="Data\ItemModel.cs" />
     <Compile Include="Data\ActorAction.cs" />
@@ -281,6 +281,7 @@
     <Compile Include="Zaimoni\Data\FileExt.cs" />
     <Compile Include="Zaimoni\Data\FloodfillPathfinder.cs" />
     <Compile Include="Zaimoni\Data\LangExt.cs" />
+    <Compile Include="Zaimoni\Data\Logger.cs" />
     <Compile Include="Zaimoni\Data\NonSerializedCache.cs" />
     <Compile Include="Zaimoni\Data\Observer.cs" />
     <Compile Include="Zaimoni\Data\Operator.cs" />
