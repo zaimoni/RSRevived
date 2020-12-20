@@ -472,8 +472,7 @@ namespace djack.RogueSurvivor.Data
         return true;
       case "Brace for pushing car in place":
         {
-        ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) as ItemMedicine);
-        if (null == stim) return false; // actually invariant failure
+        if (!(m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) is ItemMedicine stim)) return false; // actually invariant failure
         int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
         // currently all wrecked cars have weight 100
         if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour

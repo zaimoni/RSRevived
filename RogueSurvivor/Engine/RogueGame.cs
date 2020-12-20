@@ -191,8 +191,8 @@ namespace djack.RogueSurvivor.Engine
     private bool m_IsGameRunning = true;
     private readonly List<Overlay> m_Overlays = new List<Overlay>();
     private readonly object m_SimMutex = new object();  // 2018-08-20: almost dead
-    readonly Object m_SimStateLock = new Object(); // alpha10 lock when reading sim thread state flags
-    CancellationTokenSource? m_CancelSource = null; // migration of alpha10 sim thread state to .NET 5.0
+    private readonly object m_SimStateLock = new object(); // alpha10 lock when reading sim thread state flags
+    private CancellationTokenSource? m_CancelSource = null; // migration of alpha10 sim thread state to .NET 5.0
 
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
@@ -7823,9 +7823,8 @@ namespace djack.RogueSurvivor.Engine
         bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
         var msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_NORMAL_COLOR);
         var officer_msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR);
-        aggressor.MessageAllInDistrictByRadio(npc => {
-            target.RecordAggression(npc);
-        }, npc => {
+        aggressor.MessageAllInDistrictByRadio(npc => target.RecordAggression(npc),
+        npc => {
             if (npc == aggressor) return false;
             if (npc == target) return false;
             if (!npc.Model.Abilities.IsLawEnforcer) return false;
@@ -7932,9 +7931,8 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
 
-      MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => {
-        (a.Controller as PlayerController).AddMessagesForceRead(player_msgs);
-      }, a => {
+      MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => (a.Controller as PlayerController).AddMessagesForceRead(player_msgs),
+      a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
@@ -7965,9 +7963,8 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
-      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => {
-        (a.Controller as PlayerController).AddMessagesForceRead(player_msgs);
-      }, a => {
+      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => (a.Controller as PlayerController).AddMessagesForceRead(player_msgs),
+      a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
@@ -9864,11 +9861,7 @@ namespace djack.RogueSurvivor.Engine
             // also need to consider background thread to main thread issues
             // possible verbs: killed, terminated, erased, downed, wasted.
             var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
-            killer.MessageAllInDistrictByRadio(NOP, FALSE, a => {
-              AddMessage(msg);
-            }, a => {
-              (a.Controller as PlayerController).DeferMessage(msg);
-            }, TRUE);
+            killer.MessageAllInDistrictByRadio(NOP, FALSE, a => AddMessage(msg), a => (a.Controller as PlayerController).DeferMessage(msg), TRUE);
           }
         }
 
@@ -11301,7 +11294,7 @@ namespace djack.RogueSurvivor.Engine
               m_UI.UI_DrawImage(imageID, MINIMAP_X + delta.X - 1, MINIMAP_Y + delta.Y - 1);
             }
         },
-        pt => { return Player.Controller.IsKnown(new Location(map, pt)); });
+        pt => Player.Controller.IsKnown(new Location(map, pt)));
       }
       if (!Player.IsSleeping) {
         // if we see an ally, we should be able to "read off body language" who they are aiming at 2020-09-11 zaimoni
@@ -12488,13 +12481,12 @@ namespace djack.RogueSurvivor.Engine
           var zonesAt1 = entryMap.GetZonesAt(player.Location.Position);
           if (null == zonesAt1) continue;
           Zone zone = zonesAt1[0];
-          entryMap.Rect.DoForEach((pt => {
-            player.Controller.ForceKnown(pt);
-          }), (pt => {
+          entryMap.Rect.DoForEach(pt => player.Controller.ForceKnown(pt),
+          pt => {
             if (!entryMap.IsInsideAt(pt)) return true;
             List<Zone> zonesAt2 = entryMap.GetZonesAt(pt);
             return zonesAt2 != null && zonesAt2[0] == zone;
-          }));
+          });
         }
       }
 #if PRERELEASE_MOTHBALL
