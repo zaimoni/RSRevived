@@ -547,7 +547,7 @@ restart:
 #region 8. Items.
       Item sewers_stock() {
           return PostprocessQuantity(GameItems.From(sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))).create());
-      };
+      }
       sewers.Rect.DoForEach(pt => {
         sewers.DropItemAt(sewers_stock(), in pt);
       },pt => { 
@@ -2079,8 +2079,8 @@ restart:
         if (!map.HasMapObjectAt(pt)) return;
         map.SetTileModelAt(pt, floor);
       });
-      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, in pt) && !map.AnyAdjacent<DoorWindow>(pt); };
-      MapObject make_door_window(Point pt) { return ((!map.IsInsideAt(pt) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
+      bool door_window_ok(Point pt) { return !map.HasMapObjectAt(pt) && IsAccessible(map, in pt) && !map.AnyAdjacent<DoorWindow>(pt); }
+      MapObject make_door_window(Point pt) { return ((!map.IsInsideAt(pt) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); }
 
       foreach(var dir in Direction.COMPASS_4) PlaceIf(map, roomRect.Anchor((Compass.XCOMlike)dir.Index), floor, door_window_ok, make_door_window);
     }
@@ -2791,7 +2791,7 @@ restart:
         }
       }
 
-      bool actor_ok_here(Point pt) { return !underground.HasExitAt(in pt); };
+      bool actor_ok_here(Point pt) { return !underground.HasExitAt(in pt); }
 
       int width = underground.Width;
       for (int index1 = 0; index1 < width; ++index1) {
@@ -2998,9 +2998,7 @@ restart:
       if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
 
-      Item stock_armory() {
-        return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create();
-      };
+      Item stock_armory() { return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create(); }
 
       foreach (Rectangle rect2 in list) {
         Rectangle rect3 = new Rectangle(rect2.Location+Direction.SE, rect2.Size+2*Direction.NW);
@@ -3121,23 +3119,23 @@ restart:
 
       static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
-        Actor awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        Actor awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+pistol
-        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+shotgun
-        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // backup weapons
-        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN));
+        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN));
         if (null != awesome) return awesome;
 
         // pistol
-        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL));
+        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL));
         if (null != awesome) return awesome;
 
         // shotgun
@@ -3167,7 +3165,7 @@ restart:
         leaders.RemoveAt(1);
         map.MoveActorToFirstPosition(followers[1]);
         map.MoveActorToFirstPosition(followers[0]);
-        map.MoveActorToFirstPosition(leaders[0]);        
+        map.MoveActorToFirstPosition(leaders[0]);
         leaders[0].AddFollower(followers[0]);
         leaders[0].AddFollower(followers[1]);
 
@@ -3544,7 +3542,7 @@ restart:
           default: return GameItems.BOOK.create();
 #endif
         }
-      };
+      }
 
       if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), in pt);
       Direction wardrobe_dir = isFacingEast ? Direction.NW : Direction.NE;
@@ -3608,7 +3606,7 @@ restart:
           default: return MakeRandomShopItem((ShopType)choice);
 #endif
          }
-      };
+      }
 
       actor.Inventory.AddAll(equip_this());
     }
@@ -3706,7 +3704,7 @@ restart:
       Actor actor;
       if (Session.Get.HasAllZombies) {
         int num = m_DiceRoller.Roll(0, 100);
-        actor = (num < RogueGame.Options.SpawnSkeletonChance ? GameActors.Skeleton 
+        actor = (num < RogueGame.Options.SpawnSkeletonChance ? GameActors.Skeleton
               : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? GameActors.Zombie
               : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? GameActors.ZombieMaster
               : GameActors.Skeleton))).CreateNumberedName(GameFactions.TheUndeads, spawnTime);

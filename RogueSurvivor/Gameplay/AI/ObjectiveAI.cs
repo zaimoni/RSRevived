@@ -251,8 +251,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
 
-    public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.FirstOrDefault(o => o is T goal && test(goal)) as T;}
-    public T Goal<T>() where T:Objective { return Objectives.FirstOrDefault(o => o is T) as T;}
+    public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.Find(o => o is T goal && test(goal)) as T;}
+    public T Goal<T>() where T:Objective { return Objectives.Find(o => o is T) as T;}
 
     // thin wrapper for when the key logic is elsewhere; we still prefer central-logic specializations)
     public void SetObjective(Objective src) {
@@ -972,7 +972,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _sparse.Set(SparseData.ClearingZone,ret);
           return ret;
         }
-      };
+      }
       return null;
     }
 #endregion
@@ -1072,7 +1072,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       act = BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
       if (null != old_goals) {
         var now_goals = GetPreviousGoals();
-        if (null!=now_goals && old_goals.Count < now_goals.Count && !old_goals.Any(goal => !now_goals.Contains(goal))) {
+        if (null!=now_goals && old_goals.Count < now_goals.Count && old_goals.All(goal => now_goals.Contains(goal))) {
           // proper subset: plausible object constancy issue
           var act2 = BehaviorPathTo(old_goals);
           _caller = CallChain.NONE;
@@ -1749,7 +1749,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmp2.IntersectWith(tainted);
           taint_exposed[loc.Key] = tmp2.Count;
         }
-        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt.Key]).Max();
+        int max_taint_exposed = dests.Max(pt=>taint_exposed[pt.Key]);
         dests.OnlyIf(loc=>taint_exposed[loc]==max_taint_exposed);
         return dests;
     }
@@ -3181,7 +3181,7 @@ Restart:
         if (1 >= m.destination_maps.Get.Count) return true;
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
           if (District.UsesCrossDistrictView(m) != District.UsesCrossDistrictView(m_Actor.Location.Map)) return true;
-        };
+        }
         if (m == m.District.EntryMap) return false; // surface map is always ok
         var unique_maps = Session.Get.UniqueMaps;
         if (   null != unique_maps.NavigateHospital(src)
@@ -3610,7 +3610,7 @@ restart:
 
           int exit_cost(in Point pt) {
             if (src.IsInBounds(pt)) return navigate.Cost(pt) + 1;
-            return pt.Adjacent().Where(pt2 => src.IsInBounds(pt2)).Select(pt2 => navigate.Cost(pt2) + 1).Min();
+            return pt.Adjacent().Where(pt2 => src.IsInBounds(pt2)).Min(pt2 => navigate.Cost(pt2) + 1);
           }
 
           src.ForEachExit((pt,e)=> {
@@ -5791,7 +5791,7 @@ restart_chokepoints:
       // least charged flashlight goes
       List<ItemLight> lights = inv.GetItemsByType<ItemLight>();
       if (null != lights && 2<=lights.Count) {
-        int min_batteries = lights.Select(obj => obj.Batteries).Min();
+        int min_batteries = lights.Min(obj => obj.Batteries);
         ItemLight discard = lights.Find(obj => obj.Batteries==min_batteries);
         return BehaviorDropItem(discard);
       }

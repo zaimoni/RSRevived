@@ -12,16 +12,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     // alpha10 new ai helper tool
     /// <summary>
     /// A very simple and restricted pathfinder that just checks if an actor ai can reach a tile.
-    /// Only explore tiles that are closer to the goal (mimicking baseai move routine BehaviorBumpToward) 
+    /// Only explore tiles that are closer to the goal (mimicking baseai move routine BehaviorBumpToward)
     /// and within a max distance from start.
-    /// 
+    ///
     /// Each BaseAI can should use an instance and allocate on demand.
-    /// 
+    ///
     /// Not serializable as it is not meant to be persistent!
-    /// 
+    ///
     /// Not a static tool class as it would be a nightmare to manage due threads (ais living in the sim thread).
     /// </summary>
-    /// <see cref="BaseAI.CanReachSimple(RogueGame, Point, RouteFinder.SpecialActions)"/>/// 
+    /// <see cref="BaseAI.CanReachSimple(RogueGame, Point, RouteFinder.SpecialActions)"/>
     /// <see cref="BaseAI.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
     class RouteFinder
     {
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             JUMP = (1 << 1),
 
             /// <summary>
-            ///  Allowed to to try push pushable objects
+            ///  Allowed to try push pushable objects
             /// </summary>
             PUSH = (1 << 2),
 
@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             /// <summary>
             /// Any tile adj to dest is a goal, not only the dest itself.
             /// Doens't need to check can move in the destination.
-            /// Eg of goals that dont need to move into the dest proper: 
+            /// Eg of goals that dont need to move into the dest proper:
             /// - getting item from a container
             /// - attacking an actor in melee
             /// - operating a generator
@@ -102,11 +102,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         #region Checking reachability
         /// <summary>
         /// Can the BaseAI expect to reach this destination by using its simple movement logic BehaviorBumpToward.
-        /// 
+        ///
         /// Will explore only tiles :
         /// - within maxDist distance of actor current position.
         /// - that are closer to the destination (mimicking what the ai behaviors do).
-        /// 
+        ///
         /// Limiting search space this way ensures that the algorithm :
         /// - isnt too slow for usage by lots of actors
         /// - only search tiles that can realistically be reached by the simple movement behaviors of the AI.

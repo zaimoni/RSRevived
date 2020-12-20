@@ -573,7 +573,7 @@ restart:
       if (null != m_SimDistrict) return m_SimDistrict;
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;
-        if (!m_Ready.Any(d => !d.RequiresUI)) return null;
+        if (m_Ready.All(d => d.RequiresUI)) return null;
         District? tmp = null;
         while((tmp = m_Ready.Dequeue()).RequiresUI) m_Ready.Enqueue(tmp);
         Interlocked.CompareExchange(ref m_SimDistrict, tmp, null);

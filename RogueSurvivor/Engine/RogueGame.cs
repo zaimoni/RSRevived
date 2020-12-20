@@ -1373,7 +1373,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           }
         }
-      };
+      }
       if (regen_table) {
         m_HiScoreTable = new HiScoreTable();
         m_HiScoreTable.Clear();
@@ -2475,7 +2475,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private int CountFoodItemsNutrition(Map map)
     {
-      int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
+      int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); }
 
       return map.SumOverAllInventory(inv => {
         var tmp = inv.GetItemsByType<ItemFood>();
@@ -3696,7 +3696,7 @@ namespace djack.RogueSurvivor.Engine
         tmp.Insert(0, "W)alk or R)un to the item class, or walk 1) to 9) steps.");
         ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         return false;
-      };
+      }
 
       PagedMenu("Reviewing...", item_classes.Count, label, details);
     }
@@ -3760,7 +3760,7 @@ namespace djack.RogueSurvivor.Engine
 
         ShowSpecialDialogue(Player,tmp.ToArray());
         return false;
-      };
+      }
 
       PagedPopup("Reviewing...", allies.Count, label, details);
     }
@@ -3769,7 +3769,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var options = new List<string> { "Status", "Enemies by aggression" };
 
-      string label(int index) { return options[index]; };
+      string label(int index) { return options[index]; }
       bool details(int index) {
         var display = new List<string>();
         switch(index)
@@ -3844,7 +3844,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ShowSpecialDialogue(Player,display.ToArray());
         return false;
-      };
+      }
 
       PagedMenu("Reviewing...", options.Count, label, details);
     }
@@ -5130,8 +5130,8 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]); };
-      bool details(int index) { return pc.InterpretSelfOrder(index, orders); };
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]); }
+      bool details(int index) { return pc.InterpretSelfOrder(index, orders); }
 
       PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
       return pc.AutoPilotIsOn;
@@ -5144,12 +5144,12 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      string label(int index) { return orders[index].ToString(); };
+      string label(int index) { return orders[index].ToString(); }
       bool details(int index) {
         var ret = YesNoPopup("Countermand '"+orders[index].ToString()+"'");
         if (ret) pc.Countermand(orders[index]);
         return ret;
-      };
+      }
 
       PagedPopup("Current self-orders", orders.Length, label, details);
     }
@@ -7904,7 +7904,7 @@ namespace djack.RogueSurvivor.Engine
         if (m.Height-1 <= p.Y) return false;
         if (exit_to_surface.Y-2 <=p.Y && exit_to_surface.Y + 2 >= p.Y) return false;
         return true;
-      };
+      }
       m.Rect.DoForEach(pt=>Session.Get.Police.Investigate.Record(m, in pt),
           pt => in_underground_base_room(pt));
 #endregion
@@ -8744,7 +8744,7 @@ namespace djack.RogueSurvivor.Engine
       { // offered item is not of perceived use
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", trade.Value.Key.TheName)));
         return;
-      };
+      }
 
       if (flag1)
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
@@ -8887,7 +8887,7 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) {
         ret = objList[index];
         return true;
-      };
+      }
 
       PagedMenu("Trading for ...", objList.Count, label, details);
       return ret;
@@ -8902,13 +8902,13 @@ namespace djack.RogueSurvivor.Engine
       List<Item> objList = speaker.Items.ToList(); // inventory has no mentality, trivialize
       if (objList == null || 0>=objList.Count) return null;
 
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); };
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
 
       Item? ret = null;
       bool details(int index) {
         ret = objList[index];
         return true;
-      };
+      }
 
       PagedMenu("Trading for ...", objList.Count, label, details);
       return ret;
@@ -8971,7 +8971,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ErrorPopup(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason));
         return false;
-      };
+      }
 
       PagedMenu("Taking...", inv.CountItems, label, details);
     }
@@ -9130,7 +9130,7 @@ namespace djack.RogueSurvivor.Engine
 #if FALSE_POSITIVE
         if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
-      };
+      }
       if (it.IsUseless) {
         DiscardItem(actor, it);
         if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DISCARD.Conjugate(actor), it));
@@ -9513,7 +9513,7 @@ namespace djack.RogueSurvivor.Engine
           if (TryActorLeaveTile(actor)) {
             t_loc.Place(actor);
             OnActorEnterTile(actor);
-          };
+          }
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, in toPos)) {
           AddMessage(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
@@ -9720,7 +9720,7 @@ namespace djack.RogueSurvivor.Engine
       // As in RS alpha 9.  Give a very high survival rate to ammo and food for balance, not so high for other items
       // appropriate for zombification and optimistic for explosions and crushing by gates
       default: return (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
-      };
+      }
     }
 #nullable restore
 
@@ -10659,7 +10659,7 @@ namespace djack.RogueSurvivor.Engine
                     mOverlay.Draw(m_UI);
                 }
                 m_UI.UI_Repaint();
-            };  // lock (m_UI)
+            }  // lock (m_UI)
     }
 
 #nullable enable
@@ -11824,7 +11824,7 @@ namespace djack.RogueSurvivor.Engine
             PanViewportTo(Player);
             return viewpoint;
           default: break;
-          };
+          }
           PlayerCommand command = InputTranslator.KeyToCommand(key);
           Location? tmp = null;
           switch (command) {
@@ -12747,7 +12747,7 @@ namespace djack.RogueSurvivor.Engine
           Name = "Simulation Thread"
         };
       }
-      lock (m_SimStateLock) { m_CancelSource = new CancellationTokenSource(); }; // alpha10
+      lock (m_SimStateLock) { m_CancelSource = new CancellationTokenSource(); } // alpha10
       m_SimThread.Start();
     }
 
@@ -12762,7 +12762,7 @@ namespace djack.RogueSurvivor.Engine
 
       // .NET 5.0: Thread::Abort() is unsupported
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
-      lock (m_SimStateLock) { m_CancelSource.Cancel(); };
+      lock (m_SimStateLock) { m_CancelSource.Cancel(); }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
 
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");

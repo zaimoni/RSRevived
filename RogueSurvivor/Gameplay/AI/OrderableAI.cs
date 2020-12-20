@@ -644,7 +644,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         loc = dest.Location+Direction.W;
         door = loc.MapObject as DoorWindow;
         if (null != door && door.IsBarricaded) backup_plan.Add(loc);
-        if (backup_plan.Any()) _alternates = backup_plan.ToArray();
+        if (0 < backup_plan.Count) _alternates = backup_plan.ToArray();
       }
 
       public DoorWindow? Target { get { return _dest.MapObject as DoorWindow; } }
@@ -714,7 +714,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (_dest.Map.IsWalkableFor(pt,m_Actor.Model)) {
             move_to.Add(pt);
             continue;
-          };
+          }
           Actor a = _dest.Map.GetActorAt(pt);
           if (null == a) continue;
           if (m_Actor.IsEnemyOf(a)) continue;   // XXX intelligent enemies might react, but that's handled in sound processing
@@ -1090,7 +1090,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           case RaidType.ARMY_SUPLLIES: return "a chopper hovering";
           default: throw new InvalidProgramException(string.Format("unhandled raidtype {0}", raid.ToString()));
         }
-      };
+      }
 
       _lastRaidHeard = new Percept(text(raid), location.Map.LocalTime.TurnCounter, in location);
     }
@@ -1284,7 +1284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
 
-      int best_range = available_ranged_weapons.Select(rw => rw.Model.Attack.Range).Max();
+      int best_range = available_ranged_weapons.Max(rw => rw.Model.Attack.Range);
       var en_in_range = FilterFireTargets(_enemies,best_range);
 
       // if no enemies in range, or just one available ranged weapon, use the best one
@@ -1440,7 +1440,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
-          Actor actor = en_in_range.First().Percepted;
+          Actor actor = en_in_range[0].Percepted;
           if (1 < available_ranged_weapons.Count) {
             tmpAction = Equip(best_weapons[actor]);
             if (null != tmpAction) return tmpAction;
@@ -1457,7 +1457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
           en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
-        Actor actor = en_in_range.First().Percepted;
+        Actor actor = en_in_range[0].Percepted;
         if (1 < available_ranged_weapons.Count) {
           tmpAction = Equip(best_weapons[actor]);
           if (null != tmpAction) return tmpAction;
@@ -1713,7 +1713,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
       bool need_waking(Actor a) {
         return a.IsSleeping && Rules.LOUD_NOISE_RADIUS >= Rules.GridDistance(a.Location, m_Actor.Location);
-      };
+      }
 
       if (m_Actor.HasLeader && need_waking(m_Actor.Leader)) return new ActionShout(m_Actor);
       foreach (var friend in friends) {
@@ -2796,11 +2796,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
         if (sprayIt.IsPerformable()) return sprayIt;  // should be tautological given above
       }
-
       }
 
       GetEquippedStenchKiller()?.UnequippedBy(m_Actor);
-
       return null;  // nope.
     }
 #endregion
@@ -3542,8 +3540,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != track_inv) {
         var dests = track_inv.Destinations;
         if (dests.Any()) {
-          if (dests.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() > dests.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return false;
-//        if (dests.Select(loc => Rules.GridDistance(in loc,m_Actor.Location)).Min() < dests.Select(loc => Rules.GridDistance(in loc, dest)).Min()) return true;
+          if (dests.Min(loc => Rules.GridDistance(in loc,m_Actor.Location)) > dests.Min(loc => Rules.GridDistance(in loc, dest))) return false;
+//        if (dests.Min(loc => Rules.GridDistance(in loc,m_Actor.Location)) < dests.(loc => Rules.GridDistance(in loc, dest))) return true;
         }
       }
       return true;
@@ -3561,8 +3559,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != track_inv) {
         var dests = track_inv.Destinations;
         if (dests.Any()) {
-          var old_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, m_Actor.Location)).Min();
-          var new_dist = track_inv.Destinations.Select(loc => Rules.GridDistance(in loc, dest)).Min();
+          var old_dist = track_inv.Destinations.Min(loc => Rules.GridDistance(in loc, m_Actor.Location));
+          var new_dist = track_inv.Destinations.Min(loc => Rules.GridDistance(in loc, dest));
           if (old_dist > new_dist) return false;
           if (old_dist < new_dist) return true;
         }

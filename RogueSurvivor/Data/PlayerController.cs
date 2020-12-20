@@ -587,8 +587,7 @@ namespace djack.RogueSurvivor.Data
 
     private void HandleSay(object sender, Actor.SayArgs e)
     {
-      Actor speaker = (sender as Actor);
-      if (null == speaker) throw new ArgumentNullException(nameof(sender));
+      if (!(sender is Actor speaker)) throw new ArgumentNullException(nameof(sender));
       if (null == e._target) throw new ArgumentNullException("e.target");
       lock (speaker) {
         if (e.shown) return;
