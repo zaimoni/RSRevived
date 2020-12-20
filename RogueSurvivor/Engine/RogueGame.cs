@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Engine
 
     // report formatting; design width 120 characters, design height 51-ish lines (depends on bold/normal)
     private readonly string hr = "".PadLeft(120,'-');
-    private readonly string hr_plus = string.Join("",Enumerable.Range(0,11).Select(x => "---------+").ToArray());
+    private readonly string hr_plus = string.Concat(Enumerable.Range(0,11).Select(x => "---------+").ToArray());
 
     private readonly Color MODE_TEXTCOLOR = Color.Yellow;
     private readonly Color MODE_BORDERCOLOR = Color.Yellow;
@@ -7105,7 +7105,7 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("Blast radius  : {0}", tmp_i));
       var stringBuilder = new StringBuilder();
       for (int distance = 0; distance <= tmp_i; ++distance)
-        stringBuilder.Append(string.Format("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance)));
+        stringBuilder.AppendFormat("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance));
       lines.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
       if (ex is ItemGrenade grenade) {
         lines.Add("> grenade");
@@ -9427,8 +9427,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Actor fo in actor.Followers) {
         // follower can help if: not sleeping, idle and adj to map object.
         if (!fo.IsSleeping && fo.IsAvailableToHelp && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
-          if (helpers == null) helpers = new List<Actor>(actor.CountFollowers);
-          helpers.Add(fo);
+          (helpers ??= new List<Actor>(actor.CountFollowers)).Add(fo);
         }
       }
       if (helpers != null) {
@@ -9915,10 +9914,8 @@ namespace djack.RogueSurvivor.Engine
     /// <returns>the disarmed item or null if actor had no equipped item</returns>
     private Item Disarm(Actor actor)
     {
-      Item disarmIt = null;
-
       // pick equipped item to disarm : prefer weapon, then any right handed item(?), then left handed.
-      disarmIt = actor.GetEquippedWeapon();
+      var disarmIt = actor.GetEquippedWeapon();
       if (null == disarmIt) {
         disarmIt = actor.GetEquippedItem(DollPart.RIGHT_HAND);
         if (null == disarmIt) disarmIt = actor.GetEquippedItem(DollPart.LEFT_HAND);
@@ -10671,7 +10668,7 @@ namespace djack.RogueSurvivor.Engine
       var loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
       var stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
       var zonesAt = loc.Map.GetZonesAt(loc.Position);
-      if (null != zonesAt) foreach (var z in zonesAt) stringBuilder.Append(string.Format("{0} ", z.Name));
+      if (null != zonesAt) foreach (var z in zonesAt) stringBuilder.AppendFormat("{0} ", z.Name);
       return stringBuilder.ToString();
     }
 #nullable restore
@@ -12757,9 +12754,6 @@ namespace djack.RogueSurvivor.Engine
     // alpha10 StopSimThread is now blocking until the sim thread has actually stopped
     // allowed to abort when ending a game or dying because of weird bug in release build where the sim thread 
     // doesnt want to stop when dying as undead and we have to abort it(!)
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
     private void StopSimThread(bool abort=true)
     {

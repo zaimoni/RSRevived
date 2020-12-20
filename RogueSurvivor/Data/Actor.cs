@@ -723,7 +723,7 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
-    void IDeserializationCallback.OnDeserialization(object sender)
+    void IDeserializationCallback.OnDeserialization(object? sender)
     {
       if (null != m_Followers) foreach(var fo in m_Followers) fo.m_Leader = this;
     }

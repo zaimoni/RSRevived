@@ -1391,7 +1391,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
             }
           }
-          return BehaviorRangedAttack(en_in_range.First().Percepted);
+          return BehaviorRangedAttack(en_in_range[0].Percepted);
         }
       }
 
@@ -1403,7 +1403,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
           en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
         }
-        return BehaviorRangedAttack(en_in_range.First().Percepted);
+        return BehaviorRangedAttack(en_in_range[0].Percepted);
       }
     }
 

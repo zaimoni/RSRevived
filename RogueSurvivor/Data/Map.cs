@@ -2825,7 +2825,7 @@ retry:
             if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
             if (null != a.LiveLeader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:"+a.LiveLeader.Name+"</span>");
 
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Join("", actor_stats) + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
@@ -2859,7 +2859,7 @@ retry:
       dest.WriteLine("<a name='"+Name+"'></a>");
       dest.WriteLine("<pre style='clear:both'>");
       foreach (int y in Enumerable.Range(0, Height)) {
-        dest.WriteLine(String.Join("",ascii_map[y]));
+        dest.WriteLine(string.Concat(ascii_map[y]));
       }
       dest.WriteLine("</pre>");
     }

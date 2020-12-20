@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor
     private MouseButtons m_MouseButtons;
     private IContainer components;
     private IGameCanvas m_GameCanvas;
-    private List<string> m_Mods = new List<string>();
+    private readonly List<string> m_Mods = new List<string>();
     private static RogueForm? s_ooao = null;
 
     public static RogueForm Get { get { return s_ooao; } }

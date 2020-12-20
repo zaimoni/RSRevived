@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // General priority order.
-    private static DistrictKind[] ZonePriority = { DistrictKind.SHOPPING, DistrictKind.GENERAL, DistrictKind.RESIDENTIAL, DistrictKind.BUSINESS, DistrictKind.GREEN };
+    private static readonly DistrictKind[] ZonePriority = { DistrictKind.SHOPPING, DistrictKind.GENERAL, DistrictKind.RESIDENTIAL, DistrictKind.BUSINESS, DistrictKind.GREEN };
 
     static private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats) {
         var max = new KeyValuePair<int, int>(0,int.MinValue);

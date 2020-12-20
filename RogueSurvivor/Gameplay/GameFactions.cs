@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class GameFactions
+  internal static class GameFactions
   {
     private static readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
