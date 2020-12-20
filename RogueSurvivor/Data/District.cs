@@ -288,17 +288,16 @@ namespace djack.RogueSurvivor.Data
     public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (Map m in m_Maps) m.DoForAllGroundInventories(op); }
 
-
     public List<Actor> FilterActors(Predicate<Actor> test) {
       var ret = new List<Actor>();
-      void include(Actor a) { if (test(a)) ret.Add(a); };
+      void include(Actor a) { if (test(a)) ret.Add(a); }
       foreach(Map m in m_Maps) m.DoForAllActors(include);
       return ret;
     }
 
     public List<Actor> FilterActors(Predicate<Actor> test, Predicate<Map> m_test) {
       var ret = new List<Actor>();
-      void include(Actor a) { if (test(a)) ret.Add(a); };
+      void include(Actor a) { if (test(a)) ret.Add(a); }
       foreach(Map m in m_Maps) if (m_test(m)) m.DoForAllActors(include);
       return ret;
     }

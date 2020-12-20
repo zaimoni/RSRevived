@@ -1370,9 +1370,9 @@ retry:
       if (is_wall[(int)Compass.XCOMlike.NE] && is_wall[(int)Compass.XCOMlike.E] && is_wall[(int)Compass.XCOMlike.SE] && !is_wall[(int)Compass.XCOMlike.W] && (!is_wall[(int)Compass.XCOMlike.N] || !is_wall[(int)Compass.XCOMlike.S])) return false;
 
       // blocking access to something that could be next to wall/corner is problematic
-      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.NW] 
+      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.NW]
           && (no_go[(int)Compass.XCOMlike.NE] || no_go[(int)Compass.XCOMlike.SW])) return true;
-      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.E] && no_go[(int)Compass.XCOMlike.NE] 
+      if (blocked[(int)Compass.XCOMlike.N] && blocked[(int)Compass.XCOMlike.E] && no_go[(int)Compass.XCOMlike.NE]
           && (no_go[(int)Compass.XCOMlike.NW] || no_go[(int)Compass.XCOMlike.SE])) return true;
       if (blocked[(int)Compass.XCOMlike.S] && blocked[(int)Compass.XCOMlike.W] && no_go[(int)Compass.XCOMlike.SW]
           && (no_go[(int)Compass.XCOMlike.SE] || no_go[(int)Compass.XCOMlike.NW])) return true;
@@ -1410,7 +1410,7 @@ retry:
       void pan_to(Actor a) {
           Engine.RogueGame.Game.PanViewportTo(a);
           fn(a);
-      };
+      }
 
       return (null == pred ? Players.Get.ActOnce(pan_to)
                            : Players.Get.ActOnce(pan_to, pred));
@@ -1911,12 +1911,12 @@ retry:
           if (odorScent.Odor == odor) {
             if (odorScent.Strength < freshStrength) odorScent.Strength = freshStrength;
             return;
-          };
+          }
         }
         odorScentList.Add(new OdorScent(odor, freshStrength));
       } else {
         m_ScentsByPosition.Add(position, new List<OdorScent>(2) { new OdorScent(odor, freshStrength) });
-      };
+      }
     }
 #nullable restore
 
@@ -2595,7 +2595,7 @@ retry:
               && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y-2))]) m_FlushWall_s.Add(new Point(p.X+1,p.Y-1));
           if (   Rect.Width-2 > p.X
               && 1 <= p.X
-              && wall_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2, p.Y))] 
+              && wall_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2, p.Y))]
               && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y+1))]
               && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y+2))]
               && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X  ,p.Y+1))]
@@ -2622,7 +2622,7 @@ retry:
           if (   Rect.Width-2 > p.X
               && 1 <= p.Y
               && Rect.Height - 2 > p.Y
-              && wall_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y+2))] 
+              && wall_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y+2))]
               && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y))]
               && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y+1))]
               && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y-1))]
@@ -2746,7 +2746,7 @@ retry:
             if (a.Controller is PlayerController) {
               a_str = "@";
               pos_css = " style='background:lightgreen'";
-            };
+            }
             switch(a.Model.ID) {
               case Gameplay.GameActors.IDs.UNDEAD_SKELETON:
                 a_str = "<span style='background:orange'>s</span>"; break;

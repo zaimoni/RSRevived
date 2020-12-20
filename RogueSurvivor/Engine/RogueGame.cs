@@ -1592,7 +1592,7 @@ namespace djack.RogueSurvivor.Engine
         return null;
       });
 
-      static bool? choice_handler(int currentChoice) { return null; };
+      static bool? choice_handler(int currentChoice) { return null; }
 
       Func<Keys,int,bool?> failover_handler = ((k,currentChoice) => {
         switch (k) {
@@ -1781,7 +1781,7 @@ namespace djack.RogueSurvivor.Engine
             key = keyEventArgs.KeyData;
             break;
           }
-        };
+        }
         if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
         PlayerCommand command = command_labels[currentChoice].Value;
         s_KeyBindings.Set(command, key);
@@ -2268,7 +2268,7 @@ namespace djack.RogueSurvivor.Engine
 
 #region 6. Check explosives.
         bool hasExplosivesToExplode = false;
-        void expire_exp(ItemPrimedExplosive exp) { if (exp.Expire()) hasExplosivesToExplode = true; };
+        void expire_exp(ItemPrimedExplosive exp) { if (exp.Expire()) hasExplosivesToExplode = true; }
         void expire_all_exp(Inventory inv) { inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp); }
         map.DoForAllInventory(expire_all_exp);  // 6.1 Update fuses.
 
@@ -2477,10 +2477,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); }
 
-      return map.SumOverAllInventory(inv => {
-        var tmp = inv.GetItemsByType<ItemFood>();
-        return null!=tmp ? tmp.Sum(nutrition) : 0;
-      });
+      return map.SumOverAllInventory(inv => inv.GetItemsByType<ItemFood>()?.Sum(nutrition) ?? 0);
     }
 
     private bool CheckForEvent_ArmySupplies(Map map)
@@ -3170,7 +3167,6 @@ namespace djack.RogueSurvivor.Engine
       return 0>=Session.Get.World.PlayerCount;
     }
 
-
     private void HandleScreenshot()
     {
       int turn = Session.Get.WorldTime.TurnCounter;
@@ -3504,7 +3500,6 @@ namespace djack.RogueSurvivor.Engine
       RemoveOverlay(working);
     }
     private void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
-
 
     private bool YesNoPopup(string[] msg)
     {
@@ -8514,7 +8509,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= radio_competent.Count) return false;
       var target = Rules.Get.DiceRoller.Choose(radio_competent);    // \todo better choice method for this (trust-related)?
       var audience = new HashSet<Actor>();
-      var audience2 = new HashSet<Actor>(); 
+      var audience2 = new HashSet<Actor>();
 
       var turnCounter = Session.Get.WorldTime.TurnCounter;
       List<Data.Message> format_msg(string src) {
@@ -8604,13 +8599,13 @@ namespace djack.RogueSurvivor.Engine
       if (!wantedItem) { // offered item is not of perceived use
         AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", itSpeaker.TheName)));
         return false;
-      };
+      }
 
       var trade = PickItemToTrade(target, pc, itSpeaker); // XX rewrite target
       if (null == trade) {
         AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return false;
-      };
+      }
 
       AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.AName, itSpeaker.AName)));
 
@@ -8723,7 +8718,7 @@ namespace djack.RogueSurvivor.Engine
       var target = target_c.ControlledActor;
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       speaker.SpendActionPoints();    // prevent hyper-active player trades
-      
+
       // bail on null item from speaker early
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
@@ -9328,7 +9323,7 @@ namespace djack.RogueSurvivor.Engine
         have_messaged = true;
       }
       powGen.TogglePower(actor);
-      if (!have_messaged) { 
+      if (!have_messaged) {
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
           AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
       }
@@ -10735,7 +10730,7 @@ namespace djack.RogueSurvivor.Engine
       while(0 < i--) {
         MapViewRect.convert(i,ref point);
         is_visible[i] = IsVisibleToPlayer(map, in point);
-        if (is_visible[i]) { 
+        if (is_visible[i]) {
           var actorAt = map.GetActorAtExt(point);
           if (null == actorAt) continue;
           List<Point> LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
@@ -11121,7 +11116,7 @@ namespace djack.RogueSurvivor.Engine
     // alpha10
     /// <summary>
     /// Highlight with overlays which visible actors are
-    /// - are the target of this actor 
+    /// - are the target of this actor
     /// - targeting this actor
     /// - in group with this actor
     /// </summary>
@@ -11372,7 +11367,6 @@ namespace djack.RogueSurvivor.Engine
             });
         }
         if (null != draw) view.DoForEach(draw, non_self);
-
       }	// end if (!Player.IsSleeping)
       minimap_delta = (Player.Location.Position - view.Location)*MINITILE_SIZE;
       m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);
@@ -11661,7 +11655,6 @@ namespace djack.RogueSurvivor.Engine
       lock (m_Overlays) { m_Overlays.Remove(o); }
     }
 
-        
     bool HasOverlay(Overlay o) // alpha10
     {
       lock (m_Overlays) { return m_Overlays.Contains(o); }
@@ -12367,7 +12360,7 @@ namespace djack.RogueSurvivor.Engine
                 GenerateExit(entryMap2, from2, entryMap1, to2);
               }
             }
-            if (y1 < world.Size-1) { 
+            if (y1 < world.Size-1) {
               entryMap2 = world[x1 - 1, y1+1].EntryMap;
               Point from1 = new Point(-1, entryMap1.Height);
               Point from2 = new Point(entryMap2.Width, -1);
@@ -12416,7 +12409,7 @@ namespace djack.RogueSurvivor.Engine
                 GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
-            if (y1 < world.Size-1) { 
+            if (y1 < world.Size-1) {
               sewersMap2 = world[x1 - 1, y1+1].SewersMap;
               Point from1 = new Point(-1, sewersMap1.Height);
               Point from2 = new Point(sewersMap2.Width, -1);
@@ -13706,9 +13699,7 @@ retry:
       }
     }
 
-
     // alpha10
-
     class OverlayPopupTitle : Overlay
     {
       public readonly Point ScreenPosition;

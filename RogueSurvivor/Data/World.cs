@@ -56,7 +56,6 @@ namespace djack.RogueSurvivor.Data
     public District? At(int x, int y) { return InBounds(x, y) ? m_DistrictsGrid[x, y] : null; }
     public District? At(Point pt) { return InBounds(pt) ? m_DistrictsGrid[pt.X, pt.Y] : null; }
 
-
     public District this[int x, int y]
     {
       get {

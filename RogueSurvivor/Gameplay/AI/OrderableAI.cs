@@ -441,7 +441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
           } // end scope var p
-          
+
           if (inv.IsEmpty || !ordai.WouldGrabFromStack(_stacks[i].Location, inv)) {
             _stacks.RemoveAt(i);
             continue;
@@ -2110,7 +2110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-    
+
 #nullable enable
     public ActorAction? WouldUseAccessibleStack(in Location dest,bool is_real=false) {
         var stacks = dest.Map.GetAccessibleInventories(dest.Position);
@@ -2947,7 +2947,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         RogueGame.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
       return tmp;
     }
-
 
 #nullable enable
     public ActorAction? BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)

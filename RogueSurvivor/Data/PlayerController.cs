@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public List<string> GetValidSelfOrders()
-    { 
+    {
       var ret = new List<string>();
       bool in_combat = (null!=m_Actor.Controller.enemies_in_FOV);   // not using InCombat getter as we don't want to be that draconian
 

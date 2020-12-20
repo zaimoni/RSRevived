@@ -245,12 +245,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // processing based on field of view
     public override void eventFOV() { FOVevents.update(FOVloc); }
     public void AddFOVevent(Observer<Location[]> src) { FOVevents.Add(src); }
-
-
     public void ClearLastMove() { _last_move = null; }
-
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
-
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.Find(o => o is T goal && test(goal)) as T;}
     public T Goal<T>() where T:Objective { return Objectives.Find(o => o is T) as T;}
 
@@ -1630,7 +1626,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  int new_dest = ok.Count;
       return ((0 < new_dest && new_dest < src.Count) ? ok : src);
     }
-
 
     private List<Point> DecideMove_NoJump(List<Point> src)
     {
@@ -3225,7 +3220,7 @@ Restart:
           return goals;
         }
         // if that isn't enough, we could also use the police and hospital geometries
-      } 
+      }
 
       void schedule_maps(Map m2) {
 #if TRACE_GOALS
@@ -3889,7 +3884,6 @@ restart:
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
 #endif
       }
-
 
       // check for pre-existing relevant path (approaching dead code)
       {

@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       // subway city planning.  Each subway station can electrify the subway rails not just for its district, but one district away.
       // make sure all subway rails can be electrified by at least one subway station.
-      SubwayElectrifyPlans.Clear(); 
+      SubwayElectrifyPlans.Clear();
       ForceSubwayStation.Clear();
 
       var world = Session.Get.World;
@@ -406,7 +406,6 @@ restart:
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: baseline");
 #endif
 
-
       ///////////////////////////////////////////////////
       // 1. Make blocks.
       // 2. Make tunnels.
@@ -496,7 +495,7 @@ restart:
       List<Block> blockList = null;
       foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
         if (    mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2
-            &&  mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 
+            &&  mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2
             && !IsThereASpecialBuilding(surface, mSurfaceBlock.InsideRect)
             && !mSurfaceBlock.Rectangle.Any(pt => sewers.GetTileModelAt(pt).IsWalkable)) {
           (blockList ??= new List<Block>(m_SurfaceBlocks.Count)).Add(mSurfaceBlock);
@@ -548,11 +547,8 @@ restart:
       Item sewers_stock() {
           return PostprocessQuantity(GameItems.From(sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))).create());
       }
-      sewers.Rect.DoForEach(pt => {
-        sewers.DropItemAt(sewers_stock(), in pt);
-      },pt => { 
-        return sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE);
-      });
+      sewers.Rect.DoForEach(pt => sewers.DropItemAt(sewers_stock(), in pt),
+                            pt => sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE));
 #endregion
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: 88 ok");
@@ -603,7 +599,7 @@ restart:
         mid_map += Direction.N;
         mid_map += Direction.N;
       }
-        
+
       return mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
     }
 
@@ -682,7 +678,6 @@ restart:
             else if (mSurfaceBlock.Rectangle.Left > rail.X+(height-1)) costs[mSurfaceBlock.Rectangle] = exitPosition.X - (rail.X + (height - 1));
           }
         }
-        
 //      break;
       }
       if (1 >= (blockList?.Count ?? 0)) return blockList;
@@ -1300,7 +1295,7 @@ restart:
 
       // \todo arrange for this door to be mechanically locked
       PlaceDoor(map, chokepoint_door_pos, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
-      
+
       Rectangle rect2;
       Rectangle rect3;
       if (orientation_ew) {
@@ -1917,7 +1912,7 @@ restart:
         Rectangle plat() {
           int left = Math.Max(0, b.BuildingRect.Left - 10);
           int right = Math.Min(map.Width - 1, b.BuildingRect.Right + 10);
-    
+
           // bench layout doesn't look good flush against district boundary
           switch(direction.Index)
           {
@@ -2377,7 +2372,6 @@ restart:
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_PISTOL,40)
     };
 
-
     private Item MakeRandomBedroomItem()
     {
       return PostprocessQuantity(GameItems.From(bedroom_stock.UseRarityTable(m_DiceRoller.Roll(0, bedroom_checksum))).create());
@@ -2400,7 +2394,6 @@ restart:
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_ZTRACKER,25),
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_BLACKOPS,25)
     };
-
 
     public Item MakeRandomCHAROfficeItem()
     {
@@ -2557,7 +2550,7 @@ restart:
           var exchange = m_DiceRoller.Choose(air).Key;
           basement.SetTileModelAt(test, GameTiles.WALL_BRICK);
           basement.SetTileModelAt(exchange, GameTiles.FLOOR_CONCRETE);
-          goto restart;  
+          goto restart;
         }
 #if DEBUG
         throw new InvalidProgramException("need to handle 1x1 exit isolation");
@@ -2823,7 +2816,6 @@ restart:
       return underground;
     }
 
-
     private const int CHAR_armory_checksum = 2500;
     private readonly KeyValuePair<GameItems.IDs, int>[] CHAR_armory_stock = {
         new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,192),
@@ -3054,7 +3046,7 @@ restart:
       for (int index = 0; index < 5; ++index) {
         map.PlaceAt(CreateNewPoliceman(0), in ideal[index]);
       }
-      
+
       // XXX AI by default would "stock up" before charging out to the surface.
       // The simplest way to "override" is to say that these are SWAT reserves, so they have already "stocked up"
       // While here, sort the turn order -- nearest to stairs up should go first
@@ -3154,7 +3146,7 @@ restart:
       Draft(followers,typical);
       Draft(followers,typical);
       Draft(followers,typical);
-     
+
       // identify type of deployment
       if (2 <= leaders[0].Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)) {
         // 3-2.
