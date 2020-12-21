@@ -5768,9 +5768,8 @@ restart_chokepoints:
               }
             }
             if (null != drop) return _BehaviorDropOrExchange(drop, it, position, use_ok);
-#if DEBUG
-            throw new InvalidOperationException("test case");
-#endif
+            drop = no_ammo_rws.Minimize(rw => rw.Ammo*rw.Model.Attack.DamageValue*3/4); // \todo do this right (expected damage from ammo)
+            return _BehaviorDropOrExchange(drop, it, position, use_ok);
           }
         }
         return null;
