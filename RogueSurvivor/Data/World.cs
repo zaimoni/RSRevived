@@ -258,6 +258,15 @@ namespace djack.RogueSurvivor.Data
       dest.WriteLine("</head><body>");
 
       District viewpoint = Engine.RogueGame.CurrentMap.District;
+
+      var player = Engine.RogueGame.Player;
+      var code = District.UsesCrossDistrictView(player.Location.Map);
+      if (0 < code) {
+        // simulate a standard district's view
+        var zone = new ZoneLoc(player.Location.Map, new Rectangle(player.Location.Position - (Point)24, (Point)(2*24+1)));
+        (zone as IMap).DaimonMap(dest);
+      }
+
       viewpoint.DaimonMap(dest);
       for(int x = 0; x<Size; x++) {
         for(int y = 0; y<Size; y++) {

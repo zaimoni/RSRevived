@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using Zaimoni.Data;
 using static Zaimoni.Data.Compass;
 
 using UpdateMoveDelta = djack.RogueSurvivor.Engine.Actions.UpdateMoveDelta;
@@ -66,7 +67,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]    // just in case
-  internal class ZoneLoc
+  internal class ZoneLoc : IMap
   {
     public readonly Map m;
     public readonly Rectangle Rect; // doesn't have to be normalized
@@ -76,6 +77,41 @@ namespace djack.RogueSurvivor.Data
       m = _m;
       Rect = _r;
     }
+
+#region IMap implementation
+    public short Height { get { return Rect.Height; } }
+    public short Width { get { return Rect.Width; } }
+    public Point Origin { get { return Rect.Location; } }
+    public string MapName { get {
+      var center = Rect.Location + Rect.Size/2;
+      var view = GetActorAt(center);
+      if (null != view && view.IsPlayer) return "navigation: "+view.Name; // anticipated use case is DaimonMap
+      return m.Name;
+    } }
+    public bool HasExitAt(in Point pt) { return m.HasExitAtExt(pt); }
+    public Actor? GetActorAt(Point pt) { return m.GetActorAtExt(pt); }
+    public Inventory? GetItemsAt(Point pt) { return m.GetItemsAtExt(pt); }
+    public MapObject? GetMapObjectAt(Point pt) { return m.GetMapObjectAtExt(pt); }
+    public TileModel? GetTileModelAt(Point pt) { return m.GetTileModelAtExt(pt); }
+
+    // for now, bluff these two -- relies on canonicalization
+    public int TurnOrderFor(Actor a) {
+      var zones = GetCanonical;
+      if (null == zones) return m.TurnOrderFor(a);
+      return -1;
+    }
+    public Dictionary<Point, List<Corpse>>? FilterCorpses(Predicate<Corpse> ok) {
+      var zones = GetCanonical;
+      if (null != zones) return null; // temporary
+      var home_catalog = m.FilterCorpses(ok);
+      if (null != home_catalog) {
+        home_catalog.OnlyIf(pt => Contains(new Location(m, pt)));
+        if (0 >= home_catalog.Count) home_catalog = null;
+      }
+//    if (null != zones) { ... };
+      return home_catalog;
+    }
+#endregion
 
     public bool Contains(in Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
     public bool ContainsExt(in Location loc) {
