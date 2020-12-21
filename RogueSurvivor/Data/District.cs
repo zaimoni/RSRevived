@@ -345,16 +345,16 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
 
     // cheat map similar to savefile viewer
-    public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
+    public void DaimonMap(OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
-      m_EntryMap.DaimonMap(dest);   // name of this is also the district name
-      m_SewersMap.DaimonMap(dest);
-      m_SubwayMap?.DaimonMap(dest);
+      (m_EntryMap as IMap).DaimonMap(dest);   // name of this is also the district name
+      (m_SewersMap as IMap).DaimonMap(dest);
+      (m_SubwayMap as IMap)?.DaimonMap(dest);
       foreach(Map map in m_Maps) {
         if (map == m_EntryMap) continue;
         if (map == m_SewersMap) continue;
         if (map == m_SubwayMap) continue;
-        map.DaimonMap(dest);
+        (map as IMap).DaimonMap(dest);
       }
     }
 
