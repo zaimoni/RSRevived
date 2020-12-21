@@ -1261,6 +1261,8 @@ retry:
       }
     }
 
+    public int TurnOrderFor(Actor a) { return m_ActorsList.IndexOf(a); }
+
     [Serializable]
     public struct ActorCode {
         public readonly District.MapCode Key;
@@ -1822,6 +1824,22 @@ retry:
         corpseList.Insert(0, c);
       else
         m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
+    }
+
+    public Dictionary<Point, List<Corpse>>? FilterCorpses(Predicate<Corpse> ok)
+    {
+        var ub = m_aux_CorpsesByPosition.Count;
+        if (0 >= ub) return null;
+        Dictionary<Point, List<Corpse>>? ret = null;
+
+        // need a value copy of relevant corpses
+        foreach(var x in m_aux_CorpsesByPosition) {
+            ub--;
+            if (0>= x.Value.Count) continue;
+            var staging = x.Value.FindAll(ok);
+            if (0 < staging.Count) (ret ??= new Dictionary<Point, List<Corpse>>(ub+1)).Add(x.Key, staging);
+        }
+        return ret;
     }
 
     public void AddTimer(TimedTask t) { m_Timers.Add(t); }
@@ -2645,10 +2663,7 @@ retry:
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       dest.WriteLine(Name+"<br>");
       // XXX since the lock at the district level causes deadlocking, we may be inconsistent for simulation districtions
-      List<Actor> tmp_Actors = (0< m_ActorsList.Count ? new List<Actor>(m_ActorsList) : null);
-      List<Point> inv_locs = (0<m_GroundItemsByPosition.Count ? new List<Point>(m_GroundItemsByPosition.Keys) : null);
-//    if (null==tmp_Actors && null==inv_locs) return;
-      // we have one of actors or items here...full map has motivation
+      // we typically have one of actors or items here...full map has motivation
       var inv_data = new List<string>();
       string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
       List<string> actor_data = new List<string>();
@@ -2823,25 +2838,17 @@ retry:
             if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
             if (null != a.LiveLeader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:"+a.LiveLeader.Name+"</span>");
 
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>"+TurnOrderFor(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
         }
       }
-      if (0 < m_aux_CorpsesByPosition.Count) {
-        // need a value copy of relevant (infected) corpses
-        var tmp = new Dictionary<Point, List<Corpse>>(m_aux_CorpsesByPosition.Count);
 
-        static bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
+      static bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
+      var corpse_catalog = FilterCorpses(is_problem_corpse);
+      if (null != corpse_catalog) dest.WriteLine("<pre>Problematic corpses:\n"+ corpse_catalog.to_s()+"</pre>");
 
-        foreach(var x in m_aux_CorpsesByPosition) {
-          if (0>= x.Value.Count) continue;
-          if (!x.Value.Any(is_problem_corpse)) continue;
-          tmp[x.Key] = x.Value.FindAll(is_problem_corpse);
-        }
-        if (0 < tmp.Count) dest.WriteLine("<pre>Problematic corpses:\n"+tmp.to_s()+"</pre>");
-      }
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
       if (0<actor_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
@@ -2861,12 +2868,6 @@ retry:
       }
       dest.WriteLine("</pre>");
     }
-
-#if FAKE_ECS
-    // C++-style transcoding to integers
-    static public Map decode(int n) { return _transcode[n]; }
-    public int encode() { return _transcode.IndexOf(this); }
-#endif
 
     private void ReconstructAuxiliaryFields()
     {
