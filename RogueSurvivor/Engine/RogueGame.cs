@@ -445,8 +445,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void ImportantMessage(Data.Message msg, int delay=0)
     {
-      AddMessage(msg);
-      RedrawPlayScreen();
+      RedrawPlayScreen(msg);
       if (0 < delay) AnimDelay(delay);
     }
 
@@ -464,8 +463,7 @@ namespace djack.RogueSurvivor.Engine
             if (player_knows(a)) return;
             var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
             if (Player == a) {
-              AddMessage(msg);
-              RedrawPlayScreen();
+              RedrawPlayScreen(msg);
               return;
             }
             player.DeferMessage(msg);
@@ -480,8 +478,7 @@ namespace djack.RogueSurvivor.Engine
     public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
       if (!Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
-        AddMessage((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
-        RedrawPlayScreen();
+        RedrawPlayScreen((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
       }
       if (1>=Session.Get.World.PlayerCount) return;
 
@@ -584,8 +581,7 @@ namespace djack.RogueSurvivor.Engine
 #else
       if (IsSimulating) return;   // visual no-op
 #endif
-      AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       WaitEnter();
       RemoveLastMessage();
       RedrawPlayScreen();
@@ -598,8 +594,7 @@ namespace djack.RogueSurvivor.Engine
 #else
       if (IsSimulating) return;   // visual no-op
 #endif
-      AddMessage(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       WaitEnter(filter);
       RemoveLastMessage();
       RedrawPlayScreen();
@@ -1413,8 +1408,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
         }
         AddMessage(new Data.Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
-        AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("<press ENTER>", 0, Color.Yellow));
         WaitEnter();
       }
       ClearMessages();
@@ -1443,8 +1437,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
       WaitEnter();
       ClearMessages();
-      AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       play_timer.Start();
       Session.Get.World.ScheduleForAdvancePlay();   // simulation starts at district A1
       StopSimThread(false);  // alpha10 stop-start
@@ -2192,12 +2185,10 @@ namespace djack.RogueSurvivor.Engine
                 // check music.
                 m_MusicManager.PlayLooping(GameMusics.SLEEP, 1 == Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
                 // message.
-                AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
-                RedrawPlayScreen();
+                RedrawPlayScreen(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 Thread.Sleep(10);
               } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
-                AddMessage(MakeMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
-                RedrawPlayScreen();
+                RedrawPlayScreen(MakeMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
               }
 #endregion
             }
@@ -2205,8 +2196,7 @@ namespace djack.RogueSurvivor.Engine
 #region 4.3 Exhausted actors might collapse.
               DoStartSleeping(actor);
               if (ForceVisibleToPlayer(actor)) {
-                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
-                RedrawPlayScreen();
+                RedrawPlayScreen(MakeMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
               }
               if (actor == Player) {
                 Player.Controller.UpdateSensors();
@@ -2237,8 +2227,7 @@ namespace djack.RogueSurvivor.Engine
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
             if (ForceVisibleToPlayer(actor)) {
-              AddMessage(MakeMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
-              RedrawPlayScreen();
+              RedrawPlayScreen(MakeMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             }
             KillActor(null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
@@ -2335,8 +2324,7 @@ namespace djack.RogueSurvivor.Engine
         var max_un = s_Options.MaxUndeads;
         if (uc < max_un) {
           if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-            AddMessage(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
-            RedrawPlayScreen();
+            RedrawPlayScreen(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
           }
           var day = map.LocalTime.Day;
           int num2 = 1 + (int)(Math.Min(1f, (float)(day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * max_un) - uc;
@@ -2390,8 +2378,7 @@ namespace djack.RogueSurvivor.Engine
       const float REFUGEES_WAVE_SIZE = 0.2f;
 
       if (district == Player.Location.Map.District && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        AddMessage(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
       }
       int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
@@ -3170,12 +3157,10 @@ namespace djack.RogueSurvivor.Engine
     private void HandleScreenshot()
     {
       int turn = Session.Get.WorldTime.TurnCounter;
-      AddMessage(new Data.Message("Taking screenshot...", turn, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message("Taking screenshot...", turn, Color.Yellow));
       var screenshot = DoTakeScreenshot();
-      AddMessage(null == screenshot ? new Data.Message("Could not save screenshot.", turn, Color.Red)
-                                    : new Data.Message(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(null == screenshot ? new Data.Message("Could not save screenshot.", turn, Color.Red)
+                     : new Data.Message(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
     }
 
     private string? DoTakeScreenshot()
@@ -5031,7 +5016,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       ErrorPopup("No spray equipped.");
-      RedrawPlayScreen();
       return false;
     }
 
@@ -5230,8 +5214,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("2. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("3. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
@@ -5296,8 +5279,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("2. Barricade (one)...    6. Drop all items.      A. Give me...", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", str2), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message("5. Patrol...             9. Report events.       D. Where are you?", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("5. Patrol...             9. Report events.       D. Where are you?", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
@@ -5426,8 +5408,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
@@ -5476,8 +5457,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
@@ -5524,8 +5504,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
@@ -5583,8 +5562,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
+        RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
@@ -7670,8 +7648,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (isPlayer && askForConfirmation) {
         if (!YesNoPopup(string.Format("REALLY LEAVE {0}", map.Name))) {
-          AddMessage(new Data.Message("Let's stay here a bit longer...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-          RedrawPlayScreen();
+          RedrawPlayScreen(new Data.Message("Let's stay here a bit longer...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           return false;
         }
       }
@@ -8613,13 +8590,11 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
 
       if (!acceptDeal) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
-        RedrawPlayScreen();
+        RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         return false;
       }
 
-      AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-      RedrawPlayScreen();
+      RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 
       if (target.Leader == speaker && flag3)
         DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
@@ -8653,18 +8628,12 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
 
       if (!acceptDeal) {
-        if (flag1) {
-          AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
-          RedrawPlayScreen();
-        }
+        if (flag1) RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         return;
       }
 
       speaker.SpendActionPoints();
-      if (flag1) {
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-        RedrawPlayScreen();
-      }
+      if (flag1) RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
       speaker.Remove(itSpeaker);
       target.RemoveAllQuantity(trade);
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
@@ -9252,20 +9221,14 @@ namespace djack.RogueSurvivor.Engine
     {
       door.SetState(DoorWindow.STATE_OPEN);
       actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
-        AddMessage(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
-        RedrawPlayScreen();
-      }
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
     }
 
     public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
       if (!free) actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
-        AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
-        RedrawPlayScreen();
-      }
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
     }
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
@@ -9275,10 +9238,7 @@ namespace djack.RogueSurvivor.Engine
       inv.Consume(barricadeMaterial);
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
       actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
-        AddMessage(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
-        RedrawPlayScreen();
-      }
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
     }
 
     public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
@@ -9305,10 +9265,7 @@ namespace djack.RogueSurvivor.Engine
       inv.Consume(barricadeMaterial);
       actor.SpendActionPoints();
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort)) {
-        AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
-        RedrawPlayScreen();
-      }
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort)) RedrawPlayScreen(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
@@ -9458,10 +9415,7 @@ namespace djack.RogueSurvivor.Engine
           OnActorEnterTile(actor);  // RS alpha 10
         }
       }
-      if (flag) {
-        AddMessage(MakeMessage(actor, VERB_PUSH.Conjugate(actor), mapObj));
-        RedrawPlayScreen();
-      }
+      if (flag) RedrawPlayScreen(MakeMessage(actor, VERB_PUSH.Conjugate(actor), mapObj));
       OnLoudNoise(objDest, "Something being pushed");
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(actor.Location) // we already checked the attacker visibility, he's the sound origin
@@ -9508,8 +9462,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, in toPos)) {
-          AddMessage(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
-          RedrawPlayScreen();
+          RedrawPlayScreen(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
         }
         if (target.IsSleeping) DoWakeUp(target);
         OnActorEnterTile(target);
@@ -9545,10 +9498,7 @@ namespace djack.RogueSurvivor.Engine
       objDest.Place(mapObj);
 
       // noise/message.
-      if (isVisible) {
-        AddMessage(MakeMessage(actor, VERB_PULL.Conjugate(actor), mapObj));
-        RedrawPlayScreen();
-      }
+      if (isVisible) RedrawPlayScreen(MakeMessage(actor, VERB_PULL.Conjugate(actor), mapObj));
       // loud noise.
       OnLoudNoise(mapObj.Location, "Something being pushed");
 
@@ -9604,10 +9554,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsSleeping) DoWakeUp(target);
 
       // message
-      if (isVisible) {
-        AddMessage(MakeMessage(actor, VERB_PULL.Conjugate(actor), target));
-        RedrawPlayScreen();
-      }
+      if (isVisible) RedrawPlayScreen(MakeMessage(actor, VERB_PULL.Conjugate(actor), target));
 
       // Trigger stuff.
       OnActorEnterTile(actor);
@@ -9689,8 +9636,7 @@ namespace djack.RogueSurvivor.Engine
           if (Rules.Get.RollChance(actor.LoudNoiseWakeupChance(Rules.GridDistance(in noisePosition, in pt)))) {
             DoWakeUp(actor);
             if (ForceVisibleToPlayer(actor)) {
-              AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
             }
           }
         }
@@ -10648,6 +10594,12 @@ namespace djack.RogueSurvivor.Engine
                 }
                 m_UI.UI_Repaint();
             }  // lock (m_UI)
+    }
+
+    public void RedrawPlayScreen(Data.Message msg)
+    {
+      AddMessage(msg);
+      RedrawPlayScreen();
     }
 
 #nullable enable
@@ -11983,8 +11935,7 @@ namespace djack.RogueSurvivor.Engine
       StopSimThread(false); // alpha10.1
 
       ClearMessages();
-      AddMessage(new Data.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_UI.UI_Repaint();
       if (!LoadGame(saveName)) AddMessage(new Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
 
@@ -12014,10 +11965,9 @@ namespace djack.RogueSurvivor.Engine
       RefreshPlayer();
 #endif
       AddMessage(new Data.Message("LOADING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      AddMessage(new Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
       // we crash on FOVloc otherwise
       Session.Get.World.DoForAllMaps(m => { foreach (var player in m.Players.Get) { player.Controller.UpdateSensors(); } },  m => 0<m.PlayerCount);
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message("Welcome back to " + SetupConfig.GAME_NAME + "!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
       m_UI.UI_Repaint();
 #if OBSOLETE
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "<Loaded game>");
@@ -13048,8 +12998,7 @@ retry:
       Player.Controller.UpdateSensors();
       SetCurrentMap(Player.Location);
       ClearMessages();
-      AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      RedrawPlayScreen();
+      RedrawPlayScreen(new Data.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_MusicManager.Play(GameMusics.REINCARNATE, MusicPriority.PRIORITY_EVENT);
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
@@ -13225,8 +13174,7 @@ retry:
             if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
-                AddMessage(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
-                RedrawPlayScreen();
+                RedrawPlayScreen(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
               }
               // XXX \todo severe reimplementation
               if (!victor.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
@@ -13235,8 +13183,7 @@ retry:
           } else if (map.Illuminate(false)) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              AddMessage(new Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
             }
           }
         }
@@ -13248,8 +13195,7 @@ retry:
               if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new Data.Message("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
-                AddMessage(new Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
-                RedrawPlayScreen();
+                RedrawPlayScreen(new Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
               }
               map.OpenAllGates();
             }
@@ -13257,8 +13203,7 @@ retry:
             if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
-              AddMessage(new Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
             }
             CloseAllGates(map,"gates");
           }
@@ -13269,16 +13214,14 @@ retry:
           if (1.0 <= map.PowerRatio) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              AddMessage(new Data.Message("The lights turn on.", map.LocalTime.TurnCounter, Color.Green));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("The lights turn on.", map.LocalTime.TurnCounter, Color.Green));
             }
             Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(true);
             Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(true);
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              AddMessage(new Data.Message("The lights turn off.", map.LocalTime.TurnCounter, Color.Green));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("The lights turn off.", map.LocalTime.TurnCounter, Color.Green));
             }
             Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(false);
             Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(false);
@@ -13290,8 +13233,7 @@ retry:
           if (1.0 <= map.PowerRatio) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              AddMessage(new Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
             }
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
@@ -13325,8 +13267,7 @@ retry:
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              AddMessage(new Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
-              RedrawPlayScreen();
+              RedrawPlayScreen(new Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
             }
             CloseAllGates(map,"cells");
           }
@@ -13338,16 +13279,14 @@ retry:
         if (1.0 <= map.PowerRatio) {
           if (0 < map.PlayerCount) {
             ClearMessages();
-            AddMessage(new Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
-            RedrawPlayScreen();
+            RedrawPlayScreen(new Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
           }
           DoHospitalPowerOn();
         } else {
           if (map.Lighting == Lighting.DARKNESS) return;
           if (0 < map.PlayerCount) {
             ClearMessages();
-            AddMessage(new Data.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
-            RedrawPlayScreen();
+            RedrawPlayScreen(new Data.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
           }
           DoHospitalPowerOff();
         }

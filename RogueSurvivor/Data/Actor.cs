@@ -3795,8 +3795,7 @@ namespace djack.RogueSurvivor.Data
          if (Controller is PlayerController pc) {
            var msg = RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this)));
            if (RogueGame.IsPlayer(this)) {
-             RogueGame.Game.AddMessage(msg);
-             RogueGame.Game.RedrawPlayScreen();
+             RogueGame.Game.RedrawPlayScreen(msg);
            } else {
              pc.DeferMessage(msg);
            }
