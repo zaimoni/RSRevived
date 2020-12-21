@@ -576,7 +576,7 @@ namespace djack.RogueSurvivor.Data
         bool not_yet = true;
         int ub = m_Timers.Count;
         while(0 <= --ub) {
-          if (!(m_Timers[ub] is Engine.Tasks.TaskRemoveDecoration clean) || clean.WillRemove != imageId) continue;
+          if (m_Timers[ub] is not Engine.Tasks.TaskRemoveDecoration clean || clean.WillRemove != imageId) continue;
           // VAPORWARE some sort of handling re stacked decaying decorations
           if (clean.TurnsLeft >= deltaT) {  // not formally correct, but for our current use case the > doesn't actually happen
             clean.Add(pt);

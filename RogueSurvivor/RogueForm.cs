@@ -333,7 +333,7 @@ namespace djack.RogueSurvivor
       return ret;
     }
 
-    private Size[] Measure(IEnumerable<string> src, Font font)
+    static private Size[] Measure(IEnumerable<string> src, Font font)
     {
       var hull = Size.Empty;
       var ret = new List<Size>();
