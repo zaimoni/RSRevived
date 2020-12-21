@@ -9061,6 +9061,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (gift is ItemTrap trap) trap.Desactivate();
+      gift.UnequippedBy(actor, false);
       actor.Inventory.Transfer(gift, target.Inventory);
       target.SpendActionPoints();
       if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) == null)
