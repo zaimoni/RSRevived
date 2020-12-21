@@ -628,6 +628,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IsViewpoint { get { return IsPlayer || IsDebuggingTarget; } } // i.e., is camera viewpoint
+
     [NonSerialized] private string[]? _force_PC_names = null; // only used below
     public void CommandLinePlayer() // would prefer private
     {

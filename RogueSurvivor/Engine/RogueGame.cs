@@ -9,7 +9,6 @@
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
-// #define PANOPTIC_HOLYVISION
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -7481,7 +7480,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
-      if (actor.IsPlayer) RedrawPlayScreen();
+      if (dest_seen || actor.IsPlayer) RedrawPlayScreen();
     }
 
 #nullable enable
@@ -8444,8 +8443,11 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= chat_competent.Count) return false;
       var target = Rules.Get.DiceRoller.Choose(chat_competent);    // \todo better choice method for this (can postpone until CHAT_RADIUS extended
 
-      if (speaker.IsPlayer && Player!=speaker) PanViewportTo(speaker);
-      else if (target.IsPlayer && Player!=target) PanViewportTo(target);
+      if (speaker.IsPlayer && Player!=speaker) {
+        PanViewportTo(speaker);
+      } else if (target.IsPlayer && Player!=target) {
+        PanViewportTo(target);
+      }
 
       bool see_speaker = ForceVisibleToPlayer(speaker);
       bool see_target = see_speaker ? IsVisibleToPlayer(target) : ForceVisibleToPlayer(target);
@@ -11839,7 +11841,7 @@ namespace djack.RogueSurvivor.Engine
       var view = new Location(map, position);
 
       void id_player(Actor player) {
-        if (!player?.IsPlayer ?? true) return;
+        if (!player?.IsViewpoint ?? true) return;
 #if DEBUG
         // having problems with killed PCs showing up as viewpoints
         if (player.IsDead) throw new InvalidOperationException("dead player on map");
@@ -11873,19 +11875,11 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == Player) return true;
       if (IsVisibleToPlayer(actor.Location)) return true;
-#if PANOPTIC_HOLYVISION
-      if (1<=actor.Location.Map.PlayerCount) {
-        PanViewportTo(actor);
-        return true;
-      }
-      return false;
-#else
-      if (actor.IsPlayer) {
+      if (actor.IsViewpoint) {
         PanViewportTo(actor);
         return true;
       }
       return ForceVisibleToPlayer(actor.Location);
-#endif
     }
 
     private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }

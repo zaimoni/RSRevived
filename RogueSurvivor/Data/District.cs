@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Data
     // before cross district viewing, this was simply a PlayerCount check
     public bool RequiresUI {
       get {
-        if (0 < PlayerCount) return true;
+        if (0 < ViewpointCount) return true;
         // \todo Anything that initates UI from outside of the current district has to be PC to avoid a deadlock.
         // once this is working fully, we will never have to reclassify districts.
 
@@ -272,6 +272,14 @@ namespace djack.RogueSurvivor.Data
       get {
         int ret = 0;
         foreach(Map tmp in m_Maps) ret += tmp.PlayerCount;
+        return ret;
+      }
+    }
+
+    public int ViewpointCount {
+      get {
+        int ret = 0;
+        foreach(Map tmp in m_Maps) ret += tmp.ViewpointCount;
         return ret;
       }
     }
