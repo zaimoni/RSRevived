@@ -35,7 +35,6 @@ namespace djack.RogueSurvivor.Engine.Items
       set { m_IsTriggered = value; }    // can't deactivate because that eliminates the owner information
     }
 
-
     // alpha10
     public Actor? Owner {
       get {

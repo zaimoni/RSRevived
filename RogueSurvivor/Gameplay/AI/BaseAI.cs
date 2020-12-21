@@ -358,7 +358,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (int.MaxValue > turns_to_fatality) return dist + MOVE_INTO_TRAPS_PENALTY;
           return dist;
       });
-       
+
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, close_in);
     }
 

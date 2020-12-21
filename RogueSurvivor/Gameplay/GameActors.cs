@@ -118,8 +118,8 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       const Abilities.Flags STD_LIVING = Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN;
       const Abilities.Flags STD_HUMAN = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE;
       const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT | Abilities.Flags.CAN_TRADE;  // RS Alpha 10.1- did not allow soldiers or CHAR to trade
-        
-      static ActorData parse_fn(CSVLine CSV) { return new ActorData(CSV); };
+
+      static ActorData parse_fn(CSVLine CSV) { return new ActorData(CSV); }
 
       ActorData DATA_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_SKELETON);
       ActorData DATA_RED_EYED_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RED_EYED_SKELETON);

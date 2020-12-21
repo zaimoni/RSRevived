@@ -524,7 +524,6 @@ namespace djack.RogueSurvivor.Data
       return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.InteractionDistance(spotter.Location, Location);
     }
 
-
     public int MurdersInProgress {
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
@@ -1152,7 +1151,7 @@ namespace djack.RogueSurvivor.Data
       if (IsExhausted) {
         hit *= FIRING_WHEN_SLP_EXHAUSTED;
         rapidHit1 *= FIRING_WHEN_SLP_EXHAUSTED;
-        rapidHit2 *= FIRING_WHEN_SLP_EXHAUSTED; 
+        rapidHit2 *= FIRING_WHEN_SLP_EXHAUSTED;
       } else if (IsSleepy) {
         hit *= FIRING_WHEN_SLP_SLEEPY;
         rapidHit1 *= FIRING_WHEN_SLP_SLEEPY;
@@ -1439,7 +1438,7 @@ namespace djack.RogueSurvivor.Data
       Threats?.RecordTaint(other, other.Location);
     }
 
-    public void Aggress(Actor defender) { 
+    public void Aggress(Actor defender) {
       Activity = Activity.FIGHTING;
       m_TargetActor = defender;
       if (!IsEnemyOf(defender)) RogueGame.Game.DoMakeAggression(this, defender);
@@ -1615,7 +1614,7 @@ namespace djack.RogueSurvivor.Data
         if (   other == leader   // my leader?
             || other.Leader == leader)    // a mate?
           return true;
-      } 
+      }
       return m_Followers?.Contains(other) ?? false; // a follower?
     }
 
@@ -2114,7 +2113,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantPull(other, moveToPos));
     }
-
 
     public bool CanPull(Actor other, in Location dest, out string reason)
     {
@@ -2659,7 +2657,6 @@ namespace djack.RogueSurvivor.Data
       return (0<ret.Count) ? ret : null;
     }
 
-
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {
@@ -2686,7 +2683,6 @@ namespace djack.RogueSurvivor.Data
     {
       return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
-
 
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
     {
@@ -2968,7 +2964,6 @@ namespace djack.RogueSurvivor.Data
       return LOUD_NOISE_BASE_WAKEUP_CHANCE + SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (Rules.LOUD_NOISE_RADIUS - noiseDistance) * LOUD_NOISE_DISTANCE_BONUS);
     }
 
-
     public void Vomit()
     {
       const int FOOD_VOMIT_STA_COST = 100;
@@ -3079,9 +3074,7 @@ namespace djack.RogueSurvivor.Data
       // NOTE: martial arts influences the apparent rating considerably
       int rate(ItemMeleeWeapon w) { return MeleeWeaponAttack(w.Model).Rating; }
 
-      var ret = melee.Where(Item.notEquipped).Minimize(rate);
-      if (null == ret) ret = melee.Minimize(rate);
-      return ret;
+      return melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate);
     }
 
     public ItemBodyArmor? GetBestBodyArmor()
@@ -3307,7 +3300,7 @@ namespace djack.RogueSurvivor.Data
 
        // 4. SprayOn is not self or adjacent.
        if (sprayOn != this && !Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
-            
+
        return "";  // all clear.
     }
 
@@ -3596,7 +3589,6 @@ namespace djack.RogueSurvivor.Data
     {
       return Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
     }
-
 
     // smell
     public double Smell {

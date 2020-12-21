@@ -47,9 +47,9 @@ namespace djack.RogueSurvivor.Engine
 
     public List<string[]> Parse(string[] lines)
     {
-      int ub = (null == lines) ? 0 : lines.Length;
+      int ub = (lines?.Length) ?? 0;
       if (0 >= ub) return new List<string[]>();
-      List<string[]> strArrayList = new List<string[]>(ub);
+      var strArrayList = new List<string[]>(ub);
       foreach (string line in lines)
         strArrayList.Add(Parse(line));
       return strArrayList;

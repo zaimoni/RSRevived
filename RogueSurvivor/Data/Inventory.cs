@@ -334,7 +334,7 @@ namespace djack.RogueSurvivor.Data
 
         // alpha10
         /// <summary>
-        /// Defragment the inventory : consolidate smaller stacks into bigger ones. 
+        /// Defragment the inventory : consolidate smaller stacks into bigger ones.
         /// Improves AI inventory management, not meant for the player as it can change the inventory and confuses him.
         /// TODO -- Maybe later add a special "defrag" command for the player to the interface, players would probably
         /// like to be able to merge stacks too.

@@ -104,10 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               });
             }
           } else if (null != full_sheds) {
-            ok = ok.And(pt => {
-              if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;
-              return true;
-            });
+            ok = ok.And(pt => null == full_sheds.Find(z => z.Bounds.Contains(pt)));
           }
 
           // Unfortunately, CHAR did represent to the police that the offices were ok as curfew refuges.

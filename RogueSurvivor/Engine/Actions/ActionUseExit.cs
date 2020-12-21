@@ -20,8 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Location dest { get { return Exit.Location; } }
     public Location origin { get { return m_ExitPoint; } }
 
-    public ActionUseExit(Actor actor, in Location exitPoint)
-      : base(actor)
+    public ActionUseExit(Actor actor, in Location exitPoint) : base(actor)
     {
 #if DEBUG
       if (null == exitPoint.Exit) throw new ArgumentNullException("exitPoint.Exit");
@@ -41,7 +40,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (m_Actor.Location != m_ExitPoint) return false;
       return base.IsPerformable();
     }
-
 
     public override void Perform()
     {

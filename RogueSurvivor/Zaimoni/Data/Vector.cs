@@ -536,7 +536,6 @@ namespace Zaimoni.Data
         {
             return _anchor.GetHashCode()^_dim.GetHashCode();
         }
-
     }
 
     [Serializable]
@@ -1020,7 +1019,6 @@ namespace Zaimoni.Data
       }
     }
 
-
     public void DoForEachOnEdge(Action<Vector2D_short> doFn, Predicate<Vector2D_short> testFn)
     {
       var poshort = new Vector2D_short();
@@ -1095,8 +1093,8 @@ namespace Zaimoni.Data
         {
             return _anchor.GetHashCode()^_dim.GetHashCode();
         }
-
     }
+
     [Serializable]
     public struct Vector2D_long : IComparable<Vector2D_long>,IEquatable<Vector2D_long>
     {
@@ -1623,11 +1621,9 @@ namespace Zaimoni.Data
         {
             return _anchor.GetHashCode()^_dim.GetHashCode();
         }
-
     }
 
     public static class ext_Vector {
-
         public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
         {
             hull[0] = new Vector2D_short(short.MaxValue, short.MaxValue);

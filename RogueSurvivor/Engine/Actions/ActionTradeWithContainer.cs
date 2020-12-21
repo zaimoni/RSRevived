@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         protected readonly Item m_TakeItem;
         protected readonly Item m_GiveItem;
 
-        public ActionTradeWith(Actor actor, Item give, Item take) : base(actor)
+        protected ActionTradeWith(Actor actor, Item give, Item take) : base(actor)
         {
 #if DEBUG
             if (null == give || !m_Actor.Inventory.Contains(give)) throw new ArgumentNullException(nameof(give));
@@ -78,7 +78,6 @@ namespace djack.RogueSurvivor.Engine.Actions
             return Cast(new Location(actor.Location.Map, pt), actor, give, take);
         }
     }
-
 
     [Serializable]
     internal class ActionTradeWithContainer : ActionTradeWith,Target<MapObject>

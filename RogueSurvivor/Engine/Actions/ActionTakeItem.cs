@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Engine.Actions
           if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
           if (act is ActorGive trade) return trade.Give;
           return null;
-        } 
+        }
 
         if (null!=(received = parse_recovery(recover))) {
 #if DEBUG

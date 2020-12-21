@@ -252,7 +252,7 @@ retry:
                 all_there = false;
                 continue;
               }
-            } else if (act is Actions.ActionChain chain && chain.RejectOrigin(origin, 0)) { 
+            } else if (act is Actions.ActionChain chain && chain.RejectOrigin(origin, 0)) {
               all_there = false;
               continue;
             }

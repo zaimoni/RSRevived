@@ -198,10 +198,10 @@ namespace Zaimoni.Data
                 if (_contains(inspect,seg)) return true; // ok
                 if (_contains(seg, inspect)) return false;   // implies failure when in normal form
               }
-            }            
+            }
             return false;
           }
-        
+
           // XXX remove line segment operation
         }
     }

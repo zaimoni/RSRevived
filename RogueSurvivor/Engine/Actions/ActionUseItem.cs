@@ -14,7 +14,6 @@ namespace djack.RogueSurvivor.Engine.Actions
     public T Use { get; }
   }
 
-
   internal class ActionUseItem : ActorAction, Use<Item>
     {
     private readonly Item m_Item;
@@ -60,8 +59,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Item? Use {
       get {
-        if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Gameplay.GameItems.From(m_ID));
-        return m_Item;
+        return m_Item ??= m_Actor.Inventory.GetBestDestackable(Gameplay.GameItems.From(m_ID));
       }
     }
 

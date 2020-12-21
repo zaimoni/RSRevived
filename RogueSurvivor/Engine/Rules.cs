@@ -807,7 +807,6 @@ retry:
       }
       return loc;   // if not in the entry map, source map is not close to surface
     }
-
   } // end Rules class
 
 // still want this

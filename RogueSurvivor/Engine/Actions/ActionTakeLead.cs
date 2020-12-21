@@ -37,6 +37,5 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       return m_Actor.Name + " trying to lead " + m_Target.Name + "; " + m_Actor.Location + ", " + m_Target.Location;
     }
-
   }
 }

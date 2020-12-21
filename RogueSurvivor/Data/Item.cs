@@ -29,7 +29,6 @@ namespace djack.RogueSurvivor.Data
         bool FreeSlotByUse(Actor a);
     }
 
-
 #if PROTOTYPE
   [Serializable]
   internal struct ItemStruct    // for item memmory

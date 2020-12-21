@@ -587,7 +587,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-
     public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
 
     public bool HasExitAtExt(Point pos)
@@ -1403,7 +1402,6 @@ retry:
     {
         return !(new Rectangle(pos - (Point)(min_distance - 1), (Point)(-1 + 2 * min_distance))).Any(pt => GetActorAtExt(pt)?.IsPlayer ?? false);
     }
-
 
     public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool>? pred =null)
     {

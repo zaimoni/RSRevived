@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Data
       var it_memory = ItemMemory;
       if (null == it_memory) return null;
       var ret = new HashSet<Point>();
-      bool IsInHere(Location loc) { return loc.Map == map; };
+      bool IsInHere(Location loc) { return loc.Map == map; }
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
@@ -188,7 +188,6 @@ namespace djack.RogueSurvivor.Data
     } }
 
     public virtual bool InCombat { get { return IsEngaged; } }
-
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>

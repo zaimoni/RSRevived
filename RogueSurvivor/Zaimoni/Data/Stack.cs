@@ -6,7 +6,7 @@ namespace Zaimoni.Data
 {
     public ref struct Stack<T>  // note namespace collision w/C# standard library
     {
-        private Span<T> _x;
+        private readonly Span<T> _x;
         private int ub;
 
         public Stack(Span<T> src) { _x = src; ub = 0; }

@@ -58,7 +58,6 @@ namespace Zaimoni.Data
         // retain domain and blacklist, change specification of forward and inverse which invalidates the map itself
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
-
 #if DEBUG
             if (null == src) throw new ArgumentNullException(nameof(src));
 #endif

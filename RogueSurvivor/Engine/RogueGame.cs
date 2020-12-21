@@ -13692,7 +13692,7 @@ retry:
     }
 
     // alpha10
-    class OverlayPopupTitle : Overlay
+    private class OverlayPopupTitle : Overlay
     {
       public readonly Point ScreenPosition;
       public readonly string Title;

@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define Z_VECTOR
-
 using System;
 
 using Point = Zaimoni.Data.Vector2D_short;
@@ -47,7 +45,6 @@ namespace djack.RogueSurvivor.Data
       if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return false; // string.Format("{0} is blocking your way.", mapObjectAt.AName);
       return true;
     }
-
 
     public bool IsNotBlocked(out Actor? actorAt, out MapObject? mapObjectAt, Actor? actor=null) {   // \todo a couple of cold-path callers would like out vars for the actor and mapObjectAt failure modes
       mapObjectAt = null;

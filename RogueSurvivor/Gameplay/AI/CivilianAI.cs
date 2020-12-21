@@ -81,7 +81,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Emotes = src;
     }
 
-
     public override List<Percept> UpdateSensors()
     {
       return m_MemLOSSensor.Sense();

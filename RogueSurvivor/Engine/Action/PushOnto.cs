@@ -148,7 +148,6 @@ namespace djack.RogueSurvivor.Engine.Op
                 return ret.ToArray();
             }
         }
-
     }
 }
 

@@ -36,7 +36,6 @@ namespace djack.RogueSurvivor.Engine.Items
       ToolBuildBonus = build;
     }
 
-
     public Attack BaseMeleeAttack(in ActorSheet Sheet) {
       return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + Sheet.UnarmedAttack.HitValue, Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
     }

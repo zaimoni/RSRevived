@@ -5,10 +5,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Zaimoni.Data
 {
-    public interface Factory<out T>  
-    {  
-      T create();  
-    }  
+    public interface Factory<out T>
+    {
+      T create();
+    }
 
 	static class FileExt
 	{

@@ -36,6 +36,6 @@ namespace djack.RogueSurvivor.Data
       if (distance < 0 || distance > Radius) throw new ArgumentOutOfRangeException(nameof(distance), distance, "out of range");
 #endif
       return Damage[distance];
-    }  
+    }
   }
 }

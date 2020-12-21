@@ -13,7 +13,7 @@ namespace Zaimoni.Data
     [Serializable]
     public class Observed<T>
     {
-        private List<Observer<T>> m_Watchers = new List<Observer<T>>();
+        private readonly List<Observer<T>> m_Watchers = new List<Observer<T>>();
 
         public void update(T src) {
             var ub = m_Watchers.Count;

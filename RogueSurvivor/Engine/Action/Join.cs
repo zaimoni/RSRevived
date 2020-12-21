@@ -143,7 +143,7 @@ namespace djack.RogueSurvivor.Engine._Action
         while (0 <= --ub) if (m_Options[ub].IsLegal()) return true;
         return false;
       }
-      
+
       public override bool IsPerformable() {
         _real_options = m_Options.FindAll(act => act.IsPerformable());
         if (0 >= _real_options.Count) _real_options = null;
@@ -156,14 +156,12 @@ namespace djack.RogueSurvivor.Engine._Action
 #endif
         var act = Rules.Get.DiceRoller.Choose(_real_options); // \todo more sophisticated choice logic
         act.Perform();
-       
+
         var sequel = m_Sequel?.Bind(m_Actor);
 
         if (null != sequel) {
           (m_Actor.Controller as ObjectiveAI).SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
         }
       }
-
-
     }
 }

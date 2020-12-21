@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
      }
    }
- 
+
     static internal string Aggregate(this AmmoType at)  // morally PluralName
     {
       switch (at) {
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       }
     }
- 
+
     static internal string Describe(this AmmoType at, bool plural=false)
     {
       if (AmmoType.SHOTGUN == at) return at.Aggregate();

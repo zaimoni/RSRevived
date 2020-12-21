@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Engine
                 line?.Add(start);
                 if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
-                };
+                }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
@@ -234,7 +234,7 @@ namespace djack.RogueSurvivor.Engine
                 visible(start);
                 if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
-                };
+                }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;

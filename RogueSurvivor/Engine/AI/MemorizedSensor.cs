@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Engine.AI
           if (mPercept.Percepted == percept.Percepted) {
             mPercept.Location = percept.Location;
             mPercept.Turn = percept.Turn;
-            tmp.RemoveAt(ub);;
+            tmp.RemoveAt(ub);
             break;
           }
         }

@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Data
           InstallHandlers(default);
         }
 
-        [OnDeserialized] private void InstallHandlers(StreamingContext context) { 
+        [OnDeserialized] private void InstallHandlers(StreamingContext context) {
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
           _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
               } else {
                 catalog.Add(x.Key, new Dictionary<Map, Point[]> {
                     [zone.m] = cache.Where(ok).ToArray()
-                });;
+                });
               }
             }
 		  }
@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Data
               } else {
                 catalog.Add(x.Key, new Dictionary<Map, Point[]> {
                     [zone.m] = cache.Where(ok).ToArray()
-                });;
+                });
               }
             }
 		  }
@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Data
               }
               view.Width += view.Left;
               view.X = 0;
-            };
+            }
             if (map.Width < view.Right) {
               var new_width = map.Width;
               new_width -= view.Left;
@@ -216,7 +216,7 @@ namespace djack.RogueSurvivor.Data
                   ret.Add(new Point(pt.X+map.Width,pt.Y));
               }
               view.Width = new_width;
-            };
+            }
             if (0 > view.Top) {
               if (null != (test = world.At(pos + Direction.N))) {
                 foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, map.Height + view.Top, view.Width, -view.Top)))
@@ -224,7 +224,7 @@ namespace djack.RogueSurvivor.Data
               }
               view.Height += view.Top;
               view.Y = 0;
-            };
+            }
             if (map.Height < view.Bottom) {
               var new_height = map.Height;
               new_height -= view.Top;
@@ -233,7 +233,7 @@ namespace djack.RogueSurvivor.Data
                   ret.Add(new Point(pt.X,pt.Y+map.Height));
               }
               view.Height = new_height;
-            };
+            }
 	      }
           var tmp = new HashSet<Point>();
     	  lock(_threats) {
@@ -263,7 +263,7 @@ namespace djack.RogueSurvivor.Data
               }
               view.Width += view.Left;
               view.X = 0;
-            };
+            }
             if (map.Width < view.Right) {
               var new_width = map.Width;
               new_width -= view.Left;
@@ -271,14 +271,14 @@ namespace djack.RogueSurvivor.Data
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(0, view.Top, view.Width - new_width, view.Height))) return true;
               }
               view.Width = new_width;
-            };
+            }
             if (0 > view.Top) {
               if (null != (test = world.At(pos + Direction.N))) {
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, map.Height + view.Top, view.Width, -view.Top))) return true;
               }
               view.Height += view.Top;
               view.Y = 0;
-            };
+            }
             if (map.Height < view.Bottom) {
               var new_height = map.Height;
               new_height -= view.Top;
@@ -286,7 +286,7 @@ namespace djack.RogueSurvivor.Data
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, 0, view.Width, view.Height - new_height))) return true;
               }
               view.Height = new_height;
-            };
+            }
 	      }
           var tmp = new HashSet<Point>();
     	  lock(_threats) {
@@ -358,7 +358,6 @@ namespace djack.RogueSurvivor.Data
           }
           foreach(var x in remap) RecordTaint(a,x.Key,x.Value);
         }
-
 
         public void Sighted(Actor a, Location loc)
         {
@@ -660,7 +659,7 @@ namespace djack.RogueSurvivor.Data
             }
             view.Width += view.Left;
             view.X = 0;
-          };
+          }
           if (map.Width < view.Right) {
             var new_width = map.Width;
             new_width -= view.Left;
@@ -669,7 +668,7 @@ namespace djack.RogueSurvivor.Data
               foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
             }
             view.Width = new_width;
-          };
+          }
           if (0 > view.Top) {
             if (0<pos.Y && 0<crossdistrict_ok && 3!= crossdistrict_ok) {
               HashSet<Point> tmp = In(Engine.Session.Get.World[pos + Direction.N].CrossDistrictViewing(crossdistrict_ok),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
@@ -677,7 +676,7 @@ namespace djack.RogueSurvivor.Data
             }
             view.Height += view.Top;
             view.Y = 0;
-          };
+          }
           if (map.Height < view.Bottom) {
             var new_height = map.Height;
             new_height -= view.Top;
@@ -686,7 +685,7 @@ namespace djack.RogueSurvivor.Data
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
             }
             view.Height = new_height;
-          };
+          }
 		  lock(_locs) {
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
             var tmp = new HashSet<Point>(tmp2); // want a value copy here

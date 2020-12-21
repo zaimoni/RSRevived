@@ -15,7 +15,6 @@ using Point = Zaimoni.Data.Vector2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
 using PointF = System.Drawing.PointF;
 
-
 // XXX C# Point is not a point in a vector space at all.
 // C# Size  is closer (closed under + but doesn't honor left/right multiplication by a scalar)
 
@@ -91,7 +90,7 @@ namespace djack.RogueSurvivor.Data
             case -2: return S;
             case 2: return N;
             case 4: return S;
-            };
+            }
         // x dominant: E/W
         switch (dirCode)
         {
@@ -100,7 +99,7 @@ namespace djack.RogueSurvivor.Data
         case -2: return W;
         case 2: return E;
         case 4: return E;
-        };
+        }
 diagonalExit:
         switch (dirCode)
         {
