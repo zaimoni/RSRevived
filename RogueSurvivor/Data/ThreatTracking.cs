@@ -617,12 +617,7 @@ namespace djack.RogueSurvivor.Data
     {
       private readonly Dictionary<Map, HashSet<Point>> _locs = new Dictionary<Map, HashSet<Point>>();
 
-      public LocationSet() {}
-
-      public void Clear()
-      {
-        lock(_locs) { _locs.Clear(); }
-      }
+      public void Clear() { lock(_locs) { _locs.Clear(); } }
 
       public bool Contains(in Location loc)
       {
@@ -704,20 +699,18 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
       }
 
-#if DEAD_FUNC
       public void Record(Map m, IEnumerable<Point> pts)
       {
         lock(_locs) {
-		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
-          _locs[m].UnionWith(pts.Where(pt => m.GetTileModelAt(pt).IsWalkable));
+          if (!_locs.TryGetValue(m, out var cache)) _locs.Add(m, cache = new HashSet<Point>());
+          cache.UnionWith(pts.Where(pt => m.GetTileModelAt(pt).IsWalkable));
         }
       }
-#endif
 
       public void Record(Map m, in Point pt)
       {
+        if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles
         lock(_locs) {
-          if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles
           if (!_locs.TryGetValue(m, out var cache)) _locs.Add(m,(cache = new HashSet<Point>()));
           cache.Add(pt);
         }
@@ -731,6 +724,14 @@ namespace djack.RogueSurvivor.Data
           else _locs.Add(loc.Map, new HashSet<Point> { loc.Position });
 		}
       }
+
+#if DEAD_FUNC
+      public void Seen(Map m, Predicate<Point> fail) {
+        lock(_locs) {
+          if (_locs.TryGetValue(m, out var target) && 0 < target.RemoveWhere(fail) && 0 >= target.Count) _locs.Remove(m);
+        }
+      }
+#endif
 
       public void Seen(Location[] locs) {
         // assume all of these are in canonical form
