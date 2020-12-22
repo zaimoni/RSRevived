@@ -148,7 +148,10 @@ namespace djack.RogueSurvivor.Data
 
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(Dictionary<Point, MapObject> src)
     {
-      return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList());
+      var wrap = new List<Engine.MapObjects.PowerGenerator>();
+      foreach(var x in src) if (x.Value is Engine.MapObjects.PowerGenerator gen) wrap.Add(gen);
+      return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(wrap);
+//    return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList()); // OfType stopped working: .NET 5.0 break?
     }
 #nullable restore
 
