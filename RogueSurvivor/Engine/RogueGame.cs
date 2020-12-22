@@ -3677,7 +3677,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      PagedMenu("Reviewing...", item_classes.Count, label, details);
+      PagedPopup("Reviewing...", item_classes.Count, label, details);
     }
 
     private void HandleAlliesInfo()
@@ -8852,7 +8852,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 
-      PagedMenu("Trading for ...", objList.Count, label, details);
+      PagedPopup("Trading for ...", objList.Count, label, details);
       return ret;
     }
 
@@ -8873,7 +8873,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 
-      PagedMenu("Trading for ...", objList.Count, label, details);
+      PagedPopup("Trading for ...", objList.Count, label, details);
       return ret;
     }
 #nullable restore
