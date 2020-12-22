@@ -769,4 +769,81 @@ namespace djack.RogueSurvivor.Data
       public void Seen(Map m, Point pt) { Seen(new Location(m,pt)); }
 #endif
     }
+
+    [Serializable]
+    class LocationFunction<T>
+    {
+        private readonly Dictionary<Map, Dictionary<Point, T>> _locs = new Dictionary<Map, Dictionary<Point, T>>();
+
+        public void Clear() { lock (_locs) { _locs.Clear(); } }
+
+        public bool Contains(in Location loc) {
+            lock (_locs) {
+                return _locs.TryGetValue(loc.Map, out var test) && test.ContainsKey(loc.Position);
+            }
+        }
+
+        public bool TryGetValue(in Location loc, out T dest) {
+            dest = default;
+            lock (_locs) {
+                if (_locs.TryGetValue(loc.Map, out var test) && test.TryGetValue(loc.Position, out var ret)) {
+                    dest = ret;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public T this[Location loc]
+        {
+          get {
+            lock (_locs) {
+                if (_locs.TryGetValue(loc.Map, out var test) && test.TryGetValue(loc.Position, out var ret)) return ret;
+                throw new KeyNotFoundException(loc.ToString());
+            }
+          }
+
+          set {
+            lock (_locs) {
+                if (_locs.TryGetValue(loc.Map, out var test)) test[loc.Position] = value;
+                else _locs.Add(loc.Map, new Dictionary<Point, T> { [loc.Position] = value });
+            }
+          }
+        }
+
+        public T this[Map m, IEnumerable<Point> pts]
+        {
+            set {
+                if (null == pts || !pts.Any()) return;
+                lock (_locs) {
+                    if (_locs.TryGetValue(m, out var cache)) {
+                        foreach (var pt in pts) cache[pt] = value;
+                    } else {
+                        var staging = new Dictionary<Point, T>();
+                        foreach (var pt in pts) staging.Add(pt, value);
+                        _locs.Add(m, staging);
+                    }
+                }
+            }
+        }
+
+        public bool Remove(Location loc) {
+            lock (_locs) {
+                if (_locs.TryGetValue(loc.Map, out var test)) return test.Remove(loc.Position);
+            }
+            return false;
+        }
+
+        public int RemoveWhere(Map m, Func<Point, bool> fail) {
+          lock(_locs) {
+            int ret = 0;
+            if (_locs.TryGetValue(m, out var cache)) {
+              foreach(var pt in cache.Keys.Where(fail).ToArray()) if (cache.Remove(pt)) ret += 1;
+              if (0 >= cache.Count) _locs.Remove(m);
+            }
+            return ret;
+          }
+        }
+
+    }
 }
