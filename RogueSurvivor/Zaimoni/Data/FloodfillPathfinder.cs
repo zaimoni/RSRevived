@@ -77,7 +77,7 @@ namespace Zaimoni.Data
             ;
         }
 
-        // blacklist manipulation
+#region blacklist manipulation
         public void Blacklist(IEnumerable<T> src)
         {
             _blacklist.UnionWith(src);
@@ -108,6 +108,7 @@ namespace Zaimoni.Data
         {
             _blacklist.Remove(src);
         }
+        #endregion
 
         public void GoalDistance(T goal, T start, int max_cost = int.MaxValue)
         {
@@ -167,6 +168,58 @@ namespace Zaimoni.Data
                 }
             }
         }
+
+#nullable enable
+        /// <returns>null, or an ordered pair (domain violations, blacklisted)</returns>
+        public KeyValuePair<List<T>?, List<T>?>? Audit(Dictionary<T, int> goal_costs) {
+            List<T>? domain = null;
+            List<T>? banned = null;
+            bool any_ok = false;
+            foreach (var x in goal_costs) {
+                if (!_inDomain(x.Key)) {
+                    (domain ??= new List<T>()).Add(x.Key);
+                    continue;
+                }
+                if (_blacklist.Contains(x.Key)
+                    || (null != _blacklist_fn && _blacklist_fn(x.Key))) {
+                    (banned ??= new List<T>()).Add(x.Key);
+                    continue;
+                }
+                any_ok = true;
+            }
+            if (any_ok) {
+                if (null != domain) foreach (var x in domain) goal_costs.Remove(x);
+                if (null != banned) foreach (var x in banned) goal_costs.Remove(x);
+                return null;
+            }
+            return new KeyValuePair<List<T>?, List<T>?>(domain, banned);
+        }
+
+        // escape hatch for when initial goals are all domain/blacklist invalid
+        public bool StepFrom(Dictionary<T, int> goal_costs, T src) {
+          if (!goal_costs.TryGetValue(src, out var old_cost)) return false;
+          bool ret = false;
+          var threshold = int.MaxValue - old_cost;
+          foreach(var x in _forward(src)) {
+            if (0 > x.Value || threshold <= x.Value) continue;
+            var cost = old_cost + x.Value;
+            if (goal_costs.TryGetValue(x.Key, out var legacy_cost)) {
+              if (legacy_cost <= cost) continue;
+              goal_costs[x.Key] = cost;
+            } else {
+              goal_costs.Add(x.Key, cost);
+            }
+            ret = true;
+          }
+          return ret;
+        }
+
+        public bool StepFrom(Dictionary<T, int> goal_costs, IEnumerable<T> src) {
+          bool ret = false;
+          foreach(var x in src) if (StepFrom(goal_costs, x)) ret = true;
+          return ret;
+        }
+#nullable restore
 
         private bool _bootstrap(Dictionary<T,int> goal_costs, Dictionary<int, HashSet<T>> _now)
         {
@@ -228,8 +281,7 @@ namespace Zaimoni.Data
               T pt;
               int delta_cost;
               foreach(T tmp in _now[cost]) {
-                Dictionary<T, int> candidates = _forward(tmp);
-                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                foreach (KeyValuePair<T, int> tmp2 in _forward(tmp)) {
                   if (_blacklist.Contains(pt = tmp2.Key)) continue;
                   if (!_inDomain(pt)) continue;
                   if (null != _blacklist_fn && _blacklist_fn(pt)) continue;
@@ -334,8 +386,7 @@ namespace Zaimoni.Data
               int cost = _now.Keys.Min();
               int max_delta_cost = max_cost - cost;
               foreach(T tmp in _now[cost]) {
-                Dictionary<T, int> candidates = _forward(tmp);
-                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                foreach (KeyValuePair<T, int> tmp2 in _forward(tmp)) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_delta_cost<= tmp2.Value) continue;
@@ -375,8 +426,7 @@ namespace Zaimoni.Data
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
                 int cost = _map[tmp];
-                Dictionary<T, int> candidates = _forward(tmp);
-                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                foreach (KeyValuePair<T, int> tmp2 in _forward(tmp)) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_cost-cost<=tmp2.Value) continue;

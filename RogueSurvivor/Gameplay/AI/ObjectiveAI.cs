@@ -3443,6 +3443,18 @@ restart:
       var blacklist = BlacklistFunction(goal_costs, excluded, excluded_zones);
       if (null != blacklist) navigate.InstallBlacklist(blacklist);
 
+retry:
+      var reject = navigate.Audit(goal_costs);
+      if (null != reject) {
+        if (null != reject.Value.Value) {
+          // this could get really slow if it loops
+          if (navigate.StepFrom(goal_costs, reject.Value.Value)) {
+            if (goal_costs.ContainsKey(m_Actor.Location)) return null; // cancel navigation
+            goto retry;
+          }
+        }
+      }
+
       navigate.GoalDistance(goal_costs, m_Actor.Location);
       return navigate;
     }
