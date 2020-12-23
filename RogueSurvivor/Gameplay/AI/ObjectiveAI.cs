@@ -3661,7 +3661,7 @@ Restart:
 #if DEBUG
                     if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
 #endif
-                    stats.Value[ub] = new KeyValuePair<ZoneLoc, ZoneLoc[]>(stats.Value[ub].Key, trimmed);
+                    stats.Value[ub].Value = trimmed;
                 }
                 if (1 == stats.Value[ub].Value.Length && ub < --one_lb) {
                     var swap = stats.Value[ub];

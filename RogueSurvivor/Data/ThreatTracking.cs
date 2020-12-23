@@ -1006,7 +1006,7 @@ namespace djack.RogueSurvivor.Data
 #endregion
 
        // single-threaded context
-       public KeyValuePair<List<Location>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
+       public KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
             var goals = new List<Location>();
             var goal_zones = new List<ZoneLoc>();
 
@@ -1019,7 +1019,7 @@ namespace djack.RogueSurvivor.Data
                     goals.Add(loc);
                 }
             }
-            return new KeyValuePair<List<Location>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>(goals, goal_zones.Select(z => new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"))).ToList());
+            return new KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, goal_zones.Select(z => new KVpair<ZoneLoc, ZoneLoc[]>(z, z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"))).ToList());
        }
     }
 }
