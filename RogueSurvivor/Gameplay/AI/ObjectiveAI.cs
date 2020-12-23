@@ -18,7 +18,6 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using System.Runtime.Serialization;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
 
 namespace djack.RogueSurvivor.Gameplay.AI

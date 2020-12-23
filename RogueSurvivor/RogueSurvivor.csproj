@@ -68,6 +68,7 @@
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
+    <Compile Include="Gameplay\AI\Goals\Pathfinder.cs" />
     <Compile Include="Gameplay\AI\Goals\Objective.cs" />
     <Compile Include="Gameplay\AI\Goals\AcquireLineOfSight.cs" />
     <Compile Include="Gameplay\AI\Goals\BlacklistExits.cs" />
