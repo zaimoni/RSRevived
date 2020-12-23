@@ -113,6 +113,11 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
+    public List<Location>? Contains(IEnumerable<Location> src) {
+        var ret = new List<Location>();
+        foreach(var loc in src) if (Contains(in loc)) ret.Add(loc);
+        return (0 < ret.Count) ? ret : null;
+    }
     public bool Contains(in Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
     public bool ContainsExt(in Location loc) {
       if (m == loc.Map) return Rect.Contains(loc.Position);
@@ -272,6 +277,28 @@ namespace djack.RogueSurvivor.Data
             return ret;
         }
     }
+
+    public Zone? Zone {
+      get {
+        return m.GetZonesAt(Rect.Location)?.Find(z => z.Bounds == Rect);
+      }
+    }
+
+    public static ZoneLoc[] AssignZone(in Location origin) {
+        var tmp_zone = origin.ClearableZone;
+        if (null != tmp_zone) return new ZoneLoc[] { tmp_zone };
+        var dest = new List<ZoneLoc>();
+        foreach (var dir in Direction.COMPASS) {
+            var loc = origin + dir;
+            if (!Map.Canonical(ref loc)) continue;
+            tmp_zone = loc.ClearableZone;
+            if (null != tmp_zone && !dest.Contains(tmp_zone)) dest.Add(tmp_zone);
+        }
+        if (0 < dest.Count) return dest.ToArray();
+        return null;
+    }
+
+
 #nullable restore
 
     public List<UpdateMoveDelta>? WalkOut() {

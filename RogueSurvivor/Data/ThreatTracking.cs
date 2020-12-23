@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 
@@ -774,8 +774,47 @@ namespace djack.RogueSurvivor.Data
     class LocationFunction<T>
     {
         private readonly Dictionary<Map, Dictionary<Point, T>> _locs = new Dictionary<Map, Dictionary<Point, T>>();
+        [NonSerialized] private List<delete_from>? _handlers = null;
+
+        private class delete_from {
+            private readonly List<Location> triggers = new List<Location>();
+            private readonly List<Location> targets = new List<Location>();
+            private readonly List<LocationFunction<T>> hosts = new List<LocationFunction<T>>();
+
+            public delete_from(Location trigger, Location target, LocationFunction<T> host) {
+                triggers.Add(trigger);
+                targets.Add(target);
+                hosts.Add(host);
+            }
+
+            /// <returns>true if and only if this has activated and should be deleted</returns>
+            public bool Fire(in Location trigger) {
+                if (!triggers.Remove(trigger)) return false; // did not match
+                if (0 < triggers.Count) return false; // still have work to do
+                foreach (var host in hosts) host.Remove(targets);
+                return true;
+            }
+
+            public bool Merge(delete_from src) {
+                if (!triggers.ValueEqual(src.triggers)) return false;
+                if (targets.ValueEqual(src.targets)) {
+                    foreach (var host in src.hosts) {
+                        if (!hosts.Contains(host)) hosts.Add(host);
+                        return true;
+                    }
+                }
+                if (hosts.ValueEqual(src.hosts)) {
+                    foreach (var target in src.targets) {
+                        if (!targets.Contains(target)) targets.Add(target);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
 
         public void Clear() { lock (_locs) { _locs.Clear(); } }
+        public void ClearHandlers() { lock (_locs) { _handlers = null; } }
 
         public bool Contains(in Location loc) {
             lock (_locs) {
@@ -827,23 +866,160 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
-        public bool Remove(Location loc) {
-            lock (_locs) {
-                if (_locs.TryGetValue(loc.Map, out var test)) return test.Remove(loc.Position);
+        // lock provided by callers
+        private void merge(delete_from src) {
+            if (null == _handlers) {
+                _handlers = new List<delete_from> { src };
+                return;
+            }
+            int ub = _handlers.Count;
+            while (0 <= --ub) {
+                if (src.Merge(_handlers[ub])) {
+                    _handlers.RemoveAt(ub);
+                    ub = _handlers.Count;
+                }
+            }
+            _handlers.Add(src);
+        }
+
+        // lock provided by callers
+        private void fire_delete(in Location loc) {
+            if (null != _handlers) {
+                // XXX linear search XXX
+                int ub = _handlers.Count;
+                while (0 <= --ub) if (_handlers[ub].Fire(in loc)) _handlers.RemoveAt(ub);
+                if (0 >= _handlers.Count) _handlers = null;
+            }
+        }
+
+        // lock provided by callers
+        private bool remove(in Location loc) {
+            if (_locs.TryGetValue(loc.Map, out var test) && test.Remove(loc.Position)) {
+                fire_delete(in loc);
+                return true;
             }
             return false;
+        }
+
+        public bool Remove(Location loc) { lock (_locs) { return remove(in loc); } }
+
+        public int Remove(IEnumerable<Location> locs)
+        {
+            int ret = 0;
+            lock (_locs) {
+                foreach (var loc in locs) if (remove(in loc)) ret += 1;
+            }
+            return ret;
         }
 
         public int RemoveWhere(Map m, Func<Point, bool> fail) {
           lock(_locs) {
             int ret = 0;
             if (_locs.TryGetValue(m, out var cache)) {
-              foreach(var pt in cache.Keys.Where(fail).ToArray()) if (cache.Remove(pt)) ret += 1;
+              foreach(var pt in cache.Keys.Where(fail).ToArray()) if (cache.Remove(pt)) {
+                fire_delete(new Location(m, pt));
+                ret += 1;
+              }
               if (0 >= cache.Count) _locs.Remove(m);
             }
             return ret;
           }
         }
 
+        public List<Location>? RemoveWhere(Func<T, bool> fail) {
+          lock(_locs) {
+            var ret = new List<Location>();
+            var ex_map = new List<Map>();
+            foreach(var x in _locs) {
+              var doomed = new List<Point>();
+              foreach(var y in x.Value) {
+                if (fail(y.Value)) doomed.Add(y.Key);
+              }
+              foreach(var pt in doomed) {
+                if (x.Value.Remove(pt)) {
+                  var loc = new Location(x.Key, pt);
+                  fire_delete(in loc);
+                  ret.Add(loc);
+                }
+              }
+              if (0 >= x.Value.Count) ex_map.Add(x.Key);
+            }
+            foreach(var m in ex_map) _locs.Remove(m);
+            return (0 < ret.Count) ? ret : null;
+          }
+        }
+
+#region proxy setup
+        public LocationFunction<T> ForwardingClone()
+        {
+          lock(_locs) {
+            var ret = new LocationFunction<T>();
+            foreach(var x in _locs) {
+              ret._locs.Add(x.Key, new Dictionary<Point, T>(x.Value));
+              foreach(var y in x.Value) {
+                var loc = new Location(x.Key, y.Key);
+                (ret._handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, this));
+              }
+            }
+            return ret;
+          }
+        }
+
+        public void ForwardingMerge(LocationFunction<T> src, Func<T,T,int> cmp)
+        {
+          lock(_locs) {
+            lock(src._locs) {
+              foreach(var x in src._locs) {
+                if (_locs.TryGetValue(x.Key, out var cache)) {
+                  foreach(var y in x.Value) {
+                    if (cache.TryGetValue(y.Key, out var legacy)) {
+                      int code = cmp(legacy, y.Value);
+                      if (0 > code) continue; // new value "worse"
+                      var loc = new Location(x.Key, y.Key);
+                      if (0 < code) {
+                        // new value "better"
+                        fire_delete(loc);
+                        cache[y.Key] = y.Value;
+                        (_handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, src));
+                        continue;
+                      }
+                      merge(new delete_from(loc, loc, src));
+                      continue;
+                    } else {
+                      cache.Add(y.Key, y.Value);
+                      var loc = new Location(x.Key, y.Key);
+                      (_handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, src));
+                      continue;
+                    }
+                  }
+                } else {
+                  _locs.Add(x.Key, new Dictionary<Point, T>(x.Value));
+                  foreach(var y in x.Value) {
+                    var loc = new Location(x.Key, y.Key);
+                    (_handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, src));
+                  }
+                }
+              }
+            }
+          }
+        }
+#endregion
+
+       // single-threaded context
+       public KeyValuePair<List<Location>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
+            var goals = new List<Location>();
+            var goal_zones = new List<ZoneLoc>();
+
+            foreach (var x in _locs) {
+                foreach (var y in x.Value) {
+                    var loc = new Location(x.Key, y.Key);
+                    var tmp_zones = ZoneLoc.AssignZone(in loc);
+                    if (null == tmp_zones) continue;
+                    foreach (var z in tmp_zones) if (!goal_zones.Contains(z)) goal_zones.Add(z);
+                    goals.Add(loc);
+                }
+            }
+            return new KeyValuePair<List<Location>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>(goals, goal_zones.Select(z => new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"))).ToList());
+       }
     }
 }

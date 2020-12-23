@@ -541,10 +541,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var update_path = ForceLambdaPath();
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
+
+#if DEBUG
+        var pathing = new Goals.Pathfinder(5);
+        var target_threat = pathing[0];
+        var target_tourism = pathing[1];
+        var target_generators_on = pathing[2];
+        var target_generators_recharge = pathing[3];
+        var target_items = pathing[4];
+#endif
+
         HashSet<Point> hunt_threat(Map m) {
           if (District.IsSewersMap(m) && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable
           var ret = threats.ThreatWhere(m);
-          if (0<ret.Count) update_path.StageView(m,ret);
+          if (0<ret.Count) {
+#if DEBUG
+            target_threat[m, ret] = 0;
+#endif
+            update_path.StageView(m,ret);
+          }
           return ret;
         }
 
@@ -553,7 +568,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         LocationSet sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
           var ret = sights_to_see.In(m);
-          if (0<ret.Count) update_path.StageView(m,ret);
+          if (0<ret.Count) {
+#if DEBUG
+            target_tourism[m, ret] = 0;
+#endif
+            update_path.StageView(m,ret);
+          }
           return ret;
         }
         if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
@@ -568,6 +588,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null == handled) continue;
             if (handled.m != m) continue;
             bool reject(Point pt) { return handled.Rect.Contains(pt); }
+#if DEBUG
+            target_threat.RemoveWhere(m, reject);
+            target_tourism.RemoveWhere(m, reject);
+#endif
             target.RemoveWhere(reject);
             update_path.UnStageView(m,reject);
           }
@@ -578,13 +602,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var gens = Generators(m);
           if (null == gens) return new HashSet<Point>();
           if (WantToRecharge()) {
+#if DEBUG
+            update_path.StageGenerators(gens);
+            var recharge = m_Actor.CastToBumpableDestinations(m, gens.Select(obj => obj.Location.Position));
+            target_generators_recharge[m, recharge] = 0;
+            return recharge;
+#else
             update_path.StageGenerators(gens);
             return m_Actor.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
+#endif
           }
           var gens_off = gens.Where(obj => !obj.IsOn);
           if (gens_off.Any()) {
+#if DEBUG
+            update_path.StageGenerators(gens_off);
+            var turn_on = m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));
+            target_generators_on[m, turn_on] = 0;
+            return turn_on;   // XXX should be for map
+#else
             update_path.StageGenerators(gens_off);
             return m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
+#endif
           }
           return new HashSet<Point>();
         }
@@ -595,7 +633,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           var ret = WhereIs(want, m);
           if (0 < ret.Count) update_path.StageInventory(m,ret);
+#if DEBUG
+          var inventories = m_Actor.CastToInventoryAccessibleDestinations(m, ret);
+          target_items[m, inventories] = 0;
+          return inventories;
+#else
           return m_Actor.CastToInventoryAccessibleDestinations(m,ret);
+#endif
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
@@ -620,12 +664,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // 1) view pathing
           _caller = CallChain.SelectAction_LambdaPath;
+#if DEBUG
+          tmpAction = BehaviorPathTo(pathing_targets, pathing, prefilter_view, reject_view);
+#else
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
+#endif
           _caller = CallChain.NONE;
+#if DEBUG
+          if (m_Actor.IsDebuggingTarget && null != tmpAction) throw new InvalidOperationException("tracing");
+#endif
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null!=tmpAction) return tmpAction;
+#if DEBUG
+          target_threat.Clear();
+          target_tourism.Clear();
+          target_generators_on.Clear();
+          target_generators_recharge.Clear();
+          target_items.Clear();
+#endif
           update_path.ForgetStaging();
           // 2) minimap range pathing, if distinct from view
           if (0!= map_code) {
@@ -668,8 +726,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
 #endif
           _caller = CallChain.SelectAction_LambdaPath;
+#if DEBUG
+            tmpAction = BehaviorPathTo(pathing_targets, pathing, prefilter_minimap /*,postfilter_minimap*/);
+#else
             tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap /*,postfilter_minimap*/);
+#endif
           _caller = CallChain.NONE;
+#if DEBUG
+          if (m_Actor.IsDebuggingTarget && null != tmpAction) throw new InvalidOperationException("tracing");
+#endif
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
 #endif
@@ -691,14 +756,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
             }
             if (null!=tmpAction) return tmpAction;
+#if DEBUG
+            target_threat.Clear();
+            target_tourism.Clear();
+            target_generators_on.Clear();
+            target_generators_recharge.Clear();
+            target_items.Clear();
+#endif
             update_path.ForgetStaging();
           }
           // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
           if (combat_unready.Value && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
           _caller = CallChain.SelectAction_LambdaPath;
+#if DEBUG
+          tmpAction = BehaviorPathTo(pathing_targets, pathing);
+#else
           tmpAction = BehaviorPathTo(pathing_targets);
+#endif
           _caller = CallChain.NONE;
+#if DEBUG
+          if (m_Actor.IsDebuggingTarget && null != tmpAction) throw new InvalidOperationException("tracing");
+#endif
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within world: "+(tmpAction?.ToString() ?? "null"));
 #endif

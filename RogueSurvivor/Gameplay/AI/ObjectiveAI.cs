@@ -3292,6 +3292,386 @@ Restart:
       return goals;
     }
 
+    private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Goals.Pathfinder details, Map dest, Predicate<Map> preblacklist)
+    {
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ObjectiveAI::Goals (depth 1) @ "+m_Actor.Location);
+#endif
+      var dest_hospital = Session.Get.UniqueMaps.HospitalDepth(dest);
+      var dest_police = Session.Get.UniqueMaps.PoliceStationDepth(dest);
+
+      var exit_veto = Goal<Goals.BlacklistExits>();
+      var goals = new HashSet<Location>();
+      var already_seen = new List<Map>();
+      var scheduled = new List<Map>();
+      var obtain_goals_cache = new Dictionary<Map,HashSet<Point>>();
+      // branch-bound prefiltering support
+      var min_dist = new Dictionary<Location,int>();
+      var waypoint_for_dist = new Dictionary<Location,Location>();
+      int lb = int.MaxValue;
+      int ub = int.MaxValue;
+      var waypoint_dist = new Dictionary<Location,Point>(); // X lower bound, Y upper bound
+
+      void install_waypoint(Location loc, Point dists) {
+        if (!waypoint_dist.ContainsKey(loc)) waypoint_dist[loc] = dists;
+        var e = loc.Exit;
+        if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.DistrictPos == loc.Map.DistrictPos) e = null;
+        if (null != e && !waypoint_dist.ContainsKey(e.Location) && (null == exit_veto || !exit_veto.Veto(e))) {
+          if (VetoExit(m_Actor, e)) {
+            if (1 < loc.Map.destination_maps.Get.Count) {
+              if (null == exit_veto) {
+                exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                Objectives.Add(exit_veto);
+              } else exit_veto.Blacklist(e);
+            }
+          } else {
+            var move = new ActionMoveDelta(m_Actor, e.Location, loc);
+            int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
+            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+          }
+        }
+      }
+
+      install_waypoint(m_Actor.Location, new Point(0,0));
+      int actor_mapcode = District.UsesCrossDistrictView(m_Actor.Location.Map);
+
+      Point waypoint_bounds(in Location loc) {
+        Point ret = Point.MaxValue;
+        if (waypoint_dist.TryGetValue(loc, out var ret2)) return ret2;
+
+        void set_distance_estimate(Location test, in Location loc, Point range)
+        {
+          int dist = Rules.InteractionDistance(test,in loc);
+          if (short.MaxValue <= dist) {
+            var e = test.Exit;
+            if (null != e) dist = Rules.InteractionDistance(e.Location, in loc);
+            if (short.MaxValue > dist) dist += 1;
+          }
+          if (short.MaxValue <= dist || short.MaxValue - dist <= range.X) return;
+          int lb_dist = dist + range.X;
+//        if (ub < lb_dist) continue;   // doesn't work in practice; pathfinder needs these long-range values as waypoint anchors
+          if (ret.X < lb_dist) return;
+          // no restrictions causes problems w/hospital ground floor 2020-09-07 zaimoni
+          if (test != m_Actor.Location && 0 < actor_mapcode) {
+            var e = test.Exit;
+            if (null != e && !m_Actor.Model.Abilities.AI_CanUseAIExits && e.ToMap.DistrictPos == loc.Map.DistrictPos) e = null;
+            if (null != e) {
+              int loc_mapcode = District.UsesCrossDistrictView(loc.Map);
+              if (0 < loc_mapcode) {
+                int test_mapcode = District.UsesCrossDistrictView(test.Map);
+                int dest_mapcode = District.UsesCrossDistrictView(e.ToMap);
+                if (test_mapcode == loc_mapcode && 0 >= dest_mapcode) {
+                   // vertical exit away from cross-map view not a useful waypoint
+                   if (0 < dest_hospital) {
+                     if (!goals.Any(loc => dest_hospital <= Session.Get.UniqueMaps.HospitalDepth(loc.Map))) return;
+                   } else if (0 < dest_police) {
+                     if (!goals.Any(loc => dest_police <= Session.Get.UniqueMaps.PoliceStationDepth(loc.Map))) return;
+                   } else {
+                     if (!goals.Any(loc => loc.Map==dest)) return;
+                   }
+                   return;
+                }
+              }
+            }
+          }
+
+          if (ret.X > dist) {
+            ret.X = (short)dist;
+            waypoint_for_dist[loc] = test;
+          }
+          short ub_dist = short.MaxValue;
+          if (ub_dist/2 >= dist && ub_dist - 2*dist > range.Y) ub_dist = (short)(2*dist + range.Y);
+          if (ret.Y > ub_dist) {
+            ret.Y = ub_dist;
+            waypoint_for_dist[loc] = test;
+          }
+        }
+
+        set_distance_estimate(m_Actor.Location, in loc, new Point(0,0));
+        foreach(var x in waypoint_dist) set_distance_estimate(x.Key, in loc, x.Value);
+#if DELEGATED_TO_CALLER
+        if (int.MaxValue <= ret.X) throw new InvalidOperationException("no-data bounds: "+ret.to_s()+" for "+loc+"; "+waypoint_dist.to_s()+" "+ last_waypoint_ok.ToString());
+#endif
+        return ret;
+      }
+
+      HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
+        if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": obtaining goals for " + m +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s()+ "\nwaypoint_dist: "+waypoint_dist.to_s());
+#endif
+Restart:
+        var dests = targets_at(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, dests.Count.to_s()+" for "+m);
+#endif
+        if (m != m_Actor.Location.Map) {
+          // do not cache if this triggers -- don't have enough information to prune
+          int m_code = District.UsesCrossDistrictView(m);
+          if (0 < m_code) {
+            if (!waypoint_dist.Any(x => District.UsesCrossDistrictView(x.Key.Map)==m_code)) return dests;
+          } else {
+            if (!waypoint_dist.Any(x => x.Key.Map==m)) return dests;
+          }
+        }
+        if (0 < dests.Count) {
+          try {
+          foreach(var pt in dests) {
+            var loc = new Location(m,pt);
+            Point dist = waypoint_bounds(in loc);
+            if (short.MaxValue <= dist.Y) {
+              details.Remove(loc);
+              continue;
+            }
+            if (ub < dist.X) {
+              details.Remove(loc);
+              continue;
+            }
+            if (ub > dist.Y) {
+              ub = dist.Y;
+              List<Location> remove = null;
+              foreach(var x in min_dist) {
+                if (ub < x.Value) {
+                  (remove ??= new List<Location>(min_dist.Count)).Add(x.Key);
+#if TRACE_GOALS
+                  if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
+#endif
+                }
+              }
+              if (null != remove) {
+                foreach(var x in remove) {
+                  goals.Remove(x);
+                  min_dist.Remove(x);
+                  waypoint_for_dist.Remove(x);
+                }
+                details.Remove(remove);
+              }
+            }
+            if (lb > dist.X) lb = dist.X;
+#if TRACE_GOALS
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "min dist: "+loc.ToString()+": "+ dist.to_s());
+#endif
+            if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
+            goals.Add(loc);
+          }
+          } catch (InvalidOperationException e) {
+            if (e.Message.Contains("Collection was modified")) goto Restart;
+            throw;
+          }
+        }
+        already_seen.Add(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": min_dist " + min_dist.to_s()+"\nwaypoint_for_dist "+waypoint_for_dist.to_s());
+#endif
+        return obtain_goals_cache[m] = dests;
+      }
+
+      bool veto_map(Map m, Map src) {
+        if (0 < obtain_goals(m).Count) return false;
+        if (1 >= m.destination_maps.Get.Count) return true;
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          if (District.UsesCrossDistrictView(m) != District.UsesCrossDistrictView(m_Actor.Location.Map)) return true;
+        }
+        if (m == m.District.EntryMap) return false; // surface map is always ok
+        var unique_maps = Session.Get.UniqueMaps;
+        if (   null != unique_maps.NavigateHospital(src)
+            || null != unique_maps.NavigatePoliceStation(src)) return false;
+        foreach(var test in m.destination_maps.Get) {
+          if (test == src) continue;
+          if (   0 < obtain_goals(test).Count
+              || test == test.District.EntryMap
+              || test.destination_maps.Get.Contains(m.District.EntryMap)
+              || null != unique_maps.NavigateHospital(test)
+              || null != unique_maps.NavigatePoliceStation(test))
+            return false;
+        }
+        return true;
+      }
+
+      var where_to_go = obtain_goals(dest);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s()+" for "+dest);
+#endif
+
+      // upper/lower bounds; using X as lower, Y as upper bound
+      // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
+      if (0==where_to_go.Count && 0>=District.UsesCrossDistrictView(dest)) {
+        var maps = new HashSet<Map>(dest.destination_maps.Get);
+        if (null != preblacklist) maps.RemoveWhere(preblacklist);
+        if (1<maps.Count) {
+          foreach(Map m in maps.ToList()) if (veto_map(m,dest)) maps.Remove(m);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for exit short-circuit  of " + dest);
+#endif
+        }
+        if (1==maps.Count && 0==goals.Count) {
+          var exits = dest.GetExits(e => maps.Contains(e.ToMap));
+          foreach(var loc_exit in exits) {
+            goals.Add(loc_exit.Key==m_Actor.Location ? loc_exit.Value.Location : loc_exit.Key);
+          }
+#if TRACE_GOALS
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
+#endif
+#if DEBUG
+      if (m_Actor.IsDebuggingTarget) {
+        var detailed_goals = details.Goals();
+        throw new InvalidOperationException("tracing");
+      }
+#endif
+          return goals;
+        }
+        // if that isn't enough, we could also use the police and hospital geometries
+      }
+
+      void schedule_maps(Map m2) {
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": scheduling " + m2 +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s());
+#endif
+        var ok_maps = new HashSet<Map>();
+        m2.ForEachExit((pt,e) => {
+          if (already_seen.Contains(e.ToMap)) return;
+          if (scheduled.Contains(e.ToMap)) return;
+          if (null!=preblacklist && preblacklist(e.ToMap)) return;
+          if (veto_map(e.ToMap,m2)) return;
+          if (null != exit_veto && exit_veto.Veto(e)) return;
+          if (VetoExit(m_Actor, e)) {
+            if (1 < m2.destination_maps.Get.Count) {
+              if (null == exit_veto) {
+                exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                Objectives.Add(exit_veto);
+              } else exit_veto.Blacklist(e);
+            }
+            return;
+          }
+          Location dest = new Location(m2, pt);
+          Point dist = waypoint_bounds(dest);
+#if DEBUG
+          if (short.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
+#else
+          if (short.MaxValue == dist.X) return; // something haywire, discard
+#endif
+#if DEBUG
+          if (0 > dist.X || 0 > dist.Y) throw new InvalidOperationException("negative distance bounds: "+dist.to_s());
+#endif
+          if (ub < dist.X) return;
+          bool in_bounds = m2.IsInBounds(pt);
+          if (in_bounds) install_waypoint(dest, dist);
+          ok_maps.Add(e.ToMap);
+        });
+        scheduled.AddRange(ok_maps);
+      }
+
+      schedule_maps(dest);
+
+      while(0 < scheduled.Count) {
+        var m = scheduled[0];
+
+        obtain_goals(m);
+#if TRACE_GOALS
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for " + m);
+#endif
+        schedule_maps(m);
+
+        scheduled.RemoveAt(0);
+      }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final goals: " + goals.to_s() + "\nwaypoints: " + waypoint_for_dist.to_s());
+#endif
+      var replace_goals = new List<Location>();
+      var replace_with = new HashSet<Location>();
+      var backup_replace_with = new HashSet<Location>();
+      foreach(var x in goals) {
+        if (!waypoint_for_dist.TryGetValue(x,out var relay) || relay==m_Actor.Location) continue;
+        replace_goals.Add(x);
+        (PrevLocation != relay ? replace_with : backup_replace_with).Add(relay);
+      }
+      goals.ExceptWith(replace_goals);
+      goals.UnionWith(replace_with);
+      if (0 >= goals.Count) goals.UnionWith(backup_replace_with);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
+#endif
+#if DEBUG
+      if (m_Actor.IsDebuggingTarget && 0 < goals.Count) {
+        var detailed_goals = details.Goals();
+        throw new InvalidOperationException("tracing");
+      }
+#endif
+      return goals;
+    }
+
+    public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
+    {
+        var origin_zones = ZoneLoc.AssignZone(in origin);
+        int origin_cost = int.MaxValue;
+        var blacklisted_zones = new List<ZoneLoc>();
+        var inverse_pathing = new LocationFunction<int>();
+
+        var stats = pathing.GoalStats();
+        if (stats.Key.Contains(origin)) throw new InvalidOperationException("self-pathing?");
+
+        void process_origin_zone(ZoneLoc o) {
+            var staging = new Dictionary<Location, int>();
+            var contained = o.Contains(stats.Key);
+            int min = int.MaxValue;
+            bool redo_inverse = false;
+            foreach (var goal in contained) {
+                var cost = Rules.InteractionDistance(origin, goal) + pathing[goal];
+                if (min > cost) min = cost;
+                staging.Add(goal, cost);
+                if (origin_cost > cost) {
+                    redo_inverse = int.MaxValue > origin_cost;
+                    origin_cost = cost;
+                }
+            }
+            int double_cost = (int.MaxValue / 2 >= origin_cost) ? 2 * origin_cost : int.MaxValue;
+            foreach (var x in staging) {
+                if (double_cost < x.Value) {
+                    stats.Key.Remove(x.Key);
+                    pathing.Remove(x.Key);
+                } else {
+                    inverse_pathing[x.Key] = x.Value;
+                }
+            }
+            if (redo_inverse) {
+                var doomed = inverse_pathing.RemoveWhere(val => double_cost < val);
+                if (null != doomed) pathing.Remove(doomed);
+            }
+        }
+
+        // origin zones are easily solved
+        int origin_zones_hit = 0;
+        int ub = stats.Value.Count;
+        while (0 <= --ub) {
+            if (0 <= Array.IndexOf(origin_zones, stats.Value[ub].Key)) {
+                process_origin_zone(stats.Value[ub].Key);
+                stats.Value.RemoveAt(ub);
+                origin_zones_hit += 1;
+                if (origin_zones.Length <= origin_zones_hit) break;
+            }
+        }
+
+        // eliminate zones in blacklisted maps
+        int one_lb = stats.Value.Count;
+        if (null != preblacklist) {
+            ub = stats.Value.Count;
+            while (0 <= --ub) {
+                if (Array.Exists(stats.Value[ub].Value, z => preblacklist(z.m))) {
+                    var trimmed = Array.FindAll(stats.Value[ub].Value, z => !preblacklist(z.m));
+#if DEBUG
+                    if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
+#endif
+                    stats.Value[ub] = new KeyValuePair<ZoneLoc, ZoneLoc[]>(stats.Value[ub].Key, trimmed);
+                }
+                if (1 == stats.Value[ub].Value.Length && ub < --one_lb) {
+                    var swap = stats.Value[ub];
+                    stats.Value[ub] = stats.Value[one_lb];
+                    stats.Value[one_lb] = swap;
+                }
+            }
+        }
+    }
+
 #if DEAD_FUNC
     private Dictionary<Map, HashSet<Point>> RadixSortLocations(IEnumerable<Location> goals)
     {
@@ -3774,6 +4154,71 @@ retry:
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
+      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
+
+      bool rude_goal(Location loc) {
+        if (!CanSee(in loc)) return false;
+        var actor = loc.Actor;
+        if (null == actor) return false;
+        return !m_Actor.IsEnemyOf(actor);
+      }
+
+      void force_polite(HashSet<Location> x) {
+        var rude = new HashSet<Location>(x.Where(rude_goal));
+        var ever_rude = new HashSet<Location>(rude);
+        var next_rude = new HashSet<Location>();
+restart:
+        foreach(var fail in rude) {
+          var working = fail;
+          if (m_Actor.IsInGroupWith(working.Actor)) continue;
+          var exit = m_Actor.Location.Exit;
+          if (null != exit && exit.Location == working) working = m_Actor.Location;
+          foreach(var pt in working.Position.Adjacent()) {
+            var loc = new Location(working.Map,pt);
+            if (!m_Actor.CanEnter(ref loc)) continue;
+            if (null!=preblacklist && preblacklist(loc.Map)) continue;
+            if (ever_rude.Contains(loc)) continue;
+            if (rude_goal(loc)) {
+              next_rude.Add(loc);
+              continue;
+            }
+            // we should be ignoring non-pathable adjacent locations later
+            x.Add(loc);
+          }
+          x.Remove(fail);
+        }
+        if (0<next_rude.Count) {
+          ever_rude.UnionWith(next_rude);
+          rude = next_rude;
+          next_rude = new HashSet<Location>();
+          goto restart;
+        }
+      }
+      force_polite(goals);
+#if DIAGNOSE_SELF_PATHING
+      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
+      if (null != postblacklist) goals.RemoveWhere(postblacklist);
+      Goal<Goals.BlacklistExits>()?.Censor(goals);
+      return _recordPathfinding(BehaviorPathTo(goals),goals);
+    }
+
+    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Goals.Pathfinder details, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
+    {
+      var goals = Goals(targets_at, details, m_Actor.Location.Map, preblacklist);
+      if (0 >= goals.Count) return null;
+#if DEBUG
+      if (m_Actor.IsDebuggingTarget) {
+        var detailed_goals = details.Goals();
+        throw new InvalidOperationException("tracing");
+      }
+#endif
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
