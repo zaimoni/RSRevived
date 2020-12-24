@@ -1254,16 +1254,24 @@ restart:
       Point chokepoint_door_pos = CHAR_guard_locs[0] - direction;
       if (direction == Direction.N) {
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle(b.InsideRect.Left, b.BuildingRect.Top, b.InsideRect.Width, 4)));
+        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, b.BuildingRect.Top - 3, 1, b.InsideRect.Height-3)));
       } else if (direction == Direction.S) {
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y + 1, b.InsideRect.Width, 4)));
+        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, b.BuildingRect.Top, 1, b.InsideRect.Height - 3)));
       } else if (direction == Direction.E) {
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle(chokepoint_door_pos.X + 1, b.InsideRect.Top, 4, b.InsideRect.Height)));
+        map.AddZone(new Zone("Hallway", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width-3, 1)));
 #if DEBUG
       } else if (direction == Direction.W) {
 #else
       } else {
 #endif
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, 4, b.InsideRect.Height)));
+        map.AddZone(new Zone("Hallway", new Rectangle(b.InsideRect.Left + 3, chokepoint_door_pos.Y, b.InsideRect.Width - 3, 1)));
       }
 #if DEBUG
       else throw new InvalidOperationException("unhandled door side");
