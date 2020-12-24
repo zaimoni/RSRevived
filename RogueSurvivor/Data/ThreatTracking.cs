@@ -1037,8 +1037,8 @@ namespace djack.RogueSurvivor.Data
        }
 
         // single-threaded context
-        public KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
-            var goals = new List<Location>();
+        public KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
+            var goals = new Dictionary<Location, ZoneLoc[]>();
             var goal_zones = new List<ZoneLoc>();
 
             foreach (var x in _locs) {
@@ -1047,14 +1047,14 @@ namespace djack.RogueSurvivor.Data
                     var tmp_zones = loc.TrivialDistanceZones;
                     if (null == tmp_zones) continue;
                     foreach (var z in tmp_zones) if (!goal_zones.Contains(z)) goal_zones.Add(z);
-                    goals.Add(loc);
+                    goals.Add(loc, tmp_zones);
                 }
             }
 
             var relay = new List<KVpair<ZoneLoc, ZoneLoc[]>>();
             foreach (var z in goal_zones) relay.Add(new KVpair<ZoneLoc, ZoneLoc[]>(z, z.ExitZones));
 
-            return new KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
+            return new KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
        }
     }
 }

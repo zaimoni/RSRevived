@@ -3606,7 +3606,15 @@ Restart:
     {
         // savefile break: this needs value equality to have a chance of working legibly
         var stats = pathing.GoalStats();
-        if (stats.Key.Contains(origin)) throw new InvalidOperationException("self-pathing?");
+#if DEBUG
+        if (stats.Key.ContainsKey(origin)) throw new InvalidOperationException("self-pathing?");
+#endif
+
+        var initial_goals = stats.Key.Count;
+
+        if (null != preblacklist) {
+            stats.Key.OnlyIf(loc => !preblacklist(loc.Map));
+        }
 
         var origin_zones = origin.TrivialDistanceZones;
         var blacklist_zones = new List<ZoneLoc>();
@@ -3777,8 +3785,9 @@ Restart:
 
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
-        var to_clear = new List<KVpair<ZoneLoc, ZoneLoc[]>>(stats.Value);
+        var to_clear = new Dictionary<Location, ZoneLoc[]>(stats.Key);
         var seen = new List<ZoneLoc>();
+        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
         var next = new List<ZoneLoc>(origin_zones);
         var staging = new List<ZoneLoc>();
 
@@ -3796,17 +3805,15 @@ Restart:
         }
 
         void map_zone(ZoneLoc z) {
-          var found = to_clear.FirstOrDefault(zone => zone.Key == z);
-          if (null != found) {
-            stage_zones(found.Value);
-            to_clear.Remove(found);
-            return;
-          }
-          var stage_these = z.ExitZones;
-#if DEBUG
-          if (null == stage_these) throw new InvalidOperationException("should have been able to proceed");
-#endif
-          stage_zones(stage_these);
+          var found = to_clear.Where(kv => z.Contains(kv.Key));
+          var staging = to_clear.Select(kv => kv.Key).ToList();
+          foreach (var x in found) to_clear.Remove(x.Key);
+          var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
+          found = to_clear.Where(kv => 0<=Array.IndexOf(exits, kv.Key));
+          staging.AddRange(found.Select(kv => kv.Key));
+          foreach (var x in found) to_clear.Remove(x.Key);
+          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, staging));
+          stage_zones(z.ExitZones);
         }
 
         while(true) {
