@@ -3604,7 +3604,6 @@ Restart:
 
     public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
-        // savefile break: this needs value equality to have a chance of working legibly
         var stats = pathing.GoalStats();
 #if DEBUG
         if (stats.Key.ContainsKey(origin)) throw new InvalidOperationException("self-pathing?");

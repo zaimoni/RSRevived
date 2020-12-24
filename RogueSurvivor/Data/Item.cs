@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
   internal class Item
   {
-    private readonly int m_ModelID;
+    private readonly Gameplay.GameItems.IDs m_ModelID;
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= qty) throw new ArgumentOutOfRangeException(nameof(qty)); // reddit/Brasz 2020-10-23
 #endif
-      m_ModelID = (int) model.ID;
+      m_ModelID = model.ID;
       m_Quantity = qty;
       EquippedPart = DollPart.NONE;
     }
