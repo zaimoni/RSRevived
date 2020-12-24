@@ -284,13 +284,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static ZoneLoc[] AssignZone(in Location origin) {
-        var tmp_zone = origin.ClearableZone;
-        if (null != tmp_zone) return new ZoneLoc[] { tmp_zone };
+    public static ZoneLoc[]? AssignZone(in Location origin) {
         var dest = new List<ZoneLoc>();
+        var tmp_zone = origin.ClearableZone;
+        if (null != tmp_zone) dest.Add(tmp_zone);
         foreach (var dir in Direction.COMPASS) {
             var loc = origin + dir;
             if (!Map.Canonical(ref loc)) continue;
+            if (!loc.TileModel.IsWalkable) continue;
             tmp_zone = loc.ClearableZone;
             if (null != tmp_zone && !dest.Contains(tmp_zone)) dest.Add(tmp_zone);
         }

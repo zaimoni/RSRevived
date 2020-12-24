@@ -680,6 +680,26 @@ namespace djack.RogueSurvivor.Engine
       return GridDistance(a.Position, b.Position);
     }
 
+    public static int ZoneWalkDistance(in Location a, in Location b)
+    {
+      if (a.Map == b.Map) return GridDistance(a.Position, b.Position);
+      Location? test = a.Map.Denormalize(in b);
+      if (null != test) return GridDistance(a.Position, test.Value.Position);
+      var exit = b.Exit;
+      if (null != exit) {
+        if (a.Map == exit.Location.Map) return GridDistance(a.Position, exit.Location.Position)+1;
+        test = a.Map.Denormalize(exit.Location);
+        if (null != test) return GridDistance(a.Position, test.Value.Position)+1;
+      }
+      exit = a.Exit;
+      if (null != exit) {
+        if (b.Map == exit.Location.Map) return GridDistance(b.Position, exit.Location.Position)+1;
+        test = b.Map.Denormalize(exit.Location);
+        if (null != test) return GridDistance(b.Position, test.Value.Position)+1;
+      }
+      return int.MaxValue;
+    }
+
     // for jump point pathing
     public static int L1_Distance(Point pt) { return Math.Abs(pt.X)+Math.Abs(pt.Y); }
     public static int L1_Distance(in Point pA, in Point pB) { return L1_Distance(pB - pA); }

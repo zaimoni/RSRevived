@@ -3591,25 +3591,21 @@ Restart:
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
 #endif
-#if DEBUG
-      if (m_Actor.IsDebuggingTarget && 0 < goals.Count) {
-        var detailed_goals = details.Goals();
-        throw new InvalidOperationException("tracing");
-      }
-#endif
       return goals;
     }
 
     public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
-        var origin_zones = ZoneLoc.AssignZone(in origin);
-        int origin_cost = int.MaxValue;
-        var blacklisted_zones = new List<ZoneLoc>();
-        var inverse_pathing = new LocationFunction<int>();
-
         var stats = pathing.GoalStats();
         if (stats.Key.Contains(origin)) throw new InvalidOperationException("self-pathing?");
 
+        var origin_zones = origin.TrivialDistanceZones;
+        int origin_cost = int.MaxValue;
+        var blacklist_zones = new List<ZoneLoc>();
+        var inverse_pathing = new LocationFunction<int>();
+        int ub = stats.Value.Count;
+
+#if PROTOTYPE
         void process_origin_zone(ZoneLoc o) {
             var staging = new Dictionary<Location, int>();
             var contained = o.Contains(stats.Key);
@@ -3641,7 +3637,6 @@ Restart:
 
         // origin zones are easily solved
         int origin_zones_hit = 0;
-        int ub = stats.Value.Count;
         while (0 <= --ub) {
             if (0 <= Array.IndexOf(origin_zones, stats.Value[ub].Key)) {
                 process_origin_zone(stats.Value[ub].Key);
@@ -3650,6 +3645,7 @@ Restart:
                 if (origin_zones.Length <= origin_zones_hit) break;
             }
         }
+#endif
 
         // eliminate zones in blacklisted maps
         int one_lb = stats.Value.Count;
@@ -3670,6 +3666,89 @@ Restart:
                 }
             }
         }
+
+        List<Location> replace_zone(ZoneLoc src, ZoneLoc dest, List<Location> xfer) {
+          var ret = new List<Location>();
+          var exits = src.Zone.VolatileAttribute.Get<Location[]>("exits").Where(loc => dest.Contains(loc)).ToArray();
+          var exit_costs = new Dictionary<Location, int>();
+          foreach(var d_loc in exits) {
+            int cost = xfer.Min(s_loc => Rules.ZoneWalkDistance(d_loc, s_loc) +pathing[s_loc]);
+            if (pathing.TryGetValue(d_loc, out var legacy)) {
+                if (0 == legacy) continue;
+                if (2 <= cost/legacy && 2*legacy < cost) continue;
+                exit_costs.Add(d_loc, cost < legacy ? cost : legacy);
+            } else {
+                exit_costs.Add(d_loc, cost);
+            }
+          }
+          if (0 >= exit_costs.Count) {
+            pathing.Remove(xfer);
+            foreach(var gone in xfer) stats.Key.Remove(gone);
+            xfer.Clear();
+            return null;
+          }
+          ret = exit_costs.Keys.ToList();
+          int min_cost = exit_costs.Values.Min();
+          var doomed = new List<Location>();
+          foreach(var s_loc in xfer) {
+            int delta = pathing[s_loc];
+            int cost = ret.Min(d_loc => Rules.ZoneWalkDistance(d_loc, s_loc) + delta);
+            if (2 <= cost/min_cost && 2* min_cost < cost) doomed.Add(s_loc);
+          }
+          foreach(var gone in doomed) {
+            pathing.Remove(gone);
+            stats.Key.Remove(gone);
+            xfer.Remove(gone);
+          }
+          return ret;
+        }
+
+        void blacklist_zone(int n) {
+            var gone = stats.Value[n].Key;
+            stats.Value.RemoveAt(n);
+            n = stats.Value.Count;
+            while(0 <= --n) {
+                var zap = Array.IndexOf(stats.Value[n].Value, gone);
+                if (0 > zap) continue;
+                var trimmed = Array.FindAll(stats.Value[ub].Value, z => z != gone);
+#if DEBUG
+                if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
+#endif
+                stats.Value[ub].Value = trimmed;
+            }
+            blacklist_zones.Add(gone);
+        }
+
+        void install_zone(ZoneLoc src) {
+          if (stats.Value.Any(z => z.Key == src)) return;
+          var exit_zones = Array.FindAll(src.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"), z => !preblacklist(z.m));
+          if (Array.Exists(exit_zones, z => preblacklist(z.m))) exit_zones = Array.FindAll(exit_zones, z => !preblacklist(z.m));
+          if (0 >= exit_zones.Length) return;
+          foreach(var z in blacklist_zones) {
+            if (Array.Exists(exit_zones, z => blacklist_zones.Contains(z))) exit_zones = Array.FindAll(exit_zones, z => !blacklist_zones.Contains(z));
+          }
+          if (0 >= exit_zones.Length) return;
+          int insert_at = ub;
+          if (one_lb < ub) insert_at = (1 == exit_zones.Length) ? one_lb : one_lb - 1;
+          stats.Value.Insert(insert_at, new KVpair<ZoneLoc, ZoneLoc[]>(src, exit_zones));
+          ub += 1;
+        }
+
+        // handle the one-zone-exit case
+        ub = stats.Value.Count;
+        while(0 <= --ub) {
+            if (1 == stats.Value[ub].Value.Length && 0 > Array.IndexOf(origin_zones, stats.Value[ub].Key)) {
+                var transfer = stats.Value[ub].Key.Contains(stats.Key);
+                var new_domain = replace_zone(stats.Value[ub].Key, stats.Value[ub].Value[0], transfer);
+                if (null != new_domain) pathing.Relink(transfer, new_domain);
+                var next_zone = stats.Value[ub].Value[0];
+                blacklist_zone(ub);
+                install_zone(next_zone);
+            }
+        }
+#if DEBUG
+        throw new InvalidOperationException("tracing");
+#endif
     }
 
 #if DEAD_FUNC
@@ -4216,6 +4295,7 @@ restart:
 #if DEBUG
       if (m_Actor.IsDebuggingTarget) {
         var detailed_goals = details.Goals();
+        ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
         throw new InvalidOperationException("tracing");
       }
 #endif

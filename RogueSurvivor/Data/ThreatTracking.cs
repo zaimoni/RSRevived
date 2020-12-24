@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
@@ -777,33 +778,45 @@ namespace djack.RogueSurvivor.Data
         [NonSerialized] private List<delete_from>? _handlers = null;
 
         private class delete_from {
-            private readonly List<Location> triggers = new List<Location>();
-            private readonly List<Location> targets = new List<Location>();
-            private readonly List<LocationFunction<T>> hosts = new List<LocationFunction<T>>();
+            public static readonly delete_from BLANK = new delete_from();
+
+            private readonly List<Location> triggers;
+            private readonly List<Location> targets;
+            private readonly List<LocationFunction<T>> hosts;
+
+            private delete_from() { }
 
             public delete_from(Location trigger, Location target, LocationFunction<T> host) {
-                triggers.Add(trigger);
-                targets.Add(target);
-                hosts.Add(host);
+                triggers = new List<Location> { trigger };
+                targets = new List<Location> { target };
+                hosts = new List<LocationFunction<T>> { host };
+            }
+
+            public delete_from(IEnumerable<Location> trigger, IEnumerable<Location> target, LocationFunction<T> host)
+            {
+                triggers = new List<Location>(trigger);
+                targets = new List<Location>(target);
+                hosts = new List<LocationFunction<T>> { host };
             }
 
             /// <returns>true if and only if this has activated and should be deleted</returns>
             public bool Fire(in Location trigger) {
-                if (!triggers.Remove(trigger)) return false; // did not match
+                if (null == triggers || !triggers.Remove(trigger)) return false; // did not match
                 if (0 < triggers.Count) return false; // still have work to do
                 foreach (var host in hosts) host.Remove(targets);
                 return true;
             }
 
+#if PROTOTYPE
             public bool Merge(delete_from src) {
                 if (!triggers.ValueEqual(src.triggers)) return false;
-                if (targets.ValueEqual(src.targets)) {
+                if (1 == targets.Count && targets.ValueEqual(src.targets)) {
                     foreach (var host in src.hosts) {
                         if (!hosts.Contains(host)) hosts.Add(host);
                         return true;
                     }
                 }
-                if (hosts.ValueEqual(src.hosts)) {
+                if (1 == hosts.Count && hosts.ValueEqual(src.hosts)) {
                     foreach (var target in src.targets) {
                         if (!targets.Contains(target)) targets.Add(target);
                         return true;
@@ -811,6 +824,7 @@ namespace djack.RogueSurvivor.Data
                 }
                 return false;
             }
+#endif
         }
 
         public void Clear() { lock (_locs) { _locs.Clear(); } }
@@ -866,6 +880,7 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
+#if PROTOTYPE
         // lock provided by callers
         private void merge(delete_from src) {
             if (null == _handlers) {
@@ -881,13 +896,21 @@ namespace djack.RogueSurvivor.Data
             }
             _handlers.Add(src);
         }
+#endif
 
         // lock provided by callers
         private void fire_delete(in Location loc) {
             if (null != _handlers) {
                 // XXX linear search XXX
                 int ub = _handlers.Count;
-                while (0 <= --ub) if (_handlers[ub].Fire(in loc)) _handlers.RemoveAt(ub);
+                while (0 <= --ub) {
+                    var ev = delete_from.BLANK;
+                    _handlers[ub] = Interlocked.Exchange(ref ev, _handlers[ub]);
+                    if (ev.Fire(in loc)) {
+                        _handlers.Remove(delete_from.BLANK);
+                        if (ub > _handlers.Count) ub = _handlers.Count;
+                    } else _handlers[ub] = ev;
+                }
                 if (0 >= _handlers.Count) _handlers = null;
             }
         }
@@ -983,7 +1006,8 @@ namespace djack.RogueSurvivor.Data
                         (_handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, src));
                         continue;
                       }
-                      merge(new delete_from(loc, loc, src));
+//                    merge(new delete_from(loc, loc, src));
+                      (_handlers ??= new List<delete_from>()).Add(new delete_from(loc, loc, src));
                       continue;
                     } else {
                       cache.Add(y.Key, y.Value);
@@ -1005,15 +1029,19 @@ namespace djack.RogueSurvivor.Data
         }
 #endregion
 
-       // single-threaded context
-       public KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
+       public void Relink(IEnumerable<Location> triggers, IEnumerable<Location> targets) {
+            (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, targets, this));
+       }
+
+        // single-threaded context
+        public KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
             var goals = new List<Location>();
             var goal_zones = new List<ZoneLoc>();
 
             foreach (var x in _locs) {
                 foreach (var y in x.Value) {
                     var loc = new Location(x.Key, y.Key);
-                    var tmp_zones = ZoneLoc.AssignZone(in loc);
+                    var tmp_zones = loc.TrivialDistanceZones;
                     if (null == tmp_zones) continue;
                     foreach (var z in tmp_zones) if (!goal_zones.Contains(z)) goal_zones.Add(z);
                     goals.Add(loc);
