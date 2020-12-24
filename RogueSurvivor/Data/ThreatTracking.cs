@@ -801,7 +801,9 @@ namespace djack.RogueSurvivor.Data
 
             /// <returns>true if and only if this has activated and should be deleted</returns>
             public bool Fire(in Location trigger) {
-                if (null == triggers || !triggers.Remove(trigger)) return false; // did not match
+                if (null == triggers) return false; // BLANK is no-op
+                if (targets.Remove(trigger) && 0 >= targets.Count) return true; // just became no-op
+                if (!triggers.Remove(trigger)) return false; // did not match
                 if (0 < triggers.Count) return false; // still have work to do
                 foreach (var host in hosts) host.Remove(targets);
                 return true;
@@ -919,6 +921,7 @@ namespace djack.RogueSurvivor.Data
         private bool remove(in Location loc) {
             if (_locs.TryGetValue(loc.Map, out var test) && test.Remove(loc.Position)) {
                 fire_delete(in loc);
+                if (0 >= test.Count) _locs.Remove(loc.Map);
                 return true;
             }
             return false;

@@ -3588,6 +3588,14 @@ Restart:
       goals.ExceptWith(replace_goals);
       goals.UnionWith(replace_with);
       if (0 >= goals.Count) goals.UnionWith(backup_replace_with);
+#if TEST_DRIVER
+      if (m_Actor.IsDebuggingTarget && 0 < goals.Count && m_Actor.Location.Map == dest) {
+        var detailed_goals = details.Goals();
+        ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
+        throw new InvalidOperationException("tracing");
+      }
+#endif
+
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
 #endif
@@ -3596,6 +3604,7 @@ Restart:
 
     public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
+        // savefile break: this needs value equality to have a chance of working legibly
         var stats = pathing.GoalStats();
         if (stats.Key.Contains(origin)) throw new InvalidOperationException("self-pathing?");
 
@@ -3710,11 +3719,11 @@ Restart:
             while(0 <= --n) {
                 var zap = Array.IndexOf(stats.Value[n].Value, gone);
                 if (0 > zap) continue;
-                var trimmed = Array.FindAll(stats.Value[ub].Value, z => z != gone);
+                var trimmed = Array.FindAll(stats.Value[n].Value, z => z != gone);
 #if DEBUG
                 if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
 #endif
-                stats.Value[ub].Value = trimmed;
+                stats.Value[n].Value = trimmed;
             }
             blacklist_zones.Add(gone);
         }
@@ -3746,9 +3755,46 @@ Restart:
                 install_zone(next_zone);
             }
         }
+
+        // breadth-first out until all zones are seen
+        var zone_range = new List<List<ZoneLoc>>();
+        var to_clear = new List<KVpair<ZoneLoc, ZoneLoc[]>>(stats.Value);
+        var seen = new List<ZoneLoc>();
+        var next = new List<ZoneLoc>(origin_zones);
+        var staging = new List<ZoneLoc>();
+
+        void stage_zones(ZoneLoc[] src) {
+          foreach(var z in src) {
+            if (preblacklist(z.m)) continue;
+            if (blacklist_zones.Contains(z)) continue;
+            if (seen.Contains(z)) continue;
+            if (staging.Contains(z)) continue;
+            staging.Add(z);
+          }
+        }
+
+        void map_zone(ZoneLoc z) {
+          var found = to_clear.FirstOrDefault(zone => zone.Key == z);
+          if (null != found) {
+            stage_zones(found.Value);
+            to_clear.Remove(found);
+            return;
+          }
+          var stage_these = z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
 #if DEBUG
-        throw new InvalidOperationException("tracing");
+          if (null == stage_these) throw new InvalidOperationException("should have been able to proceed");
 #endif
+          stage_zones(stage_these);
+        }
+
+        while(true) {
+          zone_range.Add(next);
+          seen.AddRange(next);
+          foreach(var z in next) map_zone(z);
+          if (0 >= to_clear.Count || 0 >= staging.Count) break;
+          next = staging;
+          staging = new List<ZoneLoc>();
+        }
     }
 
 #if DEAD_FUNC
@@ -4292,10 +4338,11 @@ restart:
     {
       var goals = Goals(targets_at, details, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
-#if DEBUG
+#if TEST_DRIVER
       if (m_Actor.IsDebuggingTarget) {
         var detailed_goals = details.Goals();
         ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
+        var new_goals = details.Censor(goals);
         throw new InvalidOperationException("tracing");
       }
 #endif

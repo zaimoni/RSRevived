@@ -41,5 +41,18 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public void Remove(Location loc) {
             foreach (var x in m_GoalTypes) x.Remove(loc);
         }
+
+        public List<Location>? Censor(IEnumerable<Location> goals) {
+            var ret = new List<Location>();
+            foreach (var goal in goals) {
+                foreach (var x in m_GoalTypes) {
+                    if (x.Contains(goal)) {
+                        ret.Add(goal);
+                        break;
+                    }
+                }
+            }
+            return (0 < ret.Count) ? ret : null;
+        }
     }
 }
