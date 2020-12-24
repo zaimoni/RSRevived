@@ -3512,7 +3512,7 @@ Restart:
 #if TRACE_GOALS
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
 #endif
-#if DEBUG
+#if TEST_DRIVER
       if (m_Actor.IsDebuggingTarget) {
         var detailed_goals = details.Goals();
         throw new InvalidOperationException("tracing");
