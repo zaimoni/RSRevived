@@ -1050,7 +1050,11 @@ namespace djack.RogueSurvivor.Data
                     goals.Add(loc);
                 }
             }
-            return new KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, goal_zones.Select(z => new KVpair<ZoneLoc, ZoneLoc[]>(z, z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"))).ToList());
+
+            var relay = new List<KVpair<ZoneLoc, ZoneLoc[]>>();
+            foreach (var z in goal_zones) relay.Add(new KVpair<ZoneLoc, ZoneLoc[]>(z, z.ExitZones));
+
+            return new KeyValuePair<List<Location>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
        }
     }
 }

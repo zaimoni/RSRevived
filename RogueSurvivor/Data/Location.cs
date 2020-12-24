@@ -104,7 +104,28 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public ZoneLoc? ClearableZone { get { return Map.ClearableZoneAt(Position); } }
+#nullable enable
+    public ZoneLoc? ClearableZone { get {
+      return  Map.ClearableZoneAt(Position);
+    } }
+
+    public List<ZoneLoc>? ClearableZones { get {
+      var ret = new List<ZoneLoc>();
+      var z = ClearableZone;
+      if (null != z) {
+        ret.Add(z);
+        return ret;
+      }
+      foreach(var dir in Direction.COMPASS) {
+        var loc = this + dir;
+        if (!Map.Canonical(ref loc)) continue;
+        if (!loc.TileModel.IsWalkable) continue;
+        z = loc.ClearableZone;
+        if (null != z) ret.Add(z);
+      }
+      return (0 < ret.Count) ? ret : null;
+    } }
+#nullable restore
 
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
@@ -127,6 +148,9 @@ namespace djack.RogueSurvivor.Data
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = ClearableZone;
+#if DEBUG
+        if (null != z && !z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
         if (null != z) return new ZoneLoc[] { z };
         foreach (var dir in Direction.COMPASS) {
             var loc = this + dir;
@@ -134,6 +158,9 @@ namespace djack.RogueSurvivor.Data
             if (!loc.TileModel.IsWalkable) continue;
             z = loc.ClearableZone;
             if (null != z && !dest.Contains(z)) dest.Add(z);
+#if DEBUG
+            if (null != z && !z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
         }
         return (0 < dest.Count) ? dest.ToArray() : null;
      } }

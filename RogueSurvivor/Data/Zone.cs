@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]    // just in case
-  internal class ZoneLoc : IMap
+  internal record ZoneLoc : IMap
   {
     public readonly Map m;
     public readonly Rectangle Rect; // doesn't have to be normalized
@@ -284,21 +284,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static ZoneLoc[]? AssignZone(in Location origin) {
-        var dest = new List<ZoneLoc>();
-        var tmp_zone = origin.ClearableZone;
-        if (null != tmp_zone) dest.Add(tmp_zone);
-        foreach (var dir in Direction.COMPASS) {
-            var loc = origin + dir;
-            if (!Map.Canonical(ref loc)) continue;
-            if (!loc.TileModel.IsWalkable) continue;
-            tmp_zone = loc.ClearableZone;
-            if (null != tmp_zone && !dest.Contains(tmp_zone)) dest.Add(tmp_zone);
-        }
-        if (0 < dest.Count) return dest.ToArray();
-        return null;
-    }
+    public bool IsClearable { get {
+        return m.IsClearableZone(this);
+    } }
 
+    public ZoneLoc? RepairClearable() { return m.RepairClearableZone(this); }
+
+    public ZoneLoc[] ExitZones { get {
+        var exit_z = Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        if (Array.Exists(exit_z, zone => !zone.IsClearable)) {
+            var staging = new List<ZoneLoc>();
+            var exits = Zone.VolatileAttribute.Get<Location[]>("exits");
+            foreach (var loc in exits) {
+                var test = loc.ClearableZones;
+                if (null != test) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
+            }
+            exit_z = staging.ToArray();
+        }
+        return exit_z;
+    } }
 
 #nullable restore
 

@@ -986,6 +986,15 @@ retry:
       return null;
     }
 
+    public bool IsClearableZone(ZoneLoc z) {
+        return m_ClearableZones!.Values.Contains(z);
+    }
+
+    public ZoneLoc? RepairClearableZone(ZoneLoc z) {
+        if (m_ClearableZones!.Values.Contains(z)) return z;
+        return m_ClearableZones!.Values.FirstOrDefault(z2 => z == z2);
+    }
+
     public void OnMapGenerated()
     { // coordinates with StdTownGenerator::Generate
       // 1) flush all NoCivSpawn zones

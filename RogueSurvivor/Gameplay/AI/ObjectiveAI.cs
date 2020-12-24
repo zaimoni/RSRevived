@@ -3609,12 +3609,12 @@ Restart:
         if (stats.Key.Contains(origin)) throw new InvalidOperationException("self-pathing?");
 
         var origin_zones = origin.TrivialDistanceZones;
-        int origin_cost = int.MaxValue;
         var blacklist_zones = new List<ZoneLoc>();
-        var inverse_pathing = new LocationFunction<int>();
         int ub = stats.Value.Count;
 
 #if PROTOTYPE
+        int origin_cost = int.MaxValue;
+        var inverse_pathing = new LocationFunction<int>();
         void process_origin_zone(ZoneLoc o) {
             var staging = new Dictionary<Location, int>();
             var contained = o.Contains(stats.Key);
@@ -3662,9 +3662,13 @@ Restart:
             ub = stats.Value.Count;
             while (0 <= --ub) {
                 if (Array.Exists(stats.Value[ub].Value, z => preblacklist(z.m))) {
+#if DEBUG
+                    if (Array.Exists(stats.Value[ub].Value, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
                     var trimmed = Array.FindAll(stats.Value[ub].Value, z => !preblacklist(z.m));
 #if DEBUG
                     if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
+                    if (Array.Exists(trimmed, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
 #endif
                     stats.Value[ub].Value = trimmed;
                 }
@@ -3676,6 +3680,7 @@ Restart:
             }
         }
 
+#if PROTOTYPE
         List<Location> replace_zone(ZoneLoc src, ZoneLoc dest, List<Location> xfer) {
           var ret = new List<Location>();
           var exits = src.Zone.VolatileAttribute.Get<Location[]>("exits").Where(loc => dest.Contains(loc)).ToArray();
@@ -3714,14 +3719,21 @@ Restart:
 
         void blacklist_zone(int n) {
             var gone = stats.Value[n].Key;
+#if DEBUG
+            if (!gone.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
             stats.Value.RemoveAt(n);
             n = stats.Value.Count;
             while(0 <= --n) {
                 var zap = Array.IndexOf(stats.Value[n].Value, gone);
                 if (0 > zap) continue;
+#if DEBUG
+                if (Array.Exists(stats.Value[n].Value, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
                 var trimmed = Array.FindAll(stats.Value[n].Value, z => z != gone);
 #if DEBUG
                 if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
+                if (Array.Exists(trimmed, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
 #endif
                 stats.Value[n].Value = trimmed;
             }
@@ -3729,8 +3741,11 @@ Restart:
         }
 
         void install_zone(ZoneLoc src) {
+#if DEBUG
+          if (!src.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
           if (stats.Value.Any(z => z.Key == src)) return;
-          var exit_zones = Array.FindAll(src.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"), z => !preblacklist(z.m));
+          var exit_zones = Array.FindAll(src.ExitZones, z => !preblacklist(z.m));
           if (Array.Exists(exit_zones, z => preblacklist(z.m))) exit_zones = Array.FindAll(exit_zones, z => !preblacklist(z.m));
           if (0 >= exit_zones.Length) return;
           foreach(var z in blacklist_zones) {
@@ -3747,6 +3762,9 @@ Restart:
         ub = stats.Value.Count;
         while(0 <= --ub) {
             if (1 == stats.Value[ub].Value.Length && 0 > Array.IndexOf(origin_zones, stats.Value[ub].Key)) {
+#if DEBUG
+                if (!stats.Value[ub].Value[0].IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
                 var transfer = stats.Value[ub].Key.Contains(stats.Key);
                 var new_domain = replace_zone(stats.Value[ub].Key, stats.Value[ub].Value[0], transfer);
                 if (null != new_domain) pathing.Relink(transfer, new_domain);
@@ -3755,6 +3773,7 @@ Restart:
                 install_zone(next_zone);
             }
         }
+#endif
 
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
@@ -3765,6 +3784,9 @@ Restart:
 
         void stage_zones(ZoneLoc[] src) {
           foreach(var z in src) {
+#if DEBUG
+            if (!z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
             if (preblacklist(z.m)) continue;
             if (blacklist_zones.Contains(z)) continue;
             if (seen.Contains(z)) continue;
@@ -3780,7 +3802,7 @@ Restart:
             to_clear.Remove(found);
             return;
           }
-          var stage_these = z.Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+          var stage_these = z.ExitZones;
 #if DEBUG
           if (null == stage_these) throw new InvalidOperationException("should have been able to proceed");
 #endif
@@ -3795,6 +3817,9 @@ Restart:
           next = staging;
           staging = new List<ZoneLoc>();
         }
+#if DEBUG
+        throw new InvalidOperationException("tracing");
+#endif
     }
 
 #if DEAD_FUNC
