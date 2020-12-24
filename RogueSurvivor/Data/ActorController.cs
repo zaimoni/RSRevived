@@ -67,41 +67,8 @@ namespace djack.RogueSurvivor.Data
         Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
-        // XXX cheating postfilter: if it is a ranged weapon but we do not have ammo for that RW, actually check the map inventory and reject if rw has 0 ammo.
         if (0 >= tmp.Count) continue;
         var it_model = Gameplay.GameItems.From(it);
-        if (Gameplay.GameItems.ranged.Contains(it)) {
-          ItemRangedWeaponModel model = (it_model as ItemRangedWeaponModel)!;
-          var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType== model.AmmoType);
-          if (null == ammo) {
-            tmp.OnlyIf(loc => {
-                // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc, m_Actor);
-                if (null == allItems) {
-                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
-                  return false;
-                }
-                var ub = allItems.Count;
-                bool rebuild = true;
-                while (0 < ub) {
-                    var itemsAt = allItems[--ub];
-                    if (null != itemsAt.GetFirstByModel(model, ItemRangedWeapon.is_not_empty)) return true;
-                    if (null != itemsAt.GetFirstByModel(model)) rebuild = false;
-                }
-                if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
-                    ub = allItems.Count;
-                    while (1 < ub) {
-                        var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
-                    }
-                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
-                }
-                return false;
-            });
-            if (0 >= tmp.Count) continue;
-          }
-        }
         // cheating post-filter: reject boring entertainment
         if (it_model is ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
