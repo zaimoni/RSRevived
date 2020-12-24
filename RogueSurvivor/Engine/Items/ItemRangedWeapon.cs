@@ -24,6 +24,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public override Data.ItemStruct Struct { get { return new Data.ItemStruct(Model.ID, Ammo); } }
 #endif
 
+    public override Gameplay.GameItems.IDs InventoryMemoryID { get {
+        return 0 == Ammo ? base.InventoryMemoryID.UnloadedVersion() : base.InventoryMemoryID;
+    } }
+
     // lambda function micro-optimizations for release-mode IL size.
     // Match the intended consuming type exactly, to avoid 7 release-mode IL byte overhead. 2020-09-29 zaimoni
     static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
@@ -40,4 +44,29 @@ namespace djack.RogueSurvivor.Engine.Items
       return Model.ID.ToString()+" ("+Ammo.ToString()+")";
     }
   }
+}
+
+namespace djack.RogueSurvivor {
+
+  static public partial class RS_ext
+  {
+        static internal Gameplay.GameItems.IDs UnloadedVersion(this Gameplay.GameItems.IDs x)
+        {
+            switch (x)
+            {
+                case Gameplay.GameItems.IDs.RANGED_ARMY_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_ARMY_PISTOL;
+                case Gameplay.GameItems.IDs.RANGED_ARMY_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_ARMY_RIFLE;
+                case Gameplay.GameItems.IDs.RANGED_HUNTING_CROSSBOW: return Gameplay.GameItems.IDs.UNLOADED_HUNTING_CROSSBOW;
+                case Gameplay.GameItems.IDs.RANGED_HUNTING_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_HUNTING_RIFLE;
+                case Gameplay.GameItems.IDs.RANGED_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_PISTOL;
+                case Gameplay.GameItems.IDs.RANGED_KOLT_REVOLVER: return Gameplay.GameItems.IDs.UNLOADED_KOLT_REVOLVER;
+                case Gameplay.GameItems.IDs.RANGED_PRECISION_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_PRECISION_RIFLE;
+                case Gameplay.GameItems.IDs.RANGED_SHOTGUN: return Gameplay.GameItems.IDs.UNLOADED_SHOTGUN;
+                case Gameplay.GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN: return Gameplay.GameItems.IDs.UNLOADED_SANTAMAN_SHOTGUN;
+                case Gameplay.GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_HANS_VON_HANZ_PISTOL;
+                default: throw new ArgumentOutOfRangeException(nameof(x), x.ToString());
+            }
+        }
+    }
+
 }

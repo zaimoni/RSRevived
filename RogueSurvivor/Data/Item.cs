@@ -53,6 +53,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemModel Model { get { return Gameplay.GameItems.From(m_ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
+    public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return m_ModelID; }  }
 
     public string TheName {
       get {

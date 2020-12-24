@@ -89,11 +89,11 @@ namespace djack.RogueSurvivor.Data
                     if (null != itemsAt.GetFirstByModel(model)) rebuild = false;
                 }
                 if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
                     ub = allItems.Count;
                     while (1 < ub) {
                         var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
                     }
                     it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
                 }
@@ -119,11 +119,11 @@ namespace djack.RogueSurvivor.Data
                     if (null != itemsAt.GetFirstByModel(ent)) rebuild = false;
                 }
                 if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
                     ub = allItems.Count;
                     while (1 < ub) {
                         var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
                     }
                     it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
                 }
@@ -152,11 +152,11 @@ namespace djack.RogueSurvivor.Data
                     }
                 }
                 if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.Model.ID));
+                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
                     ub = allItems.Count;
                     while (1 < ub) {
                         var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.Model.ID));
+                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
                     }
                     it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
                 }

@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
-    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
+    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV, Ary2Dictionary<Location, GameItems.IDs, int> items)
     {
       _items = null;
       foreach (var loc in normalized_FOV) {
@@ -98,9 +98,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;
         }
-        HashSet<Gameplay.GameItems.IDs>? staging = new HashSet<Gameplay.GameItems.IDs>();
+        HashSet<GameItems.IDs>? staging = new HashSet<GameItems.IDs>();
         foreach(var inv in allItems) {
-          staging.UnionWith(inv.Items.Select(x => x.Model.ID));
+          staging.UnionWith(inv.Items.Select(x => x.InventoryMemoryID));
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc)); // \todo fix this
           (_items ??= new Dictionary<Location, Inventory>())[loc] = inv; // \todo may have to retype this
         }

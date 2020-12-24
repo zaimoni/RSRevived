@@ -5219,7 +5219,7 @@ restart_chokepoints:
         if (null != ai_items) {
           if (null!= ItemMemory && ItemMemory == ai_items) continue; // already updated
           foreach (Percept p in stacks) {
-            ai_items.Set(p.Location, new HashSet<Gameplay.GameItems.IDs>((p.Percepted as Inventory).Items.Select(x => x.Model.ID)), p.Location.Map.LocalTime.TurnCounter);
+            ai_items.Set(p.Location, new HashSet<Gameplay.GameItems.IDs>((p.Percepted as Inventory).Items.Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
           }
           continue; // followers with item memory can decide on their own what to do
         }
@@ -6942,27 +6942,10 @@ restart_chokepoints:
 
     private void retrofitWant(GameItems.IDs src, HashSet<GameItems.IDs> dest)
     {
-        static GameItems.IDs unloaded_version(GameItems.IDs x) {
-            switch(x)
-            {
-            case GameItems.IDs.RANGED_ARMY_PISTOL: return GameItems.IDs.UNLOADED_ARMY_PISTOL;
-            case GameItems.IDs.RANGED_ARMY_RIFLE: return GameItems.IDs.UNLOADED_ARMY_RIFLE;
-            case GameItems.IDs.RANGED_HUNTING_CROSSBOW: return GameItems.IDs.UNLOADED_HUNTING_CROSSBOW;
-            case GameItems.IDs.RANGED_HUNTING_RIFLE: return GameItems.IDs.UNLOADED_HUNTING_RIFLE;
-            case GameItems.IDs.RANGED_PISTOL: return GameItems.IDs.UNLOADED_PISTOL;
-            case GameItems.IDs.RANGED_KOLT_REVOLVER: return GameItems.IDs.UNLOADED_KOLT_REVOLVER;
-            case GameItems.IDs.RANGED_PRECISION_RIFLE: return GameItems.IDs.UNLOADED_PRECISION_RIFLE;
-            case GameItems.IDs.RANGED_SHOTGUN: return GameItems.IDs.UNLOADED_SHOTGUN;
-            case GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN: return GameItems.IDs.UNLOADED_SANTAMAN_SHOTGUN;
-            case GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL: return GameItems.IDs.UNLOADED_HANS_VON_HANZ_PISTOL;
-            default: throw new ArgumentOutOfRangeException(nameof(x), x.ToString());
-            }
-        }
-
         if (GameItems.ranged.Contains(src)) {
             var model = (GameItems.From(src) as ItemRangedWeaponModel)!;
             var ammo_type = (GameItems.IDs)((int)model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL);
-            if (m_Actor.Inventory.Has(ammo_type)) dest.Add(unloaded_version(src));
+            if (m_Actor.Inventory.Has(ammo_type)) dest.Add(src.UnloadedVersion());
         }
     }
 
