@@ -1205,8 +1205,8 @@ retry:
           m_ActorsList.Add(actor);
           Recalc(actor);
         }
-        m_aux_ActorsByPosition.Add(position, actor);
         actor.Location = new Location(this, position);
+        m_aux_ActorsByPosition.Add(position, actor);
       } // lock(m_aux_ActorsByPosition)
       m_iCheckNextActorIndex = 0;
     }
@@ -1485,27 +1485,23 @@ retry:
 #endif
       bool update_item_memory = mapObj.IsContainer && !mapObj.Inventory.IsEmpty;
       // cf Map::PlaceAt(Actor,Position)
-      if (null != mapObj.Location.Map && HasMapObject(mapObj)) {
-        if (update_item_memory) {
-          if (Engine.Session.Get.Police.ItemMemory.HaveEverSeen(mapObj.Location))
-            Engine.Session.Get.Police.Investigate.Record(mapObj.Location);   // XXX \todo should message based on item memories
+      if (null != mapObj.Location.Map) {
+        if (HasMapObject(mapObj)) {
+          if (update_item_memory) {
+            var police = Engine.Session.Get.Police;
+            if (police.ItemMemory.HaveEverSeen(mapObj.Location)) police.Investigate.Record(mapObj.Location); // XXX \todo should message based on item memories
+          }
+          m_MapObjectsByPosition.Remove(mapObj.Location.Position);
+        } else {
+          if (this != mapObj.Location.Map) mapObj.Remove();
         }
-        m_MapObjectsByPosition.Remove(mapObj.Location.Position);
       }
-      else {
-        if (null != mapObj.Location.Map && this != mapObj.Location.Map) mapObj.Remove();
-      }
+      mapObj.Location = new Location(this, position); // should update this while not in a map
       m_MapObjectsByPosition.Add(position, mapObj);
-      mapObj.Location = new Location(this, position);
       if (update_item_memory) Engine.Session.Get.Police.Investigate.Record(mapObj.Location);
     }
 
-    public void RemoveMapObjectAt(Point pt)
-    {
-      var mapObjectAt = GetMapObjectAt(pt);
-      if (mapObjectAt == null) return;
-      m_MapObjectsByPosition.Remove(pt);
-    }
+    public void RemoveMapObjectAt(Point pt) { m_MapObjectsByPosition.Remove(pt); }
 
     // this will need rethinking when off-ground inventory (chairs, tables) happens
     public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }

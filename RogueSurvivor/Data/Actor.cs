@@ -2982,7 +2982,7 @@ namespace djack.RogueSurvivor.Data
     {
       const int BODY_ARMOR_BREAK_CHANCE = 2;
 
-      HitPoints -= dmg;
+      m_HitPoints -= dmg;
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueGame.Game;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
