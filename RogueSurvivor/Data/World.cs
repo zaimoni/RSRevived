@@ -262,8 +262,8 @@ namespace djack.RogueSurvivor.Data
       var player = Engine.RogueGame.Player;
       var code = District.UsesCrossDistrictView(player.Location.Map);
       if (0 < code) {
-        // simulate a standard district's view
-        var zone = new ZoneLoc(player.Location.Map, new Rectangle(player.Location.Position - (Point)24, (Point)(2*24+1)));
+        // simulate police radio view
+        var zone = new ZoneLoc(player.Location.Map, new Rectangle(player.Location.Position - (Point)Engine.RogueGame.POLICE_RADIO_RANGE, (Point)(2* Engine.RogueGame.POLICE_RADIO_RANGE + 1)));
         (zone as IMap).DaimonMap(dest);
       }
 
