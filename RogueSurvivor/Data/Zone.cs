@@ -292,15 +292,12 @@ namespace djack.RogueSurvivor.Data
 
     public ZoneLoc[] ExitZones { get {
         var exit_z = Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-        if (Array.Exists(exit_z, zone => !zone.IsClearable)) {
-            var staging = new List<ZoneLoc>();
-            var exits = Zone.VolatileAttribute.Get<Location[]>("exits");
-            foreach (var loc in exits) {
-                var test = loc.ClearableZones;
-                if (null != test) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
-            }
-            exit_z = staging.ToArray();
+        var staging = new List<ZoneLoc>(Array.Exists(exit_z, zone => !zone.IsClearable) ? Array.FindAll(exit_z, zone => zone.IsClearable) : exit_z);
+        foreach (var loc in Zone.VolatileAttribute.Get<Location[]>("exits")) {
+            var test = loc.ClearableZones;
+            if (null != test) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
         }
+        exit_z = staging.ToArray();
         return exit_z;
     } }
 

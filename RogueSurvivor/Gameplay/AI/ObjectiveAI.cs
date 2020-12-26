@@ -3805,13 +3805,13 @@ Restart:
 
         void map_zone(ZoneLoc z) {
           var found = to_clear.Where(kv => z.Contains(kv.Key));
-          var staging = to_clear.Select(kv => kv.Key).ToList();
+          var stage = new List<Location>(found.Select(kv => kv.Key));
           foreach (var x in found) to_clear.Remove(x.Key);
           var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
           found = to_clear.Where(kv => 0<=Array.IndexOf(exits, kv.Key));
-          staging.AddRange(found.Select(kv => kv.Key));
+          stage.AddRange(found.Select(kv => kv.Key));
           foreach (var x in found) to_clear.Remove(x.Key);
-          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, staging));
+          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, stage));
           stage_zones(z.ExitZones);
         }
 
@@ -4369,13 +4369,13 @@ restart:
     {
       var goals = Goals(targets_at, details, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
-#if TEST_DRIVER
-      if (m_Actor.IsDebuggingTarget) {
+#if DEBUG
+//    if (m_Actor.IsDebuggingTarget) {
         var detailed_goals = details.Goals();
         ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
         var new_goals = details.Censor(goals);
         throw new InvalidOperationException("tracing");
-      }
+//    }
 #endif
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());

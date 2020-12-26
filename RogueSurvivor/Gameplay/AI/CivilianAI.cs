@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-// #define WALKZONE_PATHING
+// #define ZONEWALK_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -543,7 +543,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Func<Map,HashSet<Point>> pathing_targets = null;
         ThreatTracking threats = m_Actor.Threats;
 
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
         var pathing = new Goals.Pathfinder(5);
         var target_threat = pathing[0];
         var target_tourism = pathing[1];
@@ -556,7 +556,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (District.IsSewersMap(m) && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable
           var ret = threats.ThreatWhere(m);
           if (0<ret.Count) {
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             target_threat[m, ret] = 0;
 #endif
             update_path.StageView(m,ret);
@@ -570,7 +570,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         HashSet<Point> tourism(Map m) {
           var ret = sights_to_see.In(m);
           if (0<ret.Count) {
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             target_tourism[m, ret] = 0;
 #endif
             update_path.StageView(m,ret);
@@ -589,7 +589,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null == handled) continue;
             if (handled.m != m) continue;
             bool reject(Point pt) { return handled.Rect.Contains(pt); }
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             target_threat.RemoveWhere(m, reject);
             target_tourism.RemoveWhere(m, reject);
 #endif
@@ -603,7 +603,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var gens = Generators(m);
           if (null == gens) return new HashSet<Point>();
           if (WantToRecharge()) {
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             update_path.StageGenerators(gens);
             var recharge = m_Actor.CastToBumpableDestinations(m, gens.Select(obj => obj.Location.Position));
             target_generators_recharge[m, recharge] = 0;
@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           var gens_off = gens.Where(obj => !obj.IsOn);
           if (gens_off.Any()) {
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             update_path.StageGenerators(gens_off);
             var turn_on = m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));
             target_generators_on[m, turn_on] = 0;
@@ -634,7 +634,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           var ret = WhereIs(want, m);
           if (0 < ret.Count) update_path.StageInventory(m,ret);
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
           var inventories = m_Actor.CastToInventoryAccessibleDestinations(m, ret);
           target_items[m, inventories] = 0;
           return inventories;
@@ -665,7 +665,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // 1) view pathing
           _caller = CallChain.SelectAction_LambdaPath;
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
           tmpAction = BehaviorPathTo(pathing_targets, pathing, prefilter_view, reject_view);
 #else
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
@@ -678,7 +678,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null!=tmpAction) return tmpAction;
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
           target_threat.Clear();
           target_tourism.Clear();
           target_generators_on.Clear();
@@ -727,7 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
 #endif
           _caller = CallChain.SelectAction_LambdaPath;
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             tmpAction = BehaviorPathTo(pathing_targets, pathing, prefilter_minimap /*,postfilter_minimap*/);
 #else
             tmpAction = BehaviorPathTo(pathing_targets,prefilter_minimap /*,postfilter_minimap*/);
@@ -754,7 +754,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
             }
             if (null!=tmpAction) return tmpAction;
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
             target_threat.Clear();
             target_tourism.Clear();
             target_generators_on.Clear();
@@ -767,7 +767,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (combat_unready.Value && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
           _caller = CallChain.SelectAction_LambdaPath;
-#if WALKZONE_PATHING
+#if ZONEWALK_PATHING
           tmpAction = BehaviorPathTo(pathing_targets, pathing);
 #else
           tmpAction = BehaviorPathTo(pathing_targets);
