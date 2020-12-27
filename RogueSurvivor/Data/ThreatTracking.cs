@@ -1056,5 +1056,19 @@ namespace djack.RogueSurvivor.Data
 
             return new KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
        }
+
+       public Dictionary<Location, ZoneLoc[]> Goals() {
+            var goals = new Dictionary<Location, ZoneLoc[]>();
+
+            foreach (var x in _locs) {
+                foreach (var y in x.Value) {
+                    var loc = new Location(x.Key, y.Key);
+                    var tmp_zones = loc.TrivialDistanceZones;
+                    if (null != tmp_zones) goals.Add(loc, tmp_zones);
+                }
+            }
+
+            return goals;
+       }
     }
 }

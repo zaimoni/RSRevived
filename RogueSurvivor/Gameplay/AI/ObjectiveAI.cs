@@ -3602,12 +3602,12 @@ Restart:
       return goals;
     }
 
-    private KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
+    private KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
     {
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
-        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
-        var nav = new List<KeyValuePair<ZoneLoc, ZoneLoc[]>>();
+        var cleared = new Dictionary<ZoneLoc, List<Location>?>();
+        var nav = new Dictionary<ZoneLoc, ZoneLoc[]>();
 
         // temporaries suitable for GC
         var to_clear = new Dictionary<Location, ZoneLoc[]>(goals);
@@ -3627,17 +3627,19 @@ Restart:
         }
 
         void map_zone(ZoneLoc z) {
-          var found = to_clear.Where(kv => z.Contains(kv.Key));
-          var stage = new List<Location>(found.Select(kv => kv.Key));
-          foreach (var x in found) to_clear.Remove(x.Key);
+          var stage = to_clear.grep(k => z.Contains(k));
+          if (null != stage) foreach (var x in stage) to_clear.Remove(x);
           var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
-          found = to_clear.Where(kv => 0<=Array.IndexOf(exits, kv.Key));
-          stage.AddRange(found.Select(kv => kv.Key));
-          foreach (var x in found) to_clear.Remove(x.Key);
-          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, stage));
+          var found = to_clear.grep(k => 0<=Array.IndexOf(exits, k));
+          if (null != found) {
+            foreach (var x in found) to_clear.Remove(x);
+            if (null == stage) stage = found;
+            else stage.AddRange(found);
+          }
+          cleared.Add(z, stage);
           var e_zones = z.ExitZones;
           if (Array.Exists(e_zones, z => preblacklist(z.m))) e_zones = Array.FindAll(e_zones, z => !preblacklist(z.m));
-          nav.Add(new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, e_zones));
+          nav.Add(z, e_zones);
           stage_zones(e_zones);
         }
 
@@ -3649,92 +3651,21 @@ Restart:
           next = staging;
           staging = new List<ZoneLoc>();
         }
-        return new KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>>(zone_range,
-            new KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>(cleared, nav));
+        return new KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>>(zone_range,
+            new KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>(cleared, nav));
     }
 
     public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
-        var stats = pathing.GoalStats();
+        var goals = pathing.Goals();
 #if DEBUG
-        if (stats.Key.ContainsKey(origin)) throw new InvalidOperationException("self-pathing?");
+        if (goals.ContainsKey(origin)) throw new InvalidOperationException("self-pathing?");
 #endif
 
-        var initial_goals = stats.Key.Count;
+        var initial_goals = goals.Count; // debug statistic
 
         if (null != preblacklist) {
-            stats.Key.OnlyIf(loc => !preblacklist(loc.Map));
-        }
-
-        var origin_zones = origin.TrivialDistanceZones;
-        int ub = stats.Value.Count;
-
-#if PROTOTYPE
-        int origin_cost = int.MaxValue;
-        var inverse_pathing = new LocationFunction<int>();
-        void process_origin_zone(ZoneLoc o) {
-            var staging = new Dictionary<Location, int>();
-            var contained = o.Contains(stats.Key);
-            int min = int.MaxValue;
-            bool redo_inverse = false;
-            foreach (var goal in contained) {
-                var cost = Rules.InteractionDistance(origin, goal) + pathing[goal];
-                if (min > cost) min = cost;
-                staging.Add(goal, cost);
-                if (origin_cost > cost) {
-                    redo_inverse = int.MaxValue > origin_cost;
-                    origin_cost = cost;
-                }
-            }
-            int double_cost = (int.MaxValue / 2 >= origin_cost) ? 2 * origin_cost : int.MaxValue;
-            foreach (var x in staging) {
-                if (double_cost < x.Value) {
-                    stats.Key.Remove(x.Key);
-                    pathing.Remove(x.Key);
-                } else {
-                    inverse_pathing[x.Key] = x.Value;
-                }
-            }
-            if (redo_inverse) {
-                var doomed = inverse_pathing.RemoveWhere(val => double_cost < val);
-                if (null != doomed) pathing.Remove(doomed);
-            }
-        }
-
-        // origin zones are easily solved
-        int origin_zones_hit = 0;
-        while (0 <= --ub) {
-            if (0 <= Array.IndexOf(origin_zones, stats.Value[ub].Key)) {
-                process_origin_zone(stats.Value[ub].Key);
-                stats.Value.RemoveAt(ub);
-                origin_zones_hit += 1;
-                if (origin_zones.Length <= origin_zones_hit) break;
-            }
-        }
-#endif
-
-        // eliminate zones in blacklisted maps
-        int one_lb = stats.Value.Count;
-        if (null != preblacklist) {
-            ub = stats.Value.Count;
-            while (0 <= --ub) {
-                if (Array.Exists(stats.Value[ub].Value, z => preblacklist(z.m))) {
-#if DEBUG
-                    if (Array.Exists(stats.Value[ub].Value, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
-#endif
-                    var trimmed = Array.FindAll(stats.Value[ub].Value, z => !preblacklist(z.m));
-#if DEBUG
-                    if (0 >= trimmed.Length) throw new InvalidOperationException("should not have inaccessible goals");
-                    if (Array.Exists(trimmed, z => !z.IsClearable)) throw new InvalidOperationException("hard to pathfind with large zones");
-#endif
-                    stats.Value[ub].Value = trimmed;
-                }
-                if (1 == stats.Value[ub].Value.Length && ub < --one_lb) {
-                    var swap = stats.Value[ub];
-                    stats.Value[ub] = stats.Value[one_lb];
-                    stats.Value[one_lb] = swap;
-                }
-            }
+            goals.OnlyIf(loc => !preblacklist(loc.Map));
         }
 
 #if PROTOTYPE
@@ -3832,7 +3763,7 @@ Restart:
         }
 #endif
 
-        var parsed = zoneWalkParse(stats.Key, origin, preblacklist);
+        var parsed = zoneWalkParse(goals, origin, preblacklist);
 #if DEBUG
         throw new InvalidOperationException("tracing");
 #endif

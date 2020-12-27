@@ -384,30 +384,29 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
-    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
+#nullable enable
+    public static List<Key>? grep<Key, Value>(this Dictionary<Key, Value> src, Predicate<Key> ok) where Key:notnull
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
+      var ret = new List<Key>();
+      foreach(var x in src) if (ok(x.Key)) ret.Add(x.Key);
+      return 0<ret.Count ? ret : null;
+    }
+
+    // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
+    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn) where Key : notnull
+    {
       var reject = new List<Key>(src.Count);
       foreach(var x in src) if (!fn(x.Value)) reject.Add(x.Key);
       foreach(var x in reject) src.Remove(x);
     }
 
-    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Key> fn)
+    public static void OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Key> fn) where Key : notnull
     {
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(fn));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       var reject = new List<Key>(src.Count);
       foreach(var x in src) if (!fn(x.Key)) reject.Add(x.Key);
       foreach(var x in reject) src.Remove(x);
     }
 
-#nullable enable
     public static void OnlyIf<_T_>(this List<_T_> percepts, Func<_T_,bool> test)
     {
       int i = percepts.Count;
