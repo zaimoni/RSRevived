@@ -3616,7 +3616,6 @@ Restart:
         }
 
         var origin_zones = origin.TrivialDistanceZones;
-        var blacklist_zones = new List<ZoneLoc>();
         int ub = stats.Value.Count;
 
 #if PROTOTYPE
@@ -3784,9 +3783,12 @@ Restart:
 
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
+        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
+        var nav = new List<KeyValuePair<ZoneLoc, ZoneLoc[]>>();
+
+        // temporaries suitable for GC
         var to_clear = new Dictionary<Location, ZoneLoc[]>(stats.Key);
         var seen = new List<ZoneLoc>();
-        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
         var next = new List<ZoneLoc>(origin_zones);
         var staging = new List<ZoneLoc>();
 
@@ -3795,8 +3797,6 @@ Restart:
 #if DEBUG
             if (!z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
 #endif
-            if (preblacklist(z.m)) continue;
-            if (blacklist_zones.Contains(z)) continue;
             if (seen.Contains(z)) continue;
             if (staging.Contains(z)) continue;
             staging.Add(z);
@@ -3812,7 +3812,10 @@ Restart:
           stage.AddRange(found.Select(kv => kv.Key));
           foreach (var x in found) to_clear.Remove(x.Key);
           cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, stage));
-          stage_zones(z.ExitZones);
+          var e_zones = z.ExitZones;
+          if (Array.Exists(e_zones, z => preblacklist(z.m))) e_zones = Array.FindAll(e_zones, z => !preblacklist(z.m));
+          nav.Add(new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, e_zones));
+          stage_zones(e_zones);
         }
 
         while(true) {

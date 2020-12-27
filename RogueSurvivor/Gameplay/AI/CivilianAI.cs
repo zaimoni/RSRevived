@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-// #define ZONEWALK_PATHING
+#define ZONEWALK_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
