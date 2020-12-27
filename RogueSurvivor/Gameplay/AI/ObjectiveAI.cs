@@ -3602,6 +3602,57 @@ Restart:
       return goals;
     }
 
+    private KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
+    {
+        // breadth-first out until all zones are seen
+        var zone_range = new List<List<ZoneLoc>>();
+        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
+        var nav = new List<KeyValuePair<ZoneLoc, ZoneLoc[]>>();
+
+        // temporaries suitable for GC
+        var to_clear = new Dictionary<Location, ZoneLoc[]>(goals);
+        var seen = new List<ZoneLoc>();
+        var next = new List<ZoneLoc>(origin.TrivialDistanceZones);
+        var staging = new List<ZoneLoc>();
+
+        void stage_zones(ZoneLoc[] src) {
+          foreach(var z in src) {
+#if DEBUG
+            if (!z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
+#endif
+            if (seen.Contains(z)) continue;
+            if (staging.Contains(z)) continue;
+            staging.Add(z);
+          }
+        }
+
+        void map_zone(ZoneLoc z) {
+          var found = to_clear.Where(kv => z.Contains(kv.Key));
+          var stage = new List<Location>(found.Select(kv => kv.Key));
+          foreach (var x in found) to_clear.Remove(x.Key);
+          var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
+          found = to_clear.Where(kv => 0<=Array.IndexOf(exits, kv.Key));
+          stage.AddRange(found.Select(kv => kv.Key));
+          foreach (var x in found) to_clear.Remove(x.Key);
+          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, stage));
+          var e_zones = z.ExitZones;
+          if (Array.Exists(e_zones, z => preblacklist(z.m))) e_zones = Array.FindAll(e_zones, z => !preblacklist(z.m));
+          nav.Add(new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, e_zones));
+          stage_zones(e_zones);
+        }
+
+        while(true) {
+          zone_range.Add(next);
+          seen.AddRange(next);
+          foreach(var z in next) map_zone(z);
+          if (0 >= to_clear.Count || 0 >= staging.Count) break;
+          next = staging;
+          staging = new List<ZoneLoc>();
+        }
+        return new KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>>(zone_range,
+            new KeyValuePair<List<KeyValuePair<ZoneLoc, List<Location>>>, List<KeyValuePair<ZoneLoc, ZoneLoc[]>>>(cleared, nav));
+    }
+
     public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
         var stats = pathing.GoalStats();
@@ -3781,51 +3832,7 @@ Restart:
         }
 #endif
 
-        // breadth-first out until all zones are seen
-        var zone_range = new List<List<ZoneLoc>>();
-        var cleared = new List<KeyValuePair<ZoneLoc, List<Location>>>();
-        var nav = new List<KeyValuePair<ZoneLoc, ZoneLoc[]>>();
-
-        // temporaries suitable for GC
-        var to_clear = new Dictionary<Location, ZoneLoc[]>(stats.Key);
-        var seen = new List<ZoneLoc>();
-        var next = new List<ZoneLoc>(origin_zones);
-        var staging = new List<ZoneLoc>();
-
-        void stage_zones(ZoneLoc[] src) {
-          foreach(var z in src) {
-#if DEBUG
-            if (!z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
-#endif
-            if (seen.Contains(z)) continue;
-            if (staging.Contains(z)) continue;
-            staging.Add(z);
-          }
-        }
-
-        void map_zone(ZoneLoc z) {
-          var found = to_clear.Where(kv => z.Contains(kv.Key));
-          var stage = new List<Location>(found.Select(kv => kv.Key));
-          foreach (var x in found) to_clear.Remove(x.Key);
-          var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
-          found = to_clear.Where(kv => 0<=Array.IndexOf(exits, kv.Key));
-          stage.AddRange(found.Select(kv => kv.Key));
-          foreach (var x in found) to_clear.Remove(x.Key);
-          cleared.Add(new KeyValuePair<ZoneLoc, List<Location>>(z, stage));
-          var e_zones = z.ExitZones;
-          if (Array.Exists(e_zones, z => preblacklist(z.m))) e_zones = Array.FindAll(e_zones, z => !preblacklist(z.m));
-          nav.Add(new KeyValuePair<ZoneLoc, ZoneLoc[]>(z, e_zones));
-          stage_zones(e_zones);
-        }
-
-        while(true) {
-          zone_range.Add(next);
-          seen.AddRange(next);
-          foreach(var z in next) map_zone(z);
-          if (0 >= to_clear.Count || 0 >= staging.Count) break;
-          next = staging;
-          staging = new List<ZoneLoc>();
-        }
+        var parsed = zoneWalkParse(stats.Key, origin, preblacklist);
 #if DEBUG
         throw new InvalidOperationException("tracing");
 #endif
