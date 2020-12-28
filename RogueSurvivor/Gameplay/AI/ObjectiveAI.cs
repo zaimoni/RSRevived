@@ -3762,8 +3762,91 @@ Restart:
             }
         }
 #endif
-
         var parsed = zoneWalkParse(goals, origin, preblacklist);
+
+        void zonePrune(ZoneLoc zone)
+        {
+            var doomed = new List<KeyValuePair<ZoneLoc, ZoneLoc[]>>();
+            foreach(var kv in parsed.Value.Value) {
+                if (kv.Key != zone && 0<=Array.IndexOf(kv.Value, zone)) doomed.Add(kv);
+            }
+            foreach(var kv in doomed) {
+                if (1 == kv.Value.Length && !doomed.Any(kv2 => kv2.Key == kv.Key)) throw new InvalidOperationException("zone becoming a black hole");
+                parsed.Value.Value[kv.Key] = Array.FindAll(kv.Value, z => z != zone);
+            }
+            parsed.Value.Key.Remove(zone);
+            parsed.Value.Value.Remove(zone);
+        }
+
+        var ub = parsed.Key.Count;
+        while (0 <= --ub) {
+            var initial_zone_count = parsed.Key[ub].Count; // debug tracer
+            var ub2 = parsed.Key[ub].Count;
+            while(0 <= --ub2) {
+                var zone = parsed.Key[ub][ub2];
+                if (parsed.Value.Key.TryGetValue(zone, out var have_goals)) {
+                    if (null != have_goals) continue;
+                    zonePrune(zone);
+                    parsed.Key[ub].RemoveAt(ub2); // no longer relevant
+                } else {
+                    parsed.Key[ub].RemoveAt(ub2); // not even reached in time
+                }
+            }
+            ub2 = parsed.Key[ub].Count;
+            if (0 >= ub2) throw new InvalidOperationException("should be at least one goal at each level");
+            while(0 <= --ub2) {
+                var zone = parsed.Key[ub][ub2];
+                var xfer = parsed.Value.Key[zone];
+                var dests = parsed.Value.Value[zone];
+                var exit_costs = new Dictionary<Location, int>();
+                foreach(var e_loc in zone.Zone.VolatileAttribute.Get<Location[]>("exits")) {
+                    var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));
+                    if (!e_zones.Any()) continue;
+                    exit_costs.Add(e_loc, xfer.Select(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + pathing[s_loc]).Min());
+                }
+                if (0 >= exit_costs.Count) {
+                  pathing.Remove(xfer);
+                  foreach(var gone in xfer) {
+                    goals.Remove(gone);
+                    var ex_zone = new List<ZoneLoc>();
+                    foreach(var kv in parsed.Value.Key) if (kv.Key != zone && null != kv.Value && kv.Value.Remove(gone) && 0 >= kv.Value.Count) ex_zone.Add(kv.Key);
+                    foreach(var z in ex_zone) parsed.Value.Key[z] = null;
+                  }
+                  continue;
+                }
+                var relocate = exit_costs.Keys.ToList();
+                int min_cost = exit_costs.Values.Min();
+                var doomed = new List<Location>();
+                foreach(var s_loc in xfer) {
+                  int delta = pathing[s_loc];
+                  int cost = relocate.Min(d_loc => Rules.ZoneWalkDistance(d_loc, s_loc) + delta);
+                  if (2 <= cost/min_cost && 2* min_cost < cost) doomed.Add(s_loc);
+                }
+                foreach(var gone in doomed) {
+                  pathing.Remove(gone);
+                  goals.Remove(gone);
+                  var ex_zone = new List<ZoneLoc>();
+                  foreach(var kv in parsed.Value.Key) if (null != kv.Value && kv.Value.Remove(gone) && 0 >= kv.Value.Count) ex_zone.Add(kv.Key);
+                  foreach(var z in ex_zone) parsed.Value.Key[z] = null;
+                  xfer.Remove(gone);
+                }
+                foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value;
+                pathing.Relink(relocate, xfer);
+                if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
+                  foreach(var z in dest_zones) {
+                    var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Zone.VolatileAttribute.Get<Location[]>("exits"), loc));
+                    if (test.Any() && parsed.Value.Key.TryGetValue(z, out var already_locs)) {
+                        if (null == already_locs) parsed.Value.Key[z] = test.ToList();
+                        else {
+                            foreach(var x in test) if (!already_locs.Contains(x)) already_locs.Add(x);
+                        }
+                    }
+                  }
+                }
+                zonePrune(zone);
+            }
+            parsed.Key.RemoveAt(ub);
+        }
 #if DEBUG
         throw new InvalidOperationException("tracing");
 #endif
