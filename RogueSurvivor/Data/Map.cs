@@ -981,6 +981,8 @@ retry:
       return GetZonesAt(pos)?.Any(zone=>zone.Name.Contains(partOfName)) ?? false;
     }
 
+    /// <summary>Denotes a zone that may legitimately be "cleared" of threat or tourism targets</summary>
+    /// <returns>null, or ZoneLoc z, containing pt, such that this.IsClearableZone(z)</returns>
     public ZoneLoc? ClearableZoneAt(Point pt) {
       foreach (var x in m_ClearableZones!) if (x.Key.Contains(pt)) return x.Value;
       return null;
@@ -988,11 +990,6 @@ retry:
 
     public bool IsClearableZone(ZoneLoc z) {
         return m_ClearableZones!.Values.Contains(z);
-    }
-
-    public ZoneLoc? RepairClearableZone(ZoneLoc z) {
-        if (m_ClearableZones!.Values.Contains(z)) return z;
-        return m_ClearableZones!.Values.FirstOrDefault(z2 => z == z2);
     }
 
     public void OnMapGenerated()

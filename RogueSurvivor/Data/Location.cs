@@ -148,9 +148,6 @@ namespace djack.RogueSurvivor.Data
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = ClearableZone;
-#if DEBUG
-        if (null != z && !z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
-#endif
         if (null != z) return new ZoneLoc[] { z };
         foreach (var dir in Direction.COMPASS) {
             var loc = this + dir;
@@ -158,9 +155,6 @@ namespace djack.RogueSurvivor.Data
             if (!loc.TileModel.IsWalkable) continue;
             z = loc.ClearableZone;
             if (null != z && !dest.Contains(z)) dest.Add(z);
-#if DEBUG
-            if (null != z && !z.IsClearable) throw new InvalidOperationException("hard to pathfind with large zones");
-#endif
         }
         return (0 < dest.Count) ? dest.ToArray() : null;
      } }

@@ -288,8 +288,6 @@ namespace djack.RogueSurvivor.Data
         return m.IsClearableZone(this);
     } }
 
-    public ZoneLoc? RepairClearable() { return m.RepairClearableZone(this); }
-
     public ZoneLoc[] ExitZones { get {
         var exit_z = Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
         var staging = new List<ZoneLoc>(Array.Exists(exit_z, zone => !zone.IsClearable) ? Array.FindAll(exit_z, zone => zone.IsClearable) : exit_z);
