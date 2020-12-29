@@ -3602,7 +3602,7 @@ Restart:
       return goals;
     }
 
-    private KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
+    private static KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
     {
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
@@ -3804,7 +3804,7 @@ Restart:
                 foreach(var e_loc in zone.Exits) {
                     var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));
                     if (!e_zones.Any()) continue;
-                    exit_costs.Add(e_loc, xfer.Select(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + pathing[s_loc]).Min());
+                    exit_costs.Add(e_loc, xfer.Min(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + pathing[s_loc]));
                 }
                 if (0 >= exit_costs.Count) {
                   pathing.Remove(xfer);
@@ -4051,7 +4051,6 @@ retry:
     {
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      int current_cost = navigate.Cost(m_Actor.Location.Position);
       var approach = PlanApproach(navigate);
       Dictionary<Location, KeyValuePair<ActorAction,int> >? ok_path = null;
       ActionUseExit? _exit_map = null;

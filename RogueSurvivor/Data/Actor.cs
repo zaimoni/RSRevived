@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Data
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
 
-    static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
+    private static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
     [NonSerialized] private Actor? m_Leader;              // Backpointer
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
@@ -590,7 +590,7 @@ namespace djack.RogueSurvivor.Data
           if (Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("police do not murder");
           var leader = LiveLeader;
           if (null != leader && leader.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("deputies do not murder");
-          if (Faction.ID.ExtortionIsAggression()) throw new InvalidOperationException("authorities do not murder"); 
+          if (Faction.ID.ExtortionIsAggression()) throw new InvalidOperationException("authorities do not murder");
         }
 #endif
         if (s_MurdersCounter.ContainsKey(this)) s_MurdersCounter[this]++; // bypasses hungry civilian adjustment
@@ -1578,7 +1578,7 @@ namespace djack.RogueSurvivor.Data
         // 1) police have all other police as allies.
         if (IsFaction(GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
-        if (0 < CountFollowers) ret.UnionWith(m_Followers);
+        if (null != m_Followers) ret.UnionWith(m_Followers);
         var leader = LiveLeader;
         if (null != leader) { // 2019-08-14: currently mutually exclusive with above for NPCs
           ret.Add(leader);
@@ -1593,11 +1593,14 @@ namespace djack.RogueSurvivor.Data
     public HashSet<Actor>? ChainOfCommand {
       get {
         var ret = new HashSet<Actor>();
-        if (0 < CountFollowers) ret.UnionWith(m_Followers);
-        else if (HasLeader) {
-          ret.Add(Leader);
-          ret.UnionWith(Leader.m_Followers);
-          ret.Remove(this);
+        if (null != m_Followers) ret.UnionWith(m_Followers);
+        else {
+          var leader = LiveLeader;
+          if (null != leader) {
+            ret.Add(leader);
+            ret.UnionWith(leader.m_Followers);
+            ret.Remove(this);
+          }
         }
         return (0<ret.Count ? ret : null);
       }

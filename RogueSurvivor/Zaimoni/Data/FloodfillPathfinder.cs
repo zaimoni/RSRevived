@@ -473,20 +473,19 @@ namespace Zaimoni.Data
             return (0 < ret.Count) ? ret : null;
         }
 
+#nullable enable
         // normal use case is to set depth and then do local optimizations to the returned path
         public List<List<T>>? MinStepPathTo(T current_pos,int depth = 0)
         {
             if (!_map.TryGetValue(current_pos, out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             if (0 == current_cost) return null;   // already at a goal
-            var ret = new List<List<T>>();
-            List<T> next = null;
             var bootstrap = Approach(current_pos);
             if (null == bootstrap) return null;
-            next = bootstrap.Keys.ToList();
-            ret.Add(next);
+            List<T> next = bootstrap.Keys.ToList();
+            var ret = new List<List<T>> { next };
             if (0 < depth && 1 == next.Count) return ret;    // no optimization indicated
             while (!next.Any(pos => 0 >= _map[pos]) && (0 >= depth || depth > ret.Count)) {
-                List<T> working = null; /// would prefer HashSet, but work to ensure T is hashable is excessive in the general case
+                List<T>? working = null; /// would prefer HashSet, but work to ensure T is hashable is excessive in the general case
                 foreach (T loc in next) {
                     int reference_cost = Cost(loc);
                     var tmp = Approach(loc);
@@ -507,6 +506,7 @@ namespace Zaimoni.Data
             }
             return ret;
         }
+#nullable restore
 
 #if DEAD_FUNC
         public Dictionary<T, int> Flee(T current_pos) {

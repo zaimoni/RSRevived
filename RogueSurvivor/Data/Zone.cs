@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Compass;
@@ -17,6 +18,7 @@ using Size = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
+#nullable enable
   [Serializable]
   internal struct AVtable // attribute-value table
   {
@@ -32,17 +34,19 @@ namespace djack.RogueSurvivor.Data
       (m_Attributes ??= new Dictionary<string, object>(1))[key] = value;
     }
 
+    [return: MaybeNull]
     public _T_ Get<_T_>(string key)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 #endif
       if (m_Attributes == null) return default;
-      if (!m_Attributes.TryGetValue(key, out object obj)) return default;
+      if (!m_Attributes.TryGetValue(key, out var obj)) return default;
       if (obj is _T_ x) return x;
       throw new InvalidOperationException("game attribute is not of requested type");
     }
   }
+#nullable restore
 
   // not meant to be self-contained
   [Serializable]
