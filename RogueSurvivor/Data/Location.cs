@@ -158,6 +158,12 @@ namespace djack.RogueSurvivor.Data
         }
         return (0 < dest.Count) ? dest.ToArray() : null;
      } }
+
+    public bool BlocksLivingPathfinding { get {
+        if (!TileModel.IsWalkable) return true;
+        var obj = MapObject;
+        return null != obj && obj.BlocksLivingPathfinding;
+    } }
 #nullable restore
 
     // alpha10

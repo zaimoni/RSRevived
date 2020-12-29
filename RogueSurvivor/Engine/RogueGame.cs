@@ -11953,6 +11953,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
+      Session.Get.World.DoForAllMaps(m=>m.RepairZoneWalk());
       Direction_ext.Now();
 #if OBSOLETE
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
@@ -12399,6 +12400,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
+      Session.Get.World.DoForAllMaps(m=>m.RepairZoneWalk());
 
       Map? entryMap = null;
       if (!Session.Get.CMDoptionExists("no-spawn")) {

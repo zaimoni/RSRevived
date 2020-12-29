@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
@@ -1032,6 +1033,147 @@ retry:
         var staging = zl.Value;
         staging.Zone!.InstallExits(staging);
       }
+    }
+
+    [Conditional("DEBUG")] // uses System.Diagnostics; revert out once live
+    public void RepairZoneWalk()
+    {
+        bool needs_zone(Location loc) {
+            if (loc.BlocksLivingPathfinding) return false;
+            var trivial = loc.TrivialDistanceZones;
+            if (null == trivial) return true;
+            return 1 == trivial.Length && IsOnEdge(loc.Position) && !trivial[0].Contains(in loc);
+        }
+
+        var audit = new ZoneLoc(this, Rect);
+        var naked = audit.grep(needs_zone);
+
+        // closely related to compass rose ordering
+        int expansion_code(in Rectangle src) {
+            int ret = 0;
+            Span<bool> scan = stackalloc bool[Math.Max(src.Width, src.Height)];
+            int ub = 0;
+            int ok = 0;
+            Location test;
+            if (0 < src.X) {
+                ub = src.Height;
+                ok = 0;
+                while (0 <= --ub) {
+                  test = new Location(this, new Point(src.X - 1, src.Y + ub));
+                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                }
+                if (0 < ok && ok < src.Height && 1 < src.X) {
+                  ub = src.Height;
+                  while (0 <= --ub) {
+                    if (!scan[ub]) {
+                      test = new Location(this, new Point(src.X - 2, src.Y + ub));
+                      if (scan[ub] = test.BlocksLivingPathfinding) ok++;
+                    }
+                  }
+                }
+                if (ok == src.Height) ret += 8;
+                else if (0 < ok) {
+                    if (1 == src.X) ret += 8;
+                    else if (ok == src.Height - 1) throw new InvalidOperationException("test case");
+                }
+            }
+            if (Width - 1 > src.X + src.Width) {
+                ub = src.Height;
+                ok = 0;
+                while (0 <= --ub) {
+                  test = new Location(this, new Point(src.X + src.Width, src.Y + ub));
+                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                }
+                if (0 < ok && ok < src.Height && Width - 2 > src.X + src.Width) {
+                  ub = src.Height;
+                  while (0 <= --ub) {
+                    if (!scan[ub]) {
+                      test = new Location(this, new Point(src.X + src.Width + 1, src.Y + ub));
+                      if (scan[ub] = test.BlocksLivingPathfinding) ok++;
+                    }
+                  }
+                }
+                if (ok == src.Height) ret += 2;
+                else if (0 < ok) {
+                    if (Width - 2 == src.X + src.Width) ret += 2;
+                    else if (ok == src.Height - 1) throw new InvalidOperationException("test case");
+                }
+            }
+            if (0 < src.Y) {
+                ub = src.Width;
+                ok = 0;
+                while (0 <= --ub) {
+                  test = new Location(this, new Point(src.X + ub, src.Y - 1));
+                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                }
+                if (0 < ok && ok < src.Width && 1 < src.Y) {
+                  ub = src.Width;
+                  while (0 <= --ub) {
+                    if (!scan[ub]) {
+                      test = new Location(this, new Point(src.X + ub, src.Y - 2));
+                      if (scan[ub] = test.BlocksLivingPathfinding) ok++;
+                    }
+                  }
+                }
+                if (ok == src.Width) ret += 1;
+                else if (0 < ok) {
+                    if (1 == src.Y) ret += 4;
+                    else if (ok == src.Width - 1) throw new InvalidOperationException("test case");
+                }
+            }
+            if (Height - 1 > src.Y + src.Height) {
+                ub = src.Width;
+                ok = 0;
+                while (0 <= --ub) {
+                  test = new Location(this, new Point(src.X + ub, src.Y + src.Height));
+                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                }
+                if (0 < ok && ok < src.Width && Height - 2 > src.Y + src.Height) {
+                  ub = src.Width;
+                  while (0 <= --ub) {
+                    if (!scan[ub]) {
+                      test = new Location(this, new Point(src.X + ub, src.Y + src.Height + 1));
+                      if (scan[ub] = test.BlocksLivingPathfinding) ok++;
+                    }
+                  }
+                }
+                if (ok == src.Width) ret += 4;
+                else if (0 < ok) {
+                    if (Height - 1 > src.Y + src.Height) ret += 4;
+                    else if (ok == src.Width - 1) throw new InvalidOperationException("test case");
+                }
+            }
+            return ret;
+        }
+
+        while (null != naked) {
+          var naked_exits = naked?.Where(loc => null != loc.Exit);
+          if (null != naked_exits && naked_exits.Any()) throw new InvalidOperationException("test case");
+          var extent = new Rectangle(naked[0].Position, (Point)1);
+          var code = expansion_code(in extent);
+          while (0 < code) {
+            // tiebreak
+            if (0 != (code & 2+8) && 0 != (code & 1+4)) {
+              if (extent.Height <= extent.Width) code &= 1 + 4;
+              else code &= 2 + 8;
+            }
+            if (0 != (code & 1)) {
+              extent.Y -= 1;
+              extent.Height += 1;
+            } else if (0 != (code & 2)) extent.Width += 1;
+            else if (0 != (code & 4)) extent.Height += 1;
+            else if (0 != (code & 8)) {
+              extent.X -= 1;
+              extent.Width += 1;
+            }
+            code = expansion_code(in extent);
+          }
+          var z = new Zone("interpolated", extent);
+          var zl = new ZoneLoc(this, z);
+          m_ClearableZones.Add(extent, zl);
+          z.InstallExits(zl);
+          naked = audit.grep(needs_zone);
+        }
     }
 
     public bool ActorPositionHull(ref Span<Point> hull)
