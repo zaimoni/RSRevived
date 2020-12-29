@@ -1029,10 +1029,6 @@ retry:
         foreach(var z in staging) m_ClearableZones.Add(z.Rect, z);
       }
       // per-zone data
-      foreach(var zl in m_CanonicalZones) {
-        var staging = zl.Value;
-        staging.Zone!.InstallExits(staging);
-      }
     }
 
     [Conditional("DEBUG")] // uses System.Diagnostics; revert out once live
@@ -1060,7 +1056,10 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, new Point(src.X - 1, src.Y + ub));
-                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                  if (null != ClearableZoneAt(test.Position)) {
+                    ok = 0;
+                    break;
+                  } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
                 }
                 if (0 < ok && ok < src.Height && 1 < src.X) {
                   ub = src.Height;
@@ -1074,7 +1073,6 @@ retry:
                 if (ok == src.Height) ret += 8;
                 else if (0 < ok) {
                     if (1 == src.X) ret += 8;
-                    else if (ok == src.Height - 1) throw new InvalidOperationException("test case");
                 }
             }
             if (Width - 1 > src.X + src.Width) {
@@ -1082,7 +1080,10 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, new Point(src.X + src.Width, src.Y + ub));
-                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                  if (null != ClearableZoneAt(test.Position)) {
+                    ok = 0;
+                    break;
+                  } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
                 }
                 if (0 < ok && ok < src.Height && Width - 2 > src.X + src.Width) {
                   ub = src.Height;
@@ -1096,7 +1097,6 @@ retry:
                 if (ok == src.Height) ret += 2;
                 else if (0 < ok) {
                     if (Width - 2 == src.X + src.Width) ret += 2;
-                    else if (ok == src.Height - 1) throw new InvalidOperationException("test case");
                 }
             }
             if (0 < src.Y) {
@@ -1104,7 +1104,10 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, new Point(src.X + ub, src.Y - 1));
-                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                  if (null != ClearableZoneAt(test.Position)) {
+                    ok = 0;
+                    break;
+                  } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
                 }
                 if (0 < ok && ok < src.Width && 1 < src.Y) {
                   ub = src.Width;
@@ -1117,8 +1120,7 @@ retry:
                 }
                 if (ok == src.Width) ret += 1;
                 else if (0 < ok) {
-                    if (1 == src.Y) ret += 4;
-                    else if (ok == src.Width - 1) throw new InvalidOperationException("test case");
+                    if (1 == src.Y) ret += 1;
                 }
             }
             if (Height - 1 > src.Y + src.Height) {
@@ -1126,7 +1128,10 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, new Point(src.X + ub, src.Y + src.Height));
-                  if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
+                  if (null != ClearableZoneAt(test.Position)) {
+                    ok = 0;
+                    break;
+                  } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
                 }
                 if (0 < ok && ok < src.Width && Height - 2 > src.Y + src.Height) {
                   ub = src.Width;
@@ -1140,16 +1145,19 @@ retry:
                 if (ok == src.Width) ret += 4;
                 else if (0 < ok) {
                     if (Height - 1 > src.Y + src.Height) ret += 4;
-                    else if (ok == src.Width - 1) throw new InvalidOperationException("test case");
                 }
             }
             return ret;
         }
 
+        Point zone_anchor(List<Location> src) {
+            var src_exits = src.Where(loc => null != loc.Exit);
+            if (src_exits.Any()) return src_exits.First().Position;
+            return src[0].Position;
+        }
+
         while (null != naked) {
-          var naked_exits = naked?.Where(loc => null != loc.Exit);
-          if (null != naked_exits && naked_exits.Any()) throw new InvalidOperationException("test case");
-          var extent = new Rectangle(naked[0].Position, (Point)1);
+          var extent = new Rectangle(zone_anchor(naked), (Point)1);
           var code = expansion_code(in extent);
           while (0 < code) {
             // tiebreak
@@ -1171,7 +1179,6 @@ retry:
           var z = new Zone("interpolated", extent);
           var zl = new ZoneLoc(this, z);
           m_ClearableZones.Add(extent, zl);
-          z.InstallExits(zl);
           naked = audit.grep(needs_zone);
         }
     }

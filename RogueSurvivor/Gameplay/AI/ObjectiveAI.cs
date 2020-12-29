@@ -3629,7 +3629,7 @@ Restart:
         void map_zone(ZoneLoc z) {
           var stage = to_clear.grep(k => z.Contains(k));
           if (null != stage) foreach (var x in stage) to_clear.Remove(x);
-          var exits = z.Zone.VolatileAttribute.Get<Location[]>("exits");
+          var exits = z.Exits;
           var found = to_clear.grep(k => 0<=Array.IndexOf(exits, k));
           if (null != found) {
             foreach (var x in found) to_clear.Remove(x);
@@ -3793,13 +3793,15 @@ Restart:
                 }
             }
             ub2 = parsed.Key[ub].Count;
+#if DEBUG
             if (0 >= ub2) throw new InvalidOperationException("should be at least one goal at each level");
+#endif
             while(0 <= --ub2) {
                 var zone = parsed.Key[ub][ub2];
                 var xfer = parsed.Value.Key[zone];
                 var dests = parsed.Value.Value[zone];
                 var exit_costs = new Dictionary<Location, int>();
-                foreach(var e_loc in zone.Zone.VolatileAttribute.Get<Location[]>("exits")) {
+                foreach(var e_loc in zone.Exits) {
                     var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));
                     if (!e_zones.Any()) continue;
                     exit_costs.Add(e_loc, xfer.Select(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + pathing[s_loc]).Min());
@@ -3834,7 +3836,7 @@ Restart:
                 pathing.Relink(relocate, xfer);
                 if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
                   foreach(var z in dest_zones) {
-                    var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Zone.VolatileAttribute.Get<Location[]>("exits"), loc));
+                    var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
                     if (test.Any() && parsed.Value.Key.TryGetValue(z, out var already_locs)) {
                         if (null == already_locs) parsed.Value.Key[z] = test.ToList();
                         else {
@@ -4696,29 +4698,28 @@ restart_chokepoints:
       }
       foreach(var x in zone_test) {
         ZoneLoc? bounce_out = null;
-        Zone? bounce = null;
         if (m_Actor.Location.Map == x.Key) {
           foreach(var z in x.Value) {
             if (z.Bounds.Contains(m_Actor.Location.Position)) continue;
-            if (    1 == z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones").Length
-                && !z.VolatileAttribute.Get<Location[]>("exits").Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
-              bounce_out = new ZoneLoc(x.Key, z.Bounds);
-              bounce = z;
+            var test = new ZoneLoc(x.Key, z);
+            var data = test.ExitData;
+            if (1 == data.Value.Length && !data.Key.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+              bounce_out = new ZoneLoc(x.Key, z);
               break;
             }
           }
         } else {
           foreach(var z in x.Value) {
-            if (    1 == z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones").Length
-                && !z.VolatileAttribute.Get<Location[]>("exits").Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
-              bounce_out = new ZoneLoc(x.Key, z.Bounds);
-              bounce = z;
+            var test = new ZoneLoc(x.Key, z);
+            var data = test.ExitData;
+            if (1 == data.Value.Length && !data.Key.Any(loc => Rules.IsAdjacent(loc, m_Actor.Location))) {
+              bounce_out = new ZoneLoc(x.Key, z);
               break;
             }
           }
         }
-        if (null != bounce) {
-          var relocate_to = bounce.VolatileAttribute.Get<Location[]>("exits");
+        if (null != bounce_out) {
+          var relocate_to = bounce_out.Exits;
           var relocate_from = goals.Where(loc => bounce_out.Contains(loc)).ToArray(); // has to be value copy
           foreach(var dest in relocate_to) {
             if (!m_Actor.CanEnter(dest)) continue;

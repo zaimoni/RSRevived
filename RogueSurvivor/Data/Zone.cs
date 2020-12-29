@@ -123,6 +123,34 @@ namespace djack.RogueSurvivor.Data
       z = _z;
     }
 
+#nullable enable
+    public Location[]? Exits { get {
+        if (null == Zone) return null;
+        var ret = z.VolatileAttribute.Get<Location[]>("exits");
+        if (null != ret) return ret;
+        z.InstallExits(this);
+        return z.VolatileAttribute.Get<Location[]>("exits");
+    } }
+
+    public ZoneLoc[]? Exit_zones { get {
+        if (null == Zone) return null;
+        var ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        if (null != ret) return ret;
+        z.InstallExits(this);
+        return z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+    } }
+
+    public KeyValuePair<Location[]?, ZoneLoc[]?> ExitData { get {
+        if (null == Zone) return default;
+        var ret = z.VolatileAttribute.Get<Location[]>("exits");
+        if (null == ret) {
+            z.InstallExits(this);
+            ret = z.VolatileAttribute.Get<Location[]>("exits");
+        }
+        return new KeyValuePair<Location[]?, ZoneLoc[]?>(ret, z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"));
+    } }
+#nullable restore
+
 #region IMap implementation
     public short Height { get { return Rect.Height; } }
     public short Width { get { return Rect.Width; } }
@@ -334,16 +362,14 @@ namespace djack.RogueSurvivor.Data
     } }
 
     public ZoneLoc[] ExitZones { get {
-        var exit_z = Zone.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-        var staging = new List<ZoneLoc>(Array.Exists(exit_z, zone => !zone.IsClearable) ? Array.FindAll(exit_z, zone => zone.IsClearable) : exit_z);
-        foreach (var loc in Zone.VolatileAttribute.Get<Location[]>("exits")) {
+        var data = ExitData;
+        var staging = new List<ZoneLoc>(Array.Exists(data.Value, zone => !zone.IsClearable) ? Array.FindAll(data.Value, zone => zone.IsClearable) : data.Value);
+        foreach (var loc in data.Key) {
             var test = loc.ClearableZones;
             if (null != test) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
         }
-        exit_z = staging.ToArray();
-        return exit_z;
+        return staging.ToArray();
     } }
-
 #nullable restore
 
     public List<UpdateMoveDelta>? WalkOut() {
