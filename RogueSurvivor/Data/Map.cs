@@ -1006,7 +1006,7 @@ retry:
       if (null == m_CanonicalZones) {
         m_CanonicalZones = new Dictionary<Rectangle,ZoneLoc>();
         var staging = new List<ZoneLoc>();
-        ZoneLoc? test = null;
+        ZoneLoc? test;
         foreach(var z in m_Zones) {
           if (m_CanonicalZones.ContainsKey(z.Bounds)) continue;
           test = new ZoneLoc(this, z);
@@ -1028,38 +1028,9 @@ retry:
         foreach(var z in staging) m_ClearableZones.Add(z.Rect, z);
       }
       // per-zone data
-      foreach(var z in m_Zones) {
-        if (z.VolatileAttribute.HasKey("exits")) continue;
-        var locs = new HashSet<Location>();
-        var staging = m_CanonicalZones[z.Bounds];
-        var walking = staging.WalkOut();
-        if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
-        var vertical = staging.grep(loc => null != loc.Exit);
-        if (null != vertical) locs.UnionWith(vertical.Select(loc => loc.Exit!.Location));
-        z.VolatileAttribute.Set("exits", locs.ToArray());
-        var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
-        foreach(var loc in locs) {
-          var dest_zones = loc.Map.GetZonesAt(loc.Position);
-          if (null != dest_zones) {
-            if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new HashSet<Zone>()));
-            foreach(var zone in dest_zones) cache.Add(zone);
-          }
-        }
-        var ordered_zones = new List<ZoneLoc>();
-        var order_staging = new Dictionary<int, List<Zone>>();
-        foreach(var mapzone in zones) {
-          foreach(var x in mapzone.Value) {
-            var area = (x.Bounds.Right-x.Bounds.Left)*(x.Bounds.Bottom-x.Bounds.Top);
-            if (!order_staging.TryGetValue(area, out var cache)) order_staging.Add(area, (cache = new List<Zone>()));
-            cache.Add(x);
-          }
-          while(0 < order_staging.Count) {
-            int index = order_staging.Keys.Max();
-            foreach(var x in order_staging[index]) ordered_zones.Add(new ZoneLoc(mapzone.Key, x));
-            order_staging.Remove(index);
-          }
-        }
-        z.VolatileAttribute.Set("exit_zones", ordered_zones.ToArray());
+      foreach(var zl in m_CanonicalZones) {
+        var staging = zl.Value;
+        staging.Zone!.InstallExits(staging);
       }
     }
 
