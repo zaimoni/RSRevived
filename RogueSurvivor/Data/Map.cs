@@ -1009,7 +1009,7 @@ retry:
         ZoneLoc? test = null;
         foreach(var z in m_Zones) {
           if (m_CanonicalZones.ContainsKey(z.Bounds)) continue;
-          test = new ZoneLoc(this, z.Bounds);
+          test = new ZoneLoc(this, z);
           m_CanonicalZones.Add(z.Bounds, test);
           int ub = staging.Count;
           while(0 <= --ub) {
@@ -1055,7 +1055,7 @@ retry:
           }
           while(0 < order_staging.Count) {
             int index = order_staging.Keys.Max();
-            foreach(var x in order_staging[index]) ordered_zones.Add(new ZoneLoc(mapzone.Key, x.Bounds));
+            foreach(var x in order_staging[index]) ordered_zones.Add(new ZoneLoc(mapzone.Key, x));
             order_staging.Remove(index);
           }
         }

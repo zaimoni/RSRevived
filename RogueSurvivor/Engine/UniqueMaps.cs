@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Engine
       var src = PoliceStation_OfficesLevel.TheMap;
       var m = src.District.EntryMap;
       var zones = m.GetZonesAt(src.FirstExitFor(m).Value.Value.Location.Position);
-      return new Data.ZoneLoc(m, zones[0].Bounds);
+      return new Data.ZoneLoc(m, zones[0]);
     }
 
     public Data.ZoneLoc HospitalLanding()
@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Engine
       var src = Hospital_Admissions.TheMap;
       var m = src.District.EntryMap;
       var zones = m.GetZonesAt(src.FirstExitFor(m).Value.Value.Location.Position);
-      return new Data.ZoneLoc(m, zones[0].Bounds);
+      return new Data.ZoneLoc(m, zones[0]);
     }
   }
 }

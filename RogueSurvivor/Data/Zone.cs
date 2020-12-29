@@ -71,11 +71,19 @@ namespace djack.RogueSurvivor.Data
   {
     public readonly Map m;
     public readonly Rectangle Rect; // doesn't have to be normalized
+    [NonSerialized] private Zone? z;
 
     public ZoneLoc(Map _m, Rectangle _r)
     {
       m = _m;
       Rect = _r;
+    }
+
+    public ZoneLoc(Map _m, Zone _z)
+    {
+      m = _m;
+      Rect = _z.Bounds;
+      z = _z;
     }
 
 #region IMap implementation
@@ -280,7 +288,7 @@ namespace djack.RogueSurvivor.Data
 
     public Zone? Zone {
       get {
-        return m.GetZonesAt(Rect.Location)?.Find(z => z.Bounds == Rect);
+        return z ??= m.GetZonesAt(Rect.Location)?.Find(z => z.Bounds == Rect);
       }
     }
 
