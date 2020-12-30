@@ -3602,7 +3602,7 @@ Restart:
       return goals;
     }
 
-    private static KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, Predicate<Map> preblacklist)
+    private static KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>> zoneWalkParse(Dictionary<Location, ZoneLoc[]> goals, Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
@@ -3635,6 +3635,13 @@ Restart:
             foreach (var x in found) to_clear.Remove(x);
             if (null == stage) stage = found;
             else stage.AddRange(found);
+          }
+          var dict = pathing.Within(z);
+          foreach(var kv in dict) {
+            if (null == stage) stage = new List<Location> { kv.Key };
+            else if (!stage.Contains(kv.Key)) stage.Add(kv.Key);
+            else continue;
+            to_clear.Remove(kv.Key);
           }
           cleared.Add(z, stage);
           var e_zones = z.ExitZones;
@@ -3670,7 +3677,7 @@ Restart:
 
         pathing.InstallAfterDelete(loc => goals.Remove(loc));
 
-        var parsed = zoneWalkParse(goals, origin, preblacklist);
+        var parsed = zoneWalkParse(goals, origin, pathing, preblacklist);
 
         void zonePrune(ZoneLoc zone)
         {
@@ -3747,7 +3754,9 @@ Restart:
                 foreach(var s_loc in xfer) {
                   int delta = pathing[s_loc];
                   int cost = relocate.Min(d_loc => Rules.ZoneWalkDistance(d_loc, s_loc) + delta);
-                  if (2 <= cost/min_cost && 2* min_cost < cost) doomed.Add(s_loc);
+                  if (0 == min_cost) {
+                    if (0 < cost) doomed.Add(s_loc);
+                  } else if (2 <= cost/min_cost && 2* min_cost < cost) doomed.Add(s_loc);
                 }
                 foreach(var gone in doomed) {
                   pathing.Remove(gone);
@@ -3760,9 +3769,6 @@ Restart:
                   foreach(var z in dest_zones) {
                     var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
                     if (!test.Any()) continue;
-#if DEBUG
-                    if (test.Any(loc => loc.BlocksLivingPathfinding)) throw new InvalidOperationException("test case: "+test.Where(loc => loc.BlocksLivingPathfinding).to_s());
-#endif
                     if (parsed.Value.Key.TryGetValue(z, out var already_locs)) {
                         if (null == already_locs) parsed.Value.Key[z] = test.ToList();
                         else {
@@ -4337,21 +4343,8 @@ restart:
           var hash_goals = revised_goals.Key.ToHashSet();
           return _recordPathfinding(BehaviorPathTo(hash_goals), hash_goals);
         }
-#if DEBUG
-        throw new InvalidOperationException("tracing");
-#endif
-        var options = new List<ActorAction>();
-        foreach(var x in _legal_path) {
-          if (revised_goals.Value.ContainsKey(x.Key)) options.Add(x.Value);
-        }
-        if (0 < options.Count) {
-          var move = Rules.Get.DiceRoller.Choose(options);
-          if (0 < revised_goals.Key.Count) return _recordPathfinding(move, goals);
-          else return move;
-        }
-#if DEBUG
-        throw new InvalidOperationException("tracing");
-#endif
+        var ex_goals = revised_goals.Value.Keys.ToHashSet();
+        return _recordPathfinding(BehaviorPathTo(ex_goals), ex_goals);
       }
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
