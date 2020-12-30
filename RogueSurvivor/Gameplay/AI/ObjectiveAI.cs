@@ -3655,7 +3655,7 @@ Restart:
             new KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>(cleared, nav));
     }
 
-    public void ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
+    public KeyValuePair<List<Location>, Dictionary<Location, int>> ZoneWalk(Location origin, LocationFunction<int> pathing, Predicate<Map> preblacklist)
     {
         var goals = pathing.Goals();
 #if DEBUG
@@ -3667,6 +3667,8 @@ Restart:
         if (null != preblacklist) {
             goals.OnlyIf(loc => !preblacklist(loc.Map));
         }
+
+        pathing.InstallAfterDelete(loc => goals.Remove(loc));
 
 #if PROTOTYPE
         List<Location> replace_zone(ZoneLoc src, ZoneLoc dest, List<Location> xfer) {
@@ -3778,8 +3780,14 @@ Restart:
             parsed.Value.Value.Remove(zone);
         }
 
+        void goalPrune(Location gone, ZoneLoc zone) {
+            var ex_zone = new List<ZoneLoc>();
+            foreach(var kv in parsed.Value.Key) if (kv.Key != zone && null != kv.Value && kv.Value.Remove(gone) && 0 >= kv.Value.Count) ex_zone.Add(kv.Key);
+            foreach(var z in ex_zone) parsed.Value.Key[z] = null;
+        }
+
         var ub = parsed.Key.Count;
-        while (0 <= --ub) {
+        while (1 <= --ub) {
             var initial_zone_count = parsed.Key[ub].Count; // debug tracer
             var ub2 = parsed.Key[ub].Count;
             while(0 <= --ub2) {
@@ -3800,20 +3808,22 @@ Restart:
                 var zone = parsed.Key[ub][ub2];
                 var xfer = parsed.Value.Key[zone];
                 var dests = parsed.Value.Value[zone];
+                var home_costs = new Dictionary<Location, int>();
+                foreach(var x in xfer) {
+                  if (pathing.TryGetValue(x, out var cost)) home_costs.Add(x, cost);
+                  else goalPrune(x, zone);
+                }
+                if (0 >= home_costs.Count) continue; // wasn't in pathing to begin with
+                xfer = home_costs.Keys.ToList();
                 var exit_costs = new Dictionary<Location, int>();
                 foreach(var e_loc in zone.Exits) {
                     var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));
                     if (!e_zones.Any()) continue;
-                    exit_costs.Add(e_loc, xfer.Min(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + pathing[s_loc]));
+                    exit_costs.Add(e_loc, xfer.Min(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + home_costs[s_loc]));
                 }
                 if (0 >= exit_costs.Count) {
                   pathing.Remove(xfer);
-                  foreach(var gone in xfer) {
-                    goals.Remove(gone);
-                    var ex_zone = new List<ZoneLoc>();
-                    foreach(var kv in parsed.Value.Key) if (kv.Key != zone && null != kv.Value && kv.Value.Remove(gone) && 0 >= kv.Value.Count) ex_zone.Add(kv.Key);
-                    foreach(var z in ex_zone) parsed.Value.Key[z] = null;
-                  }
+                  foreach(var gone in xfer) goalPrune(gone, zone);
                   continue;
                 }
                 var relocate = exit_costs.Keys.ToList();
@@ -3826,10 +3836,7 @@ Restart:
                 }
                 foreach(var gone in doomed) {
                   pathing.Remove(gone);
-                  goals.Remove(gone);
-                  var ex_zone = new List<ZoneLoc>();
-                  foreach(var kv in parsed.Value.Key) if (null != kv.Value && kv.Value.Remove(gone) && 0 >= kv.Value.Count) ex_zone.Add(kv.Key);
-                  foreach(var z in ex_zone) parsed.Value.Key[z] = null;
+                  goalPrune(gone, zone);
                   xfer.Remove(gone);
                 }
                 foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value;
@@ -3849,9 +3856,7 @@ Restart:
             }
             parsed.Key.RemoveAt(ub);
         }
-#if DEBUG
-        throw new InvalidOperationException("tracing");
-#endif
+        return new KeyValuePair<List<Location>, Dictionary<Location, int>>(goals.Keys.ToList(), pathing.Within(origin.TrivialDistanceZones));
     }
 
 #if DEAD_FUNC
@@ -4397,7 +4402,7 @@ restart:
 #if DEBUG
 //    if (m_Actor.IsDebuggingTarget) {
         var detailed_goals = details.Goals();
-        ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
+        var revised_goals = ZoneWalk(m_Actor.Location, detailed_goals, preblacklist);
         var new_goals = details.Censor(goals);
         throw new InvalidOperationException("tracing");
 //    }

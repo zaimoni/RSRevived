@@ -776,6 +776,7 @@ namespace djack.RogueSurvivor.Data
     {
         private readonly Dictionary<Map, Dictionary<Point, T>> _locs = new Dictionary<Map, Dictionary<Point, T>>();
         [NonSerialized] private List<delete_from>? _handlers = null;
+        [NonSerialized] private Action<Location>? _after_delete = null;
 
         private class delete_from {
             public static readonly delete_from BLANK = new delete_from();
@@ -831,6 +832,12 @@ namespace djack.RogueSurvivor.Data
 
         public void Clear() { lock (_locs) { _locs.Clear(); } }
         public void ClearHandlers() { lock (_locs) { _handlers = null; } }
+        public void InstallAfterDelete(Action<Location> src) {
+#if DEBUG
+            if (null != _after_delete) throw new InvalidOperationException("need to build out handler composition");
+#endif
+            _after_delete = src;
+        }
 
         public bool Contains(in Location loc) {
             lock (_locs) {
@@ -922,6 +929,7 @@ namespace djack.RogueSurvivor.Data
             if (_locs.TryGetValue(loc.Map, out var test) && test.Remove(loc.Position)) {
                 fire_delete(in loc);
                 if (0 >= test.Count) _locs.Remove(loc.Map);
+                if (null != _after_delete) _after_delete(loc);
                 return true;
             }
             return false;
@@ -1056,6 +1064,27 @@ namespace djack.RogueSurvivor.Data
 
             return new KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
        }
+
+       private void Within(ZoneLoc src, Dictionary<Location, T> dest)
+       {
+            var exits = src.Exits;
+            lock (_locs) {
+                foreach (var x in _locs) {
+                    foreach (var y in x.Value) {
+                        var loc = new Location(x.Key, y.Key);
+                        if (src.Contains(loc)) dest.Add(loc, y.Value);
+                        else if (0 <= Array.IndexOf(exits, loc)) dest.Add(loc, y.Value);
+                    }
+                }
+            }
+        }
+
+       public Dictionary<Location, T> Within(IEnumerable<ZoneLoc> src)
+       {
+            var ret = new Dictionary<Location, T>();
+            foreach (var z in src) Within(z, ret);
+            return ret;
+        }
 
        public Dictionary<Location, ZoneLoc[]> Goals() {
             var goals = new Dictionary<Location, ZoneLoc[]>();
