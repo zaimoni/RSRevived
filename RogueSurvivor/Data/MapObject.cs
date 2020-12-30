@@ -125,9 +125,12 @@ namespace djack.RogueSurvivor.Data
       set { // cf IsTransparent which affects LOS calculations
         Fire old = m_FireState;
         m_FireState = value;
-        if (   (Fire.ONFIRE == old) != (Fire.ONFIRE == value)
-            || (Fire.ASHES == old)  != (Fire.ASHES == value))
+        if ((Fire.ONFIRE == old) != (Fire.ONFIRE == value)) {
           InvalidateLOS();
+          m_Location.Map.RebuildClearableZones(m_Location.Position);
+        } else if ((Fire.ASHES == old) != (Fire.ASHES == value)) {
+          InvalidateLOS();
+        }
       }
     }
 

@@ -3699,7 +3699,16 @@ Restart:
             while(0 <= --ub2) {
                 var zone = parsed.Key[ub][ub2];
                 if (parsed.Value.Key.TryGetValue(zone, out var have_goals)) {
-                    if (null != have_goals) continue;
+                    var alt_have_goals = pathing.Within(zone);
+                    if (null != have_goals) {
+                      if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
+                      if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
+                        var reject = alt_have_goals.Where(x => !have_goals.Contains(x.Key)).Select(x => x.Key).ToList();
+                        throw new InvalidOperationException("test case: "+ reject.to_s());
+                      }
+                      continue;
+                    }
+                    if (0 < alt_have_goals.Count) throw new InvalidOperationException("test case");
                     zonePrune(zone);
                     parsed.Key[ub].RemoveAt(ub2); // no longer relevant
                 } else {
@@ -3750,7 +3759,11 @@ Restart:
                 if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
                   foreach(var z in dest_zones) {
                     var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
-                    if (test.Any() && parsed.Value.Key.TryGetValue(z, out var already_locs)) {
+                    if (!test.Any()) continue;
+#if DEBUG
+                    if (test.Any(loc => loc.BlocksLivingPathfinding)) throw new InvalidOperationException("test case: "+test.Where(loc => loc.BlocksLivingPathfinding).to_s());
+#endif
+                    if (parsed.Value.Key.TryGetValue(z, out var already_locs)) {
                         if (null == already_locs) parsed.Value.Key[z] = test.ToList();
                         else {
                             foreach(var x in test) if (!already_locs.Contains(x)) already_locs.Add(x);
@@ -4320,6 +4333,13 @@ restart:
       if (0 >= goals.Count) return null;
       var revised_goals = ZoneWalk(m_Actor.Location, details.Goals(), preblacklist);
       if (0 < revised_goals.Value.Count) {
+        if (0 < revised_goals.Key.Count) {
+          var hash_goals = revised_goals.Key.ToHashSet();
+          return _recordPathfinding(BehaviorPathTo(hash_goals), hash_goals);
+        }
+#if DEBUG
+        throw new InvalidOperationException("tracing");
+#endif
         var options = new List<ActorAction>();
         foreach(var x in _legal_path) {
           if (revised_goals.Value.ContainsKey(x.Key)) options.Add(x.Value);
@@ -4328,10 +4348,6 @@ restart:
           var move = Rules.Get.DiceRoller.Choose(options);
           if (0 < revised_goals.Key.Count) return _recordPathfinding(move, goals);
           else return move;
-        }
-        if (0 < revised_goals.Key.Count) {
-          var hash_goals = revised_goals.Key.ToHashSet();
-          return _recordPathfinding(BehaviorPathTo(hash_goals), hash_goals);
         }
 #if DEBUG
         throw new InvalidOperationException("tracing");

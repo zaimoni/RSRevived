@@ -212,6 +212,18 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool Any(Predicate<Location> ok) {
+      var ret = new List<Location>();
+      Point point = new Point();
+      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
+        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
+          var loc = new Location(m,point);
+          if (Map.Canonical(ref loc) && ok(loc)) return true;
+        }
+      }
+      return false;
+    }
+
     public List<Location>? grep(Predicate<Location> ok) {
       var ret = new List<Location>();
       Point point = new Point();

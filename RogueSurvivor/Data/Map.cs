@@ -1012,6 +1012,10 @@ retry:
           if (m_CanonicalZones.ContainsKey(z.Bounds)) continue;
           test = new ZoneLoc(this, z);
           m_CanonicalZones.Add(z.Bounds, test);
+          if (3 <= z.Bounds.Width && 3 <= z.Bounds.Height) {
+            var rect = new Rectangle(z.Bounds.Location+Direction.SE, z.Bounds.Size+2*Direction.NW); // proper interior
+            if ((new ZoneLoc(this, rect)).Any(loc => loc.BlocksLivingPathfinding)) continue;
+          }
           int ub = staging.Count;
           while(0 <= --ub) {
             if (test.Rect.Contains(staging[ub].Rect)) { // if we contain another zone, we are not clearable
@@ -1181,6 +1185,39 @@ retry:
           m_ClearableZones.Add(extent, zl);
           naked = audit.grep(needs_zone);
         }
+    }
+
+    [Conditional("DEBUG")] // uses System.Diagnostics; revert out once live
+    public void RebuildClearableZones(Point pt)
+    {
+      int x_code(in Rectangle rect, in Point pt) {
+        if (pt.X < rect.Left-1) return -2;
+        if (pt.X == rect.Left - 1) return -1;
+        if (pt.X == rect.Right) return 1;
+        if (pt.X > rect.Right) return 2;
+        return 0;
+      }
+
+      int y_code(in Rectangle rect, in Point pt) {
+        if (pt.Y < rect.Top-1) return -2;
+        if (pt.Y == rect.Top - 1) return -1;
+        if (pt.Y == rect.Bottom) return 1;
+        if (pt.Y > rect.Bottom) return 2;
+        return 0;
+      }
+
+      bool rebuild = false;
+      foreach(var rect in m_ClearableZones.Keys.ToArray()) {
+        var code_x = x_code(rect, pt);
+        if (-2 == code_x || 2 == code_x) continue;
+        var code_y = y_code(rect, pt);
+        if (-2 == code_y || 2 == code_y) continue;
+        if (0 == code_x || 0 == code_y) {
+          m_ClearableZones.Remove(rect);
+          rebuild = true;
+        }
+      }
+      if (rebuild) RepairZoneWalk();
     }
 
     public bool ActorPositionHull(ref Span<Point> hull)

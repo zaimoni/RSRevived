@@ -121,7 +121,7 @@ namespace djack.RogueSurvivor.Data
         if (!Map.Canonical(ref loc)) continue;
         if (!loc.TileModel.IsWalkable) continue;
         z = loc.ClearableZone;
-        if (null != z) ret.Add(z);
+        if (null != z && !ret.Contains(z)) ret.Add(z);
       }
       return (0 < ret.Count) ? ret : null;
     } }
