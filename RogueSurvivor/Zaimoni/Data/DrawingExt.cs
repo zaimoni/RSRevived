@@ -470,7 +470,22 @@ namespace Zaimoni.Data
       foreach(var x in reject) src.Remove(x);
     }
 
-    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
+#nullable enable
+    public static Dictionary<T, R> Minimize<T,R>(this IEnumerable<Dictionary<T, R>> src) where T:notnull where R : IComparable<R>
+    {
+      var ret = new Dictionary<T, R>();
+      foreach(var dict in src) {
+        foreach(var x in dict) {
+          if (ret.TryGetValue(x.Key, out var prior_cost)) {
+            if (0 < prior_cost.CompareTo(x.Value)) ret[x.Key] = x.Value;
+          } else ret.Add(x.Key, x.Value);
+        }
+      }
+      return ret;
+    }
+#nullable restore
+
+    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
@@ -488,7 +503,7 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
+    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
@@ -506,7 +521,7 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable<R>
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
@@ -528,7 +543,7 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));

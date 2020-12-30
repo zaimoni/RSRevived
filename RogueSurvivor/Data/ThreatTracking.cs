@@ -1044,47 +1044,27 @@ namespace djack.RogueSurvivor.Data
             (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, targets, this));
        }
 
-        // single-threaded context
-        public KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>> GoalStats() {
-            var goals = new Dictionary<Location, ZoneLoc[]>();
-            var goal_zones = new List<ZoneLoc>();
-
-            foreach (var x in _locs) {
-                foreach (var y in x.Value) {
-                    var loc = new Location(x.Key, y.Key);
-                    var tmp_zones = loc.TrivialDistanceZones;
-                    if (null == tmp_zones) continue;
-                    foreach (var z in tmp_zones) if (!goal_zones.Contains(z)) goal_zones.Add(z);
-                    goals.Add(loc, tmp_zones);
-                }
-            }
-
-            var relay = new List<KVpair<ZoneLoc, ZoneLoc[]>>();
-            foreach (var z in goal_zones) relay.Add(new KVpair<ZoneLoc, ZoneLoc[]>(z, z.ExitZones));
-
-            return new KeyValuePair<Dictionary<Location, ZoneLoc[]>, List<KVpair<ZoneLoc, ZoneLoc[]>>>(goals, relay);
-       }
-
-       private void Within(ZoneLoc src, Dictionary<Location, T> dest)
+       public Dictionary<Location, T> Within(ZoneLoc src)
        {
+            var ret = new Dictionary<Location, T>();
             var exits = src.Exits;
             lock (_locs) {
                 foreach (var x in _locs) {
                     foreach (var y in x.Value) {
                         var loc = new Location(x.Key, y.Key);
-                        if (src.Contains(loc)) dest.Add(loc, y.Value);
-                        else if (0 <= Array.IndexOf(exits, loc)) dest.Add(loc, y.Value);
+                        if (src.Contains(loc) || 0 <= Array.IndexOf(exits, loc)) ret.Add(loc, y.Value); // can't do merge here without unwanted constraints
                     }
                 }
             }
-        }
-
-       public Dictionary<Location, T> Within(IEnumerable<ZoneLoc> src)
-       {
-            var ret = new Dictionary<Location, T>();
-            foreach (var z in src) Within(z, ret);
             return ret;
-        }
+       }
+
+       public List<Dictionary<Location, T>> Within(IEnumerable<ZoneLoc> src)
+       {
+            var ret = new List<Dictionary<Location, T>>();
+            foreach (var z in src) ret.Add(Within(z));
+            return ret;
+       }
 
        public Dictionary<Location, ZoneLoc[]> Goals() {
             var goals = new Dictionary<Location, ZoneLoc[]>();

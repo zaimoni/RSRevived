@@ -3762,7 +3762,20 @@ Restart:
             }
             parsed.Key.RemoveAt(ub);
         }
-        return new KeyValuePair<List<Location>, Dictionary<Location, int>>(goals.Keys.ToList(), pathing.Within(origin.TrivialDistanceZones));
+        var subgoals = pathing.Within(origin.TrivialDistanceZones).Minimize();
+        subgoals.Remove(origin); // just in case
+        var revise = new Dictionary<Location,int>();
+        foreach(var x in subgoals) revise.Add(x.Key, x.Value + Rules.ZoneWalkDistance(x.Key, origin));
+        if (1 < revise.Count) {
+          var min_cost = revise.Values.Min();
+          var doomed = new List<Location>();
+          foreach(var x in revise) if (x.Value != min_cost) doomed.Add(x.Key);
+          foreach(var loc in doomed) {
+            revise.Remove(loc);
+            pathing.Remove(loc);
+          }
+        }
+        return new KeyValuePair<List<Location>, Dictionary<Location, int>>(goals.Keys.ToList(), revise);
     }
 
 #if DEAD_FUNC
@@ -4305,12 +4318,25 @@ restart:
     {
       var goals = Goals(targets_at, details, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
+      var revised_goals = ZoneWalk(m_Actor.Location, details.Goals(), preblacklist);
+      if (0 < revised_goals.Value.Count) {
+        var options = new List<ActorAction>();
+        foreach(var x in _legal_path) {
+          if (revised_goals.Value.ContainsKey(x.Key)) options.Add(x.Value);
+        }
+        if (0 < options.Count) {
+          var move = Rules.Get.DiceRoller.Choose(options);
+          if (0 < revised_goals.Key.Count) return _recordPathfinding(move, goals);
+          else return move;
+        }
+        if (0 < revised_goals.Key.Count) {
+          var hash_goals = revised_goals.Key.ToHashSet();
+          return _recordPathfinding(BehaviorPathTo(hash_goals), hash_goals);
+        }
 #if DEBUG
-//    if (m_Actor.IsDebuggingTarget) {
-        var revised_goals = ZoneWalk(m_Actor.Location, details.Goals(), preblacklist);
         throw new InvalidOperationException("tracing");
-//    }
 #endif
+      }
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
