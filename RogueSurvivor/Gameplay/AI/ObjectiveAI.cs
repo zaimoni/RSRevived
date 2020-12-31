@@ -3729,14 +3729,67 @@ Restart:
             while(0 <= --ub2) {
                 var zone = parsed.Key[ub][ub2];
                 var xfer = parsed.Value.Key[zone];
-                var dests = parsed.Value.Value[zone];
                 var home_costs = new Dictionary<Location, int>();
                 foreach(var x in xfer) {
                   if (pathing.TryGetValue(x, out var cost)) home_costs.Add(x, cost);
                   else goalPrune(x, zone);
                 }
+#if DEBUG
+                if (home_costs.Count != xfer.Count) throw new InvalidOperationException("test case");
+#else
                 if (0 >= home_costs.Count) continue; // wasn't in pathing to begin with
                 xfer = home_costs.Keys.ToList();
+#endif
+                // outer location is the exit
+                // inner location is the goal accessed by the exit
+                var exit_costs_v2 = new Dictionary<Location, Dictionary<Location, int>>(); // goal, exit, cost
+                var extended_exits = new List<Location>();
+                foreach(var loc in xfer) {
+                  var trivial = loc.TrivialDistanceZones;
+#if DEBUG
+                  if (null == trivial) throw new InvalidOperationException("postcondition failed");
+                  if (0 > Array.IndexOf(trivial, zone)) throw new InvalidOperationException("invariant failed");
+#endif
+                  if (Array.Exists(trivial, z => !parsed.Value.Key.ContainsKey(z))) trivial = Array.FindAll(trivial, z => parsed.Value.Key.ContainsKey(z));
+#if DEBUG
+                  if (0 > Array.IndexOf(trivial, zone)) throw new InvalidOperationException("invariant failed");
+#endif
+                  var dict = new Dictionary<Location, int>();
+                  foreach(var e_loc in zone.Exits) {
+                    var exit_trivial = Array.FindAll(e_loc.TrivialDistanceZones, z => z != zone && parsed.Value.Key.ContainsKey(z));
+                    if (0 >= exit_trivial.Length) continue;
+                    var cost = Rules.ZoneWalkDistance(e_loc, loc) + home_costs[loc];
+                    dict.Add(e_loc, cost);
+                  }
+                  if (0 < dict.Count) {
+                    exit_costs_v2.Add(loc, dict);
+                    if (1 < trivial.Length) extended_exits.Add(loc);
+                  }
+                }
+                var goal_costs_v2 = exit_costs_v2.Invert(); // exit, goal, cost
+                foreach(var x in goal_costs_v2) {
+                  int min__cost = x.Value.Values.Min();
+                  if (0 >= min__cost) x.Value.OnlyIf(val => min__cost==val);
+                  else x.Value.OnlyIf(val => 2 >= val/min__cost && 2*min__cost >= val);
+                }
+                var exit_costs_v3 = goal_costs_v2.Invert(); // goal, exit, cost
+                if (exit_costs_v3.Count < exit_costs_v2.Count) {
+                  foreach(var x in exit_costs_v2) {
+                    if (!exit_costs_v3.ContainsKey(x.Key)) {
+                      pathing.Remove(x.Key);
+                      goalPrune(x.Key, zone);
+                      xfer.Remove(x.Key);
+                    }
+                  }
+                  throw new InvalidOperationException("build out");
+                }
+//                foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value; // from minimizing contraction of goal_costs_v2
+//                pathing.Relink(relocate, xfer); // one of these for each entry of exit_costs_v3
+
+#if DEBUG
+                if (0 < extended_exits.Count) throw new InvalidOperationException("tracing");
+#endif
+
                 var exit_costs = new Dictionary<Location, int>();
                 foreach(var e_loc in zone.Exits) {
                     var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));

@@ -362,6 +362,24 @@ namespace Zaimoni.Data
       return dest;
     }
 
+#nullable enable
+    public static Dictionary<U, Dictionary<T, V>> Invert<T,U,V>(this Dictionary<T,Dictionary<U,V>> src) where T:notnull where U:notnull
+    {
+        var ret = new Dictionary<U, Dictionary<T, V>>();
+        foreach(var x in src) {
+          foreach(var y in x.Value) {
+            if (ret.TryGetValue(y.Key, out var cache)) cache.Add(x.Key, y.Value);
+            else {
+                var staging = new Dictionary<T,V>();
+                staging.Add(x.Key, y.Value);
+                ret.Add(y.Key, staging);
+            }
+          }
+        }
+        return ret;
+    }
+#nullable restore
+
     public static bool NontrivialFilter<T>(this IEnumerable<T> src, Predicate<T> test) {
       if (null == src) return false;
       int found = 0;    // bitmap encoding: 1 found true, 2 found false
@@ -375,6 +393,7 @@ namespace Zaimoni.Data
       return false;
     }
 
+#nullable enable
     public static int ExcessTrue<T>(this IEnumerable<T> src, Predicate<T> test) {
       int ret = 0;
       foreach (var x in src) {
@@ -384,7 +403,6 @@ namespace Zaimoni.Data
       return ret;
     }
 
-#nullable enable
     public static List<Key>? grep<Key, Value>(this Dictionary<Key, Value> src, Predicate<Key> ok) where Key:notnull
     {
       var ret = new List<Key>();
