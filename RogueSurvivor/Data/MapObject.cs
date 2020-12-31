@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Data
         m_FireState = value;
         if ((Fire.ONFIRE == old) != (Fire.ONFIRE == value)) {
           InvalidateLOS();
-          m_Location.Map.RebuildClearableZones(m_Location.Position);
+          m_Location.Map?.RebuildClearableZones(m_Location.Position);
         } else if ((Fire.ASHES == old) != (Fire.ASHES == value)) {
           InvalidateLOS();
         }
@@ -521,6 +521,7 @@ namespace djack.RogueSurvivor.Data
 
     public void Destroy()
     {
+      bool must_rebuild_clearable_zones = BlocksLivingPathfinding;
       m_HitPoints = 0;
       if (GivesWood) {
         int val2 = 1 + MaxHitPoints / 40;
@@ -542,6 +543,7 @@ namespace djack.RogueSurvivor.Data
         m_Inventory.Clear(); // if it wasn't dropped, it's gone; disallows cross-linking
       }
       _destroy();
+      if (must_rebuild_clearable_zones) m_Location.Map.RebuildClearableZones(m_Location.Position);
       Engine.RogueGame.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
     }
 
@@ -568,17 +570,17 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    // fire
+    // fire (use accessor to get side effect processing)
     public void Ignite()
     {
-      m_FireState = Fire.ONFIRE;
+      FireState = Fire.ONFIRE;
       --m_JumpLevel;
     }
 
     public void Extinguish()
     {
       ++m_JumpLevel;
-      m_FireState = Fire.BURNABLE;
+      FireState = Fire.BURNABLE;
     }
 
     // could do this as non-static member function by hard coding m_ID as the switch
