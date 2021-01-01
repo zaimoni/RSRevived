@@ -793,6 +793,13 @@ namespace djack.RogueSurvivor.Data
                 hosts = new List<LocationFunction<T>> { host };
             }
 
+            public delete_from(IEnumerable<Location> trigger, Location target, LocationFunction<T> host)
+            {
+                triggers = new List<Location>(trigger);
+                targets = new List<Location> { target };
+                hosts = new List<LocationFunction<T>> { host };
+            }
+
             public delete_from(IEnumerable<Location> trigger, IEnumerable<Location> target, LocationFunction<T> host)
             {
                 triggers = new List<Location>(trigger);
@@ -1039,6 +1046,11 @@ namespace djack.RogueSurvivor.Data
           }
         }
 #endregion
+
+       // \todo these two may need auto-merge capability (value-equal triggers/host allows merging targets)
+       public void Relink(IEnumerable<Location> triggers, Location target) {
+            (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, target, this));
+       }
 
        public void Relink(IEnumerable<Location> triggers, IEnumerable<Location> targets) {
             (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, targets, this));

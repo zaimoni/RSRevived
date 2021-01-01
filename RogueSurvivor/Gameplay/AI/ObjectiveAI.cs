@@ -3781,14 +3781,17 @@ Restart:
                       xfer.Remove(x.Key);
                     }
                   }
-                  throw new InvalidOperationException("build out");
                 }
-//                foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value; // from minimizing contraction of goal_costs_v2
-//                pathing.Relink(relocate, xfer); // one of these for each entry of exit_costs_v3
 
-#if DEBUG
-                if (0 < extended_exits.Count) throw new InvalidOperationException("tracing");
-#endif
+                var pathing_costs = goal_costs_v2.MinimizingContract();
+                foreach(var kv in pathing_costs) pathing[kv.Key] = kv.Value;
+                var relocate_v2 = new List<Location>();
+                foreach(var kv in exit_costs_v3) {
+                  pathing.Relink(kv.Value.Keys, kv.Key);
+                  foreach(var loc in kv.Value.Keys) if (!relocate_v2.Contains(loc)) relocate_v2.Add(loc);
+                }
+#if OBSOLETE
+                throw new InvalidOperationException("tracing");
 
                 var exit_costs = new Dictionary<Location, int>();
                 foreach(var e_loc in zone.Exits) {
@@ -3818,9 +3821,10 @@ Restart:
                 }
                 foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value;
                 pathing.Relink(relocate, xfer);
+#endif
                 if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
                   foreach(var z in dest_zones) {
-                    var test = relocate.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
+                    var test = relocate_v2.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
                     if (!test.Any()) continue;
                     if (parsed.Value.Key.TryGetValue(z, out var already_locs)) {
                         if (null == already_locs) parsed.Value.Key[z] = test.ToList();

@@ -437,6 +437,13 @@ namespace Zaimoni.Data
       while(0 <= --i) if (test(percepts[i])) percepts.RemoveAt(i);
     }
 
+    public static Dictionary<T, Value> MinimizingContract<T,U,Value>(this Dictionary<T, Dictionary<U,Value>> src) where T : notnull where U : notnull where Value : IComparable<Value>
+    {
+      var ret = new Dictionary<T, Value>();
+      foreach(var x in src) ret.Add(x.Key, x.Value.Values.Min());
+      return ret;
+    }
+
     public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>
     {
       if (1 >= src.Count) return;
