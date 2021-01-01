@@ -436,13 +436,9 @@ namespace Zaimoni.Data
       int i = percepts.Count;
       while(0 <= --i) if (test(percepts[i])) percepts.RemoveAt(i);
     }
-#nullable restore
 
-    public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Value:IComparable<Value>
+    public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>
     {
-#if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       if (1 >= src.Count) return;
       var reject = new List<Key>();
       var accept = new List<Key>();
@@ -463,11 +459,8 @@ namespace Zaimoni.Data
       foreach(var x in reject) src.Remove(x);
     }
 
-    public static void OnlyIfMaximal<Key,Value>(this Dictionary<Key,Value> src) where Value:IComparable<Value>
+    public static void OnlyIfMaximal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>
     {
-#if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
       if (1 >= src.Count) return;
       var reject = new List<Key>();
       var accept = new List<Key>();
@@ -488,7 +481,6 @@ namespace Zaimoni.Data
       foreach(var x in reject) src.Remove(x);
     }
 
-#nullable enable
     public static Dictionary<T, R> Minimize<T,R>(this IEnumerable<Dictionary<T, R>> src) where T:notnull where R : IComparable<R>
     {
       var ret = new Dictionary<T, R>();
