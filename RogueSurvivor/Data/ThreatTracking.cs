@@ -1056,6 +1056,7 @@ namespace djack.RogueSurvivor.Data
             (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, targets, this));
        }
 
+#nullable enable
        public Dictionary<Location, T> Within(ZoneLoc src)
        {
             var ret = new Dictionary<Location, T>();
@@ -1070,6 +1071,7 @@ namespace djack.RogueSurvivor.Data
             }
             return ret;
        }
+#nullable restore
 
        public List<Dictionary<Location, T>> Within(IEnumerable<ZoneLoc> src)
        {

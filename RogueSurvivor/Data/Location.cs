@@ -105,23 +105,21 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    public ZoneLoc? ClearableZone { get {
-      return  Map.ClearableZoneAt(Position);
-    } }
+    public ZoneLoc? ClearableZone { get { return  Map.ClearableZoneAt(Position); } }
 
     public List<ZoneLoc>? ClearableZones { get {
       var ret = new List<ZoneLoc>();
-      var z = ClearableZone;
+      var z = Map.ClearableZonesAt(Position);
       if (null != z) {
-        ret.Add(z);
+        ret.AddRange(z);
         return ret;
       }
       foreach(var dir in Direction.COMPASS) {
         var loc = this + dir;
         if (!Map.Canonical(ref loc)) continue;
         if (!loc.TileModel.IsWalkable) continue;
-        z = loc.ClearableZone;
-        if (null != z && !ret.Contains(z)) ret.Add(z);
+        z = loc.Map.ClearableZonesAt(loc.Position);
+        if (null != z) foreach(var zone in z) if (!ret.Contains(zone)) ret.Add(zone);
       }
       return (0 < ret.Count) ? ret : null;
     } }
@@ -148,7 +146,7 @@ namespace djack.RogueSurvivor.Data
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = ClearableZone;
-        if (null != z) return new ZoneLoc[] { z };
+        if (null != z) dest.Add(z);
         foreach (var dir in Direction.COMPASS) {
             var loc = this + dir;
             if (!Map.Canonical(ref loc)) continue;

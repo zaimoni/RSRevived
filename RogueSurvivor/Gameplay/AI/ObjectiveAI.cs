@@ -3636,8 +3636,7 @@ Restart:
             if (null == stage) stage = found;
             else stage.AddRange(found);
           }
-          var dict = pathing.Within(z);
-          foreach(var kv in dict) {
+          foreach(var kv in pathing.Within(z)) {
             if (null == stage) stage = new List<Location> { kv.Key };
             else if (!stage.Contains(kv.Key)) stage.Add(kv.Key);
             else continue;
@@ -3699,6 +3698,7 @@ Restart:
             foreach(var z in ex_zone) parsed.Value.Key[z] = null;
         }
 
+        var initial_span = parsed.Key.Count; // debug tracer
         var ub = parsed.Key.Count;
         while (1 <= --ub) {
             var initial_zone_count = parsed.Key[ub].Count; // debug tracer
@@ -3715,7 +3715,16 @@ Restart:
                       }
                       continue;
                     }
-                    if (0 < alt_have_goals.Count) throw new InvalidOperationException("test case");
+                    alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
+                    if (0 < alt_have_goals.Count) {
+                      var index = alt_have_goals.First().Key;
+                      var bad = alt_have_goals.Select(x => preblacklist(x.Key.Map)).ToArray();
+                      var trivial = alt_have_goals.Keys.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+/*                    var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
+                      var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
+                      var self = trivial[0].Select(z => z == zone).ToArray(); */
+                      throw new InvalidOperationException("test case");
+                    }
                     zonePrune(zone);
                     parsed.Key[ub].RemoveAt(ub2); // no longer relevant
                 } else {
@@ -3783,55 +3792,55 @@ Restart:
                   }
                 }
 
-                var pathing_costs = goal_costs_v2.MinimizingContract();
-                foreach(var kv in pathing_costs) pathing[kv.Key] = kv.Value;
+                foreach(var kv in goal_costs_v2.MinimizingContract()) {
+                  pathing[kv.Key] = kv.Value;
+                  foreach(var z in kv.Key.TrivialDistanceZones) {
+                    if (z == zone) continue;
+                    if (parsed.Value.Key.TryGetValue(z, out var cache)) {
+                        if (null != cache) {
+                            if (!cache.Contains(kv.Key)) cache.Add(kv.Key);
+                        } else parsed.Value.Key[z] = new List<Location> { kv.Key };
+                    }
+                  }
+                }
                 var relocate_v2 = new List<Location>();
                 foreach(var kv in exit_costs_v3) {
                   pathing.Relink(kv.Value.Keys, kv.Key);
                   foreach(var loc in kv.Value.Keys) if (!relocate_v2.Contains(loc)) relocate_v2.Add(loc);
                 }
-#if OBSOLETE
-                throw new InvalidOperationException("tracing");
 
-                var exit_costs = new Dictionary<Location, int>();
-                foreach(var e_loc in zone.Exits) {
-                    var e_zones = e_loc.TrivialDistanceZones.Where(z => z != zone && parsed.Value.Key.ContainsKey(z));
-                    if (!e_zones.Any()) continue;
-                    exit_costs.Add(e_loc, xfer.Min(s_loc => Rules.ZoneWalkDistance(e_loc, s_loc) + home_costs[s_loc]));
-                }
-                if (0 >= exit_costs.Count) {
-                  pathing.Remove(xfer);
-                  foreach(var gone in xfer) goalPrune(gone, zone);
-                  continue;
-                }
-                var relocate = exit_costs.Keys.ToList();
-                int min_cost = exit_costs.Values.Min();
-                var doomed = new List<Location>();
-                foreach(var s_loc in xfer) {
-                  int delta = pathing[s_loc];
-                  int cost = relocate.Min(d_loc => Rules.ZoneWalkDistance(d_loc, s_loc) + delta);
-                  if (0 == min_cost) {
-                    if (0 < cost) doomed.Add(s_loc);
-                  } else if (2 <= cost/min_cost && 2* min_cost < cost) doomed.Add(s_loc);
-                }
-                foreach(var gone in doomed) {
-                  pathing.Remove(gone);
-                  goalPrune(gone, zone);
-                  xfer.Remove(gone);
-                }
-                foreach(var kv in exit_costs) pathing[kv.Key] = kv.Value;
-                pathing.Relink(relocate, xfer);
-#endif
                 if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
                   foreach(var z in dest_zones) {
                     var test = relocate_v2.Where(loc => z.Contains(loc) || 0 <= Array.IndexOf(z.Exits, loc));
+#if DEBUG
+                    var alt_have_goals = pathing.Within(z);
+                    if (!test.Any() && 0 < alt_have_goals.Count) throw new InvalidOperationException("test case");
+#endif
                     if (!test.Any()) continue;
                     if (parsed.Value.Key.TryGetValue(z, out var already_locs)) {
-                        if (null == already_locs) parsed.Value.Key[z] = test.ToList();
+                        if (null == already_locs) parsed.Value.Key[z] = (already_locs = test.ToList());
                         else {
                             foreach(var x in test) if (!already_locs.Contains(x)) already_locs.Add(x);
                         }
                     }
+#if DEBUG
+                    if (already_locs.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
+                    alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
+                    if (alt_have_goals.Any(x => !already_locs.Contains(x.Key))) {
+#if REPAIR_ZONEWALK
+                      parsed.Value.Key[z] = alt_have_goals.Keys.ToList();
+#else
+                      var reject = alt_have_goals.Where(x => !already_locs.Contains(x.Key)).Select(x => x.Key).ToList();
+                      var index = reject[0];
+                      var bad = reject.Select(x => preblacklist(x.Map)).ToArray();
+                      var trivial = reject.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+                      var contains = trivial[0].Select(z2 => z2.Contains(index)).ToArray();
+                      var exit_for = trivial[0].Select(z2 => Array.IndexOf(z2.Exits, index)).ToArray();
+                      var self = trivial[0].Select(z2 => z2 == zone).ToArray();
+                      throw new InvalidOperationException("test case: "+ reject.to_s());
+#endif
+                    }
+#endif
                   }
                 }
                 zonePrune(zone);

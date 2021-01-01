@@ -989,6 +989,12 @@ retry:
       return null;
     }
 
+    public List<ZoneLoc>? ClearableZonesAt(Point pt) {
+      var ret = new List<ZoneLoc>();
+      foreach (var x in m_ClearableZones!) if (x.Key.Contains(pt)) ret.Add(x.Value);
+      return (0 < ret.Count) ? ret : null;
+    }
+
     public bool IsClearableZone(ZoneLoc z) {
         return m_ClearableZones!.Values.Contains(z);
     }
