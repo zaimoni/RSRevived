@@ -1018,6 +1018,8 @@ retry:
           if (m_CanonicalZones.ContainsKey(z.Bounds)) continue;
           test = new ZoneLoc(this, z);
           m_CanonicalZones.Add(z.Bounds, test);
+          // walkways and roads are questionable (outside width-1)
+          if (z.Name.StartsWith("road@") || z.Name.StartsWith("walkway@")) continue;
           if (3 <= z.Bounds.Width && 3 <= z.Bounds.Height) {
             var rect = new Rectangle(z.Bounds.Location+Direction.SE, z.Bounds.Size+2*Direction.NW); // proper interior
             if ((new ZoneLoc(this, rect)).Any(loc => loc.BlocksLivingPathfinding)) continue;
