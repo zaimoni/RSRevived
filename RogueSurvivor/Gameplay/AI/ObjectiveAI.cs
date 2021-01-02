@@ -3657,6 +3657,17 @@ Restart:
           next = staging;
           staging = new List<ZoneLoc>();
         }
+
+        void rejectLaxNoExits(List<ZoneLoc> zl) {
+            var trivial_z = zl.Select(z => z.ExitZones.Where(z2 => cleared.ContainsKey(z2)).ToArray()).ToArray();
+            if (trivial_z.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
+        }
+
+        var ub = zone_range.Count;
+        while(0 <= --ub) {
+            rejectLaxNoExits(zone_range[ub]);
+        }
+
         return new KeyValuePair<List<List<ZoneLoc>>, KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>>(zone_range,
             new KeyValuePair<Dictionary<ZoneLoc, List<Location>?>, Dictionary<ZoneLoc, ZoneLoc[]>>(cleared, nav));
     }
@@ -3698,13 +3709,23 @@ Restart:
             foreach(var z in ex_zone) parsed.Value.Key[z] = null;
         }
 
+        void rejectLaxNoExits(List<ZoneLoc> zl) {
+            var trivial_z = zl.Select(z => z.ExitZones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
+            if (trivial_z.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
+        }
+
         var initial_span = parsed.Key.Count; // debug tracer
         var ub = parsed.Key.Count;
+
+#if DEBUG
+        while(0 <= --ub) rejectLaxNoExits(parsed.Key[ub]);
+#endif
+
+        ub = parsed.Key.Count;
         while (1 <= --ub) {
             var initial_zone_count = parsed.Key[ub].Count; // debug tracer
 #if DEBUG
-            var trivial_z = parsed.Key[ub].Select(z => z.Exit_zones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
-            if (trivial_z.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
+            rejectLaxNoExits(parsed.Key[ub]);
 #endif
             var ub2 = parsed.Key[ub].Count;
             while(0 <= --ub2) {
@@ -3713,36 +3734,34 @@ Restart:
                 if (!parsed.Value.Key.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
                 if (!parsed.Value.Value.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
 #endif
-                if (parsed.Value.Key.TryGetValue(zone, out var have_goals)) {
-                    var alt_have_goals = pathing.Within(zone);
-                    if (null != have_goals) {
-                      if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
-                      if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
+                var have_goals = parsed.Value.Key[zone];
+                var alt_have_goals = pathing.Within(zone);
+                if (null != have_goals) {
+                    if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
+                    if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
                         var reject = alt_have_goals.Where(x => !have_goals.Contains(x.Key)).Select(x => x.Key).ToList();
                         throw new InvalidOperationException("test case: "+ reject.to_s());
-                      }
-                      continue;
                     }
-                    alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
-                    if (0 < alt_have_goals.Count) {
-                      var index = alt_have_goals.First().Key;
-                      var bad = alt_have_goals.Select(x => preblacklist(x.Key.Map)).ToArray();
-                      var trivial = alt_have_goals.Keys.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
-/*                    var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
-                      var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
-                      var self = trivial[0].Select(z => z == zone).ToArray(); */
-                      throw new InvalidOperationException("test case");
-                    }
-                    zonePrune(zone);
-                    parsed.Key[ub].RemoveAt(ub2); // no longer relevant
-                } else {
-                    parsed.Key[ub].RemoveAt(ub2); // not even reached in time
+                    continue;
                 }
+                alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
+                if (0 < alt_have_goals.Count) {
+                    var index = alt_have_goals.First().Key;
+                    var bad = alt_have_goals.Select(x => preblacklist(x.Key.Map)).ToArray();
+                    var trivial = alt_have_goals.Keys.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+/*                  var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
+                    var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
+                    var self = trivial[0].Select(z => z == zone).ToArray(); */
+                    throw new InvalidOperationException("test case");
+                }
+                zonePrune(zone);
+                parsed.Key[ub].RemoveAt(ub2); // no longer relevant
             }
             ub2 = parsed.Key[ub].Count;
 #if DEBUG
-            var trivial_z2 = parsed.Key[ub].Select(z => z.Exit_zones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
-            if (trivial_z2.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
+            rejectLaxNoExits(parsed.Key[ub]);
+#endif
+#if DEBUG
             if (0 >= ub2) throw new InvalidOperationException("should be at least one goal at each level");
 #endif
             while(0 <= --ub2) {
@@ -3854,7 +3873,14 @@ Restart:
 #endif
                   }
                 }
+#if DEBUG
+                if (0 < ub) rejectLaxNoExits(parsed.Key[ub-1]);
+#endif
                 zonePrune(zone);
+#if DEBUG
+                if (0 < ub) rejectLaxNoExits(parsed.Key[ub-1]);
+#endif
+
             }
             parsed.Key.RemoveAt(ub);
         }
