@@ -110,7 +110,7 @@ namespace Zaimoni.Data
         if (testFn(point)) doFn(point);
       }
       if (2 >= rect.Height) return;
-      for (point.Y = rect.Top+1; point.Y < rect.Bottom-2; ++point.Y) {
+      for (point.Y = rect.Top+1; point.Y < rect.Bottom-1; ++point.Y) {
         point.X = rect.Left;
         if (testFn(point)) doFn(point);
         point.X = rect.Right-1;

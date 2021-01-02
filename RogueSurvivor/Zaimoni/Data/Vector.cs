@@ -454,7 +454,7 @@ namespace Zaimoni.Data
         doFn(point);
       }
       if (2 >= Height) return;
-      for (point.Y = Top+1; point.Y < Bottom-2; ++point.Y) {
+      for (point.Y = Top+1; point.Y < Bottom-1; ++point.Y) {
         point.X = Left;
         doFn(point);
         point.X = Right-1;
@@ -472,7 +472,7 @@ namespace Zaimoni.Data
         if (testFn(point)) doFn(point);
       }
       if (2 >= Height) return;
-      for (point.Y = Top+1; point.Y < Bottom-2; ++point.Y) {
+      for (point.Y = Top+1; point.Y < Bottom-1; ++point.Y) {
         point.X = Left;
         if (testFn(point)) doFn(point);
         point.X = Right-1;
@@ -1011,7 +1011,7 @@ namespace Zaimoni.Data
         doFn(poshort);
       }
       if (2 >= Height) return;
-      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-1; ++poshort.Y) {
         poshort.X = Left;
         doFn(poshort);
         poshort.X = (short)(Right -1);
@@ -1029,7 +1029,7 @@ namespace Zaimoni.Data
         if (testFn(poshort)) doFn(poshort);
       }
       if (2 >= Height) return;
-      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-2; ++poshort.Y) {
+      for (poshort.Y = (short)(Top +1); poshort.Y < Bottom-1; ++poshort.Y) {
         poshort.X = Left;
         if (testFn(poshort)) doFn(poshort);
         poshort.X = (short)(Right -1);
@@ -1539,7 +1539,7 @@ namespace Zaimoni.Data
         doFn(polong);
       }
       if (2 >= Height) return;
-      for (polong.Y = Top+1; polong.Y < Bottom-2; ++polong.Y) {
+      for (polong.Y = Top+1; polong.Y < Bottom-1; ++polong.Y) {
         polong.X = Left;
         doFn(polong);
         polong.X = Right-1;
@@ -1557,7 +1557,7 @@ namespace Zaimoni.Data
         if (testFn(polong)) doFn(polong);
       }
       if (2 >= Height) return;
-      for (polong.Y = Top+1; polong.Y < Bottom-2; ++polong.Y) {
+      for (polong.Y = Top+1; polong.Y < Bottom-1; ++polong.Y) {
         polong.X = Left;
         if (testFn(polong)) doFn(polong);
         polong.X = Right-1;
