@@ -3702,9 +3702,17 @@ Restart:
         var ub = parsed.Key.Count;
         while (1 <= --ub) {
             var initial_zone_count = parsed.Key[ub].Count; // debug tracer
+#if DEBUG
+            var trivial_z = parsed.Key[ub].Select(z => z.Exit_zones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
+            if (trivial_z.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
+#endif
             var ub2 = parsed.Key[ub].Count;
             while(0 <= --ub2) {
                 var zone = parsed.Key[ub][ub2];
+#if DEBUG
+                if (!parsed.Value.Key.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
+                if (!parsed.Value.Value.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
+#endif
                 if (parsed.Value.Key.TryGetValue(zone, out var have_goals)) {
                     var alt_have_goals = pathing.Within(zone);
                     if (null != have_goals) {
@@ -3733,9 +3741,12 @@ Restart:
             }
             ub2 = parsed.Key[ub].Count;
 #if DEBUG
+            var trivial_z2 = parsed.Key[ub].Select(z => z.Exit_zones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
+            if (trivial_z2.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
             if (0 >= ub2) throw new InvalidOperationException("should be at least one goal at each level");
 #endif
             while(0 <= --ub2) {
+                // \todo? smallest length of ok exit zones first?
                 var zone = parsed.Key[ub][ub2];
                 var xfer = parsed.Value.Key[zone];
                 var home_costs = new Dictionary<Location, int>();
