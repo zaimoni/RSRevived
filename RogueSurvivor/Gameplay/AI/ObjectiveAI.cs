@@ -3752,7 +3752,6 @@ Restart:
         void fullAudit(List<List<ZoneLoc>> src) {
           var ub = src.Count;
           while(0 <= --ub) {
-//          rejectLaxNoExits(src[ub]);
             int ub3 = src[ub].Count;
             while(0 <= --ub3) rejectInconsistentGoals(src[ub][ub3]);
           }
