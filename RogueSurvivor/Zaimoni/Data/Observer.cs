@@ -24,4 +24,22 @@ namespace Zaimoni.Data
 
         public void Add(Observer<T> src) { if (!m_Watchers.Contains(src)) m_Watchers.Add(src); }
     }
+
+    // not really observer pattern
+    public interface Condition<in T>
+    {
+        bool IsDone();
+        /// <summary>
+        /// Typically C status code convention: 0 success, negative error, positive warning.  IsDone should return true for non-positive status codes.
+        /// </summary>
+        /// <returns>0 implies IsDone()</returns>
+        int StatusCode();
+
+        bool IsDone(T viewpoint);
+        /// <summary>
+        /// Typically C status code convention: 0 success, negative error, positive warning.  IsDone should return true for non-positive status codes.
+        /// </summary>
+        /// <returns>0 implies IsDone()</returns>
+        int StatusCode(T viewpoint);
+    }
 }

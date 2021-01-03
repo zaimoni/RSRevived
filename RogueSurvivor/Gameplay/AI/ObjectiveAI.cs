@@ -5028,6 +5028,7 @@ restart_chokepoints:
         Location? exit_dest = m_Actor.Location.Exit?.Location;
         foreach(var loc in FOVloc) {
           if (exit_dest == loc) continue;
+          if (Engine._Goal.CoverTrap.IsDone(in loc, m_Actor)) continue;
           var fatal_in = FastestTrapKill(in loc);
 //        if (int.MaxValue <= FastestTrapKill(in loc)) continue; // not deadly enough
           if (5 <= fatal_in) continue; // not deadly enough
