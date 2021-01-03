@@ -2,6 +2,7 @@
 using djack.RogueSurvivor.Engine.Actions;
 using System;
 using System.Collections.Generic;
+using Zaimoni.Data;
 
 #nullable enable
 
@@ -12,18 +13,20 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     class SharedPlan
     {
         private WorldUpdate m_Plan;
+        private Condition<Actor> m_Target;
         private bool m_Expired = false;
 
         public bool IsExpired { get { return m_Expired; } }
 
-        public SharedPlan(WorldUpdate src) {
+        public SharedPlan(WorldUpdate src, Condition<Actor> done) {
 #if DEBUG
             if (!src.IsLegal()) throw new InvalidOperationException("illegal objective");
 #endif
             m_Plan = src;
+            m_Target = done;
         }
 
-        public bool IsLegal() { return m_Plan.IsLegal(); }
+        public bool IsLegal() { return !m_Target.IsDone() && m_Plan.IsLegal(); }
 
         public bool IsSuppressed(Actor a) {
             // we ask the plan, because combat plans would not be suppressed just by enemies in sight

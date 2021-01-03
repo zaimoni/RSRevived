@@ -5136,7 +5136,7 @@ restart_chokepoints:
           if (0 < plan3.Count) act_list.AddRange(plan3.Values);
           if (0 >= act_list.Count) return null;
           var schedule = (1 == act_list.Count ? act_list[0] : new Engine.Op.Fork(act_list));
-          return new SharedPlan(schedule);
+          return new SharedPlan(schedule, new Engine._Goal.CoverTrap(same_floor_deathtraps.Keys));
     }
 
     protected ActorAction? BehaviorHandleDeathTrap()

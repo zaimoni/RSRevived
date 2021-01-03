@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
 
@@ -12,9 +10,9 @@ namespace djack.RogueSurvivor.Engine._Goal
 {
     internal class CoverTrap : Condition<Actor>
     {
-        private Location m_Location;
+        private Location[] m_Locations;
 
-        CoverTrap(Location loc) { m_Location = loc; }
+        public CoverTrap(IEnumerable<Location> locs) { m_Locations = locs.ToArray(); }
 
         public static bool IsDone(in Location loc) {
             if (loc.Map.IsTrapCoveringMapObjectAt(loc.Position)) return true;
@@ -27,9 +25,18 @@ namespace djack.RogueSurvivor.Engine._Goal
         }
 
 #region Condition<Actor> implementation
-        public bool IsDone() { return IsDone(in m_Location); }
+        public bool IsDone() {
+            foreach (var loc in m_Locations) if (IsDone(in loc)) return true;
+            return false;
+        }
+
         public int StatusCode() { return IsDone() ? 0 : 1; }
-        public bool IsDone(Actor viewpoint) { return IsDone(in m_Location, viewpoint); }
+
+        public bool IsDone(Actor viewpoint) {
+            foreach (var loc in m_Locations) if (IsDone(in loc, viewpoint)) return true;
+            return false;
+        }
+
         public int StatusCode(Actor viewpoint) { return IsDone(viewpoint) ? 0 : 1; }
 #endregion
     }
