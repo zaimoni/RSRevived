@@ -3607,7 +3607,6 @@ Restart:
         // breadth-first out until all zones are seen
         var zone_range = new List<List<ZoneLoc>>();
         var cleared = new Dictionary<ZoneLoc, List<Location>?>();
-        var nav = new Dictionary<ZoneLoc, ZoneLoc[]>(); // dead variable?
 
         // temporaries suitable for GC
         var to_clear = new Dictionary<Location, ZoneLoc[]>(goals);
@@ -3645,7 +3644,6 @@ Restart:
           cleared.Add(z, stage);
           var e_zones = z.ExitZones;
           if (Array.Exists(e_zones, z => preblacklist(z.m))) e_zones = Array.FindAll(e_zones, z => !preblacklist(z.m));
-          nav.Add(z, e_zones);
           stage_zones(e_zones);
         }
 
