@@ -3726,9 +3726,10 @@ Restart:
                var alt_goals = alt_have_goals.Keys.ToArray();
                if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
                if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
-                   var index = alt_goals[0];
+                   var index = alt_goals.Where(x => !have_goals.Contains(x)).ToArray();
                    var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
                    var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+                   var costs = alt_goals.Select(x => pathing[x]).ToArray();
                    throw new InvalidOperationException("test case: " + index.to_s());
                }
                return false;
@@ -3739,6 +3740,7 @@ Restart:
                var index = alt_goals[0];
                var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
                var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+               var costs = alt_goals.Select(x => pathing[x]).ToArray();
 /*             var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
                var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
                var self = trivial[0].Select(z => z == zone).ToArray(); */
@@ -3848,10 +3850,26 @@ Restart:
 
 #if DEBUG
 //              fullAudit(parsed.Key); // ok here
+                var debug_contraction = goal_costs_v2.MinimizingContract();
+                var debug_contraction_alt = exit_costs_v3.MinimizingContract();
+                var debug_update = debug_contraction.Select(kv => kv.Key.TrivialDistanceZones.ToArray()).ToArray();
 #endif
 
+//              foreach(var kv in exit_costs_v3.MinimizingContract()) {
                 foreach(var kv in goal_costs_v2.MinimizingContract()) {
-                  pathing[kv.Key] = kv.Value;
+                  if (pathing.TryGetValue(kv.Key, out var prior_cost)) {
+                    if (prior_cost > kv.Value) {
+#if DEBUG
+                      if (2*kv.Value < prior_cost) throw new InvalidOperationException("test case");
+#endif
+                      pathing[kv.Key] = kv.Value;
+                    }
+                  } else {
+                    pathing[kv.Key] = kv.Value;
+                    var cache = parsed.Value.Key[zone];
+                    if (null != cache && !cache.Contains(kv.Key)) cache.Add(kv.Key);
+                    else parsed.Value.Key[zone] = new List<Location> { kv.Key };
+                  }
                   foreach(var z in kv.Key.TrivialDistanceZones) {
                     if (parsed.Value.Key.TryGetValue(z, out var cache)) {
                         if (null != cache) {
