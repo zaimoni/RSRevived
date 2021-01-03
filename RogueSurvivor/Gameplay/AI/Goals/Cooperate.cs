@@ -107,6 +107,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
             var goals = m_Plan.Goals(m_Actor);
             if (null != goals) {
+#if DEBUG
+                if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException("test case");
+#endif
                 ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
                 return null != ret;
             }
