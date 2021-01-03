@@ -45,6 +45,14 @@ namespace djack.RogueSurvivor.Data
       if (obj is _T_ x) return x;
       throw new InvalidOperationException("game attribute is not of requested type");
     }
+
+    public void Unset(string key)
+    {
+      if (null != m_Attributes) {
+        m_Attributes.Remove(key);
+        if (0 >= m_Attributes.Count) m_Attributes = null;
+      }
+    }
   }
 #nullable restore
 
@@ -74,22 +82,27 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
         if (host.Rect != Bounds) throw new InvalidOperationException("untrusted setup");
 #endif
-        if (VolatileAttribute.HasKey("exits")) return;
-        var locs = new HashSet<Location>();
-        var walking = host.WalkOut();
-        if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
-        var vertical = host.grep(loc => null != loc.Exit);
-        if (null != vertical) locs.UnionWith(vertical.Select(loc => loc.Exit!.Location));
+        if (VolatileAttribute.HasKey("exit_zones")) return;
+        var prior_exits = VolatileAttribute.Get<Location[]>("exits");
+        if (null == prior_exits) {
+          var locs = new HashSet<Location>();
+          var walking = host.WalkOut();
+          if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
+          var vertical = host.grep(loc => null != loc.Exit);
+          if (null != vertical) locs.UnionWith(vertical.Select(loc => loc.Exit!.Location));
 #if DEBUG
-        if (0 >= locs.Count) throw new InvalidOperationException("zone w/o exits");
+          if (0 >= locs.Count) throw new InvalidOperationException("zone w/o exits");
 #endif
-        VolatileAttribute.Set("exits", locs.ToArray());
+          prior_exits = locs.ToArray();
+          VolatileAttribute.Set("exits", prior_exits);
+        }
+
         var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
-        foreach(var loc in locs) {
+        foreach(var loc in prior_exits) {
           var dest_zones = loc.Map.GetZonesAt(loc.Position);
           if (null != dest_zones) {
             if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new HashSet<Zone>()));
-            foreach(var zone in dest_zones) cache.Add(zone);
+            cache.UnionWith(dest_zones);
           }
         }
         var ordered_zones = new List<ZoneLoc>();
@@ -144,17 +157,15 @@ namespace djack.RogueSurvivor.Data
         var ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
         if (null != ret) return ret;
         z.InstallExits(this);
-        return z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        foreach(var zone in ret) if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
+        return ret;
     } }
 
     public KeyValuePair<Location[]?, ZoneLoc[]?> ExitData { get {
         if (null == Zone) return default;
-        var ret = z.VolatileAttribute.Get<Location[]>("exits");
-        if (null == ret) {
-            z.InstallExits(this);
-            ret = z.VolatileAttribute.Get<Location[]>("exits");
-        }
-        return new KeyValuePair<Location[]?, ZoneLoc[]?>(ret, z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones"));
+        var e_zones = Exit_zones; // need this to run first
+        return new KeyValuePair<Location[]?, ZoneLoc[]?>(z.VolatileAttribute.Get<Location[]>("exits"), e_zones);
     } }
 #nullable restore
 
