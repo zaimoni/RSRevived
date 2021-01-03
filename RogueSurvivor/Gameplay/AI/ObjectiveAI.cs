@@ -3714,11 +3714,57 @@ Restart:
             if (trivial_z.Any(z => 0 >= z.Length)) throw new InvalidOperationException("test case");
         }
 
+        bool rejectInconsistentGoals(ZoneLoc zone)
+        {
+#if DEBUG
+           if (!parsed.Value.Key.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
+           if (!parsed.Value.Value.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
+#endif
+           var have_goals = parsed.Value.Key[zone];
+           var alt_have_goals = pathing.Within(zone);
+           if (null != have_goals) {
+               var alt_goals = alt_have_goals.Keys.ToArray();
+               if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
+               if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
+                   var index = alt_goals[0];
+                   var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
+                   var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+                   throw new InvalidOperationException("test case: " + index.to_s());
+               }
+               return false;
+           }
+           alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
+           if (0 < alt_have_goals.Count) {
+               var alt_goals = alt_have_goals.Keys.ToArray();
+               var index = alt_goals[0];
+               var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
+               var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
+/*             var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
+               var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
+               var self = trivial[0].Select(z => z == zone).ToArray(); */
+               throw new InvalidOperationException("test case" + index.to_s());
+           }
+           return true;
+        }
+
+        void fullAudit(List<List<ZoneLoc>> src) {
+          var ub = src.Count;
+          while(0 <= --ub) {
+//          rejectLaxNoExits(src[ub]);
+            int ub3 = src[ub].Count;
+            while(0 <= --ub3) rejectInconsistentGoals(src[ub][ub3]);
+          }
+        }
+
         var initial_span = parsed.Key.Count; // debug tracer
         var ub = parsed.Key.Count;
 
 #if DEBUG
-        while(0 <= --ub) rejectLaxNoExits(parsed.Key[ub]);
+        while(0 <= --ub) {
+          rejectLaxNoExits(parsed.Key[ub]);
+          int ub3 = parsed.Key[ub].Count;
+          while(0 <= --ub3) rejectInconsistentGoals(parsed.Key[ub][ub3]);
+        }
 #endif
 
         ub = parsed.Key.Count;
@@ -3730,32 +3776,10 @@ Restart:
             var ub2 = parsed.Key[ub].Count;
             while(0 <= --ub2) {
                 var zone = parsed.Key[ub][ub2];
-#if DEBUG
-                if (!parsed.Value.Key.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
-                if (!parsed.Value.Value.ContainsKey(zone)) throw new InvalidOperationException("invariant failure");
-#endif
-                var have_goals = parsed.Value.Key[zone];
-                var alt_have_goals = pathing.Within(zone);
-                if (null != have_goals) {
-                    if (have_goals.Any(x => !alt_have_goals.ContainsKey(x))) throw new InvalidOperationException("test case");
-                    if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
-                        var reject = alt_have_goals.Where(x => !have_goals.Contains(x.Key)).Select(x => x.Key).ToList();
-                        throw new InvalidOperationException("test case: "+ reject.to_s());
-                    }
-                    continue;
+                if (rejectInconsistentGoals(zone)) {
+                  zonePrune(zone);
+                  parsed.Key[ub].RemoveAt(ub2); // no longer relevant
                 }
-                alt_have_goals.OnlyIf(loc => loc.TrivialDistanceZones.Any(z => z != zone && parsed.Value.Key.ContainsKey(z)));
-                if (0 < alt_have_goals.Count) {
-                    var index = alt_have_goals.First().Key;
-                    var bad = alt_have_goals.Select(x => preblacklist(x.Key.Map)).ToArray();
-                    var trivial = alt_have_goals.Keys.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
-/*                  var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
-                    var exit_for = trivial[0].Select(z => Array.IndexOf(z.Exits, index)).ToArray();
-                    var self = trivial[0].Select(z => z == zone).ToArray(); */
-                    throw new InvalidOperationException("test case");
-                }
-                zonePrune(zone);
-                parsed.Key[ub].RemoveAt(ub2); // no longer relevant
             }
             ub2 = parsed.Key[ub].Count;
 #if DEBUG
@@ -3822,10 +3846,13 @@ Restart:
                   }
                 }
 
+#if DEBUG
+//              fullAudit(parsed.Key); // ok here
+#endif
+
                 foreach(var kv in goal_costs_v2.MinimizingContract()) {
                   pathing[kv.Key] = kv.Value;
                   foreach(var z in kv.Key.TrivialDistanceZones) {
-                    if (z == zone) continue;
                     if (parsed.Value.Key.TryGetValue(z, out var cache)) {
                         if (null != cache) {
                             if (!cache.Contains(kv.Key)) cache.Add(kv.Key);
@@ -3833,11 +3860,20 @@ Restart:
                     }
                   }
                 }
+
+#if DEBUG
+                fullAudit(parsed.Key);
+#endif
+
                 var relocate_v2 = new List<Location>();
                 foreach(var kv in exit_costs_v3) {
                   pathing.Relink(kv.Value.Keys, kv.Key);
                   foreach(var loc in kv.Value.Keys) if (!relocate_v2.Contains(loc)) relocate_v2.Add(loc);
                 }
+
+#if DEBUG
+                fullAudit(parsed.Key);
+#endif
 
                 if (parsed.Value.Value.TryGetValue(zone, out var dest_zones)) {
                   foreach(var z in dest_zones) {
@@ -3875,10 +3911,13 @@ Restart:
                 }
 #if DEBUG
                 if (0 < ub) rejectLaxNoExits(parsed.Key[ub-1]);
+                fullAudit(parsed.Key);
 #endif
                 zonePrune(zone);
+                parsed.Key[ub].RemoveAt(ub2);
 #if DEBUG
                 if (0 < ub) rejectLaxNoExits(parsed.Key[ub-1]);
+                fullAudit(parsed.Key);
 #endif
 
             }
