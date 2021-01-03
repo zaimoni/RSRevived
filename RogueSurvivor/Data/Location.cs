@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
@@ -146,7 +147,15 @@ namespace djack.RogueSurvivor.Data
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = Map.TrivialPathingFor(Position);
-        if (null != z) dest.AddRange(z);
+        if (null != z) {
+          dest.AddRange(z);
+          foreach(var zone in z) {
+            var x = zone.ExitZones;
+            if (null != x) {
+                foreach(var z2 in x) if (z2.Exits.Contains(this) && !dest.Contains(z2)) dest.Add(z2);
+            }
+          }
+        }
         foreach (var dir in Direction.COMPASS) {
             var loc = this + dir;
             if (!Map.Canonical(ref loc)) continue;

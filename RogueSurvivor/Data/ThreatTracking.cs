@@ -1064,8 +1064,19 @@ namespace djack.RogueSurvivor.Data
             lock (_locs) {
                 foreach (var x in _locs) {
                     foreach (var y in x.Value) {
-                        var loc = new Location(x.Key, y.Key);
-                        if (src.Contains(loc) || 0 <= Array.IndexOf(exits, loc)) ret.Add(loc, y.Value); // can't do merge here without unwanted constraints
+                        var loc = new Location(x.Key, y.Key);  // can't do merge here without unwanted constraints
+                        if (src.Contains(loc)) ret.Add(loc, y.Value);
+                        else if (0 <= Array.IndexOf(exits, loc)) {
+                            ret.Add(loc, y.Value);
+#if DEBUG
+                            var cz = loc.ClearableZone;
+//                          var ez = src.Exit_zones;
+                            var ez = src.ExitZones;
+                            if (null != cz && 0 > Array.IndexOf(ez, cz)) throw new InvalidOperationException("asymmetric accessibility of zones");
+                            var za = loc.TrivialDistanceZones;
+                            if (0 > Array.IndexOf(za, src)) throw new InvalidOperationException("asymmetric accessibility of zones");
+#endif
+                        }
                     }
                 }
             }
