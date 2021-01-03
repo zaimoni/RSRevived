@@ -3728,6 +3728,7 @@ Restart:
                if (alt_have_goals.Any(x => !have_goals.Contains(x.Key))) {
                    var index = alt_goals.Where(x => !have_goals.Contains(x)).ToArray();
                    var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
+                   var trivial2 = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
                    var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
                    var costs = alt_goals.Select(x => pathing[x]).ToArray();
                    throw new InvalidOperationException("test case: " + index.to_s());
@@ -3739,6 +3740,7 @@ Restart:
                var alt_goals = alt_have_goals.Keys.ToArray();
                var index = alt_goals[0];
                var bad = alt_goals.Select(x => preblacklist(x.Map)).ToArray();
+               var trivial2 = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Key.ContainsKey(z2)).ToArray()).ToArray();
                var trivial = alt_goals.Select(x => x.TrivialDistanceZones.Where(z2 => parsed.Value.Value.ContainsKey(z2)).ToArray()).ToArray();
                var costs = alt_goals.Select(x => pathing[x]).ToArray();
 /*             var contains = trivial[0].Select(z => z.Contains(index)).ToArray();
@@ -3862,12 +3864,17 @@ Restart:
                       if (2*kv.Value < prior_cost) throw new InvalidOperationException("test case");
 #endif
                       pathing[kv.Key] = kv.Value;
+                      var cache = parsed.Value.Key[zone];
+                      if (null != cache) {
+                        if (!cache.Contains(kv.Key)) cache.Add(kv.Key);
+                      } else parsed.Value.Key[zone] = new List<Location> { kv.Key };
                     }
                   } else {
                     pathing[kv.Key] = kv.Value;
                     var cache = parsed.Value.Key[zone];
-                    if (null != cache && !cache.Contains(kv.Key)) cache.Add(kv.Key);
-                    else parsed.Value.Key[zone] = new List<Location> { kv.Key };
+                    if (null != cache) {
+                      if (!cache.Contains(kv.Key)) cache.Add(kv.Key);
+                    } else parsed.Value.Key[zone] = new List<Location> { kv.Key };
                   }
                   foreach(var z in kv.Key.TrivialDistanceZones) {
                     if (parsed.Value.Key.TryGetValue(z, out var cache)) {

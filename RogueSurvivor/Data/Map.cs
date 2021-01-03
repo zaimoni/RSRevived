@@ -991,12 +991,23 @@ retry:
 
     public List<ZoneLoc>? ClearableZonesAt(Point pt) {
       var ret = new List<ZoneLoc>();
-      foreach (var x in m_ClearableZones!) if (x.Key.Contains(pt)) ret.Add(x.Value);
+      foreach (var x in m_ClearableZones!) {
+         if (x.Key.Contains(pt)) ret.Add(x.Value);
+      }
       return (0 < ret.Count) ? ret : null;
     }
 
     public bool IsClearableZone(ZoneLoc z) {
         return m_ClearableZones!.Values.Contains(z);
+    }
+
+    public List<ZoneLoc>? TrivialPathingFor(Point pt) {
+      var loc = new Location(this, pt);
+      var ret = new List<ZoneLoc>();
+      foreach (var x in m_ClearableZones!) {
+         if (x.Key.Contains(pt) || 0 <= Array.IndexOf(x.Value.Exits, loc)) ret.Add(x.Value);
+      }
+      return (0 < ret.Count) ? ret : null;
     }
 
     public void OnMapGenerated()
@@ -1048,9 +1059,9 @@ retry:
     {
         bool needs_zone(Location loc) {
             if (loc.BlocksLivingPathfinding) return false;
-            var trivial = loc.TrivialDistanceZones;
+            var trivial = loc.ClearableZones;
             if (null == trivial) return true;
-            return 1 == trivial.Length && IsOnEdge(loc.Position) && !trivial[0].Contains(in loc);
+            return 1 == trivial.Count && IsOnEdge(loc.Position) && !trivial[0].Contains(in loc);
         }
 
         var audit = new ZoneLoc(this, Rect);

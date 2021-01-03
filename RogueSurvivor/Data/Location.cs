@@ -145,13 +145,13 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
-        var z = Map.ClearableZonesAt(Position);
+        var z = Map.TrivialPathingFor(Position);
         if (null != z) dest.AddRange(z);
         foreach (var dir in Direction.COMPASS) {
             var loc = this + dir;
             if (!Map.Canonical(ref loc)) continue;
             if (!loc.TileModel.IsWalkable) continue;
-            z = Map.ClearableZonesAt(Position);
+            z = Map.TrivialPathingFor(Position);
             if (null != z) foreach(var zone in z) if (!dest.Contains(zone)) dest.Add(zone);
         }
         return (0 < dest.Count) ? dest.ToArray() : null;
