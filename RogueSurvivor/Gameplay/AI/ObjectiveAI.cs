@@ -7072,7 +7072,7 @@ restart_chokepoints:
       return ret;
     }
 
-    public KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>> NonCriticalInInventory()
+    public KeyValuePair<List<GameItems.IDs>?, List<GameItems.IDs>?> NonCriticalInInventory()
     {
       var insurance = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
       var want = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);
@@ -7091,7 +7091,7 @@ restart_chokepoints:
         if (2 == code) want.Add(i);
         else insurance.Add(i);
       }
-      return new KeyValuePair<List<GameItems.IDs>, List<GameItems.IDs>>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
+      return new KeyValuePair<List<GameItems.IDs>?, List<GameItems.IDs>?>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
     public bool Needs(ItemLight light)
@@ -7201,7 +7201,7 @@ restart_chokepoints:
 
     public ActorAction? DoctrineRechargeToFull(Item it)
     {
-      BatteryPowered obj = it as BatteryPowered;
+      var obj = it as BatteryPowered;
 #if DEBUG
       if (null == obj) throw new ArgumentNullException(nameof(obj));
 #endif

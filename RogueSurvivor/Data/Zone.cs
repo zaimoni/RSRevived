@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasKey(string key) { return m_Attributes?.ContainsKey(key) ?? false; }
 
-    public void Set<_T_>(string key, _T_ value)
+    public void Set<_T_>(string key, [DisallowNull] _T_ value)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
