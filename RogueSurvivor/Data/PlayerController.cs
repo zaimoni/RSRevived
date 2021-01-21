@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Data
         var game = RogueGame.Game;
         game.PlayEventMusic(music);
         RogueGame.ClearMessages();
-        game.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        RogueGame.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
         game.AddMessagePressEnter();
         return true;
     }
@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor.Data
 
     // forwarder system for to RogueGame::AddMessage
     public override void AddMessage(Data.Message msg) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueGame.Game.AddMessage(msg);
+      if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessage(msg);
       else DeferMessage(msg);
     }
 
@@ -111,25 +111,22 @@ namespace djack.RogueSurvivor.Data
     public override void AddMessageForceRead(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
         RogueGame.ClearMessages();
-        var game = RogueGame.Game;
-        game.AddMessage(msg);
-        game.AddMessagePressEnter();
+        RogueGame.AddMessage(msg);
+        RogueGame.Game.AddMessagePressEnter();
       } else DeferMessage(msg);
     }
     public void AddMessagesForceRead(IEnumerable<Data.Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor)) {
         RogueGame.ClearMessages();
-        var game = RogueGame.Game;
         RogueGame.AddMessages(msgs);
-        game.AddMessagePressEnter();
+        RogueGame.Game.AddMessagePressEnter();
       } else DeferMessages(msgs);
     }
     public override void AddMessageForceReadClear(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
         RogueGame.ClearMessages();
-        var game = RogueGame.Game;
-        game.AddMessage(msg);
-        game.AddMessagePressEnter();
+        RogueGame.AddMessage(msg);
+        RogueGame.Game.AddMessagePressEnter();
         RogueGame.ClearMessages();
       } else DeferMessage(msg);
     }

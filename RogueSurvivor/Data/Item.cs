@@ -123,9 +123,8 @@ namespace djack.RogueSurvivor.Data
       if (IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
         Unequip();
         actor.OnUnequipItem(this);
-        if (canMessage) {
-          var game = RogueGame.Game;
-          if (game.ForceVisibleToPlayer(actor)) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_UNEQUIP.Conjugate(actor), this));
+        if (canMessage && RogueGame.Game.ForceVisibleToPlayer(actor)) {
+          RogueGame.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_UNEQUIP.Conjugate(actor), this));
         }
       }
     }
@@ -143,8 +142,8 @@ namespace djack.RogueSurvivor.Data
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,this)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+Model.ID.ToString());
 #endif
-      var game = RogueGame.Game;
-      if (game.ForceVisibleToPlayer(actor)) game.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_EQUIP.Conjugate(actor), this));
+      if (RogueGame.Game.ForceVisibleToPlayer(actor))
+        RogueGame.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_EQUIP.Conjugate(actor), this));
     }
 
     // thin wrappers

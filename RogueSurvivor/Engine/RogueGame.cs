@@ -433,10 +433,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    public void AddMessage(Data.Message msg)
-    {
-      Messages.Add(msg);
-    }
+    public static void AddMessage(Data.Message msg) { Messages.Add(msg); }
 
     public static void AddMessages(IEnumerable<Data.Message> msgs)
     {
