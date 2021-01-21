@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Data
         (viewpoint.Controller as PlayerController)?.InstallAfterAction(new UITracking(who));
         var game = RogueGame.Game;
         game.PlayEventMusic(music);
-        game.ClearMessages();
+        RogueGame.ClearMessages();
         game.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
         game.AddMessagePressEnter();
         return true;
@@ -104,33 +104,33 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void AddMessages(IEnumerable<Data.Message> msgs) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueGame.Game.AddMessages(msgs);
+      if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessages(msgs);
       else DeferMessages(msgs);
     }
 
     public override void AddMessageForceRead(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
+        RogueGame.ClearMessages();
         var game = RogueGame.Game;
-        game.ClearMessages();
         game.AddMessage(msg);
         game.AddMessagePressEnter();
       } else DeferMessage(msg);
     }
     public void AddMessagesForceRead(IEnumerable<Data.Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor)) {
+        RogueGame.ClearMessages();
         var game = RogueGame.Game;
-        game.ClearMessages();
-        game.AddMessages(msgs);
+        RogueGame.AddMessages(msgs);
         game.AddMessagePressEnter();
       } else DeferMessages(msgs);
     }
     public override void AddMessageForceReadClear(Data.Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) {
+        RogueGame.ClearMessages();
         var game = RogueGame.Game;
-        game.ClearMessages();
         game.AddMessage(msg);
         game.AddMessagePressEnter();
-        game.ClearMessages();
+        RogueGame.ClearMessages();
       } else DeferMessage(msg);
     }
 
@@ -503,11 +503,11 @@ namespace djack.RogueSurvivor.Data
         if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
             var game = RogueGame.Game;
             game.PlayEventMusic(music);
-            game.ClearMessages();
+            RogueGame.ClearMessages();
             AddMessage(desc_msg);
             AddMessage(where_msg);
             game.AddMessagePressEnter();
-            game.ClearMessages();
+            RogueGame.ClearMessages();
         } else {
             DeferMessage(desc_msg);
             DeferMessage(where_msg);
@@ -598,8 +598,8 @@ namespace djack.RogueSurvivor.Data
       var game = RogueGame.Game;
       game.PanViewportTo(m_Actor);
 
-      if (e._important) game.ClearMessages();
-      game.AddMessages(e.messages);
+      if (e._important) RogueGame.ClearMessages();
+      RogueGame.AddMessages(e.messages);
       if (!e._important) return;
 
       game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));

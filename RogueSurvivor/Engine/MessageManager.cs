@@ -7,12 +7,14 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+
+using Color = System.Drawing.Color;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine
 {
+  [Serializable]
   internal class MessageManager
   {
     private readonly List<Message> m_Messages;

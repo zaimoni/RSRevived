@@ -5,8 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Drawing;
 using Zaimoni.Data;
+
+using Color = System.Drawing.Color;
 
 #nullable enable
 
@@ -29,9 +30,6 @@ namespace djack.RogueSurvivor.Data
       Turn = turn;
     }
 
-    public Message(string text, int turn)
-      : this(text, turn, Color.White)
-    {
-    }
+    public Message(string text, int turn) : this(text, turn, Color.White) {}
   }
 }

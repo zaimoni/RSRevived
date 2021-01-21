@@ -324,7 +324,8 @@ namespace djack.RogueSurvivor.Engine
 #nullable restore
     private HiScoreTable m_HiScoreTable;
 #nullable enable
-    private readonly MessageManager m_MessageManager;
+    private static MessageManager? s_MessageManager;
+    private static MessageManager Messages { get { return s_MessageManager!; } }
     private bool m_HasLoadedGame;
 
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
@@ -414,7 +415,7 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
-      m_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
+      s_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
       s_Options.ResetToDefaultValues();
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
@@ -432,14 +433,14 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    public void AddMessage(Data.Message msg)    // intentionally not sinking this validation into MessageManager::Add
+    public void AddMessage(Data.Message msg)
     {
-      m_MessageManager.Add(msg);
+      Messages.Add(msg);
     }
 
-    public void AddMessages(IEnumerable<Data.Message> msgs)
+    public static void AddMessages(IEnumerable<Data.Message> msgs)
     {
-      foreach(var msg in msgs) m_MessageManager.Add(msg);
+      foreach(var msg in msgs) Messages.Add(msg);
     }
 
     public void ImportantMessage(Data.Message msg, int delay=0)
@@ -564,13 +565,13 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    public void ClearMessages() { m_MessageManager.Clear(); }
-    private void ClearMessagesHistory() { m_MessageManager.ClearHistory(); }
-    private void RemoveLastMessage() { m_MessageManager.RemoveLastMessage(); }
+    public static void ClearMessages() { Messages.Clear(); }
+    private static void ClearMessagesHistory() { Messages.ClearHistory(); }
+    private static void RemoveLastMessage() { Messages.RemoveLastMessage(); }
 
     private void DrawMessages()
     {
-      m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
+      Messages.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
 
     public void AddMessagePressEnter()
@@ -3319,8 +3320,8 @@ namespace djack.RogueSurvivor.Engine
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      foreach (Data.Message message in m_MessageManager.History) {
-        m_UI.UI_DrawString(message.Color, message.Text, 0, gy1, new Color?());
+      foreach (var msg in Messages.History) {
+        m_UI.UI_DrawString(msg.Color, msg.Text, 0, gy1, new Color?());
         gy1 += LINE_SPACING;
       }
       DrawFootnote(Color.White, "press ESC to leave");
