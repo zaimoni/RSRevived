@@ -91,6 +91,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerController.Load(info,context);
       // end load other classes' static variables
       World = (World) info.GetValue("World",typeof(World));
+      RogueGame.Load(info, context);
       info.read_s(ref s_Player, "s_Player");
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));

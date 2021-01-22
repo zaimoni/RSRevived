@@ -375,9 +375,15 @@ namespace djack.RogueSurvivor.Engine
       m_MapView = m_Player.Location.View;
     }
 
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+      info.read_nullsafe(ref s_MessageManager, "s_MessageManager");
+    }
+
     static public void Save(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("s_Player",Map.encode(Player));
+      info.AddValue("s_MessageManager", s_MessageManager);
     }
 
     static public void Reset()  // very severe access control issue...should be called only from Session::Reset()
@@ -3482,6 +3488,23 @@ namespace djack.RogueSurvivor.Engine
       RemoveOverlay(working);
     }
     private void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
+
+    private void InfoPopup(string[] msg)
+    {
+      var staging_size = RogueForm.Get.Measure(msg);
+#if DEBUG
+      if (   CANVAS_HEIGHT-4 < staging_size[^1].Height
+          || CANVAS_WIDTH-4  < staging_size[^1].Width)
+        throw new InvalidOperationException("test case");
+#endif
+
+      var working = new OverlayPopup(msg, Color.White, MODE_BORDERCOLOR, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
+      AddOverlay(working);
+      RedrawPlayScreen();
+      WaitEscape();
+      RemoveOverlay(working);
+    }
+    private void InfoPopup(string msg) { InfoPopup(new string[] { msg }); } // Ok: Waterfall i.e. SSADM lifecycle
 
     private bool YesNoPopup(string[] msg)
     {
@@ -11953,25 +11976,19 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
       Session.Get.World.DoForAllMaps(m=>m.RepairZoneWalk());
       Direction_ext.Now();
-#if OBSOLETE
-      m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
-      m_Player = null;
-      RefreshPlayer();
-#endif
-      AddMessage(new Data.Message("LOADING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+
       // we crash on FOVloc otherwise
       Session.Get.World.DoForAllMaps(m => { foreach (var player in m.Players.Get) { player.Controller.UpdateSensors(); } },  m => 0<m.PlayerCount);
-      RedrawPlayScreen(new Data.Message("Welcome back to " + SetupConfig.GAME_NAME + "!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-      m_UI.UI_Repaint();
-#if OBSOLETE
-      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "<Loaded game>");
-#endif
+      InfoPopup(new string[] {
+          "LOADING DONE.",
+          "Welcome back to " + SetupConfig.GAME_NAME + "!"
+      });
+
       // Test drivers that require a fully constructed world can go here.
       return true;
     }
 
-    static private void LoadOptions()
-    {
+    static private void LoadOptions() {
       s_Options = GameOptions.Load(GetUserOptionsFilePath());
     }
 
