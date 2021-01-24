@@ -298,6 +298,8 @@
     <Compile Include="Zaimoni\Data\Vector.cs" />
     <Compile Include="Microsoft\Random.cs" />
     <Compile Include="Zaimoni\Data\Virtual.cs" />
+    <Compile Include="Zaimoni\Serialization\SaveManager.cs" />
+    <Compile Include="Zaimoni\Serialization\StreamingContext.cs" />
   </ItemGroup>
 <!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />
