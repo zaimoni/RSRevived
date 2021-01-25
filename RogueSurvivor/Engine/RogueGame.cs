@@ -4233,7 +4233,8 @@ namespace djack.RogueSurvivor.Engine
       } while (true);
     }
 
-    private bool DirectionCommandFiltered<T>(Func<Direction,T> select, Predicate<T> execute) where T:class
+
+    private bool DirectionCommandFiltered<T>(Func<Direction,T?> select, Predicate<T?> execute) where T:class
     {
       Dictionary<Direction,T>? options = null;
       var staging = select(Direction.NEUTRAL);
@@ -4442,12 +4443,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool build(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
+      MapObject? build_where(Direction dir) {
+        if (dir == Direction.NEUTRAL) return null;  // \todo? maybe not?  What about other-side-of-exit?
+        var loc = player.Location + dir;
+        if (!Map.Canonical(ref loc)) return null;
+        return loc.MapObject;
+      }
 
-        var mapObjectAt = player.Location.Map.GetMapObjectAtExt(pos.Value);
+      bool build(MapObject? mapObjectAt) {
         if (null != mapObjectAt) {
           if (mapObjectAt is DoorWindow door) {
             if (player.CanBarricade(door, out string reason)) {
@@ -4782,11 +4785,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? swap_whom(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool swap(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
-        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
+      Actor? swap_whom(Direction dir) {
+        if (dir == Direction.NEUTRAL) return null;
+        var loc = player.Location + dir;
+        if (!Map.Canonical(ref loc)) return null;
+        return loc.Actor;
+      }
+
+      bool swap(Actor? actorAt) {
         if (actorAt != null) {
           if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
             DoSwitchPlace(player, actorAt);
@@ -4812,11 +4818,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? lead_whom(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool lead(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
-        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
+      Actor? lead_whom(Direction dir) {
+        if (dir == Direction.NEUTRAL) return null;
+        var loc = player.Location + dir;
+        if (!Map.Canonical(ref loc)) return null;
+        return loc.Actor;
+      }
+
+      bool lead(Actor? actorAt) {
         if (actorAt != null) {
           if (player.CanTakeLeadOf(actorAt, out string reason)) {
             DoTakeLead(player, actorAt);
@@ -4852,7 +4861,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      bool actionDone = DirectionCommand(lead_whom, lead);
+      bool actionDone = DirectionCommandFiltered(lead_whom, lead);
 
       ClearOverlays();
       return actionDone;
@@ -5143,7 +5152,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      actionDone = DirectionCommand(spray_who, spray_on);
+      actionDone = DirectionCommandFiltered(spray_who, spray_on);
 
       ClearOverlays();
       return actionDone;
