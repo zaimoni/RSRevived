@@ -4233,6 +4233,32 @@ namespace djack.RogueSurvivor.Engine
       } while (true);
     }
 
+    private bool DirectionCommand<T,U>(Func<Direction,T> select, Func<T,U> guard, Predicate<U> execute) where U:class
+    {
+      Dictionary<Direction,U>? options = null;
+      var staging = guard(select(Direction.NEUTRAL));
+      if (null != staging) (options = new Dictionary<Direction, U>()).Add(Direction.NEUTRAL, staging);
+      foreach(var dir in Direction.COMPASS) {
+        staging = guard(select(dir));
+        if (null != staging) (options ??= new Dictionary<Direction, U>()).Add(dir, staging);
+      }
+      if (null == options) return false;
+      if (1 == options.Count) return execute(options.First().Value);
+
+      do {
+        ///////////////////
+        // 1. Redraw
+        // 2. Get input.
+        // 3. Handle input
+        ///////////////////
+        RedrawPlayScreen();
+        var dir = WaitDirectionOrCancel();
+        if (null == dir) return false;
+        var target = guard(select(dir));
+        if (execute(target)) return true;
+      } while (true);
+    }
+
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
       var inventoryItem = MouseToInventoryItem(screen, out var inv);
@@ -4383,12 +4409,14 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       Point? close_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool close(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsInBounds(pos.Value)) return false;  // doors never generate on map edges so IsInBounds ok
+      DoorWindow? closing(Point? pos) {
+        if (null == pos) return null;
+        if (!player.Location.Map.IsInBounds(pos.Value)) return null;  // doors never generate on map edges so IsInBounds ok
 
-        var mapObjectAt = player.Location.Map.GetMapObjectAt(pos.Value);
-        if (mapObjectAt is DoorWindow door) {
+        return player.Location.Map.GetMapObjectAt(pos.Value) as DoorWindow;
+      }
+      bool close(DoorWindow? door) {
+        if (null != door) {
           if (player.CanClose(door, out string reason)) {
             DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
             return true;
@@ -4402,7 +4430,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      bool actionDone = DirectionCommand(close_where, close);
+      bool actionDone = DirectionCommand(close_where, closing, close);
 
       ClearOverlays();
       return actionDone;
