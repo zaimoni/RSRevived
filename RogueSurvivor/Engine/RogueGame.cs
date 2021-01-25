@@ -4233,14 +4233,14 @@ namespace djack.RogueSurvivor.Engine
       } while (true);
     }
 
-    private bool DirectionCommand<T,U>(Func<Direction,T> select, Func<T,U> guard, Predicate<U> execute) where U:class
+    private bool DirectionCommandFiltered<T>(Func<Direction,T> select, Predicate<T> execute) where T:class
     {
-      Dictionary<Direction,U>? options = null;
-      var staging = guard(select(Direction.NEUTRAL));
-      if (null != staging) (options = new Dictionary<Direction, U>()).Add(Direction.NEUTRAL, staging);
+      Dictionary<Direction,T>? options = null;
+      var staging = select(Direction.NEUTRAL);
+      if (null != staging) (options = new Dictionary<Direction, T>()).Add(Direction.NEUTRAL, staging);
       foreach(var dir in Direction.COMPASS) {
-        staging = guard(select(dir));
-        if (null != staging) (options ??= new Dictionary<Direction, U>()).Add(dir, staging);
+        staging = select(dir);
+        if (null != staging) (options ??= new Dictionary<Direction, T>()).Add(dir, staging);
       }
       if (null == options) return false;
       if (1 == options.Count) return execute(options.First().Value);
@@ -4254,7 +4254,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         var dir = WaitDirectionOrCancel();
         if (null == dir) return false;
-        var target = guard(select(dir));
+        var target = select(dir);
         if (execute(target)) return true;
       } while (true);
     }
@@ -4408,13 +4408,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? close_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      DoorWindow? closing(Point? pos) {
-        if (null == pos) return null;
-        if (!player.Location.Map.IsInBounds(pos.Value)) return null;  // doors never generate on map edges so IsInBounds ok
+      DoorWindow? close_where(Direction dir) {
+        if (dir == Direction.NEUTRAL) return null;
+        var pos = player.Location.Position + dir;
+        if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
 
-        return player.Location.Map.GetMapObjectAt(pos.Value) as DoorWindow;
+        return player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
       }
+
       bool close(DoorWindow? door) {
         if (null != door) {
           if (player.CanClose(door, out string reason)) {
@@ -4430,7 +4431,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      bool actionDone = DirectionCommand(close_where, closing, close);
+      bool actionDone = DirectionCommandFiltered(close_where, close);
 
       ClearOverlays();
       return actionDone;
