@@ -4409,27 +4409,31 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
+      string err = "Nothing to close there.";
+
       DoorWindow? close_where(Direction dir) {
+        err = "Nothing to close there.";
         if (dir == Direction.NEUTRAL) return null;
         var pos = player.Location.Position + dir;
         if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
 
-        return player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
+        var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
+        if (null == door) return null;
+
+        if (!player.CanClose(door, out string reason)) {
+          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
+          return null;
+        }
+        return door;
       }
 
       bool close(DoorWindow? door) {
         if (null != door) {
-          if (player.CanClose(door, out string reason)) {
-            DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
-            return true;
-          } else {
-            ErrorPopup(string.Format("Can't close {0} : {1}.", door.TheName, reason));
-            return false;
-          }
-        } else {
-          ErrorPopup("Nothing to close there.");
-          return false;
+          DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
+          return true;
         }
+        ErrorPopup(err);
+        return false;
       }
 
       bool actionDone = DirectionCommandFiltered(close_where, close);
