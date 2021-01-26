@@ -4234,7 +4234,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-    private bool DirectionCommandFiltered<T>(Func<Direction,T?> select, Predicate<T?> execute) where T:class
+    private bool DirectionCommandFiltered<T>(Func<Direction,T?> select, Predicate<T?> execute, string? no_options=null) where T:class
     {
       Dictionary<Direction,T>? options = null;
       var staging = select(Direction.NEUTRAL);
@@ -4243,7 +4243,10 @@ namespace djack.RogueSurvivor.Engine
         staging = select(dir);
         if (null != staging) (options ??= new Dictionary<Direction, T>()).Add(dir, staging);
       }
-      if (null == options) return false;
+      if (null == options) {
+         if (!string.IsNullOrEmpty(no_options)) ErrorPopup(no_options);
+         return false;
+      }
       if (1 == options.Count) return execute(options.First().Value);
 
       do {
@@ -4436,7 +4439,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      bool actionDone = DirectionCommandFiltered(close_where, close);
+      bool actionDone = DirectionCommandFiltered(close_where, close, "Nothing to close here.");
 
       ClearOverlays();
       return actionDone;
@@ -4860,12 +4863,12 @@ namespace djack.RogueSurvivor.Engine
             return false;
           }
         } else {
-          ErrorPopup("Noone there.");
+          ErrorPopup("No one there.");
           return false;
         }
       }
 
-      bool actionDone = DirectionCommandFiltered(lead_whom, lead);
+      bool actionDone = DirectionCommandFiltered(lead_whom, lead, "No one here.");
 
       ClearOverlays();
       return actionDone;
@@ -5145,7 +5148,7 @@ namespace djack.RogueSurvivor.Engine
       Actor? spray_who(Direction dir) { return dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir); }
       bool spray_on(Actor? who) {
         if (null == who) {
-          ErrorPopup("No one to spray on here.");
+          ErrorPopup("No one to spray on there.");
           return false;
         } else if (player.CanSprayOdorSuppressor(spray, who, out string reason)) {
           DoSprayOdorSuppressor(player, spray, who);
@@ -5156,7 +5159,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      actionDone = DirectionCommandFiltered(spray_who, spray_on);
+      actionDone = DirectionCommandFiltered(spray_who, spray_on, "No one to spray on here.");
 
       ClearOverlays();
       return actionDone;
