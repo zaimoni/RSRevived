@@ -5135,9 +5135,9 @@ namespace djack.RogueSurvivor.Engine
     // alpha10 new way to use stench killer
     private bool HandlePlayerSprayOdorSuppressor(Actor player, ItemSprayScent spray)
     {
-      // Check if has odor suppressor.
-      if (0 >= spray.SprayQuantity) {
-        ErrorPopup("No spray left.");
+      // Check if has odor suppressor, etc.
+      if (!player.CanSprayOdorSuppressor(spray, out string reason)) {
+        ErrorPopup(reason);
         return false;
       }
 

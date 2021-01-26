@@ -3282,6 +3282,28 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantUseItem(it));
     }
 
+    private string? ReasonCantSprayOdorSuppressor(ItemSprayScent suppressor)
+    {
+       ///////////////////////////////////////////////////////
+       // Cant if any is true:
+       // 1. Actor cannot use items
+       // 2. Not an odor suppressor
+       // 3. Spray is not equiped by actor or has no spray left.
+       ////////////////////////////////////////////////////////
+
+       // 1. Actor cannot use items
+       if (!Model.Abilities.CanUseItems) return "cannot use items";
+
+       // 2. Not an odor suppressor
+       if (Odor.SUPPRESSOR != suppressor.Model.Odor) return "not an odor suppressor";
+
+       // 3. Spray is not equiped by actor or has no spray left.
+       if (suppressor.SprayQuantity <= 0) return "No spray left.";
+       if (!suppressor.IsEquipped || (!m_Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
+
+       return null;  // all clear.
+    }
+
     // alpha10
     private string ReasonCantSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn)
     {
@@ -3292,16 +3314,8 @@ namespace djack.RogueSurvivor.Data
        // 3. Spray is not equiped by actor or has no spray left.
        // 4. SprayOn is not self or adjacent.
        ////////////////////////////////////////////////////////
-
-       // 1. Actor cannot use items
-       if (!Model.Abilities.CanUseItems) return "cannot use items";
-
-       // 2. Not an odor suppressor
-       if (Odor.SUPPRESSOR != suppressor.Model.Odor) return "not an odor suppressor";
-
-       // 3. Spray is not equiped by actor or has no spray left.
-       if (suppressor.SprayQuantity <= 0) return "no spray left";
-       if (!suppressor.IsEquipped || (!m_Inventory?.Contains(suppressor) ?? true)) return "spray not equipped";
+       var err = ReasonCantSprayOdorSuppressor(suppressor);
+       if (null != err) return err;
 
        // 4. SprayOn is not self or adjacent.
        if (sprayOn != this && !Rules.IsAdjacent(in m_Location, sprayOn.Location)) return "not adjacent";
@@ -3315,10 +3329,23 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+    public bool CanSprayOdorSuppressor(ItemSprayScent suppressor, out string reason)
+    {
+      reason = ReasonCantSprayOdorSuppressor(suppressor) ?? "";
+      return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
     public bool CanSprayOdorSuppressor(ItemSprayScent suppressor, Actor sprayOn)
     {
       return string.IsNullOrEmpty(ReasonCantSprayOdorSuppressor(suppressor,sprayOn));
     }
+
+    public bool CanSprayOdorSuppressor(ItemSprayScent suppressor)
+    {
+      return string.IsNullOrEmpty(ReasonCantSprayOdorSuppressor(suppressor));
+    }
+#endif
 
     private string ReasonCantGet(Item it)
     {
