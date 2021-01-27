@@ -367,7 +367,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Logger.WriteLine(Logger.Stage.RUN_MAIN, "goals: "+(GetPreviousGoals()?.to_s() ?? "null"));
           }
 #endif
-          if (null != tmpAction) return tmpAction;
+          if (null != tmpAction) {
+            _used_advanced_pathing = true; // object constancy
+            return tmpAction;
+          }
         }
       }
 

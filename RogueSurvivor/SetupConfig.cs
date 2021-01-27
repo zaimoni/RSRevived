@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor
   {
     public const string GAME_NAME = "Rogue Survivor Revived";
     public const string GAME_NAME_CAPS = "ROGUE SURVIVOR REVIVED";
-    public const string GAME_VERSION = "0.10.0 unstable (2021-01-26)";
+    public const string GAME_VERSION = "0.10.0 unstable";
 
     public static eVideo Video { get; set; }
     public static eSound Sound { get; set; }
