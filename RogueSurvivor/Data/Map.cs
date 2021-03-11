@@ -787,25 +787,25 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-	public Zaimoni.Data.FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
+	public FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
 	{
       var already = new Dictionary<Location,ActorAction>();
 
-      Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(in loc, actor, already); }
+      Func<Location, Dictionary<Location, int>> fn = loc => OneStepForPathfinder(in loc, actor, already);
 
-	  var ret = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(in loc));
+	  var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(in loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
 
     // Default pather.  Recovery options would include allowing chat, and allowing pushing.
-	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)
+	public FloodfillPathfinder<Point> PathfindSteps(Actor actor)
 	{
       var already = new Dictionary<Point,ActorAction>();
 
-      Dictionary<Point,int> fn(Point pt) { return OneStepForPathfinder(pt, actor, already); }
+      Func<Point, Dictionary<Point, int>> fn = pt => OneStepForPathfinder(pt, actor, already);
 
-	  var ret = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
+	  var ret = new FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
       Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor, true));
       return ret;
     }
