@@ -725,10 +725,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     private static Dictionary<Location,int> OneStepForPathfinder(in Location loc, Actor a, Dictionary<Location,ActorAction> already)
-	{  // 2019-08-26 release mode IL Code size       99 (0x63) [invalidated]
+	{
 	  var ret = new Dictionary<Location, int>();
-      Dictionary<Location, ActorAction> moves = a.OnePath(in loc, already);
-      foreach(var move in moves) {
+      foreach(var move in a.OnePath(in loc, already)) {
         var pt = move.Key;
         if (1>= a.Controller.FastestTrapKill(in pt)) continue;
         ret.Add(pt, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
@@ -737,10 +736,9 @@ namespace djack.RogueSurvivor.Data
 	}
 
     private Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
-	{ // 2019-09-07 release mode IL Code size       121 (0x79)
+	{
 	  var ret = new Dictionary<Point, int>();
-      Dictionary<Point,ActorAction> moves = a.OnePath(this, in pt, already);
-      foreach(var move in moves) {
+      foreach(var move in a.OnePath(this, in pt, already)) {
         var pt2 = move.Key;
         if (1>= a.Controller.FastestTrapKill(new Location(a.Location.Map, pt2))) continue;
         ret.Add(pt2, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
