@@ -747,41 +747,25 @@ namespace djack.RogueSurvivor.Data
 	}
 #nullable restore
 
-    public bool WouldBlacklistFor(Point pt,Actor actor,bool is_real=false)
+    public bool WouldBlacklistFor(Point pt,Actor actor)
     {
       if (pt == actor.Location.Position && this == actor.Location.Map) return false;
-      if (actor.Model.Abilities.AI_CanUseAIExits) {
-        if (Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt))) return true;
-      }
+      if (   actor.Model.Abilities.AI_CanUseAIExits
+          && Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt)))
+          return true;
 
       var dest = new Location(this, pt);
-      if (1 == Engine.Rules.InteractionDistance(dest, actor.Location)) {
-        if (actor.Controller is Gameplay.AI.ObjectiveAI oai && oai.LegalPathingIsValid) return null == oai.LegalPathing(dest);
-      }
+      bool is_adjacent = 1 == Engine.Rules.InteractionDistance(dest, actor.Location);
+      if (   is_adjacent
+          && actor.Controller is Gameplay.AI.ObjectiveAI oai
+          && oai.LegalPathingIsValid)
+          return null == oai.LegalPathing(dest);
 
       if (actor.CanEnter(dest)) return false;
-      if (   1 == Engine.Rules.InteractionDistance(dest, actor.Location) // \todo is this morally dead code?
+      if (   is_adjacent // \todo is this morally dead code?
           && null == Engine.Rules.IsPathableFor(actor, dest)) return true;
       // generators may not be entered, but are still (unreliably) pathable
       if (GetMapObjectAtExt(pt) is Engine.MapObjects.PowerGenerator) return false;
-#if OBSOLETE
-      // most of the following is likely obsolete, if not all
-      if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
-      var mapobj = GetMapObjectAtExt(pt);
-      if (null!=mapobj) {
-        Location loc = new Location(this, pt);
-        if (mapobj.IsContainer) {
-          var inv = GetItemsAt(pt);
-          if (null==inv || inv.IsEmpty) {
-            // cheating ai: update item memory immediately since we had to check anyway
-            if (is_real) actor.Controller.ItemMemory?.Set(loc,null,LocalTime.TurnCounter);
-          } else if (actor.Location.Map!=this) return false;  // not correct, but the correct test below is using a class that assumes same-map
-          else if (actor.Controller is Gameplay.AI.OrderableAI ai && null!=ai.WouldGrabFromAccessibleStack(loc, inv)) return false;
-        }
-        if (mapobj is Engine.MapObjects.PowerGenerator) return false;
-        if (mapobj is DoorWindow) return false;
-      }
-#endif
       return true;
     }
 
@@ -792,7 +776,7 @@ namespace djack.RogueSurvivor.Data
       Func<Location, Dictionary<Location, int>> fn = loc => OneStepForPathfinder(in loc, actor, already);
 
 	  var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(in loc));
-      Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor, true));
+      Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor));
       return ret;
     }
 
@@ -804,7 +788,7 @@ namespace djack.RogueSurvivor.Data
       Func<Point, Dictionary<Point, int>> fn = pt => OneStepForPathfinder(pt, actor, already);
 
 	  var ret = new FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
-      Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor, true));
+      Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor));
       return ret;
     }
 
