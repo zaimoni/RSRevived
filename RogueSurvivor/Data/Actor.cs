@@ -3053,12 +3053,7 @@ namespace djack.RogueSurvivor.Data
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOf(ItemModel it, int n)
-    {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      if (it.IsStackable) return m_Inventory.CountQuantityOf(it) >= n * it.StackingLimit;
-      return m_Inventory.Count(it) >= n;
-    }
+    public bool HasAtLeastFullStackOf(ItemModel it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false;
 
     public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
 
