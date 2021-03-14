@@ -350,10 +350,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     static public bool Canonical(ref Location loc) {
-      if (loc.Map.IsInBounds(loc.Position)) return true;
-      var test = loc.Map._Normalize(loc.Position);
-      if (null == test) return false;
-      loc = test.Value;
+      if (!loc.Map.IsInBounds(loc.Position)) {
+        var test = loc.Map._Normalize(loc.Position);
+        if (null == test) return false;
+        loc = test.Value;
+      }
       return true;
     }
 
