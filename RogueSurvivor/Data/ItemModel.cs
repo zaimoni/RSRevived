@@ -42,6 +42,10 @@ namespace djack.RogueSurvivor.Data
     public bool IsStackable { get { return 2 <= m_StackingLimit; } }
     public bool IsEquipable { get { return EquipmentPart != DollPart.NONE; } }
 
+    public bool CanStackMore(int qty) {
+      return 2 <= m_StackingLimit && qty < m_StackingLimit;
+    }
+
     public ItemModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
     {
       ID = _id;

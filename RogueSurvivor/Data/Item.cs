@@ -83,13 +83,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool CanStackMore {
-      get {
-        ItemModel model = Model;
-        return model.IsStackable && m_Quantity < model.StackingLimit;
-      }
-    }
-
+    public int TopOffStack { get { return Model.StackingLimit - m_Quantity; } }
+    public bool CanStackMore { get { return Model.CanStackMore(m_Quantity); } }
     public bool IsEquipped { get { return EquippedPart != DollPart.NONE; } }
     public static bool notEquipped(Item it) { return DollPart.NONE == it.EquippedPart; }
 

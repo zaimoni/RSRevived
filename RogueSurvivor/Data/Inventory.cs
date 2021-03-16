@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Data
       if (null != itemsStackableWith) { // also have 0<stackedQuantity
         int quantity = stackedQuantity;
         foreach (Item to in itemsStackableWith) {
-          int addThis = Math.Min(to.Model.StackingLimit - to.Quantity, quantity);
+          int addThis = Math.Min(to.TopOffStack, quantity);
           AddToStack(it, addThis, to);
           quantity -= addThis;
           it.Quantity -= addThis;
@@ -200,7 +200,7 @@ namespace djack.RogueSurvivor.Data
       foreach(Item mItem in m_Items) {
         if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped) {
           (objList ??= new List<Item>()).Add(mItem);
-          stackedQuantity += Math.Min(it.Quantity - stackedQuantity, mItem.Model.StackingLimit - mItem.Quantity);
+          stackedQuantity += Math.Min(it.Quantity - stackedQuantity, mItem.TopOffStack);
           if (stackedQuantity == it.Quantity) break;
         }
       }
@@ -364,7 +364,7 @@ namespace djack.RogueSurvivor.Data
                 if (mergeWith == stealFrom) throw new InvalidOperationException("duplicate items found");
 #endif
                 if (stealFrom.Model == mergeWith.Model && mergeWith.CanStackMore) {
-                  int steal = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, stealFrom.Quantity);
+                  int steal = Math.Min(mergeWith.TopOffStack, stealFrom.Quantity);
                   mergeWith.Quantity += steal;
                   if (0 >= (stealFrom.Quantity -= steal)) {
                     m_Items.Remove(stealFrom);
@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Data
         }
         if (src == mergeWith) continue;
         if (src.Model != mergeWith.Model) continue;
-        int realloc = Math.Min(mergeWith.Model.StackingLimit - mergeWith.Quantity, src.Quantity);
+        int realloc = Math.Min(mergeWith.TopOffStack, src.Quantity);
         mergeWith.Quantity += realloc;
         if (0 >= (src.Quantity -= realloc)) m_Items.RemoveAt(i);
       }
