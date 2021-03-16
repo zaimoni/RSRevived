@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Threading;
 using Zaimoni.Data;
 using djack.RogueSurvivor.Engine;
 
@@ -82,6 +83,8 @@ namespace djack.RogueSurvivor.Data
         m_Quantity = (0 < value ? value : 0);
       }
     }
+
+    public bool Consume() => 0 >= Interlocked.Decrement(ref m_Quantity);
 
     public int TopOffStack { get { return Model.StackingLimit - m_Quantity; } }
     public bool CanStackMore { get { return Model.CanStackMore(m_Quantity); } }

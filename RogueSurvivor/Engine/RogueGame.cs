@@ -7608,10 +7608,10 @@ namespace djack.RogueSurvivor.Engine
       if (!trap.IsActivated) return false;
       if (!victim.Controller.IsEngaged && trap.LearnHowToBypass(victim, victim.Location)) return false;
 
-      if (trap.TriggeredBy(victim)) DoTriggerTrap(trap, victim);
+      if (trap.TriggeredBy(victim)) return DoTriggerTrap(trap, victim);
       else if (IsVisibleToPlayer(victim))
         AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", VERB_AVOID.Conjugate(victim), trap.TheName)));
-      return trap.Quantity == 0;
+      return false;
     }
 
     private bool TryEscapeTrap(ItemTrap trap, Actor victim, out bool isDestroyed)
@@ -7626,8 +7626,7 @@ namespace djack.RogueSurvivor.Engine
         if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_ESCAPE.Conjugate(victim), trap.TheName)));
         if (rules.CheckTrapEscapeBreaks(trap, victim)) {
           if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_BREAK.Conjugate(victim), trap.TheName)));
-          --trap.Quantity;
-          isDestroyed = trap.Quantity <= 0;
+          isDestroyed = trap.Consume();
         }
       }
       else if (player) AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", trap.TheName)));
@@ -7640,8 +7639,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != obj && obj.TriggersTraps) {
         map.RemoveAt<ItemTrap>(trap => {
           if (!trap.IsActivated) return false;
-          DoTriggerTrap(trap, obj);
-          return 0 >= trap.Quantity;
+          return DoTriggerTrap(trap, obj);
         }, pos);
       }
     }
@@ -7655,7 +7653,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoTriggerTrap(ItemTrap trap, Actor victim)
+    private bool DoTriggerTrap(ItemTrap trap, Actor victim)
     {
       bool player = ForceVisibleToPlayer(victim);
       trap.IsTriggered = true;
@@ -7676,12 +7674,12 @@ namespace djack.RogueSurvivor.Engine
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
-      if (!trap.CheckStepOnBreaks()) return;
+      if (!trap.CheckStepOnBreaks()) return false;
       if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
-      --trap.Quantity;
+      return trap.Consume();
     }
 
-    private void DoTriggerTrap(ItemTrap trap, MapObject obj)
+    private bool DoTriggerTrap(ItemTrap trap, MapObject obj)
     {
       ItemTrapModel trapModel = trap.Model;
       bool player = ForceVisibleToPlayer(obj);
@@ -7692,9 +7690,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
-      if (!trap.CheckStepOnBreaks(obj)) return;
+      if (!trap.CheckStepOnBreaks(obj)) return false;
       if (player) AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", obj.TheName.Capitalize(), trap.TheName), obj.Location.Map.LocalTime.TurnCounter));
-      --trap.Quantity;
+      return trap.Consume();
     }
 
     // Intentionally leaving in the askForConfirmation parameter: should be used only for plot-significant map changes
