@@ -35,24 +35,14 @@ namespace djack.RogueSurvivor.Engine.Items
     public int Rating { get { return Model.Rating; } }
     public static int Rate(ItemBodyArmor armor) { return armor.Rating; }
 
-    public ItemBodyArmor(ItemBodyArmorModel model)
-      : base(model)
-    {
-    }
+    public ItemBodyArmor(ItemBodyArmorModel model) : base(model) {}
 
     // these five functions are actually functions of the body armor model.
     // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.
     // March 28 2018: armors that are !IsNeutral are guaranteed non-neutral to all factions that pay attention
     // to such things.
-    public bool IsHostileForCops()
-    {
-      return 0 <= Array.IndexOf<GameItems.IDs>(BAD_POLICE_OUTFITS, Model.ID);
-    }
-
-    public bool IsFriendlyForCops()
-    {
-      return 0 <= Array.IndexOf<GameItems.IDs>(GOOD_POLICE_OUTFITS, Model.ID);
-    }
+    public bool IsHostileForCops() => 0 <= Array.IndexOf(BAD_POLICE_OUTFITS, Model.ID);
+    public bool IsFriendlyForCops() => 0 <= Array.IndexOf(GOOD_POLICE_OUTFITS, Model.ID);
 
     // Validity for these is enforced in GameItems.  The ordering of the armor ids was adjusted to make these valid.
     // these never were valid for non-gang members
