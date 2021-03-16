@@ -3053,17 +3053,9 @@ namespace djack.RogueSurvivor.Data
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOf(ItemModel it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false;
-
-    public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
-
-    public bool HasAtLeastFullStackOf(GameItems.IDs it, int n)
-    {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      ItemModel model = GameItems.From(it);
-      if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
-      return m_Inventory.Count(model) >= n; // XXX assumes each model goes with a specific item type
-    }
+    public bool HasAtLeastFullStackOf(ItemModel it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
+//  public bool HasAtLeastFullStackOf(Item it, int n) => HasAtLeastFullStackOf(it.Model, n); // manually inlined below
+    public bool HasAtLeastFullStackOf(Item it, int n) => m_Inventory?.HasAtLeastFullStackOf(it.Model, n) ?? false;
 
     public ItemMeleeWeapon? GetWorstMeleeWeapon()
     {
