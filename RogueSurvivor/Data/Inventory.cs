@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
-      if (0 >= --it.Quantity) m_Items.Remove(it);
+      if (it.Consume()) m_Items.Remove(it);
       RepairZeroQty();
     }
 
@@ -364,9 +364,7 @@ namespace djack.RogueSurvivor.Data
                 if (mergeWith == stealFrom) throw new InvalidOperationException("duplicate items found");
 #endif
                 if (stealFrom.Model == mergeWith.Model && mergeWith.CanStackMore) {
-                  int steal = Math.Min(mergeWith.TopOffStack, stealFrom.Quantity);
-                  mergeWith.Quantity += steal;
-                  if (0 >= (stealFrom.Quantity -= steal)) {
+                  if (stealFrom.Transfer(mergeWith, Math.Min(mergeWith.TopOffStack, stealFrom.Quantity))) {
                     m_Items.Remove(stealFrom);
                     break;
                   }
@@ -387,9 +385,7 @@ namespace djack.RogueSurvivor.Data
         }
         if (src == mergeWith) continue;
         if (src.Model != mergeWith.Model) continue;
-        int realloc = Math.Min(mergeWith.TopOffStack, src.Quantity);
-        mergeWith.Quantity += realloc;
-        if (0 >= (src.Quantity -= realloc)) m_Items.RemoveAt(i);
+        if (src.Transfer(mergeWith, Math.Min(mergeWith.TopOffStack, src.Quantity))) m_Items.RemoveAt(i);
       }
       RepairZeroQty();
     }

@@ -85,6 +85,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool Consume() => 0 >= Interlocked.Decrement(ref m_Quantity);
+    public bool Transfer(Item dest, int qty) {
+        Interlocked.Add(ref dest.m_Quantity, qty);
+        return 0 >= Interlocked.Add(ref m_Quantity, -qty);
+    }
 
     public int TopOffStack { get { return Model.StackingLimit - m_Quantity; } }
     public bool CanStackMore { get { return Model.CanStackMore(m_Quantity); } }
