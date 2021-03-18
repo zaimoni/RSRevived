@@ -3769,10 +3769,8 @@ restart:
 
       ItemModel[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+      numberedName.Inventory.AddAll(GameItems.WOODENPLANK.instantiate(GameItems.WOODENPLANK.StackingLimit));
 
-      var barricadeMaterial = GameItems.WOODENPLANK.instantiate();
-      barricadeMaterial.Quantity = GameItems.WOODENPLANK.StackingLimit;
-      numberedName.Inventory.AddAll(barricadeMaterial);
       // National Guard training includes firing range and construction.
       // The minimum physical fitness standards slide off with age.
       // If we had a melee weapons skill it would be here.

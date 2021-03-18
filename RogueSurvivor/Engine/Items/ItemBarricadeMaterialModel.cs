@@ -22,6 +22,6 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public override Item create() { return new ItemBarricadeMaterial(this); }
-    public ItemBarricadeMaterial instantiate() { return new ItemBarricadeMaterial(this); }
+    public ItemBarricadeMaterial instantiate(int qty=1) { return new ItemBarricadeMaterial(this, qty); }
   }
 }
