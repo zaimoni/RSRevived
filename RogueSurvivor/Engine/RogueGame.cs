@@ -8104,14 +8104,14 @@ namespace djack.RogueSurvivor.Engine
         }
 
         if (dmg > 0) {
-          defender.TakeDamage(dmg);
+          bool fatal = defender.TakeDamage(dmg);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
             if (isAttVisible) AddMessage(MakeMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
-          if (defender.HitPoints <= 0) {
+          if (fatal) {
             if (isAttVisible || isDefVisible) {
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
@@ -8253,8 +8253,7 @@ namespace djack.RogueSurvivor.Engine
         if (hitRoll > defRoll) {
           int dmg = rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
-            defender.TakeDamage(dmg);
-            if (defender.HitPoints <= 0) {
+            if (defender.TakeDamage(dmg)) {
               if (see_defender) {
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
                 ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
@@ -8414,10 +8413,9 @@ namespace djack.RogueSurvivor.Engine
         ExplosionChainReaction(actorAt.Inventory, in location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
-          actorAt.TakeDamage(dmg);
           if (ForceVisibleToPlayer(actorAt))
             AddMessage(new Data.Message(string.Format("{0} is hit for {1} damage!", actorAt.Name, dmg), map.LocalTime.TurnCounter, Color.Crimson));
-          if (actorAt.HitPoints <= 0 && !actorAt.IsDead) {
+          if (actorAt.TakeDamage(dmg) && !actorAt.IsDead) {
             KillActor(null, actorAt, string.Format("explosion {0} damage", dmg));
             if (ForceVisibleToPlayer(actorAt))
               AddMessage(new Data.Message(string.Format("{0} dies in the explosion!", actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));

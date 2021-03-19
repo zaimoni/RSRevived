@@ -2984,11 +2984,10 @@ namespace djack.RogueSurvivor.Data
     // bypasses armor
     public bool RawDamage(int dmg) => 0 >= Interlocked.Add(ref m_HitPoints, -dmg);
 
-    public void TakeDamage(int dmg)
+    public bool TakeDamage(int dmg)
     {
       const int BODY_ARMOR_BREAK_CHANCE = 2;
 
-      m_HitPoints -= dmg;
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueGame.Game;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
@@ -2998,6 +2997,7 @@ namespace djack.RogueSurvivor.Data
         }
       }
       if (IsSleeping) game.DoWakeUp(this);
+      return RawDamage(dmg);
     }
 
     // alpha10: boring items moved to ItemEntertaimment from Actor
