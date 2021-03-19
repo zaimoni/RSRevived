@@ -2981,6 +2981,9 @@ namespace djack.RogueSurvivor.Data
       Location.Map.AddTimedDecoration(Location.Position, Gameplay.GameImages.DECO_VOMIT, District.IsSewersMap(Location.Map) ? 3*WorldTime.HOURS_PER_DAY*WorldTime.TURNS_PER_HOUR : 7 * WorldTime.HOURS_PER_DAY * WorldTime.TURNS_PER_HOUR, TRUE);
     }
 
+    // bypasses armor
+    public bool RawDamage(int dmg) => 0 >= Interlocked.Add(ref m_HitPoints, -dmg);
+
     public void TakeDamage(int dmg)
     {
       const int BODY_ARMOR_BREAK_CHANCE = 2;

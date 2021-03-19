@@ -2103,9 +2103,8 @@ namespace djack.RogueSurvivor.Engine
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
                   if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
-                  if (actor.HitPoints <= 0) flag4 = true;
+                  if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
                   if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
@@ -2148,7 +2147,7 @@ namespace djack.RogueSurvivor.Engine
             actor.Appetite(1);
             if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
               if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, "is rotting away."));
-              if (--actor.HitPoints <= 0) (actorList1 ??= new List<Actor>()).Add(actor);
+              if (actor.RawDamage(1)) (actorList1 ??= new List<Actor>()).Add(actor);
             }
             else if (actor.IsRotHungry && rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
