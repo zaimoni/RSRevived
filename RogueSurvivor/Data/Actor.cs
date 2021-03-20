@@ -298,11 +298,7 @@ namespace djack.RogueSurvivor.Data
 
     public Inventory? Inventory { get { return m_Inventory; } }
 
-    public int HitPoints {
-      get { return m_HitPoints; }
-      set { m_HitPoints = value; }
-    }
-
+    public int HitPoints { get { return m_HitPoints; } }
     public int PreviousHitPoints { get { return m_previousHitPoints; } }
     public int StaminaPoints { get { return m_StaminaPoints; } }
 
@@ -2998,6 +2994,19 @@ namespace djack.RogueSurvivor.Data
       }
       if (IsSleeping) game.DoWakeUp(this);
       return RawDamage(dmg);
+    }
+
+    public void RevivedBy(Actor medic)
+    {
+#if IRRATIONAL_CAUTION
+        if (!IsDead) throw new InvalidOperationException("can only revive the dead");
+        if (0 >= medic.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) throw new InvalidOperationException("unqualified medic");
+#endif
+        IsDead = false;
+        m_HitPoints = 5 + medic.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
+        m_Doll.RemoveDecoration(GameImages.BLOODIED);
+        Activity = Activity.IDLE;
+        m_TargetActor = null;
     }
 
     // alpha10: boring items moved to ItemEntertaimment from Actor

@@ -4138,11 +4138,7 @@ namespace djack.RogueSurvivor.Engine
       inv.Consume(firstMatching);
       var rules = Rules.Get;
       if (rules.RollChance(actor.ReviveChance(corpse))) {
-          revive.IsDead = false;
-          revive.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
-          revive.Doll.RemoveDecoration(GameImages.BLOODIED);
-          revive.Activity = djack.RogueSurvivor.Data.Activity.IDLE;
-          revive.TargetActor = null;
+          revive.RevivedBy(actor);
           map.Remove(corpse);
           map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
           if (player) AddMessage(MakeMessage(actor, VERB_REVIVE.Conjugate(actor), revive));

@@ -772,11 +772,6 @@ namespace djack.RogueSurvivor.Engine
       return INFECTION_EFFECT_TRIGGER_CHANCE_1000 + infectionPercent / 5;
     }
 
-    public static int CorpseReviveHPs(Actor actor, Corpse corpse)
-    {
-      return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
-    }
-
     public bool CheckTrapEscapeBreaks(ItemTrap trap, Actor a)
     {
       return RollChance(trap.Model.BreakChanceWhenEscape);
