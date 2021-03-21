@@ -240,8 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorHangAroundActor: "+(tmpAction?.ToString() ?? "null"));
 #endif
         if (null != tmpAction) {
-          m_Actor.Activity = Activity.FOLLOWING;
-          m_Actor.TargetActor = m_Actor.Leader;
+          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

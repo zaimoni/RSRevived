@@ -1847,10 +1847,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
         return tmpAction;
       } finally {
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = actor;
-        }
+        if (null != tmpAction) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
       }
     }
 
@@ -3433,10 +3430,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (o_oai.IsFocused) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.
-        RogueGame.DoSay(m_Actor, near.Value, String.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);
-
-        m_Actor.Activity = Activity.FOLLOWING;
-        m_Actor.TargetActor = near.Value;
+        RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+        m_Actor.TargetedActivity(Activity.FOLLOWING, near.Value);
 
         // install trading objectives -- hints to target where to go
         var my_trading = new Trade(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, near.Value);

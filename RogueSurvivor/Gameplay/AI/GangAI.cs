@@ -189,8 +189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Actor target = victimize.Percepted as Actor;
             Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
             game.DoMakeAggression(m_Actor, target);
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = target;
+            m_Actor.TargetedActivity(Activity.CHASING, target);
             return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER); // takes turn for game balance
           }
         }
@@ -202,8 +201,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
-          m_Actor.Activity = Activity.FOLLOWING;
-          m_Actor.TargetActor = m_Actor.Leader;
+          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

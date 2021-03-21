@@ -1317,8 +1317,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
        // fire!
-       m_Actor.Activity = Activity.FIGHTING;
-       m_Actor.TargetActor = target;
+       m_Actor.TargetedActivity(Activity.FIGHTING, target);
        return new ActionRangedAttack(m_Actor, target, fireMode);
     }
 #nullable restore

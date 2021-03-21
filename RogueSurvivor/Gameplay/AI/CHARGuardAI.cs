@@ -200,8 +200,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Aggress(a);
           }
           // XXX should have some reaction from witnesses that weren't aggressed
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = target;
+          m_Actor.TargetedActivity(Activity.FIGHTING, target);
           // players are special: they get to react to being aggressed
           return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
         }
@@ -234,8 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
-          m_Actor.Activity = Activity.FOLLOWING;
-          m_Actor.TargetActor = m_Actor.Leader;
+          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

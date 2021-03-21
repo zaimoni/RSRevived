@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 #endif
 
-        static public void GiveNameToActor(DiceRoller roller, Actor actor, string prefix=null)
+    static public void GiveNameToActor(DiceRoller roller, Actor actor, string? prefix=null)
     {
       if (actor.Model.DollBody.IsMale)
         GiveNameToActor(roller, actor, MALE_FIRST_NAMES, LAST_NAMES, prefix);
@@ -374,7 +374,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         GiveNameToActor(roller, actor, FEMALE_FIRST_NAMES, LAST_NAMES, prefix);
     }
 
-    static protected void GiveNameToActor(DiceRoller roller, Actor actor, string[] firstNames, string[] lastNames, string prefix)
+    static protected void GiveNameToActor(DiceRoller roller, Actor actor, string[] firstNames, string[] lastNames, string? prefix)
     {
       actor.IsProperName = true;
       actor.Name = roller.Choose(firstNames) + " " + roller.Choose(lastNames);

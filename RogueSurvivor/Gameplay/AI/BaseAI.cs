@@ -403,8 +403,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (var percept in perceptList) {
         var tmp = BehaviorStupidBumpToward(percept.Location, true, true);
         if (null != tmp) {
-          m_Actor.Activity = Activity.CHASING;
-          m_Actor.TargetActor = percept.Percepted;
+          m_Actor.TargetedActivity(Activity.CHASING, percept.Percepted);
           return tmp;
         }
       }
@@ -698,13 +697,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
         return tmpAction;
-      } catch(System.Exception) {
+      } catch(Exception) {
         throw;
       } finally {
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = actor;
-        }
+        if (null != tmpAction) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
       }
     }
 

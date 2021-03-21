@@ -95,8 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (percept != null) {
           tmpAction = BehaviorStupidBumpToward(RandomPositionNear(rules, percept.Location, 3), true, true);
           if (null != tmpAction) {
-            m_Actor.Activity = Activity.FOLLOWING;
-            m_Actor.TargetActor = percept.Percepted as Actor;
+            m_Actor.TargetedActivity(Activity.FOLLOWING, percept.Percepted as Actor);
             return tmpAction;
           }
         }

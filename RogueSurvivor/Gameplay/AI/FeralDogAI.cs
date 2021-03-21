@@ -66,8 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
           if (null != tmpAction) {
             RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = targetActor;
+            m_Actor.TargetedActivity(Activity.FIGHTING, targetActor);
             return tmpAction;
           }
         }
@@ -103,8 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
           m_Actor.Walk();
-          m_Actor.Activity = Activity.FOLLOWING;
-          m_Actor.TargetActor = m_Actor.Leader;
+          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
           return tmpAction;
         }
       }

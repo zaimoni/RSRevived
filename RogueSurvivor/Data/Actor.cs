@@ -1700,6 +1700,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void TargetedActivity(Activity what, Actor whom)
+    {
+#if IRRATIONAL_CAUTION
+      if (Activity.CHASING != what && Activity.FIGHTING != what && Activity.FOLLOWING != what) throw new InvalidOperationException("untargetable activity");
+#endif
+      Activity = what;
+      m_TargetActor = whom;
+    }
+
     private List<Point>? FastestStepTo(Map m,Point src,Point dest)
     {
       int dist = Rules.GridDistance(in src,in dest);

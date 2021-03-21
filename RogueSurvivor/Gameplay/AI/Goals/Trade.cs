@@ -97,15 +97,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var find_visible = find_us.Where(loc => oai.CanSee(loc));
             var act = oai.BehaviorHeadFor(find_visible, false, false);
             if (null != act) {
-                m_Actor.Activity = Activity.FOLLOWING;
-                m_Actor.TargetActor = Rules.Get.DiceRoller.Choose(find_visible).Actor;   // XXX possibly misleading
+                m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(find_visible).Actor); // XXX possibly misleading
                 ret = act;
                 return true;
             }
             act = oai.BehaviorPathTo(new HashSet<Location>(find_us));
             if (null != act) {
-                m_Actor.Activity = Activity.FOLLOWING;
-                m_Actor.TargetActor = Rules.Get.DiceRoller.Choose(_whom);   // XXX possibly misleading
+                m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(_whom)); // XXX possibly misleading
                 ret = act;
                 return true;
             }
