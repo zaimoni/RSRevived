@@ -11311,21 +11311,21 @@ namespace djack.RogueSurvivor.Engine
       if (!Player.IsSleeping) {
         // if we see an ally, we should be able to "read off body language" who they are aiming at 2020-09-11 zaimoni
         var friends = Player.Controller.friends_in_FOV;
-        if (null != friends) foreach(var fr in friends) {
-          if (fr.Value.IsSleeping) continue;
-          if (!(fr.Value.Controller is ObjectiveAI oai)) continue;
+        if (null != friends) foreach(var fr in friends.Values) {
+          if (fr.IsSleeping) continue;
+          if (!(fr.Controller is ObjectiveAI oai)) continue;
           var rw = oai.GetBestRangedWeaponWithAmmo();
           int detection_range = (null != rw ? rw.Model.Attack.Range : 1);
-          var fr_enemies = fr.Value.Controller.enemies_in_FOV;
+          var fr_enemies = fr.Controller.enemies_in_FOV;
           if (null == fr_enemies) continue;
-          if (1 == detection_range && null != fr.Value.Inventory?.GetFirst(GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
-          foreach(var en in fr_enemies) {
-            if (detection_range < Rules.InteractionDistance(fr.Value.Location, en.Value.Location)) continue;
-            if (en.Value.IsDead) continue;
+          if (1 == detection_range && null != fr.Inventory?.GetFirst(GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
+          foreach(var en in fr_enemies.Values) {
+            if (detection_range < Rules.InteractionDistance(fr.Location, en.Location)) continue;
+            if (en.IsDead) continue;
             // \todo more relevant icons (likely want CGI generation)
-            if (en.Value.IsFaction(GameFactions.IDs.TheUndeads)) DrawDetected(en.Value, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
+            if (en.IsFaction(GameFactions.IDs.TheUndeads)) DrawDetected(en, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
             else { // \todo respond to viewer's own faction; definitely "wrong" for blackops to have out-of-sight enemies labeled as blackops
-              DrawDetected(en.Value, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
+              DrawDetected(en, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION, view);
             }
           }
         }
@@ -12965,7 +12965,7 @@ retry:
       }
       // XXX \todo should be for all actors
       void update_sightings(Dictionary<Location,Actor> src) {
-        if (null != src) foreach (var x in src) player.ActorScoring.AddSighting(x.Value.Model.ID);
+        if (null != src) foreach (var x in src.Values) player.ActorScoring.AddSighting(x.Model.ID);
       }
       update_sightings(player.Controller.friends_in_FOV);
       update_sightings(player.Controller.enemies_in_FOV);
@@ -13161,8 +13161,8 @@ retry:
           var inventory = actor.Inventory;
           if (null == inventory || inventory.IsEmpty) return null;
           Item it = rules.DiceRoller.Choose(inventory.Items);
-          ActionUseItem actionUseItem = new ActionUseItem(actor, it);
-          if (actionUseItem.IsPerformable()) return actionUseItem;
+          var use = new ActionUseItem(actor, it);
+          if (use.IsPerformable()) return use;
           if (it.IsEquipped) {
             it.UnequippedBy(actor);
             return new ActionWait(actor);   // historically, it took 2 insane actions to drop an equipped body armor
@@ -13171,15 +13171,15 @@ retry:
         case 4:
           var f_in_fov = actor.Controller.friends_in_FOV;
           if (null == f_in_fov) return null;
-          foreach(var x in f_in_fov) {
+          foreach(var renege in f_in_fov.Values) {
             if (!rules.RollChance(50)) continue;
             var leader = actor.LiveLeader;
             if (null != leader) {
               leader.RemoveFollower(actor);
               actor.TrustInLeader = 0;
             }
-            DoMakeAggression(actor, x.Value);
-            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
+            DoMakeAggression(actor, renege);
+            return new ActionSay(actor, renege, "YOU ARE ONE OF THEM!!", Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
           }
           return null;
         default: return null;

@@ -1795,14 +1795,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (null == friends) return null;
 	  var tmp = new HashSet<Point>();
       short range;
-	  foreach(var f in friends) {
-        if (!f.Value.HasEquipedRangedWeapon()) continue;
-        range = f.Value.CurrentRangedAttack.Range;
-        var f_loc = f.Value.Location;
-	    foreach(var e in enemies) {
-          var e_loc = e.Value.Location;
+	  foreach(var f in friends.Values) {
+        if (!f.HasEquipedRangedWeapon()) continue;
+        range = f.CurrentRangedAttack.Range;
+        var f_loc = f.Location;
+	    foreach(var e in enemies.Values) {
+          var e_loc = e.Location;
 		  if (range < Rules.GridDistance(f_loc, e_loc)) continue;
-		  List<Point> line = new List<Point>();
+		  List<Point> line = new();
 	      if (LOS.CanTraceViewLine(f_loc, e_loc, range, line)) tmp.UnionWith(line);
 		}
 	  }
@@ -2788,10 +2788,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != friends) {
          ItemRangedWeapon rw;
          Location[] line;
-         foreach(var x in friends) {
-           if (null == (rw = (x.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo())) continue;
-           foreach(var y in fear) {
-             if (null == (line = LOS.IdealFireLine(x.Value.Location, y.Value.Location, rw.Model.Attack.Range))) continue;
+         foreach(var ally in friends.Values) {
+           if (null == (rw = (ally.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo())) continue;
+           foreach(var en in fear.Values) {
+             if (null == (line = LOS.IdealFireLine(ally.Location, en.Location, rw.Model.Attack.Range))) continue;
              foreach(var pt in line) {
                if (fire_lines.TryGetValue(pt,out var cache)) cache.Add(line);
                else fire_lines.Add(pt,new List<Location[]> { line });
@@ -5248,8 +5248,8 @@ restart_chokepoints:
       }
       // XXX should be inverse-visibility
       if (null!= friends_in_FOV) {
-        foreach(var x in friends_in_FOV) {
-          if (!responders.Contains(x.Value) && is_available(x.Value, ReactionCode.ENEMY)) responders.Add(x.Value);
+        foreach(var ally in friends_in_FOV.Values) {
+          if (!responders.Contains(ally) && is_available(ally, ReactionCode.ENEMY)) responders.Add(ally);
         }
       }
       // \todo recruit allies by radio if needed
@@ -5270,8 +5270,14 @@ restart_chokepoints:
       var observers = new Dictionary<Actor, ThreatTracking>();
       var friends = friends_in_FOV;
       if (null != friends) {
-        foreach(var pos_fr in friends) {
+/*        foreach(var pos_fr in friends) {
           Actor friend = pos_fr.Value;
+          ThreatTracking ally_threat = friend.Threats;
+          if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+          if (!InCommunicationWith(friend)) continue;
+          observers[friend] = ally_threat;
+        } */
+        foreach(var friend in friends.Values) {
           ThreatTracking ally_threat = friend.Threats;
           if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
           if (!InCommunicationWith(friend)) continue;
@@ -5526,19 +5532,19 @@ restart_chokepoints:
         var TradeableItems = GetTradeableItems();
         if (null == TradeableItems || 0 >= TradeableItems.Count) return false;
 
-        foreach(var x in friends_in_FOV) {
-          if (x.Value.IsDead) continue;
-          if (x.Value.IsPlayer) continue;
-          if (this is OrderableAI ai && ai.IsActorTabooTrade(x.Value)) continue;
-          if (!m_Actor.CanTradeWith(x.Value)) continue;
-          if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Value.Location)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+        foreach(var ally in friends_in_FOV.Values) {
+          if (ally.IsDead) continue;
+          if (ally.IsPlayer) continue;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(ally)) continue;
+          if (!m_Actor.CanTradeWith(ally)) continue;
+          if (null==m_Actor.MinStepPathTo(m_Actor.Location, ally.Location)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
-            var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
+            var other_TradeableItems = (ally.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
           }
-          if (!(x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
-          return HaveTradeOptions(x.Value);
+          if (!(ally.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
+          return HaveTradeOptions(ally);
         }
         return false;
     }
