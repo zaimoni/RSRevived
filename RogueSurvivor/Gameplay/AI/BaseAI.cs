@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T>? src)
     {
-        return src?.Minimize(x => Rules.InteractionDistance(m_Actor.Location, x.Key)) ?? default;
+      return src?.Minimize(x => Rules.InteractionDistance(m_Actor.Location, x.Key)) ?? default;
     }
 
     protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)

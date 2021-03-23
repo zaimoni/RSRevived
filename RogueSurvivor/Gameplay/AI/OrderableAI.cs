@@ -101,8 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
             ret = null;
             _isExpired = true;
-            var test = m_Actor.Controller.enemies_in_FOV;
-            if (null == test) {
+            if (null == m_Actor.Controller.enemies_in_FOV) {
                 if (null != Intent_disengaged && Intent_disengaged.IsPerformable()) ret = Intent_disengaged;  // \todo may need to call auxilliary function instead
             } else {
                 if (null != Intent_engaged && Intent_engaged.IsPerformable()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead

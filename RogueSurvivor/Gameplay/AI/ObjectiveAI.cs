@@ -1728,19 +1728,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tainted.IntersectWith(new_los);
         if (0>=tainted.Count) return dests;
         var taint_exposed = new Dictionary<Location,int>();
-        foreach(var loc in dests) {
-          var test = m_Actor.Location.Map.Denormalize(loc.Key);
+        foreach(var loc in dests.Keys) {
+          var test = m_Actor.Location.Map.Denormalize(loc);
           if (null == test) {   // assume same-district exit use...don't really want to do this when other targets are close
-            taint_exposed[loc.Key] = 0;
+            taint_exposed[loc] = 0;
             continue;
           }
           if (!hypothetical_los.TryGetValue(test.Value.Position,out var src)) {
-            taint_exposed[loc.Key] = 0;
+            taint_exposed[loc] = 0;
             continue;
           }
           HashSet<Point> tmp2 = new HashSet<Point>(src);
           tmp2.IntersectWith(tainted);
-          taint_exposed[loc.Key] = tmp2.Count;
+          taint_exposed[loc] = tmp2.Count;
         }
         int max_taint_exposed = dests.Max(pt=>taint_exposed[pt.Key]);
         dests.OnlyIf(loc=>taint_exposed[loc]==max_taint_exposed);
@@ -3956,8 +3956,8 @@ Restart:
       Rectangle district_span = my_map.NavigationScope;
 
       Map g_map;
-      foreach(var goal in goals) {
-        required_0.Add(g_map = goal.Key.Map);
+      foreach(var goal in goals.Keys) {
+        required_0.Add(g_map = goal.Map);
         district_span = Rectangle.Union(district_span, g_map.NavigationScope);
       }
 
