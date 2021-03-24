@@ -2501,16 +2501,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null!=inv.GetBestDestackable(GameItems.PILLS_SLP);
       }
 
-      var stacks = GetInterestingInventoryStacks(has_SLP_relevant);
-      if (null != stacks) {
-          var nav = BehaviorHeadForBestStack(stacks);
-          if (null != nav) return nav;
-      }
+      var tmpAction = BehaviorFindStack(has_SLP_relevant);
+      if (null != tmpAction) return tmpAction;
 
       // try to resolve sleep-disruptive sanity without pathing
       if (3<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is need or higher (possible CPU hit from double-checking for want later)
-        var restore = BehaviorUseEntertainment();
-        if (null != restore)  return restore;
+        tmpAction = BehaviorUseEntertainment();
+        if (null != tmpAction)  return tmpAction;
       }
 
       var item_memory = m_Actor.Controller.ItemMemory;
@@ -2547,7 +2544,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         })) return BehaviorNavigateToSleep(item_memory);
       }
 
-      ActorAction tmpAction = null;
+//    ActorAction tmpAction = null;
       Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches, out Dictionary<Point,int> doors);
       if (0 >= sleep_locs.Count) {
          // \todo we probably should be using full pathing to the nearest valid location anyway
@@ -3231,6 +3228,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
+    private ActorAction? BehaviorFindStack(Predicate<Inventory> want_now) {
+        var stacks = GetInterestingInventoryStacks(want_now);
+        if (null != stacks) {
+            var nav = BehaviorHeadForBestStack(stacks);
+            if (null != nav) return nav;
+        }
+        return null;
+    }
+
     private ActorAction BehaviorRequestCriticalFromGroup()
     {
         var clan = m_Actor.ChainOfCommand;
@@ -3466,16 +3472,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
-      ActorAction tmp = null;
-      var interestingStacks = GetInterestingInventoryStacks(TRUE);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, interestingStacks?.to_s() ?? "null");
-#endif
-      if (null != interestingStacks) {
-        tmp = BehaviorHeadForBestStack(interestingStacks);
-        if (null != tmp) return tmp;
-      }
-
+      var tmp = BehaviorFindStack(TRUE);
+      if (null != tmp) return tmp;
       tmp = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
       if (null != tmp) return tmp;
       tmp = BehaviorTrading();
