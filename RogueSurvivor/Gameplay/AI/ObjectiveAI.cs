@@ -4122,9 +4122,11 @@ retry:
           _exit_map = use_exit;
           continue;
         }
-        var denorm = m_Actor.Location.Map.Denormalize(x.Key);
-        if (null != denorm && null != approach && approach.TryGetValue(denorm.Value.Position, out var cost)) {
-          (ok_path ??= new Dictionary<Location, KeyValuePair<ActorAction, int>>(_legal_path.Count)).Add(x.Key, new KeyValuePair<ActorAction, int>(x.Value, cost));
+        if (null != approach) {
+          var denorm = m_Actor.Location.Map.Denormalize(x.Key);
+          if (null != denorm && approach.TryGetValue(denorm.Value.Position, out var cost)) {
+            (ok_path ??= new(_legal_path.Count)).Add(x.Key, new(x.Value, cost));
+          }
         }
       }
       // \todo if _exit_map is null, may want to get more clever re push/pull
