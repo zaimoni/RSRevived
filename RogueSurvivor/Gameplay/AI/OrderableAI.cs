@@ -2544,7 +2544,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         })) return BehaviorNavigateToSleep(item_memory);
       }
 
-//    ActorAction tmpAction = null;
       Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches, out Dictionary<Point,int> doors);
       if (0 >= sleep_locs.Count) {
          // \todo we probably should be using full pathing to the nearest valid location anyway
@@ -2558,7 +2557,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var in_bounds = new HashSet<Point>(sleep_locs.Keys);
 
         foreach(var pos_type in doors) {
-          foreach(Point pt in in_bounds.ToList()) {
+          foreach(var pt in in_bounds.ToArray()) {
             // beyond-X
             switch(pos_type.Value)
             {
