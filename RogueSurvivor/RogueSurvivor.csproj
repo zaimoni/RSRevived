@@ -277,6 +277,7 @@
     <Compile Include="Properties\Resources.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Zaimoni\Collections\Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Cache.cs" />
     <Compile Include="Zaimoni\Data\KVpair.cs" />

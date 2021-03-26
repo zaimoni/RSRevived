@@ -7,6 +7,7 @@
 
 // #define AUDIT_ACTOR_MOVEMENT
 // #define AUDIT_ITEM_INVARIANTS
+// #define BOOTSTRAP_Z_DICTIONARY
 
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,9 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
     private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
+#if BOOTSTRAP_Z_DICTIONARY
+    [NonSerialized] private readonly Zaimoni.Collections.Dictionary<Point, MapObject> m_MapObjectsByPosition_alt = new(5);
+#endif
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
@@ -260,7 +264,28 @@ namespace djack.RogueSurvivor.Data
     public void RepairLoad()
     {
       foreach(var a in m_ActorsList) a.RepairLoad();
-      foreach(var x in m_MapObjectsByPosition) x.Value.RepairLoad(this, x.Key);
+#if BOOTSTRAP_Z_DICTIONARY
+      var ub = 0;
+#endif
+      foreach(var x in m_MapObjectsByPosition) {
+#if BOOTSTRAP_Z_DICTIONARY
+        var old_count = m_MapObjectsByPosition_alt.Count;
+#endif
+        x.Value.RepairLoad(this, x.Key);
+#if BOOTSTRAP_Z_DICTIONARY
+        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
+        if (++ub != m_MapObjectsByPosition_alt.Count) throw new InvalidOperationException("add failed: "+x.Key.to_s()+", "+x.Value.ToString()+" @ "+ub.ToString()+", "+old_count.ToString()+", "+ m_MapObjectsByPosition_alt.Count.ToString());
+#endif
+      }
+#if BOOTSTRAP_Z_DICTIONARY
+      var src_ub = m_MapObjectsByPosition.Count;
+      if (src_ub != m_MapObjectsByPosition_alt.Count) throw new InvalidOperationException("duplication failed");
+      foreach(var x in m_MapObjectsByPosition) {
+        if (!m_MapObjectsByPosition_alt.ContainsKey(x.Key)) throw new InvalidOperationException("duplication failed #2: " + x.Key.to_s()+"; "+src_ub.ToString());
+        if (!m_MapObjectsByPosition_alt.TryGetValue(x.Key, out var cache)) throw new InvalidOperationException("duplication failed #3: " + x.Key.to_s());
+        if (x.Value != cache) throw new InvalidOperationException("duplication failed #4: " + x.Value.ToString()+", "+(cache?.ToString() ?? "null"));
+      }
+#endif
     }
 
     private void OnConstructed(ref int hash)
