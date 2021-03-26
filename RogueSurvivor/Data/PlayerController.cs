@@ -246,10 +246,10 @@ namespace djack.RogueSurvivor.Data
             if (null != threat) {
                 var could_find = threat.ThreatAt(scan, a => a.Model.Abilities.IsUndead);
                 var reject = new List<Actor>();
-                foreach (var x in could_find) {
-                    if (scan.ContainsExt(x.Key.Location)) {
-                        threat.Sighted(x.Key, x.Key.Location);
-                        reject.Add(x.Key);
+                foreach (var x in could_find.Keys) {
+                    if (scan.ContainsExt(x.Location)) {
+                        threat.Sighted(x, x.Location);
+                        reject.Add(x);
                     }
                 }
                 foreach (var actor in reject) could_find.Remove(actor);

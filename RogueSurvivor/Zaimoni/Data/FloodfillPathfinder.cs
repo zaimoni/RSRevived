@@ -458,7 +458,7 @@ namespace Zaimoni.Data
             return (_map.TryGetValue(pos,out int ret)) ? ret: int.MaxValue;
         }
 
-        public Dictionary<T, int> Approach(T current_pos) {
+        public Dictionary<T, int>? Approach(T current_pos) {
             if (!_map.TryGetValue(current_pos,out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             if (0 == current_cost) return null;   // already at a goal
             Dictionary<T, int> tmp = _inverse(current_pos);

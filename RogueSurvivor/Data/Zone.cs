@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Data
       var home_catalog = m.FilterCorpses(ok);
       if (null != home_catalog) {
         home_catalog.OnlyIf(pt => Contains(new Location(m, pt)));
-        if (0 >= home_catalog.Count) home_catalog = null;
+        if (0 >= home_catalog.Count) return null;
       }
 //    if (null != zones) { ... };
       return home_catalog;

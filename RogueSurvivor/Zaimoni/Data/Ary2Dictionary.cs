@@ -53,12 +53,12 @@ namespace Zaimoni.Data
             lock (_first_second_dict) { return _first_second_dict.TryGetValue(key, out var src) ? src.Value : null; }
         }
 
-        public Dictionary<Key1, Range> WhereIs(Key2 key)
+        public Dictionary<Key1, Range>? WhereIs(Key2 key)
         {
             lock (_second_first_dict) { return (_second_first_dict.TryGetValue(key, out var src)) ? new Dictionary<Key1, Range>(src) : null; }
         }
 
-        public Dictionary<Key1, Range> WhereIs(Key2 key, Predicate<Key1> test)
+        public Dictionary<Key1, Range>? WhereIs(Key2 key, Predicate<Key1> test)
         {   // copy constructor failed by race condition: need to use a multi-threaded dictionary
             lock (_second_first_dict) {
                 if (!_second_first_dict.TryGetValue(key, out var src)) return null;

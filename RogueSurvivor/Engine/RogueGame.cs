@@ -3632,13 +3632,13 @@ namespace djack.RogueSurvivor.Engine
 
         HashSet<Location> retrofit() {
            var ret = new HashSet<Location>();
-           foreach(var x in catalog) {
-             var obj = x.Key.MapObject;
+           foreach(var x in catalog.Keys) {
+             var obj = x.MapObject;
              if (null==obj || !obj.IsContainer) {
-               if (Player.CanEnter(x.Key)) ret.Add(x.Key);
+               if (Player.CanEnter(x)) ret.Add(x);
              } else {
                foreach(var d in Direction.COMPASS) {
-                 var test = x.Key+d;
+                 var test = x+d;
                  if (Player.CanEnter(test)) ret.Add(test);
                }
              }

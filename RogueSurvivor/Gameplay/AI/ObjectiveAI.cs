@@ -1516,14 +1516,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Dictionary<Point, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
     {
       PlannedMoves.Clear();
-      Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
-      if (null == dest) return dest;
+      var dest = navigate.Approach(m_Actor.Location.Position);
+      if (null == dest) return null;
       PlannedMoves[m_Actor.Location.Position] = dest;
       foreach(Point pt in dest.Keys) {
         if (0>navigate.Cost(pt)) continue;
         PlannedMoves[pt] = navigate.Approach(pt);
       }
-      return new Dictionary<Point,int>(PlannedMoves[m_Actor.Location.Position]);
+      return new Dictionary<Point,int>(dest);
     }
 
     private static Dictionary<Point, int> DowngradeApproach(Dictionary<Location,int> src)
@@ -2773,7 +2773,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-    public Dictionary<Location, ActionMoveDelta> PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Location> range = null, IEnumerable<Location> range2 = null)
+    public Dictionary<Location, ActionMoveDelta>? PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Location>? range = null, IEnumerable<Location>? range2 = null)
     {
       var move_plans = new Dictionary<Location,KeyValuePair<int,Dictionary<Location,ActionMoveDelta>>>();
       var inverted_move_plans = new Dictionary<Location, Dictionary<Location, ActionMoveDelta>>();
@@ -2863,7 +2863,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endif
 
-      Dictionary<Location, ActionMoveDelta> decide() {
+      Dictionary<Location, ActionMoveDelta>? decide() {
         if (!move_plans.TryGetValue(m_Actor.Location,out var test)) return null;    // invalid
         if (null == test.Value || 0 >= test.Value.Count) return null;   // invalid
         return test.Value;
@@ -2967,9 +2967,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return decide();
     }
 
-    public Dictionary<Location, ActionMoveDelta> PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Point> range = null, IEnumerable<Point> range2 = null)
+#nullable enable
+    public Dictionary<Location, ActionMoveDelta>? PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Point>? range = null, IEnumerable<Point>? range2 = null)
     {
-      List<Location> upgrade(IEnumerable<Point> src) {
+      List<Location>? upgrade(IEnumerable<Point> src) {
         var ret = new List<Location>();
         var map = m_Actor.Location.Map;
         foreach(var pt in src) {
@@ -2981,6 +2982,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       return PlanWalkAwayFrom(fear, (null != range) ? upgrade(range) : null, (null != range2) ? upgrade(range2) : null);
     }
+#nullable restore
 
     public void ExecuteActionChain(List<ActorAction> actions)
     {
@@ -7263,12 +7265,12 @@ restart_chokepoints:
       }
       return null;
     }
-#nullable restore
 
     public Dictionary<int,Attack>? GetBestRangedAttacks(Actor target)
     {
-      if (m_Actor?.Inventory.IsEmpty ?? true) return null;  // PC zombies won't have inventory
-      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo|| null != m_Actor.Inventory.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
+      var inv = m_Actor.Inventory;
+      if (null == inv || inv.IsEmpty) return null;  // PC zombies won't have inventory
+      var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo|| null != inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
       if (null == rws) return null;
       var ret = new Dictionary<int, Attack>();
       foreach(var w in rws) {
@@ -7283,7 +7285,6 @@ restart_chokepoints:
       return 0 < ret.Count ? ret : null;
     }
 
-#nullable enable
     public void DeBarricade(Engine.MapObjects.DoorWindow doorWindow)
     {
       void install_break(ObjectiveAI ai) {

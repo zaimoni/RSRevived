@@ -100,7 +100,8 @@ namespace djack.RogueSurvivor.Data
 		  }
         }
 
-		public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone)
+#if DEAD_FUNC
+        public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone)
 		{
           var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
           var canon = zone.GetCanonical;
@@ -111,8 +112,9 @@ namespace djack.RogueSurvivor.Data
           }
           return catalog;
 		}
+#endif
 
-		public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone, Func<Actor, bool> pred)
+        public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone, Func<Actor, bool> pred)
 		{
           var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
           var canon = zone.GetCanonical;
@@ -1082,7 +1084,6 @@ namespace djack.RogueSurvivor.Data
             }
             return ret;
        }
-#nullable restore
 
        public List<Dictionary<Location, T>> Within(IEnumerable<ZoneLoc> src)
        {
@@ -1104,5 +1105,6 @@ namespace djack.RogueSurvivor.Data
 
             return goals;
        }
+#nullable restore
     }
 }

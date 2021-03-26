@@ -534,8 +534,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      var rules = Rules.Get;
-      return ActionPush.Random(m_Actor, rules.DiceRoller.Choose(objs).Value);
+      return ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
     }
 #nullable restore
 

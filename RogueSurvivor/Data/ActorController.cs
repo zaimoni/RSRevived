@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new HashSet<Point>();
       bool IsInHere(Location loc) { return loc.Map == map; }
       foreach(Gameplay.GameItems.IDs it in src) {
-        Dictionary<Location, int> tmp = it_memory.WhereIs(it, IsInHere);
+        var tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
         if (0 >= tmp.Count) continue;

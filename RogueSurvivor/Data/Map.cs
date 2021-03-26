@@ -622,7 +622,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool HasExitAt(in Point pos) { return m_Exits.ContainsKey(pos); }
+    public bool HasExitAt(in Point pos) => m_Exits.ContainsKey(pos);
 
     public bool HasExitAtExt(Point pos)
     {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
@@ -631,11 +631,7 @@ namespace djack.RogueSurvivor.Data
       return null != test && test.Value.Map.HasExitAt(test.Value.Position);
     }
 
-    public Exit? GetExitAt(Point pos)
-    {
-      if (m_Exits.TryGetValue(pos, out var exit)) return exit;
-      return null;
-    }
+    public Exit? GetExitAt(Point pos) => m_Exits.GetValueOrDefault(pos);
 
     public Dictionary<Location,Exit> GetExits(Predicate<Exit> test) {
       var ret = new Dictionary<Location, Exit>();

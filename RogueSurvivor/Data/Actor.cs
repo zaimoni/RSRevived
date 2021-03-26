@@ -1795,6 +1795,7 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+#if PROTOTYPE
     public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesTo(in Location dest) {
       var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
       if (CanEnter(dest)) {
@@ -1848,6 +1849,7 @@ namespace djack.RogueSurvivor.Data
       // tentatively not handling generators, etc. here
       return 0 < ret.Count ? ret : null;
     }
+#endif
 
     public Dictionary<Location,ActorAction>? OnePathRange(in Location loc)
     {
@@ -2056,14 +2058,14 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-    public bool CanBeShovedTo(Point toPos, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(new Location(Location.Map, toPos))); }
-    public bool CanBeShovedTo(Point toPos) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(new Location(Location.Map, toPos))); }
+    public bool CanBeShovedTo(Point toPos, out string reason) => string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(new Location(Location.Map, toPos)));
+    public bool CanBeShovedTo(Point toPos) => string.IsNullOrEmpty(ReasonCantBeShovedTo(new Location(Location.Map, toPos)));
 #if DEAD_FUNC
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
     public bool CanBeShovedTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(in to)); }
 #endif
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    public bool CanBeShovedTo(in Location to) { return string.IsNullOrEmpty(ReasonCantBeShovedTo(to)); }
+    public bool CanBeShovedTo(in Location to) => string.IsNullOrEmpty(ReasonCantBeShovedTo(to));
 
     public Dictionary<Location, Direction> ShoveDestinations {
       get {

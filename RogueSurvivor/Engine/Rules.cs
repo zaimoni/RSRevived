@@ -246,11 +246,11 @@ namespace djack.RogueSurvivor.Engine
         }
 #if B_MOVIE_MARTIAL_ARTS
         if (1<actors_in_way.Count) {
-          Actor target = null;
-          foreach(var pt_actor in actors_in_way) {
-            if (pt_actor.Value == actorAt) continue;
-            if (!actor.CanMeleeAttack(pt_actor.Value,out reason)) continue;
-            if (null == target || target.HitPoints>pt_actor.Value.HitPoints) target = pt_actor.Value;
+          Actor? target = null;
+          foreach(var pt_actor in actors_in_way.Values) {
+            if (pt_actor == actorAt) continue;
+            if (!actor.CanMeleeAttack(pt_actor, out reason)) continue;
+            if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
           }
           return (null!=target ? new ActionMeleeAttack(actor, target) : null);
         }
@@ -268,10 +268,10 @@ namespace djack.RogueSurvivor.Engine
         return new ActionChat(actor, actorAt);
 #if B_MOVIE_MARTIAL_ARTS
       } else if (0<actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
-        Actor target = null;
-        foreach(var pt_actor in actors_in_way) {
-          if (!actor.CanMeleeAttack(pt_actor.Value,out reason)) continue;
-          if (null == target || target.HitPoints>pt_actor.Value.HitPoints) target = pt_actor.Value;
+        Actor? target = null;
+        foreach(var pt_actor in actors_in_way.Values) {
+          if (!actor.CanMeleeAttack(pt_actor,out reason)) continue;
+          if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
         }
         return (null!=target ? new ActionMeleeAttack(actor, target) : null);
 #endif
@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(point)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, in point);
+      var actionMoveStep = new ActionMoveStep(actor, in point);
       if (actionMoveStep.IsLegal()) {
         reason = "";
         return actionMoveStep;
