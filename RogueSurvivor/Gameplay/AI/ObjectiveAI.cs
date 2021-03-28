@@ -3936,11 +3936,8 @@ Restart:
     {
       var map_goals = new Dictionary<Map, Dictionary<Point, int>>();
       foreach(var goal in goals) {
-        if (map_goals.TryGetValue(goal.Key.Map,out var cache)) {
-          cache[goal.Key.Position] = goal.Value;
-        } else {
-          map_goals.Add(goal.Key.Map, new Dictionary<Point, int>() { [goal.Key.Position] = goal.Value });
-        }
+        if (!map_goals.TryGetValue(goal.Key.Map, out var cache)) map_goals.Add(goal.Key.Map, cache = new());
+        cache[goal.Key.Position] = goal.Value;
       }
       return map_goals;
     }

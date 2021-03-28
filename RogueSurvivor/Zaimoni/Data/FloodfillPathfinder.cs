@@ -233,11 +233,9 @@ namespace Zaimoni.Data
                 if (null != _blacklist_fn && _blacklist_fn(x.Key)) continue;
                 bool has_prior_cost = _map.TryGetValue(x.Key, out int old_cost);
                 if (has_prior_cost && old_cost <= x.Value) continue;
-                bool old_key = _now.TryGetValue(x.Value, out var now);
-                if (!old_key) now = new HashSet<T>();
+                if (!_now.TryGetValue(x.Value, out var now)) _now.Add(x.Value, now = new());
                 _map[x.Key] = x.Value;
                 now.Add(x.Key);
-                if (!old_key) _now[x.Value] = now;
                 have_updated = true;
                 if (has_prior_cost) {
                     if (_now.TryGetValue(old_cost, out var elder)) {
@@ -256,8 +254,7 @@ namespace Zaimoni.Data
             IEnumerable<T> legal_goals = goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
             if (null != _blacklist_fn) legal_goals = legal_goals.Where(tmp => !_blacklist_fn(tmp));
             if (!legal_goals.Any()) return false; // not an error condition when merging in new goals into an existing map
-            bool old_key = _now.TryGetValue(0, out var now);
-            if (!old_key) now = new HashSet<T>();
+            if (!_now.TryGetValue(0, out var now)) _now.Add(0, now = new());
 #if OBSOLETE
             // 2019-01-06 the corner case this tries to micro-optimize for doesn't happen often enough
             foreach (T tmp in legal_goals) {
@@ -265,11 +262,9 @@ namespace Zaimoni.Data
                 _map[tmp] = 0;
                 now.Add(tmp);
             }
-            if (!old_key && 0<now.Count) _now[0] = now;
 #else
             foreach (T tmp in legal_goals) _map[tmp] = 0;
             now.UnionWith(legal_goals);
-            if (!old_key) _now[0] = now;
 #endif
             return true;
         }

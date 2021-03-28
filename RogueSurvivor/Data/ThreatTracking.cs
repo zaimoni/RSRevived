@@ -63,6 +63,7 @@ namespace djack.RogueSurvivor.Data
           return ret;
 		}
 
+#if DEAD_FUNC
         private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog)
         {
           Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
@@ -80,6 +81,7 @@ namespace djack.RogueSurvivor.Data
             }
 		  }
         }
+#endif
 
         private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog, Func<Actor, bool> pred)
         {
@@ -89,13 +91,8 @@ namespace djack.RogueSurvivor.Data
               if (!pred(x.Key)) continue;
               if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
               if (!cache.Any(ok)) continue;
-              if (catalog.TryGetValue(x.Key, out var cache2)) {
-                cache2.Add(zone.m, cache.Where(ok).ToArray());
-              } else {
-                catalog.Add(x.Key, new Dictionary<Map, Point[]> {
-                    [zone.m] = cache.Where(ok).ToArray()
-                });
-              }
+              if (!catalog.TryGetValue(x.Key, out var cache2)) catalog.Add(x.Key, cache2 = new());
+              cache2.Add(zone.m, cache.Where(ok).ToArray());
             }
 		  }
         }
