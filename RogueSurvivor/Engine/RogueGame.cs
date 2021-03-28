@@ -365,7 +365,6 @@ namespace djack.RogueSurvivor.Engine
 
 #if DEAD_FUNC
     public IRogueUI UI { get { return m_UI; } }
-    public GameItems GameItems { get { return m_GameItems; } }
 #endif
 
 #region Session save/load assistants
@@ -10905,13 +10904,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#if DEAD_FUNC
-    public void DrawTileRectangle(Point mapPosition, Color color)
-    {
-      m_UI.UI_DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
-    }
-#endif
-
     public void DrawMapObject(MapObject mapObj, GDI_Point screen, Tile tile, Color tint)    // tile is the one that the map object is on.
     {
       if (mapObj.IsMovable && tile.Model.IsWater) {
@@ -13406,8 +13398,7 @@ retry:
     static private void DoTurnAllGeneratorsOn(Map map, Actor victor)
     {
       foreach (var powGen in map.PowerGenerators.Get) {
-        if (powGen.IsOn) continue;
-        powGen.TogglePower(victor);
+        if (!powGen.IsOn) powGen.TogglePower(victor);
       }
     }
 
@@ -13424,22 +13415,8 @@ retry:
     static private bool AreLinkedByPhone(Actor speaker, Actor target)
     {
       if (speaker.Leader != target && target.Leader != speaker) return false;
-      ItemTracker itemTracker1 = speaker.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if (!itemTracker1?.CanTrackFollowersOrLeader ?? true) return false;
-      return target.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker itemTracker2 && itemTracker2.CanTrackFollowersOrLeader;
+      return speaker.HasActiveCellPhone && target.HasActiveCellPhone;
     }
-
-#if DEAD_FUNC
-    private List<Actor> ListWorldActors(Predicate<Actor> pred, RogueGame.MapListFlags flags)
-    {
-      List<Actor> actorList = new List<Actor>();
-      for (int index1 = 0; index1 < Session.Get.World.Size; ++index1) {
-        for (int index2 = 0; index2 < Session.Get.World.Size; ++index2)
-          actorList.AddRange(ListDistrictActors(Session.Get.World[index1, index2], flags, pred));
-      }
-      return actorList;
-    }
-#endif
 
 #nullable enable
     static private List<Actor> ListDistrictActors(District d, MapListFlags flags, Predicate<Actor> pred)
@@ -13608,29 +13585,6 @@ retry:
         ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y, new Color?());
       }
     }
-
-#if DEAD_FUNC
-    private class OverlayLine : Overlay   // dead class
-      {
-      public Point ScreenFrom { get; set; }
-
-      public Point ScreenTo { get; set; }
-
-      public Color Color { get; set; }
-
-      public OverlayLine(Point screenFrom, Color color, Point screenTo)
-      {
-                ScreenFrom = screenFrom;
-                ScreenTo = screenTo;
-                Color = color;
-      }
-
-      public override void Draw(IRogueUI ui)
-      {
-        ui.UI_DrawLine(Color, ScreenFrom.X, ScreenFrom.Y, ScreenTo.X, ScreenTo.Y);
-      }
-    }
-#endif
 
     // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
     public class OverlayRect : Overlay

@@ -3649,13 +3649,6 @@ restart:
       return numberedName;
     }
 
-#if DEAD_FUNC
-    public Actor CreateNewNakedHuman(int spawnTime)
-    {
-      return (m_Rules.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
-    }
-#endif
-
     public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
       Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);

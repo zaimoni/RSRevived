@@ -358,14 +358,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 #nullable restore
 
-#if DEAD_FUNC
-    static protected string RandomSkin(DiceRoller roller, bool isMale)
-    {
-      string[] strArray = isMale ? MALE_SKINS : BaseMapGenerator.FEMALE_SKINS;
-      return strArray[roller.Roll(0, strArray.Length)];
-    }
-#endif
-
     static public void GiveNameToActor(DiceRoller roller, Actor actor, string? prefix=null)
     {
       if (actor.Model.DollBody.IsMale)

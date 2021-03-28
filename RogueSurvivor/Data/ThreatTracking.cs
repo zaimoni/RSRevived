@@ -63,26 +63,6 @@ namespace djack.RogueSurvivor.Data
           return ret;
 		}
 
-#if DEAD_FUNC
-        private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog)
-        {
-          Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
-		  lock(_threats) {
-            foreach(var x in _threats) {
-              if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
-              if (!cache.Any(ok)) continue;
-              if (catalog.TryGetValue(x.Key, out var cache2)) {
-                cache2.Add(zone.m, cache.Where(ok).ToArray());
-              } else {
-                catalog.Add(x.Key, new Dictionary<Map, Point[]> {
-                    [zone.m] = cache.Where(ok).ToArray()
-                });
-              }
-            }
-		  }
-        }
-#endif
-
         private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog, Func<Actor, bool> pred)
         {
           Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
@@ -96,20 +76,6 @@ namespace djack.RogueSurvivor.Data
             }
 		  }
         }
-
-#if DEAD_FUNC
-        public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone)
-		{
-          var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
-          var canon = zone.GetCanonical;
-          if (null == canon) {
-            threatAt(zone, catalog);
-          } else {
-            foreach(var z in canon) threatAt(z, catalog);
-          }
-          return catalog;
-		}
-#endif
 
         public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone, Func<Actor, bool> pred)
 		{
@@ -725,14 +691,6 @@ namespace djack.RogueSurvivor.Data
 		}
       }
 
-#if DEAD_FUNC
-      public void Seen(Map m, Predicate<Point> fail) {
-        lock(_locs) {
-          if (_locs.TryGetValue(m, out var target) && 0 < target.RemoveWhere(fail) && 0 >= target.Count) _locs.Remove(m);
-        }
-      }
-#endif
-
       public void Seen(Location[] locs) {
         // assume all of these are in canonical form
         lock(_locs) {
@@ -759,15 +717,6 @@ namespace djack.RogueSurvivor.Data
 		  if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
 		}
       }
-
-#if DEAD_FUNC
-      public void Seen(Map m, IEnumerable<Point> pts)
-      {
-        foreach(Point pt in pts) Seen(new Location(m,pt));
-      }
-
-      public void Seen(Map m, Point pt) { Seen(new Location(m,pt)); }
-#endif
     }
 
     [Serializable]

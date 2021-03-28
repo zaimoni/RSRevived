@@ -54,13 +54,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (-1 < i) ? m_LocationsQueue.Count-i : 0;
     }
 
-#if DEAD_FUNC
-    public bool HasExplored(Zone zone)
-    {
-      return m_ZonesQueue.Contains(zone);
-    }
-#endif
-
     public bool HasExplored(List<Zone> zones)
     {
       return !zones?.Any(zone => !m_ZonesQueue.Contains(zone)) ?? true;

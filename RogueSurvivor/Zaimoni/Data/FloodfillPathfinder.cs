@@ -502,17 +502,5 @@ namespace Zaimoni.Data
             return ret;
         }
 #nullable restore
-
-#if DEAD_FUNC
-        public Dictionary<T, int> Flee(T current_pos) {
-            if (!_map.TryGetValue(current_pos,out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
-            Dictionary<T, int> tmp = _forward(current_pos);
-            Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
-            foreach (T tmp2 in tmp.Keys) {
-                if (_map.TryGetValue(tmp2, out int cost) && cost > current_cost) ret[tmp2] = _map[tmp2];
-            }
-            return (0 < ret.Count) ? ret : null;
-        }
-#endif
     }
 }

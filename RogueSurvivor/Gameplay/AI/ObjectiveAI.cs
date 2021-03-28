@@ -3919,19 +3919,6 @@ Restart:
         return new KeyValuePair<List<Location>, Dictionary<Location, int>>(goals.Keys.ToList(), revise);
     }
 
-#if DEAD_FUNC
-    private Dictionary<Map, HashSet<Point>> RadixSortLocations(IEnumerable<Location> goals)
-    {
-      var map_goals = new Dictionary<Map,HashSet<Point>>();
-      foreach(var goal in goals) {
-        if (map_goals.TryGetValue(goal.Map,out var cache)) {
-          cache.Add(goal.Position);
-        } else map_goals[goal.Map] = new HashSet<Point> { goal.Position };
-      }
-      return map_goals;
-    }
-#endif
-
     private Dictionary<Map, Dictionary<Point,int>> RadixSortLocations(Dictionary<Location,int> goals)
     {
       var map_goals = new Dictionary<Map, Dictionary<Point, int>>();

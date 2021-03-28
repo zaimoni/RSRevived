@@ -222,16 +222,6 @@ namespace djack.RogueSurvivor.Engine
       if (!map.HasMapObjectAt(pt)) PlaceDoor(map, pt, floor, door);
     }
 
-#if DEAD_FUNC
-    protected static bool PlaceDoorIfAccessible(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
-    {
-      int num = pt.Adjacent().Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
-      if (num < minAccessibility) return false;
-      PlaceDoorIfNoObject(map, pt, floor, door);
-      return true;
-    }
-#endif
-
     protected static bool PlaceDoorIfAccessibleAndNotAdjacent(Map map, Point pt, TileModel floor, int minAccessibility, DoorWindow door)
     {
       int num = 0;
@@ -299,21 +289,6 @@ namespace djack.RogueSurvivor.Engine
     {
       return map.CountAdjacentTo(p, pt => map.GetTileModelAt(pt).IsWalkable);
     }
-
-#if DEAD_FUNC
-    protected static void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
-    {
-#if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
-#endif
-      if (!predicateFn(x, y)) return;
-      MapObject mapObj = createFn(x, y);
-      if (mapObj == null) return;
-      map.SetTileModelAt(x, y, floor);
-      MapObjectPlace(map, x, y, mapObj);
-    }
-#endif
 
     protected static void PlaceIf(Map map, Point pt, TileModel floor, Func<Point, bool> predicateFn, Func<Point, MapObject> createFn)
     {

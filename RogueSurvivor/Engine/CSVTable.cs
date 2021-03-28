@@ -27,8 +27,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public IEnumerable<CSVLine> Lines { get { return m_Lines; } }
 #if DEAD_FUNC
+    public IEnumerable<CSVLine> Lines { get { return m_Lines; } }
     public int CountLines { get { return m_Lines.Count; } }
 #endif
 

@@ -26,10 +26,7 @@ namespace djack.RogueSurvivor.Engine
       m_Rng = new Random(seed);
     }
 
-    public DiceRoller()
-      : this((int) DateTime.UtcNow.Ticks)
-    {
-    }
+    public DiceRoller() : this((int) DateTime.UtcNow.Ticks) {}
 
     public int Roll(int min, int max)
     {
@@ -44,13 +41,6 @@ namespace djack.RogueSurvivor.Engine
       // should not need to defend aganst bugs in the C# library
       lock(m_Rng) { return (short)m_Rng.Next(min, max); }
     }
-
-#if DEAD_FUNC
-    public float RollFloat()
-    {
-      lock(m_Rng) { return (float) m_Rng.NextDouble(); }
-    }
-#endif
 
     public bool RollChance(int chance)
     {

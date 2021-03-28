@@ -120,39 +120,11 @@ namespace djack.RogueSurvivor.Engine
 
     private Rules() { m_DiceRoller = new DiceRoller(Session.Seed); }
 
-    public int Roll(int min, int max) { return m_DiceRoller.Roll(min, max); }
-    public short Roll(int min, short max) { return m_DiceRoller.Roll((short)min, max); }
-    public short Roll(short min, short max) { return m_DiceRoller.Roll(min, max); }
-    public bool RollChance(int chance) { return m_DiceRoller.RollChance(chance); }
-
-#if DEAD_FUNC
-    public float RollFloat()
-    {
-      return m_DiceRoller.RollFloat();
-    }
-
-    public float Randomize(float value, float deviation)
-    {
-      float num = deviation / 2f;
-      return (float) ((double) value - (double) num * (double)m_DiceRoller.RollFloat() + (double) num * (double)m_DiceRoller.RollFloat());
-    }
-
-    public int RollX(Map map)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      return m_DiceRoller.Roll(0, map.Width);
-    }
-
-    public int RollY(Map map)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      return m_DiceRoller.Roll(0, map.Height);
-    }
-#endif
-
-    public Direction RollDirection() { return m_DiceRoller.Choose(Direction.COMPASS); }
+    public int Roll(int min, int max) => m_DiceRoller.Roll(min, max);
+    public short Roll(int min, short max) => m_DiceRoller.Roll((short)min, max);
+    public short Roll(short min, short max) => m_DiceRoller.Roll(min, max);
+    public bool RollChance(int chance) => m_DiceRoller.RollChance(chance);
+    public Direction RollDirection() => m_DiceRoller.Choose(Direction.COMPASS);
 
     public int RollSkill(int skillValue)
     {  // 2019-11-22 Release mode IL Code size       40 (0x28)

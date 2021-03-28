@@ -1840,22 +1840,6 @@ retry:
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
     }
 
-#if DEAD_FUNC
-    public void RemoveItemAt(Item it, in Point position)
-    {
-#if DEBUG
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-#endif
-      var itemsAt = GetItemsAt(position);
-#if DEBUG
-      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
-      if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
-#endif
-      itemsAt.RemoveAllQuantity(it);
-      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
-    }
-#endif
-
     public void TransferFrom(Item it, in Point position, Inventory dest) {
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
@@ -1922,26 +1906,6 @@ retry:
       dest.AddAsMuchAsPossible(it);
       return true;
     }
-
-#if DEAD_FUNC
-    public void RemoveItemAtExt(Item it, Point position)
-    {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
-      if (IsInBounds(position)) {
-        RemoveItemAt(it,position);
-        return;
-      }
-      Location? test = _Normalize(position);
-      if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
-    }
-
-    public void RemoveItemAt(Item it, int x, int y)
-    {
-      RemoveItemAt(it, new Point(x, y));
-    }
-#endif
 
 #nullable enable
     /// <remark>Map generation depends on this being no-fail</remark>
