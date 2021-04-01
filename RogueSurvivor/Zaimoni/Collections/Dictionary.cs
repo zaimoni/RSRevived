@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
+#if DEBUG
+using System.Linq;
+#endif
 
 #nullable enable
 
@@ -133,11 +137,21 @@ namespace Zaimoni.Collections
         ICollection<Value> IDictionary<Key, Value>.Values { get { return values ??= new ValueCollection(this); } }
         IEnumerable<Value> IReadOnlyDictionary<Key, Value>.Values { get { return values ??= new ValueCollection(this); } }
 
+        [Conditional("DEBUG")]
+        private void _RequireContainsKey(Key key)
+        {
+            int code = 0;
+            if (!Keys.Contains(key)) code += 1;
+            if (0 > FindEntry(key)) code += 2;
+            if (0 > Array.FindIndex(entries, x => Comparer.Equals(x.key, key))) code += 4;
+            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + Count.ToString()+", "+code.ToString());
+        }
+
         public Value this[Key key]
         {
             get {
                 int i = FindEntry(key);
-                if (0 > i) throw new KeyNotFoundException("key not found: "+key.ToString());
+                if (0 > i) throw new KeyNotFoundException("key not found: " + key.ToString());
                 return entries[i].value;
             }
             set { Insert(key, value, false); }
@@ -519,6 +533,7 @@ namespace Zaimoni.Collections
                 activeList = 0;
                 freeCount = 0;
                 freeList = -1;
+                _RequireContainsKey(key);
                 return;
             }
 
@@ -566,6 +581,7 @@ namespace Zaimoni.Collections
             if (0 <= scan_lb) entries[scan_lb].next = index;
             if (0 <= scan_ub) entries[scan_ub].prev = index;
             // expensive to "rebalance" here
+            _RequireContainsKey(key);
         }
 
         private static bool IsCompatibleKey(object key)
