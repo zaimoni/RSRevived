@@ -24,12 +24,22 @@ namespace Zaimoni.Collections
             // serialize these two, not the above three
             public Key key;         // Key of entry
             public Value value;     // Value of entry
+
+            public void Clear() {
+                hashCode = -1;
+                prev = -1;
+                next = -1;
+                key = default;
+                value = default;
+            }
         }
+
 
         [OptionalField] private Entry[] entries;
         [OptionalField] public readonly IEqualityComparer<Key> Comparer;
         [NonSerialized] private int count;
         [NonSerialized] private int activeList;
+        [NonSerialized] private int lr_bias;
         [NonSerialized] private int version;
         [NonSerialized] private int freeList;
         [NonSerialized] private int freeCount;
@@ -49,6 +59,7 @@ namespace Zaimoni.Collections
             count = 0;
             freeList = -1;
             freeCount = 0;
+            version = 0;
             Comparer = comp ?? EqualityComparer<Key>.Default;
         }
 
@@ -167,13 +178,7 @@ namespace Zaimoni.Collections
                 version++;
                 while (0 < count) {
                     ref var staging = ref entries[--count];
-                    if (0 <= staging.hashCode) {
-                        staging.hashCode = -1;
-                        staging.prev = -1;
-                        staging.next = -1;
-                        staging.key = default;
-                        staging.value = default;
-                    }
+                    if (0 <= staging.hashCode) staging.Clear();
                 }
                 activeList = -1;
                 count = 0;
@@ -352,12 +357,12 @@ namespace Zaimoni.Collections
 
             // unlink us
             version++;
-            if (1 == Count % 2) {
-#if DEBUG
-                if (-1 == entries[activeList].next && 1 < Count) throw new InvalidOperationException("clearing dictionary when non-final deleting");
-#endif
-                activeList = entries[activeList].prev;
+            // expensive to "rebalance" here
+            if (activeList == doomed) {
+                if (0 > staging.next && 0 <= staging.prev) activeList = staging.prev;
+                else if (/*0 > staging.prev && */ 0 <= staging.next) activeList = staging.next;
             }
+
             if (0 <= staging.prev) {
                 if (0 <= staging.next) {
                     entries[staging.next].prev = staging.prev;
@@ -409,6 +414,9 @@ namespace Zaimoni.Collections
             int scan = activeList;
 
             while (0 <= scan) {
+#if DEBUG
+                if (count <= scan) throw new InvalidOperationException("trying to scan above last-used entry");
+#endif
                 var code = hashCode.CompareTo(entries[scan].hashCode);
                 if (0 == code) {
                     scan_lb = scan;
@@ -425,6 +433,9 @@ namespace Zaimoni.Collections
                         scan_lb = scan;
                         break;
                     }
+#if DEBUG
+                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
+#endif
                     if (hashCode >= entries[probe].hashCode) {
                         scan = probe;
                         continue;
@@ -444,6 +455,9 @@ namespace Zaimoni.Collections
                         scan_ub = scan;
                         break;
                     }
+#if DEBUG
+                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
+#endif
                     if (hashCode <= entries[probe].hashCode) {
                         scan = probe;
                         continue;
@@ -460,6 +474,9 @@ namespace Zaimoni.Collections
             if (false_positive) {
                 while (0 <= scan_lb) {
                     var probe = entries[scan_lb].prev;
+#if DEBUG
+                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
+#endif
                     if (hashCode != entries[probe].hashCode) break;
                     if (Comparer.Equals(entries[probe].key, key)) return probe;
                     scan_lb = probe;
@@ -467,6 +484,9 @@ namespace Zaimoni.Collections
                 while (0 <= scan_ub)
                 {
                     var probe = entries[scan_ub].prev;
+#if DEBUG
+                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
+#endif
                     if (hashCode != entries[probe].hashCode) break;
                     if (Comparer.Equals(entries[probe].key, key)) return probe;
                     scan_ub = probe;
@@ -515,6 +535,8 @@ namespace Zaimoni.Collections
 #if DEBUG
             if (0 <= scan_lb && entries[scan_lb].hashCode > hashCode) throw new InvalidOperationException("inverted add: prev; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
             if (0 <= scan_ub && entries[scan_ub].hashCode < hashCode) throw new InvalidOperationException("inverted add: next; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
+            if (0 <= scan_lb && entries[scan_lb].next != scan_ub) throw new InvalidOperationException("corrupt add; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
+            if (0 <= scan_ub && entries[scan_ub].prev != scan_lb) throw new InvalidOperationException("corrupt add #2; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
             var old_count = Count;
 #endif
 
@@ -543,12 +565,7 @@ namespace Zaimoni.Collections
             version++;
             if (0 <= scan_lb) entries[scan_lb].next = index;
             if (0 <= scan_ub) entries[scan_ub].prev = index;
-            if (1 == Count % 2) {
-#if DEBUG
-                if (-1 == entries[activeList].next) throw new InvalidOperationException("clearing dictionary when inserting");
-#endif
-                activeList = entries[activeList].next;
-            }
+            // expensive to "rebalance" here
         }
 
         private static bool IsCompatibleKey(object key)
