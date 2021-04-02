@@ -36,6 +36,10 @@ namespace Zaimoni.Collections
                 key = default;
                 value = default;
             }
+
+            string to_s() {
+                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + prev.ToString() + ", " + next.ToString() + "]";
+            }
         }
 
 
@@ -43,7 +47,6 @@ namespace Zaimoni.Collections
         [OptionalField] public readonly IEqualityComparer<Key> Comparer;
         [NonSerialized] private int count;
         [NonSerialized] private int activeList;
-        [NonSerialized] private int lr_bias;
         [NonSerialized] private int version;
         [NonSerialized] private int freeList;
         [NonSerialized] private int freeCount;
@@ -142,9 +145,12 @@ namespace Zaimoni.Collections
         {
             int code = 0;
             if (!Keys.Contains(key)) code += 1;
-            if (0 > FindEntry(key)) code += 2;
-            if (0 > Array.FindIndex(entries, x => Comparer.Equals(x.key, key))) code += 4;
-            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + Count.ToString()+", "+code.ToString());
+            if (0 > FindEntry(key, out var scan_lb, out var scan_ub)) code += 2;
+            var actual = Array.FindIndex(entries, x => Comparer.Equals(x.key, key));
+            if (actual > Array.FindIndex(entries, x => Comparer.Equals(x.key, key))) code += 4;
+            // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
+            // the private type Zaimoni.Collections.Dictionary::Entry
+            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + Count.ToString()+", "+code.ToString()+", "+ scan_lb.ToString() +", " + scan_ub.ToString() + ", " + activeList.ToString() +", " + actual.ToString() + "\n"+ entries.to_s());
         }
 
         public Value this[Key key]
@@ -432,6 +438,9 @@ namespace Zaimoni.Collections
                 if (count <= scan) throw new InvalidOperationException("trying to scan above last-used entry");
 #endif
                 var code = hashCode.CompareTo(entries[scan].hashCode);
+#if DEBUG
+                if (entries[scan].hashCode != (Comparer.GetHashCode(entries[scan].key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
+#endif
                 if (0 == code) {
                     scan_lb = scan;
                     scan_ub = scan;

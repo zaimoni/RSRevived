@@ -147,8 +147,15 @@ namespace Zaimoni.Data
         {
             if (null == x) return "null";
             var t_info = typeof(T);
+
+            // Try to simulate at runtime what C++ does at compile time
+            // want to catch instance members T::to_s()
+            var to_s_candidate = t_info.GetMethod("to_s", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+            if (null != to_s_candidate) {
+                return (string)to_s_candidate.Invoke(x, null);
+            }
+
             if (t_info.IsGenericType) { // will not handle arrays
-                // Try to simulate at runtime what C++ does at compile time
                 var t_name = t_info.FullName;
                 var method_name = string.Empty;
                 var t_args = t_info.GetGenericArguments();
@@ -165,7 +172,7 @@ namespace Zaimoni.Data
                     return (string)exec.Invoke(null, new object[] { x });
                 }
 #if DEBUG
-                throw new InvalidOperationException("test case");
+                throw new InvalidOperationException("test case: "+t_name+", "+t_args.Length.ToString()+", "+method_candidates.Length.ToString());
 #endif
             }
             return x.ToString();
