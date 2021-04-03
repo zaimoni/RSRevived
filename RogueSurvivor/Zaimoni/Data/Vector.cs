@@ -11,7 +11,7 @@ namespace Zaimoni.Data
 {
     // C naming conventions
     [Serializable]
-    public struct Vector2D_int : IComparable<Vector2D_int>,IEquatable<Vector2D_int>
+    public struct Vector2D_int : IComparable<Vector2D_int>, IEquatable<Vector2D_int>, Fn_to_s
     {
         public int X;
         public int Y;
@@ -78,7 +78,7 @@ namespace Zaimoni.Data
     };
 
     [Serializable]
-    public readonly struct Vector2D_int_r : IComparable<Vector2D_int_r>, IEquatable<Vector2D_int_r>
+    public readonly struct Vector2D_int_r : IComparable<Vector2D_int_r>, IEquatable<Vector2D_int_r>, Fn_to_s
     {
         public readonly int X;
         public readonly int Y;
@@ -539,7 +539,7 @@ namespace Zaimoni.Data
     }
 
     [Serializable]
-    public struct Vector2D_short : IComparable<Vector2D_short>,IEquatable<Vector2D_short>
+    public struct Vector2D_short : IComparable<Vector2D_short>, IEquatable<Vector2D_short>, Fn_to_s
     {
         public short X;
         public short Y;
@@ -621,7 +621,7 @@ namespace Zaimoni.Data
     };
 
     [Serializable]
-    public readonly struct Vector2D_short_r : IComparable<Vector2D_short_r>, IEquatable<Vector2D_short_r>
+    public readonly struct Vector2D_short_r : IComparable<Vector2D_short_r>, IEquatable<Vector2D_short_r>, Fn_to_s
     {
         public readonly short X;
         public readonly short Y;
@@ -1096,7 +1096,7 @@ namespace Zaimoni.Data
     }
 
     [Serializable]
-    public struct Vector2D_long : IComparable<Vector2D_long>,IEquatable<Vector2D_long>
+    public struct Vector2D_long : IComparable<Vector2D_long>, IEquatable<Vector2D_long>, Fn_to_s
     {
         public long X;
         public long Y;
@@ -1163,7 +1163,7 @@ namespace Zaimoni.Data
     };
 
     [Serializable]
-    public readonly struct Vector2D_long_r : IComparable<Vector2D_long_r>, IEquatable<Vector2D_long_r>
+    public readonly struct Vector2D_long_r : IComparable<Vector2D_long_r>, IEquatable<Vector2D_long_r>, Fn_to_s
     {
         public readonly long X;
         public readonly long Y;

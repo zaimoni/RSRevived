@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Zaimoni.Data
 {
+    // Interfaces don't work with ref structs, but those don't box to object either
     public interface Fn_to_s
     {
         string to_s();

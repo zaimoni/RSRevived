@@ -1,4 +1,4 @@
-﻿// #define BOOTSTRAP_BINARY_TREE
+﻿#define BOOTSTRAP_BINARY_TREE
 
 using System;
 using System.Collections;
@@ -29,7 +29,7 @@ namespace Zaimoni.Collections
             [NonSerialized] public int hashCode;    // Lower 31 bits of hash code, -1 if unused
             [NonSerialized] public int prev;        // Index of previous entry, -1 if first
             [NonSerialized] public int next;        // Index of next entry, -1 if last
-            [NonSerialized] public int parent;        // Index of next entry, -1 if last
+            [NonSerialized] public int parent;      // Index of parent of entry, -1 if root
             // serialize these two, not the above three
             public Key key;         // Key of entry
             public Value value;     // Value of entry
@@ -44,7 +44,7 @@ namespace Zaimoni.Collections
             }
 
             public string to_s() {
-                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + "]";
+                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + "]";
             }
         }
 
@@ -150,6 +150,7 @@ namespace Zaimoni.Collections
         private void _RequireDereferenceableIndex(int n)
         {
             if (0 > n || count <= n) throw new InvalidOperationException("internal index out of bounds");
+            if (0 > entries[n].hashCode) throw new InvalidOperationException("considering dereferencing into free list");
         }
 
         [Conditional("DEBUG")]
@@ -185,7 +186,7 @@ namespace Zaimoni.Collections
             if (actual > Array.FindIndex(entries, x => Comparer.Equals(x.key, key))) code += 4;
             // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
             // the private type Zaimoni.Collections.Dictionary::Entry
-            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + Count.ToString()+", "+code.ToString()+", "+ scan_lb.ToString() +", " + scan_ub.ToString() + ", " + activeList.ToString() +", " + actual.ToString() + "\n"+ entries.to_s());
+            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
         }
 
         public Value this[Key key]
@@ -413,18 +414,33 @@ namespace Zaimoni.Collections
 #endif
             if (-1 == staging.hashCode) return; // not really there after all
 
-            // unlink us
-            version++;
+            Interlocked.Increment(ref version); // break enumerators
 
 #if BOOTSTRAP_BINARY_TREE
             // binary tree version
             if (0 > staging.prev && 0 > staging.next) _excise(staging.parent, doomed, -1);
-            else if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
+retry_splice:
+            if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
             else if (0 <= staging.prev && 0 > staging.next) _excise(staging.parent, doomed, staging.prev);
             else { // not so simple
-                throw new InvalidOperationException("implement this");
                 // .prev.next = -1: rotate prev up to get -1 on .next
                 // .next.prev = -1: rotate next up to get -1 on .prev
+                var rotate_prev = new List<int> { staging.prev };
+                var rotate_next = new List<int> { staging.next };
+                while (true) {
+                    while(0 > entries[rotate_prev[^-1]].next) {
+                        _rotate_prev_up(rotate_prev[^-1]);
+                        rotate_prev.RemoveAt(rotate_prev.Count - 1);
+                        if (0 >= rotate_prev.Count) goto retry_splice;
+                    }
+                    while (0 > entries[rotate_next[^-1]].prev) {
+                        _rotate_next_up(rotate_next[^-1]);
+                        rotate_next.RemoveAt(rotate_next.Count - 1);
+                        if (0 >= rotate_next.Count) goto retry_splice;
+                    }
+                    rotate_prev.Add(entries[rotate_prev[^1]].prev);
+                    rotate_next.Add(entries[rotate_next[^1]].next);
+                }
             }
 #else
             // expensive to "rebalance" here
@@ -473,6 +489,25 @@ namespace Zaimoni.Collections
 
             return FindEntry(key, out _, out _);
         }
+
+#if BOOTSTRAP_BINARY_TREE
+
+        private int FindEntry(Key key, out int root, out int leaf)
+        {
+            if (null == key) throw new ArgumentNullException(nameof(key));
+            root = -1;
+            leaf = -1;
+            if (0 > activeList) return -1;
+#if DEBUG
+            if (-1 != entries[activeList].parent) throw new InvalidOperationException("not rooted properly");
+#endif
+
+            int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
+
+            return _findEntryTree(key, hashCode, activeList, ref root, ref leaf);
+        }
+
+#else
 
         private int FindEntry(Key key, out int scan_lb, out int scan_ub)
         {
@@ -574,54 +609,51 @@ namespace Zaimoni.Collections
             return -1;
         }
 
-        private int FindEntryTree(Key key, out int root, out int leaf)
-        {
-            if (null == key) throw new ArgumentNullException(nameof(key));
-            root = -1;
-            leaf = -1;
-            if (0 > activeList) return -1;
-#if DEBUG
-            if (-1 != entries[activeList].parent) throw new InvalidOperationException("not rooted properly");
 #endif
-
-            int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
-
-            return _findEntryTree(key, hashCode, activeList, ref root, ref leaf);
-        }
 
         private int _findEntryTree(Key key, int hashCode, int scan, ref int root, ref int leaf)
         {
             while (0 <= scan) {
+                _RequireDereferenceableIndex(scan);
+                ref var _scan = ref entries[scan];
 #if DEBUG
-                if (count <= scan) throw new InvalidOperationException("trying to scan above last-used entry");
+                if (0 <= _scan.prev) {
+                    _RequireDereferenceableIndex(_scan.prev);
+                    if (_scan.hashCode < entries[_scan.prev].hashCode) throw new InvalidOperationException("inverted link");
+                }
+                if (0 <= _scan.next) {
+                    _RequireDereferenceableIndex(_scan.next);
+                    if (_scan.hashCode > entries[_scan.next].hashCode) throw new InvalidOperationException("inverted link #2");
+                }
 #endif
-                var code = hashCode.CompareTo(entries[scan].hashCode);
+
+                var code = hashCode.CompareTo(_scan.hashCode);
 #if DEBUG
-                if (entries[scan].hashCode != (Comparer.GetHashCode(entries[scan].key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
+                if (_scan.hashCode != (Comparer.GetHashCode(_scan.key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
 #endif
-                if (0 == code) {
-                    if (Comparer.Equals(entries[scan].key, key)) {
+                if (hashCode == _scan.hashCode) {
+                    if (Comparer.Equals(_scan.key, key)) {
                         root = scan;
                         leaf = scan;
                         return scan;
                     }
-                    bool no_prev = 0 > entries[scan].prev || 0 < hashCode.CompareTo(entries[entries[scan].prev].hashCode);
-                    bool no_next = 0 > entries[scan].next || 0 > hashCode.CompareTo(entries[entries[scan].next].hashCode);
+                    bool no_prev = 0 > _scan.prev || hashCode > entries[_scan.prev].hashCode;
+                    bool no_next = 0 > _scan.next || hashCode < entries[_scan.next].hashCode;
                     if (no_prev) {
                         if (no_next) {
                             root = scan;
-                            leaf = 0 > entries[scan].next ? -1 : entries[scan].prev;
+                            leaf = 0 > entries[scan].next ? -1 : _scan.prev;
                             return -1;
                         }
-                        scan = entries[scan].next;
+                        scan = _scan.next;
                         continue;
                     } else if (no_next) {
-                        scan = entries[scan].prev;
+                        scan = _scan.prev;
                         continue;
                     }
                     int proxy_root1 = -1;
                     int proxy_leaf1 = -1;
-                    var candidate1 = _findEntryTree(key, hashCode, entries[scan].prev, ref proxy_root1, ref proxy_leaf1);
+                    var candidate1 = _findEntryTree(key, hashCode, _scan.prev, ref proxy_root1, ref proxy_leaf1);
                     if (0 <= candidate1) {
                         root = proxy_root1;
                         leaf = proxy_leaf1;
@@ -630,7 +662,7 @@ namespace Zaimoni.Collections
 
                     int proxy_root2 = -1;
                     int proxy_leaf2 = -1;
-                    var candidate2 = _findEntryTree(key, hashCode, entries[scan].next, ref proxy_root2, ref proxy_leaf2);
+                    var candidate2 = _findEntryTree(key, hashCode, _scan.next, ref proxy_root2, ref proxy_leaf2);
                     if (0 <= candidate2) {
                         root = proxy_root2;
                         leaf = proxy_leaf2;
@@ -651,23 +683,23 @@ namespace Zaimoni.Collections
                     root = proxy_root1;
                     leaf = proxy_leaf1;
                     return -1;
-                } else if (0 < code) { // greater than
-                    bool no_next = 0 > entries[scan].next || 0 > hashCode.CompareTo(entries[entries[scan].next].hashCode);
+                } else if (hashCode > _scan.hashCode) { // greater than
+                    bool no_next = 0 > _scan.next || hashCode < entries[_scan.next].hashCode;
                     if (no_next) {
                         root = scan;
-                        leaf = entries[scan].next;
+                        leaf = _scan.next;
                         return -1;
                     }
-                    scan = entries[scan].next;
+                    scan = _scan.next;
                     continue;
-                } else /* if (0 > code) */ { // less than
-                    bool no_prev = 0 > entries[scan].prev || 0 < hashCode.CompareTo(entries[entries[scan].prev].hashCode);
+                } else /* if (hashCode < _scan.hashCode) */ { // less than
+                    bool no_prev = 0 > _scan.prev || hashCode > entries[_scan.prev].hashCode;
                     if (no_prev) {
                         root = scan;
-                        leaf = entries[scan].prev;
+                        leaf = _scan.prev;
                         return -1;
                     }
-                    scan = entries[scan].prev;
+                    scan = _scan.prev;
                     continue;
                 }
             }
@@ -701,7 +733,11 @@ namespace Zaimoni.Collections
             }
 
             // find insertion point
+#if BOOTSTRAP_BINARY_TREE
+            var index = FindEntry(key, out int root, out int leaf);
+#else
             var index = FindEntry(key, out int scan_lb, out int scan_ub);
+#endif
             if (0 <= index) {
                 if (add) throw new ArgumentException("adding duplicate", nameof(key));
                 version++;
@@ -709,12 +745,18 @@ namespace Zaimoni.Collections
                 return;
             }
 
+#if BOOTSTRAP_BINARY_TREE
+            _RequireDereferenceableIndex(root);
+#else
             // scan_lb, scan_ub now bracket the intended entry point (as a linked list)
 #if DEBUG
             if (0 <= scan_lb && entries[scan_lb].hashCode > hashCode) throw new InvalidOperationException("inverted add: prev; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
             if (0 <= scan_ub && entries[scan_ub].hashCode < hashCode) throw new InvalidOperationException("inverted add: next; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
             if (0 <= scan_lb && entries[scan_lb].next != scan_ub) throw new InvalidOperationException("corrupt add; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
             if (0 <= scan_ub && entries[scan_ub].prev != scan_lb) throw new InvalidOperationException("corrupt add #2; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
+#endif
+#endif
+#if DEBUG
             var old_count = Count;
 #endif
 
@@ -734,7 +776,54 @@ namespace Zaimoni.Collections
                 if (old_count + 1 != Count) throw new InvalidOperationException("external count wiped out #2: " + old_count.ToString() + ", " + Count.ToString());
 #endif
             }
+#if BOOTSTRAP_BINARY_TREE
+            entries[index].prev = -1;
+            entries[index].next = -1;
+            entries[index].key = key;
+            entries[index].value = value;
+            entries[index].parent = root;
 
+            ref var _root = ref entries[root];
+            if (hashCode <= _root.hashCode && -1 == _root.prev) {
+                Interlocked.Increment(ref version); // break enumerators
+
+                entries[index].hashCode = hashCode;
+                _root.prev = index;
+                _RequireContainsKey(key);
+                return;
+            }
+            if (hashCode >= _root.hashCode && -1 == _root.next) {
+                Interlocked.Increment(ref version); // break enumerators
+
+                entries[index].hashCode = hashCode;
+                _root.next = index;
+                _RequireContainsKey(key);
+                return;
+            }
+            if (hashCode <= _root.hashCode) {
+                if (hashCode >= entries[_root.prev].hashCode) entries[index].prev = _root.prev;
+                else entries[index].next = _root.prev;
+
+                Interlocked.Increment(ref version); // break enumerators
+
+                entries[index].hashCode = hashCode;
+                entries[_root.prev].parent = index;
+                _root.prev = index;
+                _RequireContainsKey(key);
+                return;
+            } else /* if (hashCode >= _root.hashCode) */ {
+                if (hashCode >= entries[_root.next].hashCode) entries[index].next = _root.next;
+                else entries[index].next = _root.next;
+
+                Interlocked.Increment(ref version); // break enumerators
+
+                entries[index].hashCode = hashCode;
+                entries[_root.next].parent = index;
+                _root.next = index;
+                _RequireContainsKey(key);
+                return;
+            }
+#else
             entries[index].hashCode = hashCode;
             entries[index].prev = scan_lb;
             entries[index].next = scan_ub;
@@ -746,6 +835,7 @@ namespace Zaimoni.Collections
             if (0 <= scan_ub) entries[scan_ub].prev = index;
             // expensive to "rebalance" here
             _RequireContainsKey(key);
+#endif
         }
 
         private static bool IsCompatibleKey(object key)
