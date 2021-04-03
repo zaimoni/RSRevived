@@ -264,28 +264,12 @@ namespace djack.RogueSurvivor.Data
     public void RepairLoad()
     {
       foreach(var a in m_ActorsList) a.RepairLoad();
-#if BOOTSTRAP_Z_DICTIONARY
-      var ub = 0;
-#endif
       foreach(var x in m_MapObjectsByPosition) {
-#if BOOTSTRAP_Z_DICTIONARY
-        var old_count = m_MapObjectsByPosition_alt.Count;
-#endif
         x.Value.RepairLoad(this, x.Key);
 #if BOOTSTRAP_Z_DICTIONARY
         m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
-        if (++ub != m_MapObjectsByPosition_alt.Count) throw new InvalidOperationException("add failed: "+x.Key.to_s()+", "+x.Value.ToString()+" @ "+ub.ToString()+", "+old_count.ToString()+", "+ m_MapObjectsByPosition_alt.Count.ToString());
 #endif
       }
-#if BOOTSTRAP_Z_DICTIONARY
-      var src_ub = m_MapObjectsByPosition.Count;
-      if (src_ub != m_MapObjectsByPosition_alt.Count) throw new InvalidOperationException("duplication failed");
-      foreach(var x in m_MapObjectsByPosition) {
-        if (!m_MapObjectsByPosition_alt.ContainsKey(x.Key)) throw new InvalidOperationException("duplication failed #2: " + x.Key.to_s()+"; "+src_ub.ToString());
-        if (!m_MapObjectsByPosition_alt.TryGetValue(x.Key, out var cache)) throw new InvalidOperationException("duplication failed #3: " + x.Key.to_s());
-        if (x.Value != cache) throw new InvalidOperationException("duplication failed #4: " + x.Value.ToString()+", "+(cache?.ToString() ?? "null"));
-      }
-#endif
     }
 
     private void OnConstructed(ref int hash)
@@ -1618,14 +1602,24 @@ retry:
 
     public MapObject? GetMapObjectAt(Point pos)
     {
+#if BOOTSTRAP_Z_DICTIONARY
+      var test = m_MapObjectsByPosition_alt.TryGetValue(pos, out var mapObject_alt);
+#endif
       if (m_MapObjectsByPosition.TryGetValue(pos, out var mapObject)) {
 #if DEBUG
         // existence check for bugs relating to map object location
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
         if (pos!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
+#if BOOTSTRAP_Z_DICTIONARY
+        if (!test) throw new InvalidOperationException("desync");
+        if (mapObject_alt != mapObject) throw new InvalidOperationException("desync #2");
+#endif
 #endif
         return mapObject;
       }
+#if BOOTSTRAP_Z_DICTIONARY
+      if (test) throw new InvalidOperationException("desync #3");
+#endif
       return null;
     }
 
@@ -1669,16 +1663,27 @@ retry:
             if (police.ItemMemory.HaveEverSeen(mapObj.Location)) police.Investigate.Record(mapObj.Location); // XXX \todo should message based on item memories
           }
           m_MapObjectsByPosition.Remove(mapObj.Location.Position);
+#if BOOTSTRAP_Z_DICTIONARY
+          m_MapObjectsByPosition_alt.Remove(mapObj.Location.Position);
+#endif
         } else {
           if (this != mapObj.Location.Map) mapObj.Remove();
         }
       }
       mapObj.Location = new Location(this, position); // should update this while not in a map
       m_MapObjectsByPosition.Add(position, mapObj);
+#if BOOTSTRAP_Z_DICTIONARY
+      m_MapObjectsByPosition_alt.Add(position, mapObj);
+#endif
       if (update_item_memory) Engine.Session.Get.Police.Investigate.Record(mapObj.Location);
     }
 
-    public void RemoveMapObjectAt(Point pt) { m_MapObjectsByPosition.Remove(pt); }
+    public void RemoveMapObjectAt(Point pt) {
+      m_MapObjectsByPosition.Remove(pt);
+#if BOOTSTRAP_Z_DICTIONARY
+      m_MapObjectsByPosition_alt.Remove(pt);
+#endif
+    }
 
     // this will need rethinking when off-ground inventory (chairs, tables) happens
     public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }

@@ -43,6 +43,12 @@ namespace Zaimoni.Collections
                 value = default;
             }
 
+            public void ValueCopy(in Entry src) {
+                hashCode = src.hashCode;
+                key = src.key;
+                value = src.value;
+            }
+
             public string to_s() {
                 return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + "]";
             }
@@ -407,14 +413,13 @@ namespace Zaimoni.Collections
         }
 
         private void Remove(int doomed) {
-            if (0 > doomed || entries.Length <= doomed) throw new InvalidOperationException("invalid deletion index");
+            _RequireDereferenceableIndex(doomed);
+            Interlocked.Increment(ref version); // break enumerators
+retry:
             ref var staging = ref entries[doomed];
 #if DEBUG
             if (-1 == staging.parent && activeList!=doomed) throw new InvalidOperationException("tree head out of sync");
 #endif
-            if (-1 == staging.hashCode) return; // not really there after all
-
-            Interlocked.Increment(ref version); // break enumerators
 
 #if BOOTSTRAP_BINARY_TREE
             // binary tree version
@@ -423,23 +428,17 @@ retry_splice:
             if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
             else if (0 <= staging.prev && 0 > staging.next) _excise(staging.parent, doomed, staging.prev);
             else { // not so simple
-                // .prev.next = -1: rotate prev up to get -1 on .next
-                // .next.prev = -1: rotate next up to get -1 on .prev
-                var rotate_prev = new List<int> { staging.prev };
-                var rotate_next = new List<int> { staging.next };
-                while (true) {
-                    while(0 > entries[rotate_prev[^-1]].next) {
-                        _rotate_prev_up(rotate_prev[^-1]);
-                        rotate_prev.RemoveAt(rotate_prev.Count - 1);
-                        if (0 >= rotate_prev.Count) goto retry_splice;
-                    }
-                    while (0 > entries[rotate_next[^-1]].prev) {
-                        _rotate_next_up(rotate_next[^-1]);
-                        rotate_next.RemoveAt(rotate_next.Count - 1);
-                        if (0 >= rotate_next.Count) goto retry_splice;
-                    }
-                    rotate_prev.Add(entries[rotate_prev[^1]].prev);
-                    rotate_next.Add(entries[rotate_next[^1]].next);
+                var successor = InOrderSuccessor(doomed, out var depth_successor);
+                var predecessor = InOrderPredecessor(doomed, out var depth_predecessor);
+
+                if (depth_predecessor <= depth_successor) { // remove deeper(?) successor
+                    entries[doomed].ValueCopy(in entries[successor]);
+                    doomed = successor; // simulate tail-call
+                    goto retry;
+                } else { // remove deeper predecessor
+                    entries[doomed].ValueCopy(in entries[predecessor]);
+                    doomed = predecessor; // simulate tail-call
+                    goto retry;
                 }
             }
 #else
@@ -874,6 +873,34 @@ retry_splice:
             }
             _RequireValidParents(host);
             _RequireValidParents(target);
+        }
+
+        int InOrderSuccessor(int root, out int depth)
+        {
+            _RequireDereferenceableIndex(root);
+            depth = 0;
+            var scan = entries[root].next;
+            if (0 > scan) return root;
+            ++depth;
+            while (0 <= entries[scan].prev) {
+                scan = entries[scan].prev;
+                ++depth;
+            }
+            return scan;
+        }
+
+        int InOrderPredecessor(int root, out int depth)
+        {
+            _RequireDereferenceableIndex(root);
+            depth = 0;
+            var scan = entries[root].prev;
+            if (0 > scan) return root;
+            ++depth;
+            while (0 <= entries[scan].next) {
+                scan = entries[scan].next;
+                ++depth;
+            }
+            return scan;
         }
 
         /*
