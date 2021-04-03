@@ -20,7 +20,7 @@ namespace Zaimoni.Collections
     public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, ISerializable, IDeserializationCallback
     {
         [Serializable]
-        private struct Entry
+        private struct Entry : Fn_to_s
         {
             [NonSerialized] public int hashCode;    // Lower 31 bits of hash code, -1 if unused
             [NonSerialized] public int prev;        // Index of previous entry, -1 if first
@@ -37,7 +37,7 @@ namespace Zaimoni.Collections
                 value = default;
             }
 
-            string to_s() {
+            public string to_s() {
                 return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + prev.ToString() + ", " + next.ToString() + "]";
             }
         }

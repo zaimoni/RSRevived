@@ -4,7 +4,12 @@ using System.Linq;
 
 namespace Zaimoni.Data
 {
-    internal static partial class Virtual
+    public interface Fn_to_s
+    {
+        string to_s();
+    }
+
+    public static partial class Virtual
     {
         // Some library classes have less than useful ToString() overrides.
         // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
@@ -21,25 +26,6 @@ namespace Zaimoni.Data
             tmp[0] = "{" + tmp[0];
             ub = tmp.Count;
             tmp[ub - 1] += "} (" + ub.ToString() + ")";
-            return string.Join(",\n", tmp);
-        }
-
-        public static string to_s<T>(this List<List<T>> x)
-        {  // would be redundant in C++
-            if (null == x) return "null";
-#if DEBUG
-            throw new InvalidOperationException("eliminate this?");
-#endif
-            var ub = x.Count;
-            if (0 >= ub) return "[]";
-            var tmp = new List<string>(ub);
-            foreach (var iter in x)
-            {
-                tmp.Add(iter.to_s());
-            }
-            tmp[0] = "[" + tmp[0];
-            ub = tmp.Count;
-            tmp[ub - 1] += "] (" + ub.ToString() + ")";
             return string.Join(",\n", tmp);
         }
 
@@ -91,25 +77,6 @@ namespace Zaimoni.Data
             return string.Join(",\n", tmp);
         }
 
-        public static string to_s<T, U>(this Dictionary<T, List<U>> x)
-        {
-            if (null == x) return "null";
-#if DEBUG
-            throw new InvalidOperationException("eliminate this?");
-#endif
-            var ub = x.Count;
-            if (0 >= ub) return "{}";
-            var tmp = new List<string>(ub);
-            foreach (var iter in x)
-            {
-                tmp.Add(iter.Key.to_s() + ":" + iter.Value.to_s());
-            }
-            tmp[0] = "{" + tmp[0];
-            ub = tmp.Count;
-            tmp[ub - 1] += "} (" + ub.ToString() + ")";
-            return string.Join(",\n", tmp);
-        }
-
         public static string to_s<T, U>(this Dictionary<T, U> x)
         {
             if (null == x) return "null";
@@ -150,10 +117,14 @@ namespace Zaimoni.Data
 
             // Try to simulate at runtime what C++ does at compile time
             // want to catch instance members T::to_s()
+            // reddit/wasabiiii : interface rather than member function lookup
+            if (x is Fn_to_s y) return y.to_s();
+#if OBSOLETE
             var to_s_candidate = t_info.GetMethod("to_s", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic, null, Type.EmptyTypes, null);
             if (null != to_s_candidate) {
                 return (string)to_s_candidate.Invoke(x, null);
             }
+#endif
 
             if (t_info.IsGenericType) { // will not handle arrays
                 var t_name = t_info.FullName;
