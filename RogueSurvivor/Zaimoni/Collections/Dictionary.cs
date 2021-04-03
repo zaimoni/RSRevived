@@ -1,6 +1,4 @@
-﻿#define BOOTSTRAP_BINARY_TREE
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -421,8 +419,6 @@ retry:
             if (-1 == staging.parent && activeList!=doomed) throw new InvalidOperationException("tree head out of sync");
 #endif
 
-#if BOOTSTRAP_BINARY_TREE
-            // binary tree version
             if (0 > staging.prev && 0 > staging.next) _excise(staging.parent, doomed, -1);
 retry_splice:
             if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
@@ -441,27 +437,6 @@ retry_splice:
                     goto retry;
                 }
             }
-#else
-            // expensive to "rebalance" here
-            if (activeList == doomed) {
-                if (0 > staging.next && 0 <= staging.prev) activeList = staging.prev;
-                else if (/*0 > staging.prev && */ 0 <= staging.next) activeList = staging.next;
-            }
-
-            if (0 <= staging.prev) {
-                if (0 <= staging.next) {
-                    entries[staging.next].prev = staging.prev;
-                    entries[staging.prev].next = staging.next;
-                } else {
-                    entries[staging.prev].next = -1;
-                }
-            } else {
-                if (0 <= staging.next) {
-                    entries[staging.next].prev = staging.prev;
-                } else {
-                }
-            }
-#endif
 
             // wrap-up
             staging.hashCode = -1;
@@ -489,8 +464,6 @@ retry_splice:
             return FindEntry(key, out _, out _);
         }
 
-#if BOOTSTRAP_BINARY_TREE
-
         private int FindEntry(Key key, out int root, out int leaf)
         {
             if (null == key) throw new ArgumentNullException(nameof(key));
@@ -505,110 +478,6 @@ retry_splice:
 
             return _findEntryTree(key, hashCode, activeList, ref root, ref leaf);
         }
-
-#else
-
-        private int FindEntry(Key key, out int scan_lb, out int scan_ub)
-        {
-            if (null == key) throw new ArgumentNullException(nameof(key));
-            scan_lb = -1;
-            scan_ub = -1;
-            if (0 > activeList) return -1;
-
-            int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
-
-            bool false_positive = false;
-            int scan = activeList;
-
-            while (0 <= scan) {
-#if DEBUG
-                if (count <= scan) throw new InvalidOperationException("trying to scan above last-used entry");
-#endif
-                var code = hashCode.CompareTo(entries[scan].hashCode);
-#if DEBUG
-                if (entries[scan].hashCode != (Comparer.GetHashCode(entries[scan].key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
-#endif
-                if (0 == code) {
-                    scan_lb = scan;
-                    scan_ub = scan;
-                    if (Comparer.Equals(entries[scan].key, key)) return scan;
-                    false_positive = true;
-                    break;
-                } else if (0 < code) { // greater than
-#if DEBUG
-                    if (hashCode < entries[scan].hashCode) throw new InvalidOperationException("inverted add: scan/prev; " + scan.ToString() + ": " + hashCode.ToString() + ", " + entries[scan].hashCode.ToString());
-#endif
-                    var probe = entries[scan].next;
-                    if (0 > probe) {
-                        scan_lb = scan;
-                        break;
-                    }
-#if DEBUG
-                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
-#endif
-                    if (hashCode >= entries[probe].hashCode) {
-                        scan = probe;
-                        continue;
-                    }
-#if DEBUG
-                    if (hashCode > entries[probe].hashCode) throw new InvalidOperationException("inverted add: scan/prev #2; " + scan.ToString() + ": " + entries[scan].hashCode + ", " + hashCode.ToString() + ", " + entries[probe].hashCode.ToString());
-#endif
-                    scan_lb = scan;
-                    scan_ub = probe;
-                    break;
-                } else /* if (0 > code) */ { // less than
-#if DEBUG
-                    if (hashCode > entries[scan].hashCode) throw new InvalidOperationException("inverted add: scan/next; " + scan.ToString() + ": " + hashCode.ToString() + ", " + entries[scan].hashCode.ToString());
-#endif
-                    var probe = entries[scan].prev;
-                    if (0 > probe) {
-                        scan_ub = scan;
-                        break;
-                    }
-#if DEBUG
-                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
-#endif
-                    if (hashCode <= entries[probe].hashCode) {
-                        scan = probe;
-                        continue;
-                    }
-#if DEBUG
-                    if (hashCode < entries[probe].hashCode) throw new InvalidOperationException("inverted add: scan/next #2; " + scan.ToString() + ": " + entries[probe].hashCode.ToString() + ", " + hashCode.ToString() + ", " + entries[scan].hashCode.ToString());
-#endif
-                    scan_ub = scan;
-                    scan_lb = probe;
-                    break;
-                }
-            }
-
-            if (false_positive) {
-                while (0 <= scan_lb) {
-                    var probe = entries[scan_lb].prev;
-#if DEBUG
-                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
-#endif
-                    if (hashCode != entries[probe].hashCode) break;
-                    if (Comparer.Equals(entries[probe].key, key)) return probe;
-                    scan_lb = probe;
-                }
-                while (0 <= scan_ub)
-                {
-                    var probe = entries[scan_ub].prev;
-#if DEBUG
-                    if (count <= probe) throw new InvalidOperationException("trying to scan above last-used entry #2");
-#endif
-                    if (hashCode != entries[probe].hashCode) break;
-                    if (Comparer.Equals(entries[probe].key, key)) return probe;
-                    scan_ub = probe;
-                }
-                // not here?  "Insert at top"
-                scan_lb = scan_ub;
-                scan_ub = entries[scan_lb].next;
-            }
-            return -1;
-        }
-
-#endif
 
         private int _findEntryTree(Key key, int hashCode, int scan, ref int root, ref int leaf)
         {
@@ -732,11 +601,7 @@ retry_splice:
             }
 
             // find insertion point
-#if BOOTSTRAP_BINARY_TREE
             var index = FindEntry(key, out int root, out int leaf);
-#else
-            var index = FindEntry(key, out int scan_lb, out int scan_ub);
-#endif
             if (0 <= index) {
                 if (add) throw new ArgumentException("adding duplicate", nameof(key));
                 version++;
@@ -744,17 +609,8 @@ retry_splice:
                 return;
             }
 
-#if BOOTSTRAP_BINARY_TREE
             _RequireDereferenceableIndex(root);
-#else
-            // scan_lb, scan_ub now bracket the intended entry point (as a linked list)
-#if DEBUG
-            if (0 <= scan_lb && entries[scan_lb].hashCode > hashCode) throw new InvalidOperationException("inverted add: prev; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
-            if (0 <= scan_ub && entries[scan_ub].hashCode < hashCode) throw new InvalidOperationException("inverted add: next; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
-            if (0 <= scan_lb && entries[scan_lb].next != scan_ub) throw new InvalidOperationException("corrupt add; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_lb].hashCode.ToString());
-            if (0 <= scan_ub && entries[scan_ub].prev != scan_lb) throw new InvalidOperationException("corrupt add #2; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ": " + hashCode.ToString() + ", " + entries[scan_ub].hashCode.ToString());
-#endif
-#endif
+
 #if DEBUG
             var old_count = Count;
 #endif
@@ -775,7 +631,7 @@ retry_splice:
                 if (old_count + 1 != Count) throw new InvalidOperationException("external count wiped out #2: " + old_count.ToString() + ", " + Count.ToString());
 #endif
             }
-#if BOOTSTRAP_BINARY_TREE
+
             entries[index].prev = -1;
             entries[index].next = -1;
             entries[index].key = key;
@@ -822,19 +678,6 @@ retry_splice:
                 _RequireContainsKey(key);
                 return;
             }
-#else
-            entries[index].hashCode = hashCode;
-            entries[index].prev = scan_lb;
-            entries[index].next = scan_ub;
-            entries[index].parent = -1; // mockup
-            entries[index].key = key;
-            entries[index].value = value;
-            version++;
-            if (0 <= scan_lb) entries[scan_lb].next = index;
-            if (0 <= scan_ub) entries[scan_ub].prev = index;
-            // expensive to "rebalance" here
-            _RequireContainsKey(key);
-#endif
         }
 
         private static bool IsCompatibleKey(object key)
