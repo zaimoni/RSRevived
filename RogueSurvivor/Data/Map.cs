@@ -7,7 +7,7 @@
 
 // #define AUDIT_ACTOR_MOVEMENT
 // #define AUDIT_ITEM_INVARIANTS
-// #define BOOTSTRAP_Z_DICTIONARY
+#define BOOTSTRAP_Z_DICTIONARY
 
 using System;
 using System.Collections.Generic;

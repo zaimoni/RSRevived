@@ -525,7 +525,7 @@ retry:
             if (null == key) throw new ArgumentNullException(nameof(key));
             if (0 > activeList) return -1;
 
-            return FindEntry(key, out _, out _);
+            return FindEntry(key, stackalloc int[2]);
         }
 
         private int FindEntry(Key key, out int root, out int leaf)
@@ -538,6 +538,18 @@ retry:
             int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
 
             return _findEntryTree(key, hashCode, activeList, ref root, ref leaf);
+        }
+
+        private int FindEntry(Key key, Span<int> root_leaf)
+        {
+            if (null == key) throw new ArgumentNullException(nameof(key));
+            root_leaf[0] = -1;
+            root_leaf[1] = -1;
+            if (0 > activeList) return -1;
+
+            int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
+
+            return _findEntryTree(key, hashCode, activeList, ref root_leaf[0], ref root_leaf[1]);
         }
 
         private int _findEntryTree(Key key, int hashCode, int scan, ref int root, ref int leaf)
@@ -663,7 +675,8 @@ retry:
             }
 
             // find insertion point
-            var index = FindEntry(key, out int root, out int leaf);
+            Span<int> root_leaf = stackalloc int[2];
+            var index = FindEntry(key, root_leaf);
             if (0 <= index) {
                 if (add) throw new ArgumentException("adding duplicate", nameof(key));
                 Interlocked.Increment(ref version);
@@ -671,7 +684,7 @@ retry:
                 return;
             }
 
-            _RequireDereferenceableIndex(root);
+            _RequireDereferenceableIndex(root_leaf[0]);
 
 #if DEBUG
             var old_count = Count;
@@ -698,9 +711,9 @@ retry:
             entries[index].next = -1;
             entries[index].key = key;
             entries[index].value = value;
-            entries[index].parent = root;
+            entries[index].parent = root_leaf[0];
 
-            ref var _root = ref entries[root];
+            ref var _root = ref entries[root_leaf[0]];
             if (hashCode <= _root.hashCode && -1 == _root.prev) {
                 Interlocked.Increment(ref version); // break enumerators
 
