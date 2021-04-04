@@ -562,20 +562,14 @@ retry:
                 if (0 < code) { // greater than
                     if (0 > _scan.next) {
                         root = scan;
-                        leaf = _scan.next;
-#if IRRATIONAL_CAUTION
-                        gave_up_too_soon(leaf);
-#endif
+                        leaf = -1;
                         return -1;
                     }
                     scan = _scan.next;
                 } else if (0 > code) { // less than
                     if (0 > _scan.prev) {
                         root = scan;
-                        leaf = _scan.prev;
-#if IRRATIONAL_CAUTION
-                        gave_up_too_soon(leaf);
-#endif
+                        leaf = -1;
                         return -1;
                     }
                     scan = _scan.prev;
@@ -589,10 +583,7 @@ retry:
                     if (0 > _scan.prev) {
                         if (no_next) {
                             root = scan;
-                            leaf = 0 > _scan.next ? -1 : _scan.prev;
-#if IRRATIONAL_CAUTION
-                            gave_up_too_soon(leaf);
-#endif
+                            leaf = -1;
                             return -1;
                         }
                         scan = _scan.next;
