@@ -1,4 +1,7 @@
-﻿using System;
+﻿// #define IRRATIONAL_CAUTION
+// #define IRRATIONAL_PANIC
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,13 +17,13 @@ using System.Linq;
 // re-implementation of System.Collections.Generic.Dictionary
 // cloning: https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,cc27fcdd81291584,references
 
-// \todo this needs to work on a heap-ish indexing scheme to fit in an array
-
 namespace Zaimoni.Collections
 {
     [Serializable]
     public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, ISerializable, IDeserializationCallback, Fn_to_s
     {
+        private const string COLLECTION_WAS_MODIFIED = "enumeration failed: Collection was modified";
+
         [Serializable]
         private struct Entry : Fn_to_s
         {
@@ -28,7 +31,8 @@ namespace Zaimoni.Collections
             [NonSerialized] public int prev;        // Index of previous entry, -1 if first
             [NonSerialized] public int next;        // Index of next entry, -1 if last
             [NonSerialized] public int parent;      // Index of parent of entry, -1 if root
-            // serialize these two, not the above three
+            [NonSerialized] public uint size;       // cache field: scapegoat size of subtree rooted here
+            // serialize these two, not the above fields
             public Key key;         // Key of entry
             public Value value;     // Value of entry
 
@@ -37,6 +41,7 @@ namespace Zaimoni.Collections
                 prev = -1;
                 next = -1;
                 parent = -1;
+                size = 0;
                 key = default;
                 value = default;
             }
@@ -48,7 +53,7 @@ namespace Zaimoni.Collections
             }
 
             public string to_s() {
-                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + "]";
+                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + ", " + size.ToString() + "]";
             }
         }
 
@@ -171,27 +176,54 @@ namespace Zaimoni.Collections
             if (0 > entries[n].hashCode) throw new InvalidOperationException("considering dereferencing into free list");
         }
 
+        [Conditional("IRRATIONAL_CAUTION")]
+        private void _RequireDereferenceableIndexPrecondition(int n) => _RequireDereferenceableIndex(n);
+
         [Conditional("DEBUG")]
         private void _RequireValidIndex(int n)
         {
             if (count <= n) throw new InvalidOperationException("internal index invalid");
         }
 
+        [Conditional("IRRATIONAL_CAUTION")]
+        private void _RequireValidIndexPrecondition(int n) => _RequireValidIndex(n);
+
         [Conditional("DEBUG")]
-        private void _RequireValidParents(int n)
+        private void _RequireValid(int n)
         {
             if (0 > n) return;
             ref var test = ref entries[n];
+            if (0 > test.hashCode) return;
+            if (test.hashCode != (Comparer.GetHashCode(test.key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
             if (0 > test.parent) {
                 if (activeList != n) throw new InvalidOperationException("invalid activeList");
             } else {
                 if (activeList == n) throw new InvalidOperationException("invalid activeList #2");
+                _RequireDereferenceableIndex(test.parent);
                 ref var parent = ref entries[test.parent];
                 if (parent.prev != n && parent.next != n) throw new InvalidOperationException("parent has disowned me");
                 if (parent.prev == n && parent.next == n) throw new InvalidOperationException("parent has twinned me");
             }
-            if (0 <= test.next && entries[test.next].parent != n) throw new InvalidOperationException("backlink failed");
-            if (0 <= test.prev && entries[test.prev].parent != n) throw new InvalidOperationException("backlink failed #2");
+            if (0 <= test.next) {
+                _RequireDereferenceableIndex(test.next);
+                ref var _next = ref entries[test.next];
+                if (_next.parent != n) throw new InvalidOperationException("backlink failed");
+                if (test.hashCode > _next.hashCode) throw new InvalidCastException("unreachable: "+test.next.ToString());
+            }
+            if (0 <= test.prev) {
+                _RequireDereferenceableIndex(test.prev);
+                ref var _prev = ref entries[test.prev];
+                if (_prev.parent != n) throw new InvalidOperationException("backlink failed #2");
+                if (test.hashCode < _prev.hashCode) throw new InvalidCastException("unreachable: " + test.prev.ToString());
+            }
+            if (count < test.size) throw new InvalidOperationException("uncredible subtree size");
+        }
+
+        [Conditional("IRRATIONAL_PANIC")]
+        private void _RequireGlobalValid()
+        {
+            var ub = count;
+            while (0 <= --ub) if (0 <= entries[ub].hashCode) _RequireValid(ub);
         }
 
         [Conditional("DEBUG")]
@@ -199,12 +231,28 @@ namespace Zaimoni.Collections
         {
             int code = 0;
             if (!Keys.Contains(key)) code += 1;
-            if (0 > FindEntry(key, out var scan_lb, out var scan_ub)) code += 2;
+            if (0 > FindEntry(key, out var root, out var leaf)) code += 2;
             var actual = Array.FindIndex(entries, x => Comparer.Equals(x.key, key));
-            if (actual > Array.FindIndex(entries, x => Comparer.Equals(x.key, key))) code += 4;
+            if (0 > actual) code += 4;
+            else if (entries[actual].parent == leaf) code += 8;
             // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
             // the private type Zaimoni.Collections.Dictionary::Entry
-            if (0 < code) throw new InvalidOperationException("Key AWOL #0: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + scan_lb.ToString() + ", " + scan_ub.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
+            if (0 < code) throw new InvalidOperationException("Key AWOL: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
+            _RequireGlobalValid();
+        }
+
+        [Conditional("DEBUG")]
+        private void _RequireDoesNotContainsKey(Key key)
+        {
+            int code = 0;
+            if (Keys.Contains(key)) code += 1;
+            if (0 <= FindEntry(key, out var root, out var leaf)) code += 2;
+            var actual = Array.FindIndex(entries, x => Comparer.Equals(x.key, key));
+            if (0 <= actual) code += 4;
+            // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
+            // the private type Zaimoni.Collections.Dictionary::Entry
+            if (0 < code) throw new InvalidOperationException("Key party-crashing: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
+            _RequireGlobalValid();
         }
 
         public Value this[Key key]
@@ -231,6 +279,7 @@ namespace Zaimoni.Collections
             int i = FindEntry(keyValuePair.Key);
             if (0 <= i && EqualityComparer<Value>.Default.Equals(entries[i].value, keyValuePair.Value)) {
                 Remove(i);
+                _RequireDoesNotContainsKey(keyValuePair.Key);
                 return true;
             }
             return false;
@@ -241,6 +290,7 @@ namespace Zaimoni.Collections
             int i = FindEntry(key);
             if (0 <= i) {
                 Remove(i);
+                _RequireDoesNotContainsKey(key);
                 return true;
             }
             return false;
@@ -249,7 +299,7 @@ namespace Zaimoni.Collections
         public void Clear()
         {
             if (0 <= activeList) {
-                version++;
+                Interlocked.Increment(ref version);
                 while (0 < count) {
                     ref var staging = ref entries[--count];
                     if (0 <= staging.hashCode) staging.Clear();
@@ -425,7 +475,7 @@ namespace Zaimoni.Collections
         }
 
         private void Remove(int doomed) {
-            _RequireDereferenceableIndex(doomed);
+            _RequireDereferenceableIndexPrecondition(doomed);
             Interlocked.Increment(ref version); // break enumerators
 retry:
             ref var staging = ref entries[doomed];
@@ -434,8 +484,7 @@ retry:
 #endif
 
             if (0 > staging.prev && 0 > staging.next) _excise(staging.parent, doomed, -1);
-retry_splice:
-            if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
+            else if (0 > staging.prev && 0 <= staging.next) _excise(staging.parent, doomed, staging.next);
             else if (0 <= staging.prev && 0 > staging.next) _excise(staging.parent, doomed, staging.prev);
             else { // not so simple
                 var successor = InOrderSuccessor(doomed, out var depth_successor);
@@ -457,6 +506,7 @@ retry_splice:
             staging.prev = -1;
             staging.next = freeList;
             staging.parent = -1;
+            staging.size = 0;
             staging.key = default;  // must trigger GC here
             staging.value = default;
 
@@ -484,9 +534,6 @@ retry_splice:
             root = -1;
             leaf = -1;
             if (0 > activeList) return -1;
-#if DEBUG
-            if (-1 != entries[activeList].parent) throw new InvalidOperationException("not rooted properly");
-#endif
 
             int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
 
@@ -495,36 +542,57 @@ retry_splice:
 
         private int _findEntryTree(Key key, int hashCode, int scan, ref int root, ref int leaf)
         {
-            while (0 <= scan) {
-                _RequireDereferenceableIndex(scan);
-                ref var _scan = ref entries[scan];
-#if DEBUG
-                if (0 <= _scan.prev) {
-                    _RequireDereferenceableIndex(_scan.prev);
-                    if (_scan.hashCode < entries[_scan.prev].hashCode) throw new InvalidOperationException("inverted link");
+#if IRRATIONAL_CAUTION
+            void gave_up_too_soon(int leaf)
+            {
+                if (0 <= leaf) {
+                    ref var _leaf = ref entries[leaf];
+                    if (Comparer.Equals(_leaf.key, key)) throw new InvalidOperationException("gave up too soon #1");
+                    if (0 <= _leaf.prev && Comparer.Equals(entries[_leaf.prev].key, key)) throw new InvalidOperationException("gave up too soon #2\n" + _leaf.to_s() + "\n" + entries[_leaf.prev].to_s() + "\n" + (0 > _leaf.parent ? "" : entries[_leaf.parent].to_s()));
+                    if (0 <= _leaf.next && Comparer.Equals(entries[_leaf.next].key, key)) throw new InvalidOperationException("gave up too soon #3\n" + _leaf.to_s()+"\n"+ entries[_leaf.next].to_s()+"\n" + (0 > _leaf.parent ? "" : entries[_leaf.parent].to_s()));
                 }
-                if (0 <= _scan.next) {
-                    _RequireDereferenceableIndex(_scan.next);
-                    if (_scan.hashCode > entries[_scan.next].hashCode) throw new InvalidOperationException("inverted link #2");
-                }
+            }
 #endif
 
-                var code = hashCode.CompareTo(_scan.hashCode);
-#if DEBUG
-                if (_scan.hashCode != (Comparer.GetHashCode(_scan.key) & 0x7FFFFFFF)) throw new InvalidOperationException("corrupt hashcode");
+            while (0 <= scan) {
+                _RequireDereferenceableIndexPrecondition(scan);
+                ref var _scan = ref entries[scan];
+
+                var code = hashCode.CompareTo(_scan.hashCode); // profiles faster than direct comparison pair
+                if (0 < code) { // greater than
+                    if (0 > _scan.next) {
+                        root = scan;
+                        leaf = _scan.next;
+#if IRRATIONAL_CAUTION
+                        gave_up_too_soon(leaf);
 #endif
-                if (hashCode == _scan.hashCode) {
+                        return -1;
+                    }
+                    scan = _scan.next;
+                } else if (0 > code) { // less than
+                    if (0 > _scan.prev) {
+                        root = scan;
+                        leaf = _scan.prev;
+#if IRRATIONAL_CAUTION
+                        gave_up_too_soon(leaf);
+#endif
+                        return -1;
+                    }
+                    scan = _scan.prev;
+                } else /* if (hashCode == _scan.hashCode) */ {
                     if (Comparer.Equals(_scan.key, key)) {
                         root = scan;
                         leaf = scan;
                         return scan;
                     }
-                    bool no_prev = 0 > _scan.prev || hashCode > entries[_scan.prev].hashCode;
-                    bool no_next = 0 > _scan.next || hashCode < entries[_scan.next].hashCode;
-                    if (no_prev) {
+                    bool no_next = 0 > _scan.next;
+                    if (0 > _scan.prev) {
                         if (no_next) {
                             root = scan;
-                            leaf = 0 > entries[scan].next ? -1 : _scan.prev;
+                            leaf = 0 > _scan.next ? -1 : _scan.prev;
+#if IRRATIONAL_CAUTION
+                            gave_up_too_soon(leaf);
+#endif
                             return -1;
                         }
                         scan = _scan.next;
@@ -535,56 +603,44 @@ retry_splice:
                     }
                     int proxy_root1 = -1;
                     int proxy_leaf1 = -1;
-                    var candidate1 = _findEntryTree(key, hashCode, _scan.prev, ref proxy_root1, ref proxy_leaf1);
-                    if (0 <= candidate1) {
+                    int candidate;
+                    if (0 <= (candidate = _findEntryTree(key, hashCode, _scan.prev, ref proxy_root1, ref proxy_leaf1))) {
                         root = proxy_root1;
                         leaf = proxy_leaf1;
-                        return candidate1;
+                        return candidate;
                     }
 
                     int proxy_root2 = -1;
                     int proxy_leaf2 = -1;
-                    var candidate2 = _findEntryTree(key, hashCode, _scan.next, ref proxy_root2, ref proxy_leaf2);
-                    if (0 <= candidate2) {
+                    if (0 <= (candidate = _findEntryTree(key, hashCode, _scan.next, ref proxy_root2, ref proxy_leaf2))) {
                         root = proxy_root2;
                         leaf = proxy_leaf2;
-                        return candidate2;
+                        return candidate;
                     }
 
-                    if (-1 == proxy_leaf1) {
+                    if (0 > proxy_leaf1) {
                         root = proxy_root1;
                         leaf = -1;
                         return -1;
                     }
-                    if (-1 == proxy_leaf2) {
+                    if (0 > proxy_leaf2) {
                         root = proxy_root2;
                         leaf = -1;
                         return -1;
                     }
                     // leftward bias
+#if IRRATIONAL_CAUTION
+                    gave_up_too_soon(proxy_leaf1);
+                    gave_up_too_soon(proxy_leaf2);
+#endif
                     root = proxy_root1;
                     leaf = proxy_leaf1;
                     return -1;
-                } else if (hashCode > _scan.hashCode) { // greater than
-                    bool no_next = 0 > _scan.next || hashCode < entries[_scan.next].hashCode;
-                    if (no_next) {
-                        root = scan;
-                        leaf = _scan.next;
-                        return -1;
-                    }
-                    scan = _scan.next;
-                    continue;
-                } else /* if (hashCode < _scan.hashCode) */ { // less than
-                    bool no_prev = 0 > _scan.prev || hashCode > entries[_scan.prev].hashCode;
-                    if (no_prev) {
-                        root = scan;
-                        leaf = _scan.prev;
-                        return -1;
-                    }
-                    scan = _scan.prev;
-                    continue;
                 }
             }
+#if IRRATIONAL_CAUTION
+            gave_up_too_soon(leaf);
+#endif
             return -1;
         }
 
@@ -598,12 +654,13 @@ retry_splice:
 #if DEBUG
                 if (0 < count) throw new InvalidOperationException("non-empty dictionary that looks empty; "+count.ToString());
 #endif
-                version++;
+                Interlocked.Increment(ref version);
                 if (0 == entries.Length) entries = new Entry[15];
                 entries[0].hashCode = hashCode;
                 entries[0].prev = -1;
                 entries[0].next = -1;
                 entries[0].parent = -1;
+                entries[0].size = 1;
                 entries[0].key = key;
                 entries[0].value = value;
                 count = 1;
@@ -618,7 +675,7 @@ retry_splice:
             var index = FindEntry(key, out int root, out int leaf);
             if (0 <= index) {
                 if (add) throw new ArgumentException("adding duplicate", nameof(key));
-                version++;
+                Interlocked.Increment(ref version);
                 entries[index].value = value;
                 return;
             }
@@ -658,6 +715,7 @@ retry_splice:
 
                 entries[index].hashCode = hashCode;
                 _root.prev = index;
+                _scapegoat_size_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -666,6 +724,7 @@ retry_splice:
 
                 entries[index].hashCode = hashCode;
                 _root.next = index;
+                _scapegoat_size_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -678,6 +737,7 @@ retry_splice:
                 entries[index].hashCode = hashCode;
                 entries[_root.prev].parent = index;
                 _root.prev = index;
+                _scapegoat_size_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             } else /* if (hashCode >= _root.hashCode) */ {
@@ -689,6 +749,7 @@ retry_splice:
                 entries[index].hashCode = hashCode;
                 entries[_root.next].parent = index;
                 _root.next = index;
+                _scapegoat_size_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -712,29 +773,92 @@ retry_splice:
         }
 
 #region binary tree support
+        uint _scapegoat_size(int root) {
+            if (0 > root) return 0;
+            var ret = entries[root].size;
+#if DEBUG
+            if (count < ret) throw new InvalidOperationException("uncredible subtree size: "+ret.ToString()+" for "+root.ToString()+"\n"+entries.to_s());
+#endif
+            return ret;
+        }
+
+        static uint _min_height(uint size) {
+            uint ret = 1; // not correct for size 0 but we don't check this, if that was relevant
+            while (1 < size) {
+                ++ret;
+                size /= 2;
+            }
+            return ret;
+        }
+
+        void _scapegoat_size_rebuild(int root) {
+            if (0 > root) return;
+            _RequireDereferenceableIndexPrecondition(root);
+
+            bool update(ref int root) {
+                ref var _root = ref entries[root];
+retry:
+                uint working = 1;
+                if (0 <= _root.prev) working += _scapegoat_size(_root.prev);
+                if (0 <= _root.next) working += _scapegoat_size(_root.next);
+#if DEBUG
+                if (count < working) throw new InvalidOperationException("uncredible subtree size: "+working.ToString()+"; "+_root.to_s()+"\n"+entries.to_s());
+#endif
+                _root.size = working;
+
+                if (wantRotateNext(root)) {
+                    _rotate_next_up(root);
+                    goto retry; // simulate tail call of _scapegoat_size_rebuild from _rotate_next_up
+                }
+
+                if (wantRotatePrev(root)) {
+                    _rotate_prev_up(root);
+                    goto retry; // simulate tail call of _scapegoat_size_rebuild from _rotate_prev_up
+                }
+
+                if (0 <= _root.parent) {
+                    root = _root.parent;
+                    return true;
+                }
+                return false;
+            }
+
+            while (update(ref root)) ;
+        }
+
+        void _relink(int host, int doomed, int target)
+        {
+            _RequireDereferenceableIndex(host); // just in case we're assigning, when it's mandatory
+            _RequireValidIndexPrecondition(target);
+            ref var parent = ref entries[host];
+            if (doomed == parent.prev) parent.prev = target;
+#if DEBUG
+            else if (doomed != parent.next) throw new InvalidOperationException("child not actually linked to parent");
+#endif
+            else parent.next = target;
+            if (0 <= target) {
+                _RequireDereferenceableIndexPrecondition(target);
+                entries[target].parent = host;
+            }
+        }
+
         void _excise(int host, int doomed, int target)
         {
-            _RequireValidIndex(host);
-            _RequireValidIndex(target);
+            _RequireValidIndexPrecondition(host);
+            _RequireValidIndexPrecondition(target);
             if (0 <= host) {
-                _RequireDereferenceableIndex(doomed);
-                ref var parent = ref entries[host];
-                if (doomed == parent.prev) parent.prev = target;
-#if DEBUG
-                else if (doomed != parent.next) throw new InvalidOperationException("child not actually linked to parent");
-#endif
-                else parent.next = target;
-                if (0 <= target) entries[target].parent = host;
+                _relink(host, doomed, target);
+                _scapegoat_size_rebuild(host);
             } else if (0 <= target) {
                 entries[activeList = target].parent = -1;
             }
-            _RequireValidParents(host);
-            _RequireValidParents(target);
+            _RequireValid(host);
+            _RequireValid(target);
         }
 
         int InOrderSuccessor(int root, out int depth)
         {
-            _RequireDereferenceableIndex(root);
+            _RequireDereferenceableIndexPrecondition(root);
             depth = 0;
             var scan = entries[root].next;
             if (0 > scan) return root;
@@ -748,7 +872,7 @@ retry_splice:
 
         int InOrderPredecessor(int root, out int depth)
         {
-            _RequireDereferenceableIndex(root);
+            _RequireDereferenceableIndexPrecondition(root);
             depth = 0;
             var scan = entries[root].prev;
             if (0 > scan) return root;
@@ -770,39 +894,89 @@ retry_splice:
                 also, parent of root-before is parent of pivot-after
         */
         void _rotate_prev_up(int root) {
-            _RequireDereferenceableIndex(root);
+            _RequireDereferenceableIndexPrecondition(root);
             ref var _root = ref entries[root];
             var anchor = _root.parent;
             var pivot = _root.prev;
-            _RequireDereferenceableIndex(pivot);
+            _RequireDereferenceableIndexPrecondition(pivot);
             ref var _pivot = ref entries[pivot];
-            _RequireValidIndex(_pivot.next);
+            _RequireValidIndexPrecondition(_pivot.next);
             _root.prev = _pivot.next;
             if (0 <= _pivot.next) entries[_pivot.next].parent = root;
             _pivot.next = root;
             _root.parent = pivot;
             if (-1 == (_pivot.parent = anchor)) activeList = pivot;
-            _RequireValidParents(root);
-            _RequireValidParents(anchor);
-            _RequireValidParents(pivot);
+            else _relink(anchor, root, pivot);
+            _RequireValid(root);
+            _RequireValid(anchor);
+            _RequireValid(pivot);
+            _RequireGlobalValid();
+//          _scapegoat_size_rebuild(root); // caller does this
         }
 
         void _rotate_next_up(int root) {
-            _RequireDereferenceableIndex(root);
+            _RequireDereferenceableIndexPrecondition(root);
             ref var _root = ref entries[root];
             var anchor = _root.parent;
             var pivot = _root.next;
-            _RequireDereferenceableIndex(pivot);
+            _RequireDereferenceableIndexPrecondition(pivot);
             ref var _pivot = ref entries[pivot];
-            _RequireValidIndex(_pivot.prev);
+            _RequireValidIndexPrecondition(_pivot.prev);
             _root.next = _pivot.prev;
             if (0 <= _pivot.prev) entries[_pivot.prev].parent = root;
             _pivot.prev = root;
             _root.parent = pivot;
             if (-1 == (_pivot.parent = anchor)) activeList = pivot;
-            _RequireValidParents(root);
-            _RequireValidParents(anchor);
-            _RequireValidParents(pivot);
+            else _relink(anchor, root, pivot);
+            _RequireValid(root);
+            _RequireValid(anchor);
+            _RequireValid(pivot);
+            _RequireGlobalValid();
+//          _scapegoat_size_rebuild(root); // caller does this
+        }
+
+        bool wantRotatePrev(int root)
+        {
+            _RequireDereferenceableIndexPrecondition(root);
+            ref var _root = ref entries[root];
+            if (0 > _root.prev) return false;
+            _RequireDereferenceableIndexPrecondition(_root.prev);
+
+            ref var _pivot = ref entries[_root.prev];
+//          var size_pivot_swap = _scapegoat_size(_pivot.next); // this remains at the same height-offset before-after
+            var size_pivot_other = _scapegoat_size(_pivot.prev);
+            if (0 == size_pivot_other) return false;
+
+            var size_root_other = _scapegoat_size(_root.next);
+            if (0 == size_root_other) return 1 <= size_pivot_other;
+
+            var height_root_other = _min_height(size_root_other);
+            var height_pivot_other = _min_height(size_pivot_other);
+
+            if (height_root_other >= height_pivot_other) return false;
+            return 1 <= height_pivot_other - height_root_other;
+        }
+
+        bool wantRotateNext(int root)
+        {
+            _RequireDereferenceableIndexPrecondition(root);
+            ref var _root = ref entries[root];
+            if (0 > _root.next) return false;
+            _RequireDereferenceableIndexPrecondition(_root.next);
+
+            ref var _pivot = ref entries[_root.next];
+//          var size_pivot_swap = _scapegoat_size(_pivot.prev); // this remains at the same height-offset before-after
+            var size_pivot_other = _scapegoat_size(_pivot.next);
+            if (0 == size_pivot_other) return false;
+
+            var size_root_other = _scapegoat_size(_root.next);
+            if (0 == size_root_other) return 1 <= size_pivot_other;
+
+            var height_root_other = _min_height(size_root_other);
+            var height_pivot_other = _min_height(size_pivot_other);
+
+            if (height_root_other >= height_pivot_other) return false;
+            return 1 <= height_pivot_other - height_root_other;
         }
 #endregion
 
@@ -828,7 +1002,7 @@ retry_splice:
             }
 
             public bool MoveNext() {
-                if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                 // Use unsigned comparison since we set index to dictionary.count+1 when the enumeration ends.
                 // dictionary.count+1 could be negative if dictionary.count is Int32.MaxValue
@@ -864,7 +1038,7 @@ retry_splice:
 
             void IEnumerator.Reset()
             {
-                if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                 index = 0;
                 current = default;
@@ -977,7 +1151,7 @@ retry_splice:
 
                 public bool MoveNext()
                 {
-                    if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                    if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                     while ((uint)index < (uint)dictionary.count) {
                         ref var staging = ref dictionary.entries[index++];
@@ -1004,7 +1178,7 @@ retry_splice:
 
                 void IEnumerator.Reset()
                 {
-                    if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                    if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                     index = 0;
                     currentKey = default;
@@ -1094,7 +1268,7 @@ retry_splice:
 
                 public bool MoveNext()
                 {
-                    if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                    if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                     while ((uint)index < (uint)dictionary.count) {
                         ref var staging = ref dictionary.entries[index++];
@@ -1120,7 +1294,7 @@ retry_splice:
 
                 void IEnumerator.Reset()
                 {
-                    if (version != dictionary.version) throw new InvalidOperationException("enumeration failed: collection changed"); // \todo line this up
+                    if (version != dictionary.version) throw new InvalidOperationException(COLLECTION_WAS_MODIFIED);
 
                     index = 0;
                     currentValue = default;
