@@ -19,7 +19,7 @@ using System.Linq;
 namespace Zaimoni.Collections
 {
     [Serializable]
-    public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, ISerializable, IDeserializationCallback
+    public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, ISerializable, IDeserializationCallback, Fn_to_s
     {
         [Serializable]
         private struct Entry : Fn_to_s
@@ -149,6 +149,20 @@ namespace Zaimoni.Collections
         public ValueCollection Values { get { return values ??= new ValueCollection(this); } }
         ICollection<Value> IDictionary<Key, Value>.Values { get { return values ??= new ValueCollection(this); } }
         IEnumerable<Value> IReadOnlyDictionary<Key, Value>.Values { get { return values ??= new ValueCollection(this); } }
+
+        public string to_s() {
+            var ub = Count;
+            if (0 >= ub) return "{}";
+            var tmp = new List<string>(ub);
+            foreach (var iter in this)
+            {
+                tmp.Add(iter.Key.to_s() + ":" + iter.Value.to_s());
+            }
+            tmp[0] = "{" + tmp[0];
+            ub = tmp.Count;
+            tmp[ub - 1] += "} (" + ub.ToString() + ")";
+            return string.Join(",\n", tmp);
+        }
 
         [Conditional("DEBUG")]
         private void _RequireDereferenceableIndex(int n)

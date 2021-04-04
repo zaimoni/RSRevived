@@ -7,7 +7,7 @@
 
 // #define AUDIT_ACTOR_MOVEMENT
 // #define AUDIT_ITEM_INVARIANTS
-// #define BOOTSTRAP_Z_DICTIONARY
+#define BOOTSTRAP_Z_DICTIONARY
 
 using System;
 using System.Collections.Generic;
@@ -1611,7 +1611,7 @@ retry:
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
         if (pos!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
 #if BOOTSTRAP_Z_DICTIONARY
-        if (!test) throw new InvalidOperationException("desync");
+        if (!test) throw new InvalidOperationException("desync; "+ m_MapObjectsByPosition.to_s()+"\n"+ m_MapObjectsByPosition_alt.to_s());
         if (mapObject_alt != mapObject) throw new InvalidOperationException("desync #2");
 #endif
 #endif
