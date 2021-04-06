@@ -31,7 +31,7 @@ namespace Zaimoni.Collections
             [NonSerialized] public int prev;        // Index of previous entry, -1 if first
             [NonSerialized] public int next;        // Index of next entry, -1 if last
             [NonSerialized] public int parent;      // Index of parent of entry, -1 if root
-            [NonSerialized] public uint size;       // cache field: scapegoat size of subtree rooted here
+            [NonSerialized] public uint depth;      // cache field: scapegoat depth of subtree rooted here
             // serialize these two, not the above fields
             public Key key;         // Key of entry
             public Value value;     // Value of entry
@@ -41,9 +41,29 @@ namespace Zaimoni.Collections
                 prev = -1;
                 next = -1;
                 parent = -1;
-                size = 0;
+                depth = 0;
                 key = default;
                 value = default;
+            }
+
+            public void Deallocate(int free)
+            {
+                hashCode = -1;
+                prev = -1;
+                next = free;
+                parent = -1;
+                depth = 0;
+                key = default;  // must trigger GC here
+                value = default;
+            }
+
+            public void NewLeaf(int hash)
+            {
+                hashCode = hash;
+                prev = -1;
+                next = -1;
+                parent = -1;
+                depth = 1;
             }
 
             public void ValueCopy(in Entry src) {
@@ -52,8 +72,13 @@ namespace Zaimoni.Collections
                 value = src.value;
             }
 
+            public KeyValuePair<Key, Value> to_KV(out int hash) {
+                hash = hashCode;
+                return new KeyValuePair<Key, Value>(key, value);
+            }
+
             public string to_s() {
-                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + ", " + size.ToString() + "]";
+                return "[" + (key?.to_s() ?? "null") + ", " + (value?.to_s() ?? "null") + ", " + hashCode.ToString() + ", " + prev.ToString() + ", " + next.ToString() + ", " + parent.ToString() + ", " + depth.ToString() + "]";
             }
         }
 
@@ -214,9 +239,9 @@ namespace Zaimoni.Collections
                 _RequireDereferenceableIndex(test.prev);
                 ref var _prev = ref entries[test.prev];
                 if (_prev.parent != n) throw new InvalidOperationException("backlink failed #2");
-                if (test.hashCode < _prev.hashCode) throw new InvalidCastException("unreachable: " + test.prev.ToString());
+                if (test.hashCode < _prev.hashCode) throw new InvalidCastException("unreachable #2: " + test.prev.ToString());
             }
-            if (count < test.size) throw new InvalidOperationException("uncredible subtree size");
+            if (count < test.depth) throw new InvalidOperationException("uncredible subtree depth");
         }
 
         [Conditional("IRRATIONAL_PANIC")]
@@ -502,13 +527,7 @@ retry:
             }
 
             // wrap-up
-            staging.hashCode = -1;
-            staging.prev = -1;
-            staging.next = freeList;
-            staging.parent = -1;
-            staging.size = 0;
-            staging.key = default;  // must trigger GC here
-            staging.value = default;
+            staging.Deallocate(freeList);
 
             freeList = doomed;
             freeCount++;
@@ -659,13 +678,10 @@ retry:
 #endif
                 Interlocked.Increment(ref version);
                 if (0 == entries.Length) entries = new Entry[15];
-                entries[0].hashCode = hashCode;
-                entries[0].prev = -1;
-                entries[0].next = -1;
-                entries[0].parent = -1;
-                entries[0].size = 1;
-                entries[0].key = key;
-                entries[0].value = value;
+                ref var staging = ref entries[0];
+                staging.NewLeaf(hashCode);
+                staging.key = key;
+                staging.value = value;
                 count = 1;
                 activeList = 0;
                 freeCount = 0;
@@ -719,7 +735,7 @@ retry:
 
                 entries[index].hashCode = hashCode;
                 _root.prev = index;
-                _scapegoat_size_rebuild(index);
+                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -728,7 +744,7 @@ retry:
 
                 entries[index].hashCode = hashCode;
                 _root.next = index;
-                _scapegoat_size_rebuild(index);
+                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -741,7 +757,7 @@ retry:
                 entries[index].hashCode = hashCode;
                 entries[_root.prev].parent = index;
                 _root.prev = index;
-                _scapegoat_size_rebuild(index);
+                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             } else /* if (hashCode >= _root.hashCode) */ {
@@ -753,7 +769,7 @@ retry:
                 entries[index].hashCode = hashCode;
                 entries[_root.next].parent = index;
                 _root.next = index;
-                _scapegoat_size_rebuild(index);
+                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -777,38 +793,30 @@ retry:
         }
 
 #region binary tree support
-        uint _scapegoat_size(int root) {
+        uint _scapegoat_depth(int root) {
             if (0 > root) return 0;
-            var ret = entries[root].size;
+            var ret = entries[root].depth;
 #if DEBUG
             if (count < ret) throw new InvalidOperationException("uncredible subtree size: "+ret.ToString()+" for "+root.ToString()+"\n"+entries.to_s());
 #endif
             return ret;
         }
 
-        static uint _min_height(uint size) {
-            uint ret = 1; // not correct for size 0 but we don't check this, if that was relevant
-            while (1 < size) {
-                ++ret;
-                size /= 2;
-            }
-            return ret;
-        }
-
-        void _scapegoat_size_rebuild(int root) {
+        void _scapegoat_rebuild(int root) {
             if (0 > root) return;
             _RequireDereferenceableIndexPrecondition(root);
 
             bool update(ref int root) {
                 ref var _root = ref entries[root];
 retry:
-                uint working = 1;
-                if (0 <= _root.prev) working += _scapegoat_size(_root.prev);
-                if (0 <= _root.next) working += _scapegoat_size(_root.next);
+                var prev_depth = _scapegoat_depth(_root.prev);
+                var next_depth = _scapegoat_depth(_root.next);
+
+                var working = Math.Max(prev_depth, next_depth) + 1;
 #if DEBUG
-                if (count < working) throw new InvalidOperationException("uncredible subtree size: "+working.ToString()+"; "+_root.to_s()+"\n"+entries.to_s());
+                if (count < working) throw new InvalidOperationException("uncredible subtree depth: " + working.ToString() + "; " + _root.to_s() + "\n" + entries.to_s());
 #endif
-                _root.size = working;
+                _root.depth = working;
 
                 if (wantRotateNext(root)) {
                     _rotate_next_up(root);
@@ -820,9 +828,68 @@ retry:
                     goto retry; // simulate tail call of _scapegoat_size_rebuild from _rotate_prev_up
                 }
 
+#if DEBUG
+                // we'll run out of RAM before this can overflow
+                if (prev_depth < next_depth) {
+                    if (prev_depth + 2 <= next_depth) {
+                        var inorder_predecessor = InOrderPredecessor(root, out var pred_depth);
+                        var inorder_successor = InOrderSuccessor(root, out var succ_depth);
+#if PROTOTYPE
+                        // backup root; copy successor to root; delete successor, insert copy of root as child of inorder predecessor
+                        var backup = _root.to_KV(out var backup_hash);
+                        ref var staging = ref entries[inorder_successor];
+                        _root.ValueCopy(in staging);
+                        _excise(staging.parent, inorder_successor, staging.next);
+                        staging.NewLeaf(backup_hash);
+                        staging.key = backup.Key;
+                        staging.value = backup.Value;
+
+                        staging.parent = inorder_predecessor;
+                        if (inorder_predecessor == root) {
+                            entries[root].prev = inorder_successor;
+                            goto retry;
+                        } else {
+                            entries[inorder_predecessor].next = inorder_successor;
+                            _scapegoat_rebuild(inorder_predecessor);
+                            goto retry;
+                        }
+#else
+                        throw new InvalidOperationException("want rebalance: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString());
+#endif
+                    }
+                } else if (prev_depth > next_depth) {
+                    if (next_depth + 2 <= prev_depth) {
+                        var inorder_predecessor = InOrderPredecessor(root, out var pred_depth);
+                        var inorder_successor = InOrderSuccessor(root, out var succ_depth);
+#if PROTOTYPE
+                        // backup root; copy predecessor to root; delete predecessor, insert copy of root as child of inorder successor
+                        var backup = _root.to_KV(out var backup_hash);
+                        ref var staging = ref entries[inorder_predecessor];
+                        _root.ValueCopy(in staging);
+                        _excise(staging.parent, inorder_predecessor, staging.prev);
+                        staging.NewLeaf(backup_hash);
+                        staging.key = backup.Key;
+                        staging.value = backup.Value;
+
+                        staging.parent = inorder_successor;
+                        if (inorder_successor == root) {
+                            entries[root].next = inorder_predecessor;
+                            goto retry;
+                        } else {
+                            entries[inorder_successor].prev = inorder_predecessor;
+                            _scapegoat_rebuild(inorder_successor);
+                            goto retry;
+                        }
+#else
+                        throw new InvalidOperationException("want rebalance #2: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString());
+#endif
+                    }
+                }
+#endif
+
                 if (0 <= _root.parent) {
-                    root = _root.parent;
-                    return true;
+                  root = _root.parent;
+                  return true;
                 }
                 return false;
             }
@@ -852,7 +919,7 @@ retry:
             _RequireValidIndexPrecondition(target);
             if (0 <= host) {
                 _relink(host, doomed, target);
-                _scapegoat_size_rebuild(host);
+                _scapegoat_rebuild(host);
             } else if (0 <= target) {
                 entries[activeList = target].parent = -1;
             }
@@ -915,7 +982,7 @@ retry:
             _RequireValid(anchor);
             _RequireValid(pivot);
             _RequireGlobalValid();
-//          _scapegoat_size_rebuild(root); // caller does this
+//          _scapegoat_rebuild(root); // caller does this
         }
 
         void _rotate_next_up(int root) {
@@ -936,7 +1003,7 @@ retry:
             _RequireValid(anchor);
             _RequireValid(pivot);
             _RequireGlobalValid();
-//          _scapegoat_size_rebuild(root); // caller does this
+//          _scapegoat_rebuild(root); // caller does this
         }
 
         bool wantRotatePrev(int root)
@@ -947,15 +1014,12 @@ retry:
             _RequireDereferenceableIndexPrecondition(_root.prev);
 
             ref var _pivot = ref entries[_root.prev];
-//          var size_pivot_swap = _scapegoat_size(_pivot.next); // this remains at the same height-offset before-after
-            var size_pivot_other = _scapegoat_size(_pivot.prev);
-            if (0 == size_pivot_other) return false;
+//          var height_pivot_swap = _scapegoat_depth(_pivot.next); // this remains at the same height-offset before-after
+            var height_pivot_other = _scapegoat_depth(_pivot.prev);
+            if (0 == height_pivot_other) return false;
 
-            var size_root_other = _scapegoat_size(_root.next);
-            if (0 == size_root_other) return 1 <= size_pivot_other;
-
-            var height_root_other = _min_height(size_root_other);
-            var height_pivot_other = _min_height(size_pivot_other);
+            var height_root_other = _scapegoat_depth(_root.next);
+            if (0 == height_root_other) return 1 <= height_pivot_other;
 
             if (height_root_other >= height_pivot_other) return false;
             return 1 <= height_pivot_other - height_root_other;
@@ -969,15 +1033,12 @@ retry:
             _RequireDereferenceableIndexPrecondition(_root.next);
 
             ref var _pivot = ref entries[_root.next];
-//          var size_pivot_swap = _scapegoat_size(_pivot.prev); // this remains at the same height-offset before-after
-            var size_pivot_other = _scapegoat_size(_pivot.next);
-            if (0 == size_pivot_other) return false;
+//          var height_pivot_swap = _scapegoat_depth(_pivot.prev); // this remains at the same height-offset before-after
+            var height_pivot_other = _scapegoat_depth(_pivot.next);
+            if (0 == height_pivot_other) return false;
 
-            var size_root_other = _scapegoat_size(_root.next);
-            if (0 == size_root_other) return 1 <= size_pivot_other;
-
-            var height_root_other = _min_height(size_root_other);
-            var height_pivot_other = _min_height(size_pivot_other);
+            var height_root_other = _scapegoat_depth(_root.next);
+            if (0 == height_root_other) return 1 <= height_pivot_other;
 
             if (height_root_other >= height_pivot_other) return false;
             return 1 <= height_pivot_other - height_root_other;
