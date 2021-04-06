@@ -262,7 +262,7 @@ namespace Zaimoni.Collections
             else if (entries[actual].parent == leaf) code += 8;
             // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
             // the private type Zaimoni.Collections.Dictionary::Entry
-            if (0 < code) throw new InvalidOperationException("Key AWOL: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
+            if (0 < code) throw new InvalidOperationException("Key AWOL: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + "\n anchor: " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
             _RequireGlobalValid();
         }
 
@@ -276,7 +276,7 @@ namespace Zaimoni.Collections
             if (0 <= actual) code += 4;
             // for this to not crash, we need the base case for to_s to simulate a virtual member function call against
             // the private type Zaimoni.Collections.Dictionary::Entry
-            if (0 < code) throw new InvalidOperationException("Key party-crashing: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + ", " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
+            if (0 < code) throw new InvalidOperationException("Key party-crashing: " + key.to_s() + "; " + code.ToString() + ", " + Count.ToString() + "\n anchor: " + activeList.ToString() + "; " + root.ToString() + ", " + leaf.ToString() + ", " + actual.ToString() + "\n" + entries.to_s());
             _RequireGlobalValid();
         }
 
@@ -725,51 +725,47 @@ retry:
 
             entries[index].prev = -1;
             entries[index].next = -1;
+            entries[index].depth = 1;
             entries[index].key = key;
             entries[index].value = value;
             entries[index].parent = root_leaf[0];
 
+            Interlocked.Increment(ref version); // break enumerators
+            entries[index].hashCode = hashCode;
+
             ref var _root = ref entries[root_leaf[0]];
             if (hashCode <= _root.hashCode && -1 == _root.prev) {
-                Interlocked.Increment(ref version); // break enumerators
+                if (_link_prev(root_leaf[0], index)) _scapegoat_rebuild(root_leaf[0]);
 
-                entries[index].hashCode = hashCode;
-                _root.prev = index;
-                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
             if (hashCode >= _root.hashCode && -1 == _root.next) {
-                Interlocked.Increment(ref version); // break enumerators
+                if (_link_next(root_leaf[0], index)) _scapegoat_rebuild(root_leaf[0]);
 
-                entries[index].hashCode = hashCode;
-                _root.next = index;
-                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
             if (hashCode <= _root.hashCode) {
-                if (hashCode >= entries[_root.prev].hashCode) entries[index].prev = _root.prev;
-                else entries[index].next = _root.prev;
+                bool want_rebuild_index = (hashCode >= entries[_root.prev].hashCode)
+                                        ? _link_prev(index, _root.prev)
+                                        : _link_next(index, _root.prev);
+                bool want_rebuild_anchor = _link_prev(root_leaf[0], index);
 
-                Interlocked.Increment(ref version); // break enumerators
+                if (want_rebuild_index) _scapegoat_rebuild(index);
+                else if (want_rebuild_anchor) _scapegoat_rebuild(root_leaf[0]);
 
-                entries[index].hashCode = hashCode;
-                entries[_root.prev].parent = index;
-                _root.prev = index;
-                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             } else /* if (hashCode >= _root.hashCode) */ {
-                if (hashCode >= entries[_root.next].hashCode) entries[index].next = _root.next;
-                else entries[index].next = _root.next;
+                bool want_rebuild_index = (hashCode >= entries[_root.next].hashCode)
+                                        ? _link_prev(index, _root.next)
+                                        : _link_next(index, _root.next);
+                bool want_rebuild_anchor = _link_next(root_leaf[0], index);
 
-                Interlocked.Increment(ref version); // break enumerators
+                if (want_rebuild_index) _scapegoat_rebuild(index);
+                else if (want_rebuild_anchor) _scapegoat_rebuild(root_leaf[0]);
 
-                entries[index].hashCode = hashCode;
-                entries[_root.next].parent = index;
-                _root.next = index;
-                _scapegoat_rebuild(index);
                 _RequireContainsKey(key);
                 return;
             }
@@ -802,6 +798,33 @@ retry:
             return ret;
         }
 
+        bool _update_depth(int root)
+        {
+            ref var _root = ref entries[root];
+            var new_depth = Math.Min(_scapegoat_depth(_root.prev), _scapegoat_depth(_root.next)) + 1;
+            if (new_depth != _root.depth) {
+                _root.depth = new_depth;
+                return true;
+            };
+            return false;
+        }
+
+        bool _link_prev(int anchor, int leaf) {
+            _RequireDereferenceableIndexPrecondition(anchor);
+            _RequireDereferenceableIndexPrecondition(leaf);
+            entries[leaf].parent = anchor;
+            entries[anchor].prev = leaf;
+            return _update_depth(anchor);
+        }
+
+        bool _link_next(int anchor, int leaf) {
+            _RequireDereferenceableIndexPrecondition(anchor);
+            _RequireDereferenceableIndexPrecondition(leaf);
+            entries[leaf].parent = anchor;
+            entries[anchor].next = leaf;
+            return _update_depth(anchor);
+        }
+
         void _scapegoat_rebuild(int root) {
             if (0 > root) return;
             _RequireDereferenceableIndexPrecondition(root);
@@ -828,13 +851,13 @@ retry:
                     goto retry; // simulate tail call of _scapegoat_size_rebuild from _rotate_prev_up
                 }
 
-#if DEBUG
+#if PROTOTYPE
                 // we'll run out of RAM before this can overflow
                 if (prev_depth < next_depth) {
                     if (prev_depth + 2 <= next_depth) {
                         var inorder_predecessor = InOrderPredecessor(root, out var pred_depth);
                         var inorder_successor = InOrderSuccessor(root, out var succ_depth);
-#if PROTOTYPE
+#if DEBUG
                         // backup root; copy successor to root; delete successor, insert copy of root as child of inorder predecessor
                         var backup = _root.to_KV(out var backup_hash);
                         ref var staging = ref entries[inorder_successor];
@@ -861,7 +884,7 @@ retry:
                     if (next_depth + 2 <= prev_depth) {
                         var inorder_predecessor = InOrderPredecessor(root, out var pred_depth);
                         var inorder_successor = InOrderSuccessor(root, out var succ_depth);
-#if PROTOTYPE
+#if DEBUG
                         // backup root; copy predecessor to root; delete predecessor, insert copy of root as child of inorder successor
                         var backup = _root.to_KV(out var backup_hash);
                         ref var staging = ref entries[inorder_predecessor];
@@ -897,7 +920,7 @@ retry:
             while (update(ref root)) ;
         }
 
-        void _relink(int host, int doomed, int target)
+        bool _relink(int host, int doomed, int target)
         {
             _RequireDereferenceableIndex(host); // just in case we're assigning, when it's mandatory
             _RequireValidIndexPrecondition(target);
@@ -911,6 +934,7 @@ retry:
                 _RequireDereferenceableIndexPrecondition(target);
                 entries[target].parent = host;
             }
+            return _update_depth(host);
         }
 
         void _excise(int host, int doomed, int target)
@@ -918,8 +942,7 @@ retry:
             _RequireValidIndexPrecondition(host);
             _RequireValidIndexPrecondition(target);
             if (0 <= host) {
-                _relink(host, doomed, target);
-                _scapegoat_rebuild(host);
+                if (_relink(host, doomed, target)) _scapegoat_rebuild(host);
             } else if (0 <= target) {
                 entries[activeList = target].parent = -1;
             }
