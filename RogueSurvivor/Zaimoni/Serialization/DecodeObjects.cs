@@ -47,5 +47,19 @@ namespace Zaimoni.Serialization
             if (null != exec) foreach (var handler in exec) handler(src);
         }
 
+        public static void load<K, V>(KeyValuePair<K, V>[] src, ref Dictionary<K, V>? dest) where K:notnull
+        {
+            if (null == src || 0 >= src.Length) {
+                if (null != dest && 0 < dest.Count) dest = new();
+                return;
+            }
+            var ub = src.Length;
+            var ret = new Dictionary<K, V>(ub);
+            while (0 <= --ub) {
+                ref var x = ref src[ub];
+                ret.Add(x.Key, x.Value);
+            }
+            dest = ret;
+        }
     }
 }

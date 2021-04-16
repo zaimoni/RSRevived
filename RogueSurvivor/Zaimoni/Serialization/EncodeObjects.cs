@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 namespace Zaimoni.Serialization
@@ -28,8 +29,13 @@ namespace Zaimoni.Serialization
             var next = to_save[0];
             to_save.RemoveAt(0);
             // \todo write object id at next.Key to hard drive
-            // \todo write object itself to hard drive
+            next.Value(dest); // write object itself to hard drive
             return true;
+        }
+
+        static public T[] Linearize<T>(IEnumerable<T>? src) {
+            if (null == src || !src.Any()) return null;
+            return src.ToArray();
         }
     }
 }
