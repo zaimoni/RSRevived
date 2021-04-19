@@ -1252,9 +1252,11 @@ retry:
 
     public void DoForAllActors(Action<Actor> op) { foreach(Actor a in m_ActorsList) op(a); }
 
+    // \todo include objects in containers
+    // 2021-04-19 this would cause a bug if a live grenade were somehow in a container (failure to count down)
     public void DoForAllInventory(Action<Inventory> op)
     {
-      foreach (var x in m_GroundItemsByPosition) op(x.Value);
+      foreach (var x in m_GroundItemsByPosition.Values) op(x);
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
         if (null != inv) op(inv);
@@ -1266,11 +1268,15 @@ retry:
       foreach (var x in m_GroundItemsByPosition) op(new Location(this, x.Key), x.Value);
     }
 
+    // \todo include objects in containers
+    // 2021-04-19: this causes food in containers to be omitted when evaluating whether to order a food drop
+    // however, such containers are usually inside (i.e., maybe shouldn't be counted anyway?)
+    // and the resupply mission type is up for re-evaluation anyway when helicopters are implemented
     public int SumOverAllInventory(Func<Inventory,int> xform)
     {
       int ret = 0;
 
-      foreach (var x in m_GroundItemsByPosition) ret += xform(x.Value);
+      foreach (var x in m_GroundItemsByPosition.Values) ret += xform(x);
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
         if (null != inv) ret += xform(inv);
@@ -1279,6 +1285,8 @@ retry:
       return ret;
     }
 
+    // \todo include objects in containers
+    // 2021-04-19 this would cause a bug if a live grenade were somehow in a container (failure to count down)
     public bool DoForOneInventory(Func<Inventory,Location,bool> test)
     {
       foreach (var x in m_GroundItemsByPosition) {
@@ -1597,7 +1605,7 @@ retry:
     }
 
     // map object manipulation functions
-    public void DoForAllMapObjects(Action<MapObject> op) { foreach(var x in m_MapObjectsByPosition) op(x.Value); }
+    public void DoForAllMapObjects(Action<MapObject> op) { foreach(var x in m_MapObjectsByPosition.Values) op(x); }
     public bool HasMapObject(MapObject x) { return m_MapObjectsByPosition.ContainsValue(x); }
 
     public MapObject? GetMapObjectAt(Point pos)
@@ -1696,10 +1704,10 @@ retry:
     public void OpenAllGates()
     {
       var noise_name = this== Engine.Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap ? "cell opening" : "gate opening";
-      foreach(var x in m_MapObjectsByPosition) {
-        if (MapObject.IDs.IRON_GATE_CLOSED != x.Value.ID) continue;
-        x.Value.ID = MapObject.IDs.IRON_GATE_OPEN;
-        Engine.RogueGame.Game.OnLoudNoise(x.Value.Location, noise_name);
+      foreach(var x in m_MapObjectsByPosition.Values) {
+        if (MapObject.IDs.IRON_GATE_CLOSED != x.ID) continue;
+        x.ID = MapObject.IDs.IRON_GATE_OPEN;
+        Engine.RogueGame.Game.OnLoudNoise(x.Location, noise_name);
       }
     }
 

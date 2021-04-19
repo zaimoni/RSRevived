@@ -8,14 +8,15 @@ using System.Diagnostics;
 using System.Threading;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
-#if DEBUG
 using System.Linq;
-#endif
 
 #nullable enable
 
 // re-implementation of System.Collections.Generic.Dictionary
 // cloning: https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,cc27fcdd81291584,references
+
+// 2021-04-19: difference between O(log n) access time (this) and O(1) access time [System.Collections.Dictionary] not credibly
+// "fixable" by optimization.
 
 namespace Zaimoni.Collections
 {
