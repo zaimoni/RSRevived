@@ -2059,26 +2059,22 @@ namespace djack.RogueSurvivor.Engine
 #region corpses: decide who zombify or rots.
           var corpseList1 = new List<Corpse>(map.CountCorpses);
           var corpseList2 = new List<Corpse>(map.CountCorpses);
-          foreach (Corpse corpse in map.Corpses) {
+          foreach (var corpse in map.Corpses) {
             if (rules.RollChance(corpse.ZombifyChance(map.LocalTime, true))) {
               corpseList1.Add(corpse);
             } else if (corpse.TakeDamage(Corpse.DecayPerTurn())) {
               corpseList2.Add(corpse);
             }
           }
-          if (corpseList1.Count > 0) {
-            var corpseList3 = new List<Corpse>(corpseList1.Count);
-            foreach (Corpse corpse in corpseList1) {
+          foreach (var corpse in corpseList1) {
               if (!map.HasActorAt(corpse.Position)) {
-                corpseList3.Add(corpse);
                 Zombify(null, corpse.DeadGuy, false);
                 if (ForceVisibleToPlayer(map, corpse.Position)) {
                   AddMessage(new Data.Message("The "+corpse.ToString()+" rises again!!", map.LocalTime.TurnCounter, Color.Red));
                   m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
                 }
+                map.Destroy(corpse);
               }
-            }
-            foreach (Corpse c in corpseList3) map.Destroy(c);
           }
           // RS Alpha 10.1-: players are special, corpses wait for players to turn into dust
           // don't really have the RAM to do anything complex, like inanimate skeletons.
