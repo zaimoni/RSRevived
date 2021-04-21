@@ -127,12 +127,23 @@ namespace Zaimoni.Serialization
         protected abstract void trivialSerialize(Stream dest, sbyte src);
         protected abstract void trivialDeserialize(Stream src, ref sbyte dest);
 #endregion
+
+#region object references
+        protected abstract void SerializeNull(Stream dest);
+        protected abstract void SerializeObjCode(Stream dest, ulong code);
+        protected abstract ulong DeserializeObjCode(Stream src);
+#endregion
     }
 
     public class BinaryFormatter : Formatter
     {
         public BinaryFormatter(StreamingContext context) : base(context) { }
 
+        // sbyte values -8 ... 8 are used by the integer encoding subsystem
+        // we likely want to reserve "nearest 127/-127" first, as a long-range future-resistance scheme
+
+        const sbyte null_code = 127;
+        const sbyte obj_ref_code = -127;
 #if FAIL
         protected override bool trivialSerialize<T>(Stream dest, T src) {
             var method = typeof(BinaryFormatter).GetMethod("_trivialSerialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
@@ -276,6 +287,30 @@ namespace Zaimoni.Serialization
                 scale *= 256;
                 ++ub;
             }
+        }
+#endregion
+
+#region object references
+        protected override void SerializeNull(Stream dest)
+        {
+            trivialSerialize(dest, null_code);
+        }
+
+        protected override void SerializeObjCode(Stream dest, ulong code)
+        {
+            trivialSerialize(dest, obj_ref_code);
+            Serialize(dest, code);
+        }
+
+        protected override ulong DeserializeObjCode(Stream src)
+        {
+            sbyte signal = 0;
+            trivialDeserialize(src, ref signal);
+            if (null_code == signal) return 0;
+            if (obj_ref_code != signal) throw new InvalidDataException("expected object reference");
+            ulong ret = 0;
+            Deserialize(src, ref ret);
+            return ret;
         }
 #endregion
     }
