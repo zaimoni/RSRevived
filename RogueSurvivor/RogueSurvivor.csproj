@@ -301,6 +301,8 @@
     <Compile Include="Zaimoni\Data\Virtual.cs" />
     <Compile Include="Zaimoni\Serialization\DecodeObjects.cs" />
     <Compile Include="Zaimoni\Serialization\EncodeObjects.cs" />
+    <Compile Include="Zaimoni\Serialization\Formatter.cs" />
+    <Compile Include="Zaimoni\Serialization\LoadManager.cs" />
     <Compile Include="Zaimoni\Serialization\SaveManager.cs" />
     <Compile Include="Zaimoni\Serialization\StreamingContext.cs" />
   </ItemGroup>
