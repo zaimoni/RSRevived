@@ -114,16 +114,12 @@ namespace Zaimoni.Serialization
 #region byte basis
         public void Serialize(Stream dest, byte src) { trivialSerialize(dest, src); }
         public void Serialize(Stream dest, sbyte src) { trivialSerialize(dest, src); }
-        public void Serialize(Stream dest, char src) { trivialSerialize(dest, src); }
         public void Deserialize(Stream src, ref byte dest) { trivialDeserialize(src, ref dest); }
         public void Deserialize(Stream src, ref sbyte dest) { trivialDeserialize(src, ref dest); }
-        public void Deserialize(Stream src, ref char dest) { trivialDeserialize(src, ref dest); }
 
         // outside users should not need to provide additional overrides for the trivialSerialize/trivialDeserialize naming scheme
         protected abstract void trivialSerialize(Stream dest, byte src);
         protected abstract void trivialDeserialize(Stream src, ref byte dest);
-        protected abstract void trivialSerialize(Stream dest, char src);
-        protected abstract void trivialDeserialize(Stream src, ref char dest);
         protected abstract void trivialSerialize(Stream dest, sbyte src);
         protected abstract void trivialDeserialize(Stream src, ref sbyte dest);
 #endregion
@@ -182,7 +178,6 @@ namespace Zaimoni.Serialization
 
 #region byte basis
         protected override void trivialSerialize(Stream dest, byte src) { dest.WriteByte(src); }
-        protected override void trivialSerialize(Stream dest, char src) { dest.WriteByte((byte)src); }
         protected override void trivialSerialize(Stream dest, sbyte src) { dest.WriteByte((byte)src); }
 
         protected override void trivialDeserialize(Stream src, ref byte dest)
@@ -190,12 +185,6 @@ namespace Zaimoni.Serialization
             var code = src.ReadByte();
             if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
             dest = (byte)code;
-        }
-        protected override void trivialDeserialize(Stream src, ref char dest)
-        {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
-            dest = (char)code;
         }
         protected override void trivialDeserialize(Stream src, ref sbyte dest)
         {
