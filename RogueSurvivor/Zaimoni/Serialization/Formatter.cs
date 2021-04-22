@@ -142,8 +142,8 @@ namespace Zaimoni.Serialization
         // sbyte values -8 ... 8 are used by the integer encoding subsystem
         // we likely want to reserve "nearest 127/-127" first, as a long-range future-resistance scheme
 
-        const sbyte null_code = 127;
-        const sbyte obj_ref_code = -127;
+        const sbyte null_code = sbyte.MaxValue;
+        const sbyte obj_ref_code = sbyte.MinValue;
 #if FAIL
         protected override bool trivialSerialize<T>(Stream dest, T src) {
             var method = typeof(BinaryFormatter).GetMethod("_trivialSerialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
@@ -283,7 +283,7 @@ namespace Zaimoni.Serialization
             while (0 > ub) {
                 trivialDeserialize(src, ref scan);
                 var test = scan - 256;
-                dest += scale * scan;
+                dest += scale * test;
                 scale *= 256;
                 ++ub;
             }
@@ -298,6 +298,7 @@ namespace Zaimoni.Serialization
 
         protected override void SerializeObjCode(Stream dest, ulong code)
         {
+            // \todo? micro-optimization: integrate the size of the encoding into the signal byte
             trivialSerialize(dest, obj_ref_code);
             Serialize(dest, code);
         }
