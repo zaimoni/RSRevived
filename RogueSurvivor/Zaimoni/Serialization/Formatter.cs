@@ -129,6 +129,11 @@ namespace Zaimoni.Serialization
         protected abstract void SerializeObjCode(Stream dest, ulong code);
         protected abstract ulong DeserializeObjCode(Stream src);
 #endregion
+
+#region strings
+        public abstract void Serialize(Stream dest, string src);
+        public abstract void Deserialize(Stream src, ref string dest);
+#endregion
     }
 
     public class BinaryFormatter : Formatter
@@ -301,6 +306,56 @@ namespace Zaimoni.Serialization
             ulong ret = 0;
             Deserialize(src, ref ret);
             return ret;
+        }
+#endregion
+
+#region strings
+        private void Serialize(Stream dest, Rune src)
+        {
+            Span<byte> relay = stackalloc byte[4]; // 2021-04-22: currently 4 (check on compiler upgrade)
+            var encoded = src.EncodeToUtf8(relay);
+            dest.Write(relay.Slice(0, encoded));
+        }
+
+        public override void Serialize(Stream dest, string src) {
+            var runes = src.EnumerateRunes().ToArray();
+            var ub = runes.Length;
+            var bytes = 0;
+            var i = 0;
+            while (i < ub) bytes += runes[i++].Utf8SequenceLength;
+            Serialize(dest, bytes);
+            i = 0;
+            while (i < ub) Serialize(dest, runes[i++]);
+        }
+
+        public override void Deserialize(Stream src, ref string dest)
+        {
+            int bytes = 0;
+            int total_read = 0;
+            Deserialize(src, ref bytes);
+            Span<byte> relay = new byte[bytes];
+
+            while (4 > total_read && total_read < bytes) {
+                var read = src.Read(relay.Slice(total_read));
+                if (0 >= read) throw new InvalidDataException("string truncated");
+                total_read += read;
+            }
+
+            Span<char> encode = stackalloc char[2]; // 2021-04-22: currently 2 (check on compiler upgrade)
+            dest = string.Empty;
+            while (4 <= total_read || total_read == bytes) {
+                if (System.Buffers.OperationStatus.Done != Rune.DecodeFromUtf8(relay, out var result, out var bytesConsumed)) throw new InvalidDataException("string corrupt");
+                var n = result.EncodeToUtf16(encode);
+                dest += new string(encode.Slice(0, n));
+                bytes -= bytesConsumed;
+                total_read -= bytesConsumed;
+                relay = relay.Slice(bytesConsumed);
+                while (4 > total_read && total_read < bytes) {
+                    var read = src.Read(relay.Slice(total_read));
+                    if (0 >= read) throw new InvalidDataException("string truncated");
+                    total_read += read;
+                }
+            }
         }
 #endregion
     }
