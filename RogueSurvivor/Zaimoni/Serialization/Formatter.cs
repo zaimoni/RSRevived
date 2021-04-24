@@ -141,10 +141,99 @@ namespace Zaimoni.Serialization
         public BinaryFormatter(StreamingContext context) : base(context) { }
 
         // sbyte values -8 ... 8 are used by the integer encoding subsystem
-        // we likely want to reserve "nearest 127/-127" first, as a long-range future-resistance scheme
+        // we likely want to reserve "nearest 127/-128" first, as a long-range future-resistance scheme
 
         const sbyte null_code = sbyte.MaxValue;
         const sbyte obj_ref_code = sbyte.MinValue;
+
+        // 7-bit encoding/decoding of unsigned integers was supported by BinaryReader/BinaryWriter.  Not of use for text formats.
+        // 2021-04-24: Can't predict whether BinaryReader/BinaryWriter is included in the deprecation, so re-implement.
+#region 7-bit encoding
+        protected void Serialize7bit(Stream dest, ulong src) {
+            Span<byte> relay = stackalloc byte[10];
+            int ub = 0;
+            while ((ulong)(sbyte.MaxValue) < src) {
+                relay[ub++] = (byte)(src % 128 + 128);
+                src /= 128;
+            }
+            relay[ub++] = (byte)src;
+            dest.Write(relay.Slice(0, ub));
+        }
+        protected void Serialize7bit(Stream dest, uint src) { Serialize7bit(dest, (ulong)src); }
+        protected void Serialize7bit(Stream dest, ushort src) { Serialize7bit(dest, (ulong)src); }
+
+        protected void Serialize7bit(Stream dest, long src)
+        {
+            if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
+            Serialize7bit(dest, (ulong)src);
+        }
+
+        protected void Serialize7bit(Stream dest, int src) {
+            if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
+            Serialize7bit(dest, (ulong)src);
+        }
+
+        protected void Serialize7bit(Stream dest, short src)
+        {
+            if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
+            Serialize7bit(dest, (ulong)src);
+        }
+
+        protected ulong Deserialize7bit(Stream src) {
+            ulong scale = 1;
+            ulong dest = 0;
+            byte relay = 0;
+            trivialDeserialize(src, ref relay);
+            while (sbyte.MaxValue < relay) {
+                dest += scale * (ulong)(relay % 128);
+                scale *= 128;
+                trivialDeserialize(src, ref relay);
+            }
+            dest += scale * relay;
+            return dest;
+        }
+
+        protected void Deserialize7bit(Stream src, ref ulong dest)
+        {
+            dest = Deserialize7bit(src);
+        }
+
+        protected void Deserialize7bit(Stream src, ref uint dest)
+        {
+            var staging = Deserialize7bit(src);
+            if (uint.MaxValue < staging) throw new InvalidDataException("huge uint found");
+            dest = (uint)staging;
+        }
+
+        protected void Deserialize7bit(Stream src, ref ushort dest)
+        {
+            var staging = Deserialize7bit(src);
+            if (ushort.MaxValue < staging) throw new InvalidDataException("huge ushort found");
+            dest = (ushort)staging;
+        }
+
+        protected void Deserialize7bit(Stream src, ref long dest)
+        {
+            var staging = Deserialize7bit(src);
+            if (long.MaxValue < staging) throw new InvalidDataException("huge int found");
+            dest = (long)staging;
+        }
+
+        protected void Deserialize7bit(Stream src, ref int dest)
+        {
+            var staging = Deserialize7bit(src);
+            if (int.MaxValue < staging) throw new InvalidDataException("huge int found");
+            dest = (int)staging;
+        }
+
+        protected void Deserialize7bit(Stream src, ref short dest)
+        {
+            var staging = Deserialize7bit(src);
+            if ((ulong)(short.MaxValue) < staging) throw new InvalidDataException("huge short found");
+            dest = (short)staging;
+        }
+#endregion
+
 #if FAIL
         protected override bool trivialSerialize<T>(Stream dest, T src) {
             var method = typeof(BinaryFormatter).GetMethod("_trivialSerialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
@@ -294,7 +383,7 @@ namespace Zaimoni.Serialization
         {
             // \todo? micro-optimization: integrate the size of the encoding into the signal byte
             trivialSerialize(dest, obj_ref_code);
-            Serialize(dest, code);
+            Serialize7bit(dest, code);
         }
 
         protected override ulong DeserializeObjCode(Stream src)
@@ -303,9 +392,7 @@ namespace Zaimoni.Serialization
             trivialDeserialize(src, ref signal);
             if (null_code == signal) return 0;
             if (obj_ref_code != signal) throw new InvalidDataException("expected object reference");
-            ulong ret = 0;
-            Deserialize(src, ref ret);
-            return ret;
+            return Deserialize7bit(src);
         }
 #endregion
 
@@ -323,7 +410,9 @@ namespace Zaimoni.Serialization
             var bytes = 0;
             var i = 0;
             while (i < ub) bytes += runes[i++].Utf8SequenceLength;
-            Serialize(dest, bytes);
+
+            Serialize7bit(dest, bytes); // record byte-length explicitly
+
             i = 0;
             while (i < ub) Serialize(dest, runes[i++]);
         }
@@ -331,8 +420,9 @@ namespace Zaimoni.Serialization
         public override void Deserialize(Stream src, ref string dest)
         {
             int bytes = 0;
+            Deserialize7bit(src, ref bytes);
+
             int total_read = 0;
-            Deserialize(src, ref bytes);
             Span<byte> relay = new byte[bytes];
 
             while (4 > total_read && total_read < bytes) {
