@@ -125,9 +125,9 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region object references
-        protected abstract void SerializeNull(Stream dest);
-        protected abstract void SerializeObjCode(Stream dest, ulong code);
-        protected abstract ulong DeserializeObjCode(Stream src);
+        public abstract void SerializeNull(Stream dest);
+        public abstract void SerializeObjCode(Stream dest, ulong code);
+        public abstract ulong DeserializeObjCode(Stream src);
 #endregion
 
 #region strings
@@ -374,19 +374,19 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region object references
-        protected override void SerializeNull(Stream dest)
+        public override void SerializeNull(Stream dest)
         {
             trivialSerialize(dest, null_code);
         }
 
-        protected override void SerializeObjCode(Stream dest, ulong code)
+        public override void SerializeObjCode(Stream dest, ulong code)
         {
             // \todo? micro-optimization: integrate the size of the encoding into the signal byte
             trivialSerialize(dest, obj_ref_code);
             Serialize7bit(dest, code);
         }
 
-        protected override ulong DeserializeObjCode(Stream src)
+        public override ulong DeserializeObjCode(Stream src)
         {
             sbyte signal = 0;
             trivialDeserialize(src, ref signal);
