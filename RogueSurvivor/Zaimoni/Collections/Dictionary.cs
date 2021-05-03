@@ -810,6 +810,8 @@ retry:
             return false;
         }
 
+        void update_depth(int root) { while (_update_depth(root)) root = entries[root].parent; }
+
         bool _link_prev(int anchor, int leaf) {
             _RequireDereferenceableIndexPrecondition(anchor);
             _RequireDereferenceableIndexPrecondition(leaf);
@@ -876,9 +878,10 @@ retry:
                             if (0 <= entries[inorder_successor].prev) throw new InvalidOperationException("inconsistent return/InOrderSuccessor #4");
                         }
 #endif
-#if DEBUG
+
                         // backup root; copy successor to root; delete successor, insert copy of root as child of inorder predecessor
                         var backup = _root.to_KV(out var backup_hash);
+#if PROTOTYPE
                         ref var staging = ref entries[inorder_successor];
                         _root.ValueCopy(in staging);
                         var old_parent = staging.parent;
@@ -891,7 +894,7 @@ retry:
                         staging.parent = inorder_predecessor;
                         if (inorder_predecessor == root) {
 #if DEBUG
-                            if (-1 != entries[root].prev || entries[inorder_successor].hashCode > entries[root].hashCode)
+                            if (entries[inorder_successor].hashCode > entries[root].hashCode)
                                 throw new InvalidOperationException("losing data/prev:" + entries[root].prev.ToString() + ", " + entries[root].next + "; " + entries[root].hashCode + ", " + entries[inorder_successor].hashCode + "\n" + root.ToString() + ", " + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + "\n" + old_parent.ToString() + ", " + old_child.ToString());
 #endif
                             entries[root].prev = inorder_successor;
@@ -903,20 +906,40 @@ retry:
                                 throw new InvalidOperationException("losing data/next #2:" + entries[inorder_predecessor].prev.ToString() + ", " + entries[inorder_predecessor].next + "; " + entries[inorder_predecessor].hashCode + ", " + entries[inorder_successor].hashCode + "\n" + root.ToString() + ", " + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + "\n" + old_parent.ToString() + ", " + old_child.ToString());
 #endif
                             entries[inorder_predecessor].next = inorder_successor;
-                            _scapegoat_rebuild(inorder_predecessor);
+                            update_depth(inorder_predecessor);
+//                          _scapegoat_rebuild(inorder_predecessor); // effort to get this right looks excessive
                             goto retry;
                         }
 #else
-                        throw new InvalidOperationException("want rebalance: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString());
+                        throw new InvalidOperationException("want rebalance: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString() + "; " + root.ToString());
 #endif
                     }
                 } else if (prev_depth > next_depth) {
                     if (next_depth + 2 <= prev_depth) {
                         var inorder_predecessor = InOrderPredecessor(root, out var pred_depth);
+#if DEBUG
+                        if (root == inorder_predecessor) {
+                            if (0 < pred_depth) throw new InvalidOperationException("inconsistent return/InOrderPredecessor");
+                            if (0 <= entries[inorder_predecessor].prev) throw new InvalidOperationException("inconsistent return/InOrderPredecessor #2");
+                        } else {
+                            if (0 >= pred_depth) throw new InvalidOperationException("inconsistent return/InOrderPredecessor #3");
+                            if (0 <= entries[inorder_predecessor].next) throw new InvalidOperationException("inconsistent return/InOrderPredecessor #4");
+                        }
+#endif
                         var inorder_successor = InOrderSuccessor(root, out var succ_depth);
 #if DEBUG
+                        if (root == inorder_successor) {
+                            if (0 < succ_depth) throw new InvalidOperationException("inconsistent return/InOrderSuccessor");
+                            if (0 <= entries[inorder_successor].next) throw new InvalidOperationException("inconsistent return/InOrderSuccessor #2");
+                        } else {
+                            if (0 >= succ_depth) throw new InvalidOperationException("inconsistent return/InOrderSuccessor #3");
+                            if (0 <= entries[inorder_successor].prev) throw new InvalidOperationException("inconsistent return/InOrderSuccessor #4");
+                        }
+#endif
+
                         // backup root; copy predecessor to root; delete predecessor, insert copy of root as child of inorder successor
                         var backup = _root.to_KV(out var backup_hash);
+#if PROTOTYPE
                         ref var staging = ref entries[inorder_predecessor];
                         _root.ValueCopy(in staging);
                         var old_parent = staging.parent;
@@ -929,7 +952,7 @@ retry:
                         staging.parent = inorder_successor;
                         if (inorder_successor == root) {
 #if DEBUG
-                            if (-1 != entries[root].next || entries[inorder_predecessor].hashCode < entries[root].hashCode)
+                            if (entries[inorder_predecessor].hashCode < entries[root].hashCode)
                                 throw new InvalidOperationException("losing data/next #3:" + entries[root].prev.ToString() + ", " + entries[root].next + "; " + entries[root].hashCode + ", " + entries[inorder_predecessor].hashCode + "\n" + root.ToString() + ", " + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + "\n" + old_parent.ToString() + ", " + old_child.ToString());
 #endif
                             entries[root].next = inorder_predecessor;
@@ -941,11 +964,12 @@ retry:
                                 throw new InvalidOperationException("losing data/prev #4:" + entries[inorder_successor].prev.ToString() + ", " + entries[inorder_successor].next + "; " + entries[inorder_successor].hashCode + ", " + entries[inorder_predecessor].hashCode + "\n" + root.ToString() + ", " + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + "\n" + old_parent.ToString() + ", " + old_child.ToString());
 #endif
                             entries[inorder_successor].prev = inorder_predecessor;
-                            _scapegoat_rebuild(inorder_successor);
+                            update_depth(inorder_successor);
+//                          _scapegoat_rebuild(inorder_successor); // effort to get this right looks excessive
                             goto retry;
                         }
 #else
-                        throw new InvalidOperationException("want rebalance #2: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString());
+                        throw new InvalidOperationException("want rebalance #2: " + prev_depth.ToString() + ", " + next_depth.ToString() + "\n" + inorder_predecessor.ToString() + ", " + inorder_successor.ToString() + ", " + pred_depth.ToString() + ", " + succ_depth.ToString() + "; " + root.ToString());
 #endif
                     }
                 }
