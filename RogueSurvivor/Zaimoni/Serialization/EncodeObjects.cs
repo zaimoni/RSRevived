@@ -7,8 +7,9 @@ using System.IO;
 
 namespace Zaimoni.Serialization
 {
-    interface ISerialize
-    {
+    public interface ISerialize
+    {   // need something heavier as the second parameter
+        void load(Stream src, StreamingContext context);
         void save(Stream dest, StreamingContext context);
     }
 
