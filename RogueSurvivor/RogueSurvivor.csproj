@@ -299,6 +299,7 @@
     <Compile Include="Zaimoni\Data\Vector.cs" />
     <Compile Include="Microsoft\Random.cs" />
     <Compile Include="Zaimoni\Data\Virtual.cs" />
+    <Compile Include="Zaimoni\Lazy\LogicalAND.cs" />
     <Compile Include="Zaimoni\Serialization\DecodeObjects.cs" />
     <Compile Include="Zaimoni\Serialization\EncodeObjects.cs" />
     <Compile Include="Zaimoni\Serialization\Formatter.cs" />

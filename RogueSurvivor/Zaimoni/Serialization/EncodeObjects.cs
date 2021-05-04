@@ -10,13 +10,13 @@ namespace Zaimoni.Serialization
     public interface ISerialize
     {   // need something heavier as the second parameter
         void load(Stream src, StreamingContext context);
-        void save(Stream dest, StreamingContext context);
+        void save(Stream dest, EncodeObjects encode);
     }
 
-    class EncodeObjects
+    public class EncodeObjects
     {
-        private readonly StreamingContext context;
-        private readonly Formatter format;
+        public readonly StreamingContext context;
+        public readonly Formatter format;
         private ulong seen = 0;
         private Dictionary<Type, Dictionary<object, ulong>> encodings = new();
         private List<KeyValuePair<ulong, Action<Stream>>> to_save = new();
@@ -28,7 +28,7 @@ namespace Zaimoni.Serialization
         }
 
         // precondition: src not null
-        public ulong Saving<T>(T src) where T:ISerialize
+        public ulong Saving<T>(T src) where T : ISerialize
         {
             var type = typeof(T);
             if (encodings.TryGetValue(type, out var cache)) {
@@ -36,13 +36,13 @@ namespace Zaimoni.Serialization
             } else encodings.Add(type, cache = new());
             cache.Add(src, ++seen);
 
-            if (src is ISerialize src2) {
-                // \todo handle polymorphism -- loader must know which subclass to load
-                to_save.Add(new(seen, dest => src2.save(dest, context))); // \todo suspect need formatter rather than context here?
-                return seen;
-            }
-            // \todo handle IEnumerable
-
+            // \todo handle polymorphism -- loader must know which subclass to load
+            // yes, appears to be subverting historical architecture
+            to_save.Add(new(seen, dest => {
+                if (src is IOnSerializing x) x.OnSerializing(in context);
+                src.save(dest, this);
+                if (src is IOnSerialized y) y.OnSerialized(in context);
+            }));
             return seen;
         }
 
