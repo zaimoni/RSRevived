@@ -12,10 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
-#if OBSOLETE
-using System.Runtime.Serialization.Formatters.Soap;
-using System.Xml.Serialization;
-#endif
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -298,16 +294,6 @@ namespace djack.RogueSurvivor.Engine
         case SaveFormat.FORMAT_BIN:
           SaveBin(session, filepath);
           break;
-#if NOT_NET_CORE
-        case SaveFormat.FORMAT_SOAP:
-          SaveSoap(session, filepath);
-          break;
-#endif
-#if OBSOLETE
-        case SaveFormat.FORMAT_XML:
-          SaveXml(session, filepath);
-          break;
-#endif
       }
     }
 
@@ -323,12 +309,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
       switch (format) {
         case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
-#if NOT_NET_CORE
-        case SaveFormat.FORMAT_SOAP: return LoadSoap(filepath);
-#endif
-#if OBSOLETE
-        case SaveFormat.FORMAT_XML: return LoadXml(filepath);
-#endif
         default: return false;
       }
     }
@@ -378,74 +358,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#if NOT_NET_CORE
-    private static void SaveSoap(Session session, string filepath)
-    {
-#if DEBUG
-      if (null == session) throw new ArgumentNullException(nameof(session));
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-	  filepath.BinarySerialize(session);
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
-    }
-
-    private static bool LoadSoap(string filepath)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-      try {
-        using (Stream stream = filepath.CreateStream(false)) {
-          s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
-        }
-      } catch (Exception ex) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        return false;
-      }
-     Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
-     return true;
-    }
-#endif
-
-#if OBSOLETE
-    private static void SaveXml(Session session, string filepath)
-    {
-#if DEBUG
-      if (null == session) throw new ArgumentNullException(nameof(session));
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        new XmlSerializer(typeof (Session)).Serialize(stream, (object) session);
-        stream.Flush();
-      }
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
-    }
-
-    private static bool LoadXml(string filepath)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-      try {
-        using (Stream stream = filepath.CreateStream(false)) {
-          s_TheSession = (Session) new XmlSerializer(typeof (Session)).Deserialize(stream);
-          stream.Flush();
-        }
-      } catch (Exception ex) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        return false;
-      }
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
-      return true;
-    }
-#endif
-
     public static bool Delete(string filepath)
     {
 #if DEBUG
@@ -465,13 +377,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game... done!");
       return flag;
     }
-
-#if NOT_NET_CORE
-    private static IFormatter CreateSoapFormatter()
-    {
-      return new SoapFormatter();
-    }
-#endif
 
     // game mode support
     public static string DescGameMode(GameMode mode)
