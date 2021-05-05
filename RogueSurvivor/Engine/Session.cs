@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define BOOTSTRAP_Z_SERIALIZATION
+
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
@@ -20,7 +22,10 @@ namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class Session : ISerializable,IDeserializationCallback
-  {
+#if BOOTSTRAP_Z_SERIALIZATION
+        , Zaimoni.Serialization.ISerialize
+#endif
+    {
     public static int COMMAND_LINE_SEED;
     public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
@@ -134,6 +139,76 @@ namespace djack.RogueSurvivor.Engine
     {
       RogueGame.AfterLoad(s_Player);
     }
+
+#if BOOTSTRAP_Z_SERIALIZATION
+    protected Session(Stream src, Zaimoni.Serialization.DecodeObjects decode)
+    {
+            sbyte relay = 0;
+
+            decode.format.Deserialize(src, ref relay);
+            GameMode = (GameMode)(relay);
+            decode.format.Deserialize(src, ref relay);
+            ScriptStage_PoliceStationPrisoner = relay;
+            decode.format.Deserialize(src, ref relay);
+            ScriptStage_PoliceCHARrelations = relay;
+            decode.format.Deserialize(src, ref relay);
+            ScriptStage_HospitalPowerup = relay;
+            decode.format.Deserialize(src, ref s_seed);
+            decode.format.Deserialize(src, ref LastTurnPlayerActed);
+            decode.format.Deserialize(src, ref relay);
+            PlayerKnows_CHARUndergroundFacilityLocation = 0 != relay;
+/*
+            info.read(ref m_Scoring, "Scoring");
+            info.read(ref m_Event_Raids, "Event_Raids");
+            info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
+            // load other classes' static variables
+            ActorModel.Load(info, context);
+            Actor.Load(info, context);
+            Rules.Get.Load(info, context);
+            PlayerController.Load(info, context);
+            // end load other classes' static variables
+            World = (World)info.GetValue("World", typeof(World));
+            RogueGame.Load(info, context);
+            info.read_s(ref s_Player, "s_Player");
+            UniqueActors = (UniqueActors)info.GetValue("UniqueActors", typeof(UniqueActors));
+            UniqueItems = (UniqueItems)info.GetValue("UniqueItems", typeof(UniqueItems));
+            UniqueMaps = (UniqueMaps)info.GetValue("UniqueMaps", typeof(UniqueMaps));
+            info.read(ref Police, "Police");
+*/
+#if DEBUG
+      if (Police.FactionID != GameFactions.IDs.ThePolice) throw new InvalidOperationException("police faction id is not police");
+#endif
+
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Stream dest, Zaimoni.Serialization.EncodeObjects encode)
+    {
+            encode.format.Serialize(dest, (sbyte)GameMode);
+            encode.format.Serialize(dest, (sbyte)ScriptStage_PoliceStationPrisoner);
+            encode.format.Serialize(dest, (sbyte)ScriptStage_PoliceCHARrelations);
+            encode.format.Serialize(dest, (sbyte)ScriptStage_HospitalPowerup);
+            encode.format.Serialize(dest, s_seed);
+            encode.format.Serialize(dest, LastTurnPlayerActed);
+            encode.format.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
+/*
+            info.AddValue("Scoring", m_Scoring, typeof(Scoring));
+            info.AddValue("Event_Raids", m_Event_Raids, typeof(int[,,]));
+            info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
+            ActorModel.Save(info, context);
+            Actor.Save(info, context);
+            Rules.Get.Save(info, context);
+            PlayerController.Save(info, context);
+            info.AddValue("World", World, typeof(World));
+            RogueGame.Save(info, context);
+            info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
+            info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));
+            info.AddValue("UniqueMaps", UniqueMaps, typeof(UniqueMaps));
+            info.AddValue("Police", Police, typeof(RadioFaction));
+*/
+            // non-serialized fields
+            m_Scoring_fatality = null;
+    }
+#endif
 #endregion
 
     public void Reset()
