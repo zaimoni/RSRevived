@@ -7,10 +7,18 @@ using System.Collections.Generic;
 
 namespace Zaimoni.Serialization
 {
-    class DecodeObjects
+    public class DecodeObjects
     {
+        public readonly StreamingContext context;
+        public readonly Formatter format;
         private Dictionary<ulong, List<Action<object>>?> requested = new();
         private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
+
+        DecodeObjects(StreamingContext _context, Formatter _format)
+        {
+            context = _context;
+            format = _format;
+        }
 
         public object Seen(ulong id)
         {

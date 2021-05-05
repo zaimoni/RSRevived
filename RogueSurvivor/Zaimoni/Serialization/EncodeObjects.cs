@@ -9,7 +9,7 @@ namespace Zaimoni.Serialization
 {
     public interface ISerialize
     {   // need something heavier as the second parameter
-        void load(Stream src, StreamingContext context);
+//      void load(Stream src, DecodeObjects context); // unsure if this is needed (constructor overload?)
         void save(Stream dest, EncodeObjects encode);
     }
 
