@@ -134,6 +134,106 @@ namespace Zaimoni.Serialization
         public abstract void Serialize(Stream dest, string src);
         public abstract void Deserialize(Stream src, ref string dest);
 #endregion
+
+#region enums
+        public void SerializeEnum<T>(Stream dest, T src) where T : IConvertible // catches enums, and some others
+        {
+            var e_type = typeof(T);
+            switch (Type.GetTypeCode(Enum.GetUnderlyingType(e_type))) // but this will hard-fail on non-enums
+            {
+            case TypeCode.Byte:
+                trivialSerialize(dest, src.ToByte(null));
+                return;
+            case TypeCode.SByte:
+                trivialSerialize(dest, src.ToSByte(null));
+                return;
+            case TypeCode.Int16:
+                Serialize(dest, src.ToInt16(null));
+                return;
+            case TypeCode.Int32:
+                Serialize(dest, src.ToInt32(null));
+                return;
+            case TypeCode.Int64:
+                Serialize(dest, src.ToInt64(null));
+                return;
+            case TypeCode.UInt16:
+                Serialize(dest, src.ToUInt16(null));
+                return;
+            case TypeCode.UInt32:
+                Serialize(dest, src.ToUInt32(null));
+                return;
+            case TypeCode.UInt64:
+                Serialize(dest, src.ToUInt64(null));
+                return;
+            default: throw new InvalidOperationException("SerializeEnum cannot handle "+e_type.ToString());
+            }
+        }
+
+        public void DeserializeEnum<T>(Stream src, ref T dest) where T : Enum
+        {
+            var e_type = typeof(T);
+            switch (Type.GetTypeCode(Enum.GetUnderlyingType(e_type)))
+            {
+            case TypeCode.Byte:
+                {
+                byte relay = 0;
+                trivialDeserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.SByte:
+                {
+                sbyte relay = 0;
+                trivialDeserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.Int16:
+                {
+                short relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.Int32:
+                {
+                int relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.Int64:
+                {
+                long relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.UInt16:
+                {
+                ushort relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.UInt32:
+                {
+                uint relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            case TypeCode.UInt64:
+                {
+                ulong relay = 0;
+                Deserialize(src, ref relay);
+                dest = (T)Enum.ToObject(e_type, relay);
+                }
+                return;
+            default: throw new InvalidOperationException("DeserializeEnum cannot handle "+e_type.ToString());
+            }
+        }
+#endregion
     }
 
     public class BinaryFormatter : Formatter
