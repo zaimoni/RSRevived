@@ -211,13 +211,17 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
 #region raid timings
-    private bool HasRaidHappened(Engine.RaidType raid, Point w_pos) => 0 < m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
     private int LastRaidTime(Engine.RaidType raid, Point w_pos) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
     private void SetLastRaidTime(Engine.RaidType raid, Point w_pos, int t0) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = t0;
 
-    public bool HasRaidHappened(Engine.RaidType raid, District d) => HasRaidHappened(raid, d.WorldPosition);
-    public int LastRaidTime(Engine.RaidType raid, District d) => LastRaidTime(raid, d.WorldPosition);
     public void SetLastRaidTime(Engine.RaidType raid, Map map) => SetLastRaidTime(raid, map.DistrictPos, map.LocalTime.TurnCounter);
+
+    public bool HasRaidHappenedSince(Engine.RaidType raid, Map map, int sinceNTurns)
+    {
+      var t0 = LastRaidTime(raid, map.DistrictPos);
+      return 0 < t0 // has raid happened
+          && map.LocalTime.TurnCounter - t0 < sinceNTurns; // at least n turns ago
+    }
 #endregion
 #nullable restore
 

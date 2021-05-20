@@ -242,8 +242,6 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     // thin-wrappers; not suppressing these is technical debt.
-    public bool HasRaidHappened(RaidType raid, District district) => World.HasRaidHappened(raid, district);
-    public int LastRaidTime(RaidType raid, District district) => World.LastRaidTime(raid, district);
     public void SetLastRaidTime(RaidType raid, Map map) => World.SetLastRaidTime(raid, map);
 #nullable restore
 

@@ -2536,9 +2536,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     static private bool HasRaidHappenedSince(RaidType raid, Map map, int sinceNTurns)
     {
-      var sess = Session.Get;
-      var district = map.District;
-      return sess.HasRaidHappened(raid, district) && map.LocalTime.TurnCounter - sess.LastRaidTime(raid, district) < sinceNTurns;
+      return Session.Get.World.HasRaidHappenedSince(raid, map, sinceNTurns);
     }
 
     private bool CheckForEvent_BikersRaid(Map map)
