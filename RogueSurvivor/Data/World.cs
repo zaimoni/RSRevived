@@ -36,6 +36,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized] private Rectangle m_CHAR_City;
     public Rectangle CHAR_CityLimits { get { return m_CHAR_City; } }
 
+    private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
     private District? m_PlayerDistrict = null;
@@ -187,6 +188,7 @@ namespace djack.RogueSurvivor.Data
       Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
       m_Ready = new Queue<District>(size*size);
+      m_Event_Raids = new int[(int) Engine.RaidType._COUNT, CitySize, CitySize]; // use zero-initialization convention
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
       s_Recent = this;
@@ -206,6 +208,18 @@ namespace djack.RogueSurvivor.Data
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
     public int fromWorldPos(int x, int y) { return x + m_Size*y; }
+
+#nullable enable
+#region raid timings
+    private bool HasRaidHappened(Engine.RaidType raid, Point w_pos) => 0 < m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
+    private int LastRaidTime(Engine.RaidType raid, Point w_pos) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
+    private void SetLastRaidTime(Engine.RaidType raid, Point w_pos, int t0) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = t0;
+
+    public bool HasRaidHappened(Engine.RaidType raid, District d) => HasRaidHappened(raid, d.WorldPosition);
+    public int LastRaidTime(Engine.RaidType raid, District d) => LastRaidTime(raid, d.WorldPosition);
+    public void SetLastRaidTime(Engine.RaidType raid, Map map) => SetLastRaidTime(raid, map.DistrictPos, map.LocalTime.TurnCounter);
+#endregion
+#nullable restore
 
     public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
     {

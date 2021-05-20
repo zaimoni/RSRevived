@@ -76,7 +76,6 @@ namespace djack.RogueSurvivor.Engine
     protected Session(SerializationInfo info, StreamingContext context)
     {
       info.read(ref m_Scoring, "Scoring");
-      info.read(ref m_Event_Raids, "Event_Raids");
       GameMode = (GameMode) info.GetSByte("GameMode");
       ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
       ScriptStage_PoliceCHARrelations = (int) info.GetSByte("ScriptStage_PoliceCHARrelations");
@@ -106,7 +105,6 @@ namespace djack.RogueSurvivor.Engine
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("Scoring",m_Scoring,typeof(Scoring));
-      info.AddValue("Event_Raids",m_Event_Raids,typeof(int[,,]));
 
       info.AddValue("GameMode",(SByte)GameMode);
       info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisoner);
@@ -155,7 +153,6 @@ namespace djack.RogueSurvivor.Engine
             PlayerKnows_CHARUndergroundFacilityLocation = 0 != relay;
 /*
             info.read(ref m_Scoring, "Scoring");
-            info.read(ref m_Event_Raids, "Event_Raids");
             info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
             // load other classes' static variables
             ActorModel.Load(info, context);
@@ -188,7 +185,6 @@ namespace djack.RogueSurvivor.Engine
             encode.format.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
 /*
             info.AddValue("Scoring", m_Scoring, typeof(Scoring));
-            info.AddValue("Event_Raids", m_Event_Raids, typeof(int[,,]));
             info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
             ActorModel.Save(info, context);
             Actor.Save(info, context);
@@ -218,13 +214,6 @@ namespace djack.RogueSurvivor.Engine
       var city_size = RogueGame.Options.CitySize;
       World = new World(city_size);
       LastTurnPlayerActed = 0;
-      m_Event_Raids = new int[(int) RaidType._COUNT, city_size, city_size];
-      for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1) {
-        for (int index2 = 0; index2 < city_size; ++index2) {
-          for (int index3 = 0; index3 < city_size; ++index3)
-            m_Event_Raids[index1, index2, index3] = -1;
-        }
-      }
       PlayerKnows_CHARUndergroundFacilityLocation = false;
       ScriptStage_PoliceStationPrisoner = 0;
       ScriptStage_PoliceCHARrelations = 0;
@@ -251,28 +240,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    // we have conflicting implementation imperatives here.
-    // access control wants m_Event_Raids to be a private static member of District.  However, it is not 
-    // a natural singleton (one per savegame) so it probably belongs with the World object.
-    // At that point, keeping it in Session eliminates a use of the Load/Save helper idiom.
 #nullable enable
-    public bool HasRaidHappened(RaidType raid, District district)
-    {
-      var w_pos = district.WorldPosition;
-      return m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] > -1;
-    }
-
-    public int LastRaidTime(RaidType raid, District district)
-    {
-      var w_pos = district.WorldPosition;
-      return m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
-    }
-
-    public void SetLastRaidTime(RaidType raid, Map map)
-    {
-      var w_pos = map.DistrictPos;
-      m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = map.LocalTime.TurnCounter;
-    }
+    // thin-wrappers; not suppressing these is technical debt.
+    public bool HasRaidHappened(RaidType raid, District district) => World.HasRaidHappened(raid, district);
+    public int LastRaidTime(RaidType raid, District district) => World.LastRaidTime(raid, district);
+    public void SetLastRaidTime(RaidType raid, Map map) => World.SetLastRaidTime(raid, map);
 #nullable restore
 
     public void LatestKill(Actor killer, Actor victim, string death_loc)
