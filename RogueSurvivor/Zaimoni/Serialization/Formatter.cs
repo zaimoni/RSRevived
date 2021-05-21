@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Zaimoni.Serialization
 {
+    // 2021-05-21: policy change ... just hard-code for binary formatting
+    // likely JSON/XML will be covered by others indefinitely
     abstract public class Formatter
     {
         protected readonly StreamingContext _context;
@@ -15,6 +17,7 @@ namespace Zaimoni.Serialization
             _context = context;
         }
 
+#if OBSOLETE
         // need to work out how to handle struct and enum (defective C# generics compared to C++)
         public T Deserialize<T>(Stream src) where T:class
         {
@@ -57,6 +60,7 @@ namespace Zaimoni.Serialization
             // ensure the type T is encoded in the stream
             // then
         }
+#endif
 
 #if FAIL
         // this strategy doesn't actually work in C#: we don't have the means to
@@ -66,7 +70,7 @@ namespace Zaimoni.Serialization
         protected abstract bool trivialDeserialize<T>(Stream dest, ref T src);
 #endif
         // structs have to go through code generation using these as exemplars
-#region integer basis
+        #region integer basis
         public abstract void Serialize(Stream dest, ulong src);
         public abstract void Serialize(Stream dest, long src);
         public abstract void Deserialize(Stream src, ref ulong dest);
@@ -112,16 +116,22 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region byte basis
-        public void Serialize(Stream dest, byte src) { trivialSerialize(dest, src); }
-        public void Serialize(Stream dest, sbyte src) { trivialSerialize(dest, src); }
-        public void Deserialize(Stream src, ref byte dest) { trivialDeserialize(src, ref dest); }
-        public void Deserialize(Stream src, ref sbyte dest) { trivialDeserialize(src, ref dest); }
+        public void Serialize(Stream dest, byte src) { dest.WriteByte(src); }
+        public void Serialize(Stream dest, sbyte src) { dest.WriteByte((byte)src); }
 
-        // outside users should not need to provide additional overrides for the trivialSerialize/trivialDeserialize naming scheme
-        protected abstract void trivialSerialize(Stream dest, byte src);
-        protected abstract void trivialDeserialize(Stream src, ref byte dest);
-        protected abstract void trivialSerialize(Stream dest, sbyte src);
-        protected abstract void trivialDeserialize(Stream src, ref sbyte dest);
+        public void Deserialize(Stream src, ref byte dest)
+        {
+            var code = src.ReadByte();
+            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
+            dest = (byte)code;
+        }
+
+        public void Deserialize(Stream src, ref sbyte dest)
+        {
+            var code = src.ReadByte();
+            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
+            dest = (sbyte)code;
+        }
 #endregion
 
 #region object references
@@ -142,10 +152,10 @@ namespace Zaimoni.Serialization
             switch (Type.GetTypeCode(Enum.GetUnderlyingType(e_type))) // but this will hard-fail on non-enums
             {
             case TypeCode.Byte:
-                trivialSerialize(dest, src.ToByte(null));
+                Serialize(dest, src.ToByte(null));
                 return;
             case TypeCode.SByte:
-                trivialSerialize(dest, src.ToSByte(null));
+                Serialize(dest, src.ToSByte(null));
                 return;
             case TypeCode.Int16:
                 Serialize(dest, src.ToInt16(null));
@@ -177,14 +187,14 @@ namespace Zaimoni.Serialization
             case TypeCode.Byte:
                 {
                 byte relay = 0;
-                trivialDeserialize(src, ref relay);
+                Deserialize(src, ref relay);
                 dest = (T)Enum.ToObject(e_type, relay);
                 }
                 return;
             case TypeCode.SByte:
                 {
                 sbyte relay = 0;
-                trivialDeserialize(src, ref relay);
+                Deserialize(src, ref relay);
                 dest = (T)Enum.ToObject(e_type, relay);
                 }
                 return;
@@ -283,11 +293,11 @@ namespace Zaimoni.Serialization
             ulong scale = 1;
             ulong dest = 0;
             byte relay = 0;
-            trivialDeserialize(src, ref relay);
+            Deserialize(src, ref relay);
             while (sbyte.MaxValue < relay) {
                 dest += scale * (ulong)(relay % 128);
                 scale *= 128;
-                trivialDeserialize(src, ref relay);
+                Deserialize(src, ref relay);
             }
             dest += scale * relay;
             return dest;
@@ -370,24 +380,6 @@ namespace Zaimoni.Serialization
         }
 #endif
 
-#region byte basis
-        protected override void trivialSerialize(Stream dest, byte src) { dest.WriteByte(src); }
-        protected override void trivialSerialize(Stream dest, sbyte src) { dest.WriteByte((byte)src); }
-
-        protected override void trivialDeserialize(Stream src, ref byte dest)
-        {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
-            dest = (byte)code;
-        }
-        protected override void trivialDeserialize(Stream src, ref sbyte dest)
-        {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
-            dest = (sbyte)code;
-        }
-#endregion
-
 #region integer basis
         private sbyte _format(ulong src, in Span<byte> dest)
         {
@@ -403,11 +395,11 @@ namespace Zaimoni.Serialization
         public override void Serialize(Stream dest, ulong src) {
             Span<byte> relay = stackalloc byte[8];
             var ub = _format(src, in relay);
-            trivialSerialize(dest, ub);
+            Serialize(dest, ub);
             if (1 <= ub) {
                 byte scan = 0;
                 do {
-                    trivialSerialize(dest, relay[scan]);
+                    Serialize(dest, relay[scan]);
                 } while (++scan < ub);
             }
         }
@@ -416,11 +408,11 @@ namespace Zaimoni.Serialization
             dest = 0;
             ulong scale = 1;
             sbyte ub = 0;
-            trivialDeserialize(src, ref ub);
+            Deserialize(src, ref ub);
             if (0 > ub || 8 < ub) throw new InvalidDataException("does not fit in ulong");
             byte scan = 0;
             while (0 < ub) {
-                trivialDeserialize(src, ref scan);
+                Deserialize(src, ref scan);
                 dest += scale * scan;
                 scale *= 256;
                 --ub;
@@ -440,11 +432,11 @@ namespace Zaimoni.Serialization
             Span<byte> relay = stackalloc byte[8];
             var ub = _format((ulong)src, in relay);
             while (2 <= ub && 255 == relay[ub - 1]) --ub;
-            trivialSerialize(dest, (sbyte)(-ub));
+            Serialize(dest, (sbyte)(-ub));
             if (1 <= ub) {
                 byte scan = 0;
                 do {
-                    trivialSerialize(dest, relay[scan]);
+                    Serialize(dest, relay[scan]);
                 } while (++scan < ub);
             }
         }
@@ -453,18 +445,18 @@ namespace Zaimoni.Serialization
             dest = 0;
             long scale = 1;
             sbyte ub = 0;
-            trivialDeserialize(src, ref ub);
+            Deserialize(src, ref ub);
             if (-8 > ub || 8 < ub) throw new InvalidDataException("does not fit in long");
             byte scan = 0;
             while (0 < ub) {
-                trivialDeserialize(src, ref scan);
+                Deserialize(src, ref scan);
                 dest += scale * scan;
                 scale *= 256;
                 --ub;
             }
             if (0 <= ub) return;
             while (0 > ub) {
-                trivialDeserialize(src, ref scan);
+                Deserialize(src, ref scan);
                 var test = scan - 256;
                 dest += scale * test;
                 scale *= 256;
@@ -476,20 +468,20 @@ namespace Zaimoni.Serialization
 #region object references
         public override void SerializeNull(Stream dest)
         {
-            trivialSerialize(dest, null_code);
+            Serialize(dest, null_code);
         }
 
         public override void SerializeObjCode(Stream dest, ulong code)
         {
             // \todo? micro-optimization: integrate the size of the encoding into the signal byte
-            trivialSerialize(dest, obj_ref_code);
+            Serialize(dest, obj_ref_code);
             Serialize7bit(dest, code);
         }
 
         public override ulong DeserializeObjCode(Stream src)
         {
             sbyte signal = 0;
-            trivialDeserialize(src, ref signal);
+            Deserialize(src, ref signal);
             if (null_code == signal) return 0;
             if (obj_ref_code != signal) throw new InvalidDataException("expected object reference");
             return Deserialize7bit(src);

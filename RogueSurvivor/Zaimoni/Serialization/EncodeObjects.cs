@@ -18,8 +18,11 @@ namespace Zaimoni.Serialization
         public readonly StreamingContext context;
         public readonly Formatter format;
         private ulong seen = 0;
+        private ulong type_seen = 0;
+        private Dictionary<Type, ulong> type_code_of = new();
         private Dictionary<Type, Dictionary<object, ulong>> encodings = new();
         private List<KeyValuePair<ulong, Action<Stream>>> to_save = new();
+        private List<KeyValuePair<ulong, Action<Stream>>> to_save_type = new();
 
         EncodeObjects(StreamingContext _context, Formatter _format)
         {
@@ -62,6 +65,19 @@ namespace Zaimoni.Serialization
         static public T[] Linearize<T>(IEnumerable<T>? src) {
             if (null == src || !src.Any()) return null;
             return src.ToArray();
+        }
+
+        private ulong getTypeCode(Type src) {
+            if (type_code_of.TryGetValue(src, out var code)) return code;
+            type_code_of.Add(src, ++type_seen);
+
+#if PROTOTYPE
+            to_save_type.Add(new(type_seen, dest => {
+
+            }));
+#endif
+
+            return type_seen;
         }
     }
 }

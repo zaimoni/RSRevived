@@ -30,7 +30,6 @@ namespace djack.RogueSurvivor.Engine
 
     [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
     private Scoring m_Scoring;
-    private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
     public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
 
