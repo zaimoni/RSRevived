@@ -79,7 +79,7 @@ namespace Zaimoni.Serialization
         // 7-bit encoding/decoding of unsigned integers was supported by BinaryReader/BinaryWriter.  Not of use for text formats.
         // 2021-04-24: Can't predict whether BinaryReader/BinaryWriter is included in the deprecation, so re-implement.
 #region 7-bit encoding
-        protected void Serialize7bit(Stream dest, ulong src)
+        public void Serialize7bit(Stream dest, ulong src)
         {
             Span<byte> relay = stackalloc byte[10];
             int ub = 0;
@@ -90,28 +90,28 @@ namespace Zaimoni.Serialization
             relay[ub++] = (byte)src;
             dest.Write(relay.Slice(0, ub));
         }
-        protected void Serialize7bit(Stream dest, uint src) => Serialize7bit(dest, (ulong)src);
-        protected void Serialize7bit(Stream dest, ushort src) => Serialize7bit(dest, (ulong)src);
+        public void Serialize7bit(Stream dest, uint src) => Serialize7bit(dest, (ulong)src);
+        public void Serialize7bit(Stream dest, ushort src) => Serialize7bit(dest, (ulong)src);
 
-        protected void Serialize7bit(Stream dest, long src)
+        public void Serialize7bit(Stream dest, long src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
         }
 
-        protected void Serialize7bit(Stream dest, int src)
+        public void Serialize7bit(Stream dest, int src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
         }
 
-        protected void Serialize7bit(Stream dest, short src)
+        public void Serialize7bit(Stream dest, short src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
         }
 
-        protected ulong Deserialize7bit(Stream src)
+        private ulong Deserialize7bit(Stream src)
         {
             ulong scale = 1;
             ulong dest = 0;
@@ -126,40 +126,40 @@ namespace Zaimoni.Serialization
             return dest;
         }
 
-        protected void Deserialize7bit(Stream src, ref ulong dest)
+        public void Deserialize7bit(Stream src, ref ulong dest)
         {
             dest = Deserialize7bit(src);
         }
 
-        protected void Deserialize7bit(Stream src, ref uint dest)
+        public void Deserialize7bit(Stream src, ref uint dest)
         {
             var staging = Deserialize7bit(src);
             if (uint.MaxValue < staging) throw new InvalidDataException("huge uint found");
             dest = (uint)staging;
         }
 
-        protected void Deserialize7bit(Stream src, ref ushort dest)
+        public void Deserialize7bit(Stream src, ref ushort dest)
         {
             var staging = Deserialize7bit(src);
             if (ushort.MaxValue < staging) throw new InvalidDataException("huge ushort found");
             dest = (ushort)staging;
         }
 
-        protected void Deserialize7bit(Stream src, ref long dest)
+        public void Deserialize7bit(Stream src, ref long dest)
         {
             var staging = Deserialize7bit(src);
             if (long.MaxValue < staging) throw new InvalidDataException("huge int found");
             dest = (long)staging;
         }
 
-        protected void Deserialize7bit(Stream src, ref int dest)
+        public void Deserialize7bit(Stream src, ref int dest)
         {
             var staging = Deserialize7bit(src);
             if (int.MaxValue < staging) throw new InvalidDataException("huge int found");
             dest = (int)staging;
         }
 
-        protected void Deserialize7bit(Stream src, ref short dest)
+        public void Deserialize7bit(Stream src, ref short dest)
         {
             var staging = Deserialize7bit(src);
             if ((ulong)(short.MaxValue) < staging) throw new InvalidDataException("huge short found");
@@ -169,10 +169,91 @@ namespace Zaimoni.Serialization
 
         // structs have to go through code generation using these as exemplars
 #region integer basis
-        public abstract void Serialize(Stream dest, ulong src);
-        public abstract void Serialize(Stream dest, long src);
-        public abstract void Deserialize(Stream src, ref ulong dest);
-        public abstract void Deserialize(Stream src, ref long dest);
+        private sbyte _format(ulong src, in Span<byte> dest)
+        {
+            sbyte ub = 0;
+            while (0 < src) {
+                dest[ub++] = (byte)(src % 256);
+                src /= 256;
+            }
+            return ub;
+        }
+
+        // following file:///C:/Ruby27-x64/share/doc/ruby/html/marshal_rdoc.html
+        public void Serialize(Stream dest, ulong src)
+        {
+            Span<byte> relay = stackalloc byte[8];
+            var ub = _format(src, in relay);
+            Serialize(dest, ub);
+            if (1 <= ub) {
+                byte scan = 0;
+                do {
+                    Serialize(dest, relay[scan]);
+                } while (++scan < ub);
+            }
+        }
+
+        // we, like Ruby, are relying on the hardware signed integer format being 2's-complement
+        // that is, "trailing" 0xFF are not significant
+        // the two other C-supported representations for negative integers require different handling
+        public void Serialize(Stream dest, long src)
+        {
+            if (0 <= src) {
+                Serialize(dest, (ulong)src);
+                return;
+            }
+
+            Span<byte> relay = stackalloc byte[8];
+            var ub = _format((ulong)src, in relay);
+            while (2 <= ub && 255 == relay[ub - 1]) --ub;
+            Serialize(dest, (sbyte)(-ub));
+            if (1 <= ub) {
+                byte scan = 0;
+                do {
+                    Serialize(dest, relay[scan]);
+                } while (++scan < ub);
+            }
+        }
+
+        public void Deserialize(Stream src, ref ulong dest)
+        {
+            dest = 0;
+            ulong scale = 1;
+            sbyte ub = 0;
+            Deserialize(src, ref ub);
+            if (0 > ub || 8 < ub) throw new InvalidDataException("does not fit in ulong");
+            byte scan = 0;
+            while (0 < ub) {
+                Deserialize(src, ref scan);
+                dest += scale * scan;
+                scale *= 256;
+                --ub;
+            }
+        }
+
+        public void Deserialize(Stream src, ref long dest)
+        {
+            dest = 0;
+            long scale = 1;
+            sbyte ub = 0;
+            Deserialize(src, ref ub);
+            if (-8 > ub || 8 < ub) throw new InvalidDataException("does not fit in long");
+            byte scan = 0;
+            while (0 < ub) {
+                Deserialize(src, ref scan);
+                dest += scale * scan;
+                scale *= 256;
+                --ub;
+            }
+            if (0 <= ub) return;
+            while (0 > ub) {
+                Deserialize(src, ref scan);
+                var test = scan - 256;
+                dest += scale * test;
+                scale *= 256;
+                ++ub;
+            }
+        }
 #endregion
 
 #region integer adapters
@@ -251,8 +332,57 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region strings
-        public abstract void Serialize(Stream dest, string src);
-        public abstract void Deserialize(Stream src, ref string dest);
+        protected void Serialize(Stream dest, Rune src)
+        {
+            Span<byte> relay = stackalloc byte[4]; // 2021-04-22: currently 4 (check on compiler upgrade)
+            var encoded = src.EncodeToUtf8(relay);
+            dest.Write(relay.Slice(0, encoded));
+        }
+
+        public void Serialize(Stream dest, string src)
+        {
+            var runes = src.EnumerateRunes().ToArray();
+            var ub = runes.Length;
+            var bytes = 0;
+            var i = 0;
+            while (i < ub) bytes += runes[i++].Utf8SequenceLength;
+
+            Serialize7bit(dest, bytes); // record byte-length explicitly
+
+            i = 0;
+            while (i < ub) Serialize(dest, runes[i++]);
+        }
+
+        public void Deserialize(Stream src, ref string dest)
+        {
+            int bytes = 0;
+            Deserialize7bit(src, ref bytes);
+
+            int total_read = 0;
+            Span<byte> relay = new byte[bytes];
+
+            while (4 > total_read && total_read < bytes) {
+                var read = src.Read(relay.Slice(total_read));
+                if (0 >= read) throw new InvalidDataException("string truncated");
+                total_read += read;
+            }
+
+            Span<char> encode = stackalloc char[2]; // 2021-04-22: currently 2 (check on compiler upgrade)
+            dest = string.Empty;
+            while (4 <= total_read || total_read == bytes) {
+                if (System.Buffers.OperationStatus.Done != Rune.DecodeFromUtf8(relay, out var result, out var bytesConsumed)) throw new InvalidDataException("string corrupt");
+                var n = result.EncodeToUtf16(encode);
+                dest += new string(encode.Slice(0, n));
+                bytes -= bytesConsumed;
+                total_read -= bytesConsumed;
+                relay = relay.Slice(bytesConsumed);
+                while (4 > total_read && total_read < bytes) {
+                    var read = src.Read(relay.Slice(total_read));
+                    if (0 >= read) throw new InvalidDataException("string truncated");
+                    total_read += read;
+                }
+            }
+        }
 #endregion
 
 #region enums
@@ -351,191 +481,6 @@ namespace Zaimoni.Serialization
                 }
                 return;
             default: throw new InvalidOperationException("DeserializeEnum cannot handle "+e_type.ToString());
-            }
-        }
-#endregion
-    }
-
-    public class BinaryFormatter : Formatter
-    {
-        public BinaryFormatter(StreamingContext context) : base(context) { }
-
-        // sbyte values -8 ... 8 are used by the integer encoding subsystem
-        // we likely want to reserve "nearest 127/-128" first, as a long-range future-resistance scheme
-
-        const sbyte null_code = sbyte.MaxValue;
-        const sbyte obj_ref_code = sbyte.MinValue;
-
-#if FAIL
-        protected override bool trivialSerialize<T>(Stream dest, T src) {
-            var method = typeof(BinaryFormatter).GetMethod("_trivialSerialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
-                null, System.Reflection.CallingConventions.Standard, new Type[]{ typeof(Stream), typeof(T)}, null);
-            if (null == method) return false;
-            method.Invoke(null, new object[] { src });
-            return true;
-        }
-
-        protected override bool trivialDeserialize<T>(Stream dest, ref T src) {
-            var method = typeof(BinaryFormatter).GetMethod("_trivialDeserialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
-                null, System.Reflection.CallingConventions.Standard, new Type[]{ typeof(Stream), typeof(T).MakeByRefType() }, null);
-            if (null == method) return false;
-            T relay;
-            method.Invoke(null, new object[] { dest, relay });
-            src = relay;
-            return true;
-        }
-
-        static private void _trivialSerialize(Stream dest, byte src) { dest.WriteByte(src); }
-        static private void _trivialSerialize(Stream dest, char src) { dest.WriteByte((byte)src); }
-
-        static private void _trivialDeserialize(Stream src, ref byte dest) {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidOperationException("stream ended unexpectedly");
-            dest = (byte)code;
-        }
-
-        static private void _trivialDeserialize(Stream src, ref char dest)
-        {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidOperationException("stream ended unexpectedly");
-            dest = (char)code;
-        }
-#endif
-
-#region integer basis
-        private sbyte _format(ulong src, in Span<byte> dest)
-        {
-            sbyte ub = 0;
-            while (0 < src) {
-                dest[ub++] = (byte)(src % 256);
-                src /= 256;
-            }
-            return ub;
-        }
-
-        // following file:///C:/Ruby27-x64/share/doc/ruby/html/marshal_rdoc.html
-        public override void Serialize(Stream dest, ulong src) {
-            Span<byte> relay = stackalloc byte[8];
-            var ub = _format(src, in relay);
-            Serialize(dest, ub);
-            if (1 <= ub) {
-                byte scan = 0;
-                do {
-                    Serialize(dest, relay[scan]);
-                } while (++scan < ub);
-            }
-        }
-
-        public override void Deserialize(Stream src, ref ulong dest) {
-            dest = 0;
-            ulong scale = 1;
-            sbyte ub = 0;
-            Deserialize(src, ref ub);
-            if (0 > ub || 8 < ub) throw new InvalidDataException("does not fit in ulong");
-            byte scan = 0;
-            while (0 < ub) {
-                Deserialize(src, ref scan);
-                dest += scale * scan;
-                scale *= 256;
-                --ub;
-            }
-        }
-
-        // we, like Ruby, are relying on the hardware signed integer format being 2's-complement
-        // that is, "trailing" 0xFF are not significant
-        // the two other C-supported representations for negative integers require different handling
-        public override void Serialize(Stream dest, long src)
-        {
-            if (0 <= src) {
-                Serialize(dest, (ulong)src);
-                return;
-            }
-
-            Span<byte> relay = stackalloc byte[8];
-            var ub = _format((ulong)src, in relay);
-            while (2 <= ub && 255 == relay[ub - 1]) --ub;
-            Serialize(dest, (sbyte)(-ub));
-            if (1 <= ub) {
-                byte scan = 0;
-                do {
-                    Serialize(dest, relay[scan]);
-                } while (++scan < ub);
-            }
-        }
-
-        public override void Deserialize(Stream src, ref long dest) {
-            dest = 0;
-            long scale = 1;
-            sbyte ub = 0;
-            Deserialize(src, ref ub);
-            if (-8 > ub || 8 < ub) throw new InvalidDataException("does not fit in long");
-            byte scan = 0;
-            while (0 < ub) {
-                Deserialize(src, ref scan);
-                dest += scale * scan;
-                scale *= 256;
-                --ub;
-            }
-            if (0 <= ub) return;
-            while (0 > ub) {
-                Deserialize(src, ref scan);
-                var test = scan - 256;
-                dest += scale * test;
-                scale *= 256;
-                ++ub;
-            }
-        }
-#endregion
-
-#region strings
-        private void Serialize(Stream dest, Rune src)
-        {
-            Span<byte> relay = stackalloc byte[4]; // 2021-04-22: currently 4 (check on compiler upgrade)
-            var encoded = src.EncodeToUtf8(relay);
-            dest.Write(relay.Slice(0, encoded));
-        }
-
-        public override void Serialize(Stream dest, string src) {
-            var runes = src.EnumerateRunes().ToArray();
-            var ub = runes.Length;
-            var bytes = 0;
-            var i = 0;
-            while (i < ub) bytes += runes[i++].Utf8SequenceLength;
-
-            Serialize7bit(dest, bytes); // record byte-length explicitly
-
-            i = 0;
-            while (i < ub) Serialize(dest, runes[i++]);
-        }
-
-        public override void Deserialize(Stream src, ref string dest)
-        {
-            int bytes = 0;
-            Deserialize7bit(src, ref bytes);
-
-            int total_read = 0;
-            Span<byte> relay = new byte[bytes];
-
-            while (4 > total_read && total_read < bytes) {
-                var read = src.Read(relay.Slice(total_read));
-                if (0 >= read) throw new InvalidDataException("string truncated");
-                total_read += read;
-            }
-
-            Span<char> encode = stackalloc char[2]; // 2021-04-22: currently 2 (check on compiler upgrade)
-            dest = string.Empty;
-            while (4 <= total_read || total_read == bytes) {
-                if (System.Buffers.OperationStatus.Done != Rune.DecodeFromUtf8(relay, out var result, out var bytesConsumed)) throw new InvalidDataException("string corrupt");
-                var n = result.EncodeToUtf16(encode);
-                dest += new string(encode.Slice(0, n));
-                bytes -= bytesConsumed;
-                total_read -= bytesConsumed;
-                relay = relay.Slice(bytesConsumed);
-                while (4 > total_read && total_read < bytes) {
-                    var read = src.Read(relay.Slice(total_read));
-                    if (0 >= read) throw new InvalidDataException("string truncated");
-                    total_read += read;
-                }
             }
         }
 #endregion
