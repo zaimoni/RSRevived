@@ -12,7 +12,7 @@ namespace Zaimoni.Serialization
         public readonly States State;
         public readonly object? Context;
 
-        StreamingContext(States st, object? xtra = null) {
+        StreamingContext(States st = States.File, object? xtra = null) {
             State = st;
             Context = xtra;
         }

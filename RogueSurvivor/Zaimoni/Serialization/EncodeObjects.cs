@@ -24,18 +24,18 @@ namespace Zaimoni.Serialization
         private List<Action<Stream>> to_save = new();
         private List<Action<Stream>> to_save_type = new();
 
-        EncodeObjects(StreamingContext _context, Formatter _format)
+        EncodeObjects()
         {
-            context = _context;
-            format = _format;
+            context = new StreamingContext();
+            format = new Formatter(context);
         }
 
         // precondition: src not null
-        public ulong Saving<T>(T src) where T : ISerialize
+        public ulong Saving(ISerialize src)
         {
             if (null == src) return 0; // likely should handle this at a higher level; signals writing a null code rather than an object reference
 
-            var type = typeof(T);
+            var type = src.GetType();
             var t_code = getTypeCode(type);
             if (encodings.TryGetValue(type, out var cache)) {
                 if (cache.TryGetValue(src, out ulong code)) return code;

@@ -16,10 +16,10 @@ namespace Zaimoni.Serialization
         private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
         private Dictionary<ulong, Type> type_for_code = new();
 
-        DecodeObjects(StreamingContext _context, Formatter _format)
+        DecodeObjects()
         {
-            context = _context;
-            format = _format;
+            context = new StreamingContext();
+            format = new Formatter(context);
         }
 
         public object Seen(ulong id)

@@ -150,6 +150,15 @@ namespace djack.RogueSurvivor.Engine
             decode.format.Deserialize(src, ref LastTurnPlayerActed);
             decode.format.Deserialize(src, ref relay);
             PlayerKnows_CHARUndergroundFacilityLocation = 0 != relay;
+
+            // mockup to allow testing
+            m_CommandLineOptions = null;
+            m_Scoring = new Scoring();
+            var city_size = RogueGame.Options.CitySize;
+            World = new World(RogueGame.Options.CitySize);
+            UniqueActors = new UniqueActors();
+            UniqueItems = new UniqueItems();
+            UniqueMaps = new UniqueMaps();
 /*
             info.read(ref m_Scoring, "Scoring");
             info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
@@ -173,6 +182,17 @@ namespace djack.RogueSurvivor.Engine
 
     }
 
+    bool SaveLoadOk(Session test) {
+        if (GameMode != test.GameMode) return false;
+        if (ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner) return false;
+        if (ScriptStage_PoliceCHARrelations != test.ScriptStage_PoliceCHARrelations) return false;
+        if (ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup) return false;
+        if (LastTurnPlayerActed != test.LastTurnPlayerActed) return false;
+        if (PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation) return false;
+//      decode.format.Deserialize(src, ref s_seed);
+        return true;
+    }
+
     void Zaimoni.Serialization.ISerialize.save(Stream dest, Zaimoni.Serialization.EncodeObjects encode)
     {
             encode.format.Serialize(dest, (sbyte)GameMode);
@@ -182,6 +202,7 @@ namespace djack.RogueSurvivor.Engine
             encode.format.Serialize(dest, s_seed);
             encode.format.Serialize(dest, LastTurnPlayerActed);
             encode.format.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
+
 /*
             info.AddValue("Scoring", m_Scoring, typeof(Scoring));
             info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
