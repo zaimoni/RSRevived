@@ -18,6 +18,8 @@ namespace Zaimoni.Serialization
 
         const sbyte null_code = sbyte.MaxValue;
         const sbyte obj_ref_code = sbyte.MinValue;
+        const sbyte type_code = sbyte.MinValue + 1;
+        const sbyte type_ref_code = sbyte.MinValue + 2;
 
         public Formatter(StreamingContext context) {
             _context = context;
@@ -328,6 +330,19 @@ namespace Zaimoni.Serialization
             if (null_code == signal) return 0;
             if (obj_ref_code != signal) throw new InvalidDataException("expected object reference");
             return Deserialize7bit(src);
+        }
+
+        public void SerializeTypeCode(Stream dest, ulong code, string name)
+        {
+            Serialize(dest, type_code);
+            Serialize7bit(dest, code);
+            Serialize(dest, name);
+        }
+
+        public void SerializeTypeCode(Stream dest, ulong code)
+        {
+            Serialize(dest, type_ref_code);
+            Serialize7bit(dest, code);
         }
 #endregion
 
