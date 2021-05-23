@@ -21,7 +21,7 @@ namespace Zaimoni.Serialization
         private ulong type_seen = 0;
         private Dictionary<Type, ulong> type_code_of = new();
         private Dictionary<Type, Dictionary<object, ulong>> encodings = new();
-        private List<KeyValuePair<ulong, Action<Stream>>> to_save = new();
+        private List<Action<Stream>> to_save = new();
         private List<Action<Stream>> to_save_type = new();
 
         EncodeObjects(StreamingContext _context, Formatter _format)
@@ -33,6 +33,8 @@ namespace Zaimoni.Serialization
         // precondition: src not null
         public ulong Saving<T>(T src) where T : ISerialize
         {
+            if (null == src) return 0; // likely should handle this at a higher level; signals writing a null code rather than an object reference
+
             var type = typeof(T);
             var t_code = getTypeCode(type);
             if (encodings.TryGetValue(type, out var cache)) {
@@ -42,12 +44,13 @@ namespace Zaimoni.Serialization
 
             // \todo handle polymorphism -- loader must know which subclass to load
             // yes, appears to be subverting historical architecture
-            to_save.Add(new(seen, dest => {
+            to_save.Add(dest => {
                 format.SerializeTypeCode(dest, t_code);
+                format.SerializeObjCode(dest, seen);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
                 src.save(dest, this);
                 if (src is IOnSerialized y) y.OnSerialized(in context);
-            }));
+            });
             return seen;
         }
 
@@ -66,12 +69,7 @@ namespace Zaimoni.Serialization
 
             var next = to_save[0];
             to_save.RemoveAt(0);
-
-            // \todo intertie w/SaveManager
-            format.SerializeObjCode(dest, next.Key);
-            // \todo intertie w/SaveManager
-
-            next.Value(dest); // write object itself to hard drive
+            next(dest); // write object itself to hard drive
             return true;
         }
 
