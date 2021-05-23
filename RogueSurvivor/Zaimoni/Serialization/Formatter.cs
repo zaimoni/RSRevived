@@ -9,9 +9,10 @@ namespace Zaimoni.Serialization
 {
     // 2021-05-21: policy change ... just hard-code for binary formatting
     // likely JSON/XML will be covered by others indefinitely
-    abstract public class Formatter
+    public class Formatter
     {
-        protected readonly StreamingContext _context;
+        private readonly StreamingContext _context;
+        private ulong version = 0;
 
         // sbyte values -8 ... 8 are used by the integer encoding subsystem
         // we likely want to reserve "nearest 127/-128" first, as a long-range future-resistance scheme
@@ -77,6 +78,23 @@ namespace Zaimoni.Serialization
         protected abstract bool trivialSerialize<T>(Stream dest, T src);
         protected abstract bool trivialDeserialize<T>(Stream dest, ref T src);
 #endif
+
+#region version support
+        ulong Version {
+            get { return version; }
+            set {
+                if (0 < version) throw new InvalidOperationException("can only set version once");
+                if (0 < value) version = value;
+            }
+        }
+
+        void ReadVersion(Stream dest) {
+            if (0 >= version) Deserialize7bit(dest, ref version);
+        }
+        void SaveVersion(Stream dest) {
+            if (0 < version) Serialize7bit(dest, version);
+        }
+#endregion
 
         // 7-bit encoding/decoding of unsigned integers was supported by BinaryReader/BinaryWriter.  Not of use for text formats.
         // 2021-04-24: Can't predict whether BinaryReader/BinaryWriter is included in the deprecation, so re-implement.

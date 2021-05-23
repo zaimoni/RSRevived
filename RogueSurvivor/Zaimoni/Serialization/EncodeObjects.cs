@@ -34,7 +34,7 @@ namespace Zaimoni.Serialization
         public ulong Saving<T>(T src) where T : ISerialize
         {
             var type = typeof(T);
-            var code = getTypeCode(type);
+            var t_code = getTypeCode(type);
             if (encodings.TryGetValue(type, out var cache)) {
                 if (cache.TryGetValue(src, out ulong code)) return code;
             } else encodings.Add(type, cache = new());
@@ -43,7 +43,7 @@ namespace Zaimoni.Serialization
             // \todo handle polymorphism -- loader must know which subclass to load
             // yes, appears to be subverting historical architecture
             to_save.Add(new(seen, dest => {
-                format.SerializeTypeCode(dest, code);
+                format.SerializeTypeCode(dest, t_code);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
                 src.save(dest, this);
                 if (src is IOnSerialized y) y.OnSerialized(in context);
