@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 #nullable enable
 
@@ -13,6 +14,7 @@ namespace Zaimoni.Serialization
         public readonly Formatter format;
         private Dictionary<ulong, List<Action<object>>?> requested = new();
         private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
+        private Dictionary<ulong, Type> type_for_code = new();
 
         DecodeObjects(StreamingContext _context, Formatter _format)
         {
@@ -69,5 +71,25 @@ namespace Zaimoni.Serialization
             }
             dest = ret;
         }
+
+        private static readonly Type[] integrated_constructor = new Type[]{ typeof(Stream), typeof(DecodeObjects) };
+
+        // primary data load, not load-from-reference
+        public T Load<T>(Stream src) where T : class
+        {
+            var code = format.Peek(src);
+            if (Formatter.null_code == code) return default;    // usually null
+            format.DeserializeTypeCode(src, type_for_code);
+            var t_code = format.DeserializeTypeCode(src);
+            if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
+
+            var coop_constructor = type.GetConstructor(integrated_constructor);
+            if (null != coop_constructor) {
+                return (T)coop_constructor.Invoke(new object[] { src, format });
+            }
+
+            throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
+        }
+
     }
 }

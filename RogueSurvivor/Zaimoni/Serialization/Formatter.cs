@@ -13,14 +13,15 @@ namespace Zaimoni.Serialization
     {
         private readonly StreamingContext _context;
         private ulong version = 0;
+        private sbyte preview = 0;
 
         // sbyte values -8 ... 8 are used by the integer encoding subsystem
         // we likely want to reserve "nearest 127/-128" first, as a long-range future-resistance scheme
 
-        const sbyte null_code = sbyte.MaxValue;
-        const sbyte obj_ref_code = sbyte.MinValue;
-        const sbyte type_code = sbyte.MinValue + 1;
-        const sbyte type_ref_code = sbyte.MinValue + 2;
+        public const sbyte null_code = sbyte.MaxValue;
+        public const sbyte obj_ref_code = sbyte.MinValue;
+        public const sbyte type_code = sbyte.MinValue + 1;
+        public const sbyte type_ref_code = sbyte.MinValue + 2;
 
         public Formatter(StreamingContext context) {
             _context = context;
@@ -318,20 +319,21 @@ namespace Zaimoni.Serialization
         public void Serialize(Stream dest, byte src) => dest.WriteByte(src);
         public void Serialize(Stream dest, sbyte src) => dest.WriteByte((byte)src);
 
-        public void Deserialize(Stream src, ref byte dest)
-        {
+        private byte ReadByte(Stream src) {
             var code = src.ReadByte();
             if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
-            dest = (byte)code;
+            return (byte)code;
         }
 
-        public void Deserialize(Stream src, ref sbyte dest)
-        {
-            var code = src.ReadByte();
-            if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
-            dest = (sbyte)code;
-        }
+        public void Deserialize(Stream src, ref byte dest) { dest = ReadByte(src); }
+        public void Deserialize(Stream src, ref sbyte dest) { dest = (sbyte)ReadByte(src); }
 #endregion
+
+        public sbyte Preview { get { return preview; } }
+        public sbyte Peek(Stream src) {
+            preview = (sbyte)ReadByte(src);
+            return preview;
+        }
 
 #region object references
         public void SerializeNull(Stream dest) => Serialize(dest, null_code);
@@ -357,10 +359,36 @@ namespace Zaimoni.Serialization
             Serialize(dest, name);
         }
 
+        public void DeserializeTypeCode(Stream src, Dictionary<ulong, Type> dest)
+        {
+            while (type_code == preview) {
+                ulong stage_code = 0;
+                string stage_name = string.Empty;
+                Deserialize7bit(src, ref stage_code);
+                if (0 == stage_code) throw new InvalidOperationException("invalid type encoding");
+                if (dest.ContainsKey(stage_code)) throw new InvalidOperationException("duplicate type encoding");
+                Deserialize(src, ref stage_name);
+                var type = Type.GetType(stage_name);
+                if (null == type) throw new InvalidOperationException("did not recover type from its name");
+                dest.Add(stage_code, type);
+                Peek(src);
+            }
+        }
+
         public void SerializeTypeCode(Stream dest, ulong code)
         {
             Serialize(dest, type_ref_code);
             Serialize7bit(dest, code);
+        }
+
+        public ulong DeserializeTypeCode(Stream src)
+        {
+            if (type_ref_code != preview) throw new InvalidOperationException("did not find expected type code");
+            ulong code = 0;
+            Deserialize7bit(src, ref code);
+            if (0 == code) throw new InvalidOperationException("found null type code");
+            Peek(src);
+            return code;
         }
 #endregion
 
