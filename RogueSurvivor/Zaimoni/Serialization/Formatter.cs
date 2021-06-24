@@ -132,7 +132,7 @@ namespace Zaimoni.Serialization
             Serialize7bit(dest, (ulong)src);
         }
 
-        private ulong Deserialize7bit(Stream src)
+        static private ulong Deserialize7bit(Stream src)
         {
             ulong scale = 1;
             ulong dest = 0;
@@ -147,40 +147,37 @@ namespace Zaimoni.Serialization
             return dest;
         }
 
-        public void Deserialize7bit(Stream src, ref ulong dest)
-        {
-            dest = Deserialize7bit(src);
-        }
+        static public void Deserialize7bit(Stream src, ref ulong dest) => dest = Deserialize7bit(src);
 
-        public void Deserialize7bit(Stream src, ref uint dest)
+        static public void Deserialize7bit(Stream src, ref uint dest)
         {
             var staging = Deserialize7bit(src);
             if (uint.MaxValue < staging) throw new InvalidDataException("huge uint found");
             dest = (uint)staging;
         }
 
-        public void Deserialize7bit(Stream src, ref ushort dest)
+        static public void Deserialize7bit(Stream src, ref ushort dest)
         {
             var staging = Deserialize7bit(src);
             if (ushort.MaxValue < staging) throw new InvalidDataException("huge ushort found");
             dest = (ushort)staging;
         }
 
-        public void Deserialize7bit(Stream src, ref long dest)
+        static public void Deserialize7bit(Stream src, ref long dest)
         {
             var staging = Deserialize7bit(src);
             if (long.MaxValue < staging) throw new InvalidDataException("huge int found");
             dest = (long)staging;
         }
 
-        public void Deserialize7bit(Stream src, ref int dest)
+        static public void Deserialize7bit(Stream src, ref int dest)
         {
             var staging = Deserialize7bit(src);
             if (int.MaxValue < staging) throw new InvalidDataException("huge int found");
             dest = (int)staging;
         }
 
-        public void Deserialize7bit(Stream src, ref short dest)
+        static public void Deserialize7bit(Stream src, ref short dest)
         {
             var staging = Deserialize7bit(src);
             if ((ulong)(short.MaxValue) < staging) throw new InvalidDataException("huge short found");
@@ -343,7 +340,7 @@ namespace Zaimoni.Serialization
             Serialize7bit(dest, code);
         }
 
-        public ulong DeserializeObjCode(Stream src)
+        static public ulong DeserializeObjCode(Stream src)
         {
             sbyte signal = 0;
             Deserialize(src, ref signal);
@@ -352,7 +349,7 @@ namespace Zaimoni.Serialization
             return Deserialize7bit(src);
         }
 
-        public void SerializeTypeCode(Stream dest, ulong code, string name)
+        static public void SerializeTypeCode(Stream dest, ulong code, string name)
         {
             Serialize(dest, type_code);
             Serialize7bit(dest, code);
@@ -393,14 +390,14 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region strings
-        protected void Serialize(Stream dest, Rune src)
+        static private void Serialize(Stream dest, Rune src)
         {
             Span<byte> relay = stackalloc byte[4]; // 2021-04-22: currently 4 (check on compiler upgrade)
             var encoded = src.EncodeToUtf8(relay);
             dest.Write(relay.Slice(0, encoded));
         }
 
-        public void Serialize(Stream dest, string src)
+        static public void Serialize(Stream dest, string src)
         {
             var runes = src.EnumerateRunes().ToArray();
             var ub = runes.Length;
@@ -414,7 +411,7 @@ namespace Zaimoni.Serialization
             while (i < ub) Serialize(dest, runes[i++]);
         }
 
-        public void Deserialize(Stream src, ref string dest)
+        static public void Deserialize(Stream src, ref string dest)
         {
             int bytes = 0;
             Deserialize7bit(src, ref bytes);

@@ -45,8 +45,8 @@ namespace Zaimoni.Serialization
             // \todo handle polymorphism -- loader must know which subclass to load
             // yes, appears to be subverting historical architecture
             to_save.Add(dest => {
-                format.SerializeTypeCode(dest, t_code);
-                format.SerializeObjCode(dest, seen);
+                Formatter.SerializeTypeCode(dest, t_code);
+                Formatter.SerializeObjCode(dest, seen);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
                 src.save(dest, this);
                 if (src is IOnSerialized y) y.OnSerialized(in context);
@@ -92,7 +92,7 @@ namespace Zaimoni.Serialization
             type_code_of.Add(src, ++type_seen);
 
             to_save_type.Add(dest => {
-                format.SerializeTypeCode(dest, type_seen, src.FullName);
+                Formatter.SerializeTypeCode(dest, type_seen, src.FullName);
             });
 
             return type_seen;
