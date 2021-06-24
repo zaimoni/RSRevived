@@ -233,7 +233,7 @@ namespace Zaimoni.Serialization
             }
         }
 
-        public void Deserialize(Stream src, ref ulong dest)
+        static public void Deserialize(Stream src, ref ulong dest)
         {
             dest = 0;
             ulong scale = 1;
@@ -249,7 +249,7 @@ namespace Zaimoni.Serialization
             }
         }
 
-        public void Deserialize(Stream src, ref long dest)
+        static public void Deserialize(Stream src, ref long dest)
         {
             dest = 0;
             long scale = 1;
@@ -281,21 +281,21 @@ namespace Zaimoni.Serialization
         static public void Serialize(Stream dest, int src) { Serialize(dest, (long)src); }
         static public void Serialize(Stream dest, short src) { Serialize(dest, (long)src); }
 
-        public void Deserialize(Stream src, ref uint dest) {
+        static public void Deserialize(Stream src, ref uint dest) {
             ulong relay = 0;
             Deserialize(src, ref relay);
             if (uint.MaxValue < relay) throw new InvalidDataException("huge uint found");
             dest = (uint)relay;
         }
 
-        public void Deserialize(Stream src, ref ushort dest) {
+        static public void Deserialize(Stream src, ref ushort dest) {
             ulong relay = 0;
             Deserialize(src, ref relay);
             if (ushort.MaxValue < relay) throw new InvalidDataException("huge ushort found");
             dest = (ushort)relay;
         }
 
-        public void Deserialize(Stream src, ref int dest)
+        static public void Deserialize(Stream src, ref int dest)
         {
             long relay = 0;
             Deserialize(src, ref relay);
@@ -303,7 +303,7 @@ namespace Zaimoni.Serialization
             dest = (int)relay;
         }
 
-        public void Deserialize(Stream src, ref short dest)
+        static public void Deserialize(Stream src, ref short dest)
         {
             long relay = 0;
             Deserialize(src, ref relay);
@@ -477,7 +477,7 @@ namespace Zaimoni.Serialization
             }
         }
 
-        public void DeserializeEnum<T>(Stream src, ref T dest) where T : Enum
+        static public void DeserializeEnum<T>(Stream src, ref T dest) where T : Enum
         {
             var e_type = typeof(T);
             switch (Type.GetTypeCode(Enum.GetUnderlyingType(e_type)))
