@@ -73,6 +73,13 @@ namespace Zaimoni.Serialization
             return true;
         }
 
+        public void Linearize<T>(IEnumerable<T>? src, Stream dest) {
+            var count = src?.Count() ?? 0;
+            format.Serialize7bit(dest, count);
+            if (0 < count) {
+            }
+        }
+
         static public T[] Linearize<T>(IEnumerable<T>? src) {
             if (null == src || !src.Any()) return null;
             return src.ToArray();

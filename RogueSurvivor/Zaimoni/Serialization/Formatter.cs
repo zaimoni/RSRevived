@@ -190,7 +190,7 @@ namespace Zaimoni.Serialization
 
         // structs have to go through code generation using these as exemplars
 #region integer basis
-        private sbyte _format(ulong src, in Span<byte> dest)
+        static private sbyte _format(ulong src, in Span<byte> dest)
         {
             sbyte ub = 0;
             while (0 < src) {
@@ -201,7 +201,7 @@ namespace Zaimoni.Serialization
         }
 
         // following file:///C:/Ruby27-x64/share/doc/ruby/html/marshal_rdoc.html
-        public void Serialize(Stream dest, ulong src)
+        static public void Serialize(Stream dest, ulong src)
         {
             Span<byte> relay = stackalloc byte[8];
             var ub = _format(src, in relay);
@@ -217,7 +217,7 @@ namespace Zaimoni.Serialization
         // we, like Ruby, are relying on the hardware signed integer format being 2's-complement
         // that is, "trailing" 0xFF are not significant
         // the two other C-supported representations for negative integers require different handling
-        public void Serialize(Stream dest, long src)
+        static public void Serialize(Stream dest, long src)
         {
             if (0 <= src) {
                 Serialize(dest, (ulong)src);
@@ -278,11 +278,11 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region integer adapters
-        public void Serialize(Stream dest, uint src) { Serialize(dest, (ulong)src); }
-        public void Serialize(Stream dest, ushort src) { Serialize(dest, (ulong)src); }
+        static public void Serialize(Stream dest, uint src) { Serialize(dest, (ulong)src); }
+        static public void Serialize(Stream dest, ushort src) { Serialize(dest, (ulong)src); }
 
-        public void Serialize(Stream dest, int src) { Serialize(dest, (long)src); }
-        public void Serialize(Stream dest, short src) { Serialize(dest, (long)src); }
+        static public void Serialize(Stream dest, int src) { Serialize(dest, (long)src); }
+        static public void Serialize(Stream dest, short src) { Serialize(dest, (long)src); }
 
         public void Deserialize(Stream src, ref uint dest) {
             ulong relay = 0;
@@ -316,17 +316,17 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region byte basis
-        public void Serialize(Stream dest, byte src) => dest.WriteByte(src);
-        public void Serialize(Stream dest, sbyte src) => dest.WriteByte((byte)src);
+        static public void Serialize(Stream dest, byte src) => dest.WriteByte(src);
+        static public void Serialize(Stream dest, sbyte src) => dest.WriteByte((byte)src);
 
-        private byte ReadByte(Stream src) {
+        static private byte ReadByte(Stream src) {
             var code = src.ReadByte();
             if (-1 == code) throw new InvalidDataException("stream ended unexpectedly");
             return (byte)code;
         }
 
-        public void Deserialize(Stream src, ref byte dest) { dest = ReadByte(src); }
-        public void Deserialize(Stream src, ref sbyte dest) { dest = (sbyte)ReadByte(src); }
+        static public void Deserialize(Stream src, ref byte dest) { dest = ReadByte(src); }
+        static public void Deserialize(Stream src, ref sbyte dest) { dest = (sbyte)ReadByte(src); }
 #endregion
 
         public sbyte Preview { get { return preview; } }
@@ -447,7 +447,7 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region enums
-        public void SerializeEnum<T>(Stream dest, T src) where T : IConvertible // catches enums, and some others
+        static public void SerializeEnum<T>(Stream dest, T src) where T : IConvertible // catches enums, and some others
         {
             var e_type = typeof(T);
             switch (Type.GetTypeCode(Enum.GetUnderlyingType(e_type))) // but this will hard-fail on non-enums
