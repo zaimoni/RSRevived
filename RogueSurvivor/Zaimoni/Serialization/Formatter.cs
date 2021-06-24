@@ -100,7 +100,7 @@ namespace Zaimoni.Serialization
         // 7-bit encoding/decoding of unsigned integers was supported by BinaryReader/BinaryWriter.  Not of use for text formats.
         // 2021-04-24: Can't predict whether BinaryReader/BinaryWriter is included in the deprecation, so re-implement.
 #region 7-bit encoding
-        public void Serialize7bit(Stream dest, ulong src)
+        static public void Serialize7bit(Stream dest, ulong src)
         {
             Span<byte> relay = stackalloc byte[10];
             int ub = 0;
@@ -111,22 +111,22 @@ namespace Zaimoni.Serialization
             relay[ub++] = (byte)src;
             dest.Write(relay.Slice(0, ub));
         }
-        public void Serialize7bit(Stream dest, uint src) => Serialize7bit(dest, (ulong)src);
-        public void Serialize7bit(Stream dest, ushort src) => Serialize7bit(dest, (ulong)src);
+        static public void Serialize7bit(Stream dest, uint src) => Serialize7bit(dest, (ulong)src);
+        static public void Serialize7bit(Stream dest, ushort src) => Serialize7bit(dest, (ulong)src);
 
-        public void Serialize7bit(Stream dest, long src)
+        static public void Serialize7bit(Stream dest, long src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
         }
 
-        public void Serialize7bit(Stream dest, int src)
+        static public void Serialize7bit(Stream dest, int src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
         }
 
-        public void Serialize7bit(Stream dest, short src)
+        static public void Serialize7bit(Stream dest, short src)
         {
             if (0 > src) throw new InvalidOperationException("cannot encode negative integer in 7-bit encoding");
             Serialize7bit(dest, (ulong)src);
@@ -336,8 +336,8 @@ namespace Zaimoni.Serialization
         }
 
 #region object references
-        public void SerializeNull(Stream dest) => Serialize(dest, null_code);
-        public void SerializeObjCode(Stream dest, ulong code)
+        static public void SerializeNull(Stream dest) => Serialize(dest, null_code);
+        static public void SerializeObjCode(Stream dest, ulong code)
         {
             Serialize(dest, obj_ref_code);
             Serialize7bit(dest, code);
@@ -375,7 +375,7 @@ namespace Zaimoni.Serialization
             }
         }
 
-        public void SerializeTypeCode(Stream dest, ulong code)
+        static public void SerializeTypeCode(Stream dest, ulong code)
         {
             Serialize(dest, type_ref_code);
             Serialize7bit(dest, code);
