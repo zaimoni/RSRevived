@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using Zaimoni.Data;
 
 #nullable enable
 
@@ -73,19 +74,46 @@ namespace Zaimoni.Serialization
             return true;
         }
 
-#if PROTOTYPE
-        public void Linearize<T>(IEnumerable<T>? src, Stream dest) {
+        static private Dictionary<Type, Action<Stream, object> > s_LinearizedElement_cache = new();
+        private Action<Stream, object> LinearizedElement<T>() {
+            var t_info = typeof(T);
+            if (s_LinearizedElement_cache.TryGetValue(t_info, out var handler)) return handler;
+            // \todo interface as easy mode
+            // \todo check for direct formatter support
+            if (t_info.IsEnum) {
+                var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                // \todo route to Formatter::SerializeEnum<T>
+                throw new InvalidOperationException(t_info.FullName + "\n"+method_candidates.to_s()); // need to determine what is needed here
+            }
+
+            if (t_info.IsGenericType) { // will not handle arrays
+                // expect KeyValuePair to route this way
+                throw new InvalidOperationException(t_info.FullName); // need to debug what is needed here
+            } else {
+                var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                // todo: check for Formatter::Serialize variant
+                throw new InvalidOperationException(t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
+            }
+
+            throw new InvalidOperationException(t_info.FullName + "\nattempting to return null");
+            return null; // non-functional shim to get things building
+        }
+
+        public void LinearSave<T>(IEnumerable<T>? src, Stream dest) {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(dest, count);
             if (0 < count) {
+                var handler = LinearizedElement<T>();
+                foreach (var x in src) handler(dest, x);
             }
         }
-#endif
 
+#if OBSOLETE
         static public T[] Linearize<T>(IEnumerable<T>? src) {
             if (null == src || !src.Any()) return null;
             return src.ToArray();
         }
+#endif
 
         private ulong getTypeCode(Type src) {
             if (type_code_of.TryGetValue(src, out var code)) return code;
