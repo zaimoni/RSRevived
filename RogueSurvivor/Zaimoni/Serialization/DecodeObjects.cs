@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Zaimoni.Data;
 
 #nullable enable
 
@@ -16,7 +17,7 @@ namespace Zaimoni.Serialization
         private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
         private Dictionary<ulong, Type> type_for_code = new();
 
-        DecodeObjects()
+        public DecodeObjects()
         {
             context = new StreamingContext();
             format = new Formatter(context);
@@ -90,6 +91,20 @@ namespace Zaimoni.Serialization
 
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
+    }
 
+    public static partial class Virtual
+    {
+        public static _T_ BinaryLoad<_T_>(this string filepath, _T_ src) where _T_ : class
+        {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            var decode = new DecodeObjects();
+            using var stream = filepath.CreateStream(true);
+            _T_ ret = decode.Load<_T_>(stream);
+            stream.Flush();
+            return ret;
+        }
     }
 }

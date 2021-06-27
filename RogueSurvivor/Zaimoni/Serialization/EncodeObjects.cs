@@ -25,7 +25,7 @@ namespace Zaimoni.Serialization
         private List<Action<Stream>> to_save = new();
         private List<Action<Stream>> to_save_type = new();
 
-        EncodeObjects()
+        public EncodeObjects()
         {
             context = new StreamingContext();
             format = new Formatter(context);
@@ -74,16 +74,17 @@ namespace Zaimoni.Serialization
             return true;
         }
 
-        static private Dictionary<Type, Action<Stream, object> > s_LinearizedElement_cache = new();
-        private Action<Stream, object> LinearizedElement<T>() {
+        private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();
+        private Action<Stream, object> LinearizedElement<T>()
+        {
             var t_info = typeof(T);
-            if (s_LinearizedElement_cache.TryGetValue(t_info, out var handler)) return handler;
+            if (m_LinearizedElement_cache.TryGetValue(t_info, out var handler)) return handler;
             // \todo interface as easy mode
             // \todo check for direct formatter support
             if (t_info.IsEnum) {
                 var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
                 // \todo route to Formatter::SerializeEnum<T>
-                throw new InvalidOperationException(t_info.FullName + "\n"+method_candidates.to_s()); // need to determine what is needed here
+                throw new InvalidOperationException(t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
             }
 
             if (t_info.IsGenericType) { // will not handle arrays
@@ -108,13 +109,6 @@ namespace Zaimoni.Serialization
             }
         }
 
-#if OBSOLETE
-        static public T[] Linearize<T>(IEnumerable<T>? src) {
-            if (null == src || !src.Any()) return null;
-            return src.ToArray();
-        }
-#endif
-
         private ulong getTypeCode(Type src) {
             if (type_code_of.TryGetValue(src, out var code)) return code;
             type_code_of.Add(src, ++type_seen);
@@ -124,6 +118,21 @@ namespace Zaimoni.Serialization
             });
 
             return type_seen;
+        }
+    }
+
+    public static partial class Virtual
+    {
+        public static void BinarySave<_T_>(this string filepath, _T_ src) where _T_: ISerialize
+        {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            var encode = new EncodeObjects();
+            encode.Saving(src);
+            using var stream = filepath.CreateStream(true);
+            while (encode.SaveNext(stream));
+            stream.Flush();
         }
     }
 }

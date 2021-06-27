@@ -138,18 +138,19 @@ namespace djack.RogueSurvivor.Engine
     {
             sbyte relay = 0;
 
-            decode.format.Deserialize(src, ref relay);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             GameMode = (GameMode)(relay);
-            decode.format.Deserialize(src, ref relay);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             ScriptStage_PoliceStationPrisoner = relay;
-            decode.format.Deserialize(src, ref relay);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             ScriptStage_PoliceCHARrelations = relay;
-            decode.format.Deserialize(src, ref relay);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             ScriptStage_HospitalPowerup = relay;
-            decode.format.Deserialize(src, ref s_seed);
-            decode.format.Deserialize(src, ref LastTurnPlayerActed);
-            decode.format.Deserialize(src, ref relay);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref s_seed);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref LastTurnPlayerActed);
+            Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             PlayerKnows_CHARUndergroundFacilityLocation = 0 != relay;
+            // decode.format.....
 
             // mockup to allow testing
             m_CommandLineOptions = null;
@@ -195,13 +196,15 @@ namespace djack.RogueSurvivor.Engine
 
     void Zaimoni.Serialization.ISerialize.save(Stream dest, Zaimoni.Serialization.EncodeObjects encode)
     {
-            encode.format.Serialize(dest, (sbyte)GameMode);
-            encode.format.Serialize(dest, (sbyte)ScriptStage_PoliceStationPrisoner);
-            encode.format.Serialize(dest, (sbyte)ScriptStage_PoliceCHARrelations);
-            encode.format.Serialize(dest, (sbyte)ScriptStage_HospitalPowerup);
-            encode.format.Serialize(dest, s_seed);
-            encode.format.Serialize(dest, LastTurnPlayerActed);
-            encode.format.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
+            Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)GameMode);
+            Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)ScriptStage_PoliceStationPrisoner);
+            Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)ScriptStage_PoliceCHARrelations);
+            Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)ScriptStage_HospitalPowerup);
+            Zaimoni.Serialization.Formatter.Serialize(dest, s_seed);
+            Zaimoni.Serialization.Formatter.Serialize(dest, LastTurnPlayerActed);
+            Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
+            encode.LinearSave(m_CommandLineOptions, dest);
+            // encode.format.....
 
 /*
             info.AddValue("Scoring", m_Scoring, typeof(Scoring));
