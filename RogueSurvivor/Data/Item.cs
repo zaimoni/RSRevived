@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define USE_ITEM_STRUCT
+
 using System;
 using System.Threading;
 using Zaimoni.Data;
@@ -30,19 +32,21 @@ namespace djack.RogueSurvivor.Data
         bool FreeSlotByUse(Actor a);
     }
 
-#if PROTOTYPE
-  [Serializable]
-  internal struct ItemStruct    // for item memmory
-  {
-    public readonly Gameplay.GameItems.IDs ModelID;
-    public readonly int QtyLike; // meaning depends on ModelID
-
-    public ItemStruct(Gameplay.GameItems.IDs id, int qty)
+#if USE_ITEM_STRUCT
+    [Serializable]
+    internal struct Item_s    // for item memmory
     {
-      ModelID = id;
-      QtyLike = qty;
+        public Gameplay.GameItems.IDs ModelID;
+        public int QtyLike; // meaning depends on ModelID
+        public uint Flags; // meaning depends on ModelID
+
+        public Item_s(Gameplay.GameItems.IDs id, int qty, uint flags = 0)
+        {
+            ModelID = id;
+            QtyLike = qty;
+            Flags = flags;
+        }
     }
-  }
 #endif
 
     [Serializable]
