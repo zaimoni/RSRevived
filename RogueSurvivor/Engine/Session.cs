@@ -314,6 +314,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 	  filepath.BinarySerialize(session);
+#if BOOTSTRAP_Z_SERIALIZATION
+	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 

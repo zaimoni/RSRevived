@@ -63,7 +63,7 @@ namespace Zaimoni.Serialization
                 int i = 0;
                 while (i < save_type_ub) {
                     to_save_type[i](dest);
-                    to_save_type[i] = null;  // early GC
+                    to_save_type[i++] = null;  // early GC
                 }
                 to_save_type = new();   // force GC
             }
@@ -84,12 +84,12 @@ namespace Zaimoni.Serialization
             if (t_info.IsEnum) {
                 var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
                 // \todo route to Formatter::SerializeEnum<T>
-                throw new InvalidOperationException(t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
+                throw new InvalidOperationException("unhandled enum: " + t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
             }
 
             if (t_info.IsGenericType) { // will not handle arrays
                 // expect KeyValuePair to route this way
-                throw new InvalidOperationException(t_info.FullName); // need to debug what is needed here
+                throw new InvalidOperationException("unhandled generic: "+t_info.FullName); // need to debug what is needed here
             } else {
                 var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
                 // todo: check for Formatter::Serialize variant
