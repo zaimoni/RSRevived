@@ -25,7 +25,6 @@ namespace djack.RogueSurvivor.UI
     private readonly List<IGfx> m_Gfxs = new List<IGfx>(100);
     private static readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
     private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
-    private RogueForm m_RogueForm;
     private Bitmap m_TileImage = new Bitmap(Engine.RogueGame.TILE_SIZE, Engine.RogueGame.TILE_SIZE);    // working space for pre-compositing tiles
     private Bitmap m_RenderImage = new Bitmap(Engine.RogueGame.CANVAS_WIDTH, Engine.RogueGame.CANVAS_HEIGHT);   // image *source* for PaintEventArgs object's Graphics member; image *destination* for m_RenderGraphics
 #if GDI_PLUS
@@ -48,16 +47,18 @@ namespace djack.RogueSurvivor.UI
     public float ScaleX
     {
       get {
-        if (m_RogueForm == null) return 1f;
-        return m_RogueForm.ClientRectangle.Width / (float)Engine.RogueGame.CANVAS_WIDTH;
+        var form = RogueForm.Get;
+        if (null == form) return 1f;
+        return form.ClientRectangle.Width / (float)Engine.RogueGame.CANVAS_WIDTH;
       }
     }
 
     public float ScaleY
     {
       get {
-        if (m_RogueForm == null) return 1f;
-        return m_RogueForm.ClientRectangle.Height / (float)Engine.RogueGame.CANVAS_HEIGHT;
+        var form = RogueForm.Get;
+        if (null == form) return 1f;
+        return form.ClientRectangle.Height / (float)Engine.RogueGame.CANVAS_HEIGHT;
       }
     }
 
@@ -99,7 +100,7 @@ namespace djack.RogueSurvivor.UI
     protected override void OnKeyDown(KeyEventArgs e)
     {
       base.OnKeyDown(e);    // must be called first to allow seeing *any* keypresses?
-      m_RogueForm.UI_PostKey(e);
+      RogueForm.Get.UI_PostKey(e);
     }
 
     protected override bool IsInputKey(Keys keyData)
@@ -110,13 +111,13 @@ namespace djack.RogueSurvivor.UI
     // this intercepts all keys regardless of ALT status by itself
     protected override bool ProcessMnemonic(char charCode)
     {
-      Keys mod = Control.ModifierKeys;
+      Keys mod = ModifierKeys;
       if (Keys.None==(mod & Keys.Alt)) return false;    // normal processing works fine if ALT isn't involved
       switch(charCode)
       {
       case 'i': // sees ALT-SHIFT-I
       case 'I':
-        m_RogueForm.UI_PostKey(new KeyEventArgs(Keys.I | mod));
+        RogueForm.Get.UI_PostKey(new KeyEventArgs(Keys.I | mod));
         return true;
       // should be able to do ALT-CTRL-I
       // not sure about ALT-CTRL-SHIFT-I
@@ -133,7 +134,7 @@ namespace djack.RogueSurvivor.UI
     protected override void OnMouseClick(MouseEventArgs e)
     {
       base.OnMouseClick(e);
-      m_RogueForm.UI_PostMouseButtons(e.Button);
+      RogueForm.Get.UI_PostMouseButtons(e.Button);
     }
 
     protected override void OnSizeChanged(EventArgs e)
@@ -153,34 +154,26 @@ namespace djack.RogueSurvivor.UI
       if (ScaleX == 1.0 && ScaleY == 1.0)
         e.Graphics.DrawImageUnscaled(m_RenderImage, 0, 0);
       else
-        e.Graphics.DrawImage(m_RenderImage, m_RogueForm.ClientRectangle);
-      double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
+        e.Graphics.DrawImage(m_RenderImage, RogueForm.Get.ClientRectangle);
       if (!ShowFPS) return;
-      double num = totalMilliseconds2 - totalMilliseconds1;
-      if (num == 0.0)
-        num = double.Epsilon;
+      double num = DateTime.UtcNow.TimeOfDay.TotalMilliseconds - totalMilliseconds1;
+      if (0.0 >= num) num = double.Epsilon;
       e.Graphics.DrawString(string.Format("Frame time={0:F} FPS={1:F}", num, 1000.0 / num), Font, Brushes.Yellow, ClientRectangle.Right - 200, ClientRectangle.Bottom - 64);
     }
 
     private void DoDraw()
     {
-      if (m_RogueForm == null) return;
+      if (null == RogueForm.Get) return;
       m_RenderGraphics.Clear(m_ClearColor);
       foreach (IGfx gfx in new List<IGfx>(m_Gfxs))  // Bay12/jorgene0: this collection can change at reincarnation
         gfx.Draw(m_RenderGraphics);
     }
 
-    public void BindForm(RogueForm form)
-    {
-      m_RogueForm = form;
-      FillGameForm();
-    }
-
     public void FillGameForm()
     {
       Location = new Point(0, 0);
-      if (m_RogueForm == null) return;
-      Size = MinimumSize = MaximumSize = m_RogueForm.Size;
+      var form = RogueForm.Get;
+      if (null != form) Size = MinimumSize = MaximumSize = form.Size;
     }
 
     public void Clear(Color clearColor)

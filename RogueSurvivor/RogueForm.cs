@@ -71,9 +71,9 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create RogueGame...");
       RogueGame.Init();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
-      m_GameCanvas.BindForm(this);
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
       s_ooao = this;
+      m_GameCanvas.FillGameForm();
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
     }
 
     private void LoadResources()
