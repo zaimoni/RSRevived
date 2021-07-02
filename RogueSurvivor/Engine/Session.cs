@@ -203,7 +203,8 @@ namespace djack.RogueSurvivor.Engine
             Zaimoni.Serialization.Formatter.Serialize(dest, s_seed);
             Zaimoni.Serialization.Formatter.Serialize(dest, LastTurnPlayerActed);
             Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
-            encode.LinearSave(m_CommandLineOptions, dest);
+            encode.SaveTo(m_CommandLineOptions, dest);
+//          encode.LinearSave(m_CommandLineOptions, dest);
             // encode.format.....
 
 /*

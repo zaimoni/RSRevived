@@ -74,6 +74,7 @@ namespace Zaimoni.Serialization
             return true;
         }
 
+#region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
         private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();
         private Action<Stream, object> LinearizedElement<T>()
         {
@@ -108,6 +109,28 @@ namespace Zaimoni.Serialization
                 foreach (var x in src) handler(dest, x);
             }
         }
+#endregion
+
+#region example boilerplate based on LinearizedElement<T>
+        private void SaveTo(string src, Stream dest) => Formatter.Serialize(dest, src);
+
+        private void SaveTo(in KeyValuePair<string, string> src, Stream dest)
+        {
+            SaveTo(src.Key, dest);
+            SaveTo(src.Value, dest);
+        }
+#endregion
+
+#region example boilerplate based on LinearSave<T>
+        public void SaveTo(IEnumerable<KeyValuePair<string, string> >? src, Stream dest)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(dest, count);
+            if (0 < count) {
+                foreach (var x in src) SaveTo(in x, dest);
+            }
+        }
+#endregion
 
         private ulong getTypeCode(Type src) {
             if (type_code_of.TryGetValue(src, out var code)) return code;
