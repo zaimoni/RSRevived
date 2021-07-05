@@ -19,8 +19,14 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override bool IsUseless { get { return 0 >= SprayQuantity; } }
 
-#if PROTOTYPE
-    public override ItemStruct Struct { get { return new ItemStruct(Model.ID, SprayQuantity); } }
+#if USE_ITEM_STRUCT
+    public override Item_s toStruct() { return new Item_s(m_ModelID, SprayQuantity); }
+    public override void toStruct(ref Item_s dest)
+    {
+        dest.ModelID = m_ModelID;
+        dest.QtyLike = SprayQuantity;
+        dest.Flags = 0;
+    }
 #endif
 
     public ItemSprayScent(ItemSprayScentModel model) : base(model)

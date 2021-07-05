@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
   internal class Item
   {
-    private readonly Gameplay.GameItems.IDs m_ModelID;
+    protected readonly Gameplay.GameItems.IDs m_ModelID; // savefile break: make public and rename to ModelID
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
