@@ -59,6 +59,14 @@ namespace djack.RogueSurvivor.Data
     public ItemModel Model { get { return Gameplay.GameItems.From(m_ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
     public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return m_ModelID; }  }
+#if USE_ITEM_STRUCT
+    public virtual Item_s toStruct() { return new Item_s(m_ModelID, m_Quantity);  }
+    public virtual void toStruct(ref Item_s dest) {
+        dest.ModelID = m_ModelID;
+        dest.QtyLike = m_Quantity;
+        dest.Flags = 0;
+    }
+#endif
 
     public string TheName {
       get {
