@@ -5,7 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+#if USE_ITEM_STRUCT
 using Item_s = djack.RogueSurvivor.Data.Item_s;
+#endif
 
 #nullable enable
 

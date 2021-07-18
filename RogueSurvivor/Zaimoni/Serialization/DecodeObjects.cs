@@ -91,17 +91,42 @@ namespace Zaimoni.Serialization
 
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
+
+#region example boilerplate based on LinearizedElement<T>
+        private void LoadFrom(Stream src, ref string dest) => Formatter.Deserialize(src, ref dest);
+#endregion
+
+
+#region example boilerplate based on LinearSave<T>
+        public void LoadFrom(Stream src, ref Dictionary<string, string> dest)
+        {
+            dest = new();
+            ulong count = 0;
+            Formatter.Deserialize7bit(src, ref count);
+            while (0 < count) {
+                --count;
+                // if either key or value type requires object ids, this would trigger an indirect-load implementation
+                string key = string.Empty;
+                string value = string.Empty;
+                LoadFrom(src, ref key);
+                LoadFrom(src, ref value);
+                // Intentionally use first value if duplicate keys
+                if (!dest.ContainsKey(key)) dest.Add(key, value);
+            }
+        }
+#endregion
+
     }
 
     public static partial class Virtual
     {
-        public static _T_ BinaryLoad<_T_>(this string filepath, _T_ src) where _T_ : class
+        public static _T_ BinaryLoad<_T_>(this string filepath) where _T_ : class
         {
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
             var decode = new DecodeObjects();
-            using var stream = filepath.CreateStream(true);
+            using var stream = filepath.CreateStream(false);
             _T_ ret = decode.Load<_T_>(stream);
             stream.Flush();
             return ret;

@@ -150,10 +150,12 @@ namespace djack.RogueSurvivor.Engine
             Zaimoni.Serialization.Formatter.Deserialize(src, ref LastTurnPlayerActed);
             Zaimoni.Serialization.Formatter.Deserialize(src, ref relay);
             PlayerKnows_CHARUndergroundFacilityLocation = 0 != relay;
-            // decode.format.....
+
+            Dictionary<string, string> opts = null;
+            decode.LoadFrom(src, ref opts);
+            m_CommandLineOptions = new(opts);
 
             // mockup to allow testing
-            m_CommandLineOptions = null;
             m_Scoring = new Scoring();
             var city_size = RogueGame.Options.CitySize;
             World = new World(RogueGame.Options.CitySize);
@@ -317,8 +319,13 @@ namespace djack.RogueSurvivor.Engine
 	  filepath.BinarySerialize(session);
 #if BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
+#if PROTOTYPE
+      // immediate integation test
+      var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
+      if (!session.SaveLoadOk(compare)) throw new InvalidOperationException("new save/load cycle failed");
 #endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+#endif
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadBin(string filepath)
