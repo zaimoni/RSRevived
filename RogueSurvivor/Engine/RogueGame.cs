@@ -7122,16 +7122,17 @@ namespace djack.RogueSurvivor.Engine
     {
       ItemExplosiveModel itemExplosiveModel = ex.Model;
       var lines = new List<string>{ "> explosive" };
-      if (itemExplosiveModel.BlastAttack.CanDamageObjects) lines.Add("Can damage objects.");
-      if (itemExplosiveModel.BlastAttack.CanDestroyWalls) lines.Add("Can destroy walls.");
+      ref readonly var blast = ref itemExplosiveModel.BlastAttack;
+      if (blast.CanDamageObjects) lines.Add("Can damage objects.");
+      if (blast.CanDestroyWalls) lines.Add("Can destroy walls.");
       var primed = ex as ItemPrimedExplosive;
       lines.Add((null != primed) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
                                  : string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
-      int tmp_i = itemExplosiveModel.BlastAttack.Radius;
+      int tmp_i = blast.Radius;
       lines.Add(string.Format("Blast radius  : {0}", tmp_i));
       var stringBuilder = new StringBuilder();
       for (int distance = 0; distance <= tmp_i; ++distance)
-        stringBuilder.AppendFormat("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance));
+        stringBuilder.AppendFormat("{0};", blast.DamageAt(distance));
       lines.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
       if (ex is ItemGrenade grenade) {
         lines.Add("> grenade");
