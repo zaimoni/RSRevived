@@ -10,8 +10,7 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  [Serializable]
-  internal struct BlastAttack
+  public readonly struct BlastAttack
   {
     public readonly int Radius;
     public readonly int[] Damage;
@@ -30,7 +29,7 @@ namespace djack.RogueSurvivor.Data
       CanDestroyWalls = canDestroyWalls;
     }
 
-    public int DamageAt(int distance)
+    public readonly int DamageAt(int distance)
     {
 #if DEBUG
       if (distance < 0 || distance > Radius) throw new ArgumentOutOfRangeException(nameof(distance), distance, "out of range");

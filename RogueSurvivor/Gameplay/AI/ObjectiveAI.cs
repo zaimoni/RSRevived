@@ -4965,7 +4965,7 @@ restart_chokepoints:
       if (null == goals) return;
       IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p => new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
       foreach (Percept_<ItemPrimedExplosive> exp in explosives) {
-        BlastAttack tmp_blast = exp.Percepted.Model.BlastAttack;
+        ref readonly var tmp_blast = ref exp.Percepted.Model.BlastAttack;
         Point pt = exp.Location.Position;
         if (_damage_field.ContainsKey(pt)) _damage_field[pt] += tmp_blast.Damage[0];
         else _damage_field[pt] = tmp_blast.Damage[0];

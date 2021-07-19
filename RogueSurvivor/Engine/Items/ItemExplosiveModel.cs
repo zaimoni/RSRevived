@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     private readonly BlastAttack m_Attack;
     public readonly string BlastImage;
 
-    public BlastAttack BlastAttack { get { return m_Attack; } } // need value copy here
+    public ref readonly BlastAttack BlastAttack { get { return ref m_Attack; } }
 
     public ItemExplosiveModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, string flavor)
     : base(_id, aName, theNames, imageID, flavor, DollPart.RIGHT_HAND)
