@@ -8380,9 +8380,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ApplyExplosionWaveSub(in Location blastCenter, Point pt, int waveDistance, BlastAttack blast)
     {
-      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(in blastCenter, pt, waveDistance)) return false;
       var center = new Location(blastCenter.Map, pt);
-      int damage = ApplyExplosionDamage(in center, waveDistance, blast);    // \todo adjust this to assume the location is in canonical form to micro-optimize CPU
+      if (!Map.Canonical(ref center) || !LOS.CanTraceFireLine(in blastCenter, pt, waveDistance)) return false;
+      int damage = ApplyExplosionDamage(in center, waveDistance, blast);
       if (!ForceVisibleToPlayer(in center)) return false;
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
