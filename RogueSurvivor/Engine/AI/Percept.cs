@@ -70,8 +70,24 @@ namespace djack.RogueSurvivor.Engine.AI
     }
   }
 
-  // in general, the tmp.Any() ? tmp.ToList() : null construct requires that the Any() call be de facto deterministic; RNG can easily break things
-  internal static class ext_Percept
+    [Serializable]
+    internal struct Percept_s<_T_> {
+        public int Turn;
+        public Location Location;
+        readonly public _T_ Percepted;
+
+        public Percept_s(_T_ src, int t0, Location loc) {
+            Turn = t0;
+            Location = loc;
+            Percepted = src;
+        }
+
+        public readonly int GetAge(int t1) => Math.Max(0, t1 - Turn);
+        public override string ToString() => Percepted.ToString() + " @ " + Turn.ToString() + ": " + Location.ToString();
+    }
+
+    // in general, the tmp.Any() ? tmp.ToList() : null construct requires that the Any() call be de facto deterministic; RNG can easily break things
+    internal static class ext_Percept
   {
 #nullable enable
     internal static List<_T_>? Filter<_T_>(this IEnumerable<_T_> percepts, Func<_T_,bool> predicateFn) where _T_:WhereWhen

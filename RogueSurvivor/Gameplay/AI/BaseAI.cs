@@ -646,9 +646,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction? BehaviorTrackScent(List<Percept_<AIScent>>? scents)
+    protected ActorAction? BehaviorTrackScent(List<Percept_s<AIScent>> scents)
     {
-      if (null == scents || 0 >= scents.Count) return null;
+      if (0 >= scents.Count) return null;
       var percept = scents.Maximize(scent => scent.Percepted.Strength);
       if (m_Actor.Location != percept.Location) {
         var tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
