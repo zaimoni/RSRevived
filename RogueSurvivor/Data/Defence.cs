@@ -9,15 +9,14 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal struct Defence
+  public readonly struct Defence
   {
     [NonSerialized]
     public static readonly Defence BLANK = new Defence(0, 0, 0);
 
-    // \todo savefile break: convert to readonly fields
-    public int Value { get; private set; }
-    public int Protection_Hit { get; private set; }
-    public int Protection_Shot { get; private set; }
+    public readonly int Value;
+    public readonly int Protection_Hit;
+    public readonly int Protection_Shot;
 
     public Defence(int value, int protection_hit, int protection_shot)
     {
