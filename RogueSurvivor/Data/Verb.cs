@@ -11,7 +11,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  sealed internal class Verb
+  sealed public class Verb
   {
     public readonly string YouForm;   // 2nd person singular; in English typically also 3rd person plural
     public readonly string HeForm;    // 3rd person singular
@@ -22,10 +22,7 @@ namespace djack.RogueSurvivor.Data
       HeForm = heForm;
     }
 
-    public Verb(string youForm)
-      : this(youForm, youForm + "s")
-    {
-    }
+    public Verb(string youForm) : this(youForm, youForm + "s") {}
 
     public string Conjugate(int person, int qty = 1)
     {

@@ -9,9 +9,8 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
-  // \todo savefile break: sink AttackKind to Attack.Kind
   [Serializable]
-  internal enum AttackKind
+  public enum AttackKind
   {
     PHYSICAL,
     FIREARM,
@@ -19,12 +18,12 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal struct Attack
+  public readonly struct Attack
   {
     [NonSerialized]
     public static readonly Attack BLANK = new Attack(AttackKind.PHYSICAL, new Verb("<blank>"), 0, 0, 0, 0);
 
-    public readonly AttackKind Kind;
+    public readonly AttackKind Kind; // blocks sinking AttackKind enum into Attack
     public readonly Verb Verb;
     public readonly int DisarmChance;
     public readonly int HitValue;
@@ -59,15 +58,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int ComputeChancesHit(Actor target, int shotCounter=0)
+    internal int ComputeChancesHit(Actor target, int shotCounter=0)
     {
 #if DEBUG
       if (0 > shotCounter || 2 < shotCounter) throw new ArgumentOutOfRangeException(nameof(shotCounter));
 #endif
-      Defence defence = target.Defence;
-
       int hitValue = (shotCounter == 0 ? HitValue : shotCounter == 1 ? Hit2Value : Hit3Value);
-      int defValue = defence.Value;
+      int defValue = target.Defence.Value;
 
       float ranged_hit = Engine.Rules.SkillProbabilityDistribution(defValue).LessThan(Engine.Rules.SkillProbabilityDistribution(hitValue));
       return (int)(100* ranged_hit);
