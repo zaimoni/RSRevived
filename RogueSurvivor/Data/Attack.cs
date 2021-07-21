@@ -9,6 +9,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
+  // \todo savefile break: sink AttackKind to Attack.Kind
   [Serializable]
   internal enum AttackKind
   {

@@ -14,6 +14,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public static readonly Defence BLANK = new Defence(0, 0, 0);
 
+    // \todo savefile break: convert to readonly fields
     public int Value { get; private set; }
     public int Protection_Hit { get; private set; }
     public int Protection_Shot { get; private set; }
