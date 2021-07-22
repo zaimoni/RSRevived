@@ -931,36 +931,6 @@ restart:
       return subway;
     }
 
-    // XXX object orientation would lift this to BaseMapGenerator, starting a chain reaction of object orientation related changes.
-    // Deferring until a non-town map is needed (something outside of city limits...National Guard base or the gas station supplying the bikers and gangsters)
-    private void QuadSplit(Rectangle rect, int minWidth, int minHeight, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight)
-    {
-      int width1 = m_DiceRoller.Roll(rect.Width / 3, 2 * rect.Width / 3);
-      int height1 = m_DiceRoller.Roll(rect.Height / 3, 2 * rect.Height / 3);
-      if (width1 < minWidth) width1 = minWidth;
-      if (height1 < minHeight) height1 = minHeight;
-      int width2 = rect.Width - width1;
-      int height2 = rect.Height - height1;
-      bool flag1 = true;
-      bool flag2 = true;
-      if (width2 < minWidth) {
-        width1 = rect.Width;
-        width2 = 0;
-        flag2 = false;
-      }
-      if (height2 < minHeight) {
-        height1 = rect.Height;
-        height2 = 0;
-        flag1 = false;
-      }
-      splitX = rect.Left + width1;
-      splitY = rect.Top + height1;
-      topLeft = new Rectangle(rect.Left, rect.Top, width1, height1);
-      topRight = (flag2 ? new Rectangle(splitX, rect.Top, width2, height1) : Rectangle.Empty);
-      bottomLeft = (flag1 ? new Rectangle(rect.Left, splitY, width1, height2) : Rectangle.Empty);
-      bottomRight = ((flag2 && flag1) ? new Rectangle(splitX, splitY, width2, height2) : Rectangle.Empty);
-    }
-
     // main map block list.
     // in practice, m_Params.MinBlockSize is constant 11.  For this value:
 #if ANALYSIS
@@ -983,7 +953,7 @@ restart:
     // district size 50: raw split range 16..33. railY=25; tolerances 17,35 (moderately difficult)
     private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
     {
-      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out _, out _, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         if (makeRoads) {
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Top, rect.Width, 1));
@@ -2052,7 +2022,7 @@ restart:
     protected void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0)
     {
       if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
-      QuadSplit(rect, minRoomsXSize, minRoomsYSize, out _, out _, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      QuadSplit(rect, minRoomsXSize, minRoomsYSize, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
       } else {
