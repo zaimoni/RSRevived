@@ -1792,7 +1792,7 @@ retry:
     }
 
     // Clairvoyant.  Useful for fine-tuning map generation and little else
-    private KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
+    public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;

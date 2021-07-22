@@ -2948,8 +2948,8 @@ restart:
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(3, 0, OFFICES_WIDTH, OFFICES_HEIGHT);
       List<Rectangle> list = new List<Rectangle>();
-      // XXX to maximize supplies: need to roll 9-right-wdith on the first horizonal split
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
+      force_QuadSplit_width = OFFICES_WIDTH - 3 - 8; // Police building codes maximize supplies: width 9, including walls
       MakeRoomsPlan(map, ref list, rect1, 5);
 
       KeyValuePair<ItemModel, int>[] stock = {
@@ -3041,6 +3041,7 @@ restart:
         if (map.SwapItemTypes(GameItems.IDs.ARMOR_POLICE_RIOT, GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
         if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_JACKET)) continue;
         map.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory);
+        // \todo if cannot take police jacket, transmutate *two* items into police jackets
       }
 
       // if we have a truncheon, we can use it -- get a second one
@@ -3055,10 +3056,14 @@ restart:
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.Has(GameItems.IDs.RANGED_PISTOL)) {
           if (!map.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
-          if (!map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory)) continue;
+          // \todo: verify that we didn't take the last firearm (breaks disguise kit)
+          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
         } else /* if (a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN)) */ {
           if (!map.TakeItemType(GameItems.IDs.RANGED_PISTOL, cop.Inventory)) continue;
-          if (!map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory)) continue;
+          // \todo: verify that we didn't take the last firearm (breaks disguise kit)
+          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
         }
       }
 
@@ -3068,19 +3073,26 @@ restart:
         if (!cop.Inventory.Has(GameItems.IDs.AMMO_LIGHT_PISTOL)) {
           // shotgunner, failed to get full backup
           map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
           continue;
         } else if (!cop.Inventory.Has(GameItems.IDs.AMMO_SHOTGUN)) {
           // pistol; failed to get full backup
           map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
           continue;
         } else {
           // full kit and still has a slot open.  Prefer pistol ammo
           map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
           if (cop.Inventory.IsFull) continue;
           map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
           continue;
         }
       }
+
+      // \todo if we don't have a disguise kit, transmutate until we do (police armor, radio, flashlight)
+      // \todo sort disguise kit for convenient pickup
 
       // now, to set up the marching order
       var leaders = new List<Actor>();
