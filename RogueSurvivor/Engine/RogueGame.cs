@@ -4367,8 +4367,8 @@ namespace djack.RogueSurvivor.Engine
             if (null == obj || !obj.IsContainer) ground_inv = null;
           }
         } else if (next_to) {
-          var obj = player.Location.Map.GetMapObjectAtExt(pos);
-          if (null != obj && obj.IsContainer) ground_inv = obj.Inventory;
+          var obj_inv = player.Location.Map.GetMapObjectAtExt(pos)?.NonEmptyInventory;
+          if (null != obj_inv) ground_inv = obj_inv;
           if (null != ground_inv && ground_inv.IsEmpty) ground_inv = null;
         }
         if (null != ground_inv) {
@@ -6975,11 +6975,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (0 < (tmp_i = obj.Weight)) lines.Add(string.Format("Weight    : {0}", tmp_i));
-      if (obj.IsContainer) {
-        var inv = obj.Inventory;
-        if (!inv.IsEmpty) lines.AddRange(DescribeInventory(inv));
-      }
-      var itemsAt = obj.Location.Items;
+      var itemsAt = obj.NonEmptyInventory;
+      if (null != itemsAt) lines.AddRange(DescribeInventory(itemsAt));
+      itemsAt = obj.Location.Items;
       if (itemsAt != null) lines.AddRange(DescribeInventory(itemsAt));
       return lines.ToArray();
     }
@@ -10784,10 +10782,10 @@ namespace djack.RogueSurvivor.Engine
           if (null != mapObjectAt) {
             DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
-            if (player && mapObjectAt.IsContainer) {
+            if (player) {
               // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-              var itemsAt = mapObjectAt.Inventory;  // will not handle concealed inventory
-              if (!itemsAt.IsEmpty) DrawItemsStack(itemsAt, screen, tint);
+              var itemsAt = mapObjectAt.NonEmptyInventory;  // will not handle concealed inventory
+              if (null != itemsAt) DrawItemsStack(itemsAt, screen, tint);
             }
           }
           if (p_is_awake && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility

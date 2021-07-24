@@ -476,6 +476,11 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory;
     } }
 
+    // nullability analysis doesn't see through IsContainer to its implementation 2021-07-23 zaimoni
+    public Inventory? NonEmptyInventory { get {
+      return (null == m_Inventory || m_Inventory.IsEmpty) ? null : m_Inventory;
+    } }
+
     public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
 
     private string ReasonCantPushTo(Point toPos)

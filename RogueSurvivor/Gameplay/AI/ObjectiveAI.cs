@@ -5324,9 +5324,8 @@ restart_chokepoints:
 
     public ActorAction? WouldGetFrom(MapObject? obj)
     {
-      if (null == obj || !obj.IsContainer) return null;
-      var stack = obj.Inventory;
-      if (null == stack || stack.IsEmpty) return null;
+      var stack = obj?.NonEmptyInventory;
+      if (null == stack) return null;
       return BehaviorWouldGrabFromStack(obj.Location, stack);
     }
 #nullable restore

@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc),loc,"not canonical");
       var obj = loc.MapObject;
-      if (null == obj || !obj.IsContainer || null==obj.Inventory) throw new ArgumentNullException(nameof(obj));
+      if (null == obj || !obj.IsContainer) throw new ArgumentNullException(nameof(obj));
       m_Container = obj;
     }
 

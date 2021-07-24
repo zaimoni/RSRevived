@@ -30,7 +30,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!Map.Canonical(ref m_Location)) throw new ArgumentNullException(nameof(loc));
       m_Item = it;
       var obj = loc.MapObject;
-      if (null != obj && obj.IsContainer && obj.Inventory.Contains(it)) m_Container = obj;
+      var obj_inv = obj?.NonEmptyInventory;
+      if (null != obj_inv && obj_inv.Contains(it)) m_Container = obj;
 
 #if DEBUG
       else {
@@ -113,7 +114,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (null != m_Item) {
           m_pos = x.Key;
           var obj = m_Actor.Location.Map.GetMapObjectAtExt(x.Key);
-          if (null != obj && obj.IsContainer && obj.Inventory.Contains(m_Item)) m_Container = obj;
+          var obj_inv = obj?.NonEmptyInventory;
+          if (null != obj_inv && obj_inv.Contains(m_Item)) m_Container = obj;
           return;
         }
       }

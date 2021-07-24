@@ -62,7 +62,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
         {
             var obj = loc.MapObject;
-            if (null != obj && obj.IsContainer && obj.Inventory.Contains(take)) return new ActionTradeWithContainer(actor, give, take, obj);
+            var obj_inv = obj?.NonEmptyInventory;
+            if (null != obj_inv && obj_inv.Contains(take)) return new ActionTradeWithContainer(actor, give, take, obj);
             var g_inv = loc.Items;
             if (null != g_inv && g_inv.Contains(take)) return new ActionTradeWithGround(actor, give, take, loc);
             var a_inv = loc.Actor?.Inventory;

@@ -1662,7 +1662,7 @@ retry:
 #if DEBUG
       if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
 #endif
-      bool update_item_memory = mapObj.IsContainer && !mapObj.Inventory.IsEmpty;
+      bool update_item_memory = null != mapObj.NonEmptyInventory;
       // cf Map::PlaceAt(Actor,Position)
       if (null != mapObj.Location.Map) {
         if (HasMapObject(mapObj)) {
@@ -1742,9 +1742,8 @@ retry:
        if (!Map.Canonical(ref loc)) return null;
        var g_inv = loc.Items;
        var ret = (null == g_inv || g_inv.IsEmpty ? null : new List<Inventory> { g_inv });
-       var obj = loc.MapObject;
-       var o_inv = (null != obj && obj.IsContainer ? obj.Inventory : null);
-       if (null != o_inv && !o_inv.IsEmpty) (ret ??= new List<Inventory>()).Add(o_inv);
+       var o_inv = loc.MapObject?.NonEmptyInventory;
+       if (null != o_inv && !o_inv.IsEmpty) (ret ??= new()).Add(o_inv);
        return ret;
     }
 
@@ -1753,9 +1752,8 @@ retry:
        if (!Map.Canonical(ref loc)) return null;
        var g_inv = loc.Items;
        var ret = (null == g_inv || g_inv.IsEmpty || !ok(g_inv) ? null : new List<Inventory> { g_inv });
-       var obj = loc.MapObject;
-       var o_inv = (null != obj && obj.IsContainer ? obj.Inventory : null);
-       if (null != o_inv && !o_inv.IsEmpty && ok(o_inv)) (ret ??= new List<Inventory>()).Add(o_inv);
+       var o_inv = loc.MapObject?.NonEmptyInventory;
+       if (null != o_inv && ok(o_inv)) (ret ??= new()).Add(o_inv);
        return ret;
     }
 
@@ -1796,7 +1794,10 @@ retry:
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
-      foreach (var x in m_MapObjectsByPosition) if (x.Value.IsContainer && x.Value.Inventory.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, x.Value.Inventory);
+      foreach (var x in m_MapObjectsByPosition) {
+         var obj_inv = x.Value.NonEmptyInventory;
+         if (null != obj_inv && obj_inv.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, obj_inv);
+      }
       return null;
     }
 
