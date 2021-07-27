@@ -3035,19 +3035,160 @@ restart:
         foreach(Actor cop in impressive_cops) map.MoveActorToFirstPosition(cop);
       }
 
+      // if we have a truncheon, we can use it -- get a second one
+      foreach(Actor cop in map.Police.Get) {
+        if (!cop.Inventory.Has(GameItems.IDs.MELEE_TRUNCHEON)) continue;
+        map.TakeItemType(GameItems.IDs.MELEE_TRUNCHEON, cop.Inventory);
+      }
+
+      // this is not correct in general; it relies on all game-start inventories having exactly one item and being mapobject
+      static int item_count(Gameplay.GameItems.IDs look_for, Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory>>> src) {
+         if (!src.TryGetValue(look_for, out var cache)) return 0;
+         return cache.Count;
+      }
+
+      bool assure_disguise(Map m) {
+        var overview = m.ItemOverview();
+        // these two will not be taken by the SWAT team
+        var radios = item_count(GameItems.IDs.TRACKER_POLICE_RADIO, overview);
+
+        static void transmutate(Inventory inv, ItemModel dest) {
+          inv.RemoveAllQuantity(inv[0]);
+          inv.AddAll(dest.create());
+        }
+
+        bool transmutate_from_radio(ItemModel dest) {
+          if (2 <= radios) {
+            transmutate(overview[GameItems.IDs.TRACKER_POLICE_RADIO].First().Value[0], dest);
+            return true;
+          }
+          return false;
+        }
+
+        var light = item_count(GameItems.IDs.LIGHT_FLASHLIGHT, overview);
+        var big_light = item_count(GameItems.IDs.LIGHT_BIG_FLASHLIGHT, overview);
+        var lights = light + big_light;
+
+        bool transmutate_from_light(ItemModel dest) {
+          if (2 <= lights) {
+            if (1 <= light) {
+              transmutate(overview[GameItems.IDs.LIGHT_FLASHLIGHT].First().Value[0], dest);
+              return true;
+            }
+//          if (2 <= big_light) {
+              transmutate(overview[GameItems.IDs.LIGHT_BIG_FLASHLIGHT].First().Value[0], dest);
+              return true;
+//          }
+          }
+          return false;
+        }
+
+        // we don't care about truncheons
+        var jacket = item_count(GameItems.IDs.ARMOR_POLICE_JACKET, overview);
+        var riot = item_count(GameItems.IDs.ARMOR_POLICE_RIOT, overview);
+        var armors = jacket + riot;
+
+        bool transmutate_from_armor(ItemModel dest) {
+          if (2 <= armors) {
+            if (1 <= jacket) {
+              transmutate(overview[GameItems.IDs.ARMOR_POLICE_JACKET].First().Value[0], dest);
+              return true;
+            }
+            if (2 <= riot) {
+              transmutate(overview[GameItems.IDs.ARMOR_POLICE_RIOT].First().Value[0], dest);
+              return true;
+            }
+          }
+          return false;
+        }
+
+        var pistol = item_count(GameItems.IDs.RANGED_PISTOL, overview);
+        var pistol_ammo = item_count(GameItems.IDs.AMMO_LIGHT_PISTOL, overview);
+        var pistol_ok = 1 <= pistol && 1 <= pistol_ammo;
+
+        bool transmutate_from_pistol(ItemModel dest) {
+          if (!pistol_ok) return false;
+          if (2 <= pistol && pistol >= pistol_ammo) {
+            transmutate(overview[GameItems.IDs.RANGED_PISTOL].First().Value[0], dest);
+            return true;
+          }
+          if (2 <= pistol_ammo && pistol_ammo > pistol) {
+            transmutate(overview[GameItems.IDs.AMMO_LIGHT_PISTOL].First().Value[0], dest);
+            return true;
+          }
+          return false;
+        }
+
+        var shotgun = item_count(GameItems.IDs.RANGED_SHOTGUN, overview);
+        var shotgun_ammo = item_count(GameItems.IDs.AMMO_SHOTGUN, overview);
+        var shotgun_ok = 1 <= shotgun && 1 <= shotgun_ammo;
+
+        bool transmutate_from_shotgun(ItemModel dest) {
+          if (!shotgun_ok) return false;
+          if (2 <= shotgun && shotgun >= shotgun_ammo) {
+            transmutate(overview[GameItems.IDs.RANGED_SHOTGUN].First().Value[0], dest);
+            return true;
+          }
+          if (2 <= shotgun_ammo && shotgun_ammo > shotgun) {
+            transmutate(overview[GameItems.IDs.AMMO_SHOTGUN].First().Value[0], dest);
+            return true;
+          }
+          return false;
+        }
+
+        if (!pistol_ok && !shotgun_ok) {
+          if (1 <= shotgun_ammo) {
+            if (transmutate_from_radio(GameItems.SHOTGUN)) return true;
+            if (transmutate_from_light(GameItems.SHOTGUN)) return true;
+            if (transmutate_from_armor(GameItems.SHOTGUN)) return true;
+          }
+          if (1 <= pistol_ammo) {
+            if (transmutate_from_radio(GameItems.PISTOL)) return true;
+            if (transmutate_from_light(GameItems.PISTOL)) return true;
+            if (transmutate_from_armor(GameItems.PISTOL)) return true;
+          }
+          if (1 <= shotgun) {
+            if (transmutate_from_radio(GameItems.AMMO_SHOTGUN)) return true;
+            if (transmutate_from_light(GameItems.AMMO_SHOTGUN)) return true;
+            if (transmutate_from_armor(GameItems.AMMO_SHOTGUN)) return true;
+          }
+          if (1 <= pistol) {
+            if (transmutate_from_radio(GameItems.AMMO_LIGHT_PISTOL)) return true;
+            if (transmutate_from_light(GameItems.AMMO_LIGHT_PISTOL)) return true;
+            if (transmutate_from_armor(GameItems.AMMO_LIGHT_PISTOL)) return true;
+          }
+        }
+        if (0 >= armors) {
+            if (transmutate_from_radio(GameItems.POLICE_JACKET)) return true;
+            if (transmutate_from_light(GameItems.POLICE_JACKET)) return true;
+            if (transmutate_from_pistol(GameItems.POLICE_JACKET)) return true;
+            if (transmutate_from_shotgun(GameItems.POLICE_JACKET)) return true;
+        }
+        if (0 >= radios) {
+            if (transmutate_from_light(GameItems.POLICE_RADIO)) return true;
+            if (transmutate_from_armor(GameItems.POLICE_RADIO)) return true;
+            if (transmutate_from_pistol(GameItems.POLICE_RADIO)) return true;
+            if (transmutate_from_shotgun(GameItems.POLICE_RADIO)) return true;
+        }
+        if (0 >= lights) { // might be able to get this en-route
+            if (transmutate_from_radio(GameItems.BIG_FLASHLIGHT)) return true;
+            if (transmutate_from_armor(GameItems.BIG_FLASHLIGHT)) return true;
+            if (transmutate_from_pistol(GameItems.BIG_FLASHLIGHT)) return true;
+            if (transmutate_from_shotgun(GameItems.BIG_FLASHLIGHT)) return true;
+        }
+
+        return false;
+      }
+
+      while(assure_disguise(map));
+
       // armor tuneup
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_RIOT)) continue;
         if (map.SwapItemTypes(GameItems.IDs.ARMOR_POLICE_RIOT, GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
         if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_JACKET)) continue;
         map.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory);
-        // \todo if cannot take police jacket, transmutate *two* items into police jackets
-      }
-
-      // if we have a truncheon, we can use it -- get a second one
-      foreach(Actor cop in map.Police.Get) {
-        if (!cop.Inventory.Has(GameItems.IDs.MELEE_TRUNCHEON)) continue;
-        map.TakeItemType(GameItems.IDs.MELEE_TRUNCHEON, cop.Inventory);
+        while(assure_disguise(map));
       }
 
       // should be at inventory 4 (martial arts) or 5 (normal) now
@@ -3056,14 +3197,14 @@ restart:
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.Has(GameItems.IDs.RANGED_PISTOL)) {
           if (!map.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
-          // \todo: verify that we didn't take the last firearm (breaks disguise kit)
+          while(assure_disguise(map));
           map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
         } else /* if (a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN)) */ {
           if (!map.TakeItemType(GameItems.IDs.RANGED_PISTOL, cop.Inventory)) continue;
-          // \todo: verify that we didn't take the last firearm (breaks disguise kit)
+          while(assure_disguise(map));
           map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
         }
       }
 
@@ -3073,25 +3214,24 @@ restart:
         if (!cop.Inventory.Has(GameItems.IDs.AMMO_LIGHT_PISTOL)) {
           // shotgunner, failed to get full backup
           map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
           continue;
         } else if (!cop.Inventory.Has(GameItems.IDs.AMMO_SHOTGUN)) {
           // pistol; failed to get full backup
           map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
           continue;
         } else {
           // full kit and still has a slot open.  Prefer pistol ammo
           map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
           if (cop.Inventory.IsFull) continue;
           map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
-          // \todo: verify that we didn't take the last firearm's ammo (inconvenient for miniboss)
+          while(assure_disguise(map));
           continue;
         }
       }
 
-      // \todo if we don't have a disguise kit, transmutate until we do (police armor, radio, flashlight)
       // \todo sort disguise kit for convenient pickup
 
       // now, to set up the marching order

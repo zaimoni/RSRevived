@@ -1921,6 +1921,35 @@ retry:
       return true;
     }
 
+    // Panoptic.
+    public Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory> > > ItemOverview()
+    {
+        if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use ItemOverview except during map generation");
+
+        Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory> > > ret = new();
+
+        foreach(var x in m_GroundItemsByPosition) {
+          foreach(var it in x.Value.Items) {
+            if (!ret.TryGetValue(it.Model.ID, out var cache)) ret.Add(it.Model.ID, cache = new());
+            if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
+            if (!cache2.Contains(x.Value)) cache2.Add(x.Value);
+          }
+        }
+
+        foreach(var x in m_MapObjectsByPosition) {
+          var inv = x.Value.Inventory;
+          if (null == inv) continue;
+          foreach(var it in inv.Items) {
+            if (!ret.TryGetValue(it.Model.ID, out var cache)) ret.Add(it.Model.ID, cache = new());
+            if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
+            if (!cache2.Contains(inv)) cache2.Add(inv);
+          }
+        }
+
+        return ret;
+//      return (0 < ret.Count) ? ret : null;
+    }
+
 #nullable enable
     /// <remark>Map generation depends on this being no-fail</remark>
     public void RemoveAllItemsAt(Point position) { m_GroundItemsByPosition.Remove(position); }
