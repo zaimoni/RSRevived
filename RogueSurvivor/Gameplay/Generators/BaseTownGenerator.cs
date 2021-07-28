@@ -2968,6 +2968,10 @@ restart:
       if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
 
+#if PROTOTYPE
+      Rectangle plot_anchor = Rectangle.Empty;
+#endif
+
       Item stock_armory() { return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create(); }
 
       foreach (Rectangle rect2 in list) {
@@ -2982,6 +2986,9 @@ restart:
             shelf.Inventory.AddAll(stock_armory());
           });
           map.AddZone(MakeUniqueZone("security", rect3));
+#if PROTOTYPE
+          if (rect3.Contains(new Point(18,18))) plot_anchor = rect3;
+#endif
           continue;
         }
         TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
@@ -3037,15 +3044,13 @@ restart:
       }
 
       // this is not correct in general; it relies on all game-start inventories having exactly one item and being mapobject
-      static int item_count(Gameplay.GameItems.IDs look_for, Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory>>> src) {
-         if (!src.TryGetValue(look_for, out var cache)) return 0;
-         return cache.Count;
-      }
-
       bool reserve_uniform(Map m) {
         var overview = m.ItemOverview();
+        Span<int> counts = stackalloc int[(int)GameItems.IDs._COUNT];
+        Map.InventoryCounts(overview, counts);
+
         // these two will not be taken by the SWAT team
-        var radios = item_count(GameItems.IDs.TRACKER_POLICE_RADIO, overview);
+        var radios = counts[(int)GameItems.IDs.TRACKER_POLICE_RADIO];
 
         static void transmutate(Inventory inv, ItemModel dest) {
           inv.RemoveAllQuantity(inv[0]);
@@ -3060,8 +3065,8 @@ restart:
           return false;
         }
 
-        var light = item_count(GameItems.IDs.LIGHT_FLASHLIGHT, overview);
-        var big_light = item_count(GameItems.IDs.LIGHT_BIG_FLASHLIGHT, overview);
+        var light = counts[(int)GameItems.IDs.LIGHT_FLASHLIGHT];
+        var big_light = counts[(int)GameItems.IDs.LIGHT_BIG_FLASHLIGHT];
         var lights = light + big_light;
 
         bool transmutate_from_light(ItemModel dest) {
@@ -3079,7 +3084,7 @@ restart:
         }
 
         // we don't care about truncheons, but can transmutate from them
-        var truncheon = item_count(GameItems.IDs.MELEE_TRUNCHEON, overview);
+        var truncheon = counts[(int)GameItems.IDs.MELEE_TRUNCHEON];
 
         bool transmutate_from_truncheon(ItemModel dest) {
           if (3 <= truncheon) {
@@ -3089,8 +3094,8 @@ restart:
           return false;
         }
 
-        var jacket = item_count(GameItems.IDs.ARMOR_POLICE_JACKET, overview);
-        var riot = item_count(GameItems.IDs.ARMOR_POLICE_RIOT, overview);
+        var jacket = counts[(int)GameItems.IDs.ARMOR_POLICE_JACKET];
+        var riot = counts[(int)GameItems.IDs.ARMOR_POLICE_RIOT];
         var armors = jacket + riot;
 
         bool transmutate_from_armor(ItemModel dest) {
@@ -3107,8 +3112,8 @@ restart:
           return false;
         }
 
-        var pistol = item_count(GameItems.IDs.RANGED_PISTOL, overview);
-        var pistol_ammo = item_count(GameItems.IDs.AMMO_LIGHT_PISTOL, overview);
+        var pistol = counts[(int)GameItems.IDs.RANGED_PISTOL];
+        var pistol_ammo = counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL];
         var pistol_ok = 1 <= pistol && 1 <= pistol_ammo;
 
         bool transmutate_from_pistol(ItemModel dest) {
@@ -3124,8 +3129,8 @@ restart:
           return false;
         }
 
-        var shotgun = item_count(GameItems.IDs.RANGED_SHOTGUN, overview);
-        var shotgun_ammo = item_count(GameItems.IDs.AMMO_SHOTGUN, overview);
+        var shotgun = counts[(int)GameItems.IDs.RANGED_SHOTGUN];
+        var shotgun_ammo = counts[(int)GameItems.IDs.AMMO_SHOTGUN];
         var shotgun_ok = 1 <= shotgun && 1 <= shotgun_ammo;
 
         bool transmutate_from_shotgun(ItemModel dest) {
@@ -3245,6 +3250,37 @@ restart:
       }
 
       // \todo sort uniform for convenient pickup
+#if PROTOTYPE
+      bool gather_uniform(Map m) {
+        var overview = m.ItemOverview();
+
+        Dictionary<GameItems.IDs, Dictionary<Point, List<Inventory> > > already_here = new();
+        Dictionary<GameItems.IDs, Dictionary<Point, List<Inventory> > > outside = new();
+        foreach(var x in overview) {
+          if (GameItems.IDs.MELEE_TRUNCHEON == x.Key) continue;
+          foreach(var y in x.Value) {
+            if (plot_anchor.Contains(y.Key)) {
+              if (!already_here.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
+              cache.Add(y.Key, y.Value);
+            } else {
+              if (!outside.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
+              cache.Add(y.Key, y.Value);
+            }
+          }
+        }
+
+        var local_radios = item_count(GameItems.IDs.TRACKER_POLICE_RADIO, already_here);
+        var local_light = item_count(GameItems.IDs.LIGHT_FLASHLIGHT, already_here);
+        var local_big_light = item_count(GameItems.IDs.LIGHT_BIG_FLASHLIGHT, already_here);
+        var local_lights = local_light + local_big_light;
+        var local_truncheon = item_count(GameItems.IDs.MELEE_TRUNCHEON, already_here);
+        var local_jacket = item_count(GameItems.IDs.ARMOR_POLICE_JACKET, already_here);
+        var local_riot = item_count(GameItems.IDs.ARMOR_POLICE_RIOT, already_here);
+        var local_armors = local_jacket + local_riot;
+
+        return false;
+      }
+#endif
 
       // now, to set up the marching order
       var leaders = new List<Actor>();

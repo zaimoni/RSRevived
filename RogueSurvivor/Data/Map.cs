@@ -1950,6 +1950,19 @@ retry:
 //      return (0 < ret.Count) ? ret : null;
     }
 
+    static public void InventoryCounts(Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory>>> src, Span<int> dest) {
+      int ub = (int)Gameplay.GameItems.IDs._COUNT;
+      if (dest.Length < ub) throw new InvalidOperationException("out of bounds write");
+
+      // yes, this skips the negative values for no-ammo ranged weapons
+      while(0 < ub--) {
+        dest[ub] = 0;
+        if (src.TryGetValue((Gameplay.GameItems.IDs)ub, out var cache)) {
+          foreach(var x in cache.Values) dest[ub] += x.Count;
+        }
+      }
+    }
+
 #nullable enable
     /// <remark>Map generation depends on this being no-fail</remark>
     public void RemoveAllItemsAt(Point position) { m_GroundItemsByPosition.Remove(position); }
