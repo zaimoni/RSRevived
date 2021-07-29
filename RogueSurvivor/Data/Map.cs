@@ -1950,6 +1950,19 @@ retry:
 //      return (0 < ret.Count) ? ret : null;
     }
 
+    public List<Inventory> EmptyContainerInventories(Rectangle view) {
+        List<Inventory> ret = new();
+
+        foreach (var x in m_MapObjectsByPosition) {
+            if (!view.Contains(x.Key)) continue;
+            var inv = x.Value.Inventory;
+            if (null != inv && inv.IsEmpty) ret.Add(inv);
+        }
+
+        return ret;
+//      return (0 < ret.Count) ? ret : null;
+    }
+
     static public void InventoryCounts(Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory>>> src, Span<int> dest) {
       int ub = (int)Gameplay.GameItems.IDs._COUNT;
       if (dest.Length < ub) throw new InvalidOperationException("out of bounds write");
