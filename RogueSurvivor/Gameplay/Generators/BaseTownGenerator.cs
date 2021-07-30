@@ -294,12 +294,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
       TileFill(map, GameTiles.FLOOR_GRASS);
 restart:
-      List<Block> list = new List<Block>();
-      MakeBlocks(map, true, ref list, map.Rect);
-      List<Block> blockList1 = new List<Block>(list);
-      m_SurfaceBlocks = new List<Block>(list.Count);
-      foreach (Block copyFrom in list)
-        m_SurfaceBlocks.Add(new Block(copyFrom));
+      var blockList1 = MakeBlocks(map, true, map.Rect);
+      m_SurfaceBlocks = new(blockList1.Count);
+      foreach (var x in blockList1) m_SurfaceBlocks.Add(new Block(x)); // want value-copy here
 
       // give subway fairly high priority
       Point world_pos = map.DistrictPos;
@@ -330,38 +327,35 @@ restart:
 
       if (world_pos == PoliceStationWorldPos) MakePoliceStation(map, blockList1);
       if (world_pos == HospitalWorldPos) MakeHospital(map, blockList1);
-      List<Block> blockList2 = new List<Block>(blockList1.Count);
+      List<Block> doomed = new(blockList1.Count);
       foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
-          blockList2.Add(b);
+          doomed.Add(b);
       }
-      foreach (Block block in blockList2)
-        blockList1.Remove(block);
-      blockList2.Clear();
+      foreach (var x in doomed) blockList1.Remove(x);
+      doomed.Clear();
       int num = 0;
       foreach (Block b in blockList1) {
         if ((m_Params.District.Kind == DistrictKind.BUSINESS && num == 0) || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
           CHARBuildingType charBuildingType = MakeCHARBuilding(map, b);
           if (charBuildingType == CHARBuildingType.OFFICE) ++num;
-          if (charBuildingType != CHARBuildingType.NONE) blockList2.Add(b);
+          if (charBuildingType != CHARBuildingType.NONE) doomed.Add(b);
         }
       }
-      foreach (Block block in blockList2)
-        blockList1.Remove(block);
-      blockList2.Clear();
+      foreach (var x in doomed) blockList1.Remove(x);
+      doomed.Clear();
       foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ParkBuildingChance) && MakeParkBuilding(map, b))
-          blockList2.Add(b);
+          doomed.Add(b);
       }
-      foreach (Block block in blockList2)
-        blockList1.Remove(block);
-      blockList2.Clear();
+      foreach (var x in doomed) blockList1.Remove(x);
+      doomed.Clear();
       foreach (Block b in blockList1) {
         MakeHousingBuilding(map, b);
-        blockList2.Add(b);
+        doomed.Add(b);
       }
-      foreach (Block block in blockList2)
-        blockList1.Remove(block);
+      foreach (var x in doomed) blockList1.Remove(x);
+//    doomed.Clear();
       AddWreckedCarsOutside(map);
       DecorateOutsideWallsWithPosters(map, m_Params.PostersChance);
       DecorateOutsideWallsWithTags(map, m_Params.TagsChance);
@@ -421,8 +415,7 @@ restart:
       Map surface = district.EntryMap;
 
       // 1. Make blocks.
-      List<Block> list = new List<Block>(m_SurfaceBlocks.Count);
-      MakeBlocks(sewers, false, ref list, dev_rect);
+      List<Block> list = MakeBlocks(sewers, false, dev_rect);
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #1 ok");
 #endif
@@ -951,11 +944,11 @@ restart:
     // district size 30: raw split range 10..19; can fail to split immediately.  railY=14; tolerances 7, 25 (-7,+11); subway entrances impossible.
     // district size 40: raw split range 13..26. railY=19; tolerances 12, 30 (very difficult)
     // district size 50: raw split range 16..33. railY=25; tolerances 17,35 (moderately difficult)
-    private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
+    private void _MakeBlocks(Map map, bool makeRoads, List<Block> list, Rectangle rect)
     {
       QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
-        if (makeRoads) {
+        if (makeRoads) { // \todo? nullable function parameter
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Top, rect.Width, 1));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
           MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Left, rect.Top, 1, rect.Height));
@@ -965,12 +958,18 @@ restart:
         }
         list.Add(new Block(topLeft));
       } else {
-        MakeBlocks(map, makeRoads, ref list, topLeft);
-        if (!topRight.IsEmpty) MakeBlocks(map, makeRoads, ref list, topRight);
-        if (!bottomLeft.IsEmpty) MakeBlocks(map, makeRoads, ref list, bottomLeft);
-        if (bottomRight.IsEmpty) return;
-        MakeBlocks(map, makeRoads, ref list, bottomRight);
+        _MakeBlocks(map, makeRoads, list, topLeft);
+        if (!topRight.IsEmpty) _MakeBlocks(map, makeRoads, list, topRight);
+        if (!bottomLeft.IsEmpty) _MakeBlocks(map, makeRoads, list, bottomLeft);
+        if (!bottomRight.IsEmpty) _MakeBlocks(map, makeRoads, list, bottomRight);
       }
+    }
+
+    protected List<Block> MakeBlocks(Map map, bool makeRoads, Rectangle rect)
+    {
+      List<Block> list = new();
+      _MakeBlocks(map, makeRoads, list, rect);
+      return list;
     }
 
     protected virtual void MakeRoad(Map map, TileModel roadModel, Rectangle rect)
