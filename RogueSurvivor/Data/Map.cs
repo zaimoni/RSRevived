@@ -186,7 +186,8 @@ namespace djack.RogueSurvivor.Data
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
-      OnConstructed(ref _hash);
+      OnConstructed();
+      RepairHash(ref _hash);
     }
 
 #region Implement ISerializable
@@ -251,11 +252,15 @@ namespace djack.RogueSurvivor.Data
     {
       ReconstructAuxiliaryFields();
       RegenerateMapGeometry();
-      OnConstructed(ref _hash);
+      OnConstructed();
+      if (null != m_District) RepairHash(ref _hash);
     }
 
     public void AfterLoad(District d) {
-      if (DistrictPos == d.WorldPosition) m_District = d;
+      if (DistrictPos == d.WorldPosition) {
+        m_District = d;
+        RepairHash(ref _hash);
+      }
 #if DEBUG
       else throw new InvalidOperationException("district backpointer repair rejected");
 #endif
@@ -272,9 +277,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    private void OnConstructed(ref int hash)
+    private void OnConstructed()
     {
       pathing_exits_to_goals.Now(LocalTime.TurnCounter);
+    }
+
+    private void RepairHash(ref int hash)
+    {
       hash = Name.GetHashCode() ^ District.GetHashCode();
     }
 #endregion
