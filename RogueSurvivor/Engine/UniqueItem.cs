@@ -10,19 +10,15 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueItem
+  internal readonly struct UniqueItem
   {
-    private readonly Item m_it;
-    private readonly bool m_isSpawned;
+    public readonly Item TheItem;
+    public readonly bool IsSpawned;
 
     public UniqueItem(Item src, bool spawn=true)
     {
-      m_it = src;
-      m_isSpawned = spawn;
+      TheItem = src;
+      IsSpawned = spawn;
     }
-
-    public bool IsSpawned { get { return m_isSpawned; } }
-
-    public Item TheItem { get { return m_it; } }
   }
 }
