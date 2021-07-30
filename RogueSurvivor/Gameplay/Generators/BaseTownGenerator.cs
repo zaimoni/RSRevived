@@ -1289,10 +1289,8 @@ restart:
         rect2 = new Rectangle(left, top, midpoint.X - left, height);
         rect3 = new Rectangle(midpoint.X + 1, top, b.BuildingRect.Right - midpoint.X -1, height);
       }
-      List<Rectangle> list1 = new List<Rectangle>();
-      MakeRoomsPlan(map, ref list1, rect2, 4);
-      List<Rectangle> list2 = new List<Rectangle>();
-      MakeRoomsPlan(map, ref list2, rect3, 4);
+      var list1 = MakeRoomsPlan(map, rect2, 4);
+      var list2 = MakeRoomsPlan(map, rect3, 4);
       List<Rectangle> rectangleList = new List<Rectangle>(list1.Count + list2.Count);
       rectangleList.AddRange(list1);
       rectangleList.AddRange(list2);
@@ -1537,10 +1535,8 @@ restart:
                 apartmentMinYSize = 4;
             }
 
-            List<Rectangle> apartementsWingOne = new List<Rectangle>();
-            MakeRoomsPlan(map, ref apartementsWingOne, wingOne, apartmentMinXSize, apartmentMinYSize);
-            List<Rectangle> apartementsWingTwo = new List<Rectangle>();
-            MakeRoomsPlan(map, ref apartementsWingTwo, wingTwo, apartmentMinXSize, apartmentMinYSize);
+            var apartementsWingOne = MakeRoomsPlan(map, wingOne, apartmentMinXSize, apartmentMinYSize);
+            var apartementsWingTwo = MakeRoomsPlan(map, wingTwo, apartmentMinXSize, apartmentMinYSize);
 
             List<Rectangle> allApartments = new List<Rectangle>(apartementsWingOne.Count + apartementsWingTwo.Count);
             allApartments.AddRange(apartementsWingOne);
@@ -1621,8 +1617,7 @@ restart:
       ///////////////////////
       // 2. Rooms floor plan
       ///////////////////////
-      var roomsList = new List<Rectangle>();
-      MakeRoomsPlan(map, ref roomsList, b.BuildingRect, 5);
+      var roomsList = MakeRoomsPlan(map, b.BuildingRect, 5);
 
       /////////////////
       // 3. Make rooms
@@ -2019,29 +2014,43 @@ restart:
     }
 
     // alpha10.1 allow different x and y min size
-    protected void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0)
+    private void _MakeRoomsPlan(Map map, List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize)
     {
-      if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
       QuadSplit(rect, minRoomsXSize, minRoomsYSize, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
       } else {
-        MakeRoomsPlan(map, ref list, topLeft, minRoomsXSize, minRoomsYSize);
+        _MakeRoomsPlan(map, list, topLeft, minRoomsXSize, minRoomsYSize);
         if (!topRight.IsEmpty) {
           topRight.Location += Direction.W;
           topRight.Size += Direction.E;
-          MakeRoomsPlan(map, ref list, topRight, minRoomsXSize, minRoomsYSize);
+          _MakeRoomsPlan(map, list, topRight, minRoomsXSize, minRoomsYSize);
         }
         if (!bottomLeft.IsEmpty) {
           bottomLeft.Location += Direction.N;
           bottomLeft.Size += Direction.S;
-          MakeRoomsPlan(map, ref list, bottomLeft, minRoomsXSize, minRoomsYSize);
+          _MakeRoomsPlan(map, list, bottomLeft, minRoomsXSize, minRoomsYSize);
         }
         if (bottomRight.IsEmpty) return;
         bottomRight.Location += Direction.NW;
         bottomRight.Size += Direction.SE;
-        MakeRoomsPlan(map, ref list, bottomRight, minRoomsXSize, minRoomsYSize);
+        _MakeRoomsPlan(map, list, bottomRight, minRoomsXSize, minRoomsYSize);
       }
+    }
+
+    protected List<Rectangle> MakeRoomsPlan(Map map, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0, List<Rectangle>? list = null)
+    {
+        if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
+        if (null == list) list = new(); // retain this parameter for Waterfall software lifecycle
+
+        _MakeRoomsPlan(map, list, rect, minRoomsXSize, minRoomsYSize);
+
+        return list;
+    }
+
+    protected void MakeRoomsPlan(Map map, Rectangle rect, int minRoomsXSize, List<Rectangle> list)
+    {
+        _MakeRoomsPlan(map, list, rect, minRoomsXSize, minRoomsXSize);
     }
 
     protected virtual void MakeHousingRoom(Map map, Rectangle roomRect, TileModel floor, TileModel wall)
@@ -2690,11 +2699,10 @@ restart:
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
       Rectangle rect3 = Rectangle.FromLTRB(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
       Rectangle rect4 = Rectangle.FromLTRB(rect2.Left, rect3.Top, underground.Width, underground.Height);
-      List<Rectangle> list = new List<Rectangle>();
-      MakeRoomsPlan(underground, ref list, rect3, 6);
-      MakeRoomsPlan(underground, ref list, rect4, 6);
-      MakeRoomsPlan(underground, ref list, rect1, 6);
-      MakeRoomsPlan(underground, ref list, rect2, 6);
+      var list = MakeRoomsPlan(underground, rect3, 6);
+      MakeRoomsPlan(underground, rect4, 6, list);
+      MakeRoomsPlan(underground, rect1, 6, list);
+      MakeRoomsPlan(underground, rect2, 6, list);
       foreach (Rectangle rect5 in list) TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, rect5);
       foreach (Rectangle rectangle in list) {
         Point position1 = rectangle.Anchor(rectangle.Left < underground.Width / 2 ? Compass.XCOMlike.E : Compass.XCOMlike.W);
@@ -2947,10 +2955,9 @@ restart:
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(3, 0, OFFICES_WIDTH, OFFICES_HEIGHT);
-      List<Rectangle> list = new List<Rectangle>();
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       force_QuadSplit_width = OFFICES_WIDTH - 3 - 8; // Police building codes maximize supplies: width 9, including walls
-      MakeRoomsPlan(map, ref list, rect1, 5);
+      var list = MakeRoomsPlan(map, rect1, 5);
 
       KeyValuePair<ItemModel, int>[] stock = {
         new KeyValuePair<ItemModel,int>(GameItems.POLICE_JACKET,10),
