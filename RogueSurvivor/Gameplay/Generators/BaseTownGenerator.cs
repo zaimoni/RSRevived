@@ -2968,9 +2968,7 @@ restart:
       if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");
 #endif
 
-#if PROTOTYPE
       Rectangle plot_anchor = Rectangle.Empty;
-#endif
 
       Item stock_armory() { return stock.UseRarityTable(m_DiceRoller.Roll(0, 100)).create(); }
 
@@ -2986,9 +2984,7 @@ restart:
             shelf.Inventory.AddAll(stock_armory());
           });
           map.AddZone(MakeUniqueZone("security", rect3));
-#if PROTOTYPE
           if (rect3.Contains(new Point(18,18))) plot_anchor = rect3;
-#endif
           continue;
         }
         TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
@@ -3249,9 +3245,7 @@ restart:
         }
       }
 
-            // \todo sort uniform for convenient pickup
-#if PROTOTYPE
-      bool gather_uniform(Map m) {
+      void gather_uniform(Map m) {
         var overview = m.ItemOverview();
 
         Dictionary<GameItems.IDs, Dictionary<Point, List<Inventory> > > already_here = new();
@@ -3263,7 +3257,7 @@ restart:
               if (!already_here.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
               cache.Add(y.Key, y.Value);
             } else {
-              if (!outside.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
+              if (!outside.TryGetValue(x.Key, out var cache)) outside.Add(x.Key, cache = new());
               cache.Add(y.Key, y.Value);
             }
           }
@@ -3300,7 +3294,7 @@ restart:
                 break;
             }
         }
-        if (0 == missing_flags) return false;
+        if (0 == missing_flags) return;
         Map.InventoryCounts(outside, counts);
 
         // if we do not have a firearm anywhere, ignore its ammo (and vice versa)
@@ -3309,16 +3303,109 @@ restart:
 
         if (0 >= counts[(int)GameItems.IDs.RANGED_PISTOL] && 8 == (missing_flags & 32)) missing_flags -= (missing_flags & (8 | 16));
         else if (0 >= counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL] && 16 == (missing_flags & 64)) missing_flags -= (missing_flags & (8 | 16));
-        if (0 == missing_flags) return false;
+        if (0 == missing_flags) return;
 
         var containers = m.EmptyContainerInventories(plot_anchor);
 
-        return false;
-      }
-#endif
+        // \todo? transpose logic similar to the transmutate logic, above
+        if (0 != (missing_flags & 1) && 0 < counts[(int)GameItems.IDs.TRACKER_POLICE_RADIO]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.TRACKER_POLICE_RADIO, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 1;
+                if (0 == missing_flags) return;
+            }
+        }
 
-            // now, to set up the marching order
-            var leaders = new List<Actor>();
+        if (0 != (missing_flags & 2) && 0 < counts[(int)GameItems.IDs.LIGHT_BIG_FLASHLIGHT]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.LIGHT_BIG_FLASHLIGHT, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 2;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 2) && 0 < counts[(int)GameItems.IDs.LIGHT_FLASHLIGHT]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.LIGHT_FLASHLIGHT, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 2;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 4) && 0 < counts[(int)GameItems.IDs.ARMOR_POLICE_RIOT]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.ARMOR_POLICE_RIOT, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 4;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 4) && 0 < counts[(int)GameItems.IDs.ARMOR_POLICE_JACKET]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 4;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 8) && 0 < counts[(int)GameItems.IDs.RANGED_PISTOL]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.RANGED_PISTOL, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 8;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 16) && 0 < counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 16;
+                if (0 == missing_flags) return;
+            }
+        }
+
+
+        if (0 != (missing_flags & 32) && 0 < counts[(int)GameItems.IDs.RANGED_SHOTGUN]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 32;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        if (0 != (missing_flags & 64) && 0 < counts[(int)GameItems.IDs.AMMO_SHOTGUN]) {
+            if (0 < containers.Count) {
+                var last = containers.Count-1;
+                m.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, containers[last]);
+                containers.RemoveAt(last);
+                missing_flags -= 64;
+                if (0 == missing_flags) return;
+            }
+        }
+
+        return;
+      }
+
+      gather_uniform(map);
+
+      // now, to set up the marching order
+      var leaders = new List<Actor>();
       var followers = new List<Actor>();
       var typical = map.Police.Get.ToList();
 

@@ -8,6 +8,8 @@ REVIVED 0.10.0 CHANGES
 * Z-detectors can clear threat tracking caused by Z.
 * New command Countermand PC, default key ALT-SHIFT-O.  Use this to inspect which self-orders are active, and cancel them.
 * Some of the direction-choice commands now automatically act, if there is only a single relevant target.
+* The SWAT team is now somewhat lazier, but more consistently equipped.  Odds are much better
+  that there is a complete police uniform in the southernmost supply room of the police offices.
 
 2020-11-09 and earlier
 * Cf. main manual's commands section for how self-orders work.
