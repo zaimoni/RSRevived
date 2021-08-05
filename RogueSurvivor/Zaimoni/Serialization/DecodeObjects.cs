@@ -84,9 +84,9 @@ namespace Zaimoni.Serialization
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
 
-            var coop_constructor = type.GetConstructor(integrated_constructor);
+            var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {
-                return (T)coop_constructor.Invoke(new object[] { src, format });
+                return (T)coop_constructor.Invoke(new object[] { src, this });
             }
 
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);

@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define BOOTSTRAP_Z_SERIALIZATION
+// #define INTEGRATE_Z_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -319,13 +320,13 @@ namespace djack.RogueSurvivor.Engine
 	  filepath.BinarySerialize(session);
 #if BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
-#if PROTOTYPE
+#if INTEGRATE_Z_SERIALIZATION
       // immediate integation test
       var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
       if (!session.SaveLoadOk(compare)) throw new InvalidOperationException("new save/load cycle failed");
 #endif
 #endif
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadBin(string filepath)
