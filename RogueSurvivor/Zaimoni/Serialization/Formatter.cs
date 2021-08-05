@@ -415,6 +415,10 @@ namespace Zaimoni.Serialization
         {
             int bytes = 0;
             Deserialize7bit(src, ref bytes);
+            if (0 == bytes) {
+                dest = string.Empty;
+                return;
+            }
 
             int total_read = 0;
             Span<byte> relay = new byte[bytes];
@@ -428,10 +432,12 @@ namespace Zaimoni.Serialization
             Span<char> encode = stackalloc char[2]; // 2021-04-22: currently 2 (check on compiler upgrade)
             dest = string.Empty;
             while (4 <= total_read || total_read == bytes) {
-                if (System.Buffers.OperationStatus.Done != Rune.DecodeFromUtf8(relay, out var result, out var bytesConsumed)) throw new InvalidDataException("string corrupt");
+                var code = Rune.DecodeFromUtf8(relay, out var result, out var bytesConsumed);
+                if (System.Buffers.OperationStatus.Done != code) throw new InvalidDataException("string corrupt: "+code.ToString()+", "+total_read.ToString()+", "+bytes.ToString()+", "+bytesConsumed.ToString());
                 var n = result.EncodeToUtf16(encode);
                 dest += new string(encode.Slice(0, n));
                 bytes -= bytesConsumed;
+                if (0 == bytes) return;
                 total_read -= bytesConsumed;
                 relay = relay.Slice(bytesConsumed);
                 while (4 > total_read && total_read < bytes) {
