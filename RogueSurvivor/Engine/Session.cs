@@ -165,7 +165,6 @@ namespace djack.RogueSurvivor.Engine
             UniqueMaps = new UniqueMaps();
 /*
             info.read(ref m_Scoring, "Scoring");
-            info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
             // load other classes' static variables
             ActorModel.Load(info, context);
             Actor.Load(info, context);
@@ -194,6 +193,16 @@ namespace djack.RogueSurvivor.Engine
         if (ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup) err += "ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup\n";
         if (LastTurnPlayerActed != test.LastTurnPlayerActed) err += "LastTurnPlayerActed != test.LastTurnPlayerActed: "+ LastTurnPlayerActed.ToString() + " "+ test.LastTurnPlayerActed.ToString() + "\n";
         if (PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation) err += "PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation\n";
+
+        foreach(var x in m_CommandLineOptions) {
+          if (test.m_CommandLineOptions.TryGetValue(x.Key, out var cache)) {
+            if (x.Value != cache) err += "wrong KV pair, command line options:" + x.Key + ":" + x.Value;
+          } else err += "missing key, command line options: " + x.Key;
+        }
+        foreach(var x in test.m_CommandLineOptions) {
+          if (!test.m_CommandLineOptions.TryGetValue(x.Key, out var cache)) err += "extra key, command line options: " + x.Key + ":" + x.Value;
+        }
+
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
     }
 
@@ -212,7 +221,6 @@ namespace djack.RogueSurvivor.Engine
 
 /*
             info.AddValue("Scoring", m_Scoring, typeof(Scoring));
-            info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
             ActorModel.Save(info, context);
             Actor.Save(info, context);
             Rules.Get.Save(info, context);
