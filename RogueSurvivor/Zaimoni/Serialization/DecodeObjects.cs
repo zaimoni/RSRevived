@@ -80,9 +80,11 @@ namespace Zaimoni.Serialization
         {
             var code = format.Peek(src);
             if (Formatter.null_code == code) return default;    // usually null
+            // Formatter.SerializeTypeCode(dest, t_code);
             format.DeserializeTypeCode(src, type_for_code);
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
+            var o_code = format.DeserializeObjCodeAfterTypecode(src);
 
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {

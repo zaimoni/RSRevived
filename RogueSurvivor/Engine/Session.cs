@@ -186,15 +186,15 @@ namespace djack.RogueSurvivor.Engine
 
     }
 
-    bool SaveLoadOk(Session test) {
-        if (GameMode != test.GameMode) return false;
-        if (ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner) return false;
-        if (ScriptStage_PoliceCHARrelations != test.ScriptStage_PoliceCHARrelations) return false;
-        if (ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup) return false;
-        if (LastTurnPlayerActed != test.LastTurnPlayerActed) return false;
-        if (PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation) return false;
-//      decode.format.Deserialize(src, ref s_seed);
-        return true;
+    void SaveLoadOk(Session test) {
+        var err = string.Empty;
+        if (GameMode != test.GameMode) err += "GameMode != test.GameMode: "+ GameMode.ToString() + " "+ test.GameMode.ToString() + "\n";
+        if (ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner) err += "ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner " + ScriptStage_PoliceStationPrisoner.ToString() + " " + test.ScriptStage_PoliceStationPrisoner.ToString() + "\n";
+        if (ScriptStage_PoliceCHARrelations != test.ScriptStage_PoliceCHARrelations) err += "ScriptStage_PoliceCHARrelations != test.ScriptStage_PoliceCHARrelations\n";
+        if (ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup) err += "ScriptStage_HospitalPowerup != test.ScriptStage_HospitalPowerup\n";
+        if (LastTurnPlayerActed != test.LastTurnPlayerActed) err += "LastTurnPlayerActed != test.LastTurnPlayerActed: "+ LastTurnPlayerActed.ToString() + " "+ test.LastTurnPlayerActed.ToString() + "\n";
+        if (PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation) err += "PlayerKnows_CHARUndergroundFacilityLocation != test.PlayerKnows_CHARUndergroundFacilityLocation\n";
+        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
     }
 
     void Zaimoni.Serialization.ISerialize.save(Stream dest, Zaimoni.Serialization.EncodeObjects encode)
@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Engine
 #if INTEGRATE_Z_SERIALIZATION
       // immediate integation test
       var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
-      if (!session.SaveLoadOk(compare)) throw new InvalidOperationException("new save/load cycle failed");
+      session.SaveLoadOk(compare);
 #endif
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");

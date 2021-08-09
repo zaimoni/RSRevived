@@ -345,8 +345,15 @@ namespace Zaimoni.Serialization
             sbyte signal = 0;
             Deserialize(src, ref signal);
             if (null_code == signal) return 0;
-            if (obj_ref_code != signal) throw new InvalidDataException("expected object reference");
+            if (obj_ref_code != signal) throw new InvalidDataException("expected object reference: "+obj_ref_code.ToString() + " " + signal.ToString());
             return Deserialize7bit(src);
+        }
+
+        public ulong DeserializeObjCodeAfterTypecode(Stream src)
+        {
+            if (null_code == Preview) return 0;
+            if (obj_ref_code != Preview) throw new InvalidDataException("expected object reference: " + obj_ref_code.ToString() + " " + Preview.ToString());
+            return Deserialize7bit(src); // ideally would reset Preview to an invalid state
         }
 
         static public void SerializeTypeCode(Stream dest, ulong code, string name)
