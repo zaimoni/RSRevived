@@ -12778,7 +12778,7 @@ retry:
     {
       var score = victor.ActorScoring;
       score.SetCompletedAchievement(id);
-      Achievement achievement = Session.Get.Scoring.GetAchievement(id);
+      Achievement achievement = Scoring.GetAchievement(id);
       string name = achievement.Name;
       score.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", name, achievement.ScoreValue));
       if (!(victor.Controller is PlayerController pc)) return;

@@ -19,41 +19,46 @@ namespace djack.RogueSurvivor.Engine
   {
     private int m_ReincarnationNumber;
 
-    private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
+    private static readonly Achievement[] Achievements = new Achievement[(int)Achievement.IDs._COUNT] {
+        new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
+        "Keep staying alive!"
+      }, GameMusics.HEYTHERE, 1000),
+        new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]{
+        "Keep staying alive!"
+      }, GameMusics.HEYTHERE, 1000),
+        new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]{
+        "Keep staying alive!"
+      }, GameMusics.HEYTHERE, 1000),
+        new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1] {
+        "Is this the end?"
+      }, GameMusics.HEYTHERE, 1000),
+        new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]{
+        "Now try not to die too soon..."
+      }, GameMusics.HEYTHERE, 1000),
+        new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]{
+        "Now, where is the light switch?..."
+      }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000),
+        new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]{
+        "Personal message from the game developper : ",
+        "Sorry, the rest of the plot is missing.",
+        "For now its a dead end.",
+        "Enjoy the rest of the game.",
+        "See you in a next game version :)"
+      }, GameMusics.CHAR_UNDERGROUND_FACILITY, 3000),
+        new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1] {
+        "One less Thing to worry about!"
+      }, GameMusics.HEYTHERE, 1000)
+    };
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
 
     public Scoring()
     {
-      InitAchievement(new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]{
-        "Now try not to die too soon..."
-      }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]{
-        "Now, where is the light switch?..."
-      }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000));
-      InitAchievement(new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]{
-        "Personal message from the game developper : ",
-        "Sorry, the rest of the plot is missing.",
-        "For now its a dead end.",
-        "Enjoy the rest of the game.",
-        "See you in a next game version :)"
-      }, GameMusics.CHAR_UNDERGROUND_FACILITY, 3000));
-      InitAchievement(new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1] {
-        "One less Thing to worry about!"
-      }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
-        "Keep staying alive!"
-      }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]{
-        "Keep staying alive!"
-      }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]{
-        "Keep staying alive!"
-      }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1] {
-        "Is this the end?"
-      }, GameMusics.HEYTHERE, 1000));
+      var ub = Achievements.Length;
+      while(0 <= --ub) {
+        if (ub != (int)Achievements[ub].ID) throw new InvalidProgramException("mismatch between achievement id and array position: " + ub.ToString() + " " + Achievements[ub].ID.ToString());
+      }
     }
 
     public int StartNewLife()
@@ -66,15 +71,7 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
     }
 
-    public Achievement GetAchievement(Achievement.IDs id)
-    {
-      return Achievements[(int) id];
-    }
-
-    private void InitAchievement(Achievement a)
-    {
-      Achievements[(int) a.ID] = a;
-    }
+    public static Achievement GetAchievement(Achievement.IDs id) => Achievements[(int) id];
   }
 
   [Serializable]
@@ -150,7 +147,7 @@ namespace djack.RogueSurvivor.Engine
       Achievement.IDs i = Achievement.IDs._COUNT;
       while(0 < i--) {
         if (!Achievements_completed[(int)i]) continue;
-        ret += Session.Get.Scoring.GetAchievement(i).ScoreValue;
+        ret += Scoring.GetAchievement(i).ScoreValue;
       }
       return ret;
     } }
@@ -219,7 +216,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Achievement.IDs i = 0;
       do {
-        Achievement achievement = Session.Get.Scoring.GetAchievement(i);
+        Achievement achievement = Scoring.GetAchievement(i);
         textFile.Append(Achievements_completed[(int)i] ? string.Format("- {0} for {1} points!", achievement.Name, achievement.ScoreValue)
                                                        : string.Format("- Fail : {0}.", achievement.TeaseName));
       } while(Achievement.IDs._COUNT > ++i);
