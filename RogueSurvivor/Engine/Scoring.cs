@@ -136,9 +136,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public float DifficultyRating {
+    public double DifficultyRating {
       get {
-        return RogueGame.Options.DifficultyRating((GameFactions.IDs)m_Actor.Faction.ID);    // don't worry about reincarnation count with per-actor scoring
+        return RogueGame.Options.DifficultyRating(m_Actor.Faction.ID);    // don't worry about reincarnation count with per-actor scoring
       }
     }
 
@@ -154,7 +154,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int TotalPoints {
       get {
-        return (int) ((double)DifficultyRating * (double) (KillPoints + SurvivalPoints + AchievementPoints));
+        return (int)(DifficultyRating * (KillPoints + SurvivalPoints + AchievementPoints));
       }
     }
 

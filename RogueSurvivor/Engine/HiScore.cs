@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       AchievementPoints = asc.AchievementPoints;
       Death = asc.DeathReason;
-      DifficultyPercent = (int) (100.0 * (double) asc.DifficultyRating);
+      DifficultyPercent = (int)(100.0 * asc.DifficultyRating);
       KillPoints = asc.KillPoints;
       Name = asc.Name;
       PlayingTime = sc.RealLifePlayingTime;
