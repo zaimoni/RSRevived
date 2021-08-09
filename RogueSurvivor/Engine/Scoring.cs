@@ -55,10 +55,12 @@ namespace djack.RogueSurvivor.Engine
 
     public Scoring()
     {
+#if DEBUG
       var ub = Achievements.Length;
       while(0 <= --ub) {
         if (ub != (int)Achievements[ub].ID) throw new InvalidProgramException("mismatch between achievement id and array position: " + ub.ToString() + " " + Achievements[ub].ID.ToString());
       }
+#endif
     }
 
     public int StartNewLife()
