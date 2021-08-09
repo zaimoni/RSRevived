@@ -58,7 +58,6 @@ namespace djack.RogueSurvivor.Engine
 
     public int StartNewLife()
     {
-      foreach (var achievement in Achievements) achievement.IsDone = false;
       return ++m_ReincarnationNumber;
     }
 

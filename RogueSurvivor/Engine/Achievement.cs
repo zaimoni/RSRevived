@@ -17,7 +17,6 @@ namespace djack.RogueSurvivor.Engine
     public readonly string[] Text;
     public readonly string MusicID;
     public readonly int ScoreValue;
-    public bool IsDone;
 
     public Achievement(IDs id, string name, string teaseName, string[] text, string musicID, int scoreValue)
     {
@@ -27,7 +26,6 @@ namespace djack.RogueSurvivor.Engine
             Text = text;
             MusicID = musicID;
             ScoreValue = scoreValue;
-            IsDone = false;
     }
 
     [Serializable]
