@@ -156,15 +156,15 @@ namespace djack.RogueSurvivor.Engine
             decode.LoadFrom(src, ref opts);
             m_CommandLineOptions = new(opts);
 
+            m_Scoring = decode.LoadInline<Scoring>(src);
+
             // mockup to allow testing
-            m_Scoring = new Scoring();
             var city_size = RogueGame.Options.CitySize;
             World = new World(RogueGame.Options.CitySize);
             UniqueActors = new UniqueActors();
             UniqueItems = new UniqueItems();
             UniqueMaps = new UniqueMaps();
 /*
-            info.read(ref m_Scoring, "Scoring");
             // load other classes' static variables
             ActorModel.Load(info, context);
             Actor.Load(info, context);
@@ -186,6 +186,8 @@ namespace djack.RogueSurvivor.Engine
     }
 
     void SaveLoadOk(Session test) {
+        m_Scoring.SaveLoadOk(test.m_Scoring);
+
         var err = string.Empty;
         if (GameMode != test.GameMode) err += "GameMode != test.GameMode: "+ GameMode.ToString() + " "+ test.GameMode.ToString() + "\n";
         if (ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner) err += "ScriptStage_PoliceStationPrisoner != test.ScriptStage_PoliceStationPrisoner " + ScriptStage_PoliceStationPrisoner.ToString() + " " + test.ScriptStage_PoliceStationPrisoner.ToString() + "\n";
@@ -217,10 +219,10 @@ namespace djack.RogueSurvivor.Engine
             Zaimoni.Serialization.Formatter.Serialize(dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
             encode.SaveTo(m_CommandLineOptions, dest);
 //          encode.LinearSave(m_CommandLineOptions, dest);
+            encode.SaveInline(dest, m_Scoring);
             // encode.format.....
 
 /*
-            info.AddValue("Scoring", m_Scoring, typeof(Scoring));
             ActorModel.Save(info, context);
             Actor.Save(info, context);
             Rules.Get.Save(info, context);

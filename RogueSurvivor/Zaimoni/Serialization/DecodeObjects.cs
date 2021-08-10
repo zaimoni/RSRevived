@@ -94,6 +94,17 @@ namespace Zaimoni.Serialization
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
 
+        public T LoadInline<T>(Stream src)
+        {
+            var type = typeof(T);
+            var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
+            if (null != coop_constructor) {
+                return (T)coop_constructor.Invoke(new object[] { src, this });
+            }
+
+            throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
+        }
+
 #region example boilerplate based on LinearizedElement<T>
         private void LoadFrom(Stream src, ref string dest) => Formatter.Deserialize(src, ref dest);
 #endregion

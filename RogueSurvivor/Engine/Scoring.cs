@@ -9,16 +9,16 @@ using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Zaimoni.Serialization;
+using System.IO;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class Scoring
-  {
-    private int m_ReincarnationNumber;
-
+    internal sealed class Scoring : ISerialize
+    {
     private static readonly Achievement[] Achievements = new Achievement[(int)Achievement.IDs._COUNT] {
         new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
         "Keep staying alive!"
@@ -49,6 +49,8 @@ namespace djack.RogueSurvivor.Engine
         "One less Thing to worry about!"
       }, GameMusics.HEYTHERE, 1000)
     };
+
+    private int m_ReincarnationNumber;
     public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
 
     public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
@@ -62,6 +64,27 @@ namespace djack.RogueSurvivor.Engine
       }
 #endif
     }
+
+    protected Scoring(Stream src, DecodeObjects decode)
+    {
+       Formatter.Deserialize(src, ref m_ReincarnationNumber);
+       Formatter.Deserialize(src, ref RealLifePlayingTime);
+    }
+
+    void ISerialize.save(Stream dest, EncodeObjects encode)
+    {
+       Formatter.Serialize(dest, m_ReincarnationNumber);
+       Formatter.Serialize(dest, RealLifePlayingTime);
+    }
+
+    public void SaveLoadOk(Scoring test) {
+        var err = string.Empty;
+        if (m_ReincarnationNumber != test.m_ReincarnationNumber) err += "m_ReincarnationNumber != test.m_ReincarnationNumber: " + m_ReincarnationNumber.ToString() + " "+ test.m_ReincarnationNumber.ToString() + "\n";
+        if (RealLifePlayingTime != test.RealLifePlayingTime) err += "RealLifePlayingTime != test.RealLifePlayingTime: " + RealLifePlayingTime.ToString() + " "+ test.RealLifePlayingTime.ToString() + "\n";
+
+        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+    }
+
 
     public int StartNewLife()
     {

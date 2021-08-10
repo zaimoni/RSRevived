@@ -554,6 +554,18 @@ namespace Zaimoni.Serialization
             default: throw new InvalidOperationException("DeserializeEnum cannot handle "+e_type.ToString());
             }
         }
+        #endregion
+
+        // Policy decision needed regarding where types from the standard library go (Formatter vs. DecodeObjects/EncodeObjects pair)
+#region thin-wrappers around core types specified above
+        static public void Serialize(Stream dest, TimeSpan src) => Serialize(dest, src.Ticks);
+
+        static public void Deserialize(Stream src, ref TimeSpan dest)
+        {
+            long relay = 0;
+            Deserialize(src, ref relay);
+            dest = new TimeSpan(relay);
+        }
 #endregion
     }
 }
