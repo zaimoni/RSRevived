@@ -11,13 +11,14 @@ namespace Zaimoni.Serialization
     public interface ISerialize
     {   // need something heavier as the second parameter
 //      void load(Stream src, DecodeObjects context); // unsure if this is needed (constructor overload?)
-        void save(Stream dest, EncodeObjects encode);
+        void save(EncodeObjects encode);
     }
 
     public class EncodeObjects
     {
         public readonly StreamingContext context;
         public readonly Formatter format;
+        public readonly Stream dest;
         private ulong seen = 0;
         private ulong type_seen = 0;
         private Dictionary<Type, ulong> type_code_of = new();
@@ -25,8 +26,9 @@ namespace Zaimoni.Serialization
         private List<Action<Stream>> to_save = new();
         private List<Action<Stream>> to_save_type = new();
 
-        public EncodeObjects()
+        public EncodeObjects(Stream _dest)
         {
+            dest = _dest;
             context = new StreamingContext();
             format = new Formatter(context);
         }
@@ -49,13 +51,13 @@ namespace Zaimoni.Serialization
                 Formatter.SerializeTypeCode(dest, t_code);
                 Formatter.SerializeObjCode(dest, seen);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
-                src.save(dest, this);
+                src.save(this);
                 if (src is IOnSerialized y) y.OnSerialized(in context);
             });
             return seen;
         }
 
-        public bool SaveNext(Stream dest) {
+        public bool SaveNext() {
             if (0 >= to_save.Count) return false;
             // if there are type code entries, flush them
             var save_type_ub = to_save_type.Count;
@@ -74,7 +76,7 @@ namespace Zaimoni.Serialization
             return true;
         }
 
-        public void SaveInline(Stream dest, ISerialize src) => src.save(dest, this);
+        public void SaveInline(ISerialize src) => src.save(this);
 
 #region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
         private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();
@@ -103,7 +105,7 @@ namespace Zaimoni.Serialization
             return null; // non-functional shim to get things building
         }
 
-        public void LinearSave<T>(IEnumerable<T>? src, Stream dest) {
+        public void LinearSave<T>(IEnumerable<T>? src) {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(dest, count);
             if (0 < count) {
@@ -114,22 +116,22 @@ namespace Zaimoni.Serialization
 #endregion
 
 #region example boilerplate based on LinearizedElement<T>
-        private void SaveTo(string src, Stream dest) => Formatter.Serialize(dest, src);
+        private void SaveTo(string src) => Formatter.Serialize(dest, src);
 
-        private void SaveTo(in KeyValuePair<string, string> src, Stream dest)
+        private void SaveTo(in KeyValuePair<string, string> src)
         {
-            SaveTo(src.Key, dest);
-            SaveTo(src.Value, dest);
+            SaveTo(src.Key);
+            SaveTo(src.Value);
         }
 #endregion
 
 #region example boilerplate based on LinearSave<T>
-        public void SaveTo(IEnumerable<KeyValuePair<string, string> >? src, Stream dest)
+        public void SaveTo(IEnumerable<KeyValuePair<string, string> >? src)
         {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(dest, count);
             if (0 < count) {
-                foreach (var x in src) SaveTo(in x, dest);
+                foreach (var x in src) SaveTo(in x);
             }
         }
 #endregion
@@ -153,10 +155,10 @@ namespace Zaimoni.Serialization
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-            var encode = new EncodeObjects();
-            encode.Saving(src);
             using var stream = filepath.CreateStream(true);
-            while (encode.SaveNext(stream));
+            var encode = new EncodeObjects(stream);
+            encode.Saving(src);
+            while (encode.SaveNext());
             stream.Flush();
         }
     }

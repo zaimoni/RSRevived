@@ -10,7 +10,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Zaimoni.Serialization;
-using System.IO;
 
 #nullable enable
 
@@ -65,16 +64,16 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    protected Scoring(Stream src, DecodeObjects decode)
+    protected Scoring(DecodeObjects decode)
     {
-       Formatter.Deserialize(src, ref m_ReincarnationNumber);
-       Formatter.Deserialize(src, ref RealLifePlayingTime);
+       Formatter.Deserialize(decode.src, ref m_ReincarnationNumber);
+       Formatter.Deserialize(decode.src, ref RealLifePlayingTime);
     }
 
-    void ISerialize.save(Stream dest, EncodeObjects encode)
+    void ISerialize.save(EncodeObjects encode)
     {
-       Formatter.Serialize(dest, m_ReincarnationNumber);
-       Formatter.Serialize(dest, RealLifePlayingTime);
+       Formatter.Serialize(encode.dest, m_ReincarnationNumber);
+       Formatter.Serialize(encode.dest, RealLifePlayingTime);
     }
 
     public void SaveLoadOk(Scoring test) {

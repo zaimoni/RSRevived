@@ -13,12 +13,14 @@ namespace Zaimoni.Serialization
     {
         public readonly StreamingContext context;
         public readonly Formatter format;
+        public readonly Stream src;
         private Dictionary<ulong, List<Action<object>>?> requested = new();
         private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
         private Dictionary<ulong, Type> type_for_code = new();
 
-        public DecodeObjects()
+        public DecodeObjects(Stream _src)
         {
+            src = _src;
             context = new StreamingContext();
             format = new Formatter(context);
         }
@@ -73,10 +75,10 @@ namespace Zaimoni.Serialization
             dest = ret;
         }
 
-        private static readonly Type[] integrated_constructor = new Type[]{ typeof(Stream), typeof(DecodeObjects) };
+        private static readonly Type[] integrated_constructor = new Type[]{ typeof(DecodeObjects) };
 
         // primary data load, not load-from-reference
-        public T Load<T>(Stream src) where T : class
+        public T Load<T>() where T : class
         {
             var code = format.Peek(src);
             if (Formatter.null_code == code) return default;    // usually null
@@ -88,30 +90,30 @@ namespace Zaimoni.Serialization
 
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {
-                return (T)coop_constructor.Invoke(new object[] { src, this });
+                return (T)coop_constructor.Invoke(new object[] { this });
             }
 
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
 
-        public T LoadInline<T>(Stream src)
+        public T LoadInline<T>()
         {
             var type = typeof(T);
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {
-                return (T)coop_constructor.Invoke(new object[] { src, this });
+                return (T)coop_constructor.Invoke(new object[] { this });
             }
 
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
 
 #region example boilerplate based on LinearizedElement<T>
-        private void LoadFrom(Stream src, ref string dest) => Formatter.Deserialize(src, ref dest);
+        private void LoadFrom(ref string dest) => Formatter.Deserialize(src, ref dest);
 #endregion
 
 
 #region example boilerplate based on LinearSave<T>
-        public void LoadFrom(Stream src, ref Dictionary<string, string> dest)
+        public void LoadFrom(ref Dictionary<string, string> dest)
         {
             dest = new();
             ulong count = 0;
@@ -121,8 +123,8 @@ namespace Zaimoni.Serialization
                 // if either key or value type requires object ids, this would trigger an indirect-load implementation
                 string key = string.Empty;
                 string value = string.Empty;
-                LoadFrom(src, ref key);
-                LoadFrom(src, ref value);
+                LoadFrom(ref key);
+                LoadFrom(ref value);
                 // Intentionally use first value if duplicate keys
                 if (!dest.ContainsKey(key)) dest.Add(key, value);
             }
@@ -138,9 +140,9 @@ namespace Zaimoni.Serialization
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-            var decode = new DecodeObjects();
             using var stream = filepath.CreateStream(false);
-            _T_ ret = decode.Load<_T_>(stream);
+            var decode = new DecodeObjects(stream);
+            _T_ ret = decode.Load<_T_>();
             stream.Flush();
             return ret;
         }
