@@ -43,6 +43,17 @@ namespace djack.RogueSurvivor.Data
     {
       info.AddValue("GameActors_createdCounts", _createdCounts);
     }
+
+    // it is a semantic error for the created count to be negative, so we
+    // don't need to binary-encode against the possibility of negative values
+    static public void Load(Zaimoni.Serialization.DecodeObjects decode)
+    {
+        decode.LoadFrom7bit(ref _createdCounts);
+        if ((int)Gameplay.GameActors.IDs._COUNT != _createdCounts.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
+        // \todo auto-repair if the incoming count is incorrect
+    }
+
+    static public void Save(Zaimoni.Serialization.EncodeObjects encode) => encode.SaveTo7bit(_createdCounts);
 #endregion
 
     public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)

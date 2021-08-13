@@ -129,6 +129,19 @@ namespace Zaimoni.Serialization
                 if (!dest.ContainsKey(key)) dest.Add(key, value);
             }
         }
+
+        public void LoadFrom7bit(ref ulong[] dest)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(src, ref count);
+            if (null == dest || dest.Length != count) dest = new ulong[count];
+
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Formatter.Deserialize7bit(src, ref dest[n++]);
+            }
+        }
 #endregion
 
     }

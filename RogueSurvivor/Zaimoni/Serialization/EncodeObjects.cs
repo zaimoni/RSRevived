@@ -134,6 +134,15 @@ namespace Zaimoni.Serialization
                 foreach (var x in src) SaveTo(in x);
             }
         }
+
+        public void SaveTo7bit(IEnumerable<ulong>? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(dest, count);
+            if (0 < count) {
+                foreach (var x in src) Formatter.Serialize7bit(dest, x);
+            }
+        }
 #endregion
 
         private ulong getTypeCode(Type src) {

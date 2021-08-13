@@ -4,8 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define BOOTSTRAP_Z_SERIALIZATION
-#define INTEGRATE_Z_SERIALIZATION
+// #define BOOTSTRAP_Z_SERIALIZATION
+// #define INTEGRATE_Z_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -157,6 +157,7 @@ namespace djack.RogueSurvivor.Engine
             m_CommandLineOptions = new(opts);
 
             m_Scoring = decode.LoadInline<Scoring>();
+            ActorModel.Load(decode); // this static data doesn't involve objects
 
             // mockup to allow testing
             var city_size = RogueGame.Options.CitySize;
@@ -166,7 +167,6 @@ namespace djack.RogueSurvivor.Engine
             UniqueMaps = new UniqueMaps();
 /*
             // load other classes' static variables
-            ActorModel.Load(info, context);
             Actor.Load(info, context);
             Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
@@ -220,10 +220,9 @@ namespace djack.RogueSurvivor.Engine
             encode.SaveTo(m_CommandLineOptions);
 //          encode.LinearSave(m_CommandLineOptions, dest);
             encode.SaveInline(m_Scoring);
-            // encode.format.....
+            ActorModel.Save(encode); // this static data doesn't involve objects
 
 /*
-            ActorModel.Save(info, context);
             Actor.Save(info, context);
             Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
