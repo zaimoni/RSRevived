@@ -68,7 +68,23 @@ namespace djack.RogueSurvivor.Engine
     private Session()
     {
       m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
-      Reset();
+      s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
+#endif
+      RogueGame.Reset();
+      m_Scoring = new Scoring();
+      var city_size = RogueGame.Options.CitySize;
+      World = new World(city_size);
+      LastTurnPlayerActed = 0;
+      PlayerKnows_CHARUndergroundFacilityLocation = false;
+      ScriptStage_PoliceStationPrisoner = 0;
+      ScriptStage_PoliceCHARrelations = 0;
+      ScriptStage_HospitalPowerup = 0;
+      UniqueActors = new UniqueActors();
+      UniqueItems = new UniqueItems();
+      UniqueMaps = new UniqueMaps();
+      Police.Clear();
     }
 
 #region Implement ISerializable
@@ -239,26 +255,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #endregion
 
-    public void Reset()
-    {
-      s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
-#if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
-#endif
-      RogueGame.Reset();
-      m_Scoring = new Scoring();
-      var city_size = RogueGame.Options.CitySize;
-      World = new World(city_size);
-      LastTurnPlayerActed = 0;
-      PlayerKnows_CHARUndergroundFacilityLocation = false;
-      ScriptStage_PoliceStationPrisoner = 0;
-      ScriptStage_PoliceCHARrelations = 0;
-      ScriptStage_HospitalPowerup = 0;
-      UniqueActors = new UniqueActors();
-      UniqueItems = new UniqueItems();
-      UniqueMaps = new UniqueMaps();
-      Police.Clear();
-    }
+    public static void Reset() { s_TheSession = null; }
 
     public bool CMDoptionExists(string x) {
       if (null == m_CommandLineOptions) return false;

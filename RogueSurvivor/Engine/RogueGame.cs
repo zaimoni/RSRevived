@@ -385,10 +385,8 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("s_MessageManager", s_MessageManager);
     }
 
-    static public void Reset()  // very severe access control issue...should be called only from Session::Reset()
-    {
-      m_MapView = default;
-    }
+    // very severe access control issue; should be called only from Session::Session()
+    static public void Reset() { m_MapView = default; }
 #endregion
 
     public static void Init()
@@ -12240,7 +12238,7 @@ namespace djack.RogueSurvivor.Engine
       _validateCity();  // use the --city option values if they are remotely valid
       _validateSpawn(); // prepare to use the --spawn option
 
-      Session.Get.Reset();
+      Session.Reset();
       Rules.Reset();
       Direction_ext.Now();
       World world = Session.Get.World;
