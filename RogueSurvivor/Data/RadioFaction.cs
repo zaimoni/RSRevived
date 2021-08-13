@@ -170,6 +170,7 @@ namespace djack.RogueSurvivor.Data
         public ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
 #endif
 
+#if OBSOLETE
         public void Clear() {
             ItemMemory.Clear();
             Threats.Clear();
@@ -178,6 +179,7 @@ namespace djack.RogueSurvivor.Data
             m_Aggressors.Clear();
 #endif
         }
+#endif
 
         public bool IsMine(Actor a) { return FactionID == a.Faction.ID; }
         public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a); }

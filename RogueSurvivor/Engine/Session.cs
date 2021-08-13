@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine
     [NonSerialized] private static Map.ActorCode s_Player;
 
     [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
-    private Scoring m_Scoring;
+    private Scoring m_Scoring = new();
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
     public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
 
@@ -38,16 +38,16 @@ namespace djack.RogueSurvivor.Engine
     static public int Seed { get { return s_seed; } }
 
     public World World { get; private set; }
-    public UniqueActors UniqueActors { get; private set; }
-    public UniqueItems UniqueItems { get; private set; }
-    public UniqueMaps UniqueMaps { get; private set; }
+    public readonly UniqueActors UniqueActors = new();
+    public readonly UniqueItems UniqueItems = new();
+    public readonly UniqueMaps UniqueMaps = new();
 
     public GameMode GameMode;
-    public int LastTurnPlayerActed;
-    public bool PlayerKnows_CHARUndergroundFacilityLocation;
-    public int ScriptStage_PoliceStationPrisoner;
-    public int ScriptStage_PoliceCHARrelations;
-    public int ScriptStage_HospitalPowerup;
+    public int LastTurnPlayerActed = 0;
+    public bool PlayerKnows_CHARUndergroundFacilityLocation = false;
+    public int ScriptStage_PoliceStationPrisoner = 0;
+    public int ScriptStage_PoliceCHARrelations = 0;
+    public int ScriptStage_HospitalPowerup = 0;
 
     public static Session Get { get {
 #if DEBUG
@@ -73,18 +73,8 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
       RogueGame.Reset();
-      m_Scoring = new Scoring();
       var city_size = RogueGame.Options.CitySize;
       World = new World(city_size);
-      LastTurnPlayerActed = 0;
-      PlayerKnows_CHARUndergroundFacilityLocation = false;
-      ScriptStage_PoliceStationPrisoner = 0;
-      ScriptStage_PoliceCHARrelations = 0;
-      ScriptStage_HospitalPowerup = 0;
-      UniqueActors = new UniqueActors();
-      UniqueItems = new UniqueItems();
-      UniqueMaps = new UniqueMaps();
-      Police.Clear();
     }
 
 #region Implement ISerializable
