@@ -3361,6 +3361,7 @@ namespace djack.RogueSurvivor.Engine
           case DistrictKind.SHOPPING: return new ColorString(Color.White, "Sho");
           case DistrictKind.GREEN: return new ColorString(Color.Green, "Gre");
           case DistrictKind.BUSINESS: return new ColorString(Color.Red, "Bus");
+          case DistrictKind.INTERSTATE: return new ColorString(Color.White, "Hwy");
           default:
 #if DEBUG
             throw new ArgumentOutOfRangeException("unhandled district kind");

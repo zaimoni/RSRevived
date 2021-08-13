@@ -19,11 +19,11 @@ namespace djack.RogueSurvivor.Data
   internal enum DistrictKind
   {
     GENERAL = 0,
-    RESIDENTIAL = 1,
-    SHOPPING = 2,
-    GREEN = 3,
-    BUSINESS = 4,
-    _COUNT = 5,
+    RESIDENTIAL,
+    SHOPPING,
+    GREEN,
+    BUSINESS, // last in-city district type
+    INTERSTATE // first outside-city district type
   }
 
   [Serializable]
@@ -408,6 +408,13 @@ namespace djack.RogueSurvivor.Data
           break;
         case DistrictKind.GREEN:
           str = "Green District";
+          parameters.CHARBuildingChance /= num;
+          parameters.ParkBuildingChance *= num;
+          parameters.ShopBuildingChance /= num;
+          break;
+        case DistrictKind.INTERSTATE:
+          str = "Interstate Highway";
+          // not really...stub this as a Green district for now
           parameters.CHARBuildingChance /= num;
           parameters.ParkBuildingChance *= num;
           parameters.ShopBuildingChance /= num;

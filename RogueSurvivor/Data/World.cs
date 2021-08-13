@@ -360,33 +360,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    // world-building support
-    private void Rezone(Span<short> stats, DistrictKind[] zoning, Point view, DistrictKind dest, DistrictKind src) {
-        var rules = Engine.Rules.Get;
-        var plan = new List<int>();
-        int plan_radius = int.MaxValue;
-        int ub = m_Size*m_Size;
-        while(0 <= --ub) {
-            if (src == zoning[ub]) {
-                var dist = Engine.Rules.GridDistance(view, toWorldPos(ub));
-                if (dist <= plan_radius) {
-                     if (dist < plan_radius) {
-                         plan.Clear();
-                         plan_radius = dist;
-                     }
-                     plan.Add(ub);
-                }
-            }
-        }
-        int rezone = rules.DiceRoller.Choose(plan);
-        stats[(int)src]--;
-        stats[(int)dest]++;
-        zoning[rezone] = dest;
-    }
-
+#region world-building support
     private void Rezone(Span<short> stats, DistrictKind[] zoning, DistrictKind dest, DistrictKind src) {
         var plan = new List<int>();
-        int ub = m_Size*m_Size;
+        int ub = zoning.Length;
         while(0 <= --ub) {
             if (src == zoning[ub]) plan.Add(ub);
         }
@@ -400,7 +377,7 @@ namespace djack.RogueSurvivor.Data
         var scan = new Rectangle(view + Direction.NW, (Point)3);
         var plan_dest = new List<int>();
         var plan_src = new List<int>();
-        int ub = m_Size*m_Size;
+        int ub = zoning.Length;
         while(0 <= --ub) {
             if (src == zoning[ub] && scan.Contains(toWorldPos(ub))) plan_src.Add(ub);
             else if (dest == zoning[ub]) plan_dest.Add(ub);
@@ -412,7 +389,7 @@ namespace djack.RogueSurvivor.Data
         zoning[rezone_dest] = src;
     }
 
-    // General priority order.
+    // General priority order for in-city districts
     private static readonly DistrictKind[] ZonePriority = { DistrictKind.SHOPPING, DistrictKind.GENERAL, DistrictKind.RESIDENTIAL, DistrictKind.BUSINESS, DistrictKind.GREEN };
 
     static private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats) {
@@ -445,17 +422,20 @@ namespace djack.RogueSurvivor.Data
 
     public DistrictKind[] PreliminaryZoning {
         get {
-            Span<short> stats = stackalloc short[(int)DistrictKind._COUNT];
-            Span<short> sample = stackalloc short[(int)DistrictKind._COUNT];
-            var ret = new DistrictKind[m_Size*m_Size];
+            const int in_city_district_ub = (int)DistrictKind.BUSINESS+1;
+
+            Span<short> stats = stackalloc short[in_city_district_ub];
+            Span<short> sample = stackalloc short[in_city_district_ub];
+            var linear_extent = CitySize * CitySize;
+            var ret = new DistrictKind[linear_extent];
             var rules = Engine.Rules.Get;
             foreach(ref var x in new Span<DistrictKind>(ret)) {
-                var staging = rules.Roll(0, (int)DistrictKind._COUNT);
+                var staging = rules.Roll(0, in_city_district_ub);
                 stats[staging]++;
                 x = (DistrictKind)staging;
             }
 
-            var expected_all = m_Size*m_Size/(int)DistrictKind._COUNT;
+            var expected_all = linear_extent / in_city_district_ub;
             var unbalanced = ExtremeZoning(stats);
             var rare_priority = Array.IndexOf(ZonePriority, unbalanced.Key);
             var glut_priority = Array.IndexOf(ZonePriority, unbalanced.Value);
@@ -469,7 +449,7 @@ namespace djack.RogueSurvivor.Data
             }
 
             var city_center = CHAR_City_Origin + CHAR_CityLimits.Size / 2;
-            const int expected_neighborhood = 9/(int)DistrictKind._COUNT;
+            const int expected_neighborhood = 9 / in_city_district_ub;
             const int require_neighborhood = (expected_neighborhood+1)/2;
 
             var translation = new Rectangle(CHAR_City_Origin + Direction.SE, CHAR_CityLimits.Size + 2 * Direction.NW);
@@ -487,6 +467,7 @@ namespace djack.RogueSurvivor.Data
             return ret;
         }
     }
+#endregion
 
     // Simulation support
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
