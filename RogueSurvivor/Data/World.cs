@@ -176,21 +176,22 @@ namespace djack.RogueSurvivor.Data
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (District d in m_DistrictsGrid) d.DoForAllGroundInventories(op); }
 
-    public World(short size)
+    public World()
     {
+      var size = Engine.RogueGame.Options.CitySize;
 #if DEBUG
       if (0 >= size) throw new ArgumentOutOfRangeException(nameof(size),size, "0 >= size");
 #endif
-      m_DistrictsGrid = new District[size, size];
       m_Size = size;
+      m_DistrictsGrid = new District[Size, Size];
 //    Weather = Weather.CLEAR;
       var rules = Engine.Rules.Get;
       Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
-      m_Ready = new Queue<District>(size*size);
-      m_Event_Raids = new int[(int) Engine.RaidType._COUNT, CitySize, CitySize]; // use zero-initialization convention
+      m_Ready = new Queue<District>(Size*Size);
+      m_Event_Raids = new int[(int) Engine.RaidType._COUNT, Size, Size]; // use zero-initialization convention
 
-      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(CitySize, CitySize));
       s_Recent = this;
     }
 

@@ -73,8 +73,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
       RogueGame.Reset();
-      var city_size = RogueGame.Options.CitySize;
-      World = new World(city_size);
+      World = new World();
     }
 
 #region Implement ISerializable
