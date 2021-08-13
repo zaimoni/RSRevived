@@ -123,24 +123,30 @@ namespace djack.RogueSurvivor.Data
       const uint S_TEE = S_NEUTRAL * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
       const uint E_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_NEUTRAL;
       const uint W_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + W_NEUTRAL;
-      if (0 == pos.Y) {
-        if (0 == pos.X) return S_E;
-        else if (Size / 2 == pos.X) return S_TEE;
-        else if (Size - 1 == pos.X) return S_W;
+
+      // map generation, so doesn't have to be fast
+      var tl_city = CHAR_CityLimits.Location;
+      var br_city = CHAR_CityLimits.Location + CHAR_CityLimits.Size + Direction.NW;
+      var mid_city = CHAR_CityLimits.Location + CHAR_CityLimits.Size / 2;
+
+      if (tl_city.Y == pos.Y) {
+        if (tl_city.X == pos.X) return S_E;
+        else if (mid_city.X == pos.X) return S_TEE;
+        else if (br_city.X == pos.X) return S_W;
         else return E_W;
-      } else if (Size  / 2 == pos.Y) {
-        if (0 == pos.X) return E_TEE;
-        else if (Size / 2 == pos.X) return FOUR_WAY;
-        else if (Size - 1 == pos.X) return W_TEE;
+      } else if (mid_city.Y == pos.Y) {
+        if (tl_city.X == pos.X) return E_TEE;
+        else if (mid_city.X == pos.X) return FOUR_WAY;
+        else if (br_city.X == pos.X) return W_TEE;
         else return E_W;
       } else if (Size -1 == pos.Y) {
-        if (0 == pos.X) return N_E;
-        else if (Size / 2 == pos.X) return N_TEE;
-        else if (Size - 1 == pos.X) return N_W;
+        if (tl_city.X == pos.X) return N_E;
+        else if (mid_city.X == pos.X) return N_TEE;
+        else if (br_city.X == pos.X) return N_W;
         else return E_W;
-      } else if (0 == pos.X) return N_S;
-      else if (Size / 2 == pos.X) return N_S;
-      else if (Size - 1 == pos.X) return N_S;
+      } else if (tl_city.X == pos.X) return N_S;
+      else if (mid_city.X == pos.X) return N_S;
+      else if (br_city.X == pos.X) return N_S;
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }
 
