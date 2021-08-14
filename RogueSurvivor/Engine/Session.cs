@@ -164,9 +164,22 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring = decode.LoadInline<Scoring>();
             ActorModel.Load(decode); // this static data doesn't involve objects
 
+            var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
+            if (0 < code) {
+                var obj = decode.Seen(code);
+                if (null != obj) {
+                    if (obj is World w) World = w;
+                    else throw new InvalidOperationException("World object not loaded");
+                } else {
+                    decode.Schedule(code, (o) => {
+                        if (o is World w) World = w;
+                        else throw new InvalidOperationException("World object not loaded");
+                    });
+                }
+            } else throw new InvalidOperationException("World object not loaded");
+
             // mockup to allow testing
-            var city_size = RogueGame.Options.CitySize;
-            World = new World(RogueGame.Options.CitySize);
+//          World = new World();
             UniqueActors = new UniqueActors();
             UniqueItems = new UniqueItems();
             UniqueMaps = new UniqueMaps();
@@ -192,6 +205,7 @@ namespace djack.RogueSurvivor.Engine
 
     void SaveLoadOk(Session test) {
         m_Scoring.SaveLoadOk(test.m_Scoring);
+        World.SaveLoadOk(test.World);
 
         var err = string.Empty;
         if (GameMode != test.GameMode) err += "GameMode != test.GameMode: "+ GameMode.ToString() + " "+ test.GameMode.ToString() + "\n";
@@ -227,11 +241,12 @@ namespace djack.RogueSurvivor.Engine
             encode.SaveInline(m_Scoring);
             ActorModel.Save(encode); // this static data doesn't involve objects
 
+            var code = encode.Saving(World);
+            Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 /*
             Actor.Save(info, context);
             Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
-            info.AddValue("World", World, typeof(World));
             RogueGame.Save(info, context);
             info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
             info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));

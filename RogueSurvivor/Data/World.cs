@@ -21,7 +21,7 @@ using Rectangle = Zaimoni.Data.Box2D_short;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class World
+  internal class World : Zaimoni.Serialization.ISerialize
   {
     // alpha10
     // weather stays from 1h to 3 days and then change
@@ -210,6 +210,48 @@ namespace djack.RogueSurvivor.Data
     public void RepairLoad()
     {
       foreach(var d in m_DistrictsGrid) d.RepairLoad();
+    }
+
+    protected World(Zaimoni.Serialization.DecodeObjects decode)
+    {
+        byte relay_b = 0;
+        int relay_i = 0;
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_Size);
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay_b);
+        Weather = (Weather)(relay_b);
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
+        NextWeatherCheckTurn = relay_i;
+/*
+    private int[,,] m_Event_Raids; // \todo ultimately readonly
+    private readonly District[,] m_DistrictsGrid;
+    private District? m_PlayerDistrict = null;
+    private District? m_SimDistrict = null;
+    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+ */
+        m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+        s_Recent = this;
+    }
+
+    public void SaveLoadOk(World test) {
+        var err = string.Empty;
+
+        if (m_Size != test.m_Size) err += "World size mismatch: "+m_Size.ToString()+ "" + test.m_Size.ToString();
+
+        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Size);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Weather);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
+/*
+    private int[,,] m_Event_Raids; // \todo ultimately readonly
+    private readonly District[,] m_DistrictsGrid;
+    private District? m_PlayerDistrict = null;
+    private District? m_SimDistrict = null;
+    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+ */
     }
 
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
