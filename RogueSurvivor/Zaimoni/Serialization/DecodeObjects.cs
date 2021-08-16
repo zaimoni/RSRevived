@@ -14,9 +14,9 @@ namespace Zaimoni.Serialization
         public readonly StreamingContext context;
         public readonly Formatter format;
         public readonly Stream src;
-        private Dictionary<ulong, List<Action<object>>?> requested = new();
-        private Dictionary<Type, Dictionary<ulong, object>> encodings = new();
-        private Dictionary<ulong, Type> type_for_code = new();
+        private readonly Dictionary<ulong, List<Action<object>>?> requested = new();
+        private readonly Dictionary<Type, Dictionary<ulong, object>> encodings = new();
+        private readonly Dictionary<ulong, Type> type_for_code = new();
 
         public DecodeObjects(Stream _src)
         {
@@ -107,6 +107,41 @@ namespace Zaimoni.Serialization
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
 
+        public bool LoadNext()
+        {
+            if (0 >= requested.Count) return false;
+
+            var code = format.Peek(src);
+            if (Formatter.null_code == code) return false;    // usually null
+            // Formatter.SerializeTypeCode(dest, t_code);
+            format.DeserializeTypeCode(src, type_for_code);
+            var t_code = format.DeserializeTypeCode(src);
+            if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
+            var o_code = format.DeserializeObjCodeAfterTypecode(src);
+            if (!encodings.TryGetValue(type, out var prior)) encodings.Add(type, prior = new());
+            if (prior.TryGetValue(o_code, out var preexist)) throw new InvalidOperationException("trying to load object twice");
+            if (!requested.TryGetValue(o_code, out var handlers)) throw new InvalidOperationException("trying to load unwanted object");
+
+            var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
+            if (null != coop_constructor) {
+                var obj = coop_constructor.Invoke(new object[] { this });
+                prior.Add(o_code, obj);
+                if (null != handlers) {
+                    var ub = handlers.Count;
+                    while (0 <= --ub) {
+                        handlers[ub](obj);
+                        handlers[ub] = null;
+                    }
+                    requested[o_code] = null;
+                }
+                requested.Remove(o_code);
+                return true;
+            }
+
+            throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
+        }
+
+
 #region example boilerplate based on LinearizedElement<T>
         private void LoadFrom(ref string dest) => Formatter.Deserialize(src, ref dest);
 #endregion
@@ -156,6 +191,7 @@ namespace Zaimoni.Serialization
             using var stream = filepath.CreateStream(false);
             var decode = new DecodeObjects(stream);
             _T_ ret = decode.Load<_T_>();
+            while (decode.LoadNext());
             stream.Flush();
             return ret;
         }
