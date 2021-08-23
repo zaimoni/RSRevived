@@ -143,6 +143,35 @@ namespace Zaimoni.Serialization
                 foreach (var x in src) Formatter.Serialize7bit(dest, x);
             }
         }
+
+        public void SaveTo7bit(int[,,]? src)
+        {
+            var rank = src?.Rank ?? 0;
+            if (0 < rank) {
+                Span<int> ub = stackalloc int[3];
+                var iter = new int[3];
+                var n = 0;
+                while(rank > n) {
+                    ub[n] = src.GetUpperBound(n);
+                    Formatter.Serialize7bit(dest, ub[n++]);
+                }
+                iter[0] = 0;
+                while (ub[0] > iter[0]) {
+                    iter[1] = 0;
+                    while (ub[1] > iter[1]) {
+                        iter[2] = 0;
+                        while (ub[2] > iter[2]) {
+                            Formatter.Serialize7bit(dest, (int)src.GetValue(iter));
+                            iter[2]++;
+                        }
+                        iter[1]++;
+                    }
+                    iter[0]++;
+                }
+            } else {
+                Formatter.Serialize7bit(dest, 0);
+            }
+        }
 #endregion
 
         private ulong getTypeCode(Type src) {

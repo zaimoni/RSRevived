@@ -221,8 +221,9 @@ namespace djack.RogueSurvivor.Data
         Weather = (Weather)(relay_b);
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
         NextWeatherCheckTurn = relay_i;
+        decode.LoadFrom7bit(ref m_Event_Raids);
+        // \todo reality-check incoming array
 /*
-    private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
@@ -245,8 +246,8 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Size);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Weather);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
+        encode.SaveTo7bit(m_Event_Raids);
 /*
-    private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;

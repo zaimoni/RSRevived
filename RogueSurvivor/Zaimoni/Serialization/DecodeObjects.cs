@@ -177,6 +177,37 @@ namespace Zaimoni.Serialization
                 Formatter.Deserialize7bit(src, ref dest[n++]);
             }
         }
+
+        public void LoadFrom7bit(ref int[,,]? dest)
+        {
+            var n = 0;
+            Span<int> ub = stackalloc int[3];
+            Formatter.Deserialize7bit(src, ref ub[n++]);
+            if (0 == ub[0]) {
+                dest = null;
+                return;
+            }
+            while (3 > n) Formatter.Deserialize7bit(src, ref ub[n++]);
+            // insecure: doesn't validate bounds before allocating \todo fix
+            dest = new int[ub[0], ub[1], ub[2]];
+
+            int stage = 0;
+            var iter = new int[3];
+            iter[0] = 0;
+            while (ub[0] > iter[0]) {
+                iter[1] = 0;
+                while (ub[1] > iter[1]) {
+                    iter[2] = 0;
+                    while (ub[2] > iter[2]) {
+                        Formatter.Deserialize7bit(src, ref stage);
+                        dest.SetValue(stage, iter);
+                        iter[2]++;
+                    }
+                    iter[1]++;
+                }
+                iter[0]++;
+            }
+        }
 #endregion
 
     }
