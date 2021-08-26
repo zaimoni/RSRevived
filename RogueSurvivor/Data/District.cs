@@ -415,7 +415,7 @@ namespace djack.RogueSurvivor.Data
         case DistrictKind.INTERSTATE:
           str = "Interstate Highway";
           // not really...stub this as a Green district for now
-          parameters.CHARBuildingChance /= num;
+          parameters.CHARBuildingChance = 0; // no CHAR offices or buildings
           parameters.ParkBuildingChance *= num;
           parameters.ShopBuildingChance /= num;
           break;

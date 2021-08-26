@@ -291,18 +291,32 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       m_DiceRoller = new DiceRoller(seed);
       Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
+      Point world_pos = map.DistrictPos;
 
       TileFill(map, GameTiles.FLOOR_GRASS);
 restart:
       var blockList1 = MakeBlocks(map, true, map.Rect);
+
+#if PROTOTYPE
+      var highway_layout = Session.Get.World.HighwayLayout(world_pos);
+      if (0 < highway_layout) {
+         if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
+         // \todo hospital and police station both do not co-exist with highway
+         // \todo draw the highway(?)
+         // \todo adjust map block generation; blocks must not intersect highway
+      } else {
+         if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
+      }
+#endif
+
       m_SurfaceBlocks = new(blockList1.Count);
       foreach (var x in blockList1) m_SurfaceBlocks.Add(new Block(x)); // want value-copy here
 
       // give subway fairly high priority
-      Point world_pos = map.DistrictPos;
-      if (0 < Session.Get.World.SubwayLayout(world_pos)) {
+      var subway_layout = Session.Get.World.SubwayLayout(world_pos);
+      if (0 < subway_layout) {
         if (ForceSubwayStation.Contains(world_pos)) {
-          var test = GetSubwayStationBlocks(map, Session.Get.World.SubwayLayout(world_pos));
+          var test = GetSubwayStationBlocks(map, subway_layout);
           if (null == test) goto restart;
         }
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
@@ -685,8 +699,6 @@ restart:
       return blockList;
     }
 
-    // \todo ultimately we'd like a proper subway network (this is just the EW line)
-    // would also need: NS line, T-junctions, a 4-way junction at the center/default starting district, and diagonal bridges
     public Map GenerateSubwayMap(int seed, Map entryMap, out Block block)
     {
       block = null;
