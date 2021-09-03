@@ -11,7 +11,6 @@ using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -27,7 +26,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class District
+  internal class District : Zaimoni.Serialization.ISerialize
   {
 #nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);
@@ -106,6 +105,49 @@ namespace djack.RogueSurvivor.Data
     {
       WorldPosition = worldPos;
       Kind = kind;
+    }
+
+    protected District(Zaimoni.Serialization.DecodeObjects decode)
+    {
+        byte relay_b = 0;
+
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay_b);
+        Kind = (DistrictKind)(relay_b);
+
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.X);
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.Y);
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
+
+/*
+    private readonly List<Map> m_Maps = new List<Map>(3);
+    private Map? m_EntryMap;
+    private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
+    private Map? m_SubwayMap;
+ */
+    }
+
+    public void SaveLoadOk(District test) {
+        var err = string.Empty;
+
+        if (Kind != test.Kind) err += "District Kind mismatch: "+ Kind.ToString()+ "" + test.Kind.ToString();
+        if (WorldPosition != test.WorldPosition) err += "District Kind mismatch: "+ WorldPosition.to_s()+ "" + test.WorldPosition.to_s();
+
+        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Kind);
+        // don't want to support negative world pos coordinates here; if we have to extend west/north dynamically, that's a constructor call
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.X);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.Y);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
+/*
+                private readonly List<Map> m_Maps = new List<Map>(3);
+                private Map? m_EntryMap;
+                private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
+                private Map? m_SubwayMap;
+*/
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
