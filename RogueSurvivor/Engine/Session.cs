@@ -164,6 +164,7 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring = decode.LoadInline<Scoring>();
             ActorModel.Load(decode); // this static data doesn't involve objects
 
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
             var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
             if (0 < code) {
                 var obj = decode.Seen(code);
@@ -177,9 +178,9 @@ namespace djack.RogueSurvivor.Engine
                     });
                 }
             } else throw new InvalidOperationException("World object not loaded");
+            // end failed function extraction target
 
             // mockup to allow testing
-//          World = new World();
             UniqueActors = new UniqueActors();
             UniqueItems = new UniqueItems();
             UniqueMaps = new UniqueMaps();
@@ -189,7 +190,6 @@ namespace djack.RogueSurvivor.Engine
             Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
             // end load other classes' static variables
-            World = (World)info.GetValue("World", typeof(World));
             RogueGame.Load(info, context);
             info.read_s(ref s_Player, "s_Player");
             UniqueActors = (UniqueActors)info.GetValue("UniqueActors", typeof(UniqueActors));
