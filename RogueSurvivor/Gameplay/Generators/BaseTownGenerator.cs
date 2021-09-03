@@ -287,17 +287,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DecorateOutsideWalls(map, map.Rect, pt => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
     }
 
-    public override Map Generate(int seed, string name)
-    {
-      m_DiceRoller = new DiceRoller(seed);
-      Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
-      Point world_pos = map.DistrictPos;
-
-      TileFill(map, GameTiles.FLOOR_GRASS);
-restart:
-      var blockList1 = MakeBlocks(map, true, map.Rect);
-
+    private List<Block> NewSurfaceBlocks(Map map) {
+      // tiles already defaulted to grass
 #if PROTOTYPE
+      var world_pos = map.DistrictPos;
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
       if (0 < highway_layout) {
          if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
@@ -308,6 +301,18 @@ restart:
          if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
 #endif
+      return MakeBlocks(map, true, map.Rect);
+    }
+
+    public override Map Generate(int seed, string name)
+    {
+      m_DiceRoller = new DiceRoller(seed);
+      Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
+      Point world_pos = map.DistrictPos;
+
+      TileFill(map, GameTiles.FLOOR_GRASS);
+restart:
+      var blockList1 = NewSurfaceBlocks(map);
 
       m_SurfaceBlocks = new(blockList1.Count);
       foreach (var x in blockList1) m_SurfaceBlocks.Add(new Block(x)); // want value-copy here
