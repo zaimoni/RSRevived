@@ -52,6 +52,8 @@ namespace djack.RogueSurvivor.Data
       new TileModel(IDs.RAIL_SENW, GameImages.TILE_RAIL_SENW, LIT_GRAY1, true, true),
       new TileModel(IDs.RAIL_SENW_WALL_W, GameImages.TILE_RAIL_SENW_WALL_W, Color.Blue, false, false),
       new TileModel(IDs.RAIL_SENW_WALL_E, GameImages.TILE_RAIL_SENW_WALL_E, Color.Blue, false, false),
+      new TileModel(IDs.ROAD_ASPHALT_SWNE, GameImages.TILE_ROAD_ASPHALT_SWNE, LIT_GRAY1, true, true),
+      new TileModel(IDs.ROAD_ASPHALT_SENW, GameImages.TILE_ROAD_ASPHALT_SENW, LIT_GRAY1, true, true),
     };
 
     static public TileModel From(int id) { return m_Models[id]; }
@@ -116,6 +118,8 @@ namespace djack.RogueSurvivor.Data
       RAIL_SENW,
       RAIL_SENW_WALL_W,
       RAIL_SENW_WALL_E,
+      ROAD_ASPHALT_SWNE,
+      ROAD_ASPHALT_SENW,
       _COUNT
     }
   }

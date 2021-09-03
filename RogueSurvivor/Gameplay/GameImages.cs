@@ -103,6 +103,8 @@ namespace djack.RogueSurvivor.Gameplay
     public const string TILE_FLOOR_WALKWAY = "Tiles\\floor_walkway";
     public const string TILE_ROAD_ASPHALT_NS = "Tiles\\road_asphalt_ns";
     public const string TILE_ROAD_ASPHALT_EW = "Tiles\\road_asphalt_ew";
+    public const string TILE_ROAD_ASPHALT_SWNE = "Tiles\\road_asphalt_swne";
+    public const string TILE_ROAD_ASPHALT_SENW = "Tiles\\road_asphalt_senw";
     public const string TILE_RAIL_NS = "Tiles\\rail_ns";
     public const string TILE_RAIL_EW = "Tiles\\rail_ew";
     public const string TILE_RAIL_SWNE = "Tiles\\rail_swne";
@@ -522,6 +524,7 @@ namespace djack.RogueSurvivor.Gameplay
       Load(TILE_FLOOR_TILES);
       Load(TILE_FLOOR_WALKWAY);
       Load(TILE_ROAD_ASPHALT_EW);
+      Load(TILE_ROAD_ASPHALT_SWNE);
       Load(TILE_RAIL_EW);
       Load(TILE_WALL_BRICK);
       Load(TILE_WALL_CHAR_OFFICE);
@@ -879,12 +882,26 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
-      // 5 synthetic rail tiles to be constructed from tILE_RAIL_SWNE
+      // 5 synthetic rail tiles to be constructed from TILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);
       TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SWNE, TILE_WALL_BRICK);
       BRTLSplice(TILE_RAIL_SWNE_WALL_W, TILE_WALL_BRICK, TILE_RAIL_SWNE);
       BLTRSplice(TILE_RAIL_SENW_WALL_E,TILE_RAIL_SENW, TILE_WALL_BRICK);
       TRBLSplice(TILE_RAIL_SENW_WALL_W, TILE_WALL_BRICK, TILE_RAIL_SENW);
+
+      // 5 synthetic road tiles to be constructed from TILE_ROAD_ASPHALT_SWNE
+      VReflect(TILE_ROAD_ASPHALT_SENW, TILE_ROAD_ASPHALT_SWNE);
+/*    TLBRSplice(TILE_ROAD_ASPHALT_SWNE_CONCRETE_E, TILE_ROAD_ASPHALT_SWNE, TILE_FLOOR_CONCRETE);
+      BRTLSplice(TILE_ROAD_ASPHALT_SWNE_CONCRETE_W, TILE_FLOOR_CONCRETE, TILE_ROAD_ASPHALT_SWNE);
+      BLTRSplice(TILE_ROAD_ASPHALT_SENW_CONCRETE_E, TILE_ROAD_ASPHALT_SENW, TILE_FLOOR_CONCRETE);
+      TRBLSplice(TILE_ROAD_ASPHALT_SENW_CONCRETE_W, TILE_FLOOR_CONCRETE, TILE_ROAD_ASPHALT_SENW); */
+
+      // 4 synthetic tiles to be constructed from grass and concrete
+/*    TLBRSplice(TILE_FLOOR_GRASS_SWNE_CONCRETE_E, TILE_FLOOR_GRASS, TILE_FLOOR_CONCRETE);
+      BRTLSplice(TILE_FLOOR_GRASS_SWNE_CONCRETE_W, TILE_FLOOR_CONCRETE, TILE_FLOOR_GRASS);
+      BLTRSplice(TILE_FLOOR_GRASS_SENW_CONCRETE_E, TILE_FLOOR_GRASS, TILE_FLOOR_CONCRETE);
+      TRBLSplice(TILE_FLOOR_GRASS_SENW_CONCRETE_W, TILE_FLOOR_CONCRETE, TILE_FLOOR_GRASS); */
+
       RotateTile(TILE_ROAD_ASPHALT_NS, TILE_ROAD_ASPHALT_EW);
       RotateTile(TILE_RAIL_NS, TILE_RAIL_EW);
       Notify(ui, "done!");
