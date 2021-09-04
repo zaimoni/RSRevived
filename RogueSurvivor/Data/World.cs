@@ -159,31 +159,25 @@ namespace djack.RogueSurvivor.Data
       const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
       const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
       const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
-/*    const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
-      const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
-      const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
-      const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
-      const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
-      const uint N_TEE = N_NEUTRAL * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
-      const uint S_TEE = S_NEUTRAL * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;
-      const uint E_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_NEUTRAL;
-      const uint W_TEE = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + W_NEUTRAL; */
+      const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;  // not quite right but we can counter-adjust later
 
       // map generation, so doesn't have to be fast
       var tl_highway = CHAR_CityLimits.Location + Direction.NW;
       var br_highway = CHAR_CityLimits.Location + CHAR_CityLimits.Size;
-//    var mid_highway = CHAR_CityLimits.Location + CHAR_CityLimits.Size / 2;
+      var mid_highway = CHAR_CityLimits.Location + CHAR_CityLimits.Size / 2;
 
       if (tl_highway.Y == pos.Y) {
         if (tl_highway.X == pos.X) return S_E;
         else if (br_highway.X == pos.X) return S_W;
+        else if (mid_highway.X == pos.X) return FOUR_WAY;
         else return E_W;
       } else if (br_highway.Y == pos.Y) {
         if (tl_highway.X == pos.X) return N_E;
         else if (br_highway.X == pos.X) return N_W;
+        else if (mid_highway.X == pos.X) return FOUR_WAY;
         else return E_W;
-      } else if (tl_highway.X == pos.X) return N_S;
-      else if (br_highway.X == pos.X) return N_S;
+      } else if (tl_highway.X == pos.X) return (mid_highway.Y == pos.Y) ? FOUR_WAY : N_S;
+      else if (br_highway.X == pos.X) return (mid_highway.Y == pos.Y) ? FOUR_WAY : N_S;
       return 0; // any valid layout will have at least one line segment and thus be non-zero
     }
 

@@ -293,8 +293,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       var world_pos = map.DistrictPos;
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
       if (0 < highway_layout) {
+         // \todo? enforce that hospital and police station both do not co-exist with highway (currently by construction)
          if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
-         // \todo hospital and police station both do not co-exist with highway
+         var geometry = new Compass.LineGraph(highway_layout);
+
+         Point rail = SubwayRail(map.District);  // both the N-S and E-W highways use this as their reference point
+         const int height = 4;
+
+         // precompute some important line segments of interest
+         const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+         const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+         const uint N_NEUTRAL = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+         const uint E_NEUTRAL = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+         const uint S_NEUTRAL = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+         const uint W_NEUTRAL = (uint)Compass.XCOMlike.W * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.reference.NEUTRAL;
+         const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
+         const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+         const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+         const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+
          // \todo draw the highway(?)
          // \todo adjust map block generation; blocks must not intersect highway
       } else {
