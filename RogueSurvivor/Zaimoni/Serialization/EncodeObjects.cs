@@ -172,6 +172,37 @@ namespace Zaimoni.Serialization
                 Formatter.Serialize7bit(dest, 0);
             }
         }
+
+        public void SaveTo<T>(T[,]? src) where T:ISerialize
+        {
+            var rank = src?.Rank ?? 0;
+            if (0 < rank) {
+                Span<int> ub = stackalloc int[2];
+                var iter = new int[2];
+                var n = 0;
+                while(rank > n) {
+                    ub[n] = src.GetUpperBound(n);
+                    Formatter.Serialize7bit(dest, ub[n++]);
+                }
+                iter[0] = 0;
+                while (ub[0] > iter[0]) {
+                    iter[1] = 0;
+                    while (ub[1] > iter[1]) {
+                        T stage = (T)src.GetValue(iter);
+                        if (null == stage) Formatter.SerializeNull(dest);
+                        else {
+                            var code = Saving(stage);
+                            if (0 == code) Formatter.SerializeNull(dest);
+                            else Formatter.SerializeObjCode(dest, code);
+                        }
+                        iter[1]++;
+                    }
+                    iter[0]++;
+                }
+            } else {
+                Formatter.Serialize7bit(dest, 0);
+            }
+        }
 #endregion
 
         private ulong getTypeCode(Type src) {

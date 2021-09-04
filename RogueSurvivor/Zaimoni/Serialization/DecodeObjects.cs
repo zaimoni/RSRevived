@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Zaimoni.Data;
 
@@ -203,6 +204,54 @@ namespace Zaimoni.Serialization
                         dest.SetValue(stage, iter);
                         iter[2]++;
                     }
+                    iter[1]++;
+                }
+                iter[0]++;
+            }
+        }
+
+        public void LoadFrom<T>(ref T[,]? dest) where T:class
+        {
+            var n = 0;
+            Span<int> ub = stackalloc int[2];
+            Formatter.Deserialize7bit(src, ref ub[n++]);
+            if (0 == ub[0]) {
+                dest = null;
+                return;
+            }
+            while (2 > n) Formatter.Deserialize7bit(src, ref ub[n++]);
+            // insecure: doesn't validate bounds before allocating \todo fix
+            var local_dest = new T[ub[0], ub[1]]; // should be null-initialized
+            dest = local_dest; // should be null-initialized
+
+            int stage = 0;
+            var iter = new int[2];
+
+            Action<object> load_handler() {
+                var iter_clone = iter.ToArray(); // need JavaScript/Perl closure i.e. value copy
+                return (o) => {
+                    if (o is T w) local_dest.SetValue(w, iter_clone);
+                    else throw new InvalidOperationException("incompatible object loaded");
+                };
+            };
+
+            iter[0] = 0;
+            while (ub[0] > iter[0]) {
+                iter[1] = 0;
+                while (ub[1] > iter[1]) {
+                    // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+                    var code = Formatter.DeserializeObjCode(src);
+                    if (0 < code) {
+                        var obj = Seen(code);
+                        if (null != obj) {
+                            if (obj is T w) dest.SetValue(w, iter);
+                            else throw new InvalidOperationException("incompatible object loaded");
+                        } else {
+                            Schedule(code, load_handler());
+                        }
+                    };
+                    // null is ok for library code
+                    // end failed function extraction target
                     iter[1]++;
                 }
                 iter[0]++;
