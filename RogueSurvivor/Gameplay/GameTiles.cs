@@ -54,6 +54,14 @@ namespace djack.RogueSurvivor.Data
       new TileModel(IDs.RAIL_SENW_WALL_E, GameImages.TILE_RAIL_SENW_WALL_E, Color.Blue, false, false),
       new TileModel(IDs.ROAD_ASPHALT_SWNE, GameImages.TILE_ROAD_ASPHALT_SWNE, LIT_GRAY1, true, true),
       new TileModel(IDs.ROAD_ASPHALT_SENW, GameImages.TILE_ROAD_ASPHALT_SENW, LIT_GRAY1, true, true),
+      new TileModel(IDs.ROAD_ASPHALT_SWNE_CONCRETE_E, GameImages.TILE_ROAD_ASPHALT_SWNE_CONCRETE_E, LIT_GRAY1, true, true),
+      new TileModel(IDs.ROAD_ASPHALT_SWNE_CONCRETE_W, GameImages.TILE_ROAD_ASPHALT_SWNE_CONCRETE_W, LIT_GRAY1, true, true),
+      new TileModel(IDs.ROAD_ASPHALT_SENW_CONCRETE_E, GameImages.TILE_ROAD_ASPHALT_SENW_CONCRETE_E, LIT_GRAY1, true, true),
+      new TileModel(IDs.ROAD_ASPHALT_SENW_CONCRETE_W, GameImages.TILE_ROAD_ASPHALT_SENW_CONCRETE_W, LIT_GRAY1, true, true),
+      new TileModel(IDs.FLOOR_GRASS_SWNE_CONCRETE_E, GameImages.TILE_FLOOR_GRASS_SWNE_CONCRETE_E, LIT_GRAY2, true, true),
+      new TileModel(IDs.FLOOR_GRASS_SWNE_CONCRETE_W, GameImages.TILE_FLOOR_GRASS_SWNE_CONCRETE_W, LIT_GRAY2, true, true),
+      new TileModel(IDs.FLOOR_GRASS_SENW_CONCRETE_E, GameImages.TILE_FLOOR_GRASS_SENW_CONCRETE_E, LIT_GRAY2, true, true),
+      new TileModel(IDs.FLOOR_GRASS_SENW_CONCRETE_W, GameImages.TILE_FLOOR_GRASS_SENW_CONCRETE_W, LIT_GRAY2, true, true),
     };
 
     static public TileModel From(int id) { return m_Models[id]; }
@@ -120,6 +128,14 @@ namespace djack.RogueSurvivor.Data
       RAIL_SENW_WALL_E,
       ROAD_ASPHALT_SWNE,
       ROAD_ASPHALT_SENW,
+      ROAD_ASPHALT_SWNE_CONCRETE_E,
+      ROAD_ASPHALT_SWNE_CONCRETE_W,
+      ROAD_ASPHALT_SENW_CONCRETE_E,
+      ROAD_ASPHALT_SENW_CONCRETE_W,
+      FLOOR_GRASS_SWNE_CONCRETE_E,
+      FLOOR_GRASS_SWNE_CONCRETE_W,
+      FLOOR_GRASS_SENW_CONCRETE_E,
+      FLOOR_GRASS_SENW_CONCRETE_W,
       _COUNT
     }
   }
