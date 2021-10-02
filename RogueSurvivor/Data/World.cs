@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Data
 
     public uint HighwayLayout(Point pos)
     {
-      // precompute some line segments
+      // precompute some line segments (must agree with BaseTownGenerator::NewSurfaceBlocks)
       const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
       const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
       const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
