@@ -253,9 +253,9 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
         NextWeatherCheckTurn = relay_i;
         decode.LoadFrom7bit(ref m_Event_Raids);
-        // \todo reality-check incoming array
+//      decode.LoadFrom(ref m_DistrictsGrid);
+        // \todo reality-check incoming arrays
 /*
-    private readonly District[,] m_DistrictsGrid;
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
     private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
@@ -278,8 +278,8 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Weather);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
         encode.SaveTo7bit(m_Event_Raids);
+//      encode.SaveTo(m_DistrictsGrid);
 /*
-    private readonly District[,] m_DistrictsGrid;
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
     private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
