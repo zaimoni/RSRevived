@@ -120,7 +120,7 @@ namespace Zaimoni.Serialization
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
             var o_code = format.DeserializeObjCodeAfterTypecode(src);
             if (!encodings.TryGetValue(type, out var prior)) encodings.Add(type, prior = new());
-            if (prior.TryGetValue(o_code, out var preexist)) throw new InvalidOperationException("trying to load object twice");
+            if (prior.TryGetValue(o_code, out var preexist)) throw new InvalidOperationException("trying to load object twice: "+o_code.ToString()+", "+preexist.ToString());
             if (!requested.TryGetValue(o_code, out var handlers)) throw new InvalidOperationException("trying to load unwanted object");
 
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
