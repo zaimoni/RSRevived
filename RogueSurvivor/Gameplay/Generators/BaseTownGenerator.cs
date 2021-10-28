@@ -288,7 +288,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 
     private List<Block> NewSurfaceBlocks(Map map) {
-      // tiles already defaulted to grass
+            // tiles already defaulted to grass
 #if PROTOTYPE
       var world_pos = map.DistrictPos;
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
@@ -315,18 +315,31 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          switch(highway_layout)
          {
          case E_W:
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          case N_S:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              break;
          case N_E:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
+         // \todo? postprocess blocks to miss the road
          case N_W:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          case S_E:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          case S_W:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          case FOUR_WAY:
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          }
       } else {
