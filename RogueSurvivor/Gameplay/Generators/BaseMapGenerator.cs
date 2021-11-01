@@ -244,12 +244,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GameImages.OBJ_CAR3,
       GameImages.OBJ_CAR4
     };
-    protected readonly RogueGame m_Game;
     protected DiceRoller m_DiceRoller;
 
-    protected BaseMapGenerator(RogueGame game)
+    protected BaseMapGenerator()
     {
-      m_Game = game;
       m_DiceRoller = new DiceRoller();
     }
 

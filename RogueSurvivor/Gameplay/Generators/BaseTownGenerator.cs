@@ -112,8 +112,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public BaseTownGenerator(RogueGame game, Parameters parameters)
-      : base(game)
+    public BaseTownGenerator(Parameters parameters)
     {
       m_Params = parameters;
 

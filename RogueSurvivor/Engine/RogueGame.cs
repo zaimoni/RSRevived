@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Engine
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
-      m_TownGenerator = new StdTownGenerator(this, parameters);
+      m_TownGenerator = new StdTownGenerator(parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating keys, hints.");
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");

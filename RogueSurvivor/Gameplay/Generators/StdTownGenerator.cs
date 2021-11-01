@@ -16,9 +16,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 {
   internal class StdTownGenerator : BaseTownGenerator
   {
-    public StdTownGenerator(RogueGame game, Parameters parameters) : base(game, parameters)
-    {
-    }
+    public StdTownGenerator(Parameters parameters) : base(parameters) {}
 
     public override Map Generate(int seed, string name)
     {
