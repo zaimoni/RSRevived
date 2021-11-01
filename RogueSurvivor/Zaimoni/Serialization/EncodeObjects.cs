@@ -44,12 +44,13 @@ namespace Zaimoni.Serialization
                 if (cache.TryGetValue(src, out ulong code)) return code;
             } else encodings.Add(type, cache = new());
             cache.Add(src, ++seen);
+            var local_seen = seen;
 
             // \todo handle polymorphism -- loader must know which subclass to load
             // yes, appears to be subverting historical architecture
             to_save.Add(dest => {
                 Formatter.SerializeTypeCode(dest, t_code);
-                Formatter.SerializeObjCode(dest, seen);
+                Formatter.SerializeObjCode(dest, local_seen);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
                 src.save(this);
                 if (src is IOnSerialized y) y.OnSerialized(in context);
@@ -152,7 +153,7 @@ namespace Zaimoni.Serialization
                 var iter = new int[3];
                 var n = 0;
                 while(rank > n) {
-                    ub[n] = src.GetUpperBound(n);
+                    ub[n] = src.GetUpperBound(n) + 1;   // non-strict upper bound
                     Formatter.Serialize7bit(dest, ub[n++]);
                 }
                 iter[0] = 0;
@@ -181,7 +182,7 @@ namespace Zaimoni.Serialization
                 var iter = new int[2];
                 var n = 0;
                 while(rank > n) {
-                    ub[n] = src.GetUpperBound(n);
+                    ub[n] = src.GetUpperBound(n) + 1;   // non-strict upper bound
                     Formatter.Serialize7bit(dest, ub[n++]);
                 }
                 iter[0] = 0;
