@@ -316,9 +316,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          {
          case E_W:
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
+             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 1, map.Width);
+             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 2, map.Width);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 3, map.Width);
              break;
          case N_S:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
+             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 1, 0, map.Height);
+             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 2, 0, map.Height);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 3, 0, map.Height);
              break;
          case N_E:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
