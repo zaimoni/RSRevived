@@ -254,13 +254,24 @@ namespace djack.RogueSurvivor.Data
         NextWeatherCheckTurn = relay_i;
         decode.LoadFrom7bit(ref m_Event_Raids);
         decode.LoadFrom(ref m_DistrictsGrid);
-        // \todo reality-check incoming arrays
-/*
-    private District? m_PlayerDistrict = null;
-    private District? m_SimDistrict = null;
-    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
- */
-        m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+        m_Ready = new();
+
+#if PROTOTYPE
+        throw new InvalidOperationException("not yet crashed #3");
+        m_PlayerDistrict = decode.Load<District>();
+        throw new InvalidOperationException("not yet crashed #2");
+        m_SimDistrict = decode.Load<District>();
+        throw new InvalidOperationException("not yet crashed");
+
+        void onLoaded(District[] src) {
+            foreach (var x in src) {
+                m_Ready.Enqueue(x);
+            }
+        }
+        decode.LinearLoad<District>(onLoaded);
+#endif
+
+            m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
         s_Recent = this;
     }
 
@@ -279,11 +290,17 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
         encode.SaveTo7bit(m_Event_Raids);
         encode.SaveTo(m_DistrictsGrid);
-/*
-    private District? m_PlayerDistrict = null;
-    private District? m_SimDistrict = null;
-    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
- */
+
+#if PROTOTYPE
+        var code = encode.Saving(m_PlayerDistrict);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
+        code = encode.Saving(m_SimDistrict);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
+        Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+//      encode.LinearSave(m_Ready); // expects enum or else
+#endif
     }
 
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }

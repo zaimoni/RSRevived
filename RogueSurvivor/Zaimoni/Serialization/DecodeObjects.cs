@@ -10,6 +10,25 @@ using Zaimoni.Data;
 
 namespace Zaimoni.Serialization
 {
+    // assistant class
+    public class StageArray<T>
+    {
+        private readonly T?[] relay;
+        private readonly Action<T[]> onDone;
+
+        public StageArray(T?[] src, Action<T[]> handler) {
+            relay = src;
+            onDone = handler;
+        }
+
+        public void Verify() {
+            foreach(var x in relay) {
+                if (null == x) return;
+            }
+            onDone(relay!);
+        }
+    }
+
     public class DecodeObjects
     {
         public readonly StreamingContext context;
@@ -83,7 +102,6 @@ namespace Zaimoni.Serialization
         {
             var code = format.Peek(src);
             if (Formatter.null_code == code) return default;    // usually null
-            // Formatter.SerializeTypeCode(dest, t_code);
             format.DeserializeTypeCode(src, type_for_code);
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
@@ -114,8 +132,6 @@ namespace Zaimoni.Serialization
 
             var code = format.Peek(src);
             if (Formatter.null_code == code) return false;    // usually null
-            // Formatter.SerializeTypeCode(dest, t_code);
-            format.DeserializeTypeCode(src, type_for_code);
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
             var o_code = format.DeserializeObjCodeAfterTypecode(src);
@@ -164,6 +180,39 @@ namespace Zaimoni.Serialization
                 // Intentionally use first value if duplicate keys
                 if (!dest.ContainsKey(key)) dest.Add(key, value);
             }
+        }
+
+        public void LinearLoad<T>(Action<T[]> handler) where T:class
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new T[count];
+            var stage = new StageArray<T>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                var code = Formatter.DeserializeObjCode(src);
+                if (0 < code) {
+                    var obj = Seen(code);
+                    if (null != obj) {
+                        if (obj is T w) dest[n] = w;
+                        else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                    } else {
+                        var i = n;
+                        Schedule(code, (o) => {
+                            if (o is T w) dest[i] = w;
+                            else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                            stage.Verify();
+                        });
+                    }
+                }
+                else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                n++;
+            }
+            stage.Verify();
         }
 
         public void LoadFrom7bit(ref ulong[] dest)

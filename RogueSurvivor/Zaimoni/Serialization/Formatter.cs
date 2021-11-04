@@ -387,7 +387,7 @@ namespace Zaimoni.Serialization
 
         public ulong DeserializeTypeCode(Stream src)
         {
-            if (type_ref_code != preview) throw new InvalidOperationException("did not find expected type code");
+            if (type_ref_code != preview) throw new InvalidOperationException("did not find expected type code: "+ preview);
             ulong code = 0;
             Deserialize7bit(src, ref code);
             if (0 == code) throw new InvalidOperationException("found null type code");
