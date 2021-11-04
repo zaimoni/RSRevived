@@ -132,6 +132,7 @@ namespace Zaimoni.Serialization
 
             var code = format.Peek(src);
             if (Formatter.null_code == code) return false;    // usually null
+            format.DeserializeTypeCode(src, type_for_code);
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
             var o_code = format.DeserializeObjCodeAfterTypecode(src);
