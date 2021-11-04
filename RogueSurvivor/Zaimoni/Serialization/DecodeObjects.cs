@@ -100,9 +100,8 @@ namespace Zaimoni.Serialization
         // primary data load, not load-from-reference
         public T Load<T>() where T : class
         {
-            var code = format.Peek(src);
-            if (Formatter.null_code == code) return default;    // usually null
             format.DeserializeTypeCode(src, type_for_code);
+            if (Formatter.null_code == format.Preview) return default;    // usually null
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
             var o_code = format.DeserializeObjCodeAfterTypecode(src);
@@ -130,9 +129,8 @@ namespace Zaimoni.Serialization
         {
             if (0 >= requested.Count) return false;
 
-            var code = format.Peek(src);
-            if (Formatter.null_code == code) return false;    // usually null
             format.DeserializeTypeCode(src, type_for_code);
+            if (Formatter.null_code == format.Preview) return false;    // usually null
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
             var o_code = format.DeserializeObjCodeAfterTypecode(src);

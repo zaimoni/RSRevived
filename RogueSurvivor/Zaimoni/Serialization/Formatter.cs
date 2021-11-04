@@ -365,7 +365,7 @@ namespace Zaimoni.Serialization
 
         public void DeserializeTypeCode(Stream src, Dictionary<ulong, Type> dest)
         {
-            while (type_code == preview) {
+            while (type_code == Peek(src)) {
                 ulong stage_code = 0;
                 string stage_name = string.Empty;
                 Deserialize7bit(src, ref stage_code);
@@ -375,7 +375,6 @@ namespace Zaimoni.Serialization
                 var type = Type.GetType(stage_name);
                 if (null == type) throw new InvalidOperationException("did not recover type from its name");
                 dest.Add(stage_code, type);
-                Peek(src);
             }
         }
 

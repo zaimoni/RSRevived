@@ -257,12 +257,10 @@ namespace djack.RogueSurvivor.Data
         m_Ready = new();
 
 #if PROTOTYPE
-        throw new InvalidOperationException("not yet crashed #3");
         m_PlayerDistrict = decode.Load<District>();
-        throw new InvalidOperationException("not yet crashed #2");
         m_SimDistrict = decode.Load<District>();
-        throw new InvalidOperationException("not yet crashed");
-
+#endif
+#if PROTOTYPE
         void onLoaded(District[] src) {
             foreach (var x in src) {
                 m_Ready.Enqueue(x);
@@ -271,7 +269,7 @@ namespace djack.RogueSurvivor.Data
         decode.LinearLoad<District>(onLoaded);
 #endif
 
-            m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+        m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
         s_Recent = this;
     }
 
@@ -301,7 +299,7 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 //      encode.LinearSave(m_Ready); // expects enum or else
 #endif
-    }
+        }
 
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
