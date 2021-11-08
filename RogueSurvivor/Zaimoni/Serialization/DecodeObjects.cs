@@ -98,13 +98,25 @@ namespace Zaimoni.Serialization
         private static readonly Type[] integrated_constructor = new Type[]{ typeof(DecodeObjects) };
 
         // primary data load, not load-from-reference
-        public T Load<T>() where T : class
+        public T? Load<T>(out ulong o_code) where T : class
         {
             format.DeserializeTypeCode(src, type_for_code);
-            if (Formatter.null_code == format.Preview) return default;    // usually null
+            if (Formatter.null_code == format.Preview) {
+                o_code = 0;
+                return null;
+            }
+
+            if (Formatter.obj_ref_code == format.Preview) {
+                o_code = format.DeserializeObjCodeAfterTypecode(src);
+                var obj = Seen(o_code);
+                if (obj is T want) return want;
+                if (null != obj) throw new InvalidOperationException("requested object is not a "+typeof(T).AssemblyQualifiedName);
+                return null;
+            }
+
             var t_code = format.DeserializeTypeCode(src);
             if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
-            var o_code = format.DeserializeObjCodeAfterTypecode(src);
+            o_code = format.DeserializeObjCodeAfterTypecode(src);
 
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {
@@ -318,7 +330,8 @@ namespace Zaimoni.Serialization
 #endif
             using var stream = filepath.CreateStream(false);
             var decode = new DecodeObjects(stream);
-            _T_ ret = decode.Load<_T_>();
+            ulong discard;
+            _T_ ret = decode.Load<_T_>(out discard);
             while (decode.LoadNext());
             stream.Flush();
             return ret;

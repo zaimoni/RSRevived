@@ -256,8 +256,15 @@ namespace djack.RogueSurvivor.Data
         decode.LoadFrom(ref m_DistrictsGrid);
         m_Ready = new();
 
+        ulong code;
+        m_PlayerDistrict = decode.Load<District>(out code);
+        if (0 < code && null == m_PlayerDistrict) {
+            decode.Schedule(code, (o) => {
+                if (o is District w) m_PlayerDistrict = w;
+                else throw new InvalidOperationException("District object not loaded");
+            });
+        }
 #if PROTOTYPE
-        m_PlayerDistrict = decode.Load<District>();
         m_SimDistrict = decode.Load<District>();
 #endif
 #if PROTOTYPE
@@ -289,17 +296,17 @@ namespace djack.RogueSurvivor.Data
         encode.SaveTo7bit(m_Event_Raids);
         encode.SaveTo(m_DistrictsGrid);
 
-#if PROTOTYPE
         var code = encode.Saving(m_PlayerDistrict);
         if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
         else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
+#if PROTOTYPE
         code = encode.Saving(m_SimDistrict);
         if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
         else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
         Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 //      encode.LinearSave(m_Ready); // expects enum or else
 #endif
-        }
+    }
 
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
