@@ -286,6 +286,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DecorateOutsideWalls(map, map.Rect, pt => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
     }
 
+    // \todo? lift to BaseMapGenerator
+    // including height as a parameter per Waterfall/SSADM lifecycle
+    private void LayDiagonalRail(Point rail, Compass.LineGraph geometry, Map m, Action<Point> lay_NE_SW_rail, Action<Point> lay_NW_SE_rail, int height = 4)
+    {
+      const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
+      const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+
+        if (geometry.ContainsLineSegment(N_E)) {	// N ok; E two too high i.e. wanted rail.Y as rail.Y-2
+          for (int x = rail.X; x < m.Width; x++) lay_NE_SW_rail(new Point(x,x-rail.X-height));
+        } else if (geometry.ContainsLineSegment(S_W)) {	// W ok; slope 2 short of S endpoint i.e. wanted rail.Y as rail.Y-2
+          for (int x = 0; m.Height > rail.Y+x; x++) lay_NE_SW_rail(new Point(x, rail.Y + x));
+        } else if (geometry.ContainsLineSegment(N_W)) {	// ok (rail.X==rail.Y as constructed)
+          for (int x = 0; x <= rail.X - 1 +height; x++) lay_NW_SE_rail(new Point(x, rail.Y - 1 - x));
+        } else if (geometry.ContainsLineSegment(S_E)) {	// ok (rail.X==rail.Y as constructed)
+          for (int y = 0; m.Width > rail.X + y; y++) lay_NW_SE_rail(new Point(rail.X+y,m.Height-1-y));
+        }
+    }
+
     private List<Block> NewSurfaceBlocks(Map map) {
             // tiles already defaulted to grass
 #if PROTOTYPE
@@ -296,8 +316,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
          var geometry = new Compass.LineGraph(highway_layout);
 
-         Point rail = SubwayRail(map.District);  // both the N-S and E-W highways use this as their reference point
-         const int height = 4;
+         Point rail = SubwayRail(map.District) + Direction.NW;  // both the N-S and E-W highways use this as their reference point
+         const int height = 6;
 
          // precompute some important line segments of interest (must agree with World::HighwayLayout)
          const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
@@ -308,9 +328,40 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
          const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;  // not quite right but we can counter-adjust later
 
+      void lay_NW_SE_rail(Point pt)
+      {
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SENW_CONCRETE_W);
+        var pt2 = new Point(pt.X, pt.Y + height);
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SENW_CONCRETE_E);
+        pt2 += Direction.N;
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_W);
+        pt2 = pt + Direction.S;
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_E);
+        foreach (int delta in Enumerable.Range(2, height - 2)) {
+          pt.Y++;
+          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SENW);
+        }
+      }
+      void lay_NE_SW_rail(Point pt)
+      {
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_E);
+        var pt2 = new Point(pt.X, pt.Y + height);
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_W);
+        pt2 += Direction.N;
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_E);
+        pt2 = pt + Direction.S;
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_W);
+        foreach (int delta in Enumerable.Range(2, height - 2)) {
+          pt.Y++;
+          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SWNE);
+        }
+      }
+
          // \todo draw the highway(?)
          // \todo adjust map block generation; blocks must not intersect highway
          // \todo want to force the QuadSplit to respect the highways
+         bool have_NS = false;
+         bool have_EW = false;
          switch(highway_layout)
          {
          case E_W:
@@ -318,14 +369,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
              TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 1, map.Width);
              TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 2, map.Width);
-             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 3, map.Width);
+             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 3, map.Width);
+             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 4, map.Width);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 5, map.Width);
+             have_EW = true;
              break;
          case N_S:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
              TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 1, 0, map.Height);
              TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 2, 0, map.Height);
-             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 3, 0, map.Height);
+             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 3, 0, map.Height);
+             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 4, 0, map.Height);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 5, 0, map.Height);
+             have_NS = true;
              break;
          case N_E:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
@@ -349,6 +406,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
          }
+
+         if (!have_NS && !have_EW) LayDiagonalRail(rail, geometry, map, lay_NE_SW_rail, lay_NW_SE_rail, 6);
+
       } else {
          if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
@@ -891,17 +951,7 @@ restart:
           if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);
         }
       }
-      if (!have_NS && !have_EW) {
-        if (geometry.ContainsLineSegment(N_E)) {	// N ok; E two too high i.e. wanted rail.Y as rail.Y-2
-          for (int x = rail.X; x < subway.Width; x++) lay_NE_SW_rail(new Point(x,x-rail.X-height));
-        } else if (geometry.ContainsLineSegment(S_W)) {	// W ok; slope 2 short of S endpoint i.e. wanted rail.Y as rail.Y-2
-          for (int x = 0; subway.Height > rail.Y+x; x++) lay_NE_SW_rail(new Point(x, rail.Y + x));
-        } else if (geometry.ContainsLineSegment(N_W)) {	// ok (rail.X==rail.Y as constructed)
-          for (int x = 0; x <= rail.X - 1 +height; x++) lay_NW_SE_rail(new Point(x, rail.Y - 1 - x));
-        } else if (geometry.ContainsLineSegment(S_E)) {	// ok (rail.X==rail.Y as constructed)
-          for (int y = 0; subway.Width > rail.X + y; y++) lay_NW_SE_rail(new Point(rail.X+y,subway.Height-1-y));
-        }
-      }
+      if (!have_NS && !have_EW) LayDiagonalRail(rail, geometry, subway, lay_NE_SW_rail, lay_NW_SE_rail);
 #endregion
 
 #region 2. Make station linked to surface.

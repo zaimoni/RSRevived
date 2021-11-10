@@ -92,6 +92,16 @@ namespace djack.RogueSurvivor.Data
     static public TileModel RAIL_SENW { get { return m_Models[(int)IDs.RAIL_SENW]; } }
     static public TileModel RAIL_SENW_WALL_W { get { return m_Models[(int)IDs.RAIL_SENW_WALL_W]; } }
     static public TileModel RAIL_SENW_WALL_E { get { return m_Models[(int)IDs.RAIL_SENW_WALL_E]; } }
+    static public TileModel ROAD_ASPHALT_SWNE { get { return m_Models[(int)IDs.ROAD_ASPHALT_SWNE]; } }
+    static public TileModel ROAD_ASPHALT_SENW { get { return m_Models[(int)IDs.ROAD_ASPHALT_SENW]; } }
+    static public TileModel ROAD_ASPHALT_SWNE_CONCRETE_E { get { return m_Models[(int)IDs.ROAD_ASPHALT_SWNE_CONCRETE_E]; } }
+    static public TileModel ROAD_ASPHALT_SWNE_CONCRETE_W { get { return m_Models[(int)IDs.ROAD_ASPHALT_SWNE_CONCRETE_W]; } }
+    static public TileModel ROAD_ASPHALT_SENW_CONCRETE_E { get { return m_Models[(int)IDs.ROAD_ASPHALT_SENW_CONCRETE_E]; } }
+    static public TileModel ROAD_ASPHALT_SENW_CONCRETE_W { get { return m_Models[(int)IDs.ROAD_ASPHALT_SENW_CONCRETE_W]; } }
+    static public TileModel FLOOR_GRASS_SWNE_CONCRETE_E { get { return m_Models[(int)IDs.FLOOR_GRASS_SWNE_CONCRETE_E]; } }
+    static public TileModel FLOOR_GRASS_SWNE_CONCRETE_W { get { return m_Models[(int)IDs.FLOOR_GRASS_SWNE_CONCRETE_W]; } }
+    static public TileModel FLOOR_GRASS_SENW_CONCRETE_E { get { return m_Models[(int)IDs.FLOOR_GRASS_SENW_CONCRETE_E]; } }
+    static public TileModel FLOOR_GRASS_SENW_CONCRETE_W { get { return m_Models[(int)IDs.FLOOR_GRASS_SENW_CONCRETE_W]; } }
 #endregion
 
     static public bool IsRoadModel(TileModel model)
