@@ -142,6 +142,8 @@ namespace djack.RogueSurvivor.Engine
 #if BOOTSTRAP_Z_SERIALIZATION
     protected Session(Zaimoni.Serialization.DecodeObjects decode)
     {
+            decode.format.ReadVersion(decode.src);
+
             sbyte relay = 0;
 
             Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay);
@@ -229,6 +231,9 @@ namespace djack.RogueSurvivor.Engine
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
     {
+            encode.format.Version = 1;
+            encode.format.SaveVersion(encode.dest);
+
             Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)GameMode);
             Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)ScriptStage_PoliceStationPrisoner);
             Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)ScriptStage_PoliceCHARrelations);

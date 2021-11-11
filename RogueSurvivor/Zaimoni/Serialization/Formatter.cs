@@ -81,7 +81,7 @@ namespace Zaimoni.Serialization
 #endif
 
 #region version support
-        ulong Version {
+        public ulong Version {
             get { return version; }
             set {
                 if (0 < version) throw new InvalidOperationException("can only set version once");
@@ -89,10 +89,10 @@ namespace Zaimoni.Serialization
             }
         }
 
-        void ReadVersion(Stream dest) {
+        public void ReadVersion(Stream dest) {
             if (0 >= version) Deserialize7bit(dest, ref version);
         }
-        void SaveVersion(Stream dest) {
+        public void SaveVersion(Stream dest) {
             if (0 < version) Serialize7bit(dest, version);
         }
 #endregion
