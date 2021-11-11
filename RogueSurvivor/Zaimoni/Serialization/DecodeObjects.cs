@@ -239,6 +239,20 @@ namespace Zaimoni.Serialization
             }
         }
 
+        public void LoadFrom7bit(ref int[] dest)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(src, ref count);
+            if (null == dest || dest.Length != count) dest = new int[count];
+
+            int n = 0;
+            while (0 < count)
+            {
+                --count;
+                Formatter.Deserialize7bit(src, ref dest[n++]);
+            }
+        }
+
         public void LoadFrom7bit(ref int[,,]? dest)
         {
             var n = 0;

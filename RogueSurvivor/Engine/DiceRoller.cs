@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zaimoni.Serialization;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
@@ -17,16 +18,14 @@ using Random = Microsoft.Random;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class DiceRoller
-  {
+  internal class DiceRoller : ISerialize
+    {
     private readonly Random m_Rng;
 
-    public DiceRoller(int seed)
-    {
-      m_Rng = new Random(seed);
-    }
-
+    public DiceRoller(int seed) => m_Rng = new Random(seed);
     public DiceRoller() : this((int) DateTime.UtcNow.Ticks) {}
+    public DiceRoller(DecodeObjects decode) => m_Rng = decode.LoadInline<Random>();
+    public void save(EncodeObjects encode) => encode.SaveInline(m_Rng);
 
     public int Roll(int min, int max)
     {

@@ -145,6 +145,16 @@ namespace Zaimoni.Serialization
             }
         }
 
+        public void SaveTo7bit(IEnumerable<int>? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(dest, count);
+            if (0 < count)
+            {
+                foreach (var x in src) Formatter.Serialize7bit(dest, x);
+            }
+        }
+
         public void SaveTo7bit(int[,,]? src)
         {
             var rank = src?.Rank ?? 0;
