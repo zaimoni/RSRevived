@@ -165,6 +165,7 @@ namespace djack.RogueSurvivor.Engine
 
             m_Scoring = decode.LoadInline<Scoring>();
             ActorModel.Load(decode); // this static data doesn't involve objects
+            Rules.Get.Load(decode);
 
             // function extraction target does not work -- out/ref parameter needs accessing from lambda function
             var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
@@ -189,7 +190,6 @@ namespace djack.RogueSurvivor.Engine
 /*
             // load other classes' static variables
             Actor.Load(info, context);
-            Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
             // end load other classes' static variables
             RogueGame.Load(info, context);
@@ -245,12 +245,12 @@ namespace djack.RogueSurvivor.Engine
 //          encode.LinearSave(m_CommandLineOptions, dest);
             encode.SaveInline(m_Scoring);
             ActorModel.Save(encode); // this static data doesn't involve objects
+            Rules.Get.Save(encode);
 
             var code = encode.Saving(World);
             Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 /*
             Actor.Save(info, context);
-            Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
             RogueGame.Save(info, context);
             info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));

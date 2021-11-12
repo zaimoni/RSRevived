@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class Map : ISerializable, IMap
+  internal class Map : ISerializable, IMap, Zaimoni.Serialization.ISerialize
     {
     public const int GROUND_INVENTORY_SLOTS = 10;
     public readonly int Seed;
@@ -285,6 +285,81 @@ namespace djack.RogueSurvivor.Data
     private void RepairHash(ref int hash)
     {
       hash = Name.GetHashCode() ^ District.GetHashCode();
+    }
+#endregion
+#region implement Zaimoni.Serialization.ISerialize
+    protected Map(Zaimoni.Serialization.DecodeObjects decode)
+    {
+      byte tmp_byte = 0;
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref Seed);
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref Name);
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
+      m_Lighting = (Lighting)tmp_byte;
+
+      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Extent.X);
+      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Extent.Y);
+      Rect = new Rectangle(Point.Empty,Extent);
+
+/*
+      info.read_s(ref DistrictPos, "m_DistrictPos");
+      info.read(ref LocalTime, "m_LocalTime");
+      info.read(ref m_Exits, "m_Exits");
+      info.read(ref m_Zones, "m_Zones");
+      info.read(ref m_ActorsList, "m_ActorsList");
+      info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
+      info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
+      info.read(ref m_CorpsesList, "m_CorpsesList");
+      info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
+      info.read(ref m_Timers, "m_Timers");
+      info.read(ref m_TileIDs, "m_TileIDs");
+      info.read(ref m_IsInside, "m_IsInside");
+      info.read(ref m_Decorations, "m_Decorations");
+      m_BgMusic = info.GetString("m_BgMusic");   // alpha10
+      // readonly block
+      Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+      Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
+      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+      PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
+      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+ */
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, Seed);
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, Name);
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_Lighting);
+      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.X);
+      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.Y);
+/*
+      info.AddValue("m_DistrictPos", DistrictPos);
+      info.AddValue("m_LocalTime", LocalTime);
+      info.AddValue("m_Exits", m_Exits);
+      info.AddValue("m_Zones", m_Zones);
+      info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
+      info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
+      info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
+      info.AddValue("m_CorpsesList", m_CorpsesList);
+      info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
+      info.AddValue("m_Timers", m_Timers);
+      info.AddValue("m_TileIDs", m_TileIDs);
+      info.AddValue("m_IsInside", m_IsInside);
+      info.AddValue("m_Decorations", m_Decorations);
+      info.AddValue("m_BgMusic", m_BgMusic);    // alpha10
+
+      ReconstructAuxiliaryFields();
+      RegenerateMapGeometry();
+      OnConstructed();
+      if (null != m_District) RepairHash(ref _hash);
+
+      foreach(var a in m_ActorsList) a.RepairLoad();
+      foreach(var x in m_MapObjectsByPosition) {
+        x.Value.RepairLoad(this, x.Key);
+#if BOOTSTRAP_Z_DICTIONARY
+        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
+#endif
+      }
+ */
     }
 #endregion
 
