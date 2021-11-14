@@ -175,6 +175,8 @@ namespace djack.RogueSurvivor.Data
       Extent = new Size(width,height);
 	  m_District = d;
       DistrictPos = d.WorldPosition;
+      RepairHash(ref _hash);
+
       Rect = new Rectangle(Point.Empty, Extent);
       LocalTime = new WorldTime();
       m_Lighting = light;
@@ -187,7 +189,6 @@ namespace djack.RogueSurvivor.Data
       PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       OnConstructed();
-      RepairHash(ref _hash);
     }
 
 #region Implement ISerializable
@@ -196,6 +197,8 @@ namespace djack.RogueSurvivor.Data
       Seed = info.GetInt32("m_Seed");
       info.read_s(ref DistrictPos, "m_DistrictPos");
       Name = info.GetString("m_Name");
+      RepairHash(ref _hash);
+
       info.read(ref LocalTime, "m_LocalTime");
       info.read_s(ref Extent, "m_Extent");
       Rect = new Rectangle(Point.Empty,Extent);
@@ -253,14 +256,10 @@ namespace djack.RogueSurvivor.Data
       ReconstructAuxiliaryFields();
       RegenerateMapGeometry();
       OnConstructed();
-      if (null != m_District) RepairHash(ref _hash);
     }
 
     public void AfterLoad(District d) {
-      if (DistrictPos == d.WorldPosition) {
-        m_District = d;
-        RepairHash(ref _hash);
-      }
+      if (DistrictPos == d.WorldPosition) m_District = d;
 #if DEBUG
       else throw new InvalidOperationException("district backpointer repair rejected");
 #endif
@@ -282,10 +281,7 @@ namespace djack.RogueSurvivor.Data
       pathing_exits_to_goals.Now(LocalTime.TurnCounter);
     }
 
-    private void RepairHash(ref int hash)
-    {
-      hash = Name.GetHashCode() ^ District.GetHashCode();
-    }
+    private void RepairHash(ref int hash) => hash = Name.GetHashCode() ^ DistrictPos.GetHashCode();
 #endregion
 #region implement Zaimoni.Serialization.ISerialize
     protected Map(Zaimoni.Serialization.DecodeObjects decode)
