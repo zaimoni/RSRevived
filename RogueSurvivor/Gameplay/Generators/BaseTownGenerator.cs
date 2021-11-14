@@ -357,33 +357,43 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
 
+        void lay_NS_road(Point pt) { map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_NS); }
+        void lay_EW_road(Point pt) { map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_EW); }
          // \todo draw the highway(?)
          // \todo adjust map block generation; blocks must not intersect highway
          // \todo want to force the QuadSplit to respect the highways
+         var city_limits = Session.Get.World.CHAR_CityLimits;
+         var tl_highway = city_limits.Location + Direction.NW;
+         var br_highway = city_limits.Location + city_limits.Size;
+
+         var world_X = map.District.WorldPosition.X;
+         bool circling_NS = (world_X == city_limits.X || world_X == br_highway.X);
          bool have_NS = false;
          bool have_EW = false;
-         switch(highway_layout)
-         {
-         case E_W:
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
-             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
-             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 1, map.Width);
-             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 2, map.Width);
-             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 3, map.Width);
-             TileHLine(map, GameTiles.ROAD_ASPHALT_EW, 0, rail.Y + 4, map.Width);
-             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 5, map.Width);
-             have_EW = true;
-             break;
-         case N_S:
+        if (geometry.ContainsLineSegment(N_S) && !circling_NS) {
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
-             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 1, 0, map.Height);
-             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 2, 0, map.Height);
-             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 3, 0, map.Height);
-             TileVLine(map, GameTiles.ROAD_ASPHALT_NS, rail.X + 4, 0, map.Height);
+             DoForEachTile(new Rectangle(rail.X+1, 0, height-2, map.Height), lay_NS_road);
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 5, 0, map.Height);
              have_NS = true;
-             break;
+        }
+        if (geometry.ContainsLineSegment(E_W)) {
+             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
+             DoForEachTile(new Rectangle(rail.X, rail.Y+1, map.Width, height - 2), lay_EW_road);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 5, map.Width);
+             have_EW = true;
+        }
+        if (geometry.ContainsLineSegment(N_S) && circling_NS) {
+             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
+             DoForEachTile(new Rectangle(rail.X+1, 0, height-2, map.Height), lay_NS_road);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 5, 0, map.Height);
+             have_NS = true;
+        }
+
+         switch(highway_layout)
+         {
          case N_E:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
