@@ -296,8 +296,14 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Extent.Y);
       Rect = new Rectangle(Point.Empty,Extent);
 
+      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.X);
+      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.Y);
+      RepairHash(ref _hash);
+
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BgMusic); // alpha10
+      if (string.IsNullOrEmpty(m_BgMusic)) m_BgMusic = null;
+
 /*
-      info.read_s(ref DistrictPos, "m_DistrictPos");
       info.read(ref LocalTime, "m_LocalTime");
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
@@ -310,13 +316,25 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_TileIDs, "m_TileIDs");
       info.read(ref m_IsInside, "m_IsInside");
       info.read(ref m_Decorations, "m_Decorations");
-      m_BgMusic = info.GetString("m_BgMusic");   // alpha10
+
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+
+      ReconstructAuxiliaryFields();
+      RegenerateMapGeometry();
+      OnConstructed();
+
+      foreach(var a in m_ActorsList) a.RepairLoad();
+      foreach(var x in m_MapObjectsByPosition) {
+        x.Value.RepairLoad(this, x.Key);
+#if BOOTSTRAP_Z_DICTIONARY
+        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
+#endif
+      }
  */
     }
 
@@ -327,8 +345,11 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_Lighting);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.X);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.Y);
+      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.X);
+      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.Y);
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
+
 /*
-      info.AddValue("m_DistrictPos", DistrictPos);
       info.AddValue("m_LocalTime", LocalTime);
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
@@ -341,20 +362,6 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_TileIDs", m_TileIDs);
       info.AddValue("m_IsInside", m_IsInside);
       info.AddValue("m_Decorations", m_Decorations);
-      info.AddValue("m_BgMusic", m_BgMusic);    // alpha10
-
-      ReconstructAuxiliaryFields();
-      RegenerateMapGeometry();
-      OnConstructed();
-      if (null != m_District) RepairHash(ref _hash);
-
-      foreach(var a in m_ActorsList) a.RepairLoad();
-      foreach(var x in m_MapObjectsByPosition) {
-        x.Value.RepairLoad(this, x.Key);
-#if BOOTSTRAP_Z_DICTIONARY
-        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
-#endif
-      }
  */
     }
 #endregion
