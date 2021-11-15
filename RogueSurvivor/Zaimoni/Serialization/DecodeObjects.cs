@@ -193,6 +193,18 @@ namespace Zaimoni.Serialization
             }
         }
 
+        public void LoadFrom(ref byte[] dest)
+        {
+            ulong count = 0;
+            Formatter.Deserialize7bit(src, ref count);
+            dest = new byte[count];
+            byte tmp_byte = 0;
+            while (0 < count) {
+                Formatter.Deserialize(src, ref tmp_byte);
+                dest[--count] = tmp_byte;
+            }
+        }
+
         public void LinearLoad<T>(Action<T[]> handler) where T:class
         {
             int count = 0;
@@ -278,6 +290,35 @@ namespace Zaimoni.Serialization
                         dest.SetValue(stage, iter);
                         iter[2]++;
                     }
+                    iter[1]++;
+                }
+                iter[0]++;
+            }
+        }
+
+        public void LoadFrom(ref byte[,]? dest)
+        {
+            var n = 0;
+            Span<int> ub = stackalloc int[2];
+            Formatter.Deserialize7bit(src, ref ub[n++]);
+            if (0 == ub[0]) {
+                dest = null;
+                return;
+            }
+            while (2 > n) Formatter.Deserialize7bit(src, ref ub[n++]);
+            // insecure: doesn't validate bounds before allocating \todo fix
+            var local_dest = new byte[ub[0], ub[1]]; // should be null-initialized
+            dest = local_dest; // should be null-initialized
+
+            byte tmp_byte = 0;
+            var iter = new int[2];
+
+            iter[0] = 0;
+            while (ub[0] > iter[0]) {
+                iter[1] = 0;
+                while (ub[1] > iter[1]) {
+                    Formatter.Deserialize(src, ref tmp_byte);
+                    dest[ub[0], ub[1]] = tmp_byte;
                     iter[1]++;
                 }
                 iter[0]++;

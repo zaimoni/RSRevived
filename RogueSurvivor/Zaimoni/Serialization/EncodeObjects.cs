@@ -136,6 +136,15 @@ namespace Zaimoni.Serialization
             }
         }
 
+        public void SaveTo(IEnumerable<byte>? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(dest, count);
+            if (0 < count) {
+                foreach (var x in src) Formatter.Serialize(dest, x);
+            }
+        }
+
         public void SaveTo7bit(IEnumerable<ulong>? src)
         {
             var count = src?.Count() ?? 0;
@@ -175,6 +184,31 @@ namespace Zaimoni.Serialization
                             Formatter.Serialize7bit(dest, (int)src.GetValue(iter));
                             iter[2]++;
                         }
+                        iter[1]++;
+                    }
+                    iter[0]++;
+                }
+            } else {
+                Formatter.Serialize7bit(dest, 0);
+            }
+        }
+
+        public void SaveTo(byte[,]? src)
+        {
+            var rank = src?.Rank ?? 0;
+            if (0 < rank) {
+                Span<int> ub = stackalloc int[2];
+                var iter = new int[2];
+                var n = 0;
+                while(rank > n) {
+                    ub[n] = src.GetUpperBound(n) + 1;   // non-strict upper bound
+                    Formatter.Serialize7bit(dest, ub[n++]);
+                }
+                iter[0] = 0;
+                while (ub[0] > iter[0]) {
+                    iter[1] = 0;
+                    while (ub[1] > iter[1]) {
+                        Formatter.Serialize(dest, (byte)src.GetValue(iter));
                         iter[1]++;
                     }
                     iter[0]++;

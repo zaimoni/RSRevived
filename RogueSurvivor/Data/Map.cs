@@ -303,6 +303,9 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BgMusic); // alpha10
       if (string.IsNullOrEmpty(m_BgMusic)) m_BgMusic = null;
 
+      decode.LoadFrom(ref m_IsInside);
+      decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
+
 /*
       info.read(ref LocalTime, "m_LocalTime");
       info.read(ref m_Exits, "m_Exits");
@@ -313,8 +316,6 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_CorpsesList, "m_CorpsesList");
       info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
       info.read(ref m_Timers, "m_Timers");
-      info.read(ref m_TileIDs, "m_TileIDs");
-      info.read(ref m_IsInside, "m_IsInside");
       info.read(ref m_Decorations, "m_Decorations");
 
       // readonly block
@@ -348,6 +349,8 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.X);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.Y);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
+      encode.SaveTo(m_IsInside);
+      encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
 
 /*
       info.AddValue("m_LocalTime", LocalTime);
@@ -359,8 +362,6 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_CorpsesList", m_CorpsesList);
       info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
       info.AddValue("m_Timers", m_Timers);
-      info.AddValue("m_TileIDs", m_TileIDs);
-      info.AddValue("m_IsInside", m_IsInside);
       info.AddValue("m_Decorations", m_Decorations);
  */
     }
