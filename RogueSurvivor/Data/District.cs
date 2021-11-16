@@ -118,8 +118,13 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
 
+#if PROTOTYPE
+        m_Maps = new();
+        void onLoaded(Map[] src) { m_Maps.AddRange(src); }
+        decode.LinearLoad<Map>(onLoaded);
+#endif
+
 /*
-    private readonly List<Map> m_Maps = new List<Map>(3);
     private Map? m_EntryMap;
     private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
     private Map? m_SubwayMap;
@@ -142,13 +147,15 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.X);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
-/*
-                private readonly List<Map> m_Maps = new List<Map>(3);
-                private Map? m_EntryMap;
-                private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
-                private Map? m_SubwayMap;
-*/
-    }
+#if PROTOTYPE
+        encode.SaveTo(m_Maps);
+#endif
+            /*
+                            private Map? m_EntryMap;
+                            private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
+                            private Map? m_SubwayMap;
+            */
+        }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {

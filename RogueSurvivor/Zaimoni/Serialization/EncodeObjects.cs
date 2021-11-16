@@ -218,6 +218,22 @@ namespace Zaimoni.Serialization
             }
         }
 
+        public void SaveTo<T>(IEnumerable<T>? src) where T : ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(dest, count);
+            if (0 < count) {
+                foreach (var x in src) {
+                    if (null == x) Formatter.SerializeNull(dest);
+                    else {
+                        var code = Saving(x);
+                        if (0 == code) Formatter.SerializeNull(dest);
+                        else Formatter.SerializeObjCode(dest, code);
+                    }
+                }
+            }
+        }
+
         public void SaveTo<T>(T[,]? src) where T:ISerialize
         {
             var rank = src?.Rank ?? 0;

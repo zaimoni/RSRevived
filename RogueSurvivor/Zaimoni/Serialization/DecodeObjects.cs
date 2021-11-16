@@ -318,7 +318,7 @@ namespace Zaimoni.Serialization
                 iter[1] = 0;
                 while (ub[1] > iter[1]) {
                     Formatter.Deserialize(src, ref tmp_byte);
-                    dest[ub[0], ub[1]] = tmp_byte;
+                    dest[iter[0], iter[1]] = tmp_byte;
                     iter[1]++;
                 }
                 iter[0]++;
