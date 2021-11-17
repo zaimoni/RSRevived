@@ -199,11 +199,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       var scan = new Rectangle(anchor + Direction.NW, (Point)3);
       var essential_services_acceptable = new List<Point>();
 
-      if (essential_services_ok(zoning[world.fromWorldPos(anchor)])) essential_services_acceptable.Add(anchor);
+      if (essential_services_ok(zoning[world.CHAR_CityLimits.convert(anchor)])) essential_services_acceptable.Add(anchor);
 
       foreach(var dir in Direction.COMPASS) {
         var w_pos = anchor+dir;
-        if (essential_services_ok(zoning[world.fromWorldPos(w_pos)])) essential_services_acceptable.Add(w_pos);
+        if (essential_services_ok(zoning[world.CHAR_CityLimits.convert(w_pos)])) essential_services_acceptable.Add(w_pos);
       }
 
       // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
@@ -307,8 +307,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 
     private List<Block> NewSurfaceBlocks(Map map) {
-            // tiles already defaulted to grass
-#if PROTOTYPE
+      // tiles already defaulted to grass
       var world_pos = map.DistrictPos;
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
       if (0 < highway_layout) {
@@ -380,7 +379,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (geometry.ContainsLineSegment(E_W)) {
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
-             DoForEachTile(new Rectangle(rail.X, rail.Y+1, map.Width, height - 2), lay_EW_road);
+             DoForEachTile(new Rectangle(0, rail.Y+1, map.Width, height - 2), lay_EW_road);
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 5, map.Width);
              have_EW = true;
         }
@@ -422,7 +421,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       } else {
          if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
-#endif
+      var ret = MakeBlocks(map, true, map.Rect);
+      var ub = ret.Count;
+      while(0 <= --ub) {
+         if (ret[ub].Rectangle.Any(pt => GameTiles.FLOOR_GRASS != map.GetTileModelAt(pt))) ret.RemoveAt(ub);
+      }
       return MakeBlocks(map, true, map.Rect);
     }
 

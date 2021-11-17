@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define BOOTSTRAP_HIGHWAY
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,8 +33,12 @@ namespace djack.RogueSurvivor.Data
     private static World? s_Recent = null; // most recently constructed World; our owner Session is a Singleton
     public static World Get { get { return s_Recent ?? throw new ArgumentNullException(nameof(s_Recent)); } }
 
+#if BOOTSTRAP_HIGHWAY
+    static public readonly Point CHAR_City_Origin = new Point(1, 1);
+#else
     // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
     static public readonly Point CHAR_City_Origin = new Point(0,0);
+#endif
     [NonSerialized] private Rectangle m_CHAR_City;
     public Rectangle CHAR_CityLimits { get { return m_CHAR_City; } }
 
@@ -46,7 +52,11 @@ namespace djack.RogueSurvivor.Data
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
     public short Size { get { return m_Size; } }
+#if BOOTSTRAP_HIGHWAY
+    public short CitySize { get { return m_CHAR_City.Width; } }  // not guaranteed to be the same as the above
+#else
     public short CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
+#endif
 
     public bool InBounds(int x,int y) {
       return 0 <= x && m_Size > x && 0 <= y && m_Size > y;
@@ -219,7 +229,11 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= size) throw new ArgumentOutOfRangeException(nameof(size),size, "0 >= size");
 #endif
+#if BOOTSTRAP_HIGHWAY
+      m_Size = (short)(size + 2);
+#else
       m_Size = size;
+#endif
       m_DistrictsGrid = new District[Size, Size];
 //    Weather = Weather.CLEAR;
       var rules = Engine.Rules.Get;
@@ -228,7 +242,7 @@ namespace djack.RogueSurvivor.Data
       m_Ready = new Queue<District>(Size*Size);
       m_Event_Raids = new int[(int) Engine.RaidType._COUNT, Size, Size]; // use zero-initialization convention
 
-      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(CitySize, CitySize));
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
       s_Recent = this;
     }
 
@@ -483,7 +497,7 @@ namespace djack.RogueSurvivor.Data
         var plan_src = new List<int>();
         int ub = zoning.Length;
         while(0 <= --ub) {
-            if (src == zoning[ub] && scan.Contains(toWorldPos(ub))) plan_src.Add(ub);
+            if (src == zoning[ub] && scan.Contains(CHAR_CityLimits.convert(ub))) plan_src.Add(ub);
             else if (dest == zoning[ub]) plan_dest.Add(ub);
             }
         var dr = Engine.Rules.Get.DiceRoller;
@@ -511,8 +525,8 @@ namespace djack.RogueSurvivor.Data
         var scan = new Rectangle(view + Direction.NW, (Point)3);
         if (!CHAR_CityLimits.Contains(scan.Location) || !CHAR_CityLimits.Contains(scan.Location+scan.Size+Direction.NW)) return default;
         stats.Fill(0);
-        stats[(int)zoning[fromWorldPos(view)]]++;
-        foreach(var dir in Direction.COMPASS) stats[(int)zoning[fromWorldPos(view+dir)]]++;
+        stats[(int)zoning[CHAR_CityLimits.convert(view)]]++;
+        foreach(var dir in Direction.COMPASS) stats[(int)zoning[CHAR_CityLimits.convert(view + dir)]]++;
 
         var max = new KeyValuePair<int, int>(0,int.MinValue);
         var min = new KeyValuePair<int, int>(0,int.MaxValue);
@@ -560,7 +574,7 @@ namespace djack.RogueSurvivor.Data
             Point pt_relay = default;
             int ub = translation.Size.X*translation.Size.Y;
             while(0 <= -- ub) {
-                translation.convert(ub, ref pt_relay);
+                pt_relay = translation.convert(ub);
                 unbalanced = ExtremeZoning(sample, ret, pt_relay);
                 if (require_neighborhood <= sample[(int)unbalanced.Key]) continue;
                 SwapZones(ret, pt_relay, unbalanced.Key, unbalanced.Value);

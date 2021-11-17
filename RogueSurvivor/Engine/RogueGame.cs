@@ -10724,7 +10724,7 @@ namespace djack.RogueSurvivor.Engine
       // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
       int i = view_squares;
       while(0 < i--) {
-        MapViewRect.convert(i,ref point);
+        point = MapViewRect.convert(i);
         is_visible[i] = IsVisibleToPlayer(map, in point);
         if (is_visible[i]) {
           var actorAt = map.GetActorAtExt(point);
@@ -10735,7 +10735,7 @@ namespace djack.RogueSurvivor.Engine
             if (pt==actorAt.Location.Position) continue;
             var delta = pt - actorAt.Location.Position + point;
             if (!MapViewRect.Contains(delta)) continue;
-            MapViewRect.convert(delta,ref working);
+            working = MapViewRect.convert(delta);
             if (0 > working || view_squares <= working) continue;
             if (   i > working // not yet visibility-checked
                 || is_visible[working])   // known-visible
@@ -10760,7 +10760,7 @@ namespace djack.RogueSurvivor.Engine
           point.Y = y;
           var loc = new Location(map,point);
           if (!Map.Canonical(ref loc)) continue;
-          MapViewRect.convert(point,ref working);   // likely a VM issue if this throws
+          working = MapViewRect.convert(point);   // likely a VM issue if this throws
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
@@ -12251,7 +12251,9 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());
             m_UI.UI_Repaint();
           }
-          District district = new District(new Point(index1, index2), zoning[world.fromWorldPos(index1, index2)]);
+          var dest = new Point(index1, index2);
+          District district = (world.CHAR_CityLimits.Contains(dest)) ? new District(dest, zoning[world.CHAR_CityLimits.convert(dest)])
+                            : new District(dest, DistrictKind.INTERSTATE);
           world[index1, index2] = district;
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, district.Kind.ToString());

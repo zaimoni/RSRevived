@@ -469,11 +469,11 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory.AddAll(gift);
     }
 
-    public Inventory? Inventory { get {
+    public Inventory Inventory { get {
 #if DEBUG
       if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
 #endif
-      return m_Inventory;
+      return m_Inventory!;
     } }
 
     // nullability analysis doesn't see through IsContainer to its implementation 2021-07-23 zaimoni

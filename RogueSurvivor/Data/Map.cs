@@ -2025,9 +2025,9 @@ retry:
         }
 
         foreach(var x in m_MapObjectsByPosition) {
+          if (!x.Value.IsContainer) continue;
           var inv = x.Value.Inventory;
-          if (null == inv) continue;
-          foreach(var it in inv.Items) {
+          foreach (var it in inv.Items) {
             if (!ret.TryGetValue(it.Model.ID, out var cache)) ret.Add(it.Model.ID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
             if (!cache2.Contains(inv)) cache2.Add(inv);

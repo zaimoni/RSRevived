@@ -832,49 +832,19 @@ namespace Zaimoni.Data
 #endif
 
     // interpreting points to linear arrays
-    public static void convert(this Rectangle rect, Point pt, ref int i)
+    // candidate for generated code
+    public static int convert(this Box2D_short rect, Vector2D_short pt)
     {
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
       if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
-      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
+      return (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
     }
 
-    public static void convert(this Rectangle rect, int i, ref Point pt)
+    public static Vector2D_short convert(this Box2D_short rect, int i)
     {
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
       if (0 > i) throw new InvalidOperationException("index not in rectangle");
-      pt.X = i%rect.Width + rect.Left;
-      pt.Y = i/rect.Width + rect.Top;
-    }
-
-    public static void convert(this Box2D_int rect, Vector2D_int pt, ref int i)
-    {
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
-      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
-    }
-
-    public static void convert(this Box2D_int rect, int i, ref Vector2D_int pt)
-    {
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (0 > i) throw new InvalidOperationException("index not in rectangle");
-      pt.X = i%rect.Width + rect.Left;
-      pt.Y = i/rect.Width + rect.Top;
-    }
-
-    public static void convert(this Box2D_short rect, Vector2D_short pt, ref int i)
-    {
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
-      i = (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
-    }
-
-    public static void convert(this Box2D_short rect, int i, ref Vector2D_short pt)
-    {
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (0 > i) throw new InvalidOperationException("index not in rectangle");
-      pt.X = (short)(i%rect.Width + rect.Left);
-      pt.Y = (short)(i/rect.Width + rect.Top);
+      return new Vector2D_short(i % rect.Width + rect.Left, i / rect.Width + rect.Top);
     }
 
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
