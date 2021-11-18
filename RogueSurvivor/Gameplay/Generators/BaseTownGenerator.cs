@@ -422,11 +422,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
       var ret = MakeBlocks(map, true, map.Rect);
-      var ub = ret.Count;
-      while(0 <= --ub) {
-         if (ret[ub].Rectangle.Any(pt => GameTiles.FLOOR_GRASS != map.GetTileModelAt(pt))) ret.RemoveAt(ub);
+      if (0 < highway_layout) {
+        var ub = ret.Count;
+        while(0 <= --ub) {
+            if (ret[ub].Rectangle.Any(pt => GameTiles.FLOOR_GRASS != map.GetTileModelAt(pt))) ret.RemoveAt(ub);
+        }
       }
-      return MakeBlocks(map, true, map.Rect);
+      return ret;
     }
 
     public override Map Generate(int seed, string name)

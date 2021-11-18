@@ -34,9 +34,7 @@ namespace djack.RogueSurvivor.Data
     public readonly DistrictKind Kind;
     private string m_Name;
     private Map? m_EntryMap;
-#nullable restore
-    private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
-#nullable enable
+    private Map? m_SewersMap;
     private Map? m_SubwayMap;
 
     public string Name { get { return m_Name; } }
@@ -70,7 +68,7 @@ namespace djack.RogueSurvivor.Data
     }
 #nullable restore
 
-    public Map SewersMap {
+    public Map? SewersMap {
       get { return m_SewersMap; }
       set { // used from BaseTownGenerator::GenerateSewersMap
         if (m_SewersMap != null) RemoveMap(m_SewersMap);
@@ -300,7 +298,7 @@ namespace djack.RogueSurvivor.Data
         Point other_corner = new Point(2*Actor.MAX_VISION, 2*Actor.MAX_VISION);
 
         if (EntryMap.RequiresUI(surface_corner)) return true;
-        if (SewersMap.RequiresUI(other_corner)) return true;
+        if (SewersMap?.RequiresUI(other_corner) ?? false) return true;
         if (SubwayMap?.RequiresUI(other_corner) ?? false) return true;
 
         return false;
@@ -405,7 +403,7 @@ namespace djack.RogueSurvivor.Data
     public void DaimonMap(OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       (m_EntryMap as IMap).DaimonMap(dest);   // name of this is also the district name
-      (m_SewersMap as IMap).DaimonMap(dest);
+      (m_SewersMap as IMap)?.DaimonMap(dest);
       (m_SubwayMap as IMap)?.DaimonMap(dest);
       foreach(Map map in m_Maps) {
         if (map == m_EntryMap) continue;

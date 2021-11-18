@@ -8,7 +8,6 @@
 
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
-// #define REFUGEES_IN_SUBWAY
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -2328,9 +2327,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void CheckFor_Fire_SewersInvasion(Map map)
+    private void CheckFor_Fire_SewersInvasion(Map? map)
     {
-      if (Session.Get.HasZombiesInSewers) {
+      if (Session.Get.HasZombiesInSewers && null != map) {
         var uc = map.Actors.CountUndead();
         var max_un = s_Options.MaxUndeads / 2;
         if (uc < max_un && Rules.Get.RollChance(SEWERS_INVASION_CHANCE)) {
@@ -2368,7 +2367,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_RefugeesWave(District district)
     {
       // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
-      const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
+//    const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
       const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
       const float REFUGEES_WAVE_SIZE = 0.2f;
 
@@ -2379,11 +2378,8 @@ namespace djack.RogueSurvivor.Engine
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
       var rules = Rules.Get;
       for (int index = 0; index < num2; ++index)
-#if REFUGEES_IN_SUBWAY
-        SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
-#else
-        SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
-#endif
+//      SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
+        SpawnNewRefugee(district.EntryMap);
       if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
       lock (Session.Get.UniqueActors) {
         var candidates = Session.Get.UniqueActors.DraftPool(a => a.IsWithRefugees && !a.IsSpawned /* && !a.TheActor.IsDead */);
@@ -12264,7 +12260,7 @@ namespace djack.RogueSurvivor.Engine
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "entry map ok");
 #endif
           // other (hypothetical) map generation types are not guaranteed to have sewers or subways so leave those where they are
-          GenerateDistrictSewersMap(district);
+          if (world.CHAR_CityLimits.Contains(dest)) GenerateDistrictSewersMap(district);
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "sewers map ok");
 #endif
@@ -12286,153 +12282,97 @@ namespace djack.RogueSurvivor.Engine
 
       PlayerController.Reset(); // not safe to use before this point (relies on unique actor/item data)
 
+      void link_N(Map origin, Map? dest) {
+          if (null != dest) {
+#if DEBUG
+            if (dest.Width != origin.Width) throw new InvalidOperationException("mismatched district width");
+#endif
+            for (short x2 = 0; x2 < origin.Width; ++x2) {
+                Point from1 = new Point(x2, -1);
+                Point from2 = new Point(x2, dest.Height);
+                Point to1 = from2 + Direction.N;
+                Point to2 = from1 + Direction.S;
+                if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
+                if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
+            }
+          }
+      };
+
+      void link_W(Map origin, Map? dest) {
+          if (null != dest) {
+#if DEBUG
+            if (dest.Height != origin.Height) throw new InvalidOperationException("mismatched district height");
+#endif
+            for (short y2 = 0; y2 < origin.Height; ++y2) {
+                Point from1 = new Point(-1, y2);
+                Point from2 = new Point(dest.Width, y2);
+                Point to1 = from2 + Direction.W;
+                Point to2 = from1 + Direction.E;
+                if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
+                if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
+            }
+          }
+      };
+
+      void link_NW(Map origin, Map? dest) {
+          if (null != dest) {
+              Point from1 = new Point(-1, -1);
+              Point from2 = new Point(dest.Width, dest.Height);
+              Point to1 = from2 + Direction.NW;
+              Point to2 = from1 + Direction.SE;
+              if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
+              if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
+          }
+      };
+
+      void link_NE(Map origin, Map? dest) {
+          if (null != dest) {
+              Point from1 = new Point(-1, origin.Height);
+              Point from2 = new Point(dest.Width, -1);
+              Point to1 = from2 + Direction.SW;
+              Point to2 = from1 + Direction.NE;
+              if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
+              if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
+          }
+      };
+
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
           if (isVerbose) {
             m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x1, y1)), 0, 0, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x1, y1)), 0, 0);
             m_UI.UI_Repaint();
           }
+          Point dest = new Point(x1, y1);
+
           // In RS Alpha 9, the peacewalls meant the entry map and the sewers map had to be handled differently.
           // Retain this duplication for now.
-          Map entryMap1 = world[x1, y1].EntryMap;
-          if (y1 > 0) {
-            Map entryMap2 = world[x1, y1 - 1].EntryMap;
-            for (short x2 = 0; x2 < entryMap1.Width; ++x2) {
-              if (x2 < entryMap2.Width) {
-                Point from1 = new Point(x2, -1);
-                Point from2 = new Point(x2, entryMap2.Height);
-                Point to1 = from2 + Direction.N;
-                Point to2 = new Point(x2, 0);
-                if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
-                  GenerateExit(entryMap1, from1, entryMap2, to1);
-                  GenerateExit(entryMap2, from2, entryMap1, to2);
-                }
-              }
-            }
+          Map entryMap1 = world[dest].EntryMap;
+          link_N(entryMap1, world.At(dest + Direction.N)?.EntryMap);
+          link_W(entryMap1, world.At(dest + Direction.W)?.EntryMap);
+          link_NW(entryMap1, world.At(dest + Direction.NW)?.EntryMap);
+          link_NE(entryMap1, world.At(dest + Direction.NE)?.EntryMap);
+
+          var sewersMap1 = world[dest].SewersMap;
+          if (null != sewersMap1) {
+            link_N(sewersMap1, world.At(dest + Direction.N)?.SewersMap);
+            link_W(sewersMap1, world.At(dest + Direction.W)?.SewersMap);
+            link_NW(sewersMap1, world.At(dest + Direction.NW)?.SewersMap);
+            link_NE(sewersMap1, world.At(dest + Direction.NE)?.SewersMap);
           }
-          if (x1 > 0) {
-            Map entryMap2 = world[x1 - 1, y1].EntryMap;
-            for (short y2 = 0; y2 < entryMap1.Height; ++y2) {
-              if (y2 < entryMap2.Height) {
-                Point from1 = new Point(-1, y2);
-                Point from2 = new Point(entryMap2.Width, y2);
-                Point to1 = from2 + Direction.W;
-                Point to2 = new Point(0, y2);
-                if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
-                  GenerateExit(entryMap1, from1, entryMap2, to1);
-                  GenerateExit(entryMap2, from2, entryMap1, to2);
-                }
-              }
-            }
-            if (y1 > 0) {
-              entryMap2 = world[x1 - 1, y1-1].EntryMap;
-              Point from1 = new Point(-1, -1);
-              Point from2 = new Point(entryMap2.Width, entryMap2.Height);
-              Point to1 = from2 + Direction.NW;
-              Point to2 = new Point(0, 0);
-              if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
-                GenerateExit(entryMap1, from1, entryMap2, to1);
-                GenerateExit(entryMap2, from2, entryMap1, to2);
-              }
-            }
-            if (y1 < world.Size-1) {
-              entryMap2 = world[x1 - 1, y1+1].EntryMap;
-              Point from1 = new Point(-1, entryMap1.Height);
-              Point from2 = new Point(entryMap2.Width, -1);
-              Point to1 = from2 + Direction.SW;
-              Point to2 = from1 + Direction.NE;
-              if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
-                GenerateExit(entryMap1, from1, entryMap2, to1);
-                GenerateExit(entryMap2, from2, entryMap1, to2);
-              }
-            }
-          }
-          Map sewersMap1 = world[x1, y1].SewersMap;
-          if (y1 > 0) {
-            Map sewersMap2 = world[x1, y1 - 1].SewersMap;
-            for (short x2 = 0; x2 < sewersMap1.Width; ++x2) {
-              if (x2 < sewersMap2.Width) {
-                Point from1 = new Point(x2, -1);
-                Point from2 = new Point(x2, sewersMap2.Height);
-                Point to1 = from2 + Direction.N;
-                Point to2 = new Point(x2, 0);
-                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                GenerateExit(sewersMap2, from2, sewersMap1, to2);
-              }
-            }
-          }
-          if (x1 > 0) {
-            Map sewersMap2 = world[x1 - 1, y1].SewersMap;
-            for (short y2 = 0; y2 < sewersMap1.Height; ++y2) {
-              if (y2 < sewersMap2.Height) {
-                Point from1 = new Point(-1, y2);
-                Point from2 = new Point(sewersMap2.Width, y2);
-                Point to1 = from2 + Direction.W;
-                Point to2 = new Point(0, y2);
-                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                GenerateExit(sewersMap2, from2, sewersMap1, to2);
-              }
-            }
-            if (y1 > 0) {
-              sewersMap2 = world[x1 - 1, y1-1].SewersMap;
-              Point from1 = new Point(-1, -1);
-              Point from2 = new Point(sewersMap2.Width, sewersMap2.Height);
-              Point to1 = from2 + Direction.NW;
-              Point to2 = new Point(0, 0);
-              if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
-                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                GenerateExit(sewersMap2, from2, sewersMap1, to2);
-              }
-            }
-            if (y1 < world.Size-1) {
-              sewersMap2 = world[x1 - 1, y1+1].SewersMap;
-              Point from1 = new Point(-1, sewersMap1.Height);
-              Point from2 = new Point(sewersMap2.Width, -1);
-              Point to1 = from2 + Direction.SW;
-              Point to2 = from1 + Direction.NE;
-              if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
-                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                GenerateExit(sewersMap2, from2, sewersMap1, to2);
-              }
-            }
-          }
+
           // Subway has a different geometry than the other two canonical maps.
           // The diagonal corridors can have only of of two exits valid.
           var subwayMap1 = world[x1, y1].SubwayMap;
           if (null != subwayMap1) {
-            var subway_W = world.At(x1 - 1, y1)?.SubwayMap;
-            if (null != subway_W) {
-              for (short y2 = 0; y2 < subwayMap1.Height; ++y2) {
-                if (y2 < subway_W.Height) {
-                  Point from1 = new Point(-1, y2);
-                  Point from2 = new Point(subway_W.Width, y2);
-                  Point to1 = from2 + Direction.W;
-                  Point to2 = new Point(0, y2);
-                  if (CheckIfExitIsGood(subwayMap1, to2)) GenerateExit(subway_W, from2, subwayMap1, to2);
-                  if (CheckIfExitIsGood(subway_W, to1)) GenerateExit(subwayMap1, from1, subway_W, to1);
-                }
-              }
-            }
-            var subway_N = world.At(x1, y1 - 1)?.SubwayMap;
-            if (null != subway_N) {
-              for (short x2 = 0; x2 < subwayMap1.Width; ++x2) {
-                if (x2 < subway_N.Width) {
-                  Point from1 = new Point(x2, -1);
-                  Point from2 = new Point(x2, subway_N.Height);
-                  Point to1 = from2+Direction.N;
-                  Point to2 = new Point(x2, 0);
-                  if (CheckIfExitIsGood(subwayMap1, to2)) GenerateExit(subway_N, from2, subwayMap1, to2);
-                  if (CheckIfExitIsGood(subway_N, to1)) GenerateExit(subwayMap1, from1, subway_N, to1);
-                }
-              }
-            }
+            link_N(subwayMap1, world.At(dest + Direction.N)?.SubwayMap);
+            link_W(subwayMap1, world.At(dest + Direction.W)?.SubwayMap);
           }
         }
       }
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
-        m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0);
         m_UI.UI_Repaint();
       }
 

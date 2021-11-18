@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
@@ -569,7 +570,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public District RandomDistrictInCity() {
       var rules = Rules.Get;
       World world = Session.Get.World;
-      return world[rules.Roll(0, world.Size), rules.Roll(0, world.Size)];
+      return world[world.CHAR_CityLimits.convert(rules.Roll(0, world.CHAR_CityLimits.Width* world.CHAR_CityLimits.Height))];
     }
 
     static protected int force_QuadSplit_width = 0; // assumes map generation is single-threaded (true 2021-07-22)
