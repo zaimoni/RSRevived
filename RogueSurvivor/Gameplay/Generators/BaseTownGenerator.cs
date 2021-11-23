@@ -308,6 +308,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private List<Block> NewSurfaceBlocks(Map map) {
       // tiles already defaulted to grass
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "NewSurfaceBlocks: started");
+#endif
+
       var world_pos = map.DistrictPos;
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
       if (0 < highway_layout) {
@@ -428,6 +432,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             if (ret[ub].Rectangle.Any(pt => GameTiles.FLOOR_GRASS != map.GetTileModelAt(pt))) ret.RemoveAt(ub);
         }
       }
+#if DEBUG
+      if (0 >= ret.Count) throw new InvalidOperationException("should have scheduled at least one block");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "NewSurfaceBlocks: complete");
+#endif
       return ret;
     }
 
@@ -438,6 +446,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point world_pos = map.DistrictPos;
 
       TileFill(map, GameTiles.FLOOR_GRASS);
+#if DEBUG
+      uint restarts = 0;
+#endif
 restart:
       var blockList1 = NewSurfaceBlocks(map);
 
@@ -447,9 +458,14 @@ restart:
       // give subway fairly high priority
       var subway_layout = Session.Get.World.SubwayLayout(world_pos);
       if (0 < subway_layout) {
+#if DEBUG
+        if (!Session.Get.World.CHAR_CityLimits.Contains(world_pos)) throw new InvalidOperationException("subway outside of city");
+#endif
         if (ForceSubwayStation.Contains(world_pos)) {
           var test = GetSubwayStationBlocks(map, subway_layout);
-          if (null == test) goto restart;
+          if (null == test) {
+             goto restart;
+          }
         }
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
         if (null != subway_station) {
@@ -521,6 +537,9 @@ restart:
 
     public virtual Map GenerateSewersMap(int seed, District district)
     {
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: started");
+#endif
       m_DiceRoller = new DiceRoller(seed);
 restart:
       Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
@@ -690,7 +709,7 @@ restart:
                             pt => sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE));
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: 88 ok");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #8 ok");
 #endif
 
 #region 9. Tags.
@@ -719,6 +738,9 @@ restart:
       sewers.BgMusic = GameMusics.SEWERS;
 
       district.SewersMap = sewers;
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: complete");
+#endif
       return sewers;
     }
 
