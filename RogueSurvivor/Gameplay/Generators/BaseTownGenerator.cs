@@ -446,9 +446,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point world_pos = map.DistrictPos;
 
       TileFill(map, GameTiles.FLOOR_GRASS);
-#if DEBUG
-      uint restarts = 0;
-#endif
 restart:
       var blockList1 = NewSurfaceBlocks(map);
 
@@ -458,14 +455,9 @@ restart:
       // give subway fairly high priority
       var subway_layout = Session.Get.World.SubwayLayout(world_pos);
       if (0 < subway_layout) {
-#if DEBUG
-        if (!Session.Get.World.CHAR_CityLimits.Contains(world_pos)) throw new InvalidOperationException("subway outside of city");
-#endif
         if (ForceSubwayStation.Contains(world_pos)) {
           var test = GetSubwayStationBlocks(map, subway_layout);
-          if (null == test) {
-             goto restart;
-          }
+          if (null == test) goto restart;
         }
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
         if (null != subway_station) {

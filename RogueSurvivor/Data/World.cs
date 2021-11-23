@@ -117,6 +117,8 @@ namespace djack.RogueSurvivor.Data
     public uint SubwayLayout(Point pos)
     {
       if (40 > Engine.RogueGame.Options.DistrictSize) return 0; // 30 is known to be impossible to get a subway station.  40 is ok
+      if (!CHAR_CityLimits.Contains(pos)) return 0; // no subway outside of city limits.
+
       // precompute some line segments
       const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
       const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
