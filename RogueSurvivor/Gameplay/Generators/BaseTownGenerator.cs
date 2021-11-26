@@ -319,7 +319,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
          var geometry = new Compass.LineGraph(highway_layout);
 
-         Point rail = SubwayRail(map.District) + Direction.NW;  // both the N-S and E-W highways use this as their reference point
+         Point rail = HighwayRail(map.District) + Direction.NW;  // both the N-S and E-W highways use this as their reference point
          const int height = 6;
 
          // precompute some important line segments of interest (must agree with World::HighwayLayout)
@@ -331,32 +331,33 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
          const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;  // not quite right but we can counter-adjust later
 
+      // \todo these tiles are swapped
       void lay_NW_SE_rail(Point pt)
       {
-        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SENW_CONCRETE_W);
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SENW_CONCRETE_E);
         var pt2 = new Point(pt.X, pt.Y + height);
-        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SENW_CONCRETE_E);
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SENW_CONCRETE_W);
         pt2 += Direction.N;
-        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_W);
-        pt2 = pt + Direction.S;
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_E);
-        foreach (int delta in Enumerable.Range(2, height - 2)) {
+        pt += Direction.S;
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_W);
+        foreach (int delta in Enumerable.Range(2, height - 3)) {
           pt.Y++;
-          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SENW);
+          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SWNE);
         }
       }
       void lay_NE_SW_rail(Point pt)
       {
-        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_E);
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_W);
         var pt2 = new Point(pt.X, pt.Y + height);
-        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_W);
+        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_E);
         pt2 += Direction.N;
-        if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_E);
-        pt2 = pt + Direction.S;
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_W);
-        foreach (int delta in Enumerable.Range(2, height - 2)) {
+        pt += Direction.S;
+        if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_E);
+        foreach (int delta in Enumerable.Range(2, height - 3)) {
           pt.Y++;
-          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SWNE);
+          if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_SENW);
         }
       }
 
@@ -736,19 +737,38 @@ restart:
       return sewers;
     }
 
+    static private Point HighwayRail(District d) {
+      // original version was reading the incoming dimensions off of the incoming entryMap
+      // but this was simply the district size
+      var deviate_at = Session.Get.World.CHAR_CityLimits.Location+ Session.Get.World.CHAR_CityLimits.Size /* + Direction.NW+ Direction.SE */;
+      int half_dim = RogueGame.Options.DistrictSize/2;
+      Point mid_map = (Point)half_dim;
+      // need diagonals at An and n0 flush
+      if (deviate_at.X == d.WorldPosition.X) {
+        mid_map += Direction.W;
+        mid_map += Direction.W;
+      }
+      if (deviate_at.Y == d.WorldPosition.Y) {
+        mid_map += Direction.N;
+        mid_map += Direction.N;
+      }
+
+      return mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+    }
+
     // N-S and E-W rails use this as their reference point.
     static private Point SubwayRail(District d) {
       // original version was reading the incoming dimensions off of the incoming entryMap
       // but this was simply the district size
-      int deviate_at = Session.Get.World.CitySize-1;
+      var deviate_at = Session.Get.World.CHAR_CityLimits.Location+ Session.Get.World.CHAR_CityLimits.Size + Direction.NW;
       int half_dim = RogueGame.Options.DistrictSize/2;
       Point mid_map = (Point)half_dim;
       // need diagonals at An and n0 flush
-      if (deviate_at==d.WorldPosition.X) {
+      if (deviate_at.X == d.WorldPosition.X) {
         mid_map += Direction.W;
         mid_map += Direction.W;
       }
-      if (deviate_at==d.WorldPosition.Y) {
+      if (deviate_at.Y == d.WorldPosition.Y) {
         mid_map += Direction.N;
         mid_map += Direction.N;
       }
@@ -967,7 +987,7 @@ restart:
         if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SENW_WALL_E);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
-          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW);
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);
         }
       }
       void lay_NE_SW_rail(Point pt)
@@ -977,7 +997,7 @@ restart:
         if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SWNE_WALL_W);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
-          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE);
+          if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW);
         }
       }
       if (!have_NS && !have_EW) LayDiagonalRail(rail, geometry, subway, lay_NE_SW_rail, lay_NW_SE_rail);
