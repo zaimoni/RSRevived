@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // not going full read-only types on these two for now (relying on access control instead)
     private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
 
-    private Parameters m_Params = DEFAULT_PARAMS;
+    protected Parameters m_Params = DEFAULT_PARAMS;
     private const int HOSPITAL_TYPICAL_WIDTH_HEIGHT = 5;
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;
@@ -103,16 +103,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static private Point PoliceStationWorldPos;
     static private readonly List<List<Point>> SubwayElectrifyPlans = new List<List<Point>>();    // XXX possible template class target: logic problem solver, AND of OR-clauses
     static private readonly HashSet<Point> ForceSubwayStation = new HashSet<Point>();   // XXX possible template class target: logic problem solver, AND of OR-clauses
-
-    public Parameters Params
-    {
-      get {
-        return m_Params;
-      }
-      set { // required by District::GenerateEntryMap
-        m_Params = value;
-      }
-    }
 
     public BaseTownGenerator(Parameters parameters)
     {
@@ -472,6 +462,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public override Map Generate(int seed, string name, District d)
     {
+      if (DistrictKind.INTERSTATE == d.Kind) m_Params = district_config[(int)DistrictKind.GREEN]; // kludge to enable testing
+      else m_Params = district_config[(int)d.Kind];
       m_DiceRoller = new DiceRoller(seed);
       Map map = new Map(seed, name, d, m_Params.MapWidth, m_Params.MapHeight);
       Point world_pos = map.DistrictPos;
@@ -4112,7 +4104,7 @@ restart:
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
     {
       Actor actor;
-      if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
+      if (m_DiceRoller.RollChance(m_Params.PolicemanChance)) {
         actor = CreateNewPoliceman(spawnTime);
         for (int index = 0; index < itemsToCarry && !actor.Inventory.IsFull; ++index)
           GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);

@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       List<Zone> full_sheds = null;
 
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
-        if (m_DiceRoller.RollChance(Params.PolicemanChance))
+        if (m_DiceRoller.RollChance(m_Params.PolicemanChance))
           ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0), outside_test);
         else {
           // no unusual handling for residences or CHAR Agencies.
