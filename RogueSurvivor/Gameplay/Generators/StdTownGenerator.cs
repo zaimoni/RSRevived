@@ -18,9 +18,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
   {
     public StdTownGenerator(Parameters parameters) : base(parameters) {}
 
-    public override Map Generate(int seed, string name)
+    public override Map Generate(int seed, string name, District d)
     {
-      Map map = base.Generate(seed, name);
+      Map map = base.Generate(seed, name, d);
       bool outside_test(Point pt) { return !map.IsInsideAt(pt); }
       // XXX with default 15% policeman probability and default 25 max civilians, 0 police in district is ~1.7% chance and happens noticeably often in testing
       bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); }

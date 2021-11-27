@@ -433,7 +433,6 @@ namespace djack.RogueSurvivor.Data
       Gameplay.Generators.BaseTownGenerator.Parameters parameters = Gameplay.Generators.BaseTownGenerator.DEFAULT_PARAMS;
 
       parameters.MapWidth = parameters.MapHeight = districtSize;
-      parameters.District = this;
       const int num = 8;
       string str;
       switch (Kind)
@@ -482,7 +481,7 @@ namespace djack.RogueSurvivor.Data
       // 3. Generate map.
       Gameplay.Generators.BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
       m_TownGenerator.Params = parameters;
-      Map map = m_TownGenerator.Generate(seed, string.Format("{0}@{1}", str, World.CoordToString(x, y)));
+      Map map = m_TownGenerator.Generate(seed, string.Format("{0}@{1}", str, World.CoordToString(x, y)), this);
       m_TownGenerator.Params = @params;
 
       // done.

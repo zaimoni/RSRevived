@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine
   {
     protected MapGenerator() {}
 
-    public abstract Map Generate(int seed, string name);
+    public abstract Map Generate(int seed, string name, District d);
 
 #region Tile filling
     protected static void TileFill(Map map, TileModel model, bool inside)

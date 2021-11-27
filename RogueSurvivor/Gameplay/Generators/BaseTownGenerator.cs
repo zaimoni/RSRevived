@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 {
     internal class BaseTownGenerator : BaseMapGenerator
   {
-    public static readonly BaseTownGenerator.Parameters DEFAULT_PARAMS = new BaseTownGenerator.Parameters {
+    public static readonly Parameters DEFAULT_PARAMS = new Parameters {
       MapWidth = RogueGame.MAP_MAX_WIDTH,
       MapHeight = RogueGame.MAP_MAX_HEIGHT,
       MinBlockSize = 11,
@@ -35,6 +35,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ItemInShopShelfChance = 100,
       PolicemanChance = 15
     };
+    private readonly Parameters[] district_config;
+
     private static readonly string[] CHAR_POSTERS = new string[3]
     {
       GameImages.DECO_CHAR_POSTER1,
@@ -128,6 +130,34 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (sewer_checksum != sewer_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck " + sewer_stock.Sum(x => x.Value));
       if (sportswear_shop_checksum != sportswear_shop_stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck " + sportswear_shop_stock.Sum(x => x.Value));
 #endif
+
+      district_config = new Parameters[(int)DistrictKind.BUSINESS+1];
+      district_config[(int)DistrictKind.GENERAL] = DEFAULT_PARAMS;
+      var districtSize = RogueGame.Options.DistrictSize;
+      district_config[(int)DistrictKind.GENERAL].MapWidth = districtSize;
+      district_config[(int)DistrictKind.GENERAL].MapHeight = districtSize;
+
+      const int bias = 8;
+
+      district_config[(int)DistrictKind.RESIDENTIAL] = district_config[(int)DistrictKind.GENERAL];
+      district_config[(int)DistrictKind.RESIDENTIAL].CHARBuildingChance /= bias;
+      district_config[(int)DistrictKind.RESIDENTIAL].ParkBuildingChance /= bias;
+      district_config[(int)DistrictKind.RESIDENTIAL].ShopBuildingChance /= bias;
+
+      district_config[(int)DistrictKind.SHOPPING] = district_config[(int)DistrictKind.GENERAL];
+      district_config[(int)DistrictKind.SHOPPING].CHARBuildingChance /= bias;
+      district_config[(int)DistrictKind.SHOPPING].ParkBuildingChance /= bias;
+      district_config[(int)DistrictKind.SHOPPING].ShopBuildingChance *= bias;
+
+      district_config[(int)DistrictKind.GREEN] = district_config[(int)DistrictKind.GENERAL];
+      district_config[(int)DistrictKind.GREEN].CHARBuildingChance /= bias;
+      district_config[(int)DistrictKind.GREEN].ParkBuildingChance *= bias;
+      district_config[(int)DistrictKind.GREEN].ShopBuildingChance /= bias;
+
+      district_config[(int)DistrictKind.BUSINESS] = district_config[(int)DistrictKind.GENERAL];
+      district_config[(int)DistrictKind.BUSINESS].CHARBuildingChance *= bias;
+      district_config[(int)DistrictKind.BUSINESS].ParkBuildingChance /= bias;
+      district_config[(int)DistrictKind.BUSINESS].ShopBuildingChance /= bias;
 
       // hook for planned pre-apocalypse politics
       // following is RED STATE, RED CITY
@@ -316,7 +346,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       var highway_layout = Session.Get.World.HighwayLayout(world_pos);
       if (0 < highway_layout) {
          // \todo? enforce that hospital and police station both do not co-exist with highway (currently by construction)
-         if (DistrictKind.INTERSTATE != m_Params.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
+         if (DistrictKind.INTERSTATE != map.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
          var geometry = new Compass.LineGraph(highway_layout);
 
          Point rail = HighwayRail(map.District) + Direction.NW;  // both the N-S and E-W highways use this as their reference point
@@ -424,7 +454,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          if (!have_NS && !have_EW) LayDiagonalRail(rail, geometry, map, lay_NE_SW_rail, lay_NW_SE_rail, 6);
 
       } else {
-         if (DistrictKind.INTERSTATE == m_Params.District.Kind) throw new InvalidOperationException("interstate highway without layout");
+         if (DistrictKind.INTERSTATE == map.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
       var ret = MakeBlocks(map, true, map.Rect);
       if (0 < highway_layout) {
@@ -440,10 +470,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return ret;
     }
 
-    public override Map Generate(int seed, string name)
+    public override Map Generate(int seed, string name, District d)
     {
       m_DiceRoller = new DiceRoller(seed);
-      Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
+      Map map = new Map(seed, name, d, m_Params.MapWidth, m_Params.MapHeight);
       Point world_pos = map.DistrictPos;
 
       TileFill(map, GameTiles.FLOOR_GRASS);
@@ -491,7 +521,7 @@ restart:
       doomed.Clear();
       int num = 0;
       foreach (Block b in blockList1) {
-        if ((m_Params.District.Kind == DistrictKind.BUSINESS && num == 0) || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
+        if ((d.Kind == DistrictKind.BUSINESS && num == 0) || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
           CHARBuildingType charBuildingType = MakeCHARBuilding(map, b);
           if (charBuildingType == CHARBuildingType.OFFICE) ++num;
           if (charBuildingType != CHARBuildingType.NONE) doomed.Add(b);
@@ -1255,7 +1285,8 @@ restart:
       DoForEachTile(b.BuildingRect, map, loc => Session.Get.ForcePoliceKnown(loc)); // XXX exceptionally cheating police AI
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ shop_name_image.Key.GetHashCode();
-        string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
+        var d = map.District;
+        string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Top + b.BuildingRect.Height / 2);
         Rectangle rectangle = b.BuildingRect;
         int width = rectangle.Width;
         int height = rectangle.Height;
@@ -1289,7 +1320,7 @@ restart:
 
         if (!map.HasMapObjectAt(shopCorner)) map.RemoveMapObjectAt(shopCorner);
 
-        m_Params.District.AddUniqueMap(shopBasement);
+        map.District.AddUniqueMap(shopBasement);
       }
       return true;
     }
@@ -1898,7 +1929,7 @@ restart:
       ////////////////
       // 6. Basement?
       ////////////////
-      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE)) m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
+      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE)) map.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
 
       ///////////
       // 7. Zone
@@ -2723,7 +2754,8 @@ restart:
     private Map GenerateHouseBasementMap(Map map, Block houseBlock)
     {
       Rectangle buildingRect = houseBlock.BuildingRect;
-      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
+      var d = map.District;
+      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, buildingRect.Left + buildingRect.Width / 2, buildingRect.Top + buildingRect.Height / 2), d, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, GameTiles.WALL_BRICK, basement.Rect);
@@ -3082,8 +3114,8 @@ restart:
       var offices_jails_origin = officesLevel.Rect.Anchor(Compass.XCOMlike.SW) + Direction.NE;
       AddExit(officesLevel, offices_jails_origin, jailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN);
       AddExit(jailsLevel, new Point(1, 1), officesLevel, offices_jails_origin, GameImages.DECO_STAIRS_UP);
-      m_Params.District.AddUniqueMap(officesLevel);
-      m_Params.District.AddUniqueMap(jailsLevel);
+      map.District.AddUniqueMap(officesLevel);
+      map.District.AddUniqueMap(jailsLevel);
       Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(officesLevel);
       Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(jailsLevel);
     }
@@ -3703,11 +3735,12 @@ restart:
     {
       Block hospitalBlock = m_DiceRoller.ChooseWithoutReplacement(freeBlocks);
       GenerateHospitalEntryHall(map, hospitalBlock);
-      Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
-      Map offices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
-      Map patients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, map.District);
-      Map storage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, map.District);
-      Map power = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, map.District);
+      var d = map.District;
+      Map admissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, d);
+      Map offices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, d);
+      Map patients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, d);
+      Map storage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, d);
+      Map power = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, d);
 
       // alpha10 music
       admissions.BgMusic = offices.BgMusic = patients.BgMusic = storage.BgMusic = power.BgMusic = GameMusics.HOSPITAL;
@@ -3737,11 +3770,11 @@ restart:
       AddExit(storage, storageDownStairs, power, powerUpStairs, GameImages.DECO_STAIRS_DOWN);
       AddExit(power, powerUpStairs, storage, storageDownStairs, GameImages.DECO_STAIRS_UP);
 
-      m_Params.District.AddUniqueMap(admissions);
-      m_Params.District.AddUniqueMap(offices);
-      m_Params.District.AddUniqueMap(patients);
-      m_Params.District.AddUniqueMap(storage);
-      m_Params.District.AddUniqueMap(power);
+      d.AddUniqueMap(admissions);
+      d.AddUniqueMap(offices);
+      d.AddUniqueMap(patients);
+      d.AddUniqueMap(storage);
+      d.AddUniqueMap(power);
 
       Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap(admissions);
       Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap(offices);
@@ -4342,9 +4375,6 @@ restart:
       private int m_TagsChance;
       private int m_ItemInShopShelfChance;
       private int m_PolicemanChance;
-
-      // these have operational reasons for being public-writable
-      public District District;
 
       // map generation is naturally slow, so we can afford to hard-validate even in release mode
       public int MapWidth {
