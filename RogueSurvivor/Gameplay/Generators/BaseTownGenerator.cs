@@ -339,7 +339,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          if (DistrictKind.INTERSTATE != map.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
          var geometry = new Compass.LineGraph(highway_layout);
 
-         Point rail = HighwayRail(map.District) + Direction.NW;  // both the N-S and E-W highways use this as their reference point
+         Point rail = HighwayRail(map.District);  // both the N-S and E-W highways use this as their reference point
          const int height = 6;
 
          // precompute some important line segments of interest (must agree with World::HighwayLayout)
@@ -775,7 +775,7 @@ restart:
         mid_map += Direction.N;
       }
 
-      return mid_map + Direction.NW;  // both the N-S and E-W railways use this as their reference point
+      return mid_map + 2*Direction.NW;  // both the N-S and E-W railways use this as their reference point
     }
 
     // N-S and E-W rails use this as their reference point.
