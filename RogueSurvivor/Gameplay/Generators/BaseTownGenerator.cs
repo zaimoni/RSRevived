@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return ret;
     }
 
-    Predicate<Block>? IsFacingCity(District d) {
+    static Predicate<Block>? IsFacingCity(District d) {
       // precompute some line segments (must agree with BaseTownGenerator::NewSurfaceBlocks)
       const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
       const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
@@ -482,17 +482,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point rail = HighwayRail(d);  // both the N-S and E-W highways use this as their reference point
       const int height = 6;
 
-        if (geometry.ContainsLineSegment(N_S)) {
-                if (tl_highway.Y == d.WorldPosition.Y) {
-                } else if (br_highway.Y == d.WorldPosition.Y) {
-                }
-        }
-        if (geometry.ContainsLineSegment(E_W)) {
-                if (tl_highway.X == d.WorldPosition.X) {
-                } else if (br_highway.X == d.WorldPosition.X) {
-                }
-        }
+      bool north_facing(Block b) => b.Rectangle.Bottom <= tl_highway.Y;
+      bool south_facing(Block b) => b.Rectangle.Top > br_highway.Y;
+      bool west_facing(Block b) => b.Rectangle.Right <= tl_highway.X;
+      bool east_facing(Block b) => b.Rectangle.Left > br_highway.X;
 
+      if (geometry.ContainsLineSegment(N_S)) {
+        if (tl_highway.Y == d.WorldPosition.Y) return south_facing;
+        else if (br_highway.Y == d.WorldPosition.Y) return north_facing;
+      }
+      if (geometry.ContainsLineSegment(E_W)) {
+        if (tl_highway.X == d.WorldPosition.X) return east_facing;
+        else if (br_highway.X == d.WorldPosition.X) return west_facing;
+      }
 
          switch(highway_layout)
          {
@@ -554,6 +556,15 @@ restart:
 
       if (world_pos == PoliceStationWorldPos) MakePoliceStation(map, blockList1);
       if (world_pos == HospitalWorldPos) MakeHospital(map, blockList1);
+
+      List<Block> outside_limits = null;
+      var in_city = IsFacingCity(map.District);
+      if (null != in_city) {
+         outside_limits = new(blockList1.Count);
+         foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
+         foreach (var x in outside_limits) blockList1.Remove(x);
+      }
+
       List<Block> doomed = new(blockList1.Count);
       foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
