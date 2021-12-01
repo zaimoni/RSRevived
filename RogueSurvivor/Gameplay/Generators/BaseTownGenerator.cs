@@ -422,7 +422,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
              break;
-         // \todo? postprocess blocks to miss the road
          case N_W:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
              exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
@@ -446,7 +445,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       } else {
          if (DistrictKind.INTERSTATE == map.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
-      var ret = MakeBlocks(map, true, map.Rect);
+      var ret = MakeBlocks(map, Session.Get.World.CHAR_CityLimits.Contains(world_pos), map.Rect);
       if (0 < highway_layout) {
         var ub = ret.Count;
         while(0 <= --ub) {
@@ -458,6 +457,57 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "NewSurfaceBlocks: complete");
 #endif
       return ret;
+    }
+
+    Predicate<Block>? IsFacingCity(District d) {
+      // precompute some line segments (must agree with BaseTownGenerator::NewSurfaceBlocks)
+      const uint E_W = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint N_S = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint N_E = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.E;
+      const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
+      const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
+      const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;  // not quite right but we can counter-adjust later
+
+      var city_limits = Session.Get.World.CHAR_CityLimits;
+      if (city_limits.Contains(d.WorldPosition)) return null;
+      var highway_layout = Session.Get.World.HighwayLayout(d.WorldPosition);
+      if (0 >= highway_layout) return null;
+      var geometry = new Compass.LineGraph(highway_layout);
+
+      var tl_highway = city_limits.Location + Direction.NW;
+      var br_highway = city_limits.Location + city_limits.Size;
+      var mid_highway = city_limits.Location + city_limits.Size / 2;
+
+      Point rail = HighwayRail(d);  // both the N-S and E-W highways use this as their reference point
+      const int height = 6;
+
+        if (geometry.ContainsLineSegment(N_S)) {
+                if (tl_highway.Y == d.WorldPosition.Y) {
+                } else if (br_highway.Y == d.WorldPosition.Y) {
+                }
+        }
+        if (geometry.ContainsLineSegment(E_W)) {
+                if (tl_highway.X == d.WorldPosition.X) {
+                } else if (br_highway.X == d.WorldPosition.X) {
+                }
+        }
+
+
+         switch(highway_layout)
+         {
+         case N_E:
+             break;
+         case N_W:
+             break;
+         case S_E:
+             break;
+         case S_W:
+             break;
+         case FOUR_WAY:
+             break;
+         }
+        return null;
     }
 
     public override Map Generate(int seed, string name, District d)
