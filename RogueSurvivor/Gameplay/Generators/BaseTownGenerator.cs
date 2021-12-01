@@ -466,7 +466,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       const uint N_W = (uint)Compass.XCOMlike.N * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
       const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
       const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
-      const uint FOUR_WAY = N_S * (uint)Compass.reference.XCOM_LINE_SEGMENT_UB + E_W;  // not quite right but we can counter-adjust later
 
       var city_limits = Session.Get.World.CHAR_CityLimits;
       if (city_limits.Contains(d.WorldPosition)) return null;
@@ -477,14 +476,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       var tl_highway = city_limits.Location + Direction.NW;
       var br_highway = city_limits.Location + city_limits.Size;
       var mid_highway = city_limits.Location + city_limits.Size / 2;
+      var d_size = RogueGame.Options.DistrictSize;
 
       Point rail = HighwayRail(d);  // both the N-S and E-W highways use this as their reference point
       const int height = 6;
 
-      bool north_facing(Block b) => b.Rectangle.Bottom <= tl_highway.Y;
-      bool south_facing(Block b) => b.Rectangle.Top > br_highway.Y;
-      bool west_facing(Block b) => b.Rectangle.Right <= tl_highway.X;
-      bool east_facing(Block b) => b.Rectangle.Left > br_highway.X;
+      bool north_facing(Block b) => b.Rectangle.Bottom <= rail.Y;
+      bool south_facing(Block b) => b.Rectangle.Top >= rail.Y + height;
+      bool west_facing(Block b) => b.Rectangle.Right <= rail.X;
+      bool east_facing(Block b) => b.Rectangle.Left >= rail.X + height;
 
       if (geometry.ContainsLineSegment(N_S)) {
         if (tl_highway.X == d.WorldPosition.X) return east_facing;
@@ -495,20 +495,31 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         else if (br_highway.Y == d.WorldPosition.Y) return north_facing;
       }
 
-         switch(highway_layout)
-         {
-         case N_E:
-             break;
-         case N_W:
-             break;
-         case S_E:
-             break;
-         case S_W:
-             break;
-         case FOUR_WAY:
-             break;
-         }
-        return null;
+      bool ne_facing(Block b) {
+        var reference_delta = rail.X + height;
+        return reference_delta <= b.Rectangle.Left - b.Rectangle.Bottom;
+      }
+      bool nw_facing(Block b) {
+        var reference_delta = rail.Y;
+        return reference_delta > b.Rectangle.Bottom + b.Rectangle.Right;
+      }
+      bool se_facing(Block b) {
+        var reference_delta = d_size + (rail.X + height);
+        return reference_delta <= b.Rectangle.Top + b.Rectangle.Left;
+      }
+      bool sw_facing(Block b) {
+        var reference_delta = d_size - rail.X;
+        return reference_delta < b.Rectangle.Top - b.Rectangle.Right;
+      }
+
+      switch(highway_layout)
+      {
+      case N_E: return ne_facing;
+      case N_W: return nw_facing;
+      case S_E: return se_facing;
+      case S_W: return sw_facing;
+      }
+      return null;
     }
 
     public override Map Generate(int seed, string name, District d)
