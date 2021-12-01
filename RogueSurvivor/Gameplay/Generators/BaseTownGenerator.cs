@@ -383,9 +383,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
         void lay_NS_road(Point pt) { map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_NS); }
         void lay_EW_road(Point pt) { map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_EW); }
-         // \todo draw the highway(?)
-         // \todo adjust map block generation; blocks must not intersect highway
-         // \todo want to force the QuadSplit to respect the highways
+         // draw the highway(?)
+         // adjust map block generation; blocks must not intersect highway
          var city_limits = Session.Get.World.CHAR_CityLimits;
          var tl_highway = city_limits.Location + Direction.NW;
          var br_highway = city_limits.Location + city_limits.Size;
@@ -419,20 +418,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          switch(highway_layout)
          {
          case N_E:
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             force_QuadSplit_width = rail.X;
+             force_QuadSplit_height = rail.Y + height;
              break;
          case N_W:
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+            force_QuadSplit_width = rail.X + height;
+            force_QuadSplit_height = rail.Y + height;
              break;
          case S_E:
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             force_QuadSplit_width = rail.X;
+             force_QuadSplit_height = rail.Y;
              break;
          case S_W:
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             force_QuadSplit_width = rail.X + height;
+             force_QuadSplit_height = rail.Y;
              break;
          case FOUR_WAY:
              exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
@@ -488,12 +487,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool east_facing(Block b) => b.Rectangle.Left > br_highway.X;
 
       if (geometry.ContainsLineSegment(N_S)) {
-        if (tl_highway.Y == d.WorldPosition.Y) return south_facing;
-        else if (br_highway.Y == d.WorldPosition.Y) return north_facing;
-      }
-      if (geometry.ContainsLineSegment(E_W)) {
         if (tl_highway.X == d.WorldPosition.X) return east_facing;
         else if (br_highway.X == d.WorldPosition.X) return west_facing;
+      }
+      if (geometry.ContainsLineSegment(E_W)) {
+        if (tl_highway.Y == d.WorldPosition.Y) return south_facing;
+        else if (br_highway.Y == d.WorldPosition.Y) return north_facing;
       }
 
          switch(highway_layout)
@@ -563,7 +562,8 @@ restart:
          outside_limits = new(blockList1.Count);
          foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
          foreach (var x in outside_limits) blockList1.Remove(x);
-      }
+      };
+
 
       List<Block> doomed = new(blockList1.Count);
       foreach (Block b in blockList1) {
