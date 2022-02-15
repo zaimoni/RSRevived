@@ -570,9 +570,15 @@ restart:
       List<Block> outside_limits = null;
       var in_city = IsFacingCity(map.District);
       if (null != in_city) {
-         outside_limits = new(blockList1.Count);
-         foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
-         foreach (var x in outside_limits) blockList1.Remove(x);
+        outside_limits = new(blockList1.Count);
+        foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
+
+        // \todo this is where we would inject the firing range, and the sewage treatment plant
+
+        foreach (var x in outside_limits) {
+          MakeOuterPark(map, x);
+          blockList1.Remove(x);
+        }
       };
 
 
@@ -604,7 +610,7 @@ restart:
         doomed.Add(b);
       }
       foreach (var x in doomed) blockList1.Remove(x);
-//    doomed.Clear();
+
       AddWreckedCarsOutside(map);
       DecorateOutsideWallsWithPosters(map, m_Params.PostersChance);
       DecorateOutsideWallsWithTags(map, m_Params.TagsChance);
@@ -1656,6 +1662,49 @@ restart:
            MakeParkShedBuilding(map, "Shed", shedRect);
         }
       }
+
+      return true;
+    }
+
+    protected virtual bool MakeOuterPark(Map map, Block b)
+    {
+      if (b.InsideRect.Width < 3 || b.InsideRect.Height < 3) return false;
+//    TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
+      TileFill(map, GameTiles.FLOOR_GRASS, b.InsideRect);
+/*
+      MapObjectFill(map, b.BuildingRect, (Func<Point, MapObject>) (pt =>
+      {
+        if (pt.X == b.BuildingRect.Left || pt.X == b.BuildingRect.Right - 1 || pt.Y == b.BuildingRect.Top || pt.Y == b.BuildingRect.Bottom - 1)
+          return MakeObjFence();
+        return null;
+      }));
+*/
+      MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_TREE_CHANCE) ? MakeObjTree() : null));
+//    MapObjectFill(map, b.InsideRect, pt => (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null));
+/*
+      Point entranceAt = b.BuildingRect.Anchor((Compass.XCOMlike)m_DiceRoller.Choose(Direction.COMPASS_4).Index);
+      map.RemoveMapObjectAt(entranceAt);
+      map.SetTileModelAt(entranceAt, GameTiles.FLOOR_WALKWAY);
+      ItemsDrop(map, b.InsideRect, pt => {
+        if (!map.HasMapObjectAt(pt)) return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
+        return false;
+      }, pt => MakeRandomParkItem());
+*/
+      map.AddZone(MakeUniqueZone("OuterPark", b.BuildingRect));
+//    MakeWalkwayZones(map, b);
+
+/*
+      // alpha10: park shed
+      if (b.InsideRect.Width > PARK_SHED_WIDTH+2 && b.InsideRect.Height > PARK_SHED_HEIGHT+2) {
+        if (m_DiceRoller.RollChance(PARK_SHED_CHANCE)) {
+           // roll shed pos - dont put next to park fences!
+           var range = new Rectangle(b.InsideRect.Location+Direction.SE, b.InsideRect.Size-new Point(PARK_SHED_WIDTH + 2, PARK_SHED_HEIGHT + 2));
+           Rectangle shedRect = new Rectangle(m_DiceRoller.Choose(range), PARK_SHED_WIDTH, PARK_SHED_HEIGHT);
+           ClearRectangle(map, shedRect, false);
+           MakeParkShedBuilding(map, "Shed", shedRect);
+        }
+      }
+*/
 
       return true;
     }
