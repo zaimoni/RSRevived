@@ -3770,6 +3770,7 @@ namespace djack.RogueSurvivor.Engine
                 display.Add(" between 21:00 and 3:00 is two in five.");
                 display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
                 display.Add("The Metro Transit Authority confirmed that the subway has been shut down and the trains put in storage at 20:17.");
+                display.Add("Wasn't expecting all electric vehicles to be wrecked, when the breakers tripped on the magnetosphere generators at midnight sharp.");
               }
               if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX should record first-aggressed cop

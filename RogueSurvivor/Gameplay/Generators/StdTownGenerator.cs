@@ -31,9 +31,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       List<Zone> full_sheds = null;
 
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
-        if (m_DiceRoller.RollChance(m_Params.PolicemanChance))
-          ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0), outside_test);
-        else {
+        if (m_DiceRoller.RollChance(m_Params.PolicemanChance)) {
+          Predicate<Point> ok = outside_test;
+          // 2022-02-17: Require starting next to a wrecked car.  We'd prefer that it be a police car, but the data
+          // for that isn't (yet) in-game.
+          // This prevents some outlandish spacings in the interstate districts.
+          ok = ok.And(pt => {
+            var could_be_policecars = map.FindAdjacent<MapObject>(pt, (m,pos) => {
+                var obj = m.GetMapObjectAtExt(pos);
+                // avoiding exact-id test for now
+                if (null != obj && MapObject.CAR_WEIGHT == obj.Weight) return obj;
+                return null;
+            });
+            return 0 < could_be_policecars.Count;
+          });
+
+          ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0), ok);
+        } else {
           // no unusual handling for residences or CHAR Agencies.
           // \todo: policy decision re shop owners (would be ok to have staff and immediate relatives of owner and staff).
           // Consider forcing shop owners to be present at their shops
