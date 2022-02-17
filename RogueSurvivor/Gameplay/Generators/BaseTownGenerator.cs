@@ -1595,7 +1595,7 @@ restart:
         rect5.Intersect(rect4);
         rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));    // table is already placed
         if (2 >= chair_pos.Count) {
-          foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map, in pt);
+          foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR).PlaceAt(map, in pt);
           chair_pos.Clear();
           continue;
         }
@@ -1611,8 +1611,8 @@ restart:
             }
         // \todo geometric postprocessing
         KeyValuePair<Point,Point> chairs_at = m_DiceRoller.Choose(chairs_pos);
-        MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Key);
-        MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Value);
+        MakeObjChair(GameImages.OBJ_CHAR_CHAIR).PlaceAt(map,chairs_at.Key);
+        MakeObjChair(GameImages.OBJ_CHAR_CHAIR).PlaceAt(map,chairs_at.Value);
         chair_pos.Clear();
         chairs_pos.Clear();
       }

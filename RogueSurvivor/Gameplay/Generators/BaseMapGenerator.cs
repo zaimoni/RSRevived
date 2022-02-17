@@ -14,6 +14,8 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
   internal abstract class BaseMapGenerator : MapGenerator
@@ -526,7 +528,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-#nullable enable
     public ItemFood MakeItemGroceries()
     {
       int turnCounter = Session.Get.WorldTime.TurnCounter;
