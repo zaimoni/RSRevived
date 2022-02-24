@@ -151,35 +151,35 @@ namespace Zaimoni.Serialization
         static public void Deserialize7bit(Stream src, ref uint dest)
         {
             var staging = Deserialize7bit(src);
-            if (uint.MaxValue < staging) throw new InvalidDataException("huge uint found");
+            if (uint.MaxValue < staging) throw new InvalidDataException("huge uint found: " + staging.ToString());
             dest = (uint)staging;
         }
 
         static public void Deserialize7bit(Stream src, ref ushort dest)
         {
             var staging = Deserialize7bit(src);
-            if (ushort.MaxValue < staging) throw new InvalidDataException("huge ushort found");
+            if (ushort.MaxValue < staging) throw new InvalidDataException("huge ushort found: " + staging.ToString());
             dest = (ushort)staging;
         }
 
         static public void Deserialize7bit(Stream src, ref long dest)
         {
             var staging = Deserialize7bit(src);
-            if (long.MaxValue < staging) throw new InvalidDataException("huge int found");
+            if (long.MaxValue < staging) throw new InvalidDataException("huge int found: " + staging.ToString());
             dest = (long)staging;
         }
 
         static public void Deserialize7bit(Stream src, ref int dest)
         {
             var staging = Deserialize7bit(src);
-            if (int.MaxValue < staging) throw new InvalidDataException("huge int found");
+            if (int.MaxValue < staging) throw new InvalidDataException("huge int found: " + staging.ToString());
             dest = (int)staging;
         }
 
         static public void Deserialize7bit(Stream src, ref short dest)
         {
             var staging = Deserialize7bit(src);
-            if ((ulong)(short.MaxValue) < staging) throw new InvalidDataException("huge short found");
+            if ((ulong)(short.MaxValue) < staging) throw new InvalidDataException("huge short found: " + staging.ToString());
             dest = (short)staging;
         }
 #endregion
@@ -283,14 +283,14 @@ namespace Zaimoni.Serialization
         static public void Deserialize(Stream src, ref uint dest) {
             ulong relay = 0;
             Deserialize(src, ref relay);
-            if (uint.MaxValue < relay) throw new InvalidDataException("huge uint found");
+            if (uint.MaxValue < relay) throw new InvalidDataException("huge uint found: " + relay.ToString());
             dest = (uint)relay;
         }
 
         static public void Deserialize(Stream src, ref ushort dest) {
             ulong relay = 0;
             Deserialize(src, ref relay);
-            if (ushort.MaxValue < relay) throw new InvalidDataException("huge ushort found");
+            if (ushort.MaxValue < relay) throw new InvalidDataException("huge ushort found: " + relay.ToString());
             dest = (ushort)relay;
         }
 
@@ -298,7 +298,7 @@ namespace Zaimoni.Serialization
         {
             long relay = 0;
             Deserialize(src, ref relay);
-            if (int.MaxValue < relay || int.MinValue > relay) throw new InvalidDataException("huge int found");
+            if (int.MaxValue < relay || int.MinValue > relay) throw new InvalidDataException("huge int found: " + relay.ToString());
             dest = (int)relay;
         }
 
@@ -306,7 +306,7 @@ namespace Zaimoni.Serialization
         {
             long relay = 0;
             Deserialize(src, ref relay);
-            if (short.MaxValue < relay || short.MinValue > relay) throw new InvalidDataException("huge short found");
+            if (short.MaxValue < relay || short.MinValue > relay) throw new InvalidDataException("huge short found: " + relay.ToString());
             dest = (short)relay;
         }
 #endregion
