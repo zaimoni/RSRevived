@@ -407,6 +407,25 @@ namespace djack.RogueSurvivor.Data
           if (0<invalid_xy.Count) Cleared(Engine.Session.Get.World[pos.X+x_delta,pos.Y+y_delta].CrossDistrictViewing(crossdistrict_ok),invalid_xy);
         }
 
+        public void Cleared<T>(Dictionary<Map, T> staging) where T:IEnumerable<Point>
+        {   // assume all values of locs are in canonical form
+            lock (_threats) {
+                foreach (var m_pts in staging) {
+                    _ThreatWhere_cache.Remove(m_pts.Key);   // XXX could be more selective
+                    var amnesia = new List<Actor>();
+                    foreach (var x in _threats) {
+                        if (!x.Value.TryGetValue(m_pts.Key, out var test)) continue;
+                        test.ExceptWith(m_pts.Value);
+                        if (0 >= test.Count) {
+                            x.Value.Remove(m_pts.Key);
+                            if (0 >= x.Value.Count) amnesia.Add(x.Key);
+                        }
+                    }
+                    foreach (Actor a in amnesia) _threats.Remove(a);
+                }
+            }
+        }
+
         public void Cleared(IEnumerable<Location> locs)
         { // assume all values of locs are in canonical form
           var staging = new Dictionary<Map, HashSet<Point>>();
@@ -420,21 +439,7 @@ namespace djack.RogueSurvivor.Data
               last_pts.Add(loc.Position);
             }
           }
-          lock(_threats) {
-            foreach(var m_pts in staging) {
-              _ThreatWhere_cache.Remove(m_pts.Key);   // XXX could be more selective
-              var amnesia = new List<Actor>();
-              foreach(var x in _threats) {
-                if (!x.Value.TryGetValue(m_pts.Key, out var test)) continue;
-                test.ExceptWith(m_pts.Value);
-                if (0 >= test.Count) {
-                  x.Value.Remove(m_pts.Key);
-                  if (0 >= x.Value.Count) amnesia.Add(x.Key);
-                }
-              }
-              foreach(Actor a in amnesia) _threats.Remove(a);
-            }
-          }
+          Cleared(staging);
         }
 
         public void Cleared(Dictionary<Actor, Dictionary<Map, Point[]>> catalog) {
@@ -458,6 +463,7 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
+#if DEAD_FUNC
         public void Cleared(Location loc)
         { // assume all values of locs are in canonical form
           lock(_threats) {
@@ -475,6 +481,7 @@ namespace djack.RogueSurvivor.Data
             if (null != amnesia) _threats.Remove(amnesia);
           }
         }
+#endif
 
         public void Cleared(Actor a)
         {

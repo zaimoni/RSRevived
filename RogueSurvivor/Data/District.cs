@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define WIRE_IN_MAP
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,7 +118,7 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
 
-#if PROTOTYPE
+#if WIRE_IN_MAP
         m_Maps = new();
         void onLoaded(Map[] src) { m_Maps.AddRange(src); }
         decode.LinearLoad<Map>(onLoaded);
@@ -145,7 +147,7 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.X);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
-#if PROTOTYPE
+#if WIRE_IN_MAP
         encode.SaveTo(m_Maps);
 #endif
             /*

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
+using Point = Zaimoni.Data.Vector2D_short;
+
 #nullable enable
 
 namespace djack.RogueSurvivor.Data
@@ -29,14 +31,17 @@ namespace djack.RogueSurvivor.Data
         public bool update(Location[] fov) {
             var my_faction = GameFactions.From(FactionID);
             Investigate.Seen(fov);
+            var stage = new Dictionary<Map, List<Point>>();
             foreach (var loc in fov) {
                 var actorAt = loc.Actor;
                 if (null != actorAt && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
                     continue;
                 }
-                Threats.Cleared(loc);
+                if (!stage.TryGetValue(loc.Map, out var cache)) cache = new List<Point>();
+                cache.Add(loc.Position);
             }
+            Threats.Cleared(stage);
             return false;
         }
     }
