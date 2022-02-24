@@ -3227,14 +3227,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
+#nullable enable
     private ActorAction? BehaviorFindStack(Predicate<Inventory> want_now) {
         var stacks = GetInterestingInventoryStacks(want_now);
-        if (null != stacks) {
-            var nav = BehaviorHeadForBestStack(stacks);
-            if (null != nav) return nav;
-        }
+        if (null != stacks) return BehaviorHeadForBestStack(stacks);
         return null;
     }
+#nullable restore
 
     private ActorAction BehaviorRequestCriticalFromGroup()
     {
