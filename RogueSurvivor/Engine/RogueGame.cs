@@ -11743,6 +11743,27 @@ namespace djack.RogueSurvivor.Engine
       m_Player = player;
       PanViewportTo(player.Location);
     }
+
+    /// Debugging tool: allows AI to pray for advice to player
+    public ActorAction? AI_prayer(Actor actor, List<ActorAction> considering)
+    {
+        if (null == considering) return null;
+        if (null == actor) return null;
+        if (1 >= considering.Count) return null;
+        if (IsSimulating) return null;
+        PanViewportTo(actor);
+
+        ActorAction? ret = null;
+
+        string label(int index) { return string.Format("{0} {1}.", index + 1, considering[index].ToString()); }
+        bool details(int index) {
+            ret = considering[index];
+            return true;
+        }
+
+        PagedMenu("Advising...", considering.Count, label, details);
+        return ret;
+    }
 #nullable restore
 
     /// <returns>The final location looked at if confirmed; null if cancelled</returns>
