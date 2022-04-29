@@ -12,7 +12,8 @@ namespace Zaimoni.Serialization
     {
         private readonly StreamingContext _context;
         private ulong version = 0;
-        private sbyte preview = 0;
+        private sbyte? preview = null;
+        private ulong? last_type_code = null;
 
         // sbyte values -8 ... 8 are used by the integer encoding subsystem
         // we likely want to reserve "nearest 127/-128" first, as a long-range future-resistance scheme
@@ -325,11 +326,18 @@ namespace Zaimoni.Serialization
         static public void Deserialize(Stream src, ref sbyte dest) { dest = (sbyte)ReadByte(src); }
 #endregion
 
-        public sbyte Preview { get { return preview; } }
+        public sbyte Preview { get {
+            if (preview.HasValue) return preview.Value;
+            throw new ArgumentNullException(nameof(preview));
+        } }
+
         public sbyte Peek(Stream src) {
+            if (preview.HasValue) return preview.Value;
             preview = (sbyte)ReadByte(src);
-            return preview;
+            return preview.Value;
         }
+
+        public void ClearPeek() { preview = null; }
 
 #region object references
         static public void SerializeNull(Stream dest) => Serialize(dest, null_code);
@@ -350,8 +358,9 @@ namespace Zaimoni.Serialization
 
         public ulong DeserializeObjCodeAfterTypecode(Stream src)
         {
-            if (null_code == Preview) return 0;
+            if (null_code == Peek(src)) return 0;
             if (obj_ref_code != Preview) throw new InvalidDataException("expected object reference: " + obj_ref_code.ToString() + " " + Preview.ToString());
+            ClearPeek();
             return Deserialize7bit(src); // ideally would reset Preview to an invalid state
         }
 
@@ -367,6 +376,7 @@ namespace Zaimoni.Serialization
             while (type_code == Peek(src)) {
                 ulong stage_code = 0;
                 string stage_name = string.Empty;
+                ClearPeek();
                 Deserialize7bit(src, ref stage_code);
                 if (0 == stage_code) throw new InvalidOperationException("invalid type encoding");
                 if (dest.ContainsKey(stage_code)) throw new InvalidOperationException("duplicate type encoding");
@@ -374,6 +384,7 @@ namespace Zaimoni.Serialization
                 var type = Type.GetType(stage_name);
                 if (null == type) throw new InvalidOperationException("did not recover type from its name");
                 dest.Add(stage_code, type);
+                last_type_code = stage_code;
             }
         }
 
@@ -385,11 +396,14 @@ namespace Zaimoni.Serialization
 
         public ulong DeserializeTypeCode(Stream src)
         {
-            if (type_ref_code != preview) throw new InvalidOperationException("did not find expected type code: "+ preview);
+            if (type_ref_code != Preview) {
+                if (last_type_code.HasValue) return last_type_code.Value;
+                throw new InvalidOperationException("did not find expected type code: " + Preview);
+            }
             ulong code = 0;
+            ClearPeek();
             Deserialize7bit(src, ref code);
             if (0 == code) throw new InvalidOperationException("found null type code");
-            Peek(src);
             return code;
         }
 #endregion

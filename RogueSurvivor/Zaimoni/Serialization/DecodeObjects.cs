@@ -103,11 +103,13 @@ namespace Zaimoni.Serialization
             format.DeserializeTypeCode(src, type_for_code);
             if (Formatter.null_code == format.Preview) {
                 o_code = 0;
+                format.ClearPeek();
                 return null;
             }
 
             if (Formatter.obj_ref_code == format.Preview) {
                 o_code = format.DeserializeObjCodeAfterTypecode(src);
+                format.ClearPeek();
                 var obj = Seen(o_code);
                 if (obj is T want) return want;
                 if (null != obj) throw new InvalidOperationException("requested object is not a "+typeof(T).AssemblyQualifiedName);
@@ -148,7 +150,7 @@ namespace Zaimoni.Serialization
             var o_code = format.DeserializeObjCodeAfterTypecode(src);
             if (!encodings.TryGetValue(type, out var prior)) encodings.Add(type, prior = new());
             if (prior.TryGetValue(o_code, out var preexist)) throw new InvalidOperationException("trying to load object twice: "+o_code.ToString()+", "+preexist.ToString());
-            if (!requested.TryGetValue(o_code, out var handlers)) throw new InvalidOperationException("trying to load unwanted object");
+            if (!requested.TryGetValue(o_code, out var handlers)) throw new InvalidOperationException("trying to load unwanted object:"+o_code.ToString()+", "+t_code.ToString()+", "+type.FullName);
 
             var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
             if (null != coop_constructor) {
