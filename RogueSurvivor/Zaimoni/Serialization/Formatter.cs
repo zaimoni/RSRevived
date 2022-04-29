@@ -264,13 +264,20 @@ namespace Zaimoni.Serialization
                 --ub;
             }
             if (0 <= ub) return;
+            var padding = 8 + ub;
+            ulong stage = 0;
             while (0 > ub) {
                 Deserialize(src, ref scan);
-                var test = scan - 256;
-                dest += scale * test;
+                stage += (ulong)scale * scan;
                 scale *= 256;
                 ++ub;
             }
+            while (0 < padding) {
+                stage += (ulong)scale * 255;
+                scale *= 256;
+                --padding;
+            }
+            dest = (long)stage;
         }
 #endregion
 

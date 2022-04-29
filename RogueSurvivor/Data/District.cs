@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define WIRE_IN_MAP
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,17 +116,40 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
 
-#if WIRE_IN_MAP
         m_Maps = new();
         void onLoaded(Map[] src) { m_Maps.AddRange(src); }
         decode.LinearLoad<Map>(onLoaded);
-#endif
 
-/*
-    private Map? m_EntryMap;
-    private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
-    private Map? m_SubwayMap;
- */
+        ulong code;
+        m_EntryMap = decode.Load<Map>(out code);
+        if (null == m_EntryMap) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) m_EntryMap = w;
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new InvalidOperationException("m_EntryMap must ultimately be non-null");
+        }
+
+        m_SewersMap = decode.Load<Map>(out code);
+        if (null == m_SewersMap) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) m_SewersMap = w;
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            }
+        }
+
+        m_SubwayMap = decode.Load<Map>(out code);
+        if (null == m_SubwayMap) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) m_SubwayMap = w;
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            }
+        }
     }
 
     public void SaveLoadOk(District test) {
@@ -147,15 +168,18 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.X);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
-#if WIRE_IN_MAP
         encode.SaveTo(m_Maps);
-#endif
-            /*
-                            private Map? m_EntryMap;
-                            private Map m_SewersMap;    // this is going to stop unconditionally existing when the encircling highway goes in
-                            private Map? m_SubwayMap;
-            */
-        }
+
+        var code = encode.Saving(m_EntryMap); // obligatory, in spite of type prefix/suffix
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException(nameof(m_EntryMap));
+        code = encode.Saving(m_SewersMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
+        code = encode.Saving(m_SubwayMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
+    }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
