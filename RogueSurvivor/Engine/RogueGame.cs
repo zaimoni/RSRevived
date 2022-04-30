@@ -3572,8 +3572,11 @@ namespace djack.RogueSurvivor.Engine
       RemoveOverlay(working);
     }
 
-    private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
+    private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
+      const int MENU_VIEW = MAX_MESSAGES - 2; // breaks down if this exceeds 7
+      const int C_assert_MENU_VIEW = 1/(8 > MENU_VIEW ? 1 : 0);
+
       int turn = Session.Get.WorldTime.TurnCounter;
       int num1 = 0;
       ClearOverlays();
@@ -3582,17 +3585,21 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message(header, turn, Color.Yellow));
         int num2;
-        for (num2 = 0; num2 < MAX_MESSAGES-2 && num1 + num2 < strict_ub; ++num2) {
+        for (num2 = 0; num2 < MENU_VIEW && num1 + num2 < strict_ub; ++num2) {
           int index = num1 + num2;
           AddMessage(new Data.Message((1+num2).ToString()+" "+label(index), turn, Color.LightGreen));
         }
-        if (num2 < strict_ub) AddMessage(new Data.Message("9. next", turn, Color.LightGreen));
+        if (2 * MENU_VIEW < strict_ub) AddMessage(new Data.Message("8. prev  9. next", turn, Color.LightGreen));
+        else if (MENU_VIEW < strict_ub) AddMessage(new Data.Message("9. next", turn, Color.LightGreen));
         RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         if (Keys.Escape == keyEventArgs.KeyCode) break;
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (choiceNumber == 9) {
-          num1 += MAX_MESSAGES-2;
+        if (8 == choiceNumber) {
+          num1 -= MENU_VIEW;
+          if (0 > num1) num1 = (strict_ub / MENU_VIEW) * MENU_VIEW;
+        } else if (9 == choiceNumber) {
+          num1 += MENU_VIEW;
           if (num1 >= strict_ub) num1 = 0;
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index = num1 + choiceNumber - 1;
