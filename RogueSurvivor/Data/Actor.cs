@@ -903,7 +903,7 @@ namespace djack.RogueSurvivor.Data
     {
       var range = m_CurrentRangedAttack.Range;
       if (range < Rules.GridDistance(in p, target.Location.Position)) return "out of range";
-      if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, range, this)) return "no line of fire";
+      if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location, range, this)) return "no line of fire";
       return "";
     }
 

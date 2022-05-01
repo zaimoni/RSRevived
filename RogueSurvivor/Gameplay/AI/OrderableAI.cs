@@ -1051,7 +1051,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var targets = new Dictionary<Point,int>();
       int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
       foreach(Point pt in dests) {
-        targets[pt] = enemies.Count(p => LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location.Position, max_range, m_Actor));
+        targets[pt] = enemies.Count(p => LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location, max_range, m_Actor));
       }
       int max_LoF = targets.Values.Max();
       dests.RemoveAll(pt => max_LoF>targets[pt]);
@@ -1343,7 +1343,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (null == loc) continue;
                   foreach(var dest in norisk) {
                     var line = new List<Point>();
-                    if (!LOS.CanTraceHypotheticalFireLine(in dest, loc.Value.Position, target_rw.Model.Attack.Range, shove.Target, line)) continue;
+                    if (!LOS.CanTraceHypotheticalFireLine(in dest, loc.Value, target_rw.Model.Attack.Range, shove.Target, line)) continue;
                     if (!Rules.IsAdjacent(m_Actor.Location,dest) && line.Contains(shove.Target.Location.Position)) continue;
                     if (null == targets) targets = new Dictionary<Point, int> { [dest.Position] = 1 };
                     else if (!targets.ContainsKey(dest.Position)) targets[dest.Position] = 1;

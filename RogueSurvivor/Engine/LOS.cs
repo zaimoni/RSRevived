@@ -303,7 +303,7 @@ namespace djack.RogueSurvivor.Engine
       return IdealFireLine(in from, test.Value.Position, maxRange);
     }
 
-    public static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point>? line=null)
+    private static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point>? line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
