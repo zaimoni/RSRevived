@@ -299,6 +299,7 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.X);
       Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.Y);
       RepairHash(ref _hash);
+      LocalTime = decode.LoadInline<WorldTime>();
 
       Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BgMusic); // alpha10
       if (string.IsNullOrEmpty(m_BgMusic)) m_BgMusic = null;
@@ -307,7 +308,6 @@ namespace djack.RogueSurvivor.Data
       decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
 
 /*
-      info.read(ref LocalTime, "m_LocalTime");
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
       info.read(ref m_ActorsList, "m_ActorsList");
@@ -348,12 +348,12 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.Y);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.X);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.Y);
+      encode.SaveInline(LocalTime);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
       encode.SaveTo(m_IsInside);
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
 
 /*
-      info.AddValue("m_LocalTime", LocalTime);
       info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_Zones", m_Zones);
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null

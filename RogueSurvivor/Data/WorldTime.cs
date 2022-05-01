@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class WorldTime : ISerializable
+  internal class WorldTime : ISerializable, Zaimoni.Serialization.ISerialize
     {
     public const int HOURS_PER_DAY = 24;    // not scalable
     public const int TURNS_PER_HOUR = 30;   // defines space-time scale.  Standard game is 30 turns/hour, district size 50
@@ -109,6 +109,19 @@ namespace djack.RogueSurvivor.Data
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("TurnCounter", m_TurnCounter);
+    }
+#endregion
+#region implement Zaimoni.Serialization.ISerialize
+    protected WorldTime(Zaimoni.Serialization.DecodeObjects decode)
+    {
+      int tmp_int = 0; // should be same type as TurnCounter i.e. m_TurnCounter
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_int);
+      TurnCounter = tmp_int;
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_TurnCounter);
     }
 #endregion
 
