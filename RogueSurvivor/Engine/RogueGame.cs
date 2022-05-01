@@ -477,7 +477,8 @@ namespace djack.RogueSurvivor.Engine
     public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
       if (!Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
-        RedrawPlayScreen((Player.Controller as PlayerController).MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
+        var msg = (Player.Controller as PlayerController)?.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
+        if (null != msg) RedrawPlayScreen(msg);
       }
       if (1>=Session.Get.World.PlayerCount) return;
 
@@ -11930,7 +11931,7 @@ namespace djack.RogueSurvivor.Engine
         PanViewportTo(players[0]);
         return true;
       }
-#if DEBUG
+#if PROTOTYPE
       throw new InvalidProgramException("need to handle multiple non-active PCs who can see location");
 #else
       PanViewportTo(players[0]);
@@ -11941,11 +11942,11 @@ namespace djack.RogueSurvivor.Engine
     public bool ForceVisibleToPlayer(Actor actor)
     {
       if (actor == Player) return true;
-      if (IsVisibleToPlayer(actor.Location)) return true;
       if (actor.IsViewpoint) {
         PanViewportTo(actor);
         return true;
       }
+      if (IsVisibleToPlayer(actor.Location)) return true;
       return ForceVisibleToPlayer(actor.Location);
     }
 

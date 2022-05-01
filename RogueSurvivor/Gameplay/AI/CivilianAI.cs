@@ -673,9 +673,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
 #endif
           _caller = CallChain.NONE;
-#if DEBUG
-          if (m_Actor.IsDebuggingTarget && null != tmpAction) throw new InvalidOperationException("tracing");
-#endif
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
 #endif
