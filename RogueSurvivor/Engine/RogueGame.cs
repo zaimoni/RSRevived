@@ -8024,6 +8024,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
     {
+      if (attacker.IsViewpoint) PanViewportTo(attacker);
+      else if (defender.IsViewpoint) PanViewportTo(defender);
+
       attacker.Aggress(defender);
       Attack attack = attacker.MeleeAttack(defender);
       Defence defence = defender.Defence;
@@ -8183,6 +8186,9 @@ namespace djack.RogueSurvivor.Engine
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
     private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
+      if (attacker.IsViewpoint) PanViewportTo(attacker);
+      else if (defender.IsViewpoint) PanViewportTo(defender);
+
       // stamina penalty is simply copied through from the base ranged attack (calculated below)
       ref var r_attack = ref attacker.CurrentRangedAttack;
       attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
