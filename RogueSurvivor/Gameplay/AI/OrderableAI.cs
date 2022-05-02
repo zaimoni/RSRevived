@@ -2074,7 +2074,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, in e_loc) && !enemy.CanRun()) {
-          if (!m_Actor.WillActAgainBefore(enemy) && !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
+          if (!m_Actor.WillActAgainBefore(enemy) || !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
             return new ActionWait(m_Actor);
 
           if (null != legal_steps) {
