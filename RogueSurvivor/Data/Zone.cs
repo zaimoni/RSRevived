@@ -82,6 +82,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
         if (host.Rect != Bounds) throw new InvalidOperationException("untrusted setup");
 #endif
+        lock (this) {
         if (VolatileAttribute.HasKey("exit_zones")) return;
         var prior_exits = VolatileAttribute.Get<Location[]>("exits");
         if (null == prior_exits) {
@@ -120,6 +121,7 @@ namespace djack.RogueSurvivor.Data
           }
         }
         VolatileAttribute.Set("exit_zones", ordered_zones.ToArray());
+        };
     }
   }
 
@@ -158,7 +160,10 @@ namespace djack.RogueSurvivor.Data
         if (null != ret) return ret;
         z.InstallExits(this);
         ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-        foreach(var zone in ret) if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
+        foreach(var zone in ret) {
+          if (zone == this) throw new InvalidOperationException("self-deleting");
+          if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
+        }
         return ret;
     } }
 
@@ -383,7 +388,7 @@ namespace djack.RogueSurvivor.Data
 
     public Zone? Zone {
       get {
-        return z ??= m.GetZonesAt(Rect.Location)?.Find(z => z.Bounds == Rect);
+        return z ??= m.GetZonesAt(Rect.Location)?.Find(z0 => z0.Bounds == Rect);
       }
     }
 
