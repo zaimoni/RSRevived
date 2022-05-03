@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Data
         if (null == tmp) continue;
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
         if (0 >= tmp.Count) continue;
-        var it_model = Gameplay.GameItems.From(it);
+        var it_model = (0 <= (int)it) ? Gameplay.GameItems.From(it) : null; // exclude synthetic item models
         // cheating post-filter: reject boring entertainment
         if (it_model is ItemEntertainmentModel ent) {
             tmp.OnlyIf(loc => {
