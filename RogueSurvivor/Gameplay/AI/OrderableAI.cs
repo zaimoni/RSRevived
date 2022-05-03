@@ -657,9 +657,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
+#if DEBUG
+        if (door.Location != _dest) throw new InvalidOperationException("door.Location != _dest");
+#endif
         if (null != _alternates) {
           foreach(var loc in _alternates) {
-            var bypass = door = loc.MapObject as DoorWindow;
+            var bypass = loc.MapObject as DoorWindow;
             if (null == bypass || !bypass.IsBarricaded) { // some other way through -- break off
               _isExpired = true;
               return true;
@@ -706,6 +709,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ret = new ActionWait(m_Actor);
           return true;
         }
+
+        // have some sort of duplication issue going on
+        if (null != _alternates) {
+          foreach(var loc in _alternates) {
+            if (Rules.IsAdjacent(m_Actor.Location, loc)) {
+              _isExpired = true;
+              return true;
+            }
+          }
+        }
+
         // unusual pathing requirement: do not push helpers; give helpers room to step aside
         var helpers_at = new Dictionary<Point,Actor>();
         var move_to = new HashSet<Point>();
@@ -744,7 +758,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (0 < move_to.Count) {
-          ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == _dest.Map ? move_to : new HashSet<Point>()));
+          ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(m => (m == _dest.Map ? move_to : new HashSet<Point>()));
           return true;
         }
         return false;
