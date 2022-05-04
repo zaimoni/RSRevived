@@ -40,17 +40,19 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 #endif
-      if (m_Attributes == null) return default;
-      if (!m_Attributes.TryGetValue(key, out var obj)) return default;
+      var attr = m_Attributes;
+      if (null == attr) return default;
+      if (!attr.TryGetValue(key, out var obj)) return default;
       if (obj is _T_ x) return x;
       throw new InvalidOperationException("game attribute is not of requested type");
     }
 
     public void Unset(string key)
     {
-      if (null != m_Attributes) {
-        m_Attributes.Remove(key);
-        if (0 >= m_Attributes.Count) m_Attributes = null;
+      var attr = m_Attributes;
+      if (null != attr) {
+        attr.Remove(key);
+        if (0 >= attr.Count) m_Attributes = null;
       }
     }
   }
