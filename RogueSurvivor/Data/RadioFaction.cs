@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Data
                     Threats.Sighted(actorAt, loc);
                     continue;
                 }
-                if (!stage.TryGetValue(loc.Map, out var cache)) cache = new List<Point>();
+                if (!stage.TryGetValue(loc.Map, out var cache)) stage.Add(loc.Map, cache = new List<Point>());
                 cache.Add(loc.Position);
             }
             Threats.Cleared(stage);
