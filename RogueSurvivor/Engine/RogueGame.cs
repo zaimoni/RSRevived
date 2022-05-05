@@ -312,6 +312,8 @@ namespace djack.RogueSurvivor.Engine
     static public RogueGame Game {
         get { return s_ooao!; }
     }
+
+    static private ZoneLoc[]? s_RefugeeSpawnZones = null;
 #nullable restore
 
 #nullable enable
@@ -677,10 +679,43 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DoQuit();
     }
 
+    // called from before game loop starts, so don't need to be too concerned about efficiency
+    private void _bootstrap_computable(World world) {
+      if (null == s_RefugeeSpawnZones) {
+         const int zone_length = 6;
+         const int highway_width = 6;   // synchronize w/map generation
+         Rectangle world_bounds = new(new Point(0, 0), new Point(world.Size, world.Size)); // arguably should be provided by World
+         List<ZoneLoc> stage = new();
+         // Estimate where highways enter our reality bubble
+         var m = world.At(world_bounds.Anchor(Compass.XCOMlike.N))!.EntryMap;
+         var pt = m.Rect.Anchor(Compass.XCOMlike.N);
+         var highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
+         m = world.At(world_bounds.Anchor(Compass.XCOMlike.E))!.EntryMap;
+         pt = m.Rect.Anchor(Compass.XCOMlike.E);
+         highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
+         m = world.At(world_bounds.Anchor(Compass.XCOMlike.S))!.EntryMap;
+         pt = m.Rect.Anchor(Compass.XCOMlike.S);
+         highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
+         m = world.At(world_bounds.Anchor(Compass.XCOMlike.W))!.EntryMap;
+         pt = m.Rect.Anchor(Compass.XCOMlike.W);
+         highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
+         Interlocked.Exchange(ref s_RefugeeSpawnZones, stage.ToArray());
+      }
+    }
+
     private void GameLoop()
     {
       HandleMainMenu();
       var world = Session.Get.World;
+      _bootstrap_computable(world);
       while (m_IsGameRunning && 0 < world.PlayerCount) {
         var d = world.CurrentPlayerDistrict();
         if (null == d) {
@@ -2363,8 +2398,8 @@ namespace djack.RogueSurvivor.Engine
     // note that there are no gas/diesel stations in town, so there must be one reasonably close outside of
     // the CHAR company town city limits to enable the gas/diesel vehicles to even get here.
 
-    // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map that was physically disconnected from the surface, from
-    // their point of view.  It also artificially complicated using the subway as a safehouse.)
+    // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map
+    // that was physically disconnected from the surface, from their point of view.)
     private void FireEvent_RefugeesWave(District district)
     {
       // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
@@ -2387,6 +2422,15 @@ namespace djack.RogueSurvivor.Engine
         if (0 < candidates.Count) FireEvent_UniqueActorArrive(district.EntryMap, Rules.Get.DiceRoller.Choose(candidates));
       }
     }
+
+    // Refugee re-implementation
+    // * These arrive "near the main roads", typically
+    // * We shall assume arrival on foot, for now.  Anyone arriving by vehicle either is police/military, or has an escape plan
+    // ** squad car: 2 police; can evacuate 2 others
+    // ** Militarized Infantry Combat Vehicle: capacity 6-8; essential crew 2-3 (\todo: research).  Comes with 30mm-ish machine gun.
+    // ** Armored Personnel Carrier: capacity 20-ish; essential crew 2-3 (\todo: research).
+    // * keep the same #, but space them out in time ... say 7-17
+    // * on-foot landing zones are 6 on each side of the highway (pre-computed @ s_RefugeeSpawnZones).
 
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
