@@ -103,19 +103,22 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
     public Location[]? Exits { get {
-        if (null == Zone) return null;
-        var ret = z.VolatileAttribute.Get<Location[]>("exits");
+        var z0 = Zone;
+        if (null == z0) return null;
+
+        var ret = z0.VolatileAttribute.Get<Location[]>("exits");
         if (null != ret) return ret;
         InstallExits();
-        return z.VolatileAttribute.Get<Location[]>("exits");
+        return z0.VolatileAttribute.Get<Location[]>("exits");
     } }
 
     public ZoneLoc[]? Exit_zones { get {
-        if (null == Zone) return null;
-        var ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        var z0 = Zone;
+        if (null == z0) return null;
+
+        var ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
         if (null != ret) return ret;
-        InstallExits();
-        ret = z.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        ret = InstallExits();
         foreach(var zone in ret) {
           if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
         }
@@ -123,21 +126,25 @@ namespace djack.RogueSurvivor.Data
     } }
 
     public KeyValuePair<Location[]?, ZoneLoc[]?> ExitData { get {
-        if (null == Zone) return default;
         var e_zones = Exit_zones; // need this to run first
-        return new KeyValuePair<Location[]?, ZoneLoc[]?>(z.VolatileAttribute.Get<Location[]>("exits"), e_zones);
+        if (null == e_zones) return default;
+        return new KeyValuePair<Location[]?, ZoneLoc[]?>(z!.VolatileAttribute.Get<Location[]>("exits"), e_zones);
     } }
 
-    private void InstallExits() {
+    // return value is that of the exit_zones key
+    // \todo propagate precondition null != z into InstallExits
+    private ZoneLoc[]? InstallExits() {
         // transformed from Zone::InstallExits
         // host -> this
         // this -> z := Zone
         var z0 = Zone;
-        if (null == z0) return;
+        if (null == z0) return null;
 
         // may not be needed? multi-threading mitigation
         lock (z0) {
-        if (z0.VolatileAttribute.HasKey("exit_zones")) return;
+        var ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+        if (null != ret) return ret;
+
         var prior_exits = z0.VolatileAttribute.Get<Location[]>("exits");
         if (null == prior_exits) {
           var locs = new HashSet<Location>();
@@ -174,7 +181,9 @@ namespace djack.RogueSurvivor.Data
             order_staging.Remove(index);
           }
         }
-        z0.VolatileAttribute.Set("exit_zones", ordered_zones.ToArray());
+        ret = ordered_zones.ToArray();
+        z0.VolatileAttribute.Set("exit_zones", ret);
+        return ret;
         };
     }
 
