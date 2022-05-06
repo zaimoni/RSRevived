@@ -314,6 +314,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
+    static private List<Actor>? s_RefugeePool = null;
 #nullable restore
 
 #nullable enable
@@ -378,12 +379,14 @@ namespace djack.RogueSurvivor.Engine
     static public void Load(SerializationInfo info, StreamingContext context)
     {
       info.read_nullsafe(ref s_MessageManager, "s_MessageManager");
+      info.read_nullsafe(ref s_RefugeePool, "s_RefugeePool");
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("s_Player",Map.encode(Player));
       info.AddValue("s_MessageManager", s_MessageManager);
+      info.AddValue("s_RefugeePool", s_RefugeePool);
     }
 
     // very severe access control issue; should be called only from Session::Session()
@@ -2429,8 +2432,33 @@ namespace djack.RogueSurvivor.Engine
     // ** squad car: 2 police; can evacuate 2 others
     // ** Militarized Infantry Combat Vehicle: capacity 6-8; essential crew 2-3 (\todo: research).  Comes with 30mm-ish machine gun.
     // ** Armored Personnel Carrier: capacity 20-ish; essential crew 2-3 (\todo: research).
-    // * keep the same #, but space them out in time ... say 7-17
+    // * keep the same #, but space them out in time ... say 7-17 (incoming @ s_RefugeePool)
     // * on-foot landing zones are 6 on each side of the highway (pre-computed @ s_RefugeeSpawnZones).
+
+#if PROTOTYPE
+    private void FireEvent_ScheduleRefugees(District district)
+    {
+//    const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
+      const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
+      const float REFUGEES_WAVE_SIZE = 0.2f;
+
+      Interlocked.CompareExchange(ref s_RefugeePool, new(), null); // ok to thrash GC here, this is once/game day
+
+      int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
+      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
+      while(0 < num2--) {
+        s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
+      }
+      var rules = Rules.Get;
+      if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
+
+      var uas = Session.Get.UniqueActors;
+      lock (uas) {
+        var candidates = uas.DraftPool(a => a.IsWithRefugees && !a.IsSpawned && !s_RefugeePool.Contains(a.TheActor) /* && !a.TheActor.IsDead */);
+        if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates).TheActor);
+      }
+    }
+#endif
 
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
