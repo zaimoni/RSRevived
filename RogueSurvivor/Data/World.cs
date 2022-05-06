@@ -45,6 +45,9 @@ namespace djack.RogueSurvivor.Data
     private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
+    [NonSerialized] private Rectangle m_Extent;
+    public Rectangle Extent { get { return m_Extent; } }
+
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
     private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
@@ -107,7 +110,16 @@ namespace djack.RogueSurvivor.Data
     /// <returns>district is on south edge of world</returns>
     public bool Edge_S(District d) { return d.WorldPosition.Y == m_Size - 1; }
     /// <returns>district is on north or east edge of world</returns>
-    static public bool Edge_N_or_E(District d) { return 0 >= d.WorldPosition.X || 0 >= d.WorldPosition.Y; }    // arguably should be 0 ==
+    static public bool Edge_N_or_W(District d) { return 0 >= d.WorldPosition.X || 0 >= d.WorldPosition.Y; }    // arguably should be 0 ==
+
+    public uint EdgeCode(District d) {
+        uint ret = 0;
+        if (Extent.Top >= d.WorldPosition.X) ret |= 1;
+        if (Extent.Right - 1 <= d.WorldPosition.Y) ret |= 2;
+        if (Extent.Bottom - 1 <= d.WorldPosition.X) ret |= 4;
+        if (Extent.Left >= d.WorldPosition.Y) ret |= 8;
+	    return ret;
+    }
 
     // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE
     // supported layouts are: E-W, N-S, 
@@ -236,6 +248,7 @@ namespace djack.RogueSurvivor.Data
 #else
       m_Size = size;
 #endif
+      m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
       m_DistrictsGrid = new District[Size, Size];
 //    Weather = Weather.CLEAR;
       var rules = Engine.Rules.Get;
@@ -250,7 +263,14 @@ namespace djack.RogueSurvivor.Data
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
-      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
+      m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
+      var c_size = 
+#if BOOTSTRAP_HIGHWAY
+      (short)(m_Size - 2);
+#else
+      m_Size;
+#endif
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
       s_Recent = this;
     }
 

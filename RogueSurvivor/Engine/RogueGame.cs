@@ -687,7 +687,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == s_RefugeeSpawnZones) {
          const int zone_length = 6;
          const int highway_width = 6;   // synchronize w/map generation
-         Rectangle world_bounds = new(new Point(0, 0), new Point(world.Size, world.Size)); // arguably should be provided by World
+         Rectangle world_bounds = world.Extent;
          List<ZoneLoc> stage = new();
          // Estimate where highways enter our reality bubble
          var m = world.At(world_bounds.Anchor(Compass.XCOMlike.N))!.EntryMap;
@@ -710,7 +710,7 @@ namespace djack.RogueSurvivor.Engine
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
-         Interlocked.Exchange(ref s_RefugeeSpawnZones, stage.ToArray());
+         Interlocked.CompareExchange(ref s_RefugeeSpawnZones, stage.ToArray(), null);
       }
     }
 
@@ -1941,7 +1941,7 @@ namespace djack.RogueSurvivor.Engine
       //   arrive by road (i.e. arrive on the outer edge of the outer districts)
 
       // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
-      if (!World.Edge_N_or_E(district)) {
+      if (!World.Edge_N_or_W(district)) {
         EndTurnDistrictEvents(world[district.WorldPosition+Direction.NW]);
         if (world.Edge_S(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.W]);
         if (world.Edge_E(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.N]);
@@ -2413,7 +2413,7 @@ namespace djack.RogueSurvivor.Engine
       if (district == Player.Location.Map.District && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
         RedrawPlayScreen(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
       }
-      int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
+      int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
       var rules = Rules.Get;
       for (int index = 0; index < num2; ++index)
@@ -2444,7 +2444,7 @@ namespace djack.RogueSurvivor.Engine
 
       Interlocked.CompareExchange(ref s_RefugeePool, new(), null); // ok to thrash GC here, this is once/game day
 
-      int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
+      int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
       while(0 < num2--) {
         s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
@@ -2457,6 +2457,21 @@ namespace djack.RogueSurvivor.Engine
         var candidates = uas.DraftPool(a => a.IsWithRefugees && !a.IsSpawned && !s_RefugeePool.Contains(a.TheActor) /* && !a.TheActor.IsDead */);
         if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates).TheActor);
       }
+    }
+
+    // two options here (district must be on edge of reality bubble)
+    // * if we have a highway, we can spawn up to two parties on the spawn zones near the highway
+    // * if the district is compromised by Z, a pair of police can gate-crash things
+    private void FireEvent_RefugeeParty(District district)
+    {
+      if (null == s_RefugeePool) return;
+
+      var world = World.Get;
+      var code = world.EdgeCode(district);
+      if (0 == code) return;    // can only walk in through outer district
+
+      // count: enemies of police, police
+      // if have enemies of police, but no police, try to gate-crash
     }
 #endif
 
@@ -12915,7 +12930,7 @@ retry:
           case 0:
             if (p_map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(prisoner)) {  // alpha10 fix: and visible!)
                 string[] local_6 = null;
-                if (player.Faction == GameFactions.TheCivilians || player.Faction == GameFactions.TheSurvivors) {
+                if (player.IsFaction(GameFactions.IDs.TheCivilians) || player.IsFaction(GameFactions.IDs.TheSurvivors)) {
                   if (prisoner.IsSleeping) DoWakeUp(prisoner);
                   local_6 = new string[] {    // standard message
                     "\" Psssst! Hey! You over there! \"",
