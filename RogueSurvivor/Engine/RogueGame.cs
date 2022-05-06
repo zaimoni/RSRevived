@@ -12499,8 +12499,8 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
 
-      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
-      Session.Get.World.DoForAllMaps(m=>m.RepairZoneWalk());
+      world.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
+      world.DoForAllMaps(m=>m.RepairZoneWalk());
 
       Map? entryMap = null;
       if (!Session.Get.CMDoptionExists("no-spawn")) {

@@ -187,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ForceSubwayStation.Clear();
 
       var world = Session.Get.World;
-      Rectangle world_bounds = new Rectangle(0,0, world.Size, world.Size);
+      var world_bounds = world.Extent;
       world_bounds.DoForEach(pt => {
         if (0<world.SubwayLayout(pt)) {
           var working = new List<Point>();

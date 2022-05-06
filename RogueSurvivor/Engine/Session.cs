@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Engine
     // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
 
     // Groceries are highly demanding and will crash world generation without unusual measures here.
-    public WorldTime WorldTime { get { return new WorldTime(World[World.Size-1,World.Size-1]?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
+    public WorldTime WorldTime { get { return new WorldTime(World.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
 
     public Scoring Scoring { get { return m_Scoring; } }
     public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
