@@ -8,7 +8,7 @@
 
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
-#define REFUGEE_WAVES
+// #define REFUGEE_WAVES
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -1964,7 +1964,7 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_RefugeesWave(d.EntryMap)) FireEvent_RefugeesWave(d);
 #else
       if (CheckForEvent_ScheduleRefugees(d.EntryMap)) FireEvent_ScheduleRefugees(d);
-      if (CheckForEvent_RefugeeParty(d.EntryMap)) FireEvent_RefugeeParty(d);
+      CheckFor_Fire_RefugeeParty(d);
 #endif
       if (CheckForEvent_NationalGuard(d.EntryMap)) FireEvent_NationalGuard(d.EntryMap);
       if (CheckForEvent_ArmySupplies(d.EntryMap)) FireEvent_ArmySupplies(d.EntryMap);
@@ -2396,12 +2396,6 @@ namespace djack.RogueSurvivor.Engine
         return x != num1 || y != num1 ? 1f : 0.5f;
     }
 
-#if REFUGEE_WAVES
-    static private bool CheckForEvent_RefugeesWave(Map map)
-    {
-      return map.LocalTime.IsStrikeOfMidday;
-    }
-
     // Refugees are up for a rethinking anyway (i.e., how do they get there)
     // They currently use the same ley-line behavior as the undead invasion (indeed, all livings do)
     // Ultimately, we would want to model both helicopters (supply drops, Blackops, possibly National Guard),
@@ -2411,6 +2405,12 @@ namespace djack.RogueSurvivor.Engine
 
     // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map
     // that was physically disconnected from the surface, from their point of view.)
+#if REFUGEE_WAVES
+    static private bool CheckForEvent_RefugeesWave(Map map)
+    {
+      return map.LocalTime.IsStrikeOfMidday;
+    }
+
     private void FireEvent_RefugeesWave(District district)
     {
       // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
@@ -2449,90 +2449,131 @@ namespace djack.RogueSurvivor.Engine
     static private bool CheckForEvent_ScheduleRefugees(Map map)
     {
       if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
+#if DEBUG
+      if (6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR - 1 == map.LocalTime.Tick && null == s_RefugeePool) throw new ArgumentNullException(nameof(s_RefugeePool));
+#endif
       return 6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR-2 == map.LocalTime.Tick;
     }
 
+    private readonly object lock_RefugeePool = new();
     private void FireEvent_ScheduleRefugees(District district)
     {
 //    const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
       const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
       const float REFUGEES_WAVE_SIZE = 0.2f;
 
-      Interlocked.CompareExchange(ref s_RefugeePool, new(), null); // ok to thrash GC here, this is once/game day
+      lock(lock_RefugeePool) {
+        Interlocked.CompareExchange(ref s_RefugeePool, new(), null); // ok to thrash GC here, this is once/game day
+        int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
+        int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
+        while(0 < num2--) {
+          s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
+        }
+        var rules = Rules.Get;
+        if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
 
-      int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
-      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
-      while(0 < num2--) {
-        s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
-      }
-      var rules = Rules.Get;
-      if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
-
-      var uas = Session.Get.UniqueActors;
-      lock (uas) {
-        var candidates = uas.DraftPool(a => a.IsWithRefugees && !a.IsSpawned && !s_RefugeePool.Contains(a.TheActor) /* && !a.TheActor.IsDead */);
-        if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates).TheActor);
+        var uas = Session.Get.UniqueActors;
+        lock (uas) {
+          var candidates = uas.DraftPool(a => a.IsWithRefugees && !a.IsSpawned && !s_RefugeePool.Contains(a.TheActor) /* && !a.TheActor.IsDead */);
+          if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates).TheActor);
+        }
       }
     }
 
-    static private bool CheckForEvent_RefugeeParty(Map map)
+    private List<Actor> ConstructRefugeeParty()
     {
-      if (null == s_RefugeePool) return false;
-      return 7 <= map.LocalTime.Hour && 21 > map.LocalTime.Hour;
+      var dr = Rules.Get.DiceRoller;
+      List<Actor> ret = new();
+      var leader = dr.ChooseWithoutReplacement(s_RefugeePool);
+      ret.Add(leader);
+      if (0 == s_RefugeePool!.Count) return ret;
+
+      var n_followers = leader.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+      if (0 >= n_followers) return ret; // cannot lead.
+
+      throw new InvalidOperationException("need to implement");
+    }
+
+    private void PlaceRefugeeParty(ZoneLoc dest) {
+      var party = ConstructRefugeeParty();
+      var leader = party[0];
+      if (!SpawnIn(leader, dest, 1)) {
+        s_RefugeePool!.AddRange(party);
+        return;
+      }
+      party.RemoveAt(0);
+      while(0 < party.Count) {
+        var fo = party[0];
+        if (!SpawnIn(fo, dest, 1)) {
+          s_RefugeePool!.AddRange(party);
+          return;
+        }
+        party.RemoveAt(0);
+        leader.AddFollower(fo);
+      }
+      return;
     }
 
     // two options here (district must be on edge of reality bubble)
     // * if we have a highway, we can spawn up to two parties on the spawn zones near the highway
     // * if the district is compromised by Z, a pair of police can gate-crash things
-    private void FireEvent_RefugeeParty(District district)
-    {
-      if (null == s_RefugeePool) return; // possibly pre-condition
-
+    // we do an integrated guard-execute due to multi-threading.
+    private void CheckFor_Fire_RefugeeParty(District district) {
+      if (7 > district.EntryMap.LocalTime.Hour || 21 <= district.EntryMap.LocalTime.Hour) return;
       var world = World.Get;
       var code = world.EdgeCode(district);
       if (0 == code) return;    // can only walk in through outer district
 
-      // count: enemies of police, police
-      // if have enemies of police, but no police, try to gate-crash on foot
+      lock(lock_RefugeePool) {
+        if (null == s_RefugeePool) return;
 
-      // otherwise, check for typical spawn zones
-      Compass.XCOMlike dir;   // something illegal for incoming highway
-      switch(code) {
-      case 1:
-        if (world.Extent.Anchor(Compass.XCOMlike.N) != district.WorldPosition) return;
-        dir = Compass.XCOMlike.N;
-        break;
-      case 2:
-        if (world.Extent.Anchor(Compass.XCOMlike.E) != district.WorldPosition) return;
-        dir = Compass.XCOMlike.E;
-        break;
-      case 4:
-        if (world.Extent.Anchor(Compass.XCOMlike.S) != district.WorldPosition) return;
-        dir = Compass.XCOMlike.S;
-        break;
-      case 8:
-        if (world.Extent.Anchor(Compass.XCOMlike.W) != district.WorldPosition) return;
-        dir = Compass.XCOMlike.W;
-        break;
-      default: return;
+        // count: enemies of police, police
+        // if have enemies of police, but no police, try to gate-crash on foot
+
+        // otherwise, check for typical spawn zones
+        Compass.XCOMlike dir;   // something illegal for incoming highway
+        switch(code) {
+        case 1:
+          if (world.Extent.Anchor(Compass.XCOMlike.N) != district.WorldPosition) return;
+          dir = Compass.XCOMlike.N;
+          break;
+        case 2:
+          if (world.Extent.Anchor(Compass.XCOMlike.E) != district.WorldPosition) return;
+          dir = Compass.XCOMlike.E;
+          break;
+        case 4:
+          if (world.Extent.Anchor(Compass.XCOMlike.S) != district.WorldPosition) return;
+          dir = Compass.XCOMlike.S;
+          break;
+        case 8:
+          if (world.Extent.Anchor(Compass.XCOMlike.W) != district.WorldPosition) return;
+          dir = Compass.XCOMlike.W;
+          break;
+        default: return;
+        }
+
+        var rules = Rules.Get;
+        var one_in = 8*(district.EntryMap.LocalTime.TurnsTo(21) - 1)+1;
+        one_in -= s_RefugeePool.Count;
+        if (1 > one_in) one_in = 1;
+
+        // theoretically could overflow at a high enough turns/day, but not for Angband-scale or coarser
+        var dr = rules.DiceRoller.Roll(0, one_in*one_in);
+        if (dr >= 2 * one_in -1) return;
+
+        if (dr <= one_in) {
+          // select for left/top spawn zone
+          PlaceRefugeeParty(s_RefugeeSpawnZones![2 * (int)dir]);
+          if (0 >= s_RefugeePool.Count) {
+            Interlocked.Exchange(ref s_RefugeePool, null);
+            return;
+          }
+          if (0 < dr) return;
+        }
+        // select for right/bottom spawn zone
+        PlaceRefugeeParty(s_RefugeeSpawnZones![2 * (int)dir + 1]);
+        if (0 >= s_RefugeePool.Count) Interlocked.Exchange(ref s_RefugeePool, null);
       }
-
-      var rules = Rules.Get;
-      var one_in = 8*(district.EntryMap.LocalTime.TurnsTo(21) - 1)+1;
-      one_in -= s_RefugeePool.Count;
-      if (1 > one_in) one_in = 1;
-
-      // theoretically could overflow at a high enough turns/day, but not for Angband-scale or coarser
-      var dr = rules.DiceRoller.Roll(0, one_in*one_in);
-      if (dr >= 2 * one_in -1) return;
-
-      throw new InvalidOperationException("need to implement");
-
-      if (dr <= one_in) {
-        // select for left/top spawn zone
-        if (0 < dr) return;
-      }
-      // select for right/bottom spawn zone
     }
 #endif
 
@@ -2772,6 +2813,23 @@ namespace djack.RogueSurvivor.Engine
 	  var players = map.Players.Get;
 	  if (0 >= players.Count) return int.MaxValue;  // 2020-01-27 optimizer is catching this
 	  return players.Min(p=> Rules.GridDistance(p.Location.Position, pos));
+    }
+
+    private bool SpawnIn(Actor toSpawn, ZoneLoc dest, int minDistToPlayer) {
+      var tmp = dest.Rect.Where(pt => {
+        var loc = new Location(dest.m, pt);
+        if (!Map.Canonical(ref loc)) return false;
+        if (!loc.IsWalkableFor(toSpawn)) return false;
+        if (!dest.m.NoPlayersNearerThan(in pt, minDistToPlayer)) return false;
+        if (toSpawn.WouldBeAdjacentToEnemy(loc.Map, loc.Position)) return false;
+        return true;
+      });
+      if (0 >= tmp.Count) return false;
+      var loc = new Location(dest.m, Rules.Get.DiceRoller.Choose(tmp));
+      if (!Map.Canonical(ref loc)) return false; // invariant failure
+      loc.Place(toSpawn);
+      OnActorEnterTile(toSpawn);
+      return true;
     }
 
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
