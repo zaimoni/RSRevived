@@ -2384,21 +2384,22 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    static private float RefugeesEventDistrictFactor(District d)
+    {
+        var world = World.Get;
+        int x = d.WorldPosition.X;
+        int y = d.WorldPosition.Y;
+        if (x == world.CHAR_CityLimits.Top || y == world.CHAR_CityLimits.Left) return 2f;
+        if (x == world.CHAR_CityLimits.Bottom-1 || y == world.CHAR_CityLimits.Right-1) return 2f;
+        int num1 = world.Size - 1;
+        num1 /= 2;
+        return x != num1 || y != num1 ? 1f : 0.5f;
+    }
+
 #if REFUGEE_WAVES
     static private bool CheckForEvent_RefugeesWave(Map map)
     {
       return map.LocalTime.IsStrikeOfMidday;
-    }
-
-    static private float RefugeesEventDistrictFactor(District d)
-    {
-      int x = d.WorldPosition.X;
-      int y = d.WorldPosition.Y;
-      if (x == 0 || y == 0) return 2f;
-      int num1 = Session.Get.World.Size - 1;
-      if (x == num1 || y == num1) return 2f;
-      num1 /= 2;
-      return x != num1 || y != num1 ? 1f : 0.5f;
     }
 
     // Refugees are up for a rethinking anyway (i.e., how do they get there)
@@ -2433,18 +2434,21 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#else
     // Refugee re-implementation
     // * These arrive "near the main roads", typically
     // * We shall assume arrival on foot, for now.  Anyone arriving by vehicle either is police/military, or has an escape plan
+    // ** motorcycle: might be able to carry 2 in a pinch
+    // ** motorcycle w/side car
     // ** squad car: 2 police; can evacuate 2 others
     // ** Militarized Infantry Combat Vehicle: capacity 6-8; essential crew 2-3 (\todo: research).  Comes with 30mm-ish machine gun.
     // ** Armored Personnel Carrier: capacity 20-ish; essential crew 2-3 (\todo: research).
     // * keep the same #, but space them out in time ... say 7-17 (incoming @ s_RefugeePool)
     // * on-foot landing zones are 6 on each side of the highway (pre-computed @ s_RefugeeSpawnZones).
 
-#else
     static private bool CheckForEvent_ScheduleRefugees(Map map)
     {
+      if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
       return 6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR-2 == map.LocalTime.Tick;
     }
 
@@ -2489,7 +2493,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 == code) return;    // can only walk in through outer district
 
       // count: enemies of police, police
-      // if have enemies of police, but no police, try to gate-crash
+      // if have enemies of police, but no police, try to gate-crash on foot
 
       // otherwise, check for typical spawn zones
       Compass.XCOMlike dir;   // something illegal for incoming highway
@@ -2521,6 +2525,14 @@ namespace djack.RogueSurvivor.Engine
       // theoretically could overflow at a high enough turns/day, but not for Angband-scale or coarser
       var dr = rules.DiceRoller.Roll(0, one_in*one_in);
       if (dr >= 2 * one_in -1) return;
+
+      throw new InvalidOperationException("need to implement");
+
+      if (dr <= one_in) {
+        // select for left/top spawn zone
+        if (0 < dr) return;
+      }
+      // select for right/bottom spawn zone
     }
 #endif
 
