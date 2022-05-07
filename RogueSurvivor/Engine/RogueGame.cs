@@ -12605,10 +12605,10 @@ namespace djack.RogueSurvivor.Engine
 
       void link_NE(Map origin, Map? dest) {
           if (null != dest) {
-              Point from_origin = new Point(-1, origin.Height);
-              Point from_dest = new Point(dest.Width, -1);
-              Point to_origin = from_dest + Direction.NE;
-              Point to_dest = from_origin + Direction.SW;
+              Point to_origin = origin.Rect.Anchor(Compass.XCOMlike.NE);
+              Point to_dest = dest.Rect.Anchor(Compass.XCOMlike.SW);
+              Point from_dest = dest.Rect.Anchor(Compass.XCOMlike.SW) + Direction.SW;
+              Point from_origin = origin.Rect.Anchor(Compass.XCOMlike.NE) + Direction.NE;
               if (CheckIfExitIsGood(origin, to_origin)) GenerateExit(dest, from_dest, origin, to_origin);
               if (CheckIfExitIsGood(dest, to_dest)) GenerateExit(origin, from_origin, dest, to_dest);
           }
