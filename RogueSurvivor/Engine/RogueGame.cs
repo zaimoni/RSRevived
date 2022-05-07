@@ -2480,6 +2480,17 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    private List<KeyValuePair<int,Actor> > GetRefugeeFollowers(Actor leader)
+    {
+        List<KeyValuePair<int,Actor> > ret = new();
+        var ub = s_RefugeePool!.Count;
+        while(0 <= --ub) {
+            var fo = s_RefugeePool[ub];
+            if (leader.CanTakeLeadOf(fo)) ret.Add(new(ub, fo));
+        }
+        return ret;
+    }
+
     private List<Actor> ConstructRefugeeParty()
     {
       var dr = Rules.Get.DiceRoller;
@@ -2491,7 +2502,32 @@ namespace djack.RogueSurvivor.Engine
       var n_followers = leader.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
       if (0 >= n_followers) return ret; // cannot lead.
 
-      throw new InvalidOperationException("need to implement");
+      var recruits = GetRefugeeFollowers(leader);
+      if (0 >= recruits.Count) return ret; // no-one to lead
+
+      // \todo police may be finicky about who they want to lead
+
+      int want = n_followers;
+      do {
+        var n = dr.Roll(0, recruits.Count);
+        var recruit = recruits[n];
+        var recruit_followers = recruit.Value.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+        // may want plot armor for uniques
+        if (n_followers < recruit_followers && recruit.Value.CanTakeLeadOf(leader)) {
+          want += (recruit_followers - n_followers);
+          leader = recruit.Value;
+          ret.Insert(0, leader);
+        } else {
+          ret.Add(recruit.Value);
+        }
+        s_RefugeePool.RemoveAt(recruit.Key);
+        recruits.RemoveAt(n);
+        while(n < recruits.Count) {
+          recruits[n] = new KeyValuePair<int, Actor>(recruits[n].Key - 1, recruits[n].Value);
+          n++;
+        }
+      } while(0 < --want && 0<recruits.Count);
+      return ret;
     }
 
     private void PlaceRefugeeParty(ZoneLoc dest) {
