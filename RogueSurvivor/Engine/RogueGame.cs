@@ -8012,8 +8012,20 @@ namespace djack.RogueSurvivor.Engine
       OnActorEnterTile(actor);
       actor.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
       if (   actor.Controller is OrderableAI ai && !is_cross_district
-          && exitAt.Location.Map== exitAt.Location.Map.District.EntryMap)
+          && exitAt.Location.Map == exitAt.Location.Map.District.EntryMap) {
         ai.Avoid(exitAt.Location.Exit);
+        // subways are problematic
+        foreach(var dir in Direction.COMPASS_4) {
+          var near = exitAt.Location + dir;
+          if (!Map.Canonical(ref near)) continue;
+          var exit = near.Exit;
+          if (null != exit) ai.Avoid(exit);
+          near += dir;
+          if (!Map.Canonical(ref near)) continue;
+          exit = near.Exit;
+          if (null != exit) ai.Avoid(exit);
+        }
+      }
       if (isPlayer) PanViewportTo(actor.Location);
       return true;
     }
