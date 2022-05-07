@@ -154,6 +154,12 @@ namespace djack.RogueSurvivor.Data
       return TURNS_PER_DAY*day + TURNS_PER_HOUR*hour;
     }
 
+    public int TurnsTo(int hour, int tick=0) {
+        var t0 = TURNS_PER_DAY * Day + TURNS_PER_HOUR * hour + tick;
+        var delta = t0 - TurnCounter;
+        return 0 <= delta ? delta : delta + TURNS_PER_DAY;
+    }
+
     public int MidnightToDawnDuration {
       get {
         if (HOUR_SUNRISE > m_Hour) return Turn(m_Day, HOUR_SUNRISE) -TurnCounter;

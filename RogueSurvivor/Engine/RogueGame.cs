@@ -2436,6 +2436,11 @@ namespace djack.RogueSurvivor.Engine
     // * on-foot landing zones are 6 on each side of the highway (pre-computed @ s_RefugeeSpawnZones).
 
 #if PROTOTYPE
+    static private bool CheckForEvent_ScheduleRefugees(Map map)
+    {
+      return 6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR-2 == map.LocalTime.Tick;
+    }
+
     private void FireEvent_ScheduleRefugees(District district)
     {
 //    const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
@@ -2459,12 +2464,18 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    static private bool CheckForEvent_RefugeeParty(Map map)
+    {
+      if (null == s_RefugeePool) return false;
+      return 7 <= map.LocalTime.Hour && 21 > map.LocalTime.Hour;
+    }
+
     // two options here (district must be on edge of reality bubble)
     // * if we have a highway, we can spawn up to two parties on the spawn zones near the highway
     // * if the district is compromised by Z, a pair of police can gate-crash things
     private void FireEvent_RefugeeParty(District district)
     {
-      if (null == s_RefugeePool) return;
+      if (null == s_RefugeePool) return; // possibly pre-condition
 
       var world = World.Get;
       var code = world.EdgeCode(district);
@@ -2472,6 +2483,37 @@ namespace djack.RogueSurvivor.Engine
 
       // count: enemies of police, police
       // if have enemies of police, but no police, try to gate-crash
+
+      // otherwise, check for typical spawn zones
+      Compass.XCOMlike dir;   // something illegal for incoming highway
+      switch(code) {
+      case 1:
+        if (world.Extent.Anchor(Compass.XCOMlike.N) != district.WorldPosition) return;
+        dir = Compass.XCOMlike.N;
+        break;
+      case 2:
+        if (world.Extent.Anchor(Compass.XCOMlike.E) != district.WorldPosition) return;
+        dir = Compass.XCOMlike.E;
+        break;
+      case 4:
+        if (world.Extent.Anchor(Compass.XCOMlike.S) != district.WorldPosition) return;
+        dir = Compass.XCOMlike.S;
+        break;
+      case 8:
+        if (world.Extent.Anchor(Compass.XCOMlike.W) != district.WorldPosition) return;
+        dir = Compass.XCOMlike.W;
+        break;
+      default: return;
+      }
+
+      var rules = Rules.Get;
+      var one_in = 8*(district.EntryMap.LocalTime.TurnsTo(21) - 1)+1;
+      one_in -= s_RefugeePool.Count;
+      if (1 > one_in) one_in = 1;
+
+      // theoretically could overflow at a high enough turns/day, but not for Angband-scale or coarser
+      var dr = rules.DiceRoller.Roll(0, one_in*one_in);
+      if (dr >= 2 * one_in -1) return;
     }
 #endif
 
