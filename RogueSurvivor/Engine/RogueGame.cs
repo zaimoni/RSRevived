@@ -8,6 +8,7 @@
 
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
+#define REFUGEE_WAVES
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -1959,7 +1960,12 @@ namespace djack.RogueSurvivor.Engine
     private void EndTurnDistrictEvents(District d)
     { // historically, all districts were within city limits so they all could use the same event specifications.
       CheckFor_Fire_ZombieInvasion(d.EntryMap);
+#if REFUGEE_WAVES
       if (CheckForEvent_RefugeesWave(d.EntryMap)) FireEvent_RefugeesWave(d);
+#else
+      if (CheckForEvent_ScheduleRefugees(d.EntryMap)) FireEvent_ScheduleRefugees(d);
+      if (CheckForEvent_RefugeeParty(d.EntryMap)) FireEvent_RefugeeParty(d);
+#endif
       if (CheckForEvent_NationalGuard(d.EntryMap)) FireEvent_NationalGuard(d.EntryMap);
       if (CheckForEvent_ArmySupplies(d.EntryMap)) FireEvent_ArmySupplies(d.EntryMap);
       if (CheckForEvent_BikersRaid(d.EntryMap)) FireEvent_BikersRaid(d.EntryMap);
@@ -2378,6 +2384,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if REFUGEE_WAVES
     static private bool CheckForEvent_RefugeesWave(Map map)
     {
       return map.LocalTime.IsStrikeOfMidday;
@@ -2435,7 +2442,7 @@ namespace djack.RogueSurvivor.Engine
     // * keep the same #, but space them out in time ... say 7-17 (incoming @ s_RefugeePool)
     // * on-foot landing zones are 6 on each side of the highway (pre-computed @ s_RefugeeSpawnZones).
 
-#if PROTOTYPE
+#else
     static private bool CheckForEvent_ScheduleRefugees(Map map)
     {
       return 6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR-2 == map.LocalTime.Tick;
