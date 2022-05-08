@@ -2486,7 +2486,8 @@ namespace djack.RogueSurvivor.Engine
         var ub = s_RefugeePool!.Count;
         while(0 <= --ub) {
             var fo = s_RefugeePool[ub];
-            if (leader.CanTakeLeadOf(fo)) ret.Add(new(ub, fo));
+            // inline Actor::CanTakeLeadOf here.  Most checks vacuously true for unspawned actors
+            if (leader.Faction == fo.Faction || !fo.Faction.LeadOnlyBySameFaction) ret.Add(new(ub, fo));
         }
         return ret;
     }
@@ -2589,25 +2590,24 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var rules = Rules.Get;
-        var one_in = 8*(district.EntryMap.LocalTime.TurnsTo(21) - 1)+1;
-        one_in -= s_RefugeePool.Count;
-        if (1 > one_in) one_in = 1;
+        var numerator = s_RefugeePool.Count;
+        var denominator = 8 * (district.EntryMap.LocalTime.TurnsTo(21) - 1) + 1;
 
         // theoretically could overflow at a high enough turns/day, but not for Angband-scale or coarser
-        var dr = rules.DiceRoller.Roll(0, one_in*one_in);
-        if (dr >= 2 * one_in -1) return;
+        var dr = (numerator<denominator) ? rules.DiceRoller.Roll(0, denominator * denominator) : 0;
+        if (dr >= 2 * numerator*denominator - numerator*numerator) return;
 
-        if (dr <= one_in) {
+        if (dr <= numerator * denominator) {
           // select for left/top spawn zone
-          PlaceRefugeeParty(s_RefugeeSpawnZones![2 * (int)dir]);
+          PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir]);
           if (0 >= s_RefugeePool.Count) {
             Interlocked.Exchange(ref s_RefugeePool, null);
             return;
           }
-          if (0 < dr) return;
+          if (numerator*numerator < dr) return;
         }
         // select for right/bottom spawn zone
-        PlaceRefugeeParty(s_RefugeeSpawnZones![2 * (int)dir + 1]);
+        PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir + 1]);
         if (0 >= s_RefugeePool.Count) Interlocked.Exchange(ref s_RefugeePool, null);
       }
     }

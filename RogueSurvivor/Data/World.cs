@@ -114,10 +114,10 @@ namespace djack.RogueSurvivor.Data
 
     public uint EdgeCode(District d) {
         uint ret = 0;
-        if (Extent.Top >= d.WorldPosition.X) ret |= 1;
-        if (Extent.Right - 1 <= d.WorldPosition.Y) ret |= 2;
-        if (Extent.Bottom - 1 <= d.WorldPosition.X) ret |= 4;
-        if (Extent.Left >= d.WorldPosition.Y) ret |= 8;
+        if (Extent.Top >= d.WorldPosition.Y) ret |= 1;
+        if (Extent.Right - 1 <= d.WorldPosition.X) ret |= 2;
+        if (Extent.Bottom - 1 <= d.WorldPosition.Y) ret |= 4;
+        if (Extent.Left >= d.WorldPosition.X) ret |= 8;
 	    return ret;
     }
 
