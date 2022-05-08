@@ -23,6 +23,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Location obj_dest { get { return m_To; } }
     public Location dest { get { return m_Object.Location; } }
 
+    static public bool CanConstruct(MapObject pushObj, Direction pushDir) {
+        var x = pushObj.Location + pushDir;
+        return Map.Canonical(ref x);
+    }
+
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir) : base(actor)
     {
 #if DEBUG

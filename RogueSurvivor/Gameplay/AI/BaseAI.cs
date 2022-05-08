@@ -619,6 +619,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var dir in Direction.COMPASS) {
           var dest = x.Key+dir;
           if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          if (!ActionPush.CanConstruct(x.Value, dir)) continue;
           var act = new ActionPush(m_Actor, x.Value, dir);
           if (act.IsPerformable()) pushes.Add(act);
         }
