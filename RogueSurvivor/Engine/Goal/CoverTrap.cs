@@ -8,6 +8,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine._Goal
 {
+    [Serializable]
     internal class CoverTrap : Condition<Actor>
     {
         private Location[] m_Locations;
