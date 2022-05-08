@@ -2358,7 +2358,8 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private void CheckFor_Fire_ZombieInvasion(Map map)
     {
-      if (map.LocalTime.IsStrikeOfMidnight) {
+      // lock down the ley-line invasion to city limits, for now.
+      if (map.LocalTime.IsStrikeOfMidnight && World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) {
         var uc = map.Actors.CountUndead();
         var max_un = s_Options.MaxUndeads;
         if (uc < max_un) {
@@ -2435,7 +2436,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #else
-    // Refugee re-implementation
+    // Refugee re-implementation (requires encircling highway)
     // * These arrive "near the main roads", typically
     // * We shall assume arrival on foot, for now.  Anyone arriving by vehicle either is police/military, or has an escape plan
     // ** motorcycle: might be able to carry 2 in a pinch
