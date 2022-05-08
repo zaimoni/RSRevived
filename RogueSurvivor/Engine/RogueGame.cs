@@ -3223,8 +3223,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
                 break;
               case PlayerCommand.MARK_ENEMIES_MODE:
-                if (TryPlayerInsanity())
-                {
+                if (TryPlayerInsanity()) {
                   flag1 = false;
                   break;
                 }
@@ -3235,6 +3234,7 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.ORDER_PC_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(pc);
+                if (flag1) play_timer.Reset(); // glitches otherwise
                 break;
               case PlayerCommand.COUNTERMAND_PC:
                 HandlePlayerCountermandPC(pc);
