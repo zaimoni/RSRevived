@@ -111,21 +111,21 @@ namespace djack.RogueSurvivor.Data
     }
 
     public override void AddMessageForceRead(Data.Message msg) {
-      if (RogueGame.IsPlayer(m_Actor)) {
+      if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
       } else DeferMessage(msg);
     }
     public void AddMessagesForceRead(IEnumerable<Data.Message> msgs) {
-      if (RogueGame.IsPlayer(m_Actor)) {
+      if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessages(msgs);
         RogueGame.Game.AddMessagePressEnter();
       } else DeferMessages(msgs);
     }
     public override void AddMessageForceReadClear(Data.Message msg) {
-      if (RogueGame.IsPlayer(m_Actor)) {
+      if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
