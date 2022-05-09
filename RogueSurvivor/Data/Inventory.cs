@@ -176,8 +176,6 @@ namespace djack.RogueSurvivor.Data
         return false;
       }
       RemoveAllQuantity(it);
-      RepairZeroQty();
-      dest.RepairZeroQty();
       RejectCrossLink(dest);
       return IsEmpty;
     }

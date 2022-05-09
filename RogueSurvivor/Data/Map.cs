@@ -1965,7 +1965,6 @@ retry:
       if (null == doomed) return false;
       foreach(T it in doomed) itemsAt.RemoveAllQuantity(it);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
-      else itemsAt.RepairZeroQty(); // reddit/greenimba 2020-10-23
       return true;
     }
 

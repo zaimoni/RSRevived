@@ -3877,7 +3877,7 @@ namespace djack.RogueSurvivor.Data
         else m_SelfDefenceFrom.TrimExcess();
       }
 #if DEBUG
-      if (null != m_Inventory) m_Inventory.RepairZeroQty();
+      m_Inventory?.RepairZeroQty();
 #endif
     }
 

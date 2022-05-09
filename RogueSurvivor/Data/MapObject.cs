@@ -401,7 +401,7 @@ namespace djack.RogueSurvivor.Data
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
 #if DEBUG
-      if (null != m_Inventory) m_Inventory.RepairZeroQty();
+      m_Inventory?.RepairZeroQty();
 #endif
     }
 

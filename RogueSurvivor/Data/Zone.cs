@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Data
     {
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+      if (null == value) throw new ArgumentNullException(nameof(key));
 #endif
       (m_Attributes ??= new Dictionary<string, object>(1))[key] = value;
     }
