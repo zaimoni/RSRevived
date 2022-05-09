@@ -12205,7 +12205,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       PagedPopup("Reviewing...", w_pts.Count(), label, details);
-
+      PanViewportTo(player);
     }
 
     private bool ForceVisibleToPlayer(Map map, in Point position)
