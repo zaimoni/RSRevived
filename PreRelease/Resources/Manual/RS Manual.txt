@@ -641,11 +641,14 @@ Various items related to your current faction.  Police are much more "helpful".
 
 > SET WAYPOINT (Alt-Shift-[City Info], default Alt-Shift-I)
 Designate a location as a waypoint.  This is done via a far-look command; to just far-look, cancel setting the waypoint with Escape.
-* The actual designation is VAPORWARE.  Far-look works as advertised with usual movement keys (1-9 and X)
-* W)alk and R)un work as advertised.  These use AI pathfinding, and are canceled by an enemy in line of sight.
+* Far-look works as advertised with usual movement keys (keypad 1-9 and X)
+* W)alk and R)un work as advertised, but do not designate waypoints.  These use AI pathfinding, and are canceled by an enemy in line of sight.
+* keyboard 1..9 request walking 1-9 steps towards the waypoint, with AI pathfinding.  This *does* designate the waypoint.
 
-> CLEAR WAYPOINT (Alt-Shift-Ctrl-[City Info], default Alt-Shift-Ctrl-I) [VAPORWARE]
-Clear a previously designated waypoint.
+> CLEAR WAYPOINT (Alt-Ctrl-[City Info], default Alt-Ctrl-I)
+Brings up a popup menu of previously designated waypoints.  Selecting a waypoint far-looks at the waypoint, from which
+* keyboard 1..9 requests walking 1-9 steps towards the waypoint
+* DEL clears the waypoint
 
 > ALLIES OVERVIEW (hard-coded Ctrl-O)
 Basic overview of your allies.  Always includes followers.  Police get a review of all other police in the district as well.

@@ -53,6 +53,7 @@
 
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
+    <Compile Include="Data\Waypoint.cs" />
     <Compile Include="Data\IMap.cs" />
     <Compile Include="Data\LinearChokepoint.cs" />
     <Compile Include="Data\RadioFaction.cs" />

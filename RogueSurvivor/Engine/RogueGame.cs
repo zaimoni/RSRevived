@@ -12044,8 +12044,10 @@ namespace djack.RogueSurvivor.Engine
       var overlay_anchor = MapToScreen(viewpoint);
       overlay_anchor.X += TILE_SIZE;
 
+      var pc = Player.Controller as PlayerController;
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps.  RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps and record waypoint. ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
 
       do {
@@ -12058,7 +12060,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           case Keys.R:  // run to ...
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).RunTo(in viewpoint);
+              pc.RunTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12066,7 +12068,7 @@ namespace djack.RogueSurvivor.Engine
             break;  // XXX \todo be somewhat more informative
           case Keys.W:  // walk to ...
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).WalkTo(in viewpoint);
+              pc.WalkTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12082,7 +12084,8 @@ namespace djack.RogueSurvivor.Engine
           case Keys.D8:
           case Keys.D9:
             if (Player.CanEnter(viewpoint)) {
-              (Player.Controller as PlayerController).WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
+              pc.WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
+              pc.AddWaypoint(viewpoint, "manual: T"+viewpoint.Map.LocalTime.TurnCounter.ToString());
               ClearOverlays();
               PanViewportTo(Player);
               return null;
@@ -12157,7 +12160,52 @@ namespace djack.RogueSurvivor.Engine
       // build out implementation here
       // should be a standard menu once the objective system is built out
       // for now, forward to set way point
-      HandlePlayerSetWaypoint(player);
+//    HandlePlayerSetWaypoint(player);
+
+      var pc = player.Controller as PlayerController;
+      var w_pts = pc.Waypoints;
+      if (null == w_pts) {
+        ErrorPopup("No waypoints set.");
+        return;
+      }
+
+      string label(int index) {
+        var x = w_pts[index];
+        return string.Format("{0}: {1}", x.dest.ToString(), x.label);
+      }
+      bool details(int index) {
+        var x = w_pts[index];
+        PanViewportTo(x.dest);
+
+        void navigate(KeyEventArgs key) {
+          switch (key.KeyCode)
+          {
+          case Keys.Delete:
+            pc.RemoveWaypoint(x.dest);
+            break;
+          case Keys.D1: // walk 1-9 steps to ....
+          case Keys.D2:
+          case Keys.D3:
+          case Keys.D4:
+          case Keys.D5:
+          case Keys.D6:
+          case Keys.D7:
+          case Keys.D8:
+          case Keys.D9:
+            pc.WalkTo(x.dest, (int)key.KeyCode - (int)Keys.D0);
+            break;
+          }
+        }
+
+        var tmp = new List<string>();
+        // for the same map, try to be useful by putting the "nearest" items first
+        tmp.Insert(0, "Walk 1) to 9) steps towards the waypoint, or DEL)ete the waypoint.");
+        ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
+        return false;
+      }
+
+      PagedPopup("Reviewing...", w_pts.Count(), label, details);
+
     }
 
     private bool ForceVisibleToPlayer(Map map, in Point position)

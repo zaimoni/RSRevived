@@ -76,6 +76,7 @@ namespace djack.RogueSurvivor.Data
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
     private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
+    private List<Waypoint_s>? m_Waypoints = null;
 
     private static List<EventUnconditional>? s_BeforeAction;
     private static List<EventUnconditional>? s_AfterAction;
@@ -86,6 +87,7 @@ namespace djack.RogueSurvivor.Data
                                                                    : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
+#region UI messages
     public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
     public void DeferMessages(IEnumerable<Data.Message> x) {
       foreach(Data.Message msg in x) m_MsgCache.Add(msg);
@@ -130,6 +132,39 @@ namespace djack.RogueSurvivor.Data
         RogueGame.ClearMessages();
       } else DeferMessage(msg);
     }
+#endregion
+
+    public void AddWaypoint(in Location dest, string why) {
+        (m_Waypoints ??= new()).Add(new(dest, why));
+    }
+
+    public bool HasWaypoint(in Location dest) {
+        if (null == m_Waypoints) return false;
+        foreach(var w in m_Waypoints) if (w.dest == dest) return true;
+        return false;
+    }
+
+    public void RemoveWaypoint(in Location dest) {
+        if (null != m_Waypoints) {
+            var ub = m_Waypoints.Count;
+            while(0 <= --ub) {
+                if (m_Waypoints[ub].dest == dest) m_Waypoints.RemoveAt(ub);
+            }
+            if (0 >= m_Waypoints.Count) m_Waypoints = null;
+        }
+    }
+
+    public void RemoveWaypoints(Predicate<Location> fail) {
+        if (null != m_Waypoints) {
+            var ub = m_Waypoints.Count;
+            while(0 <= --ub) {
+                if (fail(m_Waypoints[ub].dest)) m_Waypoints.RemoveAt(ub);
+            }
+            if (0 >= m_Waypoints.Count) m_Waypoints = null;
+        }
+    }
+
+    public IReadOnlyList<Waypoint_s>? Waypoints { get { return m_Waypoints; } }
 
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
