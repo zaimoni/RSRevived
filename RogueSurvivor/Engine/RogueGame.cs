@@ -6787,6 +6787,18 @@ namespace djack.RogueSurvivor.Engine
         ;
       while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
     }
+
+    private bool WaitEscape(Predicate<KeyEventArgs> ok)
+    {
+      if (IsSimulating) return false;
+      var test = m_UI.UI_WaitKey(); // yes, no mouse processing
+      while(test.KeyCode != Keys.Escape) {
+        if (ok(test)) return true;
+        test = m_UI.UI_WaitKey();
+      };
+      return false;
+    }
+
 #nullable restore
 
     static private int KeyToChoiceNumber(Keys key)
@@ -12177,11 +12189,12 @@ namespace djack.RogueSurvivor.Engine
         var x = w_pts[index];
         PanViewportTo(x.dest);
 
-        void navigate(KeyEventArgs key) {
+        bool navigate(KeyEventArgs key) {
           switch (key.KeyCode)
           {
           case Keys.Delete:
             pc.RemoveWaypoint(x.dest);
+            return true;
             break;
           case Keys.D1: // walk 1-9 steps to ....
           case Keys.D2:
@@ -12193,15 +12206,16 @@ namespace djack.RogueSurvivor.Engine
           case Keys.D8:
           case Keys.D9:
             pc.WalkTo(x.dest, (int)key.KeyCode - (int)Keys.D0);
+            return true;
             break;
           }
+          return false;
         }
 
         var tmp = new List<string>();
-        // for the same map, try to be useful by putting the "nearest" items first
         tmp.Insert(0, "Walk 1) to 9) steps towards the waypoint, or DEL)ete the waypoint.");
         ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
-        return false;
+        return true;
       }
 
       PagedPopup("Reviewing...", w_pts.Count(), label, details);
@@ -13116,6 +13130,22 @@ retry:
       RemoveOverlay(who);   // alpha10 fix
       RemoveOverlay(content);
       m_MusicManager.Stop();
+    }
+
+    private bool ShowSpecialDialogue(Actor speaker, string[] text, Predicate<KeyEventArgs> ok)
+    {
+      m_MusicManager.Stop();
+      m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
+      var content = new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty);
+      var who = new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR));
+      AddOverlay(content);
+      AddOverlay(who);
+      RedrawPlayScreen();
+      var ret = WaitEscape(ok);
+      RemoveOverlay(who);   // alpha10 fix
+      RemoveOverlay(content);
+      m_MusicManager.Stop();
+      return ret;
     }
 #nullable restore
 
