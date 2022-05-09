@@ -2481,14 +2481,18 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    static private bool RefugeeCanTakeLeadOf(Actor leader, Actor fo) {
+      // inline Actor::CanTakeLeadOf here.  Most checks vacuously true for unspawned actors
+      return leader.Faction == fo.Faction || !fo.Faction.LeadOnlyBySameFaction;
+    }
+
     private List<KeyValuePair<int,Actor> > GetRefugeeFollowers(Actor leader)
     {
         List<KeyValuePair<int,Actor> > ret = new();
         var ub = s_RefugeePool!.Count;
         while(0 <= --ub) {
             var fo = s_RefugeePool[ub];
-            // inline Actor::CanTakeLeadOf here.  Most checks vacuously true for unspawned actors
-            if (leader.Faction == fo.Faction || !fo.Faction.LeadOnlyBySameFaction) ret.Add(new(ub, fo));
+            if (RefugeeCanTakeLeadOf(leader, fo)) ret.Add(new(ub, fo));
         }
         return ret;
     }
@@ -2515,7 +2519,7 @@ namespace djack.RogueSurvivor.Engine
         var recruit = recruits[n];
         var recruit_followers = recruit.Value.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
         // may want plot armor for uniques
-        if (n_followers < recruit_followers && recruit.Value.CanTakeLeadOf(leader)) {
+        if (n_followers < recruit_followers && RefugeeCanTakeLeadOf(recruit.Value, leader)) {
           want += (recruit_followers - n_followers);
           leader = recruit.Value;
           ret.Insert(0, leader);
