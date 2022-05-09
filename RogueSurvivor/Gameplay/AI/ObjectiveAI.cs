@@ -3112,7 +3112,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
-        if (obtain_goals_cache.TryGetValue(m,out var cache)) return cache;
+        if (obtain_goals_cache.TryGetValue(m,out var cache)) {
+#if DIAGNOSE_SELF_PATHING
+          if (m_Actor.Location.Map == m && cache.Contains(m_Actor.Location.Position)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+#endif
+          return cache;
+        }
 #if TRACE_GOALS
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": obtaining goals for " + m +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s()+ "\nwaypoint_dist: "+waypoint_dist.to_s());
 #endif
@@ -3159,7 +3164,7 @@ Restart:
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "min dist: "+loc.ToString()+": "+ dist.to_s());
 #endif
             if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
-            goals.Add(loc);
+            if (loc != m_Actor.Location) goals.Add(loc);
           }
           } catch (InvalidOperationException e) {
             if (e.Message.Contains("Collection was modified")) goto Restart;
