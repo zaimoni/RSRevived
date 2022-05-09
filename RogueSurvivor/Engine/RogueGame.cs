@@ -2863,6 +2863,7 @@ namespace djack.RogueSurvivor.Engine
         if (!loc.IsWalkableFor(toSpawn)) return false;
         if (!dest.m.NoPlayersNearerThan(in pt, minDistToPlayer)) return false;
         if (toSpawn.WouldBeAdjacentToEnemy(loc.Map, loc.Position)) return false;
+        if (null != loc.Actor) return false;
         return true;
       });
       if (0 >= tmp.Count) return false;
@@ -3759,7 +3760,7 @@ namespace djack.RogueSurvivor.Engine
     }
     private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg+"? (Y/N)" }); }
 
-    private void PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
+    private bool PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
       var all_labels = new List<string>();
       int i = 0;
@@ -3770,6 +3771,7 @@ namespace djack.RogueSurvivor.Engine
       var header_size = RogueForm.Get.Measure(header);
       header_size.Height += 1;
 
+      bool ret = false;
       int delta = EXTENDED_CHOICE_UB;
       int num1 = 0;
       int num2 = 0;
@@ -3791,7 +3793,8 @@ namespace djack.RogueSurvivor.Engine
               || CANVAS_WIDTH-4  < staging_size[^1].Width)
             throw new InvalidOperationException("test case");
 #endif
-          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
+//        working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
+          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width), (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
           AddOverlay(working);
         }
         RedrawPlayScreen();
@@ -3813,11 +3816,15 @@ namespace djack.RogueSurvivor.Engine
         int choiceNumber = KeyToExtendedChoiceNumber(keyEventArgs.KeyCode);
         if (choiceNumber >= 0 && choiceNumber < delta) {
           int index = num1 + choiceNumber;
-          if (strict_ub > index && details(index)) break;
+          if (strict_ub > index && details(index)) {
+            ret = true;
+            break;
+          }
         }
       }
       while(true);
       RemoveOverlay(working);
+      return ret;
     }
 
     private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
@@ -3861,9 +3868,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleItemInfo()
     {
+      var player_backup = Player;
       var item_classes = Player.Controller.WhatHaveISeen();
       if (null == item_classes || 0>=item_classes.Count) {
-        AddMessage(new Data.Message("You have seen no memorable items.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        ErrorPopup("You have seen no memorable items.");
         return;
       }
       item_classes.Sort();
@@ -3872,75 +3880,64 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) {
         Gameplay.GameItems.IDs item_type = item_classes[index];
         var catalog = Player.Controller.WhereIs(item_type);
+        var pc = Player.Controller as PlayerController;
 
-        HashSet<Location> retrofit() {
-           var ret = new HashSet<Location>();
-           foreach(var x in catalog.Keys) {
-             var obj = x.MapObject;
+        List<KeyValuePair<Location, int> > tmp_where = new();
+        Dictionary<Location, int> loc_distances = new();
+        foreach(var loc_qty in catalog) {
+             var obj = loc_qty.Key.MapObject;
              if (null==obj || !obj.IsContainer) {
-               if (Player.CanEnter(x)) ret.Add(x);
+               if (Player.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
              } else {
                foreach(var d in Direction.COMPASS) {
-                 var test = x+d;
-                 if (Player.CanEnter(test)) ret.Add(test);
+                 var test = loc_qty.Key + d;
+                 if (Player.CanEnter(test)) tmp_where.Add(new(test, loc_qty.Value));
                }
              }
-           }
-           return ret;
-        }
 
-        void navigate(KeyEventArgs key) {
-          var dests = new HashSet<Location>();
-          switch (key.KeyCode)
-          {
-          case Keys.R:
-            (Player.Controller as PlayerController).RunTo(retrofit());
-            break;  // XXX \todo be somewhat more informative
-          case Keys.W:  // walk to ...
-            (Player.Controller as PlayerController).WalkTo(retrofit());
-            break;
-          case Keys.D1: // walk 1-9 steps to ....
-          case Keys.D2:
-          case Keys.D3:
-          case Keys.D4:
-          case Keys.D5:
-          case Keys.D6:
-          case Keys.D7:
-          case Keys.D8:
-          case Keys.D9:
-            (Player.Controller as PlayerController).WalkTo(retrofit(), (int)key.KeyCode - (int)Keys.D0);
-            break;
-          }
-        }
-
-        var tmp = new List<string>();
-        // for the same map, try to be useful by putting the "nearest" items first
-        var distances = new Dictionary<string, int>();
-        foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 <= tmp.Count) break;
           if (loc_qty.Key.Map != CurrentMap) continue;
-          string msg = loc_qty.Key.ToString() + ": " + loc_qty.Value.ToString();
-          tmp.Add(msg);
-          distances[msg] = Rules.GridDistance(Player.Location,loc_qty.Key);
+          loc_distances[loc_qty.Key] = Rules.GridDistance(Player.Location,loc_qty.Key);
         }
-        tmp.Sort((lhs,rhs) => distances[lhs].CompareTo(distances[rhs]));
-        foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 <= tmp.Count) break;
-          if (loc_qty.Key.Map.DistrictPos != CurrentMap.DistrictPos) continue;
-          if (loc_qty.Key.Map == CurrentMap) continue;
-          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
+
+        string label2(int index) {
+            var x = tmp_where[index];
+            return x.Key.ToString() + ": " + x.Value.ToString();
+        };
+
+        bool details2(int index) {
+          var x = tmp_where[index];
+          PanViewportTo(x.Key);
+
+          bool navigate(KeyEventArgs key) {
+            switch (key.KeyCode)
+            {
+            case Keys.D1: // walk 1-9 steps to ....
+            case Keys.D2:
+            case Keys.D3:
+            case Keys.D4:
+            case Keys.D5:
+            case Keys.D6:
+            case Keys.D7:
+            case Keys.D8:
+            case Keys.D9:
+              pc.WalkTo(x.Key, (int)key.KeyCode - (int)Keys.D0);
+              pc.AddWaypoint(x.Key, item_type.ToString()+": T" + x.Value.ToString());
+              return true;
+            }
+            return false;
+          }
+
+          var tmp = new List<string>();
+          tmp.Insert(0, "Walk 1) to 9) steps towards the item");
+          return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         }
-        foreach(var loc_qty in catalog) {
-          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-1 <= tmp.Count) break;
-          if (loc_qty.Key.Map.DistrictPos == CurrentMap.DistrictPos) continue;
-          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
-        }
-        tmp.Insert(0, "W)alk or R)un to the item class, or walk 1) to 9) steps.");
-        ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
-        return false;
+
+        return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", tmp_where.Count, label2, details2);
       }
 
       PagedPopup("Reviewing...", item_classes.Count, label, details);
+      PanViewportTo(player_backup);
+      RedrawPlayScreen();
     }
 
     private void HandleAlliesInfo()
