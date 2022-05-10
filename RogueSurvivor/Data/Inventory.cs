@@ -153,6 +153,16 @@ namespace djack.RogueSurvivor.Data
       RepairZeroQty();
     }
 
+    public void RemoveAllQuantity(IEnumerable<Item> src) {
+      foreach(var it in src) {
+#if DEBUG
+        if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");
+#endif
+        m_Items.Remove(it);
+      }
+      RepairZeroQty();
+    }
+
     public void Consume(Item it) {
 #if DEBUG
       if (!m_Items.Contains(it)) throw new InvalidOperationException("tracing");

@@ -1963,7 +1963,7 @@ retry:
       if (null == itemsAt) return false;
       var doomed = itemsAt.GetItemsByType(test);
       if (null == doomed) return false;
-      foreach(T it in doomed) itemsAt.RemoveAllQuantity(it);
+      itemsAt.RemoveAllQuantity(doomed);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
       return true;
     }
