@@ -3100,7 +3100,7 @@ namespace djack.RogueSurvivor.Engine
         if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
 
-        ActorAction tmpAction = (Player.Controller as PlayerController).AutoPilot();
+        ActorAction tmpAction = pc.AutoPilot();
         if (null != tmpAction) {
           play_timer.Start();
           tmpAction.Perform();
@@ -7973,10 +7973,7 @@ namespace djack.RogueSurvivor.Engine
         if (Player==actor) RedrawPlayScreen();
         return false;
       }
-#if OBSOLETE
-      if (isPlayer && exitAt.ToMap.District != map.District)
-        BeforePlayerEnterDistrict(exitAt.ToMap.District);
-#endif
+
       string reason = exitAt.ReasonIsBlocked(actor);
       if (!string.IsNullOrEmpty(reason)) {
         if (isPlayer) ErrorPopup(reason);
@@ -7985,6 +7982,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
         return true;
       }
+
       Map exit_map = exitAt.ToMap;
       bool is_cross_district = map.DistrictPos != exit_map.DistrictPos;
       bool run_is_free_move = actor.RunIsFreeMove;
@@ -8016,9 +8014,7 @@ namespace djack.RogueSurvivor.Engine
       actor.RemoveFromMap();
       var dragged_corpse = actor.DraggedCorpse;
       if (null != dragged_corpse) map.Remove(dragged_corpse);
-#if OBSOLETE
-      if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
-#endif
+
       exitAt.Location.Place(actor); // Adds at last position by default
       if (   !is_cross_district // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
           || run_was_free_move)
@@ -12919,73 +12915,6 @@ namespace djack.RogueSurvivor.Engine
       // alpha10 update background music
       UpdateBgMusic();
     }
-
-#if OBSOLETE
-    // looks good in single-player but not really honest with the no-skew scheduler (and possibly can mess it up)
-    // problems with turn skew should be handled in simulation (BeforePlayerEnterDistrict)
-    private void OnPlayerLeaveDistrict()
-    {
-//    Session.Get.CurrentMap.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
-    }
-
-    private void BeforePlayerEnterDistrict(District district)
-    {
-      if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
-        m_MusicManager.Stop();
-        m_MusicManager.Play(GameMusics.INTERLUDE);
-        StopSimThread();
-        lock (m_SimMutex) {
-          // The no-skew scheduling should mean the following is not necessary.
-          // a district after the PC's will run in order.  It's ok for the turn counter to not increment.
-          // a district before the PCs will already be "current"
-#if FAIL
-          Map entryMap = district.EntryMap;
-          double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-          int turnCounter = entryMap.LocalTime.TurnCounter;
-          double num1 = 0.0;
-          bool flag = false;
-          while (entryMap.LocalTime.TurnCounter <= Session.Get.WorldTime.TurnCounter) {
-            double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-            if (entryMap.LocalTime.TurnCounter == Session.Get.WorldTime.TurnCounter || entryMap.LocalTime.TurnCounter == turnCounter || totalMilliseconds2 >= num1 + 1000.0) {
-              num1 = totalMilliseconds2;
-              ClearMessages();
-              AddMessage(new Data.Message(string.Format("Simulating district, please wait {0}/{1}...", (object)entryMap.LocalTime.TurnCounter, (object)Session.Get.WorldTime.TurnCounter), Session.Get.WorldTime.TurnCounter, Color.White));
-              AddMessage(new Data.Message("(this is an option you can tune)", Session.Get.WorldTime.TurnCounter, Color.White));
-              int num2 = entryMap.LocalTime.TurnCounter - turnCounter;
-              if (num2 > 1) {
-                int num3 = Session.Get.WorldTime.TurnCounter - entryMap.LocalTime.TurnCounter;
-                double num4 = 1000.0 * (double)num2 / (1.0 + totalMilliseconds2 - totalMilliseconds1);
-                AddMessage(new Data.Message(string.Format("Turns per second    : {0:F2}.", (object)num4), Session.Get.WorldTime.TurnCounter, Color.White));
-                int num5 = (int)((double)num3 / num4);
-                int num6 = num5 / 60;
-                int num7 = num5 % 60;
-                AddMessage(new Data.Message(string.Format("Estimated time left : {0}.", num6 > 0 ? (object)string.Format("{0} min {1:D2} secs", (object)num6, (object)num7) : (object)string.Format("{0} secs", (object)num7)), Session.Get.WorldTime.TurnCounter, Color.White));
-              }
-              if (flag)
-                AddMessage(new Data.Message("Simulation aborted!", Session.Get.WorldTime.TurnCounter, Color.Red));
-              else
-                AddMessage(new Data.Message("<keep ESC pressed to abort the simulation>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-              RedrawPlayScreen();
-              if (!m_MusicManager.IsPlaying(GameMusics.INTERLUDE))
-                m_MusicManager.Play(GameMusics.INTERLUDE);
-            }
-            if (flag) break;
-
-            KeyEventArgs keyEventArgs = m_UI.UI_PeekKey();
-            if (keyEventArgs != null && keyEventArgs.KeyCode == Keys.Escape) {
-              foreach (Map map in district.Maps)
-                map.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
-              flag = true;
-            }
-            if (!flag) SimulateDistrict(district);
-          }
-#endif
-        }
-        RestartSimThread();
-        RemoveLastMessage();
-        m_MusicManager.Stop();
-    }
-#endif
 
     private SimFlags ComputeSimFlagsForTurn(int turn)
     {
