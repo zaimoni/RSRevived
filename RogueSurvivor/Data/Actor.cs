@@ -579,6 +579,13 @@ namespace djack.RogueSurvivor.Data
       return murders+ circumstantial;
     }
 
+    public bool IsFirstClassCitizen()
+    {
+        if (Model.Abilities.IsLawEnforcer) return true;
+        if (Faction.ID.ExtortionIsAggression()) return true;
+        return false;
+    }
+
     public void HasMurdered(Actor victim)
     {
 #if DEBUG

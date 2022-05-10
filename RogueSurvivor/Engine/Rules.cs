@@ -711,8 +711,8 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == killer) return false;
       if (victim.Model.Abilities.IsUndead) return false;
-      if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersOnRecord(killer) > 0) return false;
-      if (killer.Faction.ID.ExtortionIsAggression() && victim.MurdersOnRecord(killer) > 0) return false;
+      bool k_first_class = killer.IsFirstClassCitizen();
+      if (k_first_class && 0 < victim.MurdersOnRecord(killer)) return false;
 #if POLICE_NO_QUESTIONS_ASKED
       if (killer.Model.Abilities.IsLawEnforcer && killer.Threats.IsThreat(victim)) return false;
 #endif
@@ -720,17 +720,17 @@ namespace djack.RogueSurvivor.Engine
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
       var killer_leader = killer.LiveLeader;
-      if (null != killer_leader && killer_leader.Model.Abilities.IsLawEnforcer) {
-        if (victim.MurdersOnRecord(killer_leader) > 0) return false;
-        if (killer_leader.IsEnemyOf(victim)) return false;
-        if (victim.IsSelfDefenceFrom(killer_leader)) return false;  // XXX redundant?
+      if (!k_first_class) {
+        if (null != killer_leader && killer_leader.IsFirstClassCitizen()) {
+          if (victim.MurdersOnRecord(killer_leader) > 0) return false;
+          if (killer_leader.IsEnemyOf(victim)) return false;
+          if (victim.IsSelfDefenceFrom(killer_leader)) return false;  // XXX redundant?
+        }
       }
 
-      // \todo National Guard is likely to have unusual handling as well.
-
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
-      if (victim.Model.Abilities.IsLawEnforcer) return true;
-      if (victim.LiveLeader?.Model.Abilities.IsLawEnforcer ?? false) return true;
+      if (victim.IsFirstClassCitizen()) return true;
+      if (victim.LiveLeader?.IsFirstClassCitizen() ?? false) return true;
 
       // resume old definition
       if (killer.IsSelfDefenceFrom(victim)) return false;

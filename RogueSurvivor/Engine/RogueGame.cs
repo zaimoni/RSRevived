@@ -7816,7 +7816,13 @@ namespace djack.RogueSurvivor.Engine
           }
           return trap_gone;
       }, pos);
-      if (0 >= cur_hp) KillActor(trap_owners?[0], actor, "trap");
+      if (0 >= cur_hp) {
+        var owner = trap_owners?[0];
+        if (null != owner && actor.IsFirstClassCitizen()) {
+          if (owner.IsFirstClassCitizen()) owner = null; // look the other way when it comes to friendly trap kills
+        }
+        KillActor(owner, actor, "trap");
+      }
     }
 #nullable restore
 
