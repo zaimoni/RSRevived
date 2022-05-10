@@ -58,6 +58,38 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs>? WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
     public Dictionary<Location, int>? WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
+    public Dictionary<Location, int>? Filter(Dictionary<Location, int> src, Predicate<Inventory> ok) {
+      var it_memory = ItemMemory;
+      if (null == it_memory) return src;
+
+      Dictionary<Location, int> ret = new();
+      foreach(var x in src) {
+        // Cf. LOSSensor::_seeItems
+        var allItems = Map.AllItemsAt(x.Key, m_Actor);
+        if (null == allItems) {
+          it_memory.Set(x.Key, null, x.Key.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
+          continue;
+        }
+        var ub = allItems.Count;
+        var loc_ok = false;
+        while (0 < ub) {
+          var itemsAt = allItems[--ub];
+          if (ok(itemsAt)) loc_ok = true;
+        }
+        if (loc_ok) ret.Add(x.Key, x.Value);
+        else {
+          var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
+          ub = allItems.Count;
+          while (1 < ub) {
+            var itemsAt = allItems[--ub];
+            staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
+          }
+          it_memory.Set(x.Key, staging, x.Key.Map.LocalTime.TurnCounter);   // extrasensory perception update
+        }
+      }
+      return 0 < ret.Count ? ret : null;
+    }
+
     public HashSet<Point>? WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
       var it_memory = ItemMemory;
       if (null == it_memory) return null;
@@ -71,65 +103,19 @@ namespace djack.RogueSurvivor.Data
         var it_model = (0 <= (int)it) ? Gameplay.GameItems.From(it) : null; // exclude synthetic item models
         // cheating post-filter: reject boring entertainment
         if (it_model is ItemEntertainmentModel ent) {
-            tmp.OnlyIf(loc => {
-                // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc, m_Actor);
-                if (null == allItems) {
-                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
-                  return false;
-                }
-                var ub = allItems.Count;
-                bool rebuild = true;
-                while (0 < ub) {
-                    var itemsAt = allItems[--ub];
-                    if (null != itemsAt.GetFirstByModel<ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor))) return true;
-                    if (null != itemsAt.GetFirstByModel(ent)) rebuild = false;
-                }
-                if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
-                    ub = allItems.Count;
-                    while (1 < ub) {
-                        var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
-                    }
-                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
-                }
-                return false;
-            });
+          tmp = Filter(tmp, inv => null != inv.GetFirstByModel<ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor)));
+          if (null == tmp) continue;
         }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
         if (m_Actor.Inventory.IsFull) {
           if (it_model is ItemLightModel || it_model is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
-            tmp.OnlyIf(loc => {
-                // Cf. LOSSensor::_seeItems
-                var allItems = Map.AllItemsAt(loc, m_Actor);
-                if (null == allItems) {
-                  it_memory.Set(loc,null,loc.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
-                  return false;
-                }
-                var ub = allItems.Count;
-                bool rebuild = true;
-                while (0 < ub) {
-                    var itemsAt = allItems[--ub];
-                    var test = itemsAt.GetFirstByModel(it_model);
-                    if (null == test) rebuild = true;
-                    else {
-                        if (!test.IsUseless
-                          || null != itemsAt.GetFirstByModel<Item>(it_model, obj => !obj.IsUseless)) return true;   // actualy want this one
-                    }
-                }
-                if (rebuild) {
-                    var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].Items.Select(x => x.InventoryMemoryID));
-                    ub = allItems.Count;
-                    while (1 < ub) {
-                        var itemsAt = allItems[--ub];
-                        staging.UnionWith(itemsAt.Items.Select(x => x.InventoryMemoryID));
-                    }
-                    it_memory.Set(loc, staging, loc.Map.LocalTime.TurnCounter);   // extrasensory perception update
-                }
-                return false;
+            tmp = Filter(tmp, inv => {
+              var test = inv.GetFirstByModel(it_model);
+              if (null == test) return false;
+              if (!test.IsUseless) return true;
+              return null != inv.GetFirstByModel<Item>(it_model, obj => !obj.IsUseless);
             });
-            if (0 >= tmp.Count) continue;
+            if (null == tmp) continue;
           }
         }
         ret.UnionWith(tmp.Keys.Select(Location.pos));

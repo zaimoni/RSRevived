@@ -49,13 +49,13 @@ namespace Zaimoni.Data
         }
 
         // Yes, value copy for these two
-        public HashSet<Key2> WhatIsAt(Key1 key) {
+        public HashSet<Key2>? WhatIsAt(Key1 key) {
             lock (_first_second_dict) { return _first_second_dict.TryGetValue(key, out var src) ? src.Value : null; }
         }
 
         public Dictionary<Key1, Range>? WhereIs(Key2 key)
         {
-            lock (_second_first_dict) { return (_second_first_dict.TryGetValue(key, out var src)) ? new Dictionary<Key1, Range>(src) : null; }
+            lock (_second_first_dict) { return (_second_first_dict.TryGetValue(key, out var src)) ? new(src) : null; }
         }
 
         public Dictionary<Key1, Range>? WhereIs(Key2 key, Predicate<Key1> test)
