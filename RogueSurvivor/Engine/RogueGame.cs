@@ -2004,16 +2004,6 @@ namespace djack.RogueSurvivor.Engine
       if (nextActorToAct == null) return; // undiscovered CHAR base is in stasis
 #endif
 
-      // We actually may do something.  Do a partial solution to dropped messages here in the multi-PC case
-      if (map != Player.Location.Map && !nextActorToAct.IsPlayer) {
-        var tmp = map.FindPlayer;
-        if (null != tmp) {
-          (m_Player = tmp).Controller.UpdateSensors();
-          SetCurrentMap(Player.Location);  // multi-PC support
-          RedrawPlayScreen();
-        }
-      }
-
 #if DEBUG
       if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
 #endif
