@@ -10974,6 +10974,7 @@ namespace djack.RogueSurvivor.Engine
 
 	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = Player.InterestingLocs;
+      var items = Player.Controller.ItemMemory;
 
       Point point = new Point();
       const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
@@ -11014,6 +11015,11 @@ namespace djack.RogueSurvivor.Engine
           }
         } else {
           overlays[i] = null;
+          var loc = new Location(map, point);
+          if (Map.Canonical(ref loc)) {
+            if (null != items.WhatIsAt(loc)) overlays[i] = GameImages.ITEMS_OVERLAY;
+          }
+
           if (tainted.Contains(point)) {
             overlays[i] = tourism.Contains(point) ? GameImages.THREAT_AND_TOURISM_OVERLAY : GameImages.THREAT_OVERLAY;
           } else if (tourism.Contains(point)) {
@@ -12137,15 +12143,24 @@ namespace djack.RogueSurvivor.Engine
             string[] lines = DescribeStuffAt(viewpoint.Map, viewpoint.Position);
             if (null != lines) inspect = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
+            List<string> lines = null;
             var threat = Player.Threats;
             if (null != threat) {
                 var compromised = threat.ThreatAt(in viewpoint);
                 if (0 < compromised.Count) {
-                   var lines = new List<string> { "Possibly here:" };
+                   lines = new List<string> { "Possibly here:" };
                    foreach(var x in compromised) lines.Add(x.Name);
-                   inspect = new OverlayPopup(lines.ToArray(), Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
                 }
             }
+            var items = Player.Controller.ItemMemory;
+            if (null != items) {
+                var what = items.WhatIsAt(viewpoint);
+                if (null != what) {
+                    (lines ??= new()).Add("Should be here:");
+                    foreach(var it in what) lines.Add(it.ToString());
+                }
+            }
+            if (null != lines) inspect = new OverlayPopup(lines.ToArray(), Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           }
           if (null != inspect) AddOverlay(inspect);
           PanViewportTo(in viewpoint);

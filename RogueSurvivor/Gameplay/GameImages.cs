@@ -446,6 +446,7 @@ namespace djack.RogueSurvivor.Gameplay
     // monochrome overlays
     public const string THREAT_OVERLAY = "threat";
     public const string TOURISM_OVERLAY = "tourism";
+    public const string ITEMS_OVERLAY = "items";
     public const string THREAT_AND_TOURISM_OVERLAY = "threat_tourism";
     public const string LINE_OF_FIRE_OVERLAY = "lof";
 
@@ -880,6 +881,7 @@ namespace djack.RogueSurvivor.Gameplay
       // 2018-07-31: EW railway: 64 64 64 drop shadow; 160 160 160 outer rail; 127 127 17 (stock dark gray) central bar; 100 100 80 ground under railway.
       MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
       MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
+      MonochromeTile(ITEMS_OVERLAY, Color.FromArgb(0x3200ff00));
       MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
       MonochromeTile(LINE_OF_FIRE_OVERLAY, Color.FromArgb(0x32ff7f00));
 #if CGI_ICONS
