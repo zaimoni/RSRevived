@@ -11050,7 +11050,7 @@ namespace djack.RogueSurvivor.Engine
             DrawPlayerActorTargets(Player);
           var mapObjectAt = loc.MapObject;
           if (null != mapObjectAt) {
-            DrawMapObject(mapObjectAt, screen, tile, tint);
+            DrawMapObject(mapObjectAt, screen, tile, tint, overlays[working]);
             flag2 = true;
             if (player) {
               // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
@@ -11114,7 +11114,7 @@ namespace djack.RogueSurvivor.Engine
         bool flag2 = false;
         var mapObjectAt = e.Location.MapObject;
         if (mapObjectAt != null) {
-          DrawMapObject(mapObjectAt, screen, tile, tint);
+          DrawMapObject(mapObjectAt, screen, tile, tint, null);
           flag2 = true;
         }
         // XXX currently smell does not go through (vertical) exits directly
@@ -11167,7 +11167,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawMapObject(MapObject mapObj, GDI_Point screen, Tile tile, Color tint)    // tile is the one that the map object is on.
+    public void DrawMapObject(MapObject mapObj, GDI_Point screen, Tile tile, Color tint, string overlay)    // tile is the one that the map object is on.
     {
       if (mapObj.IsMovable && tile.Model.IsWater) {
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
@@ -11187,6 +11187,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else if (tile.IsVisited && !IsPlayerSleeping()) {
         draw(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
+        if (!string.IsNullOrEmpty(overlay)) m_UI.UI_DrawImage(overlay, screen.X, screen.Y, tint);
       }
     }
 
