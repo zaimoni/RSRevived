@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, Zaimoni.Data.BackwardPlan<UpdateMoveDelta>
+  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>, Zaimoni.Data.BackwardPlan<UpdateMoveDelta>
   {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -256,6 +256,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         {   // \todo more sophisticated response to enemies in sight (might need configuring)
             return null != a.Controller.enemies_in_FOV;
         }
+
+        public bool IsCompleted(Actor src) { return m_NewLocation == src.Location; }
 
         public override ActorAction? Bind(Actor src) {
             if (!src.CanEnter(m_NewLocation)) return null;

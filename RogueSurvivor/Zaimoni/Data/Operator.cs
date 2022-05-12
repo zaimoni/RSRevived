@@ -19,4 +19,15 @@ namespace Zaimoni.Data
     {
         OP? Reduce();
     }
+
+    internal interface CanComplete<in SRC>
+    {
+        bool IsCompleted(SRC src);
+    }
+
+    internal interface CanFinish
+    {
+        bool IsCompleted();
+    }
+
 }

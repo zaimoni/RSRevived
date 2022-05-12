@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using djack.RogueSurvivor.Data;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest
+    class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest, CanFinish
     {
         private readonly Location m_NewLocation;
         private readonly Location m_From;
@@ -128,6 +129,12 @@ namespace djack.RogueSurvivor.Engine.Op
         public override ActorAction? Bind(Actor src) {
             var act = new _Action.PushOnto(src, m_From, m_NewLocation);
             return act.IsPerformable() ? act : null;
+        }
+
+        public bool IsCompleted()
+        {
+            var obj = m_NewLocation.MapObject;
+            return DisarmOk(obj, m_ObjCode);
         }
 
         public override void Blacklist(HashSet<Location> goals) {
