@@ -12,7 +12,7 @@ using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    internal class Chain : WorldUpdate
+    internal class Chain : WorldUpdate, CanReduce<WorldUpdate>
     {
         private readonly List<WorldUpdate> m_Actions;
 
@@ -63,6 +63,20 @@ namespace djack.RogueSurvivor.Engine.Op
         public override bool IsLegal() {
             foreach (var act in m_Actions) if (!act.IsLegal()) return false;
             return true;
+        }
+
+        public WorldUpdate? Reduce()
+        {
+restart:
+          var act = m_Actions[0];
+          if (act is CanFinish x) {
+            if (x.IsCompleted()) {
+              if (2 == m_Actions.Count) return m_Actions[1];
+              m_Actions.RemoveAt(0);
+              goto restart;
+            }
+          }
+          return this;
         }
 
         /// <returns>null, or a Performable action</returns>

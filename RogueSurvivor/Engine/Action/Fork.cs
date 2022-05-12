@@ -199,7 +199,7 @@ retry:
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class Fork : WorldUpdate
+    class Fork : WorldUpdate, CanReduce<WorldUpdate>
     {
       private readonly List<WorldUpdate> m_Options = new List<WorldUpdate>();
 
@@ -247,6 +247,20 @@ namespace djack.RogueSurvivor.Engine.Op
         var ub = m_Options.Count;
         while(0 <= --ub) if (!m_Options[ub].IsSuppressed(a)) return false;
         return true;
+      }
+
+      public WorldUpdate? Reduce()
+      {
+        var ub = m_Options.Count;
+        while (0 <= --ub) {
+          if (!m_Options[ub].IsLegal()) m_Options.RemoveAt(ub);
+        };
+        switch (m_Options.Count)
+        {
+        case 1: return m_Options[0];
+        case 0: return null;
+        default: return this;
+        }
       }
 
       public override ActorAction? Bind(Actor src) {

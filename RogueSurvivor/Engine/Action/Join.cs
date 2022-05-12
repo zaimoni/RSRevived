@@ -70,17 +70,27 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public WorldUpdate? Reduce()
         {
-            var ub = m_Options.Count;
-            while (0 <= --ub) {
-                if (!m_Options[ub].IsLegal()) m_Options.RemoveAt(ub);
-            };
-            switch (m_Options.Count)
-            {
-            case 1: return m_Options[0];
-            case 0: return null;
-            default: return this;
+          if (m_Sequel is CanFinish x) {
+            if (x.IsCompleted()) return m_Sequel;
+          }
+
+          var ub = m_Options.Count;
+          while (0 <= --ub) {
+            var act = m_Options[ub];
+            if (!act.IsLegal()) m_Options.RemoveAt(ub);
+            if (act is CanFinish y) {
+              if (y.IsCompleted()) return m_Sequel;
             }
+          };
+
+          switch (m_Options.Count)
+          {
+          case 1: return new Chain(m_Options[0], m_Sequel);
+          case 0: return null;
+          default: return this;
+          }
         }
+
 
         public override ActorAction? Bind(Actor src)
         {
