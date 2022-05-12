@@ -14,4 +14,9 @@ namespace Zaimoni.Data
     {
       List<OP>? prequel();
     }
+
+    internal interface CanReduce<out OP>
+    {
+        OP? Reduce();
+    }
 }

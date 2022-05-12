@@ -15,7 +15,7 @@ using Goal_NextAction = djack.RogueSurvivor.Gameplay.AI.Goal_NextAction;
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class Join : WorldUpdate
+    class Join : WorldUpdate, CanReduce<WorldUpdate>
     {
         private List<WorldUpdate> m_Options;
         private WorldUpdate m_Sequel;
@@ -66,6 +66,20 @@ namespace djack.RogueSurvivor.Engine.Op
             var ub = m_Options.Count;
             while (0 <= --ub) if (!m_Options[ub].IsSuppressed(a)) return false;
             return true;
+        }
+
+        public WorldUpdate? Reduce()
+        {
+            var ub = m_Options.Count;
+            while (0 <= --ub) {
+                if (!m_Options[ub].IsLegal()) m_Options.RemoveAt(ub);
+            };
+            switch (m_Options.Count)
+            {
+            case 1: return m_Options[0];
+            case 0: return null;
+            default: return this;
+            }
         }
 
         public override ActorAction? Bind(Actor src)
