@@ -4,7 +4,6 @@ using System.Linq;
 
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
-using BackwardPlan = Zaimoni.Data.BackwardPlan<djack.RogueSurvivor.Data.ActorAction>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 #nullable enable
@@ -19,38 +18,12 @@ namespace djack.RogueSurvivor.Engine._Action
     {
       private readonly Dictionary<int, List<ActorAction>> m_Options = new Dictionary<int, List<ActorAction>>();
 
-      // imports pre-existing legal path calculation as the "starting point"
-      public Fork(Actor actor, Dictionary<Location, ActorAction> legal_path) : base(actor)
-      {
-#if DEBUG
-        if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
-#endif
-        void record(KeyValuePair<Location, ActorAction> x) {
-          if (x.Value is Actions.ActorDest) Add(x.Value is Actions.ActorOrigin ? x.Value : new Actions.ActionMoveDelta(m_Actor, x.Key));
-          else if (x.Value is Actions.Resolvable act) record(new KeyValuePair<Location, ActorAction>(x.Key, act.ConcreteAction));
-          else Add(x.Value);
-        }
-
-        foreach(var x in legal_path) record(x);
-      }
-
       public Fork(Actor actor, List<ActorAction> legal_path) : base(actor)
       {
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
 #endif
         foreach (var act in legal_path) Add(act);
-      }
-
-      public Fork(Actor actor, ActorAction root) : base(actor)
-      {
-#if DEBUG
-        if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
-        if (!root.IsLegal()) throw new ArgumentOutOfRangeException(nameof(root), root, "must be legal");
-        if (root is BackwardPlan) throw new ArgumentOutOfRangeException(nameof(root), root, "must be capable of backward planning");
-        if (root is Fork) throw new InvalidOperationException("fork of fork is not reasonable");
-#endif
-        Add(root);
       }
 
       public override bool IsLegal()
@@ -139,25 +112,11 @@ retry:
         return act_cost;
       }
 
-      private static void _add(Dictionary<int, List<Actions.ActionChain>> dest, Actions.ActionChain src)
-      {
-        int cost = src.CumulativeMoveCost();
-        if (dest.TryGetValue(cost, out var cache)) cache.Add(src);
-        else dest.Add(cost, new List<Actions.ActionChain> { src });
-      }
-
       private void Add(ActorAction src)
       {
         int cost = (src is Actions.ActionChain chain) ? chain.CumulativeMoveCost() : Map.PathfinderMoveCosts(src) + Map.TrapMoveCostFor(src, m_Actor);
         if (m_Options.TryGetValue(cost, out var cache)) cache.Add(src);
         else m_Options.Add(cost, new List<ActorAction> { src });
-      }
-
-      public ActorAction? Reduce()
-      {
-        if (1 != m_Options.Count) return null;
-        var test = m_Options.First();
-        return 1==test.Value.Count ? test.Value[0] : null;
       }
 
       public bool ContainsSuffix(List<ActorAction> src, int index)
@@ -209,36 +168,6 @@ retry:
           }
         }
         return ret;
-      }
-
-      private static List<ActorAction>? CanBackwardPlan(ActorAction src)
-      {
-        var act = src as BackwardPlan;
-        if (null == act && src is Actions.ActionChain chain) act = chain.ConcreteAction as BackwardPlan;
-        if (null != act) return act.prequel();
-        return null;
-      }
-
-      bool backward_chain()
-      {
-        int act_cost = m_Options.Keys.Min();
-        var cache = m_Options[act_cost];
-        var working = new List<Actions.ActionChain>();
-        int ub = cache.Count;
-        while(0 <= --ub) {
-          var dest = cache[ub];
-          var setup = CanBackwardPlan(dest);
-          if (null == setup) throw new ArgumentNullException(nameof(setup));    // invariant failure
-          foreach (var x in setup) {
-            var test = new Actions.ActionChain(x, dest);
-            if (!test.IsSemanticParadox()) working.Add(test);
-          }
-          cache.RemoveAt(ub);
-          if (0 >= working.Count) continue;
-          foreach(var chain in working) splice(chain);
-          return true;
-        }
-        return false;
       }
 
       public ActorAction? RejectOrigin(Location origin)
