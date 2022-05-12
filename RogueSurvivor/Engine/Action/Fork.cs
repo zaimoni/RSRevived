@@ -253,14 +253,36 @@ namespace djack.RogueSurvivor.Engine.Op
       {
         var ub = m_Options.Count;
         while (0 <= --ub) {
-          if (!m_Options[ub].IsLegal()) m_Options.RemoveAt(ub);
+          if (m_Options[ub] is CanReduce<WorldUpdate> reducing) {
+            var now = reducing.Reduce();
+            if (null == now) {
+              m_Options.RemoveAt(ub);
+              continue;
+            }
+            if (now is Fork fork) {
+              m_Options.RemoveAt(ub);
+              m_Options.AddRange(fork.m_Options);
+              continue;
+            } else
+              m_Options[ub] = now;
+          }
+          var act = m_Options[ub];
+          if (!act.IsLegal()) {
+            m_Options.RemoveAt(ub);
+            continue;
+          }
+          if (act is CanFinish ending) {
+            if (ending.IsCompleted()) return act;
+          }
         };
+
         switch (m_Options.Count)
         {
-        case 1: return m_Options[0];
-        case 0: return null;
-        default: return this;
+          case 1: return m_Options[0];
+          case 0: return null;
         }
+
+        return this;
       }
 
       public override ActorAction? Bind(Actor src) {
@@ -307,6 +329,11 @@ namespace djack.RogueSurvivor.Engine.Op
           }
           m_Options.Add(src);
         }
+      }
+
+      public Join Append(WorldUpdate next)
+      {
+         return new Join(new List<WorldUpdate>(m_Options), next); // value-copy for safety
       }
 
       public bool ForceRelevant(Location loc, ref WorldUpdate dest) {

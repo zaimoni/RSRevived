@@ -70,6 +70,7 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public WorldUpdate? Reduce()
         {
+          if (!m_Sequel.IsLegal()) return null;
           if (m_Sequel is CanFinish x) {
             if (x.IsCompleted()) return m_Sequel;
           }

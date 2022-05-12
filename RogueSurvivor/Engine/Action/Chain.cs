@@ -68,14 +68,27 @@ namespace djack.RogueSurvivor.Engine.Op
         public WorldUpdate? Reduce()
         {
 restart:
-          var act = m_Actions[0];
-          if (act is CanFinish x) {
-            if (x.IsCompleted()) {
+          if (m_Actions[0] is CanReduce<WorldUpdate> reducing) {
+            var now = reducing.Reduce();
+            if (null == now) return null;
+            if (now is Chain chain) {
+              m_Actions.RemoveAt(0);
+              chain.Append(1 < m_Actions.Count ? this : m_Actions[0]);
+              return chain;
+            } else if (now is Fork fork) {
+              m_Actions.RemoveAt(0);
+              return fork.Append(1 < m_Actions.Count ? this : m_Actions[0]);
+            } else
+              m_Actions[0] = now;
+          }
+          if (m_Actions[0] is CanFinish ending) {
+            if (ending.IsCompleted()) {
               if (2 == m_Actions.Count) return m_Actions[1];
               m_Actions.RemoveAt(0);
               goto restart;
             }
           }
+
           return this;
         }
 
@@ -93,6 +106,16 @@ restart:
         public override bool IsSuppressed(Actor a) { return m_Actions[0].IsSuppressed(a); } // return to this later
         public override void Blacklist(HashSet<Location> goals) { m_Actions[0].Blacklist(goals); }
         public override void Goals(HashSet<Location> goals) { m_Actions[0].Goals(goals); }
+
+      public void Append(WorldUpdate next)
+      {
+         if (m_Actions[^-1] is Fork final_fork) {
+            var join = final_fork.Append(next);
+            m_Actions[^-1] = join;
+         } else if (next is Chain chain) {
+            m_Actions.AddRange(chain.m_Actions);
+         }
+      }
 
 
         private static int _forkBefore(List<WorldUpdate> src)
