@@ -58,6 +58,8 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs>? WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
     public Dictionary<Location, int>? WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
+    virtual public IEnumerable<Gameplay.GameItems.IDs>? RejectUnwanted(IEnumerable<Gameplay.GameItems.IDs>? src, Location loc) { return src; }
+
     public Dictionary<Location, int>? Filter(Dictionary<Location, int> src, Predicate<Inventory> ok) {
       var it_memory = ItemMemory;
       if (null == it_memory) return src;

@@ -168,6 +168,22 @@ namespace djack.RogueSurvivor.Data
 
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
+    private bool ShowThis(Gameplay.GameItems.IDs src, in Location loc) {
+      if (Gameplay.GameItems.IDs.TRAP_EMPTY_CAN == src) return false;
+      return true;
+    }
+
+    public override IEnumerable<Gameplay.GameItems.IDs>? RejectUnwanted(IEnumerable<Gameplay.GameItems.IDs>? src, Location loc) {
+      if (null == src) return null;
+      List<Gameplay.GameItems.IDs> ret = new();
+      // \todo need a UI for this (cf. Angband)
+      foreach(var it in src) {
+        if (ShowThis(it, in loc)) ret.Add(it);
+      }
+      return 0<ret.Count ? ret : null;
+    }
+
+
 	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
 	  switch(m_Actor.Model.DefaultController.Name)
 	  {
