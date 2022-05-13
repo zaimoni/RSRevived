@@ -2453,14 +2453,20 @@ namespace djack.RogueSurvivor.Engine
       const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
       const float REFUGEES_WAVE_SIZE = 0.2f;
 
+      var rules = Rules.Get;
+      var dr = rules.DiceRoller;
+
       lock(lock_RefugeePool) {
         Interlocked.CompareExchange(ref s_RefugeePool, new(), null); // ok to thrash GC here, this is once/game day
         int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
         int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
         while(0 < num2--) {
+          var refugee = m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
+          // Actively de-duplicate these names
+          while(null != s_RefugeePool.FirstOrDefault(a  => a.Name == refugee.Name)) BaseMapGenerator.GiveNameToActor(dr, refugee);
           s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
         }
-        var rules = Rules.Get;
+
         if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
 
         var uas = Session.Get.UniqueActors;
