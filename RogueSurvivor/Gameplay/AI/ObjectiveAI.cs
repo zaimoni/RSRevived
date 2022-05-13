@@ -5144,11 +5144,15 @@ restart_chokepoints:
             return null == obj || !(obj is DoorWindow);
         });
         if (0 >= same_floor_deathtraps.Count) return null;
-#if DEBUG
         foreach(var x in same_floor_deathtraps) {
-          if (null != x.Key.MapObject) throw new InvalidOperationException("test case");
-        }
+          if (null != x.Key.MapObject) {
+             // \todo: want a pull-off/push back loop.  Pushing enters the deathtrap.
+             if (x.Key.MapObject.TriggersTraps) return null;
+#if DEBUG
+             throw new InvalidOperationException("test case");
 #endif
+          }
+        }
           // \todo maybe just build a small fortification on top of it?
 
           // try pushing something onto it (either covers or destroys)
