@@ -603,6 +603,18 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
       }
 
+      public List<Location>? All() {
+        List<Location> ret = new();
+        lock(_locs) {
+          foreach(var x in _locs) {
+            foreach(var pt in x.Value) {
+              ret.Add(new(x.Key, pt));
+            }
+          }
+        }
+        return 0 < ret.Count ? ret : null;
+      }
+
       public void Record(Map m, IEnumerable<Point> pts)
       {
         lock(_locs) {

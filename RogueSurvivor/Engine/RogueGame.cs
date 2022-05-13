@@ -3866,14 +3866,64 @@ namespace djack.RogueSurvivor.Engine
       }
       item_classes.Sort();
 
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, item_classes.Count, item_classes[index].ToString()); }
+      var tourism = Player.InterestingLocs;
+      var sights_to_see = tourism?.All() ?? new();
+
+      if (null != tourism) {
+        Dictionary<Location, int> loc_distances = new();
+        foreach(var loc in sights_to_see) loc_distances.Add(loc, Rules.GridDistance(Player.Location, loc));
+        sights_to_see.Sort((x,y) => loc_distances[x].CompareTo(loc_distances[y]));
+      }
+
+      string label_tourism(int index) {
+        var x = sights_to_see[index];
+        return x.ToString();
+      };
+
+      bool details_tourism(int index) {
+        var pc = Player.Controller as PlayerController;
+          var x = sights_to_see[index];
+          PanViewportTo(x);
+
+          bool navigate(KeyEventArgs key) {
+            switch (key.KeyCode)
+            {
+            case Keys.D1: // walk 1-9 steps to ....
+            case Keys.D2:
+            case Keys.D3:
+            case Keys.D4:
+            case Keys.D5:
+            case Keys.D6:
+            case Keys.D7:
+            case Keys.D8:
+            case Keys.D9:
+              pc.WalkTo(x, (int)key.KeyCode - (int)Keys.D0);
+              pc.AddWaypoint(x, "tourism");
+              return true;
+            }
+            return false;
+          }
+
+          var tmp = new List<string>();
+          tmp.Insert(0, "Walk 1) to 9) steps towards the item");
+          return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
+      }
+
+      string label(int index) {
+        if (index < item_classes.Count) return string.Format("{0}/{1} {2}.", index + 1, item_classes.Count, item_classes[index].ToString());
+        return "Tourism";
+      }
+
       bool details(int index) {
+        if (item_classes.Count <= index) {
+          return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", sights_to_see.Count, label_tourism, details_tourism);
+        }
+
         Gameplay.GameItems.IDs item_type = item_classes[index];
         var catalog = Player.Controller.WhereIs(item_type);
         var pc = Player.Controller as PlayerController;
 
         List<KeyValuePair<Location, int> > tmp_where = new();
-        Dictionary<Location, int> loc_distances = new();
         foreach(var loc_qty in catalog) {
              var obj = loc_qty.Key.MapObject;
              if (null==obj || !obj.IsContainer) {
@@ -3884,10 +3934,11 @@ namespace djack.RogueSurvivor.Engine
                  if (Player.CanEnter(test)) tmp_where.Add(new(test, loc_qty.Value));
                }
              }
-
-          if (loc_qty.Key.Map != CurrentMap) continue;
-          loc_distances[loc_qty.Key] = Rules.GridDistance(Player.Location,loc_qty.Key);
         }
+
+        Dictionary<Location, int> loc_distances = new();
+        foreach(var loc in tmp_where) loc_distances.Add(loc.Key, Rules.GridDistance(Player.Location, loc.Key));
+        tmp_where.Sort((x,y) => loc_distances[x.Key].CompareTo(loc_distances[y.Key]));
 
         string label2(int index) {
             var x = tmp_where[index];
@@ -3925,7 +3976,7 @@ namespace djack.RogueSurvivor.Engine
         return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", tmp_where.Count, label2, details2);
       }
 
-      PagedPopup("Reviewing...", item_classes.Count, label, details);
+      PagedPopup("Reviewing...", item_classes.Count+(null != tourism ? 1 : 0), label, details);
       PanViewportTo(player_backup);
       RedrawPlayScreen();
     }
