@@ -1373,22 +1373,37 @@ namespace djack.RogueSurvivor.Data
 
     // 2020-01-26 public void AddLeader(Actor leader) didn't work out in release mode IL: operator ?. doesn't actually reduce bytecode for the caller
 
-    public void RemoveFollower(Actor other)
+    // 2022-05-13 having problems with multi-threading or out-of-order instructions within Actor::RemoveAllFollowers.
+    // handled by refactoring out Actor::_NoLongerFollower
+    private void _NoLongerFollower()
     {
-      if (m_Followers == null) throw new InvalidOperationException("no followers");
-      m_Followers.Remove(other);
-      if (m_Followers.Count == 0) m_Followers = null;
-      other.m_Leader = null;
-      if (other.Controller is Gameplay.AI.OrderableAI ordai) {
+      Interlocked.Exchange(ref m_Leader, null);
+      if (Controller is Gameplay.AI.OrderableAI ordai) {
         ordai.Directives.Reset();
         ordai.SetOrder(null);
       }
     }
 
+    public void RemoveFollower(Actor other)
+    {
+      var followers = m_Followers;
+      if (null == followers) throw new InvalidOperationException(Name+": no followers");
+      followers.Remove(other);
+      if (0 == followers.Count) Interlocked.Exchange(ref m_Followers, null);
+      other._NoLongerFollower();
+    }
+
     public void RemoveAllFollowers()
     {
+#if OBSOLETE
       while (m_Followers != null && m_Followers.Count > 0)
         RemoveFollower(m_Followers[0]);
+#endif
+      var followers = m_Followers;
+      if (null != followers) {
+        foreach(var fo in followers) fo._NoLongerFollower();
+        Interlocked.Exchange(ref m_Followers, null);
+      }
     }
 
     public void SetTrustIn(Actor other, int trust)

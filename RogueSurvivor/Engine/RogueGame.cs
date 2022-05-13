@@ -3937,7 +3937,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         Dictionary<Location, int> loc_distances = new();
-        foreach(var loc in tmp_where) loc_distances.Add(loc.Key, Rules.GridDistance(Player.Location, loc.Key));
+        foreach(var loc in tmp_where) loc_distances[loc.Key] = Rules.GridDistance(Player.Location, loc.Key);
         tmp_where.Sort((x,y) => loc_distances[x.Key].CompareTo(loc_distances[y.Key]));
 
         string label2(int index) {
