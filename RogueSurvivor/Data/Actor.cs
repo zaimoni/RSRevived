@@ -1596,11 +1596,11 @@ namespace djack.RogueSurvivor.Data
         // 1) police have all other police as allies.
         if (IsFaction(GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
-        if (null != m_Followers) ret.UnionWith(m_Followers);
+        m_Followers?.AppendTo(ret);
         var leader = LiveLeader;
         if (null != leader) { // 2019-08-14: currently mutually exclusive with above for NPCs
           ret.Add(leader);
-          ret.UnionWith(leader.m_Followers);
+          leader.m_Followers?.AppendTo(ret);
           ret.Remove(this);
         }
         return (0<ret.Count ? ret : null);
@@ -1611,14 +1611,12 @@ namespace djack.RogueSurvivor.Data
     public HashSet<Actor>? ChainOfCommand {
       get {
         var ret = new HashSet<Actor>();
-        if (null != m_Followers) ret.UnionWith(m_Followers);
-        else {
-          var leader = LiveLeader;
-          if (null != leader) {
-            ret.Add(leader);
-            ret.UnionWith(leader.m_Followers);
-            ret.Remove(this);
-          }
+        m_Followers?.AppendTo(ret);
+        var leader = LiveLeader;
+        if (null != leader) {
+          ret.Add(leader);
+          leader.m_Followers?.AppendTo(ret);
+          ret.Remove(this);
         }
         return (0<ret.Count ? ret : null);
       }

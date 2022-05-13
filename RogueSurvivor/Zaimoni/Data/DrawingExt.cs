@@ -933,6 +933,13 @@ namespace Zaimoni.Data
     }
   } // ext_Drawing
 
+  public static class threading_assist {
+    public static void AppendTo<T>(this IEnumerable<T> src, HashSet<T> dest)
+    {
+        dest.UnionWith(src);
+    }
+  }
+
   // Gödel encoding using Chinese remainder theorem
   public static class crmth
   {
