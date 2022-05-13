@@ -7862,7 +7862,8 @@ namespace djack.RogueSurvivor.Engine
         if (null != owner && actor.IsFirstClassCitizen()) {
           if (owner.IsFirstClassCitizen()) owner = null; // look the other way when it comes to friendly trap kills
         }
-        KillActor(owner, actor, "trap");
+        // the above can trigger killing of actor already; hard crash
+        if (!actor.IsDead) KillActor(owner, actor, "trap");
       }
     }
 #nullable restore

@@ -69,6 +69,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             m_Plan.Goals(ret);
             m_Plan.Blacklist(ret);
             ret.RemoveWhere(loc => !actor.CanEnter(loc)); // matters for burning cars
+            // goal locations should make actions relevant.  If we are *at* a goal location already,
+            // bail so we don't self-path.
+            if (ret.Contains(actor.Location)) return null;
             return 0 < ret.Count ? ret : null;
         }
 
@@ -110,9 +113,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
             var goals = m_Plan.Goals(m_Actor);
             if (null != goals) {
-#if DEBUG
-                if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException("test case");
-#endif
                 ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
                 return null != ret;
             }
