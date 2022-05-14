@@ -43,6 +43,24 @@ namespace djack.RogueSurvivor.Data
         FLEEING_FROM_EXPLOSIVE,
     }
 
+    [Serializable]
+    public readonly record struct ActorTag
+    {
+        public readonly string Name;
+        public readonly int SpawnTime;
+
+        public ActorTag(string name, int spawn)
+        {
+            Name = name;
+            SpawnTime = spawn;
+        }
+
+        internal ActorTag(Actor src) {
+            Name = src.UnmodifiedName;
+            SpawnTime = src.SpawnTime;
+        }
+    };
+
   [Serializable]
   internal class Actor : IEquatable<Actor>, IDeserializationCallback
     {
