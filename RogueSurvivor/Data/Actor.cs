@@ -143,7 +143,7 @@ namespace djack.RogueSurvivor.Data
                                         // in a later version of C#, we can't count on the fix remaining.
                                         // Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
                                         // this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
-    private readonly int m_SpawnTime;
+    private readonly int m_SpawnTime;   // savefile break \todo eliminate accessor
     private Inventory? m_Inventory;
     private Doll m_Doll;
     private int m_HitPoints;

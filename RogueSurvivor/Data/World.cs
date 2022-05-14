@@ -480,22 +480,21 @@ namespace djack.RogueSurvivor.Data
     public int PlayerCount {
       get {
         int ret = 0;
-        for (int index1 = 0; index1 < m_Size; ++index1) {
-          for (int index2 = 0; index2 < m_Size; ++index2)
-            ret += m_DistrictsGrid[index1, index2].PlayerCount;
-        }
+
+        foreach(District d in m_DistrictsGrid) ret += d.PlayerCount;
+
         return ret;
       }
     }
 
     public List<District> PlayerDistricts {
       get {
-        List<District> ret = new List<District>(m_Size*m_Size);
-        for (int index1 = 0; index1 < m_Size; ++index1) {
-          for (int index2 = 0; index2 < m_Size; ++index2) {
-            if (0 < m_DistrictsGrid[index1, index2].PlayerCount) ret.Add(m_DistrictsGrid[index1, index2]);
-          }
+        List<District> ret = new();
+
+        foreach (District d in m_DistrictsGrid) {
+          if (0 < d.PlayerCount) ret.Add(d);
         }
+
         return ret;
       }
     }
