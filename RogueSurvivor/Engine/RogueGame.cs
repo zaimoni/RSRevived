@@ -8638,9 +8638,25 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.Consume(itemGrenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
-      Map map = actor.Location.Map;
-      map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), in targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
+      Location dest = new(actor.Location.Map, targetPos);
+      if (!Map.Canonical(ref dest)) throw new InvalidOperationException("throwing to non-existent location");
+      var itemGrenadePrimed = new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID));
+      dest.Drop(itemGrenadePrimed);
+
+      short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;
+      var avoid = new ZoneLoc(dest.Map, new Rectangle(dest.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
+      var flee = new Gameplay.AI.Goals.FleeExplosive(actor, avoid, itemGrenadePrimed);
+
+      void fear_explosive(Actor who) {
+        if (who.IsDead || who.IsSleeping) return;
+        if (!(who.Controller is ObjectiveAI oai)) return;
+        if (!oai.UsesExplosives) return;
+        oai.SetUnownedObjective(flee);
+      }
+
+      PropagateSight(dest, fear_explosive);
+
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(dest)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
@@ -8653,9 +8669,24 @@ namespace djack.RogueSurvivor.Engine
       if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
       actor.SpendActionPoints();
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
-      Map map = actor.Location.Map;
-      map.DropItemAtExt(itemGrenadePrimed, in targetPos);
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(map, in targetPos)) return;
+      Location dest = new(actor.Location.Map, targetPos);
+      if (!Map.Canonical(ref dest)) throw new InvalidOperationException("throwing to non-existent location");
+      dest.Drop(itemGrenadePrimed);
+
+      short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;
+      var avoid = new ZoneLoc(dest.Map, new Rectangle(dest.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
+      var flee = new Gameplay.AI.Goals.FleeExplosive(actor, avoid, itemGrenadePrimed);
+
+      void fear_explosive(Actor who) {
+        if (who.IsDead || who.IsSleeping) return;
+        if (!(who.Controller is ObjectiveAI oai)) return;
+        if (!oai.UsesExplosives) return;
+        oai.SetUnownedObjective(flee);
+      }
+
+      PropagateSight(dest, fear_explosive);
+
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(dest)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);

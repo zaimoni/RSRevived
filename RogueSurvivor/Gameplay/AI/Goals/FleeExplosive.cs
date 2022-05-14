@@ -6,29 +6,30 @@ using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.Items;
 
 using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
+    [Serializable]
     internal class FleeExplosive: Objective
     {
         private readonly ZoneLoc m_Fear;
+        private ItemPrimedExplosive m_Explosive;
 
-        public FleeExplosive(int t0, Actor who, ZoneLoc avoid) : base(t0, who)
+        public FleeExplosive(Actor who, ZoneLoc avoid, ItemPrimedExplosive obj) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             m_Fear = avoid;
+            m_Explosive = obj;
         }
 
         // we are an influence on behaviors so we don't actually execute
         public override bool UrgentAction(out ActorAction ret)
         {
             ret = null;
-            return false;
+            return 0 >= m_Explosive.FuseTimeLeft; // has already exploded
         }
-
-        // rather than expire on our own cognizance, we let the game engine expire us
-        public void ExpireNow() { _isExpired = true; }
 
         public List<Point>? FilterLegalSteps(Location origin, List<Point>? steps) {
             if (null == steps) return null;

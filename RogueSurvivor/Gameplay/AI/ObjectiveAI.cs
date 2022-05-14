@@ -271,6 +271,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Objectives.Insert(0,src);
     }
 
+    public void SetUnownedObjective(Objective src) {
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      // for now, treat this as "early"
+      Objectives.Insert(0,src);
+    }
+
     public ActorAction Pathing<T>() where T:Objective,Pathable
     {
         var remote = Goal<T>();
