@@ -1744,8 +1744,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Scan the group:
       // - Find farthest member of the group.
       // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
+      // next test game \todo (m_Actor.CountFollowers+1)/ 2 ,so a single follower isn't left behind
       int halfGroup = m_Actor.CountFollowers / 2;
-	  if (0 >= halfGroup) return null;	// automatic do nothing(!)
+      if (0 >= halfGroup) return null;	// automatic do nothing(!)
       int worstDist = Int32.MinValue;
       int closeCount = 0;
 

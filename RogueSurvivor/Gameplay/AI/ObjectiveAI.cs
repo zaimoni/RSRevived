@@ -235,6 +235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected HashSet<Location> _current_goals = null;
     [NonSerialized] protected CallChain _caller = CallChain.NONE;
     [NonSerialized] protected ActorAction? _staged_action = null;   // should be a free action
+    [NonSerialized] protected FleeExplosive[]? _blast_zones = null;   // should be a free action
 #if USING_ESCAPE_MOVES
     [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
 #endif
@@ -248,6 +249,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
     public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.Find(o => o is T goal && test(goal)) as T;}
     public T Goal<T>() where T:Objective { return Objectives.Find(o => o is T) as T;}
+
+    public T[]? AllGoals<T>() where T:Objective {
+      var ret = Objectives.Where(o => o is T).Select(o => o as T).ToArray();
+      return 0<ret.Length ? ret : null;
+    }
 
     // thin wrapper for when the key logic is elsewhere; we still prefer central-logic specializations)
     public void SetObjective(Objective src) {
@@ -342,6 +348,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _slow_melee_threat = null;
       _immediate_threat = null;
       _blast_field = null;
+      _blast_zones = null;
       _retreat = null;
       _run_retreat = null;
       _safe_retreat = false;
@@ -603,9 +610,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
       AddTrapsToDamageField(_damage_field, now);
       if (UsesExplosives) {   // only civilians and soldiers respect explosives; CHAR and gang don't
+        _blast_zones = AllGoals<FleeExplosive>();
         _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
         AddExplosivesToDamageField(all_time);
         if (0>= _blast_field.Count) _blast_field = null;
+        if (null != _blast_zones) {
+            foreach(var zone in _blast_zones) _legal_steps = zone.FilterLegalSteps(m_Actor.Location, _legal_steps);
+        }
       }
       if (0>= _damage_field.Count) _damage_field = null;
       if (0>= _slow_melee_threat.Count) _slow_melee_threat = null;
@@ -614,8 +625,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       UpdateRetreatDestinations();
 
       _legal_path = m_Actor.OnePath(m_Actor.Location);
-      _legal_path.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
-      if (0 >= _legal_path.Count) _legal_path = null;
+      _legal_path.OnlyIf(act => act.IsPerformable());
+      if (null != _blast_zones) {
+        foreach(var zone in _blast_zones) _legal_path = zone.FilterLegalPath(m_Actor.Location, _legal_path);
+      } else {
+        _legal_path.OnlyIf(act => !VetoAction(act));
+        if (0 >= _legal_path.Count) _legal_path = null;
+      }
       if (null!=_last_move && _last_move.dest!=m_Actor.Location) _last_move = null;
     }
 

@@ -234,6 +234,17 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    public Actor? From(in ActorTag src) {
+        foreach(District d in m_DistrictsGrid) {
+            var actor = d.From(in src);
+            if (null != actor) return actor;
+        }
+
+        // If necessary, this is where we would check for "off-stage" actors, that could return.
+
+        return null;
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (District d in m_DistrictsGrid) d.DoForAllGroundInventories(op); }
 

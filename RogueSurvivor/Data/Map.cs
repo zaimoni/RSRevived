@@ -1416,6 +1416,13 @@ retry:
       return null != tmp && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
     }
 
+    public Actor? From(in ActorTag src) {
+        foreach(var a in m_ActorsList) {
+            if (a.SpawnTime == src.SpawnTime && a.UnmodifiedName == src.Name && !a.IsDead) return a;
+        }
+        return null;
+    }
+
     public void Recalc(Actor actor)
     {
       if (actor.IsPlayer) Players.Recalc();

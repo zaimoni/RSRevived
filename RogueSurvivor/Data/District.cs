@@ -366,6 +366,14 @@ namespace djack.RogueSurvivor.Data
        return null;
     }
 
+    public Actor? From(in ActorTag src) {
+        foreach(Map m in m_Maps) {
+            var actor = m.From(in src);
+            if (null != actor) return actor;
+        }
+        return null;
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (Map m in m_Maps) m.DoForAllGroundInventories(op); }
 
