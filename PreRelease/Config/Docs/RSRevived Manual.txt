@@ -147,3 +147,5 @@ Rogue Survivor Revived was dynamically linked against a .NET lower than 4.6 .  F
 install 4.6.x by direct download from Microsoft.  Initially reported against 0.9.7 at 
 http://smf.cataclysmdda.com/index.php?topic=12463.15 , but this is current for all versions
 requiring .NET 4.6 .
+
+NOTE: above is true, but obsolete.  You will have problems with this binary against a .NET lower than 6.0.

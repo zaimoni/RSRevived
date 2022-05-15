@@ -530,6 +530,10 @@ You can initiate a trade deal by offering an item.
 This works like normal trading, except you chose which your items you want to exhange.
 Move the mouse on the item, press the key, then choose someone next to you in a direction.
 
+> UNLOADING RANGED WEAPONS (default U)
+Move the mouse on the item in an inventory, then press the key.  The unloaded ammo will be dropped, if there is not room in your inventory.
+
+Unlike other item manipulation commands, this one works on the ground inventory as well.
 
 > BARRICADING OBJECTS  (default B)
 Use the barricade mode. You can barricade doors, windows and repair fortifications.
@@ -597,7 +601,7 @@ See the Followers section for more details.
 Give orders or directives to yourself.  Only immediately relevant orders will appear.  
 See the Followers section for more details
 
-> COUNTERMAND PC  (Alt-Shift-[Order]; default Ctrl-Shift-O)
+> COUNTERMAND PC  (Alt-Shift-[Order]; default Alt-Shift-O)
 Countermand orders or directives to yourself.  These may have been given by AI.
 
 > SHOUTING  (default S)

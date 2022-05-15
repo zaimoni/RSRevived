@@ -24,9 +24,9 @@ namespace djack.RogueSurvivor.Data
   {
      public readonly Inventory inv;
      public readonly T? it = null;
-     private readonly Actor? a_owner = null;
-     private readonly MapObject? obj_owner = null;
-     private readonly Location? loc = null;
+     public readonly Actor? a_owner = null;
+     public readonly MapObject? obj_owner = null;
+     public readonly Location? loc = null;
 
      public InventorySource(Actor owner, T? obj = null) {
 #if DEBUG

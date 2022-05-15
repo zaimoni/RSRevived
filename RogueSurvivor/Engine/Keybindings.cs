@@ -74,6 +74,7 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.SHOUT, Keys.S);
             Set(PlayerCommand.SLEEP, Keys.Z);
             Set(PlayerCommand.SWITCH_PLACE, Keys.S | Keys.Control);
+            Set(PlayerCommand.UNLOAD, Keys.U);
             Set(PlayerCommand.LEAD_MODE, Keys.T);
             Set(PlayerCommand.USE_SPRAY, Keys.A);
             Set(PlayerCommand.USE_EXIT, Keys.X);
@@ -148,7 +149,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... ("+filepath+")");
       Keybindings keybindings;
       try {
 	    keybindings = filepath.BinaryDeserialize<Keybindings>();

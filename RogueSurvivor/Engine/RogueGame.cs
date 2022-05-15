@@ -1779,6 +1779,7 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Shout", PlayerCommand.SHOUT),
           new KeyValuePair< string,PlayerCommand >("Sleep", PlayerCommand.SLEEP),
           new KeyValuePair< string,PlayerCommand >("Switch Place", PlayerCommand.SWITCH_PLACE),
+          new KeyValuePair< string,PlayerCommand >("Unload", PlayerCommand.UNLOAD),
           new KeyValuePair< string,PlayerCommand >("Use Exit", PlayerCommand.USE_EXIT),
           new KeyValuePair< string,PlayerCommand >("Use Spray", PlayerCommand.USE_SPRAY),
         };
@@ -2526,9 +2527,10 @@ namespace djack.RogueSurvivor.Engine
         s_RefugeePool.RemoveAt(recruit.Key);
         recruits.RemoveAt(n);
         while(n < recruits.Count) {
-          recruits[n] = new KeyValuePair<int, Actor>(recruits[n].Key - 1, recruits[n].Value);
+          recruits[n] = new KeyValuePair<int, Actor>(recruits[n+1].Key - (recruit.Key < recruits[n+1].Key ? 1 : 0), recruits[n+1].Value);
           n++;
         }
+        n = recruit.Key;
       } while(0 < --want && 0<recruits.Count);
       return ret;
     }
@@ -3262,6 +3264,9 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.SWITCH_PLACE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerSwitchPlace(player);
+                break;
+              case PlayerCommand.UNLOAD:
+                flag1 = !TryPlayerInsanity() && !HandlePlayerUnloadItem(pc, point);
                 break;
               case PlayerCommand.USE_EXIT:
                 flag1 = !TryPlayerInsanity() && !DoLeaveMap(player, player.Location.Position);
@@ -4546,6 +4551,28 @@ namespace djack.RogueSurvivor.Engine
         if (execute(target)) return true;
       } while (true);
     }
+
+    private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
+    {
+      var inventoryItem = MouseToInventoryItem(screen, out var inv);
+      if (null == inv || null == inventoryItem) return false; // this command can work against ground inventory
+      if (!(inventoryItem is ItemRangedWeapon rw)) return false;
+
+      var original_ammo = rw.Ammo;
+      if (0 >= original_ammo) return false;
+
+      var player = pc.ControlledActor;
+      InventorySource<ItemRangedWeapon> src = (inv == player.Inventory) ? new(player, rw) : new(player.Location, player, rw);
+
+      // try unloading to our own inventory first
+      var dest = new InventorySource<Item>(player);
+      if (DoUnload(player, src, dest)) return true;
+
+      // If that fails, try unload to ground inventory
+      dest = new InventorySource<Item>(player.Location,  player);
+      return DoUnload(player, src, dest);
+    }
+
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
@@ -7378,7 +7405,8 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemLong(Item it, bool isPlayerInventory)
     {
-      var lines = new List<string>();
+      List<string> lines = new();
+      List<string> command_lines = new(); // these work on non-player inventories as well
       var model = it.Model;
       lines.Add(model.IsStackable ? string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, model.StackingLimit)
                                   : DescribeItemShort(it));
@@ -7386,7 +7414,10 @@ namespace djack.RogueSurvivor.Engine
       string? inInvAdditionalDesc = null;
       if (it is ItemWeapon w) {
         lines.AddRange(DescribeItemWeapon(w));
-        if (it is ItemRangedWeapon) inInvAdditionalDesc = string.Format("to fire : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+        if (it is ItemRangedWeapon) {
+          inInvAdditionalDesc = string.Format("to fire : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+          command_lines.Add(string.Format("to unload : <{0}>.", s_KeyBindings.Get(PlayerCommand.UNLOAD).ToString()));
+        }
       }
       else if (it is ItemFood food) lines.AddRange(DescribeItemFood(food));
       else if (it is ItemMedicine med) lines.AddRange(DescribeItemMedicine(med));
@@ -7420,6 +7451,11 @@ namespace djack.RogueSurvivor.Engine
         lines.Add(string.Format("to give : <{0}>.", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
         lines.Add(string.Format("to trade : <{0}>.", s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
         if (inInvAdditionalDesc != null) lines.Add(inInvAdditionalDesc);
+        if (0 < command_lines.Count) lines.AddRange(command_lines);
+      } else if (0 < command_lines.Count) {
+        lines.Add(" ");
+        lines.Add("----");
+        lines.AddRange(command_lines);
       }
       return lines.ToArray();
     }
@@ -9544,6 +9580,7 @@ namespace djack.RogueSurvivor.Engine
       var added = dest.inv.AddAsMuchAsPossible(ammo);
       if (0 >= added) return false;
 
+      actor.SpendActionPoints();
       src.it.Ammo -= added;
       src.fireChange();
       dest.fireChange();
