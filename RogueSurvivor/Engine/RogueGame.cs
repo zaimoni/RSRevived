@@ -2484,15 +2484,9 @@ namespace djack.RogueSurvivor.Engine
       return leader.Faction == fo.Faction || !fo.Faction.LeadOnlyBySameFaction;
     }
 
-    private List<KeyValuePair<int,Actor> > GetRefugeeFollowers(Actor leader)
+    private List<Actor> GetRefugeeFollowers(Actor leader)
     {
-        List<KeyValuePair<int,Actor> > ret = new();
-        var ub = s_RefugeePool!.Count;
-        while(0 <= --ub) {
-            var fo = s_RefugeePool[ub];
-            if (RefugeeCanTakeLeadOf(leader, fo)) ret.Add(new(ub, fo));
-        }
-        return ret;
+        return s_RefugeePool!.Where(fo => RefugeeCanTakeLeadOf(leader, fo)).ToList();
     }
 
     private List<Actor> ConstructRefugeeParty()
@@ -2515,22 +2509,17 @@ namespace djack.RogueSurvivor.Engine
       do {
         var n = dr.Roll(0, recruits.Count);
         var recruit = recruits[n];
-        var recruit_followers = recruit.Value.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+        var recruit_followers = recruit.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
         // may want plot armor for uniques
-        if (n_followers < recruit_followers && RefugeeCanTakeLeadOf(recruit.Value, leader)) {
+        if (n_followers < recruit_followers && RefugeeCanTakeLeadOf(recruit, leader)) {
           want += (recruit_followers - n_followers);
-          leader = recruit.Value;
+          leader = recruit;
           ret.Insert(0, leader);
         } else {
-          ret.Add(recruit.Value);
+          ret.Add(recruit);
         }
-        s_RefugeePool.RemoveAt(recruit.Key);
+        s_RefugeePool.Remove(recruit);
         recruits.RemoveAt(n);
-        while(n < recruits.Count) {
-          recruits[n] = new KeyValuePair<int, Actor>(recruits[n+1].Key - (recruit.Key < recruits[n+1].Key ? 1 : 0), recruits[n+1].Value);
-          n++;
-        }
-        n = recruit.Key;
       } while(0 < --want && 0<recruits.Count);
       return ret;
     }
@@ -9577,11 +9566,16 @@ namespace djack.RogueSurvivor.Engine
     {
       var ammo = ItemAmmo.make(src.it.Model.ID);
       ammo.Quantity = src.it.Ammo;
-      var added = dest.inv.AddAsMuchAsPossible(ammo);
-      if (0 >= added) return false;
+      if (null != dest.inv) {
+        var added = dest.inv.AddAsMuchAsPossible(ammo);
+        if (0 >= added) return false;
+        src.it.Ammo -= added;
+      } else {
+        dest.loc.Value.Drop(ammo);
+        src.it.Ammo = 0;
+      }
 
       actor.SpendActionPoints();
-      src.it.Ammo -= added;
       src.fireChange();
       dest.fireChange();
 

@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
      public InventorySource(Location src, T? obj = null) {
         var floor_inv = src.Items;
 #if DEBUG
-       if (null == floor_inv) throw new ArgumentNullException("src.Items");
+       if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
 #endif
        inv = floor_inv;
        loc = src;
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Data
      public InventorySource(Location src, Actor agent, T? obj = null) {
         var floor_inv = src.Items;
 #if DEBUG
-       if (null == floor_inv) throw new ArgumentNullException("src.Items");
+       if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
 #endif
        inv = floor_inv;
        loc = src;

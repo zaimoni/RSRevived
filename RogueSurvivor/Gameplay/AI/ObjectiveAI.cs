@@ -4929,6 +4929,10 @@ restart_chokepoints:
           }
           if (melee_damage_field.ContainsKey(m_Actor.Location.Position)) immediate_threat.Add(a);
         }
+
+        // next test game \todo unclear whether only bikers, or those w/o ranged weapons in general,
+        // should ignore ranged damage if they can't get into hard cover.
+
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
         // XXX doesn't handle non-optimal ranged attacks
