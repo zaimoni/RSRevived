@@ -3756,7 +3756,7 @@ namespace djack.RogueSurvivor.Engine
     }
     private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg+"? (Y/N)" }); }
 
-    private bool PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
+    private bool PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details, bool centered=true)
     {
       var all_labels = new List<string>();
       int i = 0;
@@ -3789,8 +3789,8 @@ namespace djack.RogueSurvivor.Engine
               || CANVAS_WIDTH-4  < staging_size[^1].Width)
             throw new InvalidOperationException("test case");
 #endif
-//        working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
-          working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width), (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
+          if (centered) working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
+          else working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width), (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
           AddOverlay(working);
         }
         RedrawPlayScreen();
@@ -3922,7 +3922,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool details(int index) {
         if (item_classes.Count <= index) {
-          return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", sights_to_see.Count, label_tourism, details_tourism);
+          return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", sights_to_see.Count, label_tourism, details_tourism, false);
         }
 
         Gameplay.GameItems.IDs item_type = item_classes[index];
@@ -3979,10 +3979,10 @@ namespace djack.RogueSurvivor.Engine
           return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         }
 
-        return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", tmp_where.Count, label2, details2);
+        return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", tmp_where.Count, label2, details2, false);
       }
 
-      PagedPopup("Reviewing...", item_classes.Count+(null != tourism ? 1 : 0), label, details);
+      PagedPopup("Reviewing...", item_classes.Count+(null != tourism ? 1 : 0), label, details, false);
       PanViewportTo(player_backup);
       RedrawPlayScreen();
     }
@@ -4048,7 +4048,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      PagedPopup("Reviewing...", allies.Count, label, details);
+      PagedPopup("Reviewing...", allies.Count, label, details, false);
     }
 
     private void HandleFactionInfo()
@@ -12316,7 +12316,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 
-      PagedPopup("Reviewing...", w_pts.Count(), label, details);
+      PagedPopup("Reviewing...", w_pts.Count(), label, details, false);
       PanViewportTo(player);
     }
 
