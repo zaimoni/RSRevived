@@ -20,6 +20,98 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
+  internal struct InventorySource<T> where T:Item
+  {
+     public readonly Inventory inv;
+     public readonly T? it = null;
+     private readonly Actor? a_owner = null;
+     private readonly MapObject? obj_owner = null;
+     private readonly Location? loc = null;
+
+     public InventorySource(Actor owner, T? obj = null) {
+#if DEBUG
+       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+#endif
+       inv = owner.Inventory;
+       a_owner = owner;
+       if (null != obj) {
+#if DEBUG
+         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+         it = obj;
+       }
+     }
+
+     public InventorySource(MapObject owner, T? obj = null) {
+#if DEBUG
+       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+#endif
+       inv = owner.Inventory;
+       obj_owner = owner;
+       if (null != obj) {
+#if DEBUG
+         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+         it = obj;
+       }
+     }
+
+     public InventorySource(MapObject owner, Actor agent, T? obj = null) {
+#if DEBUG
+       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+#endif
+       inv = owner.Inventory;
+       obj_owner = owner;
+       a_owner = agent;
+       if (null != obj) {
+#if DEBUG
+         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+         it = obj;
+       }
+     }
+
+     public InventorySource(Location src, T? obj = null) {
+        var floor_inv = src.Items;
+#if DEBUG
+       if (null == floor_inv) throw new ArgumentNullException("src.Items");
+#endif
+       inv = floor_inv;
+       loc = src;
+       if (null != obj) {
+#if DEBUG
+         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+         it = obj;
+       }
+     }
+
+     public InventorySource(Location src, Actor agent, T? obj = null) {
+        var floor_inv = src.Items;
+#if DEBUG
+       if (null == floor_inv) throw new ArgumentNullException("src.Items");
+#endif
+       inv = floor_inv;
+       loc = src;
+       a_owner = agent;
+       if (null != obj) {
+#if DEBUG
+         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+         it = obj;
+       }
+     }
+
+    public void fireChange() {
+      // Police ai cheats
+      if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
+        if (null != loc) Engine.Session.Get.Police.Investigate.Record(loc.Value);
+        if (null != obj_owner) Engine.Session.Get.Police.Investigate.Record(obj_owner.Location);
+      }
+    }
+  }
+
+
   [Serializable]
   internal class Inventory
   {

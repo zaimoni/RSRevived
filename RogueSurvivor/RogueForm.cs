@@ -159,18 +159,14 @@ namespace djack.RogueSurvivor
         if (null!= m_InKey) break;
         Thread.Sleep(100);
       }
-      KeyEventArgs tmp = m_InKey;
-      m_InKey = null;
-      return tmp;
+      return Interlocked.Exchange(ref m_InKey, null);
     }
 
     public KeyEventArgs UI_PeekKey()
     {
       Thread.Sleep(1);
       Application.DoEvents();
-      KeyEventArgs tmp = m_InKey;
-      m_InKey = null;
-      return tmp;
+      return Interlocked.Exchange(ref m_InKey, null);
     }
 
     public void UI_PostKey(KeyEventArgs e)
@@ -196,7 +192,7 @@ namespace djack.RogueSurvivor
         case Keys.RControlKey:
           break;
         default:
-          m_InKey = e;
+          Interlocked.Exchange(ref m_InKey, e);
           e.Handled = true;
           break;
       }

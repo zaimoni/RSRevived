@@ -167,6 +167,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_RAISE_ALARM = new Verb("raise the alarm", "raises the alarm");
     private readonly Verb VERB_REFUSE_THE_DEAL = new Verb("refuse the deal", "refuses the deal");
     public static readonly Verb VERB_RELOAD = new Verb("reload");
+    private readonly Verb VERB_UNLOAD = new Verb("unload");
     private readonly Verb VERB_RECHARGE = new Verb("recharge");
     private readonly Verb VERB_REPAIR = new Verb("repair");
     private readonly Verb VERB_REVIVE = new Verb("revive");
@@ -9534,6 +9535,22 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.Consume(it);
       actor.Location.Drop(clone);
       clone.Unequip();
+    }
+
+    public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InventorySource<Item> dest)
+    {
+      var ammo = ItemAmmo.make(src.it.Model.ID);
+      ammo.Quantity = src.it.Ammo;
+      var added = dest.inv.AddAsMuchAsPossible(ammo);
+      if (0 >= added) return false;
+
+      src.it.Ammo -= added;
+      src.fireChange();
+      dest.fireChange();
+
+      bool player = ForceVisibleToPlayer(actor);
+      if (player) AddMessage(MakeMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
+      return true;
     }
 
     // At low time resolutions, it would make sense to allow using from adjacent reachable inventories
