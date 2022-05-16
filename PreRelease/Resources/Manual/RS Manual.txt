@@ -385,6 +385,22 @@ They are displayed in the same way as your items.
 Manage items on the ground with the mouse.
 To take an item : Left-Click.
 
+> > Inventory hot-keys
+
+The keyboard keys 1234567890 provide an alternate way to interact with inventory.
+(0 targets the tenth inventory slot.)
+
+E.g.:
+* CTRL-2 uses the item in the second player inventory slot.  (Equivalent to left-click on player inventory)
+* SHIFT-2 takes the item in the second ground inventory slot. (Equivalent to left-click on ground inventory)
+* ALT-2 drops the item in the second player inventory slot. (Equivalent tor right-click on player inventory)
+* 2 enters a command count of 2.  This count is honored by the following commands:
+** Use Spray
+
+We don't try to parse large numbers here (that is, the last digit is the only one tracked).
+0 and 1 both cancel the subsequent command repeat.  Otherwise, 2 through 9 repeats may be requested.
+This will be cancelled if an enemy enters sight, but will not be cancelled
+just by having (police) threat tracking on screen.
 
 > SKILLS
 List your current skills, their level and their name.
@@ -438,11 +454,6 @@ You need to be not tired to start or continue running. If you are tired while ru
 
 > WAITING/RESTING  (default NumPad5)
 Do nothing. You recover STA faster this way.
-
-
-> WAITING ONE HOUR  (default W)
-Wait for one hour. Interrupted if you see enemies, become hungry or sleepy, or witness something important happening.
-Useful if you want to wait for the day to rise, the night to fall or just to waste time.
 
 
 > CLOSING A DOOR/WINDOW  (default C)

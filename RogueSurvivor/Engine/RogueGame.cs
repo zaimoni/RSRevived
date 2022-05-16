@@ -382,6 +382,7 @@ namespace djack.RogueSurvivor.Engine
     {
       info.read_nullsafe(ref s_MessageManager, "s_MessageManager");
       info.read_nullsafe(ref s_RefugeePool, "s_RefugeePool");
+      info.read_nullsafe(ref s_CountedCommands, "s_CountedCommands");
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
@@ -389,6 +390,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("s_Player",Map.encode(Player));
       info.AddValue("s_MessageManager", s_MessageManager);
       info.AddValue("s_RefugeePool", s_RefugeePool);
+      info.AddValue("s_CountedCommands", s_CountedCommands);
     }
 
     // very severe access control issue; should be called only from Session::Session()
@@ -3025,6 +3027,9 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
+    // Don't want this in PlayerController; the required public accessors are unacceptable.
+    static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
+
     private void HandlePlayerActor(PlayerController pc)
     {
 #if DEBUG
@@ -3045,6 +3050,7 @@ namespace djack.RogueSurvivor.Engine
       GC.WaitForPendingFinalizers();
       play_timer.Stop();
 
+      int hotkey_turns = 0;
       bool flag1 = true;
       do {
         if (Player!=player) {
@@ -3092,6 +3098,52 @@ namespace djack.RogueSurvivor.Engine
         if (null != tmpAction) {
           play_timer.Start();
           tmpAction.Perform();
+          // XXX following is duplicated code
+          pc.UpdateSensors();
+          SetCurrentMap(player.Location);
+          pc.UpdatePrevLocation();
+          Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
+          m_PlayerInTurn = null;
+          return;
+        }
+
+        PlayerCommand? pc_command = null;
+        int? index = null;
+        if (null != s_CountedCommands) {
+            var ub = s_CountedCommands.Count;
+            while(0 <= --ub) {
+              if (s_CountedCommands[ub].Key == pc) {
+                if (null != pc.enemies_in_FOV) {
+                  // enemies in sight: abort.  Don't use the more general "in combat" notion.
+                  // \todo We actually should abort if we think we could be imminently attacked by an unseen enemy
+                  s_CountedCommands.RemoveAt(ub);
+                  break;
+                }
+
+                pc_command = s_CountedCommands[ub].Value.Value;
+                var count = s_CountedCommands[ub].Value.Key;
+                if (1 >= count) {
+                  if (1 >= s_CountedCommands.Count) s_CountedCommands = null;
+                  else s_CountedCommands.RemoveAt(ub);
+                } else {
+                  s_CountedCommands[ub] = new(pc,new(count-1, pc_command.Value));
+                  index = ub;
+                }
+                break;
+              }
+            }
+        }
+
+        if (null != pc_command) {
+          play_timer.Start();
+          switch (pc_command.Value)
+          {
+          case PlayerCommand.USE_SPRAY:
+            if (TryPlayerInsanity() || !HandlePlayerUseSpray(player)) {
+              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+            };
+            break;
+          }
           // XXX following is duplicated code
           pc.UpdateSensors();
           SetCurrentMap(player.Location);
@@ -3261,7 +3313,16 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !DoLeaveMap(player, player.Location.Position);
                 break;
               case PlayerCommand.USE_SPRAY:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerUseSpray(player);
+                if (TryPlayerInsanity()) {
+                  flag1 = false;
+                  break;
+                }
+                if (HandlePlayerUseSpray(player)) {
+                  flag1 = false;
+                  if (2 <= hotkey_turns) {
+                    (s_CountedCommands ??= new()).Add(new(pc, new(hotkey_turns-1, PlayerCommand.USE_SPRAY)));
+                  }
+                };
                 break;
               case PlayerCommand.CITY_INFO:
                 HandleCityInfo();
@@ -3282,33 +3343,73 @@ namespace djack.RogueSurvivor.Engine
                 HandleMessageLog();
                 break;
               case PlayerCommand.ITEM_SLOT_0:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 1;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 0, key);
                 break;
               case PlayerCommand.ITEM_SLOT_1:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 2;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 1, key);
                 break;
               case PlayerCommand.ITEM_SLOT_2:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 3;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 2, key);
                 break;
               case PlayerCommand.ITEM_SLOT_3:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 4;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 3, key);
                 break;
               case PlayerCommand.ITEM_SLOT_4:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 5;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 4, key);
                 break;
               case PlayerCommand.ITEM_SLOT_5:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 6;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 5, key);
                 break;
               case PlayerCommand.ITEM_SLOT_6:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 7;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 6, key);
                 break;
               case PlayerCommand.ITEM_SLOT_7:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 8;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 7, key);
                 break;
               case PlayerCommand.ITEM_SLOT_8:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 9;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 8, key);
                 break;
               case PlayerCommand.ITEM_SLOT_9:
+                if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
+                  hotkey_turns = 0;
+                  break;
+                }
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 9, key);
                 break;
               default: throw new ArgumentException("command unhandled");
