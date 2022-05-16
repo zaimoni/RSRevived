@@ -145,7 +145,9 @@ retry:      if (target == Norm.Get) return;
             if (_cache.TryGetValue(x, out var val)) return new DenormalizedProbability<T>(val);
             var raw = new Dictionary<T, float> { [x] = 1 };
             var ret = new DenormalizedProbability<T>(raw);
-            _cache[x] = new DenormalizedProbability<T>(ret);
+            lock (_cache) {
+                _cache[x] = new DenormalizedProbability<T>(ret);
+            };
             return ret;
         }
     }   // ConstantDistribution<T>
@@ -166,7 +168,9 @@ retry:      if (target == Norm.Get) return;
             for (int x = lb; x <= ub; x++) raw[x] = 1;
             var ret = new DenormalizedProbability<int>(raw);
             ret.Normalize();
-            _cache[index] = new DenormalizedProbability<int>(ret);
+            lock (_cache) {
+                _cache[index] = new DenormalizedProbability<int>(ret);
+            };
             return ret;
         }
     }   // UniformDistribution
