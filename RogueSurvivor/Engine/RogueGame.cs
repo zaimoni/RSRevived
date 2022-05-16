@@ -3138,6 +3138,24 @@ namespace djack.RogueSurvivor.Engine
           play_timer.Start();
           switch (pc_command.Value)
           {
+          case PlayerCommand.MOVE_N:
+          case PlayerCommand.MOVE_NE:
+          case PlayerCommand.MOVE_E:
+          case PlayerCommand.MOVE_SE:
+          case PlayerCommand.MOVE_S:
+          case PlayerCommand.MOVE_SW:
+          case PlayerCommand.MOVE_W:
+          case PlayerCommand.MOVE_NW:
+            if (TryPlayerInsanity() || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command.Value) - (int)(PlayerCommand.MOVE_N)])) {
+              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+            };
+            break;
+          case PlayerCommand.WAIT_OR_SELF:
+            if (TryPlayerInsanity()) {
+              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+            };
+            DoWait(player);
+            break;
           case PlayerCommand.USE_SPRAY:
             if (TryPlayerInsanity() || !HandlePlayerUseSpray(player)) {
               if (null != index) s_CountedCommands.RemoveAt(index.Value);
@@ -3218,7 +3236,16 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.MOVE_SW:
               case PlayerCommand.MOVE_W:
               case PlayerCommand.MOVE_NW:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.COMPASS[(int)(command)-(int)(PlayerCommand.MOVE_N)]);
+                if (TryPlayerInsanity()) {
+                  flag1 = false;
+                  break;
+                }
+                if (DoPlayerBump(player, Direction.COMPASS[(int)(command) - (int)(PlayerCommand.MOVE_N)])) {
+                  flag1 = false;
+                  if (2 <= hotkey_turns) {
+                    (s_CountedCommands ??= new()).Add(new(pc, new(hotkey_turns-1, command)));
+                  }
+                };
                 break;
               case PlayerCommand.RUN_TOGGLE:
                 if (TryPlayerInsanity()) {
@@ -3233,6 +3260,9 @@ namespace djack.RogueSurvivor.Engine
                   break;
                 }
                 flag1 = false;
+                if (2 <= hotkey_turns) {
+                  (s_CountedCommands ??= new()).Add(new(pc, new(hotkey_turns-1, PlayerCommand.WAIT_OR_SELF)));
+                }
                 DoWait(player);
                 break;
               case PlayerCommand.BARRICADE_MODE:
@@ -4657,6 +4687,12 @@ namespace djack.RogueSurvivor.Engine
       // try unloading to our own inventory first
       var dest = new InventorySource<Item>(player);
       if (DoUnload(player, src, dest)) return true;
+
+      // If that fails, and we are unloading from a container, try the container's inventory
+      if (null != src.obj_owner) {
+        dest = new(player.Location, player);
+        if (DoUnload(player, src, dest)) return true;
+      }
 
       // If that fails, try unload to ground inventory
       dest = new InventorySource<Item>(player.Location,  player);

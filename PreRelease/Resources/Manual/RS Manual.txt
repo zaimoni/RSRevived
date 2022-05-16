@@ -396,6 +396,7 @@ E.g.:
 * ALT-2 drops the item in the second player inventory slot. (Equivalent tor right-click on player inventory)
 * 2 enters a command count of 2.  This count is honored by the following commands:
 ** Use Spray
+** numeric keypad movement commands (directional, and wait)
 
 We don't try to parse large numbers here (that is, the last digit is the only one tracked).
 0 and 1 both cancel the subsequent command repeat.  Otherwise, 2 through 9 repeats may be requested.
