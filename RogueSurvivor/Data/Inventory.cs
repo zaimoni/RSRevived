@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Linq;
 
+using djack.RogueSurvivor.Engine;
+
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
@@ -20,7 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal struct InventorySource<T> where T:Item
+  internal readonly struct InventorySource<T> where T:Item
   {
      public readonly Inventory inv;
      public readonly T? it = null;
@@ -105,9 +107,19 @@ namespace djack.RogueSurvivor.Data
     public void fireChange() {
       // Police ai cheats
       if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
-        if (null != loc) Engine.Session.Get.Police.Investigate.Record(loc.Value);
-        if (null != obj_owner) Engine.Session.Get.Police.Investigate.Record(obj_owner.Location);
+        if (null != loc) Session.Get.Police.Investigate.Record(loc.Value);
+        if (null != obj_owner) Session.Get.Police.Investigate.Record(obj_owner.Location);
       }
+    }
+
+    public bool IsAccessible(Location origin) {
+      if (null != loc) return loc.Value == origin;
+      if (null != obj_owner) return 1==Rules.GridDistance(origin, obj_owner.Location);
+#if DEBUG
+      throw new InvalidOperationException("untested failover path");
+#endif
+      // must be actor inventory.  Wouldn't be asking about our own, so must be someone else's.
+      return 1==Rules.GridDistance(origin, a_owner!.Location);
     }
   }
 

@@ -2892,6 +2892,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
+    private ActorAction? _takeThis(in InventorySource<Item> stack, Item obj, ActorAction recover, bool is_real)
+    {
+#if DEBUG
+      if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to take from actor inventory");
+#endif
+        // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
+        if (obj is ItemBodyArmor armor) {
+          var best_armor = GetEquippedBodyArmor();
+          if (null != best_armor && armor.Rating > best_armor.Rating) {
+            // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
+            return ActionTradeWith.Cast(in stack, m_Actor, best_armor, obj);
+          }
+        }
+#if DEBUG
+        if (is_real && !m_Actor.MayTakeFrom(in stack)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take");
+#endif
+        var tmp = new ActionTakeItem(m_Actor, in stack, obj);
+        if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
+        if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
+          if (recover is ActorGive drop) {
+            if (obj.Model.ID == drop.Give.Model.ID) return null;
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
+          }
+          return new ActionChain(recover, tmp);
+        }
+        return null;
+    }
+
     private ActorAction? _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
     {
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
@@ -2915,6 +2943,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionChain(recover, tmp);
         }
         return null;
+    }
+
+    public ActorAction? WouldGrabFromAccessibleStack(in InventorySource<Item> stack, bool is_real=false)
+    {
+#if DEBUG
+      if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to grab from actor inventory");
+#endif
+      Item obj = MostInterestingItemInStack(stack.inv);
+      if (obj == null) return null;
+
+      // but if we cannot take it, ignore anyway
+      bool cant_get = !m_Actor.CanGet(obj);
+      bool need_recover = cant_get && m_Actor.Inventory.IsFull;
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, in stack) : null);
+#if DEBUG
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+      if (cant_get && null == recover) {
+        int obj_code = ItemRatingCode(obj);
+        foreach(Item it in m_Actor.Inventory.Items) {
+          int it_code = ItemRatingCode(it);
+          if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
+        }
+        return null;
+      }
+#else
+      if (cant_get && null == recover) return null;
+#endif
+#else
+      if (cant_get && null == recover) return null;
+#endif
+
+      // the get item checks do not validate that inventory is not full
+      var tmp = _takeThis(in stack, obj, recover, is_real);
+      if (null == tmp) return null;
+      if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        RogueGame.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
+      return tmp;
     }
 
     public ActorAction? WouldGrabFromAccessibleStack(in Location loc, Inventory stack, bool is_real=false)

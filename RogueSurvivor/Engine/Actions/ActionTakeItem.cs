@@ -42,6 +42,21 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
     }
 
+    public ActionTakeItem(Actor actor, in InventorySource<Item> stack, Item it) : base(actor)
+    {
+#if DEBUG
+      if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
+      if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+      if (null == stack.loc && null == stack.obj_owner) throw new InvalidOperationException("trying to take from actor");
+      if (null == stack.inv || !stack.inv.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
+#endif
+      m_Location = null == stack.loc ? stack.obj_owner.Location : stack.loc.Value;
+      if (!Map.Canonical(ref m_Location)) throw new ArgumentNullException(nameof(m_Location));
+      m_Item = it;
+      m_Container = stack.obj_owner;
+    }
+
+
     public Item Take { get { return m_Item; } }
 
     private Inventory? _inv { get { return null != m_Container ? m_Container.Inventory : m_Location.Map.GetItemsAtExt(m_Location.Position); } }
