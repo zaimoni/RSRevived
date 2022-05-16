@@ -5187,7 +5187,7 @@ restart_chokepoints:
 
           // try pushing something onto it (either covers or destroys)
           var do_this = CanDisarmDeathtrap(same_floor_deathtraps);
-          if (null != do_this) {
+          if (null != do_this && do_this.IsLegal()) {
             var coordinate_this = new Goals.Cooperate(m_Actor, do_this);
             var tenable = coordinate_this.UrgentAction(out var next_action);
             if (null != next_action) {
@@ -7215,12 +7215,13 @@ restart_chokepoints:
 
     public ActorAction? DoctrineMedicateHP()
     {
+       int delta = m_Actor.MaxHPs - m_Actor.HitPoints;
+       if (0 >= delta) return null;
        var bandage = m_Actor.Inventory?.GetBestDestackable(GameItems.BANDAGE) as ItemMedicine;
        var medikit = m_Actor.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
        if (null == bandage && null == medikit) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        if (null == medikit) return new ActionUseItem(m_Actor, bandage);
-       int delta = m_Actor.MaxHPs - m_Actor.HitPoints;
        int medikit_help = m_Actor.ScaleMedicineEffect(medikit.Healing);
        if (medikit_help <= delta) return new ActionUseItem(m_Actor, medikit);
        if (null != bandage) {
