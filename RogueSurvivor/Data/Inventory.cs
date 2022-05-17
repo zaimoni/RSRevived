@@ -22,7 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal readonly struct InventorySource<T> where T:Item
+  internal readonly record struct InventorySource<T> where T:Item
   {
      public readonly Inventory inv;
      public readonly T? it = null;
@@ -116,6 +116,14 @@ namespace djack.RogueSurvivor.Data
        it = obj;
      }
 
+    public Location Location {
+      get {
+        if (null != loc) return loc.Value;
+        if (null != obj_owner) return obj_owner.Location;
+        // must be actor inventory.
+        return a_owner!.Location;
+      }
+    }
 
     public void fireChange() {
       // Police ai cheats

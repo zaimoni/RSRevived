@@ -7279,7 +7279,8 @@ restart_chokepoints:
     }
 #nullable restore
 
-    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
+    /// pt is just an abstract key here, not used in position calculations directly
+    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in InventorySource<Item> pt, Dictionary<InventorySource<Item>, ItemRangedWeapon[]> best_rw, Dictionary<InventorySource<Item>, ItemRangedWeapon[]> reload_empty_rw, Dictionary<InventorySource<Item>, ItemRangedWeapon[]> discard_empty_rw, Dictionary<InventorySource<Item>, ItemRangedWeapon[]> reload_rw)
     {
         if (null == rws || !rws.Any()) return;
 
@@ -7348,15 +7349,15 @@ restart_chokepoints:
         }
       }
 
-      var ground_inv = loc.Map.GetAccessibleInventories(loc.Position);
-      if (0 >= ground_inv.Count) return null;
+      var ground_inv = Map.GetAccessibleInventorySources(loc);
+      if (null == ground_inv) return null;
 
       // set up pattern-matching for ranged weapons
-      Point viewpoint_inventory = Point.MaxValue; // intentionally chosen to be impossible, as a flag
-      var best_rw = new Dictionary<Point, ItemRangedWeapon[]>();
-      var reload_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
-      var discard_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
-      var reload_rw = new Dictionary<Point, ItemRangedWeapon[]>();
+      InventorySource<Item> viewpoint_inventory = new(m_Actor); // intentionally chosen to be impossible, as a flag
+      Dictionary<InventorySource<Item>, ItemRangedWeapon[]> best_rw = new();
+      Dictionary<InventorySource<Item>, ItemRangedWeapon[]> reload_empty_rw = new();
+      Dictionary<InventorySource<Item>, ItemRangedWeapon[]> discard_empty_rw = new();
+      Dictionary<InventorySource<Item>, ItemRangedWeapon[]> reload_rw = new();
 
       _InterpretRangedWeapons(rws, in viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
 
@@ -7368,8 +7369,8 @@ restart_chokepoints:
             if (null == (local_rw = reload_rw[viewpoint_inventory][i])) continue;
             var local_ammo = inv.GetCompatibleAmmoItem(local_rw);
             if (null == local_ammo) continue;
-            foreach(var x in ground_inv) {
-             var remote_ammo = x.Value.GetCompatibleAmmoItem(local_rw);
+            foreach(var stack in ground_inv) {
+             var remote_ammo = stack.inv.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
              Objectives.Insert(0, new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
              return UseAmmo(local_ammo, local_rw);
@@ -7378,15 +7379,15 @@ restart_chokepoints:
         }
 
         // prepare to analyze ranged weapon swaps.
-        foreach(var x in ground_inv) {
-          var ground_rws = x.Value.GetItemsByType<ItemRangedWeapon>();
-          _InterpretRangedWeapons(ground_rws, x.Key, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
+        foreach(var stack in ground_inv) {
+          var ground_rws = stack.inv.GetItemsByType<ItemRangedWeapon>();
+          _InterpretRangedWeapons(ground_rws, stack, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
         }
 
         ItemRangedWeapon? alt_rw;
         if (discard_empty_rw.ContainsKey(viewpoint_inventory)) {
           // we should not have been able to reload this i.e. no ammo.
-          Point? dest = null;
+          InventorySource<Item>? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;
@@ -7410,7 +7411,7 @@ restart_chokepoints:
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
         {
-          Point? dest = null;
+          InventorySource<Item>? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;
