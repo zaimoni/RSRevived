@@ -104,6 +104,19 @@ namespace djack.RogueSurvivor.Data
        }
      }
 
+     public InventorySource(InventorySource<T> src, T obj) {
+       inv = src.inv;
+       a_owner = src.a_owner;
+       obj_owner = src.obj_owner;
+       loc = src.loc;
+#if DEBUG
+       if (null == inv) throw new ArgumentNullException(nameof(inv));
+       if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+       it = obj;
+     }
+
+
     public void fireChange() {
       // Police ai cheats
       if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
@@ -120,6 +133,13 @@ namespace djack.RogueSurvivor.Data
 #endif
       // must be actor inventory.  Wouldn't be asking about our own, so must be someone else's.
       return 1==Rules.GridDistance(origin, a_owner!.Location);
+    }
+
+    public bool TransferFrom(Inventory dest) {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+      return inv.Transfer(it, dest);
     }
   }
 

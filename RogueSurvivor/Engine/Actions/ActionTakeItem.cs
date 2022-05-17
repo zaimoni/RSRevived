@@ -96,8 +96,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Gameplay.GameItems.IDs m_ID;
     [NonSerialized] private Item? m_Item;
-    [NonSerialized] private Point? m_pos;
-    [NonSerialized] private MapObject? m_Container;
+    [NonSerialized] private InventorySource<Item>? m_InvSrc;
 
     public ActionTake(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
     {
@@ -113,30 +112,28 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public MapObject? What { get {
       init();
-      return m_Container;
+      return m_InvSrc.Value.obj_owner;
     } }
 
     private void init()
     {
-      if (null != m_Item && (m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.Contains(m_Item) ?? false)) return;
-      var stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-      if (0 >= stacks.Count) return;
+      if (null != m_Item && m_InvSrc.Value.inv.Contains(m_Item)) return;
+
+      var stacks = Map.GetAccessibleInventorySources(m_Actor.Location);
+      if (null == stacks) return;
 
       ItemModel model = Gameplay.GameItems.From(m_ID);
 
-      foreach(var x in stacks) {
-        m_Item = x.Value.GetFirstByModel(model);
+      foreach(var stack in stacks) {
+        m_Item = stack.inv.GetFirstByModel(model);
         if (null != m_Item) {
-          m_pos = x.Key;
-          var obj = m_Actor.Location.Map.GetMapObjectAtExt(x.Key);
-          var obj_inv = obj?.NonEmptyInventory;
-          if (null != obj_inv && obj_inv.Contains(m_Item)) m_Container = obj;
+          m_InvSrc = stack;
           return;
         }
       }
     }
 
-    private Inventory? _inv { get { return null != m_Container ? m_Container.Inventory : m_Actor.Location.Map.GetItemsAtExt(m_pos.Value); } }
+    private Inventory? _inv { get { return m_InvSrc.Value.inv; } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
@@ -153,8 +150,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       Item it = Take!;  // cf IsLegal(), above
       m_Actor.Inventory.RejectCrossLink(_inv!);
-      if (null != m_Container) RogueGame.Game.DoTakeItem(m_Actor, m_Container, m_Item);
-      else RogueGame.Game.DoTakeItem(m_Actor, m_pos!.Value, it);
+      RogueGame.Game.DoTakeItem(m_Actor, m_InvSrc.Value);
       _inv?.RejectCrossLink(m_Actor.Inventory);
     }
 

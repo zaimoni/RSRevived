@@ -9510,6 +9510,26 @@ namespace djack.RogueSurvivor.Engine
       PagedMenu("Taking...", inv.CountItems, label, details);
     }
 
+    public void DoTakeItem(Actor actor, in InventorySource<Item> src)
+    {
+      var it = src.it;  // backward compatibility
+      var g_inv = src.inv;  // backward compatibility
+#if DEBUG
+      if (null == src.it) throw new ArgumentNullException("src.it");
+      if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("do not take from actor inventory");
+      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
+#endif
+      actor.SpendActionPoints();
+      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
+      g_inv.RepairCrossLink(actor.Inventory);
+      src.TransferFrom(actor.Inventory);   // invalidates g_inv if that was the last item
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(src))
+        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
+      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
+        it.EquippedBy(actor);
+      if (Player==actor) RedrawPlayScreen();
+    }
+
     public void DoTakeItem(Actor actor, MapObject container, Item it)
     {
       var g_inv = container.Inventory;
@@ -12558,6 +12578,13 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }
     private bool ForceVisibleToPlayer(in Location location) { return ForceVisibleToPlayer(location.Map, location.Position); }
+
+    private bool ForceVisibleToPlayer(in InventorySource<Item> src) {
+      if (null != src.obj_owner) return ForceVisibleToPlayer(src.obj_owner);
+      if (null != src.loc) return ForceVisibleToPlayer(src.loc.Value);
+      // a_owner will be non-null
+      return ForceVisibleToPlayer(src.a_owner);
+    }
 
     private bool IsPlayerSleeping()
     {
