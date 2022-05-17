@@ -21,15 +21,9 @@ namespace djack.RogueSurvivor.Engine
     // makes sense.
     // 2019-04-14: while we would like to lock access to FOVcache (there is a multi-threading crash issue manifesting as an "impossible" null cache value,
     // this deadlocks on PC district change
-    private static readonly Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>>();
+    private static readonly Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new();
 
     public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire()) FOVcache.Remove(m); }
-#if OBSOLETE
-    public static void Now(Map map) {
-      if (!FOVcache.TryGetValue(map,out var cache)) FOVcache[map] = cache = new Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>();
-      cache.Now(map.LocalTime.TurnCounter);
-    }
-#endif
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
       if (FOVcache.TryGetValue(map,out var target)) target.Validate(fn);
@@ -37,7 +31,7 @@ namespace djack.RogueSurvivor.Engine
 
     // Optimal FOV offset subsystem to deal with some ugly inverse problems
     // this is symmetric, unlike actual FOV calculations at range 5+ (range 4- is symmetric by construction)
-    private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>>();
+    private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new();
     public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(short range)
     {
       if (OptimalFOVOffsets.TryGetValue(range,out var ret)) return ret;    // TryGetValue indicated
@@ -368,10 +362,9 @@ namespace djack.RogueSurvivor.Engine
     public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
       if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
-        cache = new Zaimoni.Data.Cache.Associative<KeyValuePair<Point, int>, HashSet<Point>>();
-        FOVcache[a_loc.Map] = cache; // \todo? could use Add if using a lock
+        FOVcache[a_loc.Map] = (cache = new()); // \todo? could use Add if using a lock
       }
-      if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out var visibleSet)) return new HashSet<Point>(visibleSet);
+      if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out var visibleSet)) return new(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
 
@@ -379,7 +372,7 @@ namespace djack.RogueSurvivor.Engine
 
       Map map = a_loc.Map;
       Point position = a_loc.Position;
-      List<Point> pointList1 = new List<Point>();
+      List<Point> pointList1 = new();
 
       bool FOVSub(in Location fromLocation, Point toPosition)
       {
@@ -427,7 +420,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       }
       visibleSet.UnionWith(pointList2);
-      FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
+      FOVcache[a_loc.Map].Set(new(a_loc.Position,maxRange), new(visibleSet));
       return visibleSet;
     }
 
