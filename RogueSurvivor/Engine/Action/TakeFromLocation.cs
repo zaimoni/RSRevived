@@ -31,12 +31,15 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsPerformable() {
             if (!IsLegal()) return false;
-            var stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
-            if (0 >= stacks.Count) return false;
-            var denorm = m_Actor.Location.Map.Denormalize(in m_loc);
-            if (null == denorm || !stacks.ContainsKey(denorm.Value.Position)) return false;
-            m_Item = m_loc.Items?.GetBestDestackable(Gameplay.GameItems.From(m_ID));
-            return null != m_Item;
+            var stacks = Map.GetAccessibleInventorySources(m_Actor.Location);
+            if (null == stacks) return false;
+            foreach (var stack in stacks) {
+                if (null != stack.loc && stack.loc.Value == m_loc) {
+                    m_Item = stack.inv.GetBestDestackable(Gameplay.GameItems.From(m_ID));
+                    return null != m_Item;
+                }
+            }
+            return false;
         }
 
         public override void Perform()
