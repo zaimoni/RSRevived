@@ -1878,45 +1878,10 @@ retry:
 #endif
 
           if (!stage.inv.IsEmpty) ret.Add(stage);
-        } /* else {
-          stage = new(loc);
-          if (null != stage.inv) ret.Add(stage); // XXX this is scheduled for revision
-        } */
+        }
       }
 
       return 0<ret.Count ? ret : null;
-    }
-
-    public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
-    {
-      var ground_inv = new Dictionary<Point, Inventory>();
-      var inv = GetItemsAtExt(pt);
-      if (null != inv && !inv.IsEmpty) ground_inv.Add(pt, inv);
-      foreach(var adjacent in pt.Adjacent()) {
-        var loc = new Location(this, adjacent);
-        if (!Canonical(ref loc)) continue;
-        var obj = loc.MapObject;
-        if (null != obj && obj.IsContainer) {
-          inv = obj.Inventory;
-          if (null != inv && !inv.IsEmpty) {
-            ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
-            // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
-            // \todo for now, A Miracle Occurs
-            var losing_inv = loc.Items;
-            while(null != losing_inv && !inv.IsFull) {
-              loc.Map.TransferFrom(losing_inv.TopItem, loc.Position, inv);
-              losing_inv = loc.Items;
-            }
-#if DEBUG
-            if (null != losing_inv) throw new InvalidOperationException("lost ground inventory");
-#endif
-          } else {
-            inv = loc.Items;
-            if (null != inv) ground_inv.Add(adjacent, inv); // XXX this is scheduled for revision
-          }
-        }
-      }
-      return ground_inv;
     }
 
     // Clairvoyant.  Useful for fine-tuning map generation and little else
