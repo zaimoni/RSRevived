@@ -2124,16 +2124,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #nullable enable
     public ActorAction? WouldUseAccessibleStack(in Location dest,bool is_real=false) {
-        var stacks = dest.Map.GetAccessibleInventories(dest.Position);
-        if (0 < stacks.Count) {
-          ActorAction? tmpAction;
-          var map = dest.Map;
-          foreach(var x in stacks) {
-            var loc = new Location(map, x.Key);
-            if (Map.Canonical(ref loc) && (null != (tmpAction = WouldGrabFromAccessibleStack(in loc, x.Value, is_real)))) return tmpAction;
-          }
+      var stacks = Map.GetAccessibleInventorySources(dest);
+      if (null != stacks) {
+        ActorAction? act;
+        foreach(var stack in stacks) {
+          act = WouldGrabFromAccessibleStack(in stack, is_real);
+          if (null != act) return act;
         }
-        return null;
+      }
+      return null;
     }
 
     public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }

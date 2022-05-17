@@ -1852,6 +1852,41 @@ retry:
        return ret;
     }
 
+    public static List<InventorySource<Item>>? GetAccessibleInventorySources(Location origin)
+    {
+      List<InventorySource<Item>> ret = new();
+
+      InventorySource<Item> stage = new(origin);
+      if (null != stage.inv) ret.Add(stage);
+
+      foreach(var adjacent in origin.Position.Adjacent()) {
+        var loc = new Location(origin.Map, adjacent);
+        if (!Canonical(ref loc)) continue;
+        var obj = loc.MapObject;
+        if (null != obj && obj.IsContainer) {
+          stage = new(obj);
+
+          // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
+          // \todo for now, A Miracle Occurs
+          var losing_inv = loc.Items;
+          while(null != losing_inv && !stage.inv.IsFull) {
+            loc.Map.TransferFrom(losing_inv.TopItem, loc.Position, stage.inv);
+            losing_inv = loc.Items;
+          }
+#if DEBUG
+          if (null != losing_inv) throw new InvalidOperationException("lost ground inventory");
+#endif
+
+          if (!stage.inv.IsEmpty) ret.Add(stage);
+        } /* else {
+          stage = new(loc);
+          if (null != stage.inv) ret.Add(stage); // XXX this is scheduled for revision
+        } */
+      }
+
+      return 0<ret.Count ? ret : null;
+    }
+
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
     {
       var ground_inv = new Dictionary<Point, Inventory>();

@@ -5389,6 +5389,7 @@ restart_chokepoints:
         if (!want_now(x.Value)) continue;   // not immediately relevant
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
         if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement
+        if (x.Value.IsEmpty) continue;  // got changed on us?
         if (!BehaviorWouldGrabFromStack(x.Key, x.Value)?.IsLegal() ?? true) {
           boringStacks.Add(new Percept(x.Value, t0, x.Key));
           continue;
