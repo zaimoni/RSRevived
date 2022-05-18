@@ -379,13 +379,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsFull) {
         var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
         if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          Objectives.Insert(0, use_trap);
+          SetObjective(use_trap);
           return ret;
         }
       }
 #endif
 
-      var rules = Rules.Get;
+            var rules = Rules.Get;
       if (rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);
 #if TRACE_SELECTACTION
@@ -747,7 +747,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                   if (0 < dests.Count) {
                     var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
-                    Objectives.Insert(0, goal);
+                    SetObjective(goal);
                     AddFOVevent(goal);
                   }
                 }

@@ -1159,7 +1159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
                    var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
-                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
+                   SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
               }
             } else m_Actor.Run();
           }
@@ -1322,7 +1322,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
                    var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
-                   Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
+                   SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
                 }
               }
               return tmpAction;
@@ -1775,7 +1775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         targ_ai.CancelPathTo(m_Actor);  // do not count pathing to *me* as focused
         if (targ_ai.IsFocused) return null;
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
-        targ_ai.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));
+        targ_ai.SetObjective(new Goal_HintPathToActor(t0, target1, m_Actor));
       }
       return BehaviorIntelligentBumpToward(target1.Location, false, false);
     }
@@ -1951,11 +1951,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (null != close_doors) {
           var dest = rules.DiceRoller.Choose(close_doors);
-          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
+          SetObjective(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
           return new ActionCloseDoor(m_Actor, dest, m_Actor.Location == PrevLocation);
         } else if (null != barricade_doors) {
           var dest = rules.DiceRoller.Choose(barricade_doors);
-          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
+          SetObjective(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Location));
           return new ActionBarricadeDoor(m_Actor, dest);
         }
         }   // enable automatic GC
@@ -3394,8 +3394,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (null != tmpAction) {
                     // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
                     var your_plan = new Goal_HintPathToActor(t0, donor, m_Actor, donate);
-                    (donor.Controller as OrderableAI).Objectives.Insert(0,your_plan);
-                    Objectives.Insert(0,my_plan);
+                    (donor.Controller as OrderableAI).SetObjective(your_plan);
+                    SetObjective(my_plan);
                     return tmpAction;
                 }
                 return null;
@@ -3421,8 +3421,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 tmpAction = my_plan.Pathing();
                 if (null != tmpAction) {    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
                     var your_plan = new Goal_HintPathToActor(t0, donor, m_Actor, donate);
-                    (donor.Controller as OrderableAI).Objectives.Insert(0,your_plan);
-                    Objectives.Insert(0,my_plan);
+                    (donor.Controller as OrderableAI).SetObjective(your_plan);
+                    SetObjective(my_plan);
                     return tmpAction;
                 }
                 return null;
@@ -3665,7 +3665,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       act = TurnOnAdjacentGenerators();
       if (null != act) {
-        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return act;
       }
       act = RechargeWithAdjacentGenerator();

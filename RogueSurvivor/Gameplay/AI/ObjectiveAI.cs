@@ -255,6 +255,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<ret.Length ? ret : null;
     }
 
+    private int InsertObjectiveAt(Objective src) {
+      // highest priority
+      if (src is Goal_RestRatherThanLoseturnWhenTired) return 0;
+      int ret = 0;
+      if (Objectives[0] is Goal_RestRatherThanLoseturnWhenTired) ret++;
+      return ret;
+    }
+
     // thin wrapper for when the key logic is elsewhere; we still prefer central-logic specializations)
     public void SetObjective(Objective src) {
 #if DEBUG
@@ -268,7 +276,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return;
 #endif
       // for now, treat this as "early"
-      Objectives.Insert(0,src);
+      Objectives.Insert(InsertObjectiveAt(src), src);
     }
 
     public void SetUnownedObjective(Objective src) {
@@ -276,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       // for now, treat this as "early"
-      Objectives.Insert(0,src);
+      Objectives.Insert(InsertObjectiveAt(src), src);
     }
 
     public ActorAction Pathing<T>() where T:Objective,Pathable
@@ -2442,7 +2450,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // refine the historical behavior to not happen in-combat (bad for CHAR base assault, good for most other combat situations)
         if (m_Actor.Model.DefaultController==typeof(CivilianAI)) {
           if (m_Actor.Location.MapObject is DoorWindow door && door.IsOpen && !InCombat) {
-            Objectives.Insert(0,new Goals.StageAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionCloseDoor(m_Actor, door, true)));
+            SetObjective(new StageAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionCloseDoor(m_Actor, door, true)));
             return;
           }
         }
@@ -2718,7 +2726,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 >= final_act.Count) continue;
           // \todo: something that decides which escape destination to use, (i.e. actually can react to newly visible threat, etc.)
           var schedule = Rules.Get.DiceRoller.Choose(final_act);
-          Objectives.Insert(0,new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, schedule.Value, schedule.Value));
+          SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, schedule.Value, schedule.Value));
           return step;
         }
       }
@@ -3020,7 +3028,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       act.Perform();
       if (!(actions[0] is ActorDest) || !actions[0].IsPerformable()) actions.RemoveAt(0);
       if (1<=actions.Count)
-        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, 1 < actions.Count ? new ActionChain(m_Actor, actions)
+        SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, 1 < actions.Count ? new ActionChain(m_Actor, actions)
                                                                                                                        : actions[0]));
     }
 
@@ -4889,7 +4897,7 @@ restart_chokepoints:
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)
     {
-      Objectives.Insert(0, new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Select(pt => new Location(m, pt))));
+      SetObjective(new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Select(pt => new Location(m, pt))));
     }
 
 #region damage field
@@ -5608,7 +5616,7 @@ restart_chokepoints:
       if (!(it is ItemTrap)) {  // traps: try to use them explicitly
         var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
         if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          Objectives.Insert(0, use_trap);
+          SetObjective(use_trap);
           return ret;
         }
       }
@@ -6460,7 +6468,7 @@ restart_chokepoints:
       if (use_ok && !(it is ItemTrap)) {  // traps: try to use them explicitly
         var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
         if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          Objectives.Insert(0, use_trap);
+          SetObjective(use_trap);
           return ret;
         }
       }
@@ -6873,7 +6881,7 @@ restart_chokepoints:
       if (use_ok && !(it is ItemTrap)) {  // traps: try to use them explicitly
         var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
         if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          Objectives.Insert(0, use_trap);
+          SetObjective(use_trap);
           return ret;
         }
       }
@@ -7372,7 +7380,7 @@ restart_chokepoints:
             foreach(var stack in ground_inv) {
              var remote_ammo = stack.inv.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
-             Objectives.Insert(0, new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
+             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
              return UseAmmo(local_ammo, local_rw);
             }
           }
@@ -7747,7 +7755,7 @@ restart_chokepoints:
       void install_break(ObjectiveAI ai) {
         // XXX \todo message this so it's clear what's going on
         if (null == ai.Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) {
-          ai.Objectives.Insert(0, new Goal_BreakBarricade(ai.m_Actor, doorWindow));
+          SetObjective(new Goal_BreakBarricade(ai.m_Actor, doorWindow));
         }
       }
 

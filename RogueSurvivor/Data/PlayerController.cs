@@ -416,22 +416,22 @@ namespace djack.RogueSurvivor.Data
 
     public void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));
+      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));
     }
 
     public void WalkTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, true, n));
+      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, true, n));
     }
 
     public void RunTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, false, n));
+      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, false, n));
     }
 
     public void RunTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      Objectives.Insert(0,new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, false, n));
+      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, false, n));
     }
 
     public List<string> GetValidSelfOrders()
@@ -501,7 +501,7 @@ namespace djack.RogueSurvivor.Data
         string target_name = orders[i].Substring(18);
         foreach(Corpse c in corpses_at) {
           if (target_name == c.DeadGuy.Name) {
-            Objectives.Insert(0,new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor,c));
+            SetObjective(new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor,c));
             return true;
           }
         }
@@ -516,7 +516,7 @@ namespace djack.RogueSurvivor.Data
       switch(orders[i])
       {
       case "Rest in place":
-        Objectives.Insert(0,new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
+        SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
         return true;
       case "Brace for pushing car in place":
         {
@@ -524,23 +524,23 @@ namespace djack.RogueSurvivor.Data
         int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
         // currently all wrecked cars have weight 100
         if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
-        Objectives.Insert(0,new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
+        SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
         }
         return true;
       case "Recharge everything to full":
-        Objectives.Insert(0,new Goal_RechargeAll(m_Actor));
+        SetObjective(new Goal_RechargeAll(m_Actor));
         return true;
       case "Rest rather than lose turn when tired":
-        Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
+        SetObjective(new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
         return true;
       case "Turn on all adjacent generators":
-        Objectives.Insert(0,new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return true;
       case "Medicate sleep":
-        Objectives.Insert(0,new Goal_MedicateSLP(m_Actor));
+        SetObjective(new Goal_MedicateSLP(m_Actor));
         return true;
       case "Medicate HP":
-        Objectives.Insert(0,new Goal_MedicateHP(m_Actor));
+        SetObjective(new Goal_MedicateHP(m_Actor));
         return true;
       default: return false;  // automatic failure
       }
