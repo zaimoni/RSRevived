@@ -4120,6 +4120,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("You have no nearby allies.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         return;
       }
+      var player_backup = Player;
       List<Actor> allies = player_allies.ToList();
       allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
 
@@ -4127,6 +4128,7 @@ namespace djack.RogueSurvivor.Engine
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
         Actor a = allies[index];
+        PanViewportTo(a);
         var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
@@ -4175,6 +4177,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       PagedPopup("Reviewing...", allies.Count, label, details, false);
+      PanViewportTo(player_backup);
     }
 
     private void HandleFactionInfo()
