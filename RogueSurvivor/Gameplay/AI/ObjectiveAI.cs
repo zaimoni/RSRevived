@@ -258,6 +258,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private int InsertObjectiveAt(Objective src) {
       // highest priority
       if (src is Goal_RestRatherThanLoseturnWhenTired) return 0;
+      if (0 >= Objectives.Count) return 0;
       int ret = 0;
       if (Objectives[0] is Goal_RestRatherThanLoseturnWhenTired) ret++;
       return ret;
@@ -4914,7 +4915,7 @@ restart_chokepoints:
         if (a.CanRun() && a.RunIsFreeMove) a_turns++;
         int a_turns_bak = a_turns;
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
-        if (0==a.CurrentRangedAttack.Range && Rules.IsAdjacent(m_Actor.Location, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
+        if (null == (a.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo() && Rules.IsAdjacent(m_Actor.Location, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new();
         int a_max_dam;

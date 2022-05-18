@@ -385,7 +385,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endif
 
-            var rules = Rules.Get;
+      var rules = Rules.Get;
       if (rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);
 #if TRACE_SELECTACTION
