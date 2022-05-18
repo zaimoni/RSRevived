@@ -721,6 +721,7 @@ namespace djack.RogueSurvivor.Engine
     private void GameLoop()
     {
       HandleMainMenu();
+      if (!m_IsGameRunning) return;
       var world = Session.Get.World;
       _bootstrap_computable(world);
       while (m_IsGameRunning && 0 < world.PlayerCount) {
