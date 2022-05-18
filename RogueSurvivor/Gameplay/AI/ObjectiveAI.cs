@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // cache variables
     [NonSerialized] protected List<Point> _legal_steps = null;
     [NonSerialized] protected Dictionary<Location,ActorAction> _legal_path = null;
-    [NonSerialized] protected Dictionary<Point, int> _damage_field = null;
+    [NonSerialized] protected Dictionary<Point, int> _damage_field = null; // denormalized
     [NonSerialized] protected List<Actor> _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
     [NonSerialized] protected HashSet<Point> _blast_field = null;
@@ -612,14 +612,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // AI cache fields
       _legal_steps = m_Actor.LegalSteps;
-      _damage_field = new Dictionary<Point, int>();
-      _slow_melee_threat = new List<Actor>();
-      _immediate_threat = new HashSet<Actor>();
+      _damage_field = new();
+      _slow_melee_threat = new();
+      _immediate_threat = new();
       if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
       AddTrapsToDamageField(_damage_field, now);
       if (UsesExplosives) {   // only civilians and soldiers respect explosives; CHAR and gang don't
         _blast_zones = AllGoals<FleeExplosive>();
-        _blast_field = new HashSet<Point>();  // thrashes GC for GangAI/CHARGuardAI
+        _blast_field = new();  // thrashes GC for GangAI/CHARGuardAI
         AddExplosivesToDamageField(all_time);
         if (0>= _blast_field.Count) _blast_field = null;
         if (null != _blast_zones) {
@@ -4893,7 +4893,7 @@ restart_chokepoints:
     }
 
 #region damage field
-    private void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
+    private void VisibleMaximumDamage(Dictionary<Point, int> damage_field,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
@@ -4908,7 +4908,7 @@ restart_chokepoints:
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
         if (0==a.CurrentRangedAttack.Range && Rules.IsAdjacent(m_Actor.Location, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
-        Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
+        Dictionary<Point,int> melee_damage_field = new();
         int a_max_dam;
         if (Actor.STAMINA_MIN_FOR_ACTIVITY <= a.StaminaPoints) {
           a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
@@ -4940,8 +4940,8 @@ restart_chokepoints:
 
         if (null == ranged_attacks) {
           foreach(var pt_dam in melee_damage_field) {
-            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
-            else ret[pt_dam.Key] = pt_dam.Value;
+            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += pt_dam.Value;
+            else damage_field[pt_dam.Key] = pt_dam.Value;
           }
           continue;
         }
@@ -4950,7 +4950,7 @@ restart_chokepoints:
         HashSet<Point> aFOV = LOS.ComputeFOVFor(a);
         // maximum melee damage: a.MeleeAttack(m_Actor).DamageValue
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
-        Dictionary<Point,int> ranged_damage_field = new Dictionary<Point,int>();
+        Dictionary<Point,int> ranged_damage_field = new();
         a_turns = a_turns_bak;
         foreach(Point pt in aFOV) {
           if (pt == a.Location.Position) continue;
@@ -4961,8 +4961,8 @@ restart_chokepoints:
           }
         }
         if (1<a_turns) {
-          HashSet<Point> already = new HashSet<Point>();
-          HashSet<Point> now = new HashSet<Point>{ a.Location.Position };
+          HashSet<Point> already = new();
+          var now = new HashSet<Point>{ a.Location.Position };
           do {
             a_turns--;
             var tmp2 = a.NextStepRange(a.Location.Map,already,now);
@@ -4986,11 +4986,11 @@ restart_chokepoints:
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(var pt_dam in ranged_damage_field) {
           if (melee_damage_field.TryGetValue(pt_dam.Key,out int prior_dam)) {
-            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += Math.Max(pt_dam.Value, prior_dam);
-            else ret[pt_dam.Key] = Math.Max(pt_dam.Value, prior_dam);
+            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += Math.Max(pt_dam.Value, prior_dam);
+            else damage_field[pt_dam.Key] = Math.Max(pt_dam.Value, prior_dam);
           } else {
-            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
-            else ret[pt_dam.Key] = pt_dam.Value;
+            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += pt_dam.Value;
+            else damage_field[pt_dam.Key] = pt_dam.Value;
           }
         }
       }
