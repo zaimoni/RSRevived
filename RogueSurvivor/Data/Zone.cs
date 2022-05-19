@@ -188,6 +188,19 @@ namespace djack.RogueSurvivor.Data
         };
     }
 
+    public Dictionary<Map, HashSet<Point>> ParsedListing {
+      get {
+        Dictionary<Map, HashSet<Point>> ret = new();
+        Rect.DoForEach(pt => {
+            Location loc = new(m, pt);
+            if (!Map.Canonical(ref loc)) return;
+            if (!ret.TryGetValue(loc.Map, out var cache)) ret.Add(loc.Map, cache = new());
+            cache.Add(loc.Position);
+        });
+        return ret;
+      }
+    }
+
 #nullable restore
 
 #region IMap implementation

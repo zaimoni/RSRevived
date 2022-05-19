@@ -129,11 +129,15 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
 		}
 
-		public bool AnyThreatAt(in Location loc)
-		{
-          lock(_ThreatWhere_cache) {
+        private bool _anyThreatAt(in Location loc) {
             if (_ThreatWhere_cache.TryGetValue(loc.Map, out var cache2)) return cache2.Contains(loc.Position);
             return _ThreatWhere(loc.Map).Contains(loc.Position);
+        }
+
+        public bool AnyThreatAt(in Location loc)
+		{
+          lock(_ThreatWhere_cache) {
+            return _anyThreatAt(in loc);
           }
         }
 
@@ -501,13 +505,34 @@ namespace djack.RogueSurvivor.Data
               if (null == tmp) return;
 			  tmp.Add(moving.Location.Position);
 
-#if PROTOTYPE
-              // logic puzzle here...automate it
-              var pre_existing = ThreatWhere(moving.Location.Map, new Rectangle(moving.Location.Position.X-1,moving.Location.Position.Y-1,3,3));
-              pre_existing.ExceptWith(tmp);
-              if (0<pre_existing.Count) {
+              bool new_mark = false;
+              foreach(var pt in tmp) {
+                Location loc = new(moving.Location.Map, pt);
+                if (!Map.Canonical(ref loc)) continue;
+                if (!_anyThreatAt(loc)) {
+                  new_mark = true;
+                  break;
+                }
               }
-#endif
+              if (new_mark) {
+                ZoneLoc near = new(moving.Location.Map, new Rectangle(moving.Location.Position + 2 * Direction.NW, new Point(5,5)));
+                var lockdown = near.ParsedListing;
+                if (_threats.TryGetValue(moving, out var cache)) {
+                  List<Map> doomed = new();
+                  foreach(var x in cache) {
+                    if (lockdown.TryGetValue(x.Key, out var cache2)) {
+                      x.Value.IntersectWith(cache2);
+                      if (0 < x.Value.Count) continue;
+                    }
+                    // HMM...inferred not to be here
+                    doomed.Add(x.Key);
+                  }
+                  foreach(var m in doomed) {
+                    cache.Remove(m);
+                    _ThreatWhere_cache.Remove(m);
+                  }
+                }
+              }
 
               RecordTaint(moving,moving.Location.Map, tmp);
             }
