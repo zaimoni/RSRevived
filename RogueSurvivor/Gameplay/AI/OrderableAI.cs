@@ -2785,9 +2785,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActionWait? BehaviorRestIfTired()
+    protected ActorAction? BehaviorRestIfTired()
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
+      // ok to walk to a lower damage field
+      if (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+        var steps = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, loc => !_damage_field.ContainsKey(loc.Position), false);
+        if (null != steps) {
+            while(0<steps.Value.Key.Count) {
+              var n = Rules.Get.DiceRoller.Roll(0, steps.Value.Key.Count);
+              var act = steps.Value.Key[n].Bind(m_Actor);
+              if (null != act) return act;
+              steps.Value.Key.RemoveAt(n);
+            }
+        }
+      }
+
       return new ActionWait(m_Actor);
     }
 

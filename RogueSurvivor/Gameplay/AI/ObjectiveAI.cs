@@ -2409,6 +2409,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is Engine._Action.PushOnto) return null;
       if (x is Engine._Action.Fork) return null; // these likely need some sort of recursive approach, or de facto resolution first
       if (x is Engine._Action.Join) return null;
+      if (x is Engine._Action.MoveStep) return null; // these are from new-AI
 
       // exit-related processing.
       var e = m_Actor.Location.Exit;
