@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Op
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
-        readonly bool is_running;
+        private readonly bool is_running;
 
         public Location dest { get { return m_NewLocation; } }  // of m_Actor
         public Location origin { get { return m_Origin; } }
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine._Action
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
-        readonly bool is_running;
+        public readonly bool is_running;
 
         public Location dest { get { return m_NewLocation; } }  // of m_Actor
         public Location origin { get { return m_Origin; } }

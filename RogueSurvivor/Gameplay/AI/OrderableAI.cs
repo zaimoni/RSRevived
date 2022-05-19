@@ -2000,6 +2000,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
+    private List<Engine._Action.MoveStep>? _closeIn(Location e_loc) {
+        int current_distance = Rules.GridDistance(m_Actor.Location, in e_loc);
+#if DEBUG
+        if (2 != current_distance) throw new InvalidOperationException("use something more general");
+#endif
+
+        Predicate<Location> closing_in = loc => current_distance > Rules.GridDistance(in loc, in e_loc);
+
+        var first = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, closing_in, false);
+        if (null == first) return null;
+
+        var last = e_loc.Adjacent(loc => m_Actor.CanEnter(loc));
+        if (null == last) return null;
+
+        bool want_to_run = !m_Actor.RunIsFreeMove;
+        bool will_tire_after_run = m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING + m_Actor.NightSTApenalty);
+
+        int best_STA = int.MaxValue;
+        Dictionary<Location, int> STA_costs = new();
+        var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
+        List<Engine._Action.MoveStep> routes = new();
+        foreach(var move in first.Value.Key) {
+          if (!last.Contains(move.dest)) continue;
+          var test_STA = m_Actor.RunningStaminaCost(move.dest);
+          if (best_STA < test_STA) continue;
+          var act = move.Bind(m_Actor);
+          if (!(act is Engine._Action.MoveStep step)) continue;
+          if (best_STA > test_STA) {
+            best_STA = test_STA;
+            routes.Clear();
+          }
+          if (!will_tire_after_run) {
+            var dest = move.dest;
+            if (!STA_costs.TryGetValue(dest, out var dest_cost)) STA_costs.Add(dest, dest_cost = m_Actor.RunningStaminaCost(dest));
+            if (!m_Actor.WillTireAfter(STA_cost + dest_cost)) {
+              routes.Add(new Engine._Action.MoveStep(m_Actor.Location, move.dest, true, m_Actor));
+              continue;
+            }
+          }
+          routes.Add(step);
+        }
+
+        return 0 < routes.Count ? routes : null;
+    }
+
     private List<KeyValuePair<List<Engine.Op.MoveStep>, ActorAction>>? _chargeTowards(Location e_loc)
     {
         // check if this is "too tiring" under optimal circumstances
@@ -2152,49 +2197,58 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
 
       // redo the pause check
-      if (2 == Rules.GridDistance(m_Actor.Location, in e_loc) && 2<= CannotMeleeForThisLong(enemy)) {
-        var dash_attack = new Dictionary<Point,ActorAction>();
-        var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
-        var attack_possible = new Zaimoni.Data.Stack<Point>(stackalloc Point[legal_steps.Count]);
-        foreach(var pt in legal_steps) {
-          if (    Rules.IsAdjacent(in pt, e_loc.Position)
-              && (null == LoF_reserve || LoF_reserve.Contains(pt))
-              && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))) is ActionMoveStep step
-              && !m_Actor.WillTireAfter(STA_cost))
-              attack_possible.push(pt);
-        }
-        if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
-        var pos = Rules.Get.DiceRoller.Choose(attack_possible);
-        bool want_to_run = !m_Actor.WillTireAfter(STA_cost + m_Actor.RunningStaminaCost(new Location(m_Actor.Location.Map, pos)));
-        if (want_to_run) {
-          // XXX could filter down attack_possible some more
-          SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionMeleeAttack(m_Actor, enemy), null));
-        }
-        return new Engine._Action.MoveStep(m_Actor.Location, new Location(m_Actor.Location.Map, pos), want_to_run, m_Actor);
-      }
-
-      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, in e_loc) && !enemy.CanRun()) {
-          if (!m_Actor.WillActAgainBefore(enemy) || !m_Actor.RunIsFreeMove)    // XXX assumes enemy wants to close
-            return new ActionWait(m_Actor);
-
-          if (null != legal_steps) {
-            // cannot close at normal speed safely; run-hit may be ok
-            var dash_attack = new Dictionary<Point,ActorAction>();
-            var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
-            var attack_possible = new Zaimoni.Data.Stack<Point>(stackalloc Point[legal_steps.Count]);
-            foreach(var pt in legal_steps) {
-                if (    Rules.IsAdjacent(in pt, e_loc.Position)
-                    && (null == LoF_reserve || LoF_reserve.Contains(pt))
-                    && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))) is ActionMoveStep step
-                    && !m_Actor.WillTireAfter(STA_cost + m_Actor.RunningStaminaCost(step.dest)))
-                     attack_possible.push(pt);
-            }
-            if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
-            // XXX could filter down attack_possible some more
-            SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionMeleeAttack(m_Actor, enemy), null));
-            m_Actor.IsRunning = true;
-            return dash_attack[Rules.Get.DiceRoller.Choose(attack_possible)];
+      var next_to = 2 == Rules.GridDistance(m_Actor.Location, in e_loc) ? _closeIn(e_loc) : null;
+      if (null != next_to) {
+        if (1 < next_to.Count && null != LoF_reserve) {
+          List<Engine._Action.MoveStep> stage = new(next_to.Count);
+          foreach (var move in next_to) {
+            if (!LoF_reserve.Contains(move.dest.Position)) stage.Add(move);
           }
+          if (0<stage.Count && stage.Count < next_to.Count) next_to = stage;
+        }
+
+        var no_melee_for = CannotMeleeForThisLong(enemy);
+        if (2 <= no_melee_for) {
+          var n = Rules.Get.DiceRoller.Roll(0, next_to.Count);
+          var act = next_to[n];
+          if (act.is_running) {
+            Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
+            SetObjective(goal);
+          }
+          return act;
+        };
+        if (m_Actor.Speed > enemy.Speed && !enemy.CanRun()) {
+          List<Engine._Action.MoveStep> stage = new(next_to.Count);
+          foreach (var move in next_to) {
+            if (move.is_running) stage.Add(move);
+          }
+          if (0<stage.Count) {
+            if (stage.Count < next_to.Count) next_to = stage;
+
+            var n = Rules.Get.DiceRoller.Roll(0, next_to.Count);
+            var act = next_to[n];
+            Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
+            SetObjective(goal);
+            return act;
+          } else
+            return new ActionWait(m_Actor);
+        }
+        // otherwise, check for dash-attack
+        {
+          List<Engine._Action.MoveStep> stage = new(next_to.Count);
+          foreach (var move in next_to) {
+            if (move.is_running) stage.Add(move);
+          }
+          if (0<stage.Count) {
+            if (stage.Count < next_to.Count) next_to = stage;
+
+            var n = Rules.Get.DiceRoller.Roll(0, next_to.Count);
+            var act = next_to[n];
+            Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
+            SetObjective(goal);
+            return act;
+          }
+        }
       }
 
       if (3 == Rules.GridDistance(m_Actor.Location, in e_loc) && m_Actor.RunIsFreeMove && enemy.CanRun()) {
