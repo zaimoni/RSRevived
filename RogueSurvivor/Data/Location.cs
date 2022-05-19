@@ -84,6 +84,18 @@ namespace djack.RogueSurvivor.Data
       if (null != e) op(e.Location);
     }
 
+    public List<Location>? Adjacent(Predicate<Location> ok)
+    {
+      if (null == Map) return null;
+
+      List<Location> ret = new();
+      ForEachAdjacent(loc => {
+          if (ok(loc)) ret.Add(loc);
+      });
+
+      return 0 < ret.Count ? ret : null;
+    }
+
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based
       var e = Exit;

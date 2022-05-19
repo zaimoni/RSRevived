@@ -45,6 +45,37 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override void Blacklist(HashSet<Location> goals) { }
         public override void Goals(HashSet<Location> goals) { goals.Add(m_Origin); }
+
+        public static KeyValuePair<List<MoveStep>, HashSet<Location>>? outbound(Location origin, Actor who, Predicate<Location> ok, bool run)
+        {
+            List<MoveStep> ret = new();
+            HashSet<Location> next = new();
+
+            origin.ForEachAdjacent(dest => {
+                if (ok(dest) && _Action.MoveStep._CanConstruct(origin, dest, true, who)) {
+                    next.Add(dest);
+                    ret.Add(new MoveStep(origin, dest, run));
+                }
+            });
+
+            return (0 < ret.Count) ? new(ret, next) : null;
+        }
+
+        public static KeyValuePair<List<MoveStep>, HashSet<Location>>? inbound(Actor who, Location dest, Predicate<Location> ok, bool run)
+        {
+            List<MoveStep> ret = new();
+            HashSet<Location> next = new();
+
+            dest.ForEachAdjacent(origin => {
+                if (ok(origin) && _Action.MoveStep._CanConstruct(origin, dest, true, who))
+                {
+                    next.Add(origin);
+                    ret.Add(new MoveStep(origin, dest, run));
+                }
+            });
+
+            return (0 < ret.Count) ? new(ret, next) : null;
+        }
     }
 }
 
@@ -61,7 +92,9 @@ namespace djack.RogueSurvivor.Engine._Action
         public Location origin { get { return m_Origin; } }
 
         static public bool _CanConstruct(Location from, Location to, bool run, Actor actor) {
+#if DEBUG
             if (1 != Rules.InteractionDistance(to, from)) return false;
+#endif
             if (!actor.CanEnter(from)) return false;
             if (!actor.CanEnter(to)) return false;
             if (run && !actor.Model.Abilities.CanRun) return false;

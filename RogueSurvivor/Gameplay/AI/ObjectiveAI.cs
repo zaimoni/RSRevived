@@ -1538,6 +1538,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
+    protected int STA_delta(int jump, int melee, int push, int push_weight)
+    {
+      int tmp = push_weight;
+      tmp += jump*Rules.STAMINA_COST_JUMP;
+      tmp += melee*(Rules.STAMINA_COST_MELEE_ATTACK+m_Actor.BestMeleeAttack().StaminaPenalty);
+
+      return tmp + m_Actor.NightSTApenalty * (jump + melee + push);
+    }
+
     protected void ReserveSTA(int jump, int melee, int push, int push_weight)   // currently jump and break have the same cost
     {
       int tmp = push_weight;
