@@ -3308,11 +3308,7 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemWeapon) return "to use a weapon, equip it";
       if (it is ItemBodyArmor) return "to use armor, wear it";
       if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
-#if DEBUG
-      if (!(it is UsableItem obj)) throw new InvalidOperationException(it.Model.ToString()+" is not a usable item type");
-#else
-      if (!(it is UsableItem obj)) return "not a usable item type";
-#endif
+      if (!(it is UsableItem obj)) return "not a usable item type"; // cannot throw due to insane actions
       var err = obj.ReasonCantUse(this);
       if (!string.IsNullOrEmpty(err)) return err;
       if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
