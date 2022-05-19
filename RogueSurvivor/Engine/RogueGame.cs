@@ -11315,7 +11315,7 @@ namespace djack.RogueSurvivor.Engine
           overlays[i] = null;
           var loc = new Location(map, point);
           if (Map.Canonical(ref loc)) {
-            if (null != Player.Controller.RejectUnwanted(items.WhatIsAt(loc), loc)) overlays[i] = GameImages.ITEMS_OVERLAY;
+            if (null != Player.Controller.RejectUnwanted(items?.WhatIsAt(loc), loc)) overlays[i] = GameImages.ITEMS_OVERLAY;
           }
 
           if (tainted.Contains(point)) {

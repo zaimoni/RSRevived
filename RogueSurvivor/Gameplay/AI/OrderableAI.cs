@@ -2107,6 +2107,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
             ReserveSTA(0,0,0,0);  // baseline
             if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
+            SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionMeleeAttack(m_Actor, enemy), null));
+            m_Actor.IsRunning = true;
+            return dash_attack[Rules.Get.DiceRoller.Choose(attack_possible)];
+          }
+      }
+
+      if (2 == Rules.GridDistance(m_Actor.Location, in e_loc) && m_Actor.RunIsFreeMove && enemy.CanRun()) {
+          if (null != legal_steps) {
+            // cannot close at normal speed safely; run-hit may be ok
+            var dash_attack = new Dictionary<Point,ActorAction>();
+            ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
+            var attack_possible = new Zaimoni.Data.Stack<Point>(stackalloc Point[legal_steps.Count]);
+            foreach(var pt in legal_steps) {
+                if (    Rules.IsAdjacent(in pt, e_loc.Position)
+                    && (null == LoF_reserve || LoF_reserve.Contains(pt))
+                    && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))) is ActionMoveStep step
+                    && !m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(step.dest)))
+                     attack_possible.push(pt);
+            }
+            ReserveSTA(0,0,0,0);  // baseline
+            if (0 >= attack_possible.Count) return new ActionWait(m_Actor);
+            // XXX could filter down attack_possible some more
+            SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionMeleeAttack(m_Actor, enemy), null));
             m_Actor.IsRunning = true;
             return dash_attack[Rules.Get.DiceRoller.Choose(attack_possible)];
           }
