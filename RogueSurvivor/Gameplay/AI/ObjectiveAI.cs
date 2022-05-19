@@ -7753,10 +7753,10 @@ restart_chokepoints:
 
     public void DeBarricade(Engine.MapObjects.DoorWindow doorWindow)
     {
-      void install_break(ObjectiveAI ai) {
+      void install_break(ObjectiveAI oai) {
         // XXX \todo message this so it's clear what's going on
-        if (null == ai.Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) {
-          SetObjective(new Goal_BreakBarricade(ai.m_Actor, doorWindow));
+        if (null == oai.Goal<Goal_BreakBarricade>(o => o.Target == doorWindow)) {
+          oai.SetObjective(new Goal_BreakBarricade(oai.m_Actor, doorWindow));
         }
       }
 
