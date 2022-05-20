@@ -3863,7 +3863,7 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
       RemoveOverlay(working);
     }
-    private void InfoPopup(string msg) { InfoPopup(new string[] { msg }); } // Ok: Waterfall i.e. SSADM lifecycle
+    public void InfoPopup(string msg) { InfoPopup(new string[] { msg }); } // Ok: Waterfall i.e. SSADM lifecycle
 
     private bool YesNoPopup(string[] msg)
     {

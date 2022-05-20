@@ -2106,7 +2106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private static int CannotMeleeForThisLong(Actor a) {
         if (Actor.STAMINA_MIN_FOR_ACTIVITY-4 < a.StaminaPoints) return 0;
-        return (a.StaminaPoints - (Actor.STAMINA_MIN_FOR_ACTIVITY - 4))/4;
+        return (Actor.STAMINA_MIN_FOR_ACTIVITY - a.StaminaPoints)/4;
     }
 
     // sunk from BaseAI
@@ -2149,8 +2149,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           doRun = !HasSpeedAdvantage(m_Actor, enemy);
         }
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
-          if (   (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
-              || Rules.IsAdjacent(m_Actor.Location, in e_loc))
+            if (  (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
+                || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= CannotMeleeForThisLong(enemy)))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
@@ -2218,6 +2218,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return act;
         };
         if (m_Actor.Speed > enemy.Speed && !enemy.CanRun()) {
+          if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
+
           List<Engine._Action.MoveStep> stage = new(next_to.Count);
           foreach (var move in next_to) {
             if (move.is_running) stage.Add(move);
