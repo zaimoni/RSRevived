@@ -1796,6 +1796,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<Location>? OneStepRange(Location loc)
     {
+      var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
       var ret = new List<Location>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
@@ -1808,6 +1809,7 @@ namespace djack.RogueSurvivor.Data
         ret.Add(test);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      // deathtrapped revision intentionally omitted: not used in pathing
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
@@ -1904,6 +1906,10 @@ namespace djack.RogueSurvivor.Data
         ret.Add(test, tmp);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
+        var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
+        if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
+      }
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
@@ -1942,6 +1948,10 @@ namespace djack.RogueSurvivor.Data
         if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
+        var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
+        if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
+      }
       if (null != exit) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {

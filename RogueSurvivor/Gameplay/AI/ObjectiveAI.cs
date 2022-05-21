@@ -11,14 +11,16 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
+using djack.RogueSurvivor.Gameplay.AI.Goals;
 using Zaimoni.Data;
+
+using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using djack.RogueSurvivor.Gameplay.AI.Goals;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -256,11 +258,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     private int InsertObjectiveAt(Objective src) {
-      // highest priority
+      // highest priority: rest rather than lose turn when tired
       if (src is Goal_RestRatherThanLoseturnWhenTired) return 0;
       if (0 >= Objectives.Count) return 0;
       int ret = 0;
       if (Objectives[0] is Goal_RestRatherThanLoseturnWhenTired) ret++;
+
+      // next highest: informational goals that never return an action, but can expire when asked to provide an action
+      if (src is Engine.Goal.DeathTrapped) return ret;
+      if (ret >= Objectives.Count) return ret;
+      if (Objectives[ret] is Engine.Goal.DeathTrapped) ret++;
+
       return ret;
     }
 
@@ -342,6 +350,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void CancelPathTo(Actor dest) {
       var goal = Goal<Goal_HintPathToActor>(o => o.Whom == dest);
       if (null != goal) Objectives.Remove(goal);    // \todo? optimize...could just find index and remove that index immediately
+    }
+
+    private bool RecordDeathtrapped(Location loc)
+    {
+      var goal = Goal<Engine.Goal.DeathTrapped>();
+      if (null != goal) return goal.Ban(in loc);
+      SetObjective(new Engine.Goal.DeathTrapped(m_Actor, in loc));
+      return true;
     }
 
     public override ActorAction? ExecAryZeroBehavior(int code)
@@ -2202,7 +2218,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (x is ActorDest a_dest) {
         if (a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
-        if (1>=FastestTrapKill(a_dest.dest)) return true;   // death-trapped
+        if (1>=FastestTrapKill(a_dest.dest)) {
+          if (RecordDeathtrapped(a_dest.dest)) {
+            // news to us; \todo warn followers and allies
+            void overheard_vulgarity(Actor overhear) {
+              if (!(overhear.Controller is ObjectiveAI oai)) return;
+              if (1 >= oai.FastestTrapKill(a_dest.dest)) RecordDeathtrapped(a_dest.dest);
+            }
+
+            RogueGame.Game.DoBackgroundSpeech(m_Actor, "@#?!, "+a_dest.dest+" is death-trapped.", overheard_vulgarity);
+            var msg = new Data.Message(string.Format("(police radio, {0}) {1} is death-trapped.", m_Actor.Name, a_dest.dest.ToString()), Session.Get.WorldTime.TurnCounter);
+            m_Actor.MessageAllInDistrictByRadio(overheard_vulgarity, TRUE, a => AddMessage(msg), a => (a.Controller as PlayerController).DeferMessage(msg), TRUE);
+          }
+          return true;   // death-trapped
+        }
 #if PROTOTYPE
         if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
           if (x is ActionUseExit) {

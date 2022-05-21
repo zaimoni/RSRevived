@@ -9054,6 +9054,63 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+    static private List<Actor>? ThoseNearby(Location loc, int radius) {
+        List<Actor> ret = new();
+        var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
+        survey.DoForEach(pt => {
+          if (pt == loc.Position) return;
+          Location test = new Location(loc.Map, pt);
+          if (Map.Canonical(ref loc)) {
+              var actor = loc.Actor;
+              if (null != actor && !actor.IsSleeping) ret.Add(actor);
+          }
+        });
+
+        var exit = loc.Exit;
+        if (null != exit) {
+          var actor = exit.Location.Actor;
+          if (null != actor && !actor.IsSleeping) ret.Add(actor);
+        }
+
+        return 0<ret.Count ? ret : null;
+    }
+
+    public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    {
+      var chat_competent = ThoseNearby(speaker.Location, Rules.CHAT_RADIUS);
+      if (null == chat_competent) return false;
+      var preferred_chat = chat_competent.Where(a => speaker.IsAlly(a)).ToArray();
+      var target = (0 < preferred_chat.Length) ? preferred_chat[Rules.Get.DiceRoller.Roll(0, preferred_chat.Length)] : chat_competent[Rules.Get.DiceRoller.Roll(0, chat_competent.Count)];
+
+      if (speaker.IsPlayer && Player!=speaker) {
+        PanViewportTo(speaker);
+      } else if (target.IsPlayer && Player!=target) {
+        PanViewportTo(target);
+      }
+
+      bool see_speaker = ForceVisibleToPlayer(speaker);
+      bool see_target = see_speaker ? IsVisibleToPlayer(target) : ForceVisibleToPlayer(target);
+      bool speaker_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,speaker.Location);
+      bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,target.Location);
+      flags |= Sayflags.IS_FREE_ACTION;
+
+      if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
+      if (!speaker_heard_clearly && !target_heard_clearly) {
+        if (see_speaker) AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
+      }
+
+      // not nearly as sanity-restoring as proper chat, but worth something
+      speaker.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+      target.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE/15);
+
+      // eavesdropping
+      foreach(var actor in chat_competent) {
+        if (speaker==actor) continue;
+        op(actor);
+      }
+      return true;
+    }
+
     public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
