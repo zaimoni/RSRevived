@@ -339,8 +339,8 @@ namespace djack.RogueSurvivor.Engine
     {
       var threat = actor.Threats; // assumed that Threats and InterestingLocs are either both null, or both non-null
       if (null != threat && 2 <= candidates.Count) {
-        var delta = new Point(Actor.MAX_VISION + 1, Actor.MAX_VISION + 1);
-        var domain = new Rectangle(actor.Location.Position - delta, actor.Location.Position + delta); // \todo legalize this
+        var radius = Actor.MAX_VISION + 1;
+        var domain = new Rectangle(actor.Location.Position - (Point)radius, (Size)(2*radius +1));
         var a_map = actor.Location.Map;
         var dests = threat.ThreatWhere(a_map, domain);
         dests.UnionWith(actor.InterestingLocs.In(a_map, domain));
