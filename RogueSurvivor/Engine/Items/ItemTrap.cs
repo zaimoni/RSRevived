@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(a.Controller is Gameplay.AI.ObjectiveAI ai)) return false;
 
       bool may_ask(Actor act) { // \todo extraction target: ObjectiveAI
-        return !act.Controller.IsEngaged && ai.InCommunicationWith(act);
+        return !act.Controller.IsEngaged && ai.InCommunicationWith(act) && !act.IsEnemyOf(a);
       }
 
       // Necromancy counts, here.

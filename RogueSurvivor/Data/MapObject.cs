@@ -549,7 +549,7 @@ namespace djack.RogueSurvivor.Data
       }
       _destroy();
       if (must_rebuild_clearable_zones) m_Location.Map.RebuildClearableZones(m_Location.Position);
-      Engine.RogueGame.Game.OnLoudNoise(in m_Location, "A loud *CRASH*");
+      Engine.RogueGame.Game.OnLoudNoise(m_Location, "A loud *CRASH*");
     }
 
     // flag handling

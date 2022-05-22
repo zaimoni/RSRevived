@@ -461,12 +461,15 @@ namespace djack.RogueSurvivor.Engine
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
     public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
     {
-      var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO, (Point)(2 * GameActors.HUMAN_AUDIO + 1));
-      survey.DoForEach(pt => {
-          var a = loc.Map.GetActorAtExt(pt);
-          if (   null == a || a.IsSleeping    // XXX \todo integrate loud noise wakeup here
-              || a.Controller.CanSee(loc) || Rules.StdDistance(a.Location, loc) > a.AudioRange)
-              return;
+      bool hears(Actor a) {
+        if (a.IsSleeping) return false;
+        if (a.Controller.CanSee(loc)) return false;
+        return Rules.StdDistance(a.Location, loc) <= a.AudioRange;
+      };
+
+      var actors = ThoseNearby(loc, GameActors.HUMAN_AUDIO, hears);
+      if (null == actors) return;
+      foreach(var a in actors) {
           if (a.Controller is PlayerController player) {
             if (player_knows(a)) return;
             var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
@@ -479,40 +482,41 @@ namespace djack.RogueSurvivor.Engine
           }
           // NPC ai hooks go here
           doFn(a);
-      });
+      }
     }
 
     // XXX just about everything that rates this is probable cause for police investigation
     public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
-      if (!Player.IsSleeping && Rules.StdDistance(Player.Location, in loc) <= Player.AudioRange) {
-        var msg = (Player.Controller as PlayerController)?.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
-        if (null != msg) RedrawPlayScreen(msg);
-      }
-      if (1>=Session.Get.World.PlayerCount) return;
+      bool hears(Actor a) {
+        if (a.IsSleeping) return false;
+        if (Rules.StdDistance(a.Location, in loc) > a.AudioRange) return false;
+        if (a.Controller.CanSee(loc)) return false;
+        return a.IsPlayer;
+      };
 
-      var survey = new Rectangle(loc.Position - (Point)GameActors.HUMAN_AUDIO,(Point)(2*GameActors.HUMAN_AUDIO+1));
-      survey.DoForEach(pt => {
-          var a = loc.Map.GetActorAtExt(pt);
-          if (   null != a && !a.IsSleeping && Player != a && !a.Controller.CanSee(loc) && Rules.StdDistance(a.Location, loc) <= a.AudioRange
-              && a.Controller is PlayerController player)
-              player.DeferMessage(player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
-      });
+      var actors = ThoseNearby(loc, GameActors.HUMAN_AUDIO, hears);
+      if (null == actors) return;
+
+      foreach(var player in actors) {
+        var pc = (player.Controller as PlayerController)!;
+        var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
+        if (null != msg) {
+            if (IsPlayer(player)) RedrawPlayScreen(msg);
+            else pc.DeferMessage(msg);
+        }
+      }
     }
 
     // more sophisticated variants would handle player-varying messages
     static public void PropagateSight(Location loc, Action<Actor> doFn)
     {
-      void process_sight(Actor? a) {
-        ActorController? ac;
-        if (null == a || a.IsDead || !(ac = a.Controller).CanSee(loc)) return;
-        doFn(a);
-      }
+      bool sees(Actor a) { return a.Controller.CanSee(loc); };
 
-      var survey = new Rectangle(loc.Position - (Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
-      survey.DoForEach(pt => process_sight(loc.Map.GetActorAtExt(pt)));
-      var e = loc.Exit;
-      if (null != e) process_sight(e.Location.Actor);
+      var actors = ThoseNearby(loc, Actor.MAX_VISION, sees);
+      if (null == actors) return;
+
+      foreach(var a in actors) doFn(a);
     }
 
     private static Data.Message MakeErrorMessage(string text)
@@ -8002,7 +8006,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < actor.ActionPoints) actor.DropScent();    // alpha10 fix
       if (!actor.IsPlayer && (actor.Activity == Data.Activity.FLEEING || actor.Activity == Data.Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
-        OnLoudNoise(in newLocation, "A loud SCREAM");
+        OnLoudNoise(newLocation, "A loud SCREAM");
         if (!dest_seen && Rules.Get.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
@@ -8872,7 +8876,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
-      OnLoudNoise(in location, "A loud EXPLOSION");
+      OnLoudNoise(location, "A loud EXPLOSION");
       bool isVisible = ForceVisibleToPlayer(in location);
       if (isVisible) {
         ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
@@ -9054,22 +9058,23 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    static private List<Actor>? ThoseNearby(Location loc, int radius) {
+    // use Func rather than Predicate as that doesn't have problems w/local functions
+    static private List<Actor>? ThoseNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<Actor> ret = new();
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
+        // lambda function access of loc.Position prevents converting to member function
         survey.DoForEach(pt => {
-          if (pt == loc.Position) return;
           Location test = new Location(loc.Map, pt);
           if (Map.Canonical(ref loc)) {
               var actor = loc.Actor;
-              if (null != actor && !actor.IsSleeping) ret.Add(actor);
+              if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
           }
         });
 
         var exit = loc.Exit;
         if (null != exit) {
           var actor = exit.Location.Actor;
-          if (null != actor && !actor.IsSleeping) ret.Add(actor);
+          if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
         }
 
         return 0<ret.Count ? ret : null;
@@ -9077,8 +9082,12 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
-      var chat_competent = ThoseNearby(speaker.Location, Rules.CHAT_RADIUS);
+      bool is_awake(Actor a) { return !a.IsSleeping; };
+
+      var chat_competent = ThoseNearby(speaker.Location, Rules.CHAT_RADIUS, is_awake);
       if (null == chat_competent) return false;
+      chat_competent.Remove(speaker);
+      if (0 >= chat_competent.Count) return false;
       var preferred_chat = chat_competent.Where(a => speaker.IsAlly(a)).ToArray();
       var target = (0 < preferred_chat.Length) ? preferred_chat[Rules.Get.DiceRoller.Roll(0, preferred_chat.Length)] : chat_competent[Rules.Get.DiceRoller.Roll(0, chat_competent.Count)];
 
@@ -10300,26 +10309,21 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, " to forget its orders."));
     }
 
-    public void OnLoudNoise(in Location loc, string noiseName) { OnLoudNoise(loc.Map,loc.Position,noiseName); }
+    public void OnLoudNoise(Location loc, string noiseName) {
+      bool hears(Actor a) {
+        if (!a.IsSleeping) return false;
+        return Rules.Get.RollChance(a.LoudNoiseWakeupChance(Rules.GridDistance(loc, a.Location)));
+      };
 
-    private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
-    {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
-      Rectangle survey = new Rectangle(noisePosition - (Point)Rules.LOUD_NOISE_RADIUS, (Point)(2* Rules.LOUD_NOISE_RADIUS + 1));
+      var actors = ThoseNearby(loc, Rules.LOUD_NOISE_RADIUS, hears);
+      if (null == actors) return;
 
-      void loud_noise(Point pt) {
-        var actor = map.GetActorAtExt(pt);
-        if (null != actor && actor.IsSleeping) {
-          // would need to test for other kinds of distance
-          if (Rules.Get.RollChance(actor.LoudNoiseWakeupChance(Rules.GridDistance(in noisePosition, in pt)))) {
-            DoWakeUp(actor);
-            if (ForceVisibleToPlayer(actor)) {
-              RedrawPlayScreen(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
-            }
-          }
+      foreach(var actor in actors) {
+        DoWakeUp(actor);
+        if (ForceVisibleToPlayer(actor)) {
+          RedrawPlayScreen(new Data.Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
         }
       }
-
-      survey.DoForEach(loud_noise);
     }
 
     static public int ItemSurviveKillProbability(Item it, string reason)
@@ -12588,31 +12592,19 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ForceVisibleToPlayer(Map map, in Point position)
     {
-      if (   null == map   // convince Duckman to not superheroically crash many games on turn 0
-          || !map.IsValid(position))
-        return false;
-      Rectangle survey = new Rectangle(position-(Point)Actor.MAX_VISION,(Point)(1+2*Actor.MAX_VISION));
-      var players = new List<Actor>();
-      var view = new Location(map, position);
+      if (null == map) return false; // convince Duckman to not superheroically crash many games on turn 0
 
-      void id_player(Actor player) {
-        if (!player?.IsViewpoint ?? true) return;
-#if DEBUG
-        // having problems with killed PCs showing up as viewpoints
-        if (player.IsDead) throw new InvalidOperationException("dead player on map");
-        if (!player.Location.Map.HasActor(player)) throw new InvalidOperationException("misplaced player on map");
-#else
-        if (player.IsDead) return;
-#endif
-        if (player.Controller.CanSee(view)) players.Add(player);
-      }
+      Location view = new(map, position);
+      if (!Map.Canonical(ref view)) return false;
 
-      if (map.IsInBounds(survey.Location) && map.IsInBounds(survey.Location+survey.Size)) survey.DoForEach(pt => id_player(map.GetActorAt(pt)));
-      else survey.DoForEach(pt => id_player(map.GetActorAtExt(pt)));
-      var e = map.GetExitAt(position);
-      if (null != e) id_player(e.Location.Actor);
+      bool sees(Actor a) {
+        if (!a.IsViewpoint) return false;
+        return a.Controller.CanSee(view);
+      };
 
-      if (0 >= players.Count) return false;
+      var players = ThoseNearby(view, Actor.MAX_VISION, sees);
+      if (null == players) return false;
+
       if (players.Contains(Player)) return true;
       if (1==players.Count) {
         PanViewportTo(players[0]);
@@ -13790,27 +13782,29 @@ retry:
     {
       Location loc = whoDoesTheAction.Location;
       int maxLivingFOV = Actor.MaxLivingFOV(whoDoesTheAction.Location.Map);
-      Rectangle rect = new Rectangle(loc.Position-(Point)maxLivingFOV,(Point)(2*maxLivingFOV+1));
-      rect.DoForEach(actor=>{
+
+      bool sees(Actor a) {
+        if (!a.Model.Abilities.HasSanity) return false;
+        if (a.IsSleeping) return false;
+        return a.Controller.CanSee(loc);
+      };
+
+      var victims = ThoseNearby(loc, maxLivingFOV, sees);
+      if (null == victims) return;
+
+      foreach(var actor in victims) {
         actor.SpendSanity(sanCost);
         if (whoDoesTheAction == actor) {
           if (actor.IsPlayer)
-            AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+            actor.Controller.AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
           else if (ForceVisibleToPlayer(actor))
             AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor))));
         }
         else if (actor.IsPlayer)
-          AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
+          actor.Controller.AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
         else if (ForceVisibleToPlayer(actor))
           AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor))));
-      },pt=>{
-        var actor = loc.Map.GetActorAtExt(pt);
-        if (null == actor) return null;
-        if (!actor.Model.Abilities.HasSanity) return null;
-        if (actor.IsSleeping) return null;
-        if (!LOS.CanTraceViewLine(in loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return null;
-        return actor;
-      });
+      }
     }
 
     public void OnMapPowerGeneratorSwitch(Map map, Actor victor)
