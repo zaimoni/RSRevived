@@ -201,6 +201,18 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public List<Location> Listing {
+      get {
+        List<Location> ret = new();
+        Rect.DoForEach(pt => {
+            Location loc = new(m, pt);
+            if (!Map.Canonical(ref loc)) return;
+            ret.Add(loc);
+        });
+        return ret;
+      }
+    }
+
 #nullable restore
 
 #region IMap implementation

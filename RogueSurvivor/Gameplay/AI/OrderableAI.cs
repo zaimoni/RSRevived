@@ -1231,6 +1231,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       var range = m_Actor.CurrentRangedAttack.Range;
+      if (range > m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)) {
+        range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      }
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(var en in enemies) {
         foreach(var p in optimal_FOV) {
@@ -1251,15 +1254,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!danger.Contains(transit)) ret.Add(transit);
               }
             }
+#if DEBUG
+          if (ret.Contains(m_Actor.Location)) {
+            if (!RogueGame.IsSimulating) {
+              RogueGame.Game.PanViewportTo(m_Actor);
+              RogueGame.Game.InfoPopup("doom");
+            }
+            throw new InvalidProgramException("tracing");
+          }
+#else
+          ret.Remove(m_Actor.Location);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
+#endif
           }
           // if "safe" attack possible init danger in different/earlier loop
         }
       }
-#if DEBUG
-      if (ret.Contains(m_Actor.Location)) throw new InvalidProgramException("trying to fire from a location without line of fire");
-#else
-      ret.Remove(m_Actor.Location);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
-#endif
       return ret;
     }
 

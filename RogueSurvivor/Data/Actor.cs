@@ -1407,8 +1407,8 @@ namespace djack.RogueSurvivor.Data
       var followers = m_Followers;
       if (null == followers) throw new InvalidOperationException(Name+": no followers");
       followers.Remove(other);
-      if (0 == followers.Count) Interlocked.Exchange(ref m_Followers, null);
       other._NoLongerFollower();
+      if (0 == followers.Count) Interlocked.Exchange(ref m_Followers, null);
     }
 
     public void RemoveAllFollowers()

@@ -8509,6 +8509,31 @@ namespace djack.RogueSurvivor.Engine
 
       target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, msg_player, msg_player_test);
     }
+
+    private void InferEnemy(Actor attacker, Actor defender) {
+      // Cf. game factions and default AI definitions
+      if (   defender.IsFaction(GameFactions.IDs.TheUndeads)
+          || defender.IsFaction(GameFactions.IDs.ThePsychopaths))
+        return;
+
+      bool sees(Actor a) {
+        if (!(a.Controller is OrderableAI ordai)) return false; // PlayerController would respond only on autopilot; that would require ObjectiveAI here
+        if (!a.Controller.CanSee(defender.Location)) return false;
+        if (a.Controller.CanSee(attacker.Location)) return false;
+        if (Rules.StdDistance(a.Location, attacker.Location) > a.AudioRange) return false;
+        if (a.IsEnemyOf(defender)) return false;
+        return a.IsEnemyOf(attacker);
+      }
+
+      // defender may be just-killed
+      var responders = ThoseNearby(defender.Location, Actor.MAX_VISION, sees);
+      if (null == responders) return;
+
+      AI.Percept_<Actor> target = new(attacker, attacker.Location.Map.LocalTime.TurnCounter, attacker.Location);
+      foreach(var actor in responders) {
+        (actor.Controller as ObjectiveAI)!.Track(target);
+      }
+    }
 #nullable restore
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
@@ -8640,6 +8665,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
       if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
+      InferEnemy(attacker, defender);
     }
 
 #nullable enable
@@ -8669,6 +8695,7 @@ namespace djack.RogueSurvivor.Engine
           throw new ArgumentOutOfRangeException("unhandled mode");
       }
       if (!defender.IsDead) ai?.RecruitHelp(defender);
+      InferEnemy(attacker, defender);
     }
 #nullable restore
 
@@ -9065,8 +9092,8 @@ namespace djack.RogueSurvivor.Engine
         // lambda function access of loc.Position prevents converting to member function
         survey.DoForEach(pt => {
           Location test = new Location(loc.Map, pt);
-          if (Map.Canonical(ref loc)) {
-              var actor = loc.Actor;
+          if (Map.Canonical(ref test)) {
+              var actor = test.Actor;
               if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
           }
         });
@@ -13304,6 +13331,7 @@ namespace djack.RogueSurvivor.Engine
         m_SimThread = new Thread(new ThreadStart(SimThreadProc)) {
           Name = "Simulation Thread"
         };
+        m_SimThread.IsBackground = true;
       }
       lock (m_SimStateLock) { m_CancelSource = new CancellationTokenSource(); } // alpha10
       m_SimThread.Start();

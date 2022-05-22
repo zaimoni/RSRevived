@@ -360,6 +360,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
+    public void Track(Percept_<Actor> target)
+    {
+      var goal = Goal<InferActor>();
+      if (null != goal) {
+        goal.Track(target);
+        return;
+      }
+      SetObjective(new InferActor(m_Actor, target));
+    }
+
     public override ActorAction? ExecAryZeroBehavior(int code)
     {
       switch(code) {
@@ -641,7 +651,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _slow_melee_threat = new();
       _immediate_threat = new();
       if (null != enemies_in_FOV) VisibleMaximumDamage(_damage_field, _slow_melee_threat, _immediate_threat);
-      AddTrapsToDamageField(_damage_field, now);
+      AddTrapsToDamageField(_damage_field, now); // using this for inventory
       if (UsesExplosives) {   // only civilians and soldiers respect explosives; CHAR and gang don't
         _blast_zones = AllGoals<FleeExplosive>();
         _blast_field = new();  // thrashes GC for GangAI/CHARGuardAI
@@ -666,6 +676,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= _legal_path.Count) _legal_path = null;
       }
       if (null!=_last_move && _last_move.dest!=m_Actor.Location) _last_move = null;
+
+      // perception fixup
+      var infer = Goal<InferActor>();
+      if (null != infer) infer.Infer(ref now);
     }
 
 #nullable enable
