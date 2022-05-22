@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -12,6 +10,7 @@ using djack.RogueSurvivor.Engine.Actions;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
+    [Serializable]
     class Trade : Objective
     {
         readonly List<Actor> _whom = new List<Actor>(1);
