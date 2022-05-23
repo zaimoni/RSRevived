@@ -107,23 +107,27 @@ namespace djack.RogueSurvivor.Data
         var z0 = Zone;
         if (null == z0) return null;
 
-        var ret = z0.VolatileAttribute.Get<Location[]>("exits");
-        if (null != ret) return ret;
-        InstallExits();
-        return z0.VolatileAttribute.Get<Location[]>("exits");
+        lock(z0) {
+          var ret = z0.VolatileAttribute.Get<Location[]>("exits");
+          if (null != ret) return ret;
+          InstallExits();
+          return z0.VolatileAttribute.Get<Location[]>("exits");
+        }
     } }
 
     public ZoneLoc[]? Exit_zones { get {
         var z0 = Zone;
         if (null == z0) return null;
 
-        var ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-        if (null != ret) return ret;
-        ret = InstallExits();
-        foreach(var zone in ret) {
-          if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
+        lock(z0) {
+          var ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
+          if (null != ret) return ret;
+          ret = InstallExits();
+          foreach(var zone in ret) {
+            if (0 > Array.IndexOf(zone.Exit_zones, this)) zone.Zone.VolatileAttribute.Unset("exit_zones");
+          }
+          return ret;
         }
-        return ret;
     } }
 
     public KeyValuePair<Location[]?, ZoneLoc[]?> ExitData { get {
