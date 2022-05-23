@@ -12025,8 +12025,11 @@ namespace djack.RogueSurvivor.Engine
         }
         if (null != draw) view.DoForEach(draw, non_self);
       }	// end if (!Player.IsSleeping)
-      minimap_delta = (Player.Location.Position - view.Location)*MINITILE_SIZE;
-      m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);
+      var denorm = map.Denormalize(Player.Location);
+      if (null != denorm) {
+        minimap_delta = (denorm.Value.Position - view.Location)*MINITILE_SIZE;
+        m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);
+      }
     }
 
     static private ColorString ActorHungerStatus(Actor actor)

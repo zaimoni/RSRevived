@@ -248,12 +248,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  var friends = FilterNonEnemies(current);
       if (null != _enemies) {
-        if (null != friends && Rules.Get.RollChance(50)) {
-          tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
+        if (null != friends) {
+          var nearest_enemy = FilterNearest(_enemies);
+          if (null != nearest_enemy && Rules.Get.RollChance(50)) { // null check due to InferActor goal
+            tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
 #endif
-          if (null != tmpAction) return tmpAction;
+            if (null != tmpAction) return tmpAction;
+          }
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         tmpAction = BehaviorFightOrFlee(game, Directives.Courage, m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);

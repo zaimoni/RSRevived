@@ -205,9 +205,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
         }
       }
-      if (null != _enemies && null != friends) {
-        tmpAction = BehaviorWarnFriends(friends, FilterNearest(_enemies).Percepted as Actor);
-        if (null != tmpAction) return tmpAction;
+      if (null != _enemies) {
+        if (null != friends) {
+          var nearest_enemy = FilterNearest(_enemies);
+          if (null != nearest_enemy && Rules.Get.RollChance(50)) { // null check due to InferActor goal
+            tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+#endif
+            if (null != tmpAction) return tmpAction;
+          }
+        }
       }
 
       tmpAction = NonCombatReflexMoves();

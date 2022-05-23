@@ -2137,6 +2137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       var target = FilterNearest(_enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
+      if (null == target) return null;  // can happen due to InferActor
       Actor enemy = target.Percepted;
       Location e_loc = enemy.Location;
 
