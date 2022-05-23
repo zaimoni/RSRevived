@@ -335,7 +335,8 @@ namespace djack.RogueSurvivor.Engine
     // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor? m_Player;
     private static Actor? m_PlayerInTurn;
-    private static string? m_Status = null; // suppressed by m_PlayerInTurn mismatch
+    private static string? m_Status = null; // suppressed by m_PlayerInTurn mismatch; AI view of player state
+    private static string? m_Status2 = null; // suppressed by m_PlayerInTurn mismatch; UI feedback
 #nullable restore
     private static ZoneLoc m_MapView;
 
@@ -3097,6 +3098,8 @@ namespace djack.RogueSurvivor.Engine
 
         var deferredMessages = pc.ReleaseMessages();
         if (null != deferredMessages) AddMessages(deferredMessages);
+        if (2 <= hotkey_turns) m_Status2 = hotkey_turns.ToString();
+        else m_Status2 = null;
         RedrawPlayScreen();
 
         ActorAction tmpAction = pc.AutoPilot();
@@ -3462,6 +3465,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
+      m_Status2 = null;
       pc.UpdateSensors();
       SetCurrentMap(player.Location);
       pc.UpdatePrevLocation();    // abandon PC results in null here
@@ -12088,6 +12092,12 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
+    static private string _gameStatusAlt(Actor a) {
+      if (a != m_PlayerInTurn) return null;
+      if (!string.IsNullOrEmpty(m_Status2)) return m_Status2;
+      return null;
+    }
+
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy, new Color?());
@@ -12150,6 +12160,10 @@ namespace djack.RogueSurvivor.Engine
       Attack attack1 = actor.MeleeAttack();
       int num1 = actor.DamageBonusVsUndeads;
       m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", attack1.HitValue, attack1.DamageValue, attack1.DamageValue + num1), gx, gy, new Color?());
+      {
+      var msg = _gameStatusAlt(actor);
+      if (!string.IsNullOrEmpty(msg)) m_UI.UI_DrawStringBold(Color.Orange, msg, gx + 126 + 100, gy, new Color?());
+      }
       gy += BOLD_LINE_SPACING;
       Attack attack2 = actor.RangedAttack(actor.CurrentRangedAttack.EfficientRange);
       if (actor.GetEquippedWeapon() is ItemRangedWeapon rw) {
