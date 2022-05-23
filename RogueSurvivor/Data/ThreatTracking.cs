@@ -31,6 +31,7 @@ namespace djack.RogueSurvivor.Data
           _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
         }
 
+#if DEAD_FUNC
         public void Clear()
         {
           lock(_threats) {
@@ -38,6 +39,7 @@ namespace djack.RogueSurvivor.Data
             _ThreatWhere_cache.Clear();
           }
         }
+#endif
 
         public bool IsThreat(Actor a)
         {
@@ -278,46 +280,54 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
-          lock(_threats) {
+          lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(m);
-            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
-		    cache.Add(m, new HashSet<Point>(pts));
+            lock(_threats) {
+              if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
+		      cache.Add(m, new(pts));
+            }
           }
         }
 
         public void RecordTaint(Actor a, Location loc)
         {
-		  lock(_threats) {
+          lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
-            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
-            if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
-            else cache.Add(loc.Map, new HashSet<Point> { loc.Position });
-		  }
+		    lock(_threats) {
+              if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
+              if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
+              else cache.Add(loc.Map, new(){ loc.Position });
+		    }
+          }
         }
 
         public void RecordTaint(Actor a, Map m, Point p)
         {
-		  lock(_threats) {
+          lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-            if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
-            if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
-            else cache.Add(m, new HashSet<Point> { p });
-		  }
+		    lock(_threats) {
+              if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
+              if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
+              else cache.Add(m, new HashSet<Point> { p });
+		    }
+          }
         }
 
         public void RecordTaint(Actor a, Map m, IEnumerable<Point> pts)
         {
-          var local = new List<Point>(pts.Count());
+          List<Point> local = new(pts.Count());
           List<Point> other = null;
           foreach(Point pt in pts) {
-            (m.IsInBounds(pt) ? local : (other ??= new List<Point>(pts.Count()))).Add(pt);
+            (m.IsInBounds(pt) ? local : (other ??= new(pts.Count()))).Add(pt);
           }
-		  lock(_threats) {
+          lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-            if (!_threats.TryGetValue(a,out var map_cache)) _threats.Add(a,map_cache = new Dictionary<Map, HashSet<Point>>());
-            if (!map_cache.TryGetValue(m,out var cache)) map_cache.Add(m,cache = new HashSet<Point>());
-            cache.UnionWith(local);
-		  }
+		    lock(_threats) {
+              if (!_threats.TryGetValue(a,out var map_cache)) _threats.Add(a,map_cache = new());
+              if (!map_cache.TryGetValue(m,out var cache)) map_cache.Add(m,cache = new());
+              cache.UnionWith(local);
+		    }
+          }
           if (null == other) return;
           var remap = new Dictionary<Map,List<Point>>();
           foreach(Point pt in other) {
@@ -331,32 +341,36 @@ namespace djack.RogueSurvivor.Data
 
         public void Sighted(Actor a, Location loc)
         {
-          lock(_threats) {
+          lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(loc.Map);
-            if (_threats.TryGetValue(a, out var cache)) {
-              foreach(var x in cache) _ThreatWhere_cache.Remove(x.Key);
+            lock(_threats) {
+              if (_threats.TryGetValue(a, out var cache)) {
+                foreach(var x in cache) _ThreatWhere_cache.Remove(x.Key);
+              }
+              _threats[a] = new(1) {
+                [loc.Map] = new(){ loc.Position }
+              };
             }
-            _threats[a] = new Dictionary<Map, HashSet<Point>>(1) {
-              [loc.Map] = new HashSet<Point> { loc.Position }
-            };
           }
         }
 
         public void Cleared<T>(Dictionary<Map, T> staging) where T:IEnumerable<Point>
         {   // assume all values of locs are in canonical form
-            lock (_threats) {
-                foreach (var m_pts in staging) {
-                    _ThreatWhere_cache.Remove(m_pts.Key);   // XXX could be more selective
-                    var amnesia = new List<Actor>();
-                    foreach (var x in _threats) {
-                        if (!x.Value.TryGetValue(m_pts.Key, out var test)) continue;
-                        test.ExceptWith(m_pts.Value);
-                        if (0 >= test.Count) {
-                            x.Value.Remove(m_pts.Key);
-                            if (0 >= x.Value.Count) amnesia.Add(x.Key);
+            lock (_ThreatWhere_cache) {
+                lock (_threats) {
+                    foreach (var m_pts in staging) {
+                        _ThreatWhere_cache.Remove(m_pts.Key);   // XXX could be more selective
+                        List<Actor> amnesia = new();
+                        foreach (var x in _threats) {
+                            if (!x.Value.TryGetValue(m_pts.Key, out var test)) continue;
+                            test.ExceptWith(m_pts.Value);
+                            if (0 >= test.Count) {
+                                x.Value.Remove(m_pts.Key);
+                                if (0 >= x.Value.Count) amnesia.Add(x.Key);
+                            }
                         }
+                        foreach (Actor a in amnesia) _threats.Remove(a);
                     }
-                    foreach (Actor a in amnesia) _threats.Remove(a);
                 }
             }
         }
@@ -378,21 +392,23 @@ namespace djack.RogueSurvivor.Data
         }
 
         public void Cleared(Dictionary<Actor, Dictionary<Map, Point[]>> catalog) {
-            lock (_threats) {
-                foreach (var x in catalog) {
-                    if (_threats.TryGetValue(x.Key, out var cache)) {
-                        foreach (var y in x.Value) {
-                            if (cache.TryGetValue(y.Key, out var cache2)) {
-                                var former = cache2.Count;
-                                cache2.ExceptWith(y.Value);
-                                var now = cache2.Count;
-                                if (former > now) {
-                                    _ThreatWhere_cache.Remove(y.Key);
-                                    if (0 >= now) cache.Remove(y.Key);
+            lock (_ThreatWhere_cache) {
+                lock (_threats) {
+                    foreach (var x in catalog) {
+                        if (_threats.TryGetValue(x.Key, out var cache)) {
+                            foreach (var y in x.Value) {
+                                if (cache.TryGetValue(y.Key, out var cache2)) {
+                                    var former = cache2.Count;
+                                    cache2.ExceptWith(y.Value);
+                                    var now = cache2.Count;
+                                    if (former > now) {
+                                        _ThreatWhere_cache.Remove(y.Key);
+                                        if (0 >= now) cache.Remove(y.Key);
+                                    }
                                 }
                             }
+                            if (0 >= cache.Count) _threats.Remove(x.Key);
                         }
-                        if (0 >= cache.Count) _threats.Remove(x.Key);
                     }
                 }
             }
@@ -420,12 +436,14 @@ namespace djack.RogueSurvivor.Data
 
         public void Cleared(Actor a)
         {
-          lock(_threats) {
-            if (_threats.TryGetValue(a, out var cache)) {
-              foreach(var x in cache) _ThreatWhere_cache.Remove(x.Key);   // XXX could be more selective
-              _threats.Remove(a);
+            lock (_ThreatWhere_cache) {
+                lock (_threats) {
+                    if (_threats.TryGetValue(a, out var cache)) {
+                        foreach (var x in cache) _ThreatWhere_cache.Remove(x.Key);   // XXX could be more selective
+                        _threats.Remove(a);
+                    }
+                }
             }
-          }
         }
 
         public void Audit(Predicate<Actor> ok) {
@@ -433,7 +451,7 @@ namespace djack.RogueSurvivor.Data
             lock (_threats) {
                 foreach (var x in _threats) {
                     if (ok(x.Key)) continue;
-                    (discard ??= new List<Actor>(_threats.Count)).Add(x.Key);
+                    (discard ??= new(_threats.Count)).Add(x.Key);
                 }
             }
             if (null != discard) foreach (var a in discard) Cleared(a);
@@ -443,8 +461,8 @@ namespace djack.RogueSurvivor.Data
         // mainly of use at game start
         public void Rebuild(Map m)
         {
-            var who = new List<Actor>();
-            var fulltaint = new HashSet<Point>();
+            List<Actor> who = new();
+            HashSet<Point> fulltaint = new();
             lock (_threats) {
                 foreach (var x in _threats) {
                     if (x.Key.Location.Map != m) continue;  // ignore threats not on current map
@@ -457,8 +475,8 @@ namespace djack.RogueSurvivor.Data
 
             if (0 >= who.Count) return; // no-op for completely inappropriate call
 
-            var accounted_for = new HashSet<Point>();
-            var boundary = new Dictionary<Point, HashSet<Actor>>();
+            HashSet<Point> accounted_for = new();
+            Dictionary<Point, HashSet<Actor>> boundary = new();
             foreach (var a in who) {
                 Sighted(a, a.Location);
                 accounted_for.Add(a.Location.Position);
@@ -466,13 +484,13 @@ namespace djack.RogueSurvivor.Data
                     if (!fulltaint.Contains(pt)) continue;
                     if (accounted_for.Contains(pt)) continue;
                     if (boundary.TryGetValue(pt, out var cache)) cache.Add(a);
-                    else boundary[pt] = new HashSet<Actor> { a };
+                    else boundary[pt] = new(){ a };
                 }
             }
             fulltaint.ExceptWith(accounted_for);
             while (0 < fulltaint.Count && 0 < boundary.Count) {
                 accounted_for.Clear();
-                var new_boundary = new Dictionary<Point, HashSet<Actor>>();
+                Dictionary<Point, HashSet<Actor>> new_boundary = new();
                 foreach (var x in boundary) {
                     foreach (var a in x.Value) RecordTaint(a, m, x.Key);
                     accounted_for.Add(x.Key);
@@ -480,7 +498,7 @@ namespace djack.RogueSurvivor.Data
                         if (!fulltaint.Contains(pt)) continue;
                         if (accounted_for.Contains(pt)) continue;
                         if (new_boundary.TryGetValue(pt, out var cache)) cache.UnionWith(x.Value);
-                        else new_boundary[pt] = new HashSet<Actor>(x.Value);
+                        else new_boundary[pt] = new(x.Value);
                     }
                 }
                 fulltaint.ExceptWith(accounted_for);
@@ -498,45 +516,47 @@ namespace djack.RogueSurvivor.Data
           private void HandleMove(object sender, EventArgs e)
           {
             Actor moving = (sender as Actor);
-            lock(_threats) {
-              if (!_threats.ContainsKey(moving)) return;
-              // we don't have the CPU to do this right (that is, expand out legal steps from all current candidate locations)
-              List<Point> tmp = moving.LegalSteps;
-              if (null == tmp) return;
-			  tmp.Add(moving.Location.Position);
+            var tmp = moving.LegalSteps;
+            if (null == tmp) return;
+            tmp.Add(moving.Location.Position);
 
-              bool new_mark = false;
-              foreach(var pt in tmp) {
-                Location loc = new(moving.Location.Map, pt);
-                if (!Map.Canonical(ref loc)) continue;
-                if (!_anyThreatAt(loc)) {
-                  new_mark = true;
-                  break;
-                }
-              }
-              if (new_mark) {
-                ZoneLoc near = new(moving.Location.Map, new Rectangle(moving.Location.Position + 2 * Direction.NW, new Point(5,5)));
-                var lockdown = near.ParsedListing;
-                if (_threats.TryGetValue(moving, out var cache)) {
-                  List<Map> doomed = new();
-                  foreach(var x in cache) {
-                    if (lockdown.TryGetValue(x.Key, out var cache2)) {
-                      x.Value.IntersectWith(cache2);
-                      if (0 < x.Value.Count) continue;
+            lock (_ThreatWhere_cache) {
+                lock (_threats) {
+                    if (!_threats.ContainsKey(moving)) return;
+                    // we don't have the CPU to do this right (that is, expand out legal steps from all current candidate locations)
+
+                    bool new_mark = false;
+                    foreach (var pt in tmp) {
+                        Location loc = new(moving.Location.Map, pt);
+                        if (!Map.Canonical(ref loc)) continue;
+                        if (!_anyThreatAt(loc)) {
+                            new_mark = true;
+                            break;
+                        }
                     }
-                    // HMM...inferred not to be here
-                    doomed.Add(x.Key);
-                  }
-                  foreach(var m in doomed) {
-                    cache.Remove(m);
-                    _ThreatWhere_cache.Remove(m);
-                  }
+                    if (new_mark) {
+                        ZoneLoc near = new(moving.Location.Map, new Rectangle(moving.Location.Position + 2 * Direction.NW, new Point(5, 5)));
+                        var lockdown = near.ParsedListing;
+                        if (_threats.TryGetValue(moving, out var cache)) {
+                            List<Map> doomed = new();
+                            foreach (var x in cache) {
+                                if (lockdown.TryGetValue(x.Key, out var cache2)) {
+                                    x.Value.IntersectWith(cache2);
+                                    if (0 < x.Value.Count) continue;
+                                }
+                                // HMM...inferred not to be here
+                                doomed.Add(x.Key);
+                            }
+                            foreach (var m in doomed) {
+                                cache.Remove(m);
+                                _ThreatWhere_cache.Remove(m);
+                            }
+                        }
+                    }
                 }
-              }
-
-              RecordTaint(moving,moving.Location.Map, tmp);
             }
-          }
+            RecordTaint(moving, moving.Location.Map, tmp);
+        }
     }   // end ThreatTracking definition
 
     // stripped down version of above, just managing locations of interest across maps
