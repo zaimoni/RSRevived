@@ -5715,11 +5715,13 @@ namespace djack.RogueSurvivor.Engine
       return flag4;
     }
 
-    private bool HandlePlayerDirectiveFollower(Actor player, Actor follower)    // XXX could be void return but other HandlePlayer... return bool
+    private bool HandlePlayerDirectiveFollower(Actor player, OrderableAI ordai)    // XXX could be void return but other HandlePlayer... return bool
     {
+      if (null == ordai) return false;
+      var follower = ordai.ControlledActor;
       bool flag1 = true;
       do {
-        ActorDirective directives = (follower.Controller as OrderableAI).Directives;
+        ActorDirective directives = ordai.Directives;
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
@@ -5779,7 +5781,95 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string str1 = DescribePlayerFollowerStatus(follower);
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(follower);
+      var fovFor = LOS.ComputeFOVFor(follower);
+      var fo_ordai = follower.Controller as OrderableAI;
+
+      // a mechanical interpretation of the legacy order UI; intentionally not using programmer time to optimize UI
+      List<KeyValuePair<string, Func<bool>>> orders = new();
+      if (null != fo_ordai) {
+          if (null != fo_ordai.Order) {
+            orders.Add(new(string.Format("0. Cancel legacy order {0}.", str1), () => {
+              DoCancelOrder(player, fo_ordai);
+              return true;
+            }));
+          }
+
+        orders.Add(new("Set directives...", () => {
+          HandlePlayerDirectiveFollower(player, fo_ordai);
+          return false;
+        }));
+
+        if (follower.Inventory.Has<ItemBarricadeMaterial>()) {
+          orders.Add(new("Barricade (one)...", () => {
+            return HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, false);
+          }));
+
+          orders.Add(new("Barricade (max)...", () => {
+            return HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, true);
+          }));
+        }
+
+        orders.Add(new("Guard...", () => {
+          return HandlePlayerOrderFollowerToGuard(player, fo_ordai, fovFor);
+        }));
+
+        orders.Add(new("Patrol...", () => {
+          return HandlePlayerOrderFollowerToPatrol(player, fo_ordai, fovFor);
+        }));
+
+        if (   0 < follower.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)
+            && follower.Inventory.Has<ItemBarricadeMaterial>()) {
+          var have = follower.CountItems<ItemBarricadeMaterial>();
+
+          if (follower.BarricadingMaterialNeedForFortification(false) <= have) {
+            orders.Add(new("Build small fort.", () => {
+              return HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, false);
+            }));
+          }
+
+          if (follower.BarricadingMaterialNeedForFortification(true) <= have) {
+            orders.Add(new("Build large fort.", () => {
+              return HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, true);
+            }));
+          }
+        }
+
+        orders.Add(new("Report events.", () => {
+          DoGiveOrderTo(player, fo_ordai, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
+          return true;
+        }));
+
+        orders.Add(new("Sleep now.", () => {
+          DoGiveOrderTo(player, fo_ordai, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
+          return true;
+        }));
+
+        orders.Add(new((fo_ordai.DontFollowLeader ? "Start" : "Stop") + " following me.", () => {
+          DoGiveOrderTo(player, fo_ordai, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
+          return true;
+        }));
+
+        orders.Add(new("Where are you?", () => {
+          DoGiveOrderTo(player, fo_ordai, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
+          return true;
+        }));
+      }
+
+      // old-style but valid for PCs
+      if (null == FollowerCannotGiveItems(player, follower)) {
+        orders.Add(new("Give me...", () => {
+            return HandlePlayerOrderFollowerToGiveItems(player, follower);
+        }));
+      }
+
+      // new-style orders, that are valid for PCs, go here
+
+      string label(int index) { return orders[index].Key; }
+      bool details(int index) { return orders[index].Value(); }
+
+      return PagedPopup(string.Format("Order {0} to...", follower.Name), orders.Count, label, details, false);
+
+#if OBSOLETE
       bool flag1 = true;
       bool flag2 = false;
       do {
@@ -5800,36 +5890,36 @@ namespace djack.RogueSurvivor.Engine
         else if (choiceNumber >= 0 && choiceNumber <= 9) {
           switch (choiceNumber) {
             case 0:
-              DoCancelOrder(player, follower);
+              DoCancelOrder(player, fo_ordai);
               flag1 = false;
               flag2 = true;
               break;
             case 1:
-              HandlePlayerDirectiveFollower(player, follower);
+              HandlePlayerDirectiveFollower(player, fo_ordai);
               break;
             case 2:
-              if (HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, false)) {
+              if (HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, false)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 3:
-              if (HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, true)) {
+              if (HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, true)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 4:
-              if (HandlePlayerOrderFollowerToGuard(player, follower, fovFor)) {
+              if (HandlePlayerOrderFollowerToGuard(player, fo_ordai, fovFor)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 5:
-              if (HandlePlayerOrderFollowerToPatrol(player, follower, fovFor)) {
+              if (HandlePlayerOrderFollowerToPatrol(player, fo_ordai, fovFor)) {
                 flag1 = false;
                 flag2 = true;
                 break;
@@ -5845,14 +5935,14 @@ namespace djack.RogueSurvivor.Engine
               break;
 #endif
             case 7:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false)) {
+              if (HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, false)) {
                 flag1 = false;
                 flag2 = true;
                 break;
               }
               break;
             case 8:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, true)) {
+              if (HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, true)) {
                 flag1 = false;
                 flag2 = true;
                 break;
@@ -5908,10 +5998,14 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       return flag2;
+#endif
     }
 
-    private bool HandlePlayerOrderFollowerToBuildFortification(Actor player, Actor follower, HashSet<Point> followerFOV, bool isLarge)
+    private bool HandlePlayerOrderFollowerToBuildFortification(Actor player, OrderableAI ordai, HashSet<Point> followerFOV, bool isLarge)
     {
+      if (null == ordai) return false;
+      var follower = ordai.ControlledActor;
+
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
@@ -5936,7 +6030,7 @@ namespace djack.RogueSurvivor.Engine
                 nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  DoGiveOrderTo(player, follower, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
+                  DoGiveOrderTo(player, ordai, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -5959,8 +6053,11 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private bool HandlePlayerOrderFollowerToBarricade(Actor player, Actor follower, HashSet<Point> followerFOV, bool toTheMax)
+    private bool HandlePlayerOrderFollowerToBarricade(Actor player, OrderableAI ordai, HashSet<Point> followerFOV, bool toTheMax)
     {
+      if (null == ordai) return false;
+      var follower = ordai.ControlledActor;
+
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
@@ -5986,7 +6083,7 @@ namespace djack.RogueSurvivor.Engine
                 if (follower.CanBarricade(door, out string reason)) {
                   color = Color.LightGreen;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                    DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
+                    DoGiveOrderTo(player, ordai, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
                     flag1 = false;
                     flag2 = true;
                   }
@@ -6006,8 +6103,11 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private bool HandlePlayerOrderFollowerToGuard(Actor player, Actor follower, HashSet<Point> followerFOV)
+    private bool HandlePlayerOrderFollowerToGuard(Actor player, OrderableAI ordai, HashSet<Point> followerFOV)
     {
+      if (null == ordai) return false;
+      var follower = ordai.ControlledActor;
+
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
@@ -6032,7 +6132,7 @@ namespace djack.RogueSurvivor.Engine
                 nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
+                  DoGiveOrderTo(player, ordai, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -6055,8 +6155,11 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private bool HandlePlayerOrderFollowerToPatrol(Actor player, Actor follower, HashSet<Point> followerFOV)
+    private bool HandlePlayerOrderFollowerToPatrol(Actor player, OrderableAI ordai, HashSet<Point> followerFOV)
     {
+      if (null == ordai) return false;
+      var follower = ordai.ControlledActor;
+
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
@@ -6097,7 +6200,7 @@ namespace djack.RogueSurvivor.Engine
               if (flag3) {
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
+                  DoGiveOrderTo(player, ordai, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -6122,43 +6225,47 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private bool HandlePlayerOrderFollowerToReport(Actor player, Actor follower)
     {
-      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
+      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToSleep(Actor player, Actor follower)
     {
-      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
+      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToToggleFollow(Actor player, Actor follower)
     {
-      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
+      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToReportPosition(Actor player, Actor follower)
     {
-      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
+      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
       return true;
     }
 #nullable restore
 
+    private Data.Message? FollowerCannotGiveItems(Actor player, Actor follower) {
+      if (follower.Inventory == null || follower.Inventory.IsEmpty) 
+        return MakeErrorMessage(string.Format("{0} has no items to give.", follower.TheName));
+      if (!Rules.IsAdjacent(player.Location, follower.Location))
+        return MakeErrorMessage(string.Format("{0} is not next to you.", follower.TheName));
+      return null;
+    }
+
     private bool HandlePlayerOrderFollowerToGiveItems(Actor player, Actor follower)
     {
-      if (follower.Inventory == null || follower.Inventory.IsEmpty) {
+      var err = FollowerCannotGiveItems(player, follower);
+      if (null != err) {
         ClearMessages();
-        AddMessage(MakeErrorMessage(string.Format("{0} has no items to give.", follower.TheName)));
+        AddMessage(err);
         AddMessagePressEnter();
         return false;
       }
-      if (!Rules.IsAdjacent(player.Location, follower.Location)) {
-        ClearMessages();
-        AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", follower.TheName)));
-        AddMessagePressEnter();
-        return false;
-      }
+
       bool flag1 = true;
       bool flag2 = false;
       int num1 = 0;
@@ -7402,7 +7509,7 @@ namespace djack.RogueSurvivor.Engine
     {
       string desc = string.Format("(trust:{0})", follower.TrustInLeader);
       if (follower.Controller is OrderableAI ai) {
-        return (ai?.Order?.ToString() ?? "(no orders)") + desc;
+        return (ai.Order?.ToString() ?? "(no orders)") + desc;
       } else {
         return "(is player)" + desc;
       }
@@ -10311,24 +10418,26 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_SPRAY.Conjugate(actor), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
     }
 
-    private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
+    private void DoGiveOrderTo(Actor master, OrderableAI? ordai, ActorOrder order)
     {
+      if (null == ordai) return;
+      var slave = ordai.ControlledActor;
       master.SpendActionPoints();
       if (master != slave.Leader) DoSay(slave, master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
       else if (!slave.IsTrustingLeader) DoSay(slave, master, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
       else {
-        if (!(slave.Controller is OrderableAI ai)) return;
-        ai.SetOrder(order);
+        ordai.SetOrder(order);
         if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
           AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, string.Format(" to {0}.", order.ToString())));
       }
     }
 
-    private void DoCancelOrder(Actor master, Actor slave)
+    private void DoCancelOrder(Actor master, OrderableAI ordai)
     {
+      if (null == ordai) return;
+      var slave = ordai.ControlledActor;
       master.SpendActionPoints();
-      if (!(slave.Controller is OrderableAI ai)) return;
-      ai.SetOrder(null);
+      ordai.SetOrder(null);
       if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
         AddMessage(MakeMessage(master, VERB_ORDER.Conjugate(master), slave, " to forget its orders."));
     }
