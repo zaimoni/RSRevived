@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)
     {
-      return percepts?.Filter(target => m_Actor.CanFireAt(target,range));
+      return percepts?.Filter(target => m_Actor.CanFireAt(target,range) && m_Actor.Controller.CanSee(target.Location));
     }
 
     protected List<Percept_<Actor>>? FilterPossibleFireTargets(List<Percept_<Actor>>? percepts)
