@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Data
     private const int NIGHT_STA_PENALTY = 2;
     public const int STAMINA_REGEN_WAIT = 2;
     public const int TRUST_BOND_THRESHOLD = Rules.TRUST_MAX;
-    public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
+    public const int TRUST_TRUSTING_THRESHOLD = 0 /* RS: 12*WorldTime.TURNS_PER_HOUR */;
 
     // most/all of these FOV modifiers should space-time scale
     private const short MINIMAL_FOV = 2;

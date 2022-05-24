@@ -5790,7 +5790,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Order {0} to...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message(string.Format("0. Cancel current order {0}.", str1), Session.Get.WorldTime.TurnCounter, Color.Green));
         AddMessage(new Data.Message("1. Set directives...", Session.Get.WorldTime.TurnCounter, Color.Cyan));
-        AddMessage(new Data.Message("2. Barricade (one)...    6. Drop all items.      A. Give me...", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message("2. Barricade (one)...                            A. Give me...", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new Data.Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", str2), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen(new Data.Message("5. Patrol...             9. Report events.       D. Where are you?", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5835,6 +5835,7 @@ namespace djack.RogueSurvivor.Engine
                 break;
               }
               break;
+#if OBSOLETE
             case 6:
               if (HandlePlayerOrderFollowerToDropAllItems(player, follower)) {
                 flag1 = false;
@@ -5842,6 +5843,7 @@ namespace djack.RogueSurvivor.Engine
                 break;
               }
               break;
+#endif
             case 7:
               if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false)) {
                 flag1 = false;
@@ -6118,15 +6120,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private bool HandlePlayerOrderFollowerToDropAllItems(Actor player, Actor follower)
-    {
-      if (follower.Inventory.IsEmpty) return false;
-      DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
-      DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
-      ModifyActorTrustInLeader(follower, follower.Inventory.CountItems * Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
-      return true;
-    }
-
     private bool HandlePlayerOrderFollowerToReport(Actor player, Actor follower)
     {
       DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
@@ -7409,7 +7402,7 @@ namespace djack.RogueSurvivor.Engine
     {
       string desc = string.Format("(trust:{0})", follower.TrustInLeader);
       if (follower.Controller is OrderableAI ai) {
-        return (ai?.Order.ToString() ?? "(no orders)") + desc;
+        return (ai?.Order?.ToString() ?? "(no orders)") + desc;
       } else {
         return "(is player)" + desc;
       }

@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Data
     BARRICADE_MAX,
     GUARD,
     PATROL,
-    DROP_ALL_ITEMS,
+    DROP_ALL_ITEMS_XXX, // historical command but extremely fourth-wall breaking
     BUILD_SMALL_FORTIFICATION,
     BUILD_LARGE_FORTIFICATION,
     REPORT_EVENTS,
@@ -48,8 +48,8 @@ namespace djack.RogueSurvivor.Data
           return string.Format("guard ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.PATROL:
           return string.Format("patrol ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
-        case ActorTasks.DROP_ALL_ITEMS:
-          return "drop all items";
+        case ActorTasks.DROP_ALL_ITEMS_XXX:
+          return "drop all items (should not be seeing this)";
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
           return string.Format("build small fortification ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
