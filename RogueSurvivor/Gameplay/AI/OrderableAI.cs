@@ -1116,8 +1116,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
-      ActorAction tmpAction = null;
-      if ((null != _retreat || null != _run_retreat) && null != available_ranged_weapons && null!=_enemies) {
+        const bool tracing = false; // debugging hook
+
+        ActorAction tmpAction = null;
+        if ((null != _retreat || null != _run_retreat) && null != available_ranged_weapons && null!=_enemies) {
+        if (tracing && !RogueGame.IsSimulating) {
+          RogueGame.Game.InfoPopup(available_ranged_weapons.to_s());
+        }
+
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(_retreat, _enemies);
         MaximizeRangedTargets(_run_retreat, _enemies);
@@ -1151,6 +1157,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (null != _retreat) {
+        if (tracing && !RogueGame.IsSimulating) {
+          if (WillTireAfterAttack(m_Actor)) RogueGame.Game.InfoPopup("will tire after attack");
+          if (null != _slow_melee_threat) RogueGame.Game.InfoPopup(_slow_melee_threat.to_s());
+          if (_damage_field.ContainsKey(m_Actor.Location.Position)) RogueGame.Game.InfoPopup(_damage_field.to_s());
+        }
+
         if (   WillTireAfterAttack(m_Actor) // need stamina to melee: slow retreat ok
             || null != _slow_melee_threat) {    // have slow enemies nearby
           _caller = CallChain.ManageMeleeRisk;
@@ -2009,7 +2021,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         bool will_tire_after_run = m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING + m_Actor.NightSTApenalty);
 
         int best_STA = int.MaxValue;
-        Dictionary<Location, int> STA_costs = new();
         var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
         List<Engine._Action.MoveStep> routes = new();
         foreach(var move in first.Value.Key) {
@@ -2022,15 +2033,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
             best_STA = test_STA;
             routes.Clear();
           }
+          var dest = move.dest;
           if (!will_tire_after_run) {
-            var dest = move.dest;
-            if (!STA_costs.TryGetValue(dest, out var dest_cost)) STA_costs.Add(dest, dest_cost = m_Actor.RunningStaminaCost(dest));
-            if (!m_Actor.WillTireAfter(STA_cost + dest_cost)) {
+            if (!m_Actor.WillTireAfter(STA_cost + m_Actor.RunningStaminaCost(dest))) {
               routes.Add(new Engine._Action.MoveStep(m_Actor.Location, move.dest, true, m_Actor));
               continue;
             }
           }
-          routes.Add(step);
         }
 
         return 0 < routes.Count ? routes : null;
@@ -2122,6 +2131,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == target) return null;  // can happen due to InferActor
       Actor enemy = target.Percepted;
       Location e_loc = enemy.Location;
+      const bool tracing = false; // debugging hook
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(m_Actor.Name+"\n"+enemy.Name);
 
       bool doRun = false;	// only matters when fleeing
       bool decideToFlee = (null != legal_steps);
@@ -2137,6 +2148,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           decideToFlee = true;
           doRun = true;
         } else {
+          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("evading melee: "+WantToEvadeMelee(m_Actor, courage, enemy).ToString());
           decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
           doRun = !HasSpeedAdvantage(m_Actor, enemy);
         }
@@ -2189,7 +2201,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
 
       // redo the pause check
-      var next_to = 2 == Rules.GridDistance(m_Actor.Location, in e_loc) ? _closeIn(e_loc) : null;
+      var en_dist = Rules.GridDistance(m_Actor.Location, in e_loc);
+      var next_to = 2 == en_dist ? _closeIn(e_loc) : null;
+
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("distance: "+en_dist.ToString());
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("dash-attack: "+((null == next_to) ? "null" : next_to.to_s()));
+
       if (null != next_to) {
         if (1 < next_to.Count && null != LoF_reserve) {
           List<Engine._Action.MoveStep> stage = new(next_to.Count);
@@ -2243,9 +2260,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return act;
           }
         }
+      } else if (2 == en_dist) {
+        // no dash-attack at range 2, have not decided to flee
+        if (null == _damage_field || !_damage_field.ContainsKey(m_Actor.Location.Position)) return new ActionWait(m_Actor);
       }
 
-      if (3 == Rules.GridDistance(m_Actor.Location, in e_loc) && m_Actor.RunIsFreeMove && enemy.CanRun()) {
+      if (3 == en_dist && m_Actor.RunIsFreeMove && enemy.CanRun()) {
         var options = _chargeTowards(e_loc);
         if (null != options) {
           var n = Rules.Get.DiceRoller.Roll(0,options.Count);
@@ -2257,7 +2277,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // charge
       tmpAction = BehaviorChargeEnemy(target, true, true);
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("charging: "+ tmpAction.ToString());
+
       if (null != tmpAction) {
+        if (null != next_to) {
+          if (tmpAction is ActorDest dest) {
+            foreach(var move in next_to) {
+              if (move.dest == dest.dest) {
+                if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("running: "+ move.is_running.ToString());
+                Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
+                SetObjective(goal);
+                return move;
+              }
+            }
+          }
+        }
+
         if (Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;

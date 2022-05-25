@@ -2536,6 +2536,12 @@ namespace djack.RogueSurvivor.Data
       return Rules.STAMINA_COST_RUNNING + NightSTApenalty;
     }
 
+    public int WalkingStaminaCost(in Location dest)
+    {
+      if (Location.RequiresJump(in dest)) return Rules.STAMINA_COST_JUMP+NightSTApenalty;
+      return 0;
+    }
+
     public int MaxSTA {
       get {
         return Sheet.BaseStaminaPoints + SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);

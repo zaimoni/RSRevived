@@ -5021,6 +5021,7 @@ restart_chokepoints:
             HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
             a_turns--;
             foreach(Point pt2 in sweep) {
+              if (!map.IsWalkableFor(pt2, a)) continue;
               foreach(var dir in Direction.COMPASS) {
                 var pt = pt2 + dir;
                 if (sweep.Contains(pt)) continue;

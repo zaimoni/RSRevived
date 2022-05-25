@@ -8539,6 +8539,8 @@ namespace djack.RogueSurvivor.Engine
       if (attacker.IsViewpoint) PanViewportTo(attacker);
       else if (defender.IsViewpoint) PanViewportTo(defender);
 
+      const bool tracing = false; // debugging hook
+
       attacker.Aggress(defender);
       Attack attack = attacker.MeleeAttack(defender);
       Defence defence = defender.Defence;
@@ -8553,6 +8555,11 @@ namespace djack.RogueSurvivor.Engine
       OnLoudNoise(attacker.Location, "Nearby fighting");
       bool isDefVisible = ForceVisibleToPlayer(defender);
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
+      if (tracing && !IsSimulating) {
+        isDefVisible = true;
+        isAttVisible = true;
+      };
+
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
       bool display_defender = isDefVisible || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 

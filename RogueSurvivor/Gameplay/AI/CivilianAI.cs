@@ -223,12 +223,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // this action tests whether enemies are in sight and chooses which action to take based on this
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
 
+      const bool tracing = false; // debugging hook
+      if (tracing && !RogueGame.IsSimulating && null != _enemies) {
+        RogueGame.Game.PanViewportTo(m_Actor);
+        RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
+      }
+
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif
+      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       if (null != _enemies && Directives.CanThrowGrenades) {
@@ -244,6 +251,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
+      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
 	  var friends = FilterNonEnemies(current);
@@ -263,6 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
+        if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
         if (null != tmpAction) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action
