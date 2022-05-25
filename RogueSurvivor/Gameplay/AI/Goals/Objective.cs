@@ -51,6 +51,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction? Pathing();
     }
 
+    public interface PreciseCountermand
+    {
+        /// <returns>true if and only if should be deleted</returns>
+        bool HandlePlayerCountermand();
+    }
+
     [Serializable]
     internal class PathToTarget {
         enum What {

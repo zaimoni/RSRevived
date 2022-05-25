@@ -3854,7 +3854,7 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
       RemoveOverlay(working);
     }
-    private void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
+    public void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
 
     private void InfoPopup(string[] msg)
     {
@@ -3889,9 +3889,9 @@ namespace djack.RogueSurvivor.Engine
       RemoveOverlay(working);
       return ret;
     }
-    private bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg+"? (Y/N)" }); }
+    public bool YesNoPopup(string msg) { return YesNoPopup(new string[] { msg+"? (Y/N)" }); }
 
-    private bool PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details, bool centered=true)
+    public bool PagedPopup(string header,int strict_ub, Func<int,string> label, Predicate<int> details, bool centered=true)
     {
       var all_labels = new List<string>();
       int i = 0;
@@ -4060,26 +4060,33 @@ namespace djack.RogueSurvivor.Engine
           return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", sights_to_see.Count, label_tourism, details_tourism, false);
         }
 
-        Gameplay.GameItems.IDs item_type = item_classes[index];
+        GameItems.IDs item_type = item_classes[index];
         var catalog = Player.Controller.WhereIs(item_type);
         var pc = Player.Controller as PlayerController;
 
         List<KeyValuePair<Location, int> > tmp_where = new();
         foreach(var loc_qty in catalog) {
-             var obj = loc_qty.Key.MapObject;
-             if (null==obj || !obj.IsContainer) {
-               if (Player.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
-             } else {
-               foreach(var d in Direction.COMPASS) {
-                 var test = loc_qty.Key + d;
-                 if (Player.CanEnter(test)) tmp_where.Add(new(test, loc_qty.Value));
-               }
-             }
+          var obj = loc_qty.Key.MapObject;
+          if (Player.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
+          else if (null != obj && obj.IsContainer) tmp_where.Add(loc_qty);
         }
 
         Dictionary<Location, int> loc_distances = new();
         foreach(var loc in tmp_where) loc_distances[loc.Key] = Rules.GridDistance(Player.Location, loc.Key);
         tmp_where.Sort((x,y) => loc_distances[x.Key].CompareTo(loc_distances[y.Key]));
+
+        // check for followers in-communication (cannot give orders to PC leader)
+        List<Actor> available_followers = new();
+        var p_fos = Player.Followers;
+        if (null != p_fos) {
+          foreach(var fo in p_fos) {
+            if (pc.InCommunicationWith(fo)) available_followers.Add(fo);
+          }
+        }
+
+        string label_follower(int index) {
+            return available_followers[index].Name;
+        };
 
         string label2(int index) {
             var x = tmp_where[index];
@@ -4089,6 +4096,13 @@ namespace djack.RogueSurvivor.Engine
         bool details2(int index) {
           var x = tmp_where[index];
           PanViewportTo(x.Key);
+
+          bool details_follower(int index) {
+            var obj = x.Key.MapObject;
+            InventorySource<Item> src = (null != obj) ? new(obj) : new(x.Key);
+            (available_followers[index].Controller as ObjectiveAI).Track(in src, item_type);
+            return true;
+          };
 
           bool navigate(KeyEventArgs key) {
             switch (key.KeyCode)
@@ -4105,12 +4119,19 @@ namespace djack.RogueSurvivor.Engine
               pc.WalkTo(x.Key, (int)key.KeyCode - (int)Keys.D0);
               pc.AddWaypoint(x.Key, item_type.ToString()+": T" + x.Value.ToString());
               return true;
+            case Keys.O: 
+              if (0 < available_followers.Count) {
+                return PagedPopup("Who takes it?", available_followers.Count, label_follower, details_follower);
+              }
+              break;
             }
             return false;
           }
 
+          var prompt = "Walk 1) to 9) steps towards the item";
+          if (0 < available_followers.Count) prompt += ", or O)rder a follower to pick it up";
           var tmp = new List<string>();
-          tmp.Insert(0, "Walk 1) to 9) steps towards the item");
+          tmp.Insert(0, prompt);
           return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         }
 
@@ -5864,6 +5885,10 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // new-style orders, that are valid for PCs, go here
+        orders.Add(new("What's up?", () => {
+            fo_ordai.HandlePlayerCountermand();
+            return false;
+        }));
 
       string label(int index) { return orders[index].Key; }
       bool details(int index) { return orders[index].Value(); }

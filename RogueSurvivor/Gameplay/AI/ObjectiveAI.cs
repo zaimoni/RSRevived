@@ -370,6 +370,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetObjective(new InferActor(m_Actor, target));
     }
 
+    public void Track(in InventorySource<Item> src, GameItems.IDs take)
+    {
+      var goal = Goal<PathToStack>();
+      if (null != goal) {
+        goal.Add(in src, take);
+        return;
+      }
+      SetObjective(new PathToStack(m_Actor, in src, take));
+    }
+
+    public static bool DefaultPlayerCountermand(Objective o)
+    {
+        return RogueGame.Game.YesNoPopup("Countermand '"+ o.ToString()+"'");
+    }
+
+    public void HandlePlayerCountermand() {
+      if (!m_Actor.LiveLeader.IsPlayer) {
+#if DEBUG
+        throw new InvalidOperationException("not a player-led follower");
+#else
+        return;
+#endif
+      };
+      if (0 >= Objectives.Count) {
+        RogueGame.Game.ErrorPopup("No current orders.");
+        return;
+      }
+
+      string label(int index) { return Objectives[index].ToString(); }
+      bool details(int index) {
+        var precise = Objectives[index] as PreciseCountermand;
+        var ret = (null != precise) ? precise.HandlePlayerCountermand() : DefaultPlayerCountermand(Objectives[index]);
+        if (ret) Objectives.RemoveAt(index);
+        return ret;
+      }
+
+      RogueGame.Game.PagedPopup(m_Actor.UnmodifiedName+"'s objectives", Objectives.Count, label, details);
+    }
+
     public override ActorAction? ExecAryZeroBehavior(int code)
     {
       switch(code) {

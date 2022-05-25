@@ -3464,6 +3464,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #nullable enable
     private ActorAction? BehaviorFindStack(Predicate<Inventory> want_now) {
+        if (null != Goal<PathToStack>()) return null; // direct-order to pick up pre-empts
         var stacks = GetInterestingInventoryStacks(want_now);
         if (null != stacks) return BehaviorHeadForBestStack(stacks);
         return null;

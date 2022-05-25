@@ -22,6 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
+  [Serializable]
   internal readonly record struct InventorySource<T> where T:Item
   {
      public readonly Inventory inv;
@@ -125,6 +126,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool Exists { get {
+      if (null != loc) return null != loc.Value.Items;
+      if (null != obj_owner) return obj_owner.Location.MapObject == obj_owner;
+      // must be actor inventory.
+      return !a_owner!.IsDead;
+    } }
+
     public void fireChange() {
       // Police ai cheats
       if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
@@ -148,6 +156,14 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       return inv.Transfer(it, dest);
+    }
+
+    public override string ToString()
+    {
+      if (null != loc) return loc.Value.ToString();
+      if (null != obj_owner) return obj_owner.Location.ToString();
+      // must be actor inventory.  Wouldn't be asking about our own, so must be someone else's.
+      return a_owner!.Name;
     }
   }
 
@@ -375,6 +391,16 @@ namespace djack.RogueSurvivor.Data
       Item? obj = null;
       foreach (Item mItem in m_Items) {
         if (mItem.Model == it && (obj == null || mItem.Quantity < obj.Quantity))
+          obj = mItem;
+      }
+      return obj;
+    }
+
+    public Item? GetWorstDestackable(ItemModel it)
+    {
+      Item? obj = null;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == it && (obj == null || mItem.Quantity > obj.Quantity))
           obj = mItem;
       }
       return obj;
