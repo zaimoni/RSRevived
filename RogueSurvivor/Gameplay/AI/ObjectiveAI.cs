@@ -216,6 +216,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private int _STA_reserve;
     protected int STA_reserve { get { return _STA_reserve; } }
 
+    private Dictionary<GameItems.IDs, KeyValuePair<sbyte,int>>? _rating_overrides; // origin code: 1 self, 2 order (AI or PC)
+
     // cache variables
     [NonSerialized] protected List<Point> _legal_steps = null;
     [NonSerialized] protected Dictionary<Location,ActorAction> _legal_path = null;
@@ -719,6 +721,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // perception fixup
       var infer = Goal<InferActor>();
       if (null != infer) infer.Infer(ref now);
+
+      // inventory priority fixup
+      if (null != _rating_overrides) {
+        List<GameItems.IDs> doomed = new();
+        foreach(var x in _rating_overrides) {
+          if (!m_Actor.Inventory.Has(x.Key)) doomed.Add(x.Key);
+        }
+        foreach(var x in doomed) _rating_overrides.Remove(x);
+        if (0 >= _rating_overrides.Count) _rating_overrides = null;
+      }
     }
 
 #nullable enable
@@ -5353,6 +5365,19 @@ restart_chokepoints:
       return false;
     }
 
+    /// <returns>0: not; 1: visual; 2: police radio; 3: army radio; 4: cell phone</returns>
+    public int CommunicationMethodCode(Actor a)
+    {
+      if (m_Actor==a) return 1; // pathological
+      if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return 0;
+      if (a.IsSleeping) return 0;
+      if (a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return 1;
+      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio && RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location), Rules.PoliceRadioLocation(a.Location))) return 2;
+      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio && RogueGame.POLICE_RADIO_RANGE >= Rules.GridDistance(Rules.PoliceRadioLocation(m_Actor.Location), Rules.PoliceRadioLocation(a.Location))) return 3;
+      if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return 4;
+      return 0;
+    }
+
     public void RecruitHelp(Actor enemy) {
 #if DEBUG
       if (enemy?.IsDead ?? true) throw new ArgumentNullException(nameof(enemy));
@@ -6149,8 +6174,37 @@ restart_chokepoints:
     }
     }
 
+    public bool UnsetRatingOverride(GameItems.IDs x, int severity) {
+      if (null == _rating_overrides) return true;
+      if (_rating_overrides.TryGetValue(x, out var cache)) {
+        if (severity < cache.Value) return false; // self-AI cannot unset an order priority override
+        _rating_overrides.Remove(x);
+        if (0 >= _rating_overrides.Count) _rating_overrides = null;
+        return true;
+      }
+      return true;
+    }
+
+    public KeyValuePair<sbyte,int>? SetRatingOverride(GameItems.IDs x, sbyte priority, int severity) {
+      KeyValuePair<sbyte,int> ret = new(0,0); // value 0: no authority
+      if ((_rating_overrides ??= new()).TryGetValue(x, out var cache)) {
+        if (severity < cache.Value) return null; // self-AI cannot overrule an order priority override
+        if (cache.Key == priority && cache.Value == severity) return null; // already present
+        ret = cache; // what to restore to
+      }
+      _rating_overrides[x] = new(priority, severity);
+      return ret;
+    }
+
     private int ItemRatingCode(GameItems.IDs x)
     {
+       var model = GameItems.From(x);
+       if (null != _rating_overrides) {
+         if (_rating_overrides.TryGetValue(x, out var cache)) {
+           if (1>=m_Actor.Inventory.Count(model)) return cache.Key;
+         }
+       }
+
        // \todo location-based inferences
        return ItemRatingCode(GameItems.From(x));
     }
@@ -7346,6 +7400,13 @@ restart_chokepoints:
       if (!m_Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
 #endif
       if (ItemIsUseless(it)) return false;
+
+      if (null != _rating_overrides) {
+        if (_rating_overrides.TryGetValue(it.Model.ID, out var cache)) {
+          if (1 < cache.Key) return true;
+          if (1 > cache.Key) return false;
+        }
+      }
 
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE

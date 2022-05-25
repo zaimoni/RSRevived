@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
+using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Rectangle = Zaimoni.Data.Box2D_short;
@@ -132,6 +133,52 @@ namespace djack.RogueSurvivor.Data
         RogueGame.ClearMessages();
       } else DeferMessage(msg);
     }
+
+    private void _handleReport(string raw_text, int code, Actor who)
+    {
+      if (1 == code) {
+        who.Say(ControlledActor, raw_text, RogueGame.Sayflags.IS_FREE_ACTION);
+      }
+      if (2 == code) {
+        var msg = new Data.Message("(police radio, "+ who.Name +") "+raw_text, Session.Get.WorldTime.TurnCounter, RogueGame.SAYOREMOTE_NORMAL_COLOR);
+        Action<Actor> pc_add_msg = actor => actor.Controller.AddMessage(msg);
+        who.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
+      }
+      // defer army radio and cell phones for now
+    }
+
+    // check-in with leader
+    public override bool ReportBlocked(in InventorySource<Item> src, Actor who) {
+      var code = CommunicationMethodCode(who);
+      if (0 >= code) return false;
+
+      _handleReport(src.ToString() + " is blocked.", code, who);
+      return true;
+    }
+    public override bool ReportGone(in InventorySource<Item> src, Actor who) {
+      var code = CommunicationMethodCode(who);
+      if (0 >= code) return false;
+
+      _handleReport("Nothing at " + src.ToString() + ".", code, who);
+      return true;
+    }
+    public override bool ReportNotThere(in InventorySource<Item> src, Gameplay.GameItems.IDs what, Actor who) {
+      var code = CommunicationMethodCode(who);
+      if (0 >= code) return false;
+
+      _handleReport(what.ToString()+" is not at " + src.ToString() + ".", code, who);
+      return true;
+    }
+    public override bool ReportTaken(in InventorySource<Item> src, Item it, Actor who)  {
+      var code = CommunicationMethodCode(who);
+      if (0 >= code) return false;
+
+      _handleReport("Have taken "+it.ToString()+" from " + src.ToString() + ".", code, who);
+      return true;
+    }
+
+
+
 #endregion
 
     public void AddWaypoint(in Location dest, string why) {

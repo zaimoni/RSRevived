@@ -31,10 +31,18 @@ namespace djack.RogueSurvivor.Data
     public virtual void TakeControl() {}
     public virtual void LeaveControl() {}
 
+#region UI messages
     // forwarder system for to RogueGame::AddMessage
     public virtual void AddMessage(Data.Message msg) { RogueGame.AddMessage(msg); }
     public virtual void AddMessageForceRead(Data.Message msg) { RogueGame.AddMessage(msg); }
     public virtual void AddMessageForceReadClear(Data.Message msg) { RogueGame.AddMessage(msg); }
+
+    // check-in with leader
+    public virtual bool ReportBlocked(in InventorySource<Item> src, Actor who) { return true; }
+    public virtual bool ReportGone(in InventorySource<Item> src, Actor who) { return true; }
+    public virtual bool ReportNotThere(in InventorySource<Item> src, Gameplay.GameItems.IDs what, Actor who) { return true; }
+    public virtual bool ReportTaken(in InventorySource<Item> src, Item it, Actor who) { return true; }
+#endregion
 
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
        get {

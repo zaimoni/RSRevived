@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     {
         private readonly List<KeyValuePair<InventorySource<Item>, GameItems.IDs>> _stacks = new(1);
         [NonSerialized] private ObjectiveAI oai;
-        [NonSerialized] private List<KeyValuePair<Location, ActorAction>>? _inventory_actions = null;
+        [NonSerialized] private List<KeyValuePair<InventorySource<Item>, ActorAction>>? _inventory_actions = null;
 
 #if DEAD_FUNC
         public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Key.inv); } }
@@ -64,44 +64,63 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         private bool _removeInvalidStacks()
         {
             _inventory_actions = null;
+            var leader = m_Actor.LiveLeader;
             int i = _stacks.Count;
             while (0 < i--) {
                 // no longer exists
-                if (!_stacks[i].Key.Exists) {
-                    _stacks.RemoveAt(i);
-                    oai.ClearLastMove(); // unsure if this is needed
-                    continue;
-                }
-                // no longer has target
-                if (!_stacks[i].Key.inv.Has(_stacks[i].Value)) {
-                  _stacks.RemoveAt(i);
-                  oai.ClearLastMove(); // unsure if this is needed
-                  continue;
-                }
-                // blocked!
                 var loc = _stacks[i].Key.Location;
-                if (m_Actor.Controller.CanSee(in loc) && m_Actor.StackIsBlocked(in loc)) {
-                  _stacks.RemoveAt(i);
-                  oai.ClearLastMove(); // unsure if this is needed
-                  continue;
+                if (m_Actor.Controller.CanSee(in loc)) {
+                    if (!_stacks[i].Key.Exists) {
+                        leader?.Controller.ReportGone(_stacks[i].Key, m_Actor);
+                        _stacks.RemoveAt(i);
+                        oai.ClearLastMove(); // unsure if this is needed
+                        continue;
+                    }
+                    // no longer has target
+                    if (!_stacks[i].Key.inv.Has(_stacks[i].Value)) {
+                        leader?.Controller.ReportNotThere(_stacks[i].Key, _stacks[i].Value, m_Actor);
+                        _stacks.RemoveAt(i);
+                        oai.ClearLastMove(); // unsure if this is needed
+                        continue;
+                    }
+                    // blocked!
+                    if (m_Actor.StackIsBlocked(in loc)) {
+                        leader?.Controller.ReportBlocked(_stacks[i].Key, m_Actor);
+                        _stacks.RemoveAt(i);
+                        oai.ClearLastMove(); // unsure if this is needed
+                        continue;
+                    }
                 }
                 // need special handling for Actor on stack, but that may not rate amnesia
 
                 if (!_stacks[i].Key.IsAccessible(m_Actor.Location)) continue;
+                var need_override = oai.SetRatingOverride(_stacks[i].Value, 3, 2);
                 var act = Take(m_Actor, _stacks[i].Key, _stacks[i].Value);
                 if (null != act && act.IsPerformable()) {
-                    (_inventory_actions ??= new()).Add(new(_stacks[i].Key.Location, act));
+                    (_inventory_actions ??= new()).Add(new(_stacks[i].Key, act));
+                } else if (null != need_override) {
+                    oai.UnsetRatingOverride(_stacks[i].Value, 2);
+                    if (0 < need_override.Value.Value) oai.SetRatingOverride(_stacks[i].Value, need_override.Value.Key, need_override.Value.Value);
                 }
+
             }
             return 0 >= _stacks.Count;
+        }
+
+        private static ActorTake? ExtractTake(ActorAction act) {
+            var ret = act as ActorTake;
+            if (null == ret)
+            {
+                if (act is ActionChain chain) ret = chain.LastAction as ActorTake;
+            }
+            return ret;
         }
 
         public override bool UrgentAction(out ActorAction ret)
         {
             ret = null;
 
-            if (_removeInvalidStacks())
-            {
+            if (_removeInvalidStacks()) {
                 _isExpired = true;
                 return true;
             }
@@ -116,20 +135,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     var ub = _inventory_actions.Count;
                     while (1 <= --ub)
                     {
-                        var upper_take = _inventory_actions[ub].Value as ActorTake;
-                        if (null == upper_take)
-                        {
-                            if (_inventory_actions[ub].Value is ActionChain chain) upper_take = chain.LastAction as ActorTake;
-                        }
+                        var upper_take = ExtractTake(_inventory_actions[ub].Value);
                         if (null == upper_take) continue;
                         var i = ub;
                         while (0 <= --i)
                         {
-                            var take = _inventory_actions[i].Value as ActorTake;
-                            if (null == take)
-                            {
-                                if (_inventory_actions[i].Value is ActionChain chain) take = chain.LastAction as ActorTake;
-                            }
+                            var take = ExtractTake(_inventory_actions[i].Value);
                             if (null == take) continue;
                             if (oai.RHSMoreInteresting(take.Take, upper_take.Take))
                             {
@@ -145,6 +156,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     }
                 }
                 ret = _inventory_actions[0].Value;
+                var ret_take = ExtractTake(ret);
+                if (null != ret_take) {
+                    var have = ret_take.Take;
+                    m_Actor.LiveLeader?.Controller.ReportTaken(_inventory_actions[0].Key, have, m_Actor);
+                }
                 m_Actor.Activity = Activity.IDLE;
                 _isExpired = true;  // we don't play well with action chains
                 return true;
