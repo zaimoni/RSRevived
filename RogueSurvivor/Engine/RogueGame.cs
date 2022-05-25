@@ -5717,13 +5717,13 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerDirectiveFollower(Actor player, OrderableAI ordai)    // XXX could be void return but other HandlePlayer... return bool
     {
-      if (null == ordai) return false;
       var follower = ordai.ControlledActor;
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
+
       bool flag1 = true;
       do {
         ActorDirective directives = ordai.Directives;
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("{0} directives...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message(string.Format("1. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5765,6 +5765,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
       return false;
     }
 
@@ -5868,154 +5869,22 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) { return orders[index].Value(); }
 
       return PagedPopup(string.Format("Order {0} to...", follower.Name), orders.Count, label, details, false);
-
-#if OBSOLETE
-      bool flag1 = true;
-      bool flag2 = false;
-      do {
-        string str2 = (follower.Controller as OrderableAI).DontFollowLeader ? "Start" : "Stop";
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        ClearMessages();
-        AddMessage(new Data.Message(string.Format("Order {0} to...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new Data.Message(string.Format("0. Cancel current order {0}.", str1), Session.Get.WorldTime.TurnCounter, Color.Green));
-        AddMessage(new Data.Message("1. Set directives...", Session.Get.WorldTime.TurnCounter, Color.Cyan));
-        AddMessage(new Data.Message("2. Barricade (one)...                            A. Give me...", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new Data.Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", str2), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen(new Data.Message("5. Patrol...             9. Report events.       D. Where are you?", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
-        else if (choiceNumber >= 0 && choiceNumber <= 9) {
-          switch (choiceNumber) {
-            case 0:
-              DoCancelOrder(player, fo_ordai);
-              flag1 = false;
-              flag2 = true;
-              break;
-            case 1:
-              HandlePlayerDirectiveFollower(player, fo_ordai);
-              break;
-            case 2:
-              if (HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, false)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case 3:
-              if (HandlePlayerOrderFollowerToBarricade(player, fo_ordai, fovFor, true)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case 4:
-              if (HandlePlayerOrderFollowerToGuard(player, fo_ordai, fovFor)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case 5:
-              if (HandlePlayerOrderFollowerToPatrol(player, fo_ordai, fovFor)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-#if OBSOLETE
-            case 6:
-              if (HandlePlayerOrderFollowerToDropAllItems(player, follower)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-#endif
-            case 7:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, false)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case 8:
-              if (HandlePlayerOrderFollowerToBuildFortification(player, fo_ordai, fovFor, true)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case 9:
-              if (HandlePlayerOrderFollowerToReport(player, follower))
-              {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-          }
-        }
-        else
-        {
-          switch (keyEventArgs.KeyCode)
-          {
-            case Keys.A:
-              if (HandlePlayerOrderFollowerToGiveItems(player, follower))
-              {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case Keys.B:
-              if (HandlePlayerOrderFollowerToSleep(player, follower))
-              {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case Keys.C:
-              if (HandlePlayerOrderFollowerToToggleFollow(player, follower))
-              {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-            case Keys.D:
-              if (HandlePlayerOrderFollowerToReportPosition(player, follower)) {
-                flag1 = false;
-                flag2 = true;
-                break;
-              }
-              break;
-          }
-        }
-      }
-      while (flag1);
-      return flag2;
-#endif
     }
 
     private bool HandlePlayerOrderFollowerToBuildFortification(Actor player, OrderableAI ordai, HashSet<Point> followerFOV, bool isLarge)
     {
-      if (null == ordai) return false;
       var follower = ordai.ControlledActor;
+
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
 
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
-      Point? nullable = new Point?();
+      Point? nullable = null;
+      OverlayRect selected = null;
       Color color = Color.White;
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -6027,7 +5896,6 @@ namespace djack.RogueSurvivor.Engine
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (follower.CanBuildFortification(map2, isLarge, out string reason)) {
-                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, ordai, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
@@ -6035,7 +5903,6 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? "large" : "small", reason)));
@@ -6043,31 +5910,37 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = map2;
               color = Color.Red;
+            }
+            if (null == nullable || nullable.Value != map2) {
+              nullable = map2;
+              if (null != selected) RemoveOverlay(selected);
+              selected = new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE));
+              AddOverlay(selected);
             }
           }
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
+      if (null != selected) RemoveOverlay(selected);
       return flag2;
     }
 
     private bool HandlePlayerOrderFollowerToBarricade(Actor player, OrderableAI ordai, HashSet<Point> followerFOV, bool toTheMax)
     {
-      if (null == ordai) return false;
       var follower = ordai.ControlledActor;
+
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
 
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
+      OverlayRect selected = null;
       Color color = Color.White;
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -6077,7 +5950,6 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
-            nullable = map2;
             if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (map1.GetMapObjectAt(map2) is DoorWindow door) {
                 if (follower.CanBarricade(door, out string reason)) {
@@ -6096,28 +5968,35 @@ namespace djack.RogueSurvivor.Engine
                 }
               } else color = Color.Red;
             } else color = Color.Red;
+            if (null == nullable || nullable.Value != map2) {
+              nullable = map2;
+              if (null != selected) RemoveOverlay(selected);
+              selected = new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE));
+              AddOverlay(selected);
+            }
           }
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
+      if (null != selected) RemoveOverlay(selected);
       return flag2;
     }
 
     private bool HandlePlayerOrderFollowerToGuard(Actor player, OrderableAI ordai, HashSet<Point> followerFOV)
     {
-      if (null == ordai) return false;
       var follower = ordai.ControlledActor;
+
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
 
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
+      OverlayRect selected = null;
       Color color = Color.White;
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -6129,7 +6008,6 @@ namespace djack.RogueSurvivor.Engine
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out string reason)) {
-                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, ordai, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
@@ -6137,7 +6015,6 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't guard here : {0}", reason)));
@@ -6145,40 +6022,38 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = map2;
               color = Color.Red;
+            }
+            if (null == nullable || nullable.Value != map2) {
+              nullable = map2;
+              if (null != selected) RemoveOverlay(selected);
+              selected = new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE));
+              AddOverlay(selected);
             }
           }
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
+      if (null != selected) RemoveOverlay(selected);
       return flag2;
     }
 
     private bool HandlePlayerOrderFollowerToPatrol(Actor player, OrderableAI ordai, HashSet<Point> followerFOV)
     {
-      if (null == ordai) return false;
       var follower = ordai.ControlledActor;
+
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
 
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
+      OverlayRect? selected = null;
+      OverlayPopup? zones = null;
       Color color = Color.White;
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        if (nullable.HasValue) {
-          AddOverlay(new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
-          List<Zone> zonesAt = map1.GetZonesAt(nullable.Value);
-          if (null != zonesAt) {
-            string[] lines = new string[zonesAt.Count + 1];
-            lines[0] = "Zone(s) here :";
-            for (int index = 0; index < zonesAt.Count; ++index)
-              lines[index + 1] = string.Format("- {0}", zonesAt[index].Name);
-            AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(nullable.Value.X + 1, nullable.Value.Y + 1)));
-          }
-        }
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -6196,7 +6071,6 @@ namespace djack.RogueSurvivor.Engine
                 reason = "no zone here";
               } else if (map2 != follower.Location.Position && !map1.IsWalkableFor(map2, follower, out reason))
                 flag3 = false;
-              nullable = map2;
               if (flag3) {
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
@@ -6212,41 +6086,34 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = map2;
               color = Color.Red;
+            }
+            if (null == nullable || nullable.Value != map2) {
+              nullable = map2;
+              if (null != selected) RemoveOverlay(selected);
+              selected = new OverlayRect(color, new GDI_Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE));
+              AddOverlay(selected);
+
+              if (null != zones) RemoveOverlay(zones);
+              var zonesAt = map1.GetZonesAt(nullable.Value);
+              if (null != zonesAt) {
+                string[] lines = new string[zonesAt.Count + 1];
+                lines[0] = "Zone(s) here :";
+                for (int index = 0; index < zonesAt.Count; ++index)
+                 lines[index + 1] = string.Format("- {0}", zonesAt[index].Name);
+                zones = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(nullable.Value.X + 1, nullable.Value.Y + 1));
+                AddOverlay(zones);
+              } else zones = null;
             }
           }
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
+      if (null != selected) RemoveOverlay(selected);
+      if (null != zones) RemoveOverlay(zones);
       return flag2;
     }
-
-#nullable enable
-    private bool HandlePlayerOrderFollowerToReport(Actor player, Actor follower)
-    {
-      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
-      return true;
-    }
-
-    private bool HandlePlayerOrderFollowerToSleep(Actor player, Actor follower)
-    {
-      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
-      return true;
-    }
-
-    private bool HandlePlayerOrderFollowerToToggleFollow(Actor player, Actor follower)
-    {
-      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
-      return true;
-    }
-
-    private bool HandlePlayerOrderFollowerToReportPosition(Actor player, Actor follower)
-    {
-      DoGiveOrderTo(player, follower.Controller as OrderableAI, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
-      return true;
-    }
-#nullable restore
 
     private Data.Message? FollowerCannotGiveItems(Actor player, Actor follower) {
       if (follower.Inventory == null || follower.Inventory.IsEmpty) 
@@ -6266,13 +6133,14 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
+
       bool flag1 = true;
       bool flag2 = false;
       int num1 = 0;
       Inventory inventory = follower.Inventory;
       do {
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to give...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         int num2;
@@ -6304,6 +6172,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
+      RemoveOverlay(mode);
       return flag2;
     }
 
