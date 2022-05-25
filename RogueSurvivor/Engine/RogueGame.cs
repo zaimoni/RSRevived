@@ -5683,7 +5683,7 @@ namespace djack.RogueSurvivor.Engine
         pointSetArray[index1] = LOS.ComputeFOVFor(follower);
         bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && player.Controller.CanSee(follower.Location);
         bool flag2 = AreLinkedByPhone(player, follower);
-        flagArray[index1] = flag1 || flag2;
+        flagArray[index1] = (player.Controller as PlayerController).InCommunicationWith(follower);
         ++index1;
       }
       if (player.CountFollowers == 1 && flagArray[0]) {
