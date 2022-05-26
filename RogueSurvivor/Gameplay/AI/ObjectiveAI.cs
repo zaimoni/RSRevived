@@ -2423,6 +2423,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != clan) {
          var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
          foreach(var a in adj_clan) {
+            if (a.IsPlayer) continue;
             var they_want = m_Actor.Inventory.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
             if (!they_want.Any()) continue;
             var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
@@ -2446,6 +2447,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != clan) {
          var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
          foreach(var a in adj_clan) {
+            if (a.IsPlayer) continue;
             if (!use.UseBeforeDrop(a)) continue;
             var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;

@@ -1861,7 +1861,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         tmpAction = BehaviorBumpToward(target.Location, canCheckBreak, canCheckPush, close_in); // end inlining modifications to intelligent bumping toward
         if (null == tmpAction) return null;
-        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
+
+        // decision on whether to run
+        if (tmpAction is ActorDest dest) {
+          var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
+          if (!m_Actor.WillTireAfter(STA_cost + m_Actor.RunningStaminaCost(dest.dest))) m_Actor.Run();
+        }
+
         return tmpAction;
       } finally {
         if (null != tmpAction) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
@@ -2131,6 +2137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == target) return null;  // can happen due to InferActor
       Actor enemy = target.Percepted;
       Location e_loc = enemy.Location;
+
       const bool tracing = false; // debugging hook
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(m_Actor.Name+"\n"+enemy.Name);
 
@@ -2152,6 +2159,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
           doRun = !HasSpeedAdvantage(m_Actor, enemy);
         }
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("initial decision to flee: " + decideToFlee.ToString());
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("will tire after attack: " + WillTireAfterAttack(m_Actor).ToString());
+
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
             if (  (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
                 || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= CannotMeleeForThisLong(enemy)))

@@ -136,15 +136,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
+      const bool tracing = false; // debugging hook
+      if (tracing && !RogueGame.IsSimulating && null != _enemies) {
+        RogueGame.Game.PanViewportTo(m_Actor);
+        RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
+      }
+
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif
+      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
+      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
 	  var friends = FilterNonEnemies(_all);
@@ -160,6 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         tmpAction = BehaviorFightOrFlee(game, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
+        if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
         if (null != tmpAction) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action

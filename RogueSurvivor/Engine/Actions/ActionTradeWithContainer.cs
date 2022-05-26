@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null != dest.loc) {
                 return new ActionTradeWithGround(actor, give, take, dest.loc.Value);
             }
-            if (null != dest.a_owner) {
+            if (null != dest.a_owner && !dest.a_owner.IsPlayer) {
                 return new ActionTradeWithActor(actor, give, take, dest.a_owner);
             }
 #if DEBUG
@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             var g_inv = loc.Items;
             if (null != g_inv && g_inv.Contains(take)) return new ActionTradeWithGround(actor, give, take, loc);
             var a_inv = loc.Actor?.Inventory;
-            if (null != a_inv && a_inv.Contains(take)) return new ActionTradeWithActor(actor, give, take, loc.Actor);
+            if (null != a_inv && a_inv.Contains(take) && !loc.Actor.IsPlayer) return new ActionTradeWithActor(actor, give, take, loc.Actor);
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
 #endif
@@ -187,6 +187,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 #if DEBUG
             var a_inv = whom.Inventory;
             if (null == a_inv || a_inv.Contains(m_GiveItem) || !a_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(whom) + ".Inventory");
+            if (!(whom.Controller is OrderableAI)) throw new ArgumentNullException("whom.Controller as OrderableAI");
 #endif
             m_Whom = whom;
             actor.Activity = Activity.IDLE;
