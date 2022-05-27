@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
       if (null == Map) return;
       foreach(var pt in Position.Adjacent()) {
         var test = new Location(Map,pt);
-        if (Map.Canonical(ref test)) op(test);
+        if (Map.CanEnter(ref test)) op(test);
       }
       var e = Exit;
       if (null != e) op(e.Location);

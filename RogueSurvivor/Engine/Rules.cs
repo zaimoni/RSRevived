@@ -255,7 +255,7 @@ namespace djack.RogueSurvivor.Engine
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
       var actionMoveStep = new ActionMoveStep(actor, in point);
-      if (actionMoveStep.IsLegal()) {
+      if (actionMoveStep.IsPerformable()) {
         reason = "";
         return actionMoveStep;
       }

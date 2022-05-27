@@ -16,11 +16,6 @@ namespace djack.RogueSurvivor.Engine.Actions
 
 	public Location dest { get { return m_NewLocation; } }
 
-    public ActionMoveStep(Actor actor, Direction direction) : base(actor)
-    {
-      m_NewLocation = actor.Location + direction;
-    }
-
     public ActionMoveStep(Actor actor, in Point to) : base(actor)
     {
       m_NewLocation = new Location(actor.Location.Map, to);
@@ -32,6 +27,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public override bool IsLegal()
+    {
+      return m_Actor.CanEnter(m_NewLocation);
+    }
+
+    public override bool IsPerformable()
     {
       return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason) && Rules.IsAdjacent(m_Actor.Location, m_NewLocation);
     }

@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>, Zaimoni.Data.BackwardPlan<UpdateMoveDelta>
+  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>
   {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -278,40 +278,17 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static public List<UpdateMoveDelta>? toDest(Location _dest) {
             if (!Map.CanEnter(ref _dest)) return null;
-            var ret = new List<UpdateMoveDelta>();
-            var e = _dest.Exit;
-            if (null != e) ret.Add(new UpdateMoveDelta(e.Location, _dest)); // currently all exits come in matching pairs i.e. no one-way exits
-            foreach (var dir in Direction.COMPASS) {
-                var test = _dest + dir;
-                if (!Map.CanEnter(ref test)) continue;
-                ret.Add(new UpdateMoveDelta(test, _dest));
-            }
+            List<UpdateMoveDelta> ret = new();
+            _dest.ForEachAdjacent(_origin => ret.Add(new UpdateMoveDelta(_origin, _dest)));
             return 0 < ret.Count ? ret : null;
         }
 
         static public List<UpdateMoveDelta>? fromOrigin(Location _origin, Func<Location, bool> ok) {
             if (!Map.CanEnter(ref _origin)) return null;
-            var ret = new List<UpdateMoveDelta>();
-            var e = _origin.Exit;
-            if (null != e && ok(e.Location)) ret.Add(new UpdateMoveDelta(_origin, e.Location)); // currently all exits come in matching pairs i.e. no one-way exits
-            foreach (var dir in Direction.COMPASS) {
-                var test = _origin + dir;
-                if (!Map.CanEnter(ref test)) continue;
-                if (ok(test)) ret.Add(new UpdateMoveDelta(_origin, test));
-            }
-            return 0 < ret.Count ? ret : null;
-        }
-
-        public List<UpdateMoveDelta>? prequel() {
-            var ret = new List<UpdateMoveDelta>();
-            var e = m_NewLocation.Exit;
-            if (null != e && e.Location != m_Origin) ret.Add(new UpdateMoveDelta(m_NewLocation, e.Location));
-            foreach (var dir in Direction.COMPASS) {
-                var test = m_NewLocation + dir;
-                if (!Map.CanEnter(ref test)) continue;
-                if (test == m_Origin) continue;
-                ret.Add(new UpdateMoveDelta(m_NewLocation, test));
-            }
+            List<UpdateMoveDelta> ret = new();
+            _origin.ForEachAdjacent(_dest => {
+                if (ok(_dest)) ret.Add(new UpdateMoveDelta(_origin, _dest));
+            });
             return 0 < ret.Count ? ret : null;
         }
     }

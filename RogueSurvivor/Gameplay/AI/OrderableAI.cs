@@ -2367,11 +2367,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       adjacent.OnlyIf(loc => range.ContainsKey(loc));
       if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(act => Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor)));
 
-#if OBSOLETE
-      var init_costs = new Dictionary<Location,int>();
-      foreach(var x in range) init_costs[x.Key] = 0;
-      return BehaviorPathTo(PathfinderFor(init_costs,new HashSet<Map>()));
-#endif
       return BehaviorPathTo(new HashSet<Location>(range.Keys));
 	}
 
