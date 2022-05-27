@@ -1883,7 +1883,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
         Actor? next;
         while(null != (next = current.NextActorToAct)) {
-          if (IsSimulating) { m_CancelSource.Token.ThrowIfCancellationRequested(); }
+          if (IsSimulating) {
+            lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // .NET 5.0 conversion
+          }
 #if DEBUG
           // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
           if (next.ActionPoints > next.Doll.Body.Speed) throw new InvalidOperationException(next.Name+" is hyperactive: energy limit, "+ next.Doll.Body.Speed.ToString() + " actual "+ next.ActionPoints.ToString());
@@ -12463,6 +12465,18 @@ namespace djack.RogueSurvivor.Engine
         return available_followers[index].Name;
       };
 
+      bool details_follower(int index) {
+        var oai = available_followers[index].Controller as ObjectiveAI;
+        if (available_followers[index].CanEnter(viewpoint)) {
+          oai.WalkTo(in viewpoint);
+          ClearOverlays();
+          PanViewportTo(Player);
+          return true;
+        }
+        return false;
+      };
+
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps and record waypoint. ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
@@ -12491,6 +12505,12 @@ namespace djack.RogueSurvivor.Engine
               return null;
             }
             break;  // XXX \todo be somewhat more informative
+          case Keys.O:  // walk to ...
+              // other commands possible
+              if (null != available_followers && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.Location)) {
+                if (PagedPopup("Who stops by there?", available_followers.Count, label_follower, details_follower)) return null;
+              }
+            break;
           case Keys.D1:
           case Keys.D2:
           case Keys.D3:

@@ -382,6 +382,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetObjective(new PathToStack(m_Actor, in src, take));
     }
 
+    // \todo replace this goal with something more AI-friendly
+    public virtual void WalkTo(in Location loc, int n = int.MaxValue)
+    {   // triggered from far look mode
+      SetObjective(new PathTo(m_Actor, in loc, true, n));
+    }
+
     public static bool DefaultPlayerCountermand(Objective o)
     {
         return RogueGame.Game.YesNoPopup("Countermand '"+ o.ToString()+"'");
@@ -1619,7 +1625,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-    protected int STA_delta(int jump, int melee, int push, int push_weight)
+    public int STA_delta(int jump, int melee, int push, int push_weight)
     {
       int tmp = push_weight;
       tmp += jump*Rules.STAMINA_COST_JUMP;

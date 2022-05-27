@@ -461,7 +461,7 @@ namespace djack.RogueSurvivor.Data
     public void Countermand(Objective o) { Objectives.Remove(o); }
 #nullable restore
 
-    public void WalkTo(in Location loc, int n = int.MaxValue)
+    public override void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
       SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));
     }

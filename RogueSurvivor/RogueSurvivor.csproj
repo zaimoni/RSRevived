@@ -74,6 +74,7 @@
     <Compile Include="Engine\Goal\CoverTrap.cs" />
     <Compile Include="Engine\Tasks\TaskEscapeNanny.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
+    <Compile Include="Gameplay\AI\Goals\PathTo.cs" />
     <Compile Include="Gameplay\AI\Goals\PathToStack.cs" />
     <Compile Include="Gameplay\AI\Goals\InferActor.cs" />
     <Compile Include="Gameplay\AI\Goals\FleeExplosive.cs" />
