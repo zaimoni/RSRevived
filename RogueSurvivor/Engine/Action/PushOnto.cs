@@ -131,6 +131,13 @@ namespace djack.RogueSurvivor.Engine.Op
             return act.IsPerformable() ? act : null;
         }
 
+        public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
+        {
+            var act = Bind(src);
+            if (null == act) return null;
+            return new(act, null);
+        }
+
         public bool IsCompleted()
         {
             var obj = m_NewLocation.MapObject;

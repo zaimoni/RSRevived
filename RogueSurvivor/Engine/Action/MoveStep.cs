@@ -43,6 +43,13 @@ namespace djack.RogueSurvivor.Engine.Op
             return ret.IsPerformable() ? ret : null;
         }
 
+        public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
+        {
+            var act = Bind(src);
+            if (null == act) return null;
+            return new(act, null);
+        }
+
         public override void Blacklist(HashSet<Location> goals) { }
         public override void Goals(HashSet<Location> goals) { goals.Add(m_Origin); }
 

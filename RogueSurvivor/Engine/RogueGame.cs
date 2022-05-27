@@ -4076,13 +4076,7 @@ namespace djack.RogueSurvivor.Engine
         tmp_where.Sort((x,y) => loc_distances[x.Key].CompareTo(loc_distances[y.Key]));
 
         // check for followers in-communication (cannot give orders to PC leader)
-        List<Actor> available_followers = new();
-        var p_fos = Player.Followers;
-        if (null != p_fos) {
-          foreach(var fo in p_fos) {
-            if (pc.InCommunicationWith(fo)) available_followers.Add(fo);
-          }
-        }
+        var available_followers = pc.AvailableFollowers;
 
         string label_follower(int index) {
             return available_followers[index].Name;
@@ -4120,7 +4114,7 @@ namespace djack.RogueSurvivor.Engine
               pc.AddWaypoint(x.Key, item_type.ToString()+": T" + x.Value.ToString());
               return true;
             case Keys.O: 
-              if (0 < available_followers.Count) {
+              if (null != available_followers) {
                 return PagedPopup("Who takes it?", available_followers.Count, label_follower, details_follower);
               }
               break;
@@ -4129,7 +4123,7 @@ namespace djack.RogueSurvivor.Engine
           }
 
           var prompt = "Walk 1) to 9) steps towards the item";
-          if (0 < available_followers.Count) prompt += ", or O)rder a follower to pick it up";
+          if (null != available_followers) prompt += ", or O)rder a follower to pick it up";
           var tmp = new List<string>();
           tmp.Insert(0, prompt);
           return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
@@ -12463,6 +12457,11 @@ namespace djack.RogueSurvivor.Engine
       overlay_anchor.X += TILE_SIZE;
 
       var pc = Player.Controller as PlayerController;
+      var available_followers = pc.AvailableFollowers;
+
+      string label_follower(int index) {
+        return available_followers[index].Name;
+      };
 
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps and record waypoint. ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));

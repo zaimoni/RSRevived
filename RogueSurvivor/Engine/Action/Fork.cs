@@ -293,7 +293,7 @@ namespace djack.RogueSurvivor.Engine.Op
         foreach(var x in m_Options) {
           if (x.IsRelevant(src.Location) && !x.IsSuppressed(src)) {
 #if DEBUG
-            if (x is Join) throw new InvalidOperationException("test case");
+            if (x is Join) throw new InvalidOperationException("test case: Join");
 #endif
             var act = x.Bind(src);
             if (null != act) actions.Add(act);
@@ -302,6 +302,26 @@ namespace djack.RogueSurvivor.Engine.Op
         var act_count = actions.Count;
         if (1 >= act_count) return (0 >= act_count) ? null : actions[0];
         return new _Action.Fork(src, actions);
+      }
+
+
+      public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
+      {
+        List<KeyValuePair<ActorAction, WorldUpdate?>> options = new();
+        foreach(var x in m_Options) {
+          var stage = x.BindReduce(src);
+          if (null != stage) options.Add(stage.Value);
+        }
+        if (0 >= options.Count) return null;
+        if (1 == options.Count) return options[0];
+        // XXX would like something more reasonable here
+        List<ActorAction> actions = new();
+        List<WorldUpdate> next = new();
+        foreach(var x in options) {
+          actions.Add(x.Key);
+          if (null != x.Value) next.Add(x.Value);
+        }
+        return new(new _Action.Fork(src, actions), 0 >= next.Count ? null : new Fork(next));
       }
 
       public override void Blacklist(HashSet<Location> goals)

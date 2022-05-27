@@ -101,6 +101,14 @@ restart:
             return m_Actions[0].Bind(src);
         }
 
+        public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
+        {
+            var act = m_Actions[0].Bind(src);
+            if (null == act) return null;
+            if (2 == m_Actions.Count) return new(act, m_Actions[1]);
+            return new(act, new Chain(m_Actions, 1));
+        }
+
         public override bool IsRelevant() { return false; }
         public override bool IsRelevant(Location loc) { return m_Actions[0].IsRelevant(loc); }
         public override bool IsSuppressed(Actor a) { return m_Actions[0].IsSuppressed(a); } // return to this later

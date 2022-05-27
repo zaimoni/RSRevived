@@ -113,6 +113,13 @@ namespace djack.RogueSurvivor.Engine.Op
             return new _Action.Fork(src, actions);
         }
 
+        public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
+        {
+            var act = Bind(src);
+            if (null == act) return null;
+            return new(act, m_Sequel);
+        }
+
         public override void Blacklist(HashSet<Location> goals)
         {
             var ub = m_Options.Count;

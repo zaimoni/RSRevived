@@ -64,6 +64,7 @@ namespace djack.RogueSurvivor.Data
 
         /// <returns>null, or a Performable action</returns>
         public abstract ActorAction? Bind(Actor src);
+        public abstract KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src);
         public abstract void Blacklist(HashSet<Location> goals);
         public abstract void Goals(HashSet<Location> goals);
     }

@@ -5367,6 +5367,18 @@ restart_chokepoints:
       return false;
     }
 
+    public List<Actor>? AvailableFollowers
+    { get {
+        List<Actor> ret = new();
+        var p_fos = m_Actor.Followers;
+        if (null != p_fos) {
+          foreach(var fo in p_fos) {
+            if (InCommunicationWith(fo)) ret.Add(fo);
+          }
+        }
+        return 0<ret.Count ? ret : null;
+    } }
+
     /// <returns>0: not; 1: visual; 2: police radio; 3: army radio; 4: cell phone</returns>
     public int CommunicationMethodCode(Actor a)
     {
