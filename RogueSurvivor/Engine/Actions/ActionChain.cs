@@ -7,7 +7,7 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 namespace djack.RogueSurvivor.Engine.Actions
 {
     [Serializable]
-    internal class ActionChain : ActorAction,Resolvable
+    internal class ActionChain : ActorAction, Resolvable, RecursivePathfinderMoveCost
     {
         private readonly List<ActorAction> m_Actions;
 
@@ -82,6 +82,13 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             foreach (var act in m_Actions) if (act.Abort()) return true;
             return false;
+        }
+
+        public int PathfinderMoveCost() {
+            int ret = 0;
+            // not quite correct if the step after opening a door, is explicit
+            foreach (var act in m_Actions) ret += Map.PathfinderMoveCosts(act);
+            return ret;
         }
 
         public bool ContainsSuffix(List<ActorAction> lhs, int lb)

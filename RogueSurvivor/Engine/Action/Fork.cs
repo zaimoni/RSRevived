@@ -14,7 +14,7 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class Fork : ActorAction
+    class Fork : ActorAction, RecursivePathfinderMoveCost
     {
       private readonly Dictionary<int, List<ActorAction>> m_Options = new Dictionary<int, List<ActorAction>>();
 
@@ -86,6 +86,8 @@ namespace djack.RogueSurvivor.Engine._Action
         foreach(var x in m_Options) foreach(var act in x.Value) if (act.Abort()) return true;
         return false;
       }
+
+      public int PathfinderMoveCost() { return m_Options.Keys.Min(); }
 
       // assume the candidate indexing is mostly correct
       public int CumulativeMoveCost()

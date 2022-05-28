@@ -27,10 +27,16 @@ using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transi
 
 namespace djack.RogueSurvivor.Data
 {
+  public interface RecursivePathfinderMoveCost
+  {
+    int PathfinderMoveCost();
+  }
+
+
   // VAPORWARE this is currently per-map and works off of where the viewer is, not what the light level of the viewing target is.
   // Staying Alive has made a massive fix attempt and should be reviewed. 
   [Serializable]
-  internal enum Lighting
+  public enum Lighting
   {
     DARKNESS = 0,
     OUTSIDE = 1,
@@ -794,6 +800,7 @@ namespace djack.RogueSurvivor.Data
             return cost;
         }
 
+        if (act is RecursivePathfinderMoveCost recurse) return recurse.PathfinderMoveCost();
         if (act is Engine.Actions.Resolvable delta) return PathfinderMoveCosts(delta.ConcreteAction);
         if (act is Engine.Actions.ActionShove) return 4;    // impolite so penalize just more than walking around
         if (   act is Engine.Actions.ActionOpenDoor  // extra turn

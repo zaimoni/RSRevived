@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Engine.Op
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class Join : ActorAction
+    class Join : ActorAction, RecursivePathfinderMoveCost
     {
       private List<ActorAction> m_Options;
       private WorldUpdate? m_Sequel = null;
@@ -194,6 +194,16 @@ namespace djack.RogueSurvivor.Engine._Action
         if (null != sequel) {
           (m_Actor.Controller as ObjectiveAI).SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
         }
+      }
+
+      public int PathfinderMoveCost() {
+        int ret = int.MaxValue;
+        foreach(var act in m_Options) {
+          var test = Map.PathfinderMoveCosts(act);
+          if (test < ret) ret = test;
+        }
+        // \todo try to handle m_Sequel
+        return ret;
       }
     }
 }
