@@ -4280,7 +4280,10 @@ namespace djack.RogueSurvivor.Engine
               display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
               display.Add("...");
             }
-            if (0 >= display.Count) display.Add("No personal enemies");
+            if (0 >= display.Count) {
+              InfoPopup("No personal enemies");
+              return false;
+            }
             }
             break;
         }
