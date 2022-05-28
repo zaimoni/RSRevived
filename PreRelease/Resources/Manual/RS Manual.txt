@@ -658,8 +658,10 @@ Various items related to your current faction.  Police are much more "helpful".
 > SET WAYPOINT (Alt-Shift-[City Info], default Alt-Shift-I)
 Designate a location as a waypoint.  This is done via a far-look command; to just far-look, cancel setting the waypoint with Escape.
 * Far-look works as advertised with usual movement keys (keypad 1-9 and X)
-* W)alk and R)un work as advertised, but do not designate waypoints.  These use AI pathfinding, and are canceled by an enemy in line of sight.
+* W)alk and R)un work as advertised, but do not designate waypoints.  These use AI pathfinding, and are canceled by the nebulous IN COMBAT status.
+** for Civilians, this is just enemy in sight.  Police stress out more easily, with their radio implementing threat tracking.
 * keyboard 1..9 request walking 1-9 steps towards the waypoint, with AI pathfinding.  This *does* designate the waypoint.
+* One can O)rder in-communication followers to go somewhere.  They won't stay there, and will forget the order on sighting an enemy.
 
 > CLEAR WAYPOINT (Alt-Ctrl-[City Info], default Alt-Ctrl-I)
 Brings up a popup menu of previously designated waypoints.  Selecting a waypoint far-looks at the waypoint, from which

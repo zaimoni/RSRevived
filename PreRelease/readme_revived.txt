@@ -12,7 +12,14 @@ REVIVED 0.10.0 CHANGES
   that there is a complete police uniform in the southernmost supply room of the police offices.
 * Player waypoints are working; see manual for details.
 * Item memory has been completely revamped, and it is possible to set a waypoint for a specific item memory location.
-* explicitly repeating a command 2-9 times is possible for some commands.  See manual for details.
+* Explicitly repeating a command 2-9 times is possible for some commands.  See manual for details.
+* The main O)rdering followers UI has been reformatted; the top level is now on a right-aligned popup menu.
+** As long as the follower is in communication, this order will work.  The historical mutual line of sight and mutual cell phones are special cases of this.
+** Drop All items, is gone.
+** "What's Up" reports on new-style Objectives, not old-style Orders.  Prior entries are old-style (and may be UI-glitchy)  They may be countermanded from here.
+*** all PC self-orders are new-style objectives.
+** Ordering followers to go somewhere, is done from the Far Look command.  (This sets an objective).  The follower will *not* stay there once arrived.
+** Ordering followers to go pick up an item, is done from the Item Memory listings.  (This sets an objective.)
 
 2020-11-09 and earlier
 * Cf. main manual's commands section for how self-orders work.
