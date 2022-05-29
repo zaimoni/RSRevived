@@ -4143,7 +4143,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var player_allies = Player.Allies;
       if (null == player_allies) {
-        AddMessage(new Data.Message("You have no nearby allies.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        InfoPopup("You have no nearby allies.");
         return;
       }
       var player_backup = Player;

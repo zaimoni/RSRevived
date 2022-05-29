@@ -522,6 +522,7 @@ namespace djack.RogueSurvivor.Data
       if (null != TurnOnAdjacentGenerators()) ret.Add("Turn on all adjacent generators");
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
+      if (m_Actor.IsSleepy) ret.Add("Rest rather than lose turn when sleepy");
 
       var corpses_at = m_Actor.Location.Corpses;
       if (null != corpses_at) {
@@ -578,6 +579,7 @@ namespace djack.RogueSurvivor.Data
         SetObjective(new Goal_RechargeAll(m_Actor));
         return true;
       case "Rest rather than lose turn when tired":
+      case "Rest rather than lose turn when sleepy":
         SetObjective(new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
         return true;
       case "Turn on all adjacent generators":

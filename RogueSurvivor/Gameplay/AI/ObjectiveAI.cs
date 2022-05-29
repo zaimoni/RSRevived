@@ -24,6 +24,7 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
+  // savefile break \todo rename this to what it actually does
   [Serializable]
   internal class Goal_RestRatherThanLoseturnWhenTired : Objective
   {
@@ -32,7 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
-      if (!m_Actor.IsTired) {
+      if (!m_Actor.IsTired && !m_Actor.IsSleepy) {
         _isExpired = true;
         return true;
       }
