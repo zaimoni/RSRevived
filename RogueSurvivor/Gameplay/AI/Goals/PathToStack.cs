@@ -142,13 +142,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                         {
                             var take = ExtractTake(_inventory_actions[i].Value);
                             if (null == take) continue;
-                            if (oai.RHSMoreInteresting(take.Take, upper_take.Take))
-                            {
+                            if (oai.RHSMoreInteresting(take.Take, upper_take.Take)) {
                                 _inventory_actions.RemoveAt(i);
                                 break;
-                            }
-                            else if (oai.RHSMoreInteresting(upper_take.Take, take.Take))
-                            {
+                            } else if (oai.RHSMoreInteresting(upper_take.Take, take.Take)) {
                                 _inventory_actions.RemoveAt(ub);
                                 break;
                             }

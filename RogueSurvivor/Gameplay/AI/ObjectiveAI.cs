@@ -1563,18 +1563,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool WantToRecharge() { return m_Actor.Inventory.Has<ItemLight>(it => WantToRecharge(it)); }
 
 #nullable enable
-    public ActionRechargeItemBattery? RechargeWithAdjacentGenerator()
+    public ActorAction? RechargeWithAdjacentGenerator()
     {
-      var recharge_these = m_Actor.Inventory.GetItemsByType<ItemLight>(it => WantToRecharge(it));
+      var recharge_these = m_Actor.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
       if (null == recharge_these) return null;
+      HashSet<Location> recharge_at = new();
       foreach(var gen in m_Actor.Location.Map.PowerGenerators.Get) {
         // design decision to not turn on here
-        if (gen.IsOn && Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
-          var recharge = recharge_these[0];
-          recharge.EquippedBy(m_Actor);
-          return new ActionRechargeItemBattery(m_Actor, recharge);
+        if (gen.IsOn) {
+          if (Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
+            var recharge = recharge_these[0];
+            recharge.EquippedBy(m_Actor);
+            return new ActionRechargeItemBattery(m_Actor, recharge);
+          } else {
+            var candidates = gen.Location.Adjacent(loc => loc.IsWalkableFor(m_Actor));
+            if (null != candidates) recharge_at.UnionWith(candidates);
+          }
         }
       }
+      if (0 < recharge_at.Count) return BehaviorPathTo(recharge_at);
       return null;
     }
 #nullable restore

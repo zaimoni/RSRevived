@@ -71,21 +71,16 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "loading setup...");
       SetupConfig.Load();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup : " + SetupConfig.toString(SetupConfig.Video) + ", " + SetupConfig.toString(SetupConfig.Sound));
-#if DEBUG
-      using (RogueForm rogueForm = new RogueForm()) {
-        Application.Run((Form)rogueForm);
+#if LEGACY
+      using (RogueForm rogueForm = new()) {
+        Application.Run(rogueForm);
       }
 #else
-      using (RogueForm rogueForm = new RogueForm())
-      {
-        try
-        {
-          Application.Run((Form) rogueForm);
-        }
-        catch (Exception ex)
-        {
-          using (Bugreport bugreport = new Bugreport(ex))
-          {
+      using(RogueForm rogueForm = new()) {
+        try {
+          Application.Run(rogueForm);
+        } catch (Exception ex) {
+          using (Bugreport bugreport = new(ex)) {
             int num = (int) bugreport.ShowDialog();
           }
           Application.Exit();
