@@ -215,7 +215,6 @@ namespace djack.RogueSurvivor.Data
     public Rectangle RadioDistricts {
       get {
         Rectangle ret = new Rectangle(Map.DistrictPos, new Size(1, 1));
-        if (District.IsEntryMap(Map)) return ret;  // RS behavior
         const int radius = Engine.RogueGame.POLICE_RADIO_RANGE + 100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
         var district_size = Engine.RogueGame.Options.DistrictSize;
         var topleft = new Vector2D_int_stack(Position.X-radius,Position.Y-radius);
