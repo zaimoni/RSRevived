@@ -538,7 +538,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public ActorAction Pathing()
       {
         if (_removeInvalidStacks()) return null;
-        var _locs = _stacks.Select(p => p.Location).Where(loc => loc.StrictHasActorAt);
+        var _locs = _stacks.Select(p => p.Location).Where(loc => !loc.StrictHasActorAt);
         if (!_locs.Any()) return null;
 
         var ret = ordai.BehaviorPathTo(new HashSet<Location>(_locs));

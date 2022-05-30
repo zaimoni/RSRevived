@@ -860,10 +860,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 //        _sparse.Unset(SparseData.PathingTo); // ClearGoals body?  Won't build here (access control)
         } else {
-          tmpAction = BehaviorPathTo(prev_goals);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
+          var ok = prev_goals.Where(loc => loc.IsWalkableFor(m_Actor));
+          if (ok.Any()) {
+            if (ok.Count() < prev_goals.Count) prev_goals = ok.ToHashSet();
+            tmpAction = BehaviorPathTo(prev_goals);
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.IDLE;
+              return tmpAction;
+            }
           }
           tmpAction = BehaviorMakeTime();
           if (null != tmpAction) return tmpAction;
