@@ -2656,10 +2656,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      // all battery powered items other than the police radio are left hand, currently
-      // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
-      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (it is BatteryPowered) it.UnequippedBy(m_Actor);
       return new ActionSleep(m_Actor);
     }
 
@@ -2669,6 +2665,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == item_memory) throw new ArgumentNullException(nameof(item_memory));
 #endif
         if (null == _legal_path) return null;
+
+        const bool tracing = false; // debugging hook
+
         var med_slp = item_memory.WhereIs(GameItems.IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
         bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
             if (null!=med_slp && med_slp.ContainsKey(loc)) return true;
@@ -2676,19 +2675,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!item_memory.HaveEverSeen(loc, out int when)) return false;
             // be as buggy as the display, which shows objects in their current positions
             if (!(loc.MapObject?.IsCouch ?? false)) return false;
+            if (0 >= SleepLocationRating(loc)) return false;
             return !(loc.Actor?.IsSleeping ?? false);   // cheat: bed should not have someone already sleeping in it
         }
         var navigate = m_Actor.Location.Map.PathfindLocSteps(m_Actor);
         // would like to pathfind to an indoors bed, but the heuristics for finding the goals are inefficient
         navigate.GoalDistance(known_bed, m_Actor.Location);
-        return BehaviorPathTo(navigate);
+        var act = BehaviorPathTo(navigate);
+        if (act is ActorDest dest) {
+          var couch = dest.dest.MapObject;
+          if (null != couch && couch.IsCouch && 0 < SleepLocationRating(dest.dest)) {
+            if (tracing && !RogueGame.IsSimulating) {
+              RogueGame.Game.InfoPopup("scheduling sleep:" + m_Actor.CanSleep().ToString());
+            }
+            SetObjective(new Engine.Goal.NextAction(m_Actor, (ActorAction)null, new ActionSleep(m_Actor)));
+          }
+        }
+        return act;
     }
 
     protected ActorAction BehaviorNavigateToSleep()
     {
       // \todo precalculate sleep-relevant medicines at game start
       // use SLP-relevant medicines from inventory (2019-07-29: caught by BehaviorUseMedecine, but we want to be more precise)
+      const bool tracing = false; // debugging hook
+
       var med_slp = m_Actor?.Inventory.GetBestDestackable(GameItems.PILLS_SLP);
+      if (tracing && !RogueGame.IsSimulating) {
+        RogueGame.Game.PanViewportTo(m_Actor);
+        RogueGame.Game.InfoPopup("SLP pills:" + (null == med_slp ? "null" : "have"));
+      }
       if (null != med_slp) return new ActionUseItem(m_Actor, med_slp);
 
       // taking SLP-relevant medicines from accessible stacks should be intercepted by general adjacent-stack handling
@@ -2699,16 +2715,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var tmpAction = BehaviorFindStack(has_SLP_relevant);
+      if (tracing && !RogueGame.IsSimulating) {
+        RogueGame.Game.InfoPopup("inventory w/SLP pills:" + (null == tmpAction ? "null" : "known"));
+      }
       if (null != tmpAction) return tmpAction;
 
       // try to resolve sleep-disruptive sanity without pathing
       if (3<=WantRestoreSAN) {  // intrinsic item rating code for sanity restore is need or higher (possible CPU hit from double-checking for want later)
         tmpAction = BehaviorUseEntertainment();
+        if (tracing && !RogueGame.IsSimulating) {
+          RogueGame.Game.InfoPopup("entertainment:" + (null == tmpAction ? "null" : "have"));
+        }
         if (null != tmpAction)  return tmpAction;
       }
 
       var item_memory = m_Actor.Controller.ItemMemory;
       if (!m_Actor.IsInside) {
+        if (tracing && !RogueGame.IsSimulating) {
+          RogueGame.Game.InfoPopup("not inside.  item memory status: " + (null != item_memory ? "no" : "have"));
+        }
         if (null != item_memory) return BehaviorNavigateToSleep(item_memory);
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.

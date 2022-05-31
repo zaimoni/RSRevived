@@ -10279,6 +10279,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoStartSleeping(Actor actor)
     {
+      // all battery powered items other than the police radio are left hand, currently
+      // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
+      var it = actor.GetEquippedItem(DollPart.LEFT_HAND);
+      if (it is BatteryPowered) it.UnequippedBy(actor);
+      // the above is not appropriate for collapsing from exhaustion, just intentional sleeping
+
       actor.SpendActionPoints();
       DoStopDragCorpse(actor);
       actor.Activity = Data.Activity.SLEEPING;
