@@ -1555,8 +1555,10 @@ namespace djack.RogueSurvivor.Data
       // my mates enemies are my enemies.
       static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
       {
-        if (groupActor.Leader.IsEnemyOf(target, false)) return true;
-        foreach (Actor mate in groupActor.Leader.m_Followers)
+        var leader = groupActor.LiveLeader;
+        if (null == leader) return false;
+        if (leader.IsEnemyOf(target, false)) return true;
+        foreach (Actor mate in leader.m_Followers)
           if (mate != groupActor && mate.IsEnemyOf(target, false)) return true;
         return false;
       }
@@ -1564,22 +1566,16 @@ namespace djack.RogueSurvivor.Data
       // my followers enemies are my enemies
       static bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
+        if (null == groupActor.m_Followers) return false;
         foreach (Actor follower in groupActor.m_Followers)
           if (follower.IsEnemyOf(target, false)) return true;
         return false;
       }
 
-      if (HasLeader && IsEnemyOfMyLeaderOrMates(this,other)) {
-        if (IsEnemyOfMyLeaderOrMates(this, other)) return true;
-        var o_Leader = other.LiveLeader;
-        if (null != o_Leader && m_Leader.IsEnemyOf(o_Leader, false)) return true;
-      }
-      if (0 < CountFollowers && IsEnemyOfMyFollowers(this,other)) return true;
-      if (other.HasLeader) {
-        if (IsEnemyOfMyLeaderOrMates(other, this)) return true;
-//      if (HasLeader && other.Leader.IsEnemyOf(m_Leader,false)) return true;
-      }
-      if (0 < other.CountFollowers && IsEnemyOfMyFollowers(other,this)) return true;
+      if (IsEnemyOfMyLeaderOrMates(this, other)) return true;
+      if (IsEnemyOfMyFollowers(this,other)) return true;
+      if (IsEnemyOfMyLeaderOrMates(other, this)) return true;
+      if (IsEnemyOfMyFollowers(other,this)) return true;
       return false;
     }
 
