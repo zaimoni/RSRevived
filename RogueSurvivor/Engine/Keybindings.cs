@@ -6,24 +6,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+
+using djack.RogueSurvivor.UI;
+
 using Zaimoni.Data;
 
+// GDI+ types
+using Color = System.Drawing.Color;
+
+// savefile break: reposition to djack.RogueSurvivor.UI
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class Keybindings
   {
-    private readonly Dictionary<PlayerCommand, Keys> m_CommandToKeyData = new Dictionary<PlayerCommand, Keys>();
-    private readonly Dictionary<Keys, PlayerCommand> m_KeyToCommand = new Dictionary<Keys, PlayerCommand>();
+    private readonly Dictionary<PlayerCommand, Keys> m_CommandToKeyData = new();
+    private readonly Dictionary<Keys, PlayerCommand> m_KeyToCommand = new();
 
-    public Keybindings()
-    {
-      ResetToDefaults();
-    }
+    public Keybindings() => ResetToDefaults();
 
-    public void ResetToDefaults()
+    private void ResetToDefaults()
     {
       m_CommandToKeyData.Clear();
       m_KeyToCommand.Clear();
@@ -93,7 +98,7 @@ namespace djack.RogueSurvivor.Engine
       return PlayerCommand.NONE;
     }
 
-    public void Set(PlayerCommand command, Keys key)
+    private void Set(PlayerCommand command, Keys key)
     {
       PlayerCommand key1 = Get(key);
       if (key1 != PlayerCommand.NONE) m_CommandToKeyData.Remove(key1);
@@ -121,7 +126,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public bool CheckForConflict()
+    private bool CheckForConflict()
     {
       foreach (Keys key1 in  m_CommandToKeyData.Values) {
         if (m_KeyToCommand.Keys.Count(k => k == key1) > 1) return true;
@@ -133,14 +138,13 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public static void Save(Keybindings kb, string filepath)
+    private void Save(string filepath)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-      if (null == kb) throw new ArgumentNullException(nameof(kb));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-	  filepath.BinarySerialize(kb);
+	  filepath.BinarySerialize(this);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
     }
 
@@ -160,6 +164,118 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... done!");
       return keybindings;
+    }
+
+    public void HandleRedefineKeys()
+    {
+      // need to maintain: label to command mapping
+      // then generate current keybindings
+      // then read off position from reference array
+      // screen layout may fail with more than 51 entries; at 49 entries currently
+      var command_labels = new KeyValuePair<string, PlayerCommand>[] {
+          new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
+          new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
+          new KeyValuePair< string,PlayerCommand >("Move E", PlayerCommand.MOVE_E),
+          new KeyValuePair< string,PlayerCommand >("Move SE", PlayerCommand.MOVE_SE),
+          new KeyValuePair< string,PlayerCommand >("Move S", PlayerCommand.MOVE_S),
+          new KeyValuePair< string,PlayerCommand >("Move SW", PlayerCommand.MOVE_SW),
+          new KeyValuePair< string,PlayerCommand >("Move W", PlayerCommand.MOVE_W),
+          new KeyValuePair< string,PlayerCommand >("Move NW", PlayerCommand.MOVE_NW),
+          new KeyValuePair< string,PlayerCommand >("Wait", PlayerCommand.WAIT_OR_SELF),
+          new KeyValuePair< string,PlayerCommand >("Abandon Game", PlayerCommand.ABANDON_GAME),
+          new KeyValuePair< string,PlayerCommand >("Advisor Hint", PlayerCommand.ADVISOR),
+          new KeyValuePair< string,PlayerCommand >("Barricade", PlayerCommand.BARRICADE_MODE),
+          new KeyValuePair< string,PlayerCommand >("Break", PlayerCommand.BREAK_MODE),
+          new KeyValuePair< string,PlayerCommand >("Build Large Fortification", PlayerCommand.BUILD_LARGE_FORTIFICATION),
+          new KeyValuePair< string,PlayerCommand >("Build Small Fortification", PlayerCommand.BUILD_SMALL_FORTIFICATION),
+          new KeyValuePair< string,PlayerCommand >("City Info", PlayerCommand.CITY_INFO),
+          new KeyValuePair< string,PlayerCommand >("Close", PlayerCommand.CLOSE_DOOR),
+          new KeyValuePair< string,PlayerCommand >("Fire", PlayerCommand.FIRE_MODE),
+          new KeyValuePair< string,PlayerCommand >("Give", PlayerCommand.GIVE_ITEM),
+          new KeyValuePair< string,PlayerCommand >("Help", PlayerCommand.HELP_MODE),
+          new KeyValuePair< string,PlayerCommand >("Hints screen", PlayerCommand.HINTS_SCREEN_MODE),
+          new KeyValuePair< string,PlayerCommand >("Initiate Trade", PlayerCommand.INITIATE_TRADE),
+          new KeyValuePair< string,PlayerCommand >("Item 1 slot", PlayerCommand.ITEM_SLOT_0),
+          new KeyValuePair< string,PlayerCommand >("Item 2 slot", PlayerCommand.ITEM_SLOT_1),
+          new KeyValuePair< string,PlayerCommand >("Item 3 slot", PlayerCommand.ITEM_SLOT_2),
+          new KeyValuePair< string,PlayerCommand >("Item 4 slot", PlayerCommand.ITEM_SLOT_3),
+          new KeyValuePair< string,PlayerCommand >("Item 5 slot", PlayerCommand.ITEM_SLOT_4),
+          new KeyValuePair< string,PlayerCommand >("Item 6 slot", PlayerCommand.ITEM_SLOT_5),
+          new KeyValuePair< string,PlayerCommand >("Item 7 slot", PlayerCommand.ITEM_SLOT_6),
+          new KeyValuePair< string,PlayerCommand >("Item 8 slot", PlayerCommand.ITEM_SLOT_7),
+          new KeyValuePair< string,PlayerCommand >("Item 9 slot", PlayerCommand.ITEM_SLOT_8),
+          new KeyValuePair< string,PlayerCommand >("Item 10 slot", PlayerCommand.ITEM_SLOT_9),
+          new KeyValuePair< string,PlayerCommand >("Lead", PlayerCommand.LEAD_MODE),
+          new KeyValuePair< string,PlayerCommand >("Load Game", PlayerCommand.LOAD_GAME),
+          new KeyValuePair< string,PlayerCommand >("Mark Enemies", PlayerCommand.MARK_ENEMIES_MODE),
+          new KeyValuePair< string,PlayerCommand >("Messages Log", PlayerCommand.MESSAGE_LOG),
+          new KeyValuePair< string,PlayerCommand >("Order", PlayerCommand.ORDER_MODE),
+          new KeyValuePair< string,PlayerCommand >("Pull", PlayerCommand.PULL_MODE),
+          new KeyValuePair< string,PlayerCommand >("Push", PlayerCommand.PUSH_MODE),
+          new KeyValuePair< string,PlayerCommand >("Quit Game", PlayerCommand.QUIT_GAME),
+          new KeyValuePair< string,PlayerCommand >("Redefine Keys", PlayerCommand.KEYBINDING_MODE),
+          new KeyValuePair< string,PlayerCommand >("Run", PlayerCommand.RUN_TOGGLE),
+          new KeyValuePair< string,PlayerCommand >("Save Game", PlayerCommand.SAVE_GAME),
+          new KeyValuePair< string,PlayerCommand >("Screenshot", PlayerCommand.SCREENSHOT),
+          new KeyValuePair< string,PlayerCommand >("Shout", PlayerCommand.SHOUT),
+          new KeyValuePair< string,PlayerCommand >("Sleep", PlayerCommand.SLEEP),
+          new KeyValuePair< string,PlayerCommand >("Switch Place", PlayerCommand.SWITCH_PLACE),
+          new KeyValuePair< string,PlayerCommand >("Unload", PlayerCommand.UNLOAD),
+          new KeyValuePair< string,PlayerCommand >("Use Exit", PlayerCommand.USE_EXIT),
+          new KeyValuePair< string,PlayerCommand >("Use Spray", PlayerCommand.USE_SPRAY),
+        };
+
+      string[] entries = command_labels.Select(x => x.Key).ToArray();
+      var m_UI = IRogueUI.UI; // backward compatibility
+      const int BOLD_LINE_SPACING = RogueGame.BOLD_LINE_SPACING;
+      var game = RogueGame.Game;
+      const int gx = 0;
+      int gy = 0;
+
+      Func<int,bool?> setup_handler = (currentChoice => {
+        string[] values = command_labels.Select(x => Get(x.Value).ToString()).ToArray();
+
+        gy = 0;
+        m_UI.UI_Clear(Color.Black);
+        game.DrawHeader();
+        gy += BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
+        gy += BOLD_LINE_SPACING;
+        game.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy);
+        if (CheckForConflict()) {
+          m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
+          gy += BOLD_LINE_SPACING;
+        }
+        game.DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", command_labels[currentChoice].Key), gx, gy, new Color?());
+        m_UI.UI_Repaint();
+        Keys key = Keys.None;
+        while(true) {
+          KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+          if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt) {
+            key = keyEventArgs.KeyData;
+            break;
+          }
+        }
+        if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
+        PlayerCommand command = command_labels[currentChoice].Value;
+        Set(command, key);
+        return null;
+      });
+      do game.ChoiceMenu(choice_handler, setup_handler, entries.Length);
+      while(CheckForConflict());
+
+      // save the keybindings
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
+      m_UI.UI_Repaint();
+      Save(Path.Combine(RogueGame.GetUserConfigPath(), "keys.dat"));
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
     }
   }
 }

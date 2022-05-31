@@ -252,7 +252,7 @@ namespace djack.RogueSurvivor.Engine
     public const int DELAY_NORMAL = 500;
     public const int DELAY_LONG = 1000;
     private const int LINE_SPACING = 12;
-    private const int BOLD_LINE_SPACING = 14;
+    public const int BOLD_LINE_SPACING = 14;
     private const int SKILL_LINE_SPACING = LINE_SPACING+4;
     private const int CREDIT_CHAR_SPACING = 8;
     private const int CREDIT_LINE_SPACING = 12;
@@ -785,7 +785,7 @@ namespace djack.RogueSurvivor.Engine
     // this is a UI function so we can afford to be an inefficient monolithic function
     // return values of handlers: null is continue, true/false are the return values
     // Compiler error to mix this with out/ref parameters
-    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?>? failover_handler=null)
+    public bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?>? failover_handler=null)
     {
       int currentChoice = 0;
       do {
@@ -927,7 +927,7 @@ namespace djack.RogueSurvivor.Engine
               return true;
             }
             break;
-          case 2: HandleRedefineKeys(); break;
+          case 2: s_KeyBindings.HandleRedefineKeys(); break;
           case 3:
             HandleOptions(false);
             ApplyOptions(false);
@@ -1731,107 +1731,6 @@ namespace djack.RogueSurvivor.Engine
       ChoiceMenu(choice_handler, setup_handler, entries.Length, failover_handler);
       ApplyOptions(false);
       SaveOptions();
-    }
-
-    private void HandleRedefineKeys()
-    {
-      // need to maintain: label to command mapping
-      // then generate current keybindings
-      // then read off position from reference array
-      // screen layout may fail with more than 51 entries; at 49 entries currently
-      var command_labels = new KeyValuePair<string, PlayerCommand>[] {
-          new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
-          new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
-          new KeyValuePair< string,PlayerCommand >("Move E", PlayerCommand.MOVE_E),
-          new KeyValuePair< string,PlayerCommand >("Move SE", PlayerCommand.MOVE_SE),
-          new KeyValuePair< string,PlayerCommand >("Move S", PlayerCommand.MOVE_S),
-          new KeyValuePair< string,PlayerCommand >("Move SW", PlayerCommand.MOVE_SW),
-          new KeyValuePair< string,PlayerCommand >("Move W", PlayerCommand.MOVE_W),
-          new KeyValuePair< string,PlayerCommand >("Move NW", PlayerCommand.MOVE_NW),
-          new KeyValuePair< string,PlayerCommand >("Wait", PlayerCommand.WAIT_OR_SELF),
-          new KeyValuePair< string,PlayerCommand >("Abandon Game", PlayerCommand.ABANDON_GAME),
-          new KeyValuePair< string,PlayerCommand >("Advisor Hint", PlayerCommand.ADVISOR),
-          new KeyValuePair< string,PlayerCommand >("Barricade", PlayerCommand.BARRICADE_MODE),
-          new KeyValuePair< string,PlayerCommand >("Break", PlayerCommand.BREAK_MODE),
-          new KeyValuePair< string,PlayerCommand >("Build Large Fortification", PlayerCommand.BUILD_LARGE_FORTIFICATION),
-          new KeyValuePair< string,PlayerCommand >("Build Small Fortification", PlayerCommand.BUILD_SMALL_FORTIFICATION),
-          new KeyValuePair< string,PlayerCommand >("City Info", PlayerCommand.CITY_INFO),
-          new KeyValuePair< string,PlayerCommand >("Close", PlayerCommand.CLOSE_DOOR),
-          new KeyValuePair< string,PlayerCommand >("Fire", PlayerCommand.FIRE_MODE),
-          new KeyValuePair< string,PlayerCommand >("Give", PlayerCommand.GIVE_ITEM),
-          new KeyValuePair< string,PlayerCommand >("Help", PlayerCommand.HELP_MODE),
-          new KeyValuePair< string,PlayerCommand >("Hints screen", PlayerCommand.HINTS_SCREEN_MODE),
-          new KeyValuePair< string,PlayerCommand >("Initiate Trade", PlayerCommand.INITIATE_TRADE),
-          new KeyValuePair< string,PlayerCommand >("Item 1 slot", PlayerCommand.ITEM_SLOT_0),
-          new KeyValuePair< string,PlayerCommand >("Item 2 slot", PlayerCommand.ITEM_SLOT_1),
-          new KeyValuePair< string,PlayerCommand >("Item 3 slot", PlayerCommand.ITEM_SLOT_2),
-          new KeyValuePair< string,PlayerCommand >("Item 4 slot", PlayerCommand.ITEM_SLOT_3),
-          new KeyValuePair< string,PlayerCommand >("Item 5 slot", PlayerCommand.ITEM_SLOT_4),
-          new KeyValuePair< string,PlayerCommand >("Item 6 slot", PlayerCommand.ITEM_SLOT_5),
-          new KeyValuePair< string,PlayerCommand >("Item 7 slot", PlayerCommand.ITEM_SLOT_6),
-          new KeyValuePair< string,PlayerCommand >("Item 8 slot", PlayerCommand.ITEM_SLOT_7),
-          new KeyValuePair< string,PlayerCommand >("Item 9 slot", PlayerCommand.ITEM_SLOT_8),
-          new KeyValuePair< string,PlayerCommand >("Item 10 slot", PlayerCommand.ITEM_SLOT_9),
-          new KeyValuePair< string,PlayerCommand >("Lead", PlayerCommand.LEAD_MODE),
-          new KeyValuePair< string,PlayerCommand >("Load Game", PlayerCommand.LOAD_GAME),
-          new KeyValuePair< string,PlayerCommand >("Mark Enemies", PlayerCommand.MARK_ENEMIES_MODE),
-          new KeyValuePair< string,PlayerCommand >("Messages Log", PlayerCommand.MESSAGE_LOG),
-          new KeyValuePair< string,PlayerCommand >("Order", PlayerCommand.ORDER_MODE),
-          new KeyValuePair< string,PlayerCommand >("Pull", PlayerCommand.PULL_MODE),
-          new KeyValuePair< string,PlayerCommand >("Push", PlayerCommand.PUSH_MODE),
-          new KeyValuePair< string,PlayerCommand >("Quit Game", PlayerCommand.QUIT_GAME),
-          new KeyValuePair< string,PlayerCommand >("Redefine Keys", PlayerCommand.KEYBINDING_MODE),
-          new KeyValuePair< string,PlayerCommand >("Run", PlayerCommand.RUN_TOGGLE),
-          new KeyValuePair< string,PlayerCommand >("Save Game", PlayerCommand.SAVE_GAME),
-          new KeyValuePair< string,PlayerCommand >("Screenshot", PlayerCommand.SCREENSHOT),
-          new KeyValuePair< string,PlayerCommand >("Shout", PlayerCommand.SHOUT),
-          new KeyValuePair< string,PlayerCommand >("Sleep", PlayerCommand.SLEEP),
-          new KeyValuePair< string,PlayerCommand >("Switch Place", PlayerCommand.SWITCH_PLACE),
-          new KeyValuePair< string,PlayerCommand >("Unload", PlayerCommand.UNLOAD),
-          new KeyValuePair< string,PlayerCommand >("Use Exit", PlayerCommand.USE_EXIT),
-          new KeyValuePair< string,PlayerCommand >("Use Spray", PlayerCommand.USE_SPRAY),
-        };
-
-      string[] entries = command_labels.Select(x => x.Key).ToArray();
-      const int gx = 0;
-      int gy = 0;
-
-      Func<int,bool?> setup_handler = (currentChoice => {
-        string[] values = command_labels.Select(x => RogueGame.s_KeyBindings.Get(x.Value).ToString()).ToArray();
-
-        gy = 0;
-        m_UI.UI_Clear(Color.Black);
-        DrawHeader();
-        gy += BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
-        gy += BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy);
-        if (s_KeyBindings.CheckForConflict()) {
-          m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
-          gy += BOLD_LINE_SPACING;
-        }
-        DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
-        return null;
-      });
-      Func<int, bool?> choice_handler = (currentChoice => {
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", command_labels[currentChoice].Key), gx, gy, new Color?());
-        m_UI.UI_Repaint();
-        Keys key = Keys.None;
-        while(true) {
-          KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-          if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt) {
-            key = keyEventArgs.KeyData;
-            break;
-          }
-        }
-        if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
-        PlayerCommand command = command_labels[currentChoice].Value;
-        s_KeyBindings.Set(command, key);
-        return null;
-      });
-      do ChoiceMenu(choice_handler, setup_handler, entries.Length);
-      while(s_KeyBindings.CheckForConflict());
-      SaveKeybindings();
     }
 
     private void FindPlayer()
@@ -3205,7 +3104,7 @@ namespace djack.RogueSurvivor.Engine
                 ApplyOptions(true);
                 break;
               case PlayerCommand.KEYBINDING_MODE:
-                HandleRedefineKeys();
+                s_KeyBindings.HandleRedefineKeys();
                 break;
               case PlayerCommand.HINTS_SCREEN_MODE:
                 HandleHintsScreen();
@@ -12822,17 +12721,6 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    private void SaveKeybindings()
-    {
-      m_UI.UI_Clear(Color.Black);
-      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
-      Keybindings.Save(s_KeyBindings, Path.Combine(GetUserConfigPath(), "keys.dat"));
-      m_UI.UI_Clear(Color.Black);
-      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
-    }
-
     private void LoadHints()
     {
       m_UI.UI_Clear(Color.Black);
@@ -12849,7 +12737,7 @@ namespace djack.RogueSurvivor.Engine
       GameHintsStatus.Save(s_Hints, Path.Combine(GetUserConfigPath(), "hints.dat"));
     }
 
-    private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
+    public void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
     {
 #if DEBUG
       if (null == entries) throw new ArgumentNullException(nameof(entries));
@@ -12873,12 +12761,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DrawHeader()
+    public void DrawHeader()
     {
       m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
     }
 
-    private void DrawFootnote(Color color, string text)
+    public void DrawFootnote(Color color, string text)
     {
       Color color1 = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
       m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, 754, color1);
