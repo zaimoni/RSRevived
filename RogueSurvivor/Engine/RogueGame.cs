@@ -8340,6 +8340,13 @@ namespace djack.RogueSurvivor.Engine
         bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
         var msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_NORMAL_COLOR);
         var officer_msg = new Data.Message(string.Format(raw_msg, aggressor.Name, target.Name), Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR);
+        Action<PlayerController> pc_add_msg = pc => {
+            var a = pc.ControlledActor;
+            if (a.Model.Abilities.IsLawEnforcer && !a.IsInGroupWith(target) && !a.IsEnemyOf(target)) target.RecordAggression(a);
+            var danger = a.Model.Abilities.IsLawEnforcer || a.IsInGroupWith(target) || a.IsInGroupWith(aggressor);
+            if (danger) pc.AddMessageForceRead(officer_msg);
+            else pc.AddMessage(msg);
+        };
         aggressor.MessageAllInDistrictByRadio(npc => target.RecordAggression(npc),
         npc => {
             if (npc == aggressor) return false;
@@ -8348,15 +8355,7 @@ namespace djack.RogueSurvivor.Engine
             if (npc.IsInGroupWith(target)) return false;
             if (npc.IsEnemyOf(target)) return false;
             return true;
-        }, a => {
-          if (a.Model.Abilities.IsLawEnforcer && !a.IsInGroupWith(target) && !a.IsEnemyOf(target)) target.RecordAggression(a);
-          var danger = a.Model.Abilities.IsLawEnforcer || a.IsInGroupWith(target) || a.IsInGroupWith(aggressor);
-          AddMessage(danger ? officer_msg : msg);
-          if (danger) AddMessagePressEnter();
-        }, a => {
-          if (a.Model.Abilities.IsLawEnforcer && !a.IsInGroupWith(target) && !a.IsEnemyOf(target)) target.RecordAggression(a);
-          (a.Controller as PlayerController).DeferMessage((a.Model.Abilities.IsLawEnforcer || a.IsInGroupWith(target) || a.IsInGroupWith(aggressor)) ? officer_msg : msg);
-        }, player => {
+        }, pc_add_msg, pc_add_msg, player => {
             if (player == aggressor) return false;
             if (player == target) return false;
             if (wasAlreadyEnemy && player.IsEnemyOf(target)) return false;
@@ -8448,7 +8447,7 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
 
-      MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => (a.Controller as PlayerController).AddMessagesForceRead(player_msgs),
+      MakeEnemyOfTargetFactionInDistrict(aggressor, cop, pc => pc.AddMessagesForceRead(player_msgs),
       a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -8480,7 +8479,7 @@ namespace djack.RogueSurvivor.Engine
         new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
         new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
       };
-      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => (a.Controller as PlayerController).AddMessagesForceRead(player_msgs),
+      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, pc => pc.AddMessagesForceRead(player_msgs),
       a => {
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
@@ -8489,7 +8488,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> msg_player, Func<Actor, bool> msg_player_test)
+    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<PlayerController> msg_player, Func<Actor, bool> msg_player_test)
     {
       // XXX this should actually be based on radio range
       // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
@@ -9186,14 +9185,14 @@ namespace djack.RogueSurvivor.Engine
       static void PC_message(PlayerController PC, List<Data.Message> msgs) { PC.AddMessages(msgs); }
 
       void PC_hear_question(PlayerController PC) { PC_message(PC, PC.ControlledActor == speaker ? format_msg(string.Format("({0} using police radio) {1}", speaker.Name, speaker_text)) : msg_question); }
-      void PC_heard_question(Actor a) {
-        PC_hear_question(a.Controller as PlayerController);
-        heard_question(a);
+      void PC_heard_question(PlayerController PC) {
+        PC_hear_question(PC);
+        heard_question(PC.ControlledActor);
       }
       void PC_hear_answer(PlayerController PC) { PC_message(PC, PC.ControlledActor == target ? format_msg(string.Format("({0} using police radio) {1}", target.Name, target_text)) : msg_answer); }
-      void PC_heard_answer(Actor a) {
-        PC_hear_answer(a.Controller as PlayerController);
-        heard_answer(a);
+      void PC_heard_answer(PlayerController PC) {
+        PC_hear_answer(PC);
+        heard_answer(PC.ControlledActor);
       }
 
       bool reject_conversants(Actor a) {
@@ -10521,7 +10520,8 @@ namespace djack.RogueSurvivor.Engine
             // also need to consider background thread to main thread issues
             // possible verbs: killed, terminated, erased, downed, wasted.
             var msg = new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), Session.Get.WorldTime.TurnCounter, Color.White);
-            killer.MessageAllInDistrictByRadio(NOP, FALSE, a => AddMessage(msg), a => (a.Controller as PlayerController).DeferMessage(msg), TRUE);
+            Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg);
+            killer.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
           }
         }
 

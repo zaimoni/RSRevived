@@ -1322,7 +1322,7 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-    public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Action<Actor> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
+    public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<PlayerController> msg_player, Action<PlayerController> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
       bool player_initiated = RogueGame.IsPlayer(this);
       bool simulating = RogueGame.IsSimulating;
@@ -1351,15 +1351,17 @@ namespace djack.RogueSurvivor.Data
           if (RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
 
           // note: UI redraw will fail if IsSimulating; should be deferring message in that case
-          if (actor.IsPlayer && msg_player_test(actor)) {
-            // IsSimulating: defer
-            // actor is RogueGame::Player: maybe don't need this at all, maybe defer (option?)
-            // otherwise: pan and live display
-            if (player_initiated || simulating) defer_msg_player(actor);
-            else {
-              RogueGame.Game.PanViewportTo(actor);
-              player_initiated = true; // not really, but this prevents distracting re-pans for background police radio
-              msg_player(actor);
+          if (actor.Controller is PlayerController pc) {
+            if (msg_player_test(actor)) {
+              // IsSimulating: defer
+              // actor is RogueGame::Player: maybe don't need this at all, maybe defer (option?)
+              // otherwise: pan and live display
+              if (player_initiated || simulating) defer_msg_player(pc);
+              else {
+                RogueGame.Game.PanViewportTo(actor);
+                player_initiated = true; // not really, but this prevents distracting re-pans for background police radio
+                msg_player(pc);
+              }
             }
           }
 

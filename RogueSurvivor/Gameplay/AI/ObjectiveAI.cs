@@ -2307,7 +2307,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
             RogueGame.Game.DoBackgroundSpeech(m_Actor, "@#?!, "+a_dest.dest+" is death-trapped.", overheard_vulgarity);
             var msg = new Data.Message(string.Format("(police radio, {0}) {1} is death-trapped.", m_Actor.Name, a_dest.dest.ToString()), Session.Get.WorldTime.TurnCounter);
-            m_Actor.MessageAllInDistrictByRadio(overheard_vulgarity, TRUE, a => AddMessage(msg), a => (a.Controller as PlayerController).DeferMessage(msg), TRUE);
+            Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg);
+            m_Actor.MessageAllInDistrictByRadio(overheard_vulgarity, TRUE, pc_add_msg, pc_add_msg, TRUE);
           }
           return true;   // death-trapped
         }

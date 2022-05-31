@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (2 == code) {
         var msg = new Data.Message("(police radio, "+ who.Name +") "+raw_text, Session.Get.WorldTime.TurnCounter, RogueGame.SAYOREMOTE_NORMAL_COLOR);
-        Action<Actor> pc_add_msg = actor => actor.Controller.AddMessage(msg);
+        Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg);
         who.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
       }
       // defer army radio and cell phones for now
