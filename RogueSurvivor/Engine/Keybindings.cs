@@ -86,6 +86,12 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.WAIT_OR_SELF, Keys.NumPad5);
     }
 
+    public string AsString(PlayerCommand command)
+    {
+      if (m_CommandToKeyData.TryGetValue(command, out Keys keys)) return keys.ToString();
+      return string.Empty;
+    }
+
     public Keys Get(PlayerCommand command)
     {
       if (m_CommandToKeyData.TryGetValue(command, out Keys keys)) return keys;
