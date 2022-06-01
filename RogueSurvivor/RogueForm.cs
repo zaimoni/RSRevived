@@ -218,6 +218,11 @@ namespace djack.RogueSurvivor
       return m_MouseButtons;
     }
 
+    // mouse event support
+    // formally should be Point, but we don't want to leak System.Drawing types more than we already are
+    public void Add(Action<int, int> op) => m_GameCanvas.Add(op);
+    public void Add(Func<int, int, bool> op) => m_GameCanvas.Add(op);
+
     public void UI_SetCursor(Cursor cursor)
     {
       if (cursor == Cursor) return;

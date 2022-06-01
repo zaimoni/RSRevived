@@ -125,10 +125,29 @@ namespace djack.RogueSurvivor.UI
       return false;
     }
 
+    // mouse event support
+    private readonly List<Action<int, int>> core_hover_handlers = new();
+    public void Add(Action<int, int> op) {
+        core_hover_handlers.Add(op);
+    }
+
+    private readonly List<Func<int, int, bool>> aux_hover_handlers = new();
+    public void Add(Func<int, int, bool> op) {
+        aux_hover_handlers.Add(op);
+    }
+
     protected override void OnMouseMove(MouseEventArgs e)
     {
-      base.OnMouseMove(e);
-      MouseLocation = e.Location;
+        lock(aux_hover_handlers) {
+        base.OnMouseMove(e);
+        MouseLocation = e.Location;
+        var ub = aux_hover_handlers.Count;
+        // this runs in parallel and locking is ineffective
+        foreach(var h in aux_hover_handlers.ToArray()) {
+          if (h(e.Location.X, e.Location.Y)) aux_hover_handlers.Remove(h);
+        }
+        foreach(var h in core_hover_handlers) h(e.Location.X, e.Location.Y);
+        }
     }
 
     protected override void OnMouseClick(MouseEventArgs e)

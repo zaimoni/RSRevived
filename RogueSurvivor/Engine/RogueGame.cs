@@ -441,6 +441,7 @@ namespace djack.RogueSurvivor.Engine
       GameActors.Init(m_UI);
       GameItems.Init(m_UI);
       m_Manual = LoadManual();
+      m_UI.Add(HandleMouseLookAuto);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -4203,25 +4204,52 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("Your prayers are unclearly answered.", turn, Color.Yellow));
     }
 
+    /// not really; just need to block the other manual handlers from triggering
     private bool HandleMouseLook(GDI_Point mousePos)
     {
       Point pt = MouseToMap(mousePos);
-      if (!IsInViewRect(pt)) return false;
-      if (!CurrentMap.IsValid(pt)) return true;
-      ClearOverlays();
-      if (IsVisibleToPlayer(CurrentMap, in pt)) {
+      return IsInViewRect(pt);
+    }
+
+    static private Location? m_LiveLook = null;
+    private void HandleMouseLookAuto(int x, int y)
+    {
+      if (null == m_MapView) return;
+      Point pt = MouseToMap(x, y);
+      if (!IsInViewRect(pt)) return;
+      Location loc = new(CurrentMap, pt);
+      if (!Map.Canonical(ref loc)) return;
+      if (loc == m_LiveLook) return;
+      if (IsVisibleToPlayer(in loc)) {
+        List<Overlay> overlays = new();
         string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (lines != null) {
           var screen = MapToScreen(pt);
-          AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y)));
-          if (s_Options.ShowTargets) {
-            var actorAt = CurrentMap.GetActorAt(pt);
-            if (actorAt != null) DrawActorRelations(actorAt);
+          overlays.Add(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y)));
+        }
+        if (s_Options.ShowTargets) {
+          var actorAt = loc.Actor;
+          if (actorAt != null) DrawActorRelations(actorAt, overlays);
+        }
+        if (0 < overlays.Count) {
+          m_LiveLook = loc;
+          foreach(var o in overlays) AddOverlay(o);
+          bool remove(int x, int y) {
+            GDI_Point mousePos = new(x, y);
+            Point pt = MouseToMap(mousePos);
+            Location test = new(CurrentMap, pt);
+            if (Map.Canonical(ref test) && null!=m_LiveLook && test == m_LiveLook.Value) return false;
+            foreach(var o in overlays) RemoveOverlay(o);
+            m_LiveLook = null;
+            RedrawPlayScreen();
+            return true;
           }
+          IRogueUI.UI.Add(remove);
+          RedrawPlayScreen();
         }
       }
-      return true;
     }
+
 
     private bool _HandlePlayerInventory(Actor player, Item it)
     {
@@ -6839,7 +6867,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void WaitKeyOrMouse(out KeyEventArgs key, out GDI_Point mousePos, out MouseButtons? mouseButtons)
     {
-      m_UI.UI_PeekKey();
+      m_UI.UI_PeekKey(); // discards prior key
       var mousePosition = m_UI.UI_GetMousePosition();
       mousePos = new GDI_Point(-1, -1);
       mouseButtons = null;
@@ -11684,13 +11712,12 @@ namespace djack.RogueSurvivor.Engine
     /// - targeting this actor
     /// - in group with this actor
     /// </summary>
-    /// <param name="actor"></param>
-    private void DrawActorRelations(Actor actor)
+    private void DrawActorRelations(Actor actor, List<Overlay> overlays)
     {
       // target of this actor
       var a_target = actor.TargetActor;
       if (null != a_target && !a_target.IsDead && IsVisibleToPlayer(a_target))
-        AddOverlay(new OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
+        overlays.Add(new OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
 
       // actors targeting this actor or in same group
       bool isTargettedHighlighted = false;
@@ -11700,19 +11727,19 @@ namespace djack.RogueSurvivor.Engine
         // targetting this actor
         if (other.TargetActor == actor && other.IsEngaged) {
           if (!isTargettedHighlighted) {
-            AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
+            overlays.Add(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
             isTargettedHighlighted = true;
           }
-          AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
+          overlays.Add(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
         }
 
         // in group with actor
-        if (other.IsInGroupWith(actor)) AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
+        if (other.IsInGroupWith(actor)) overlays.Add(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
       }
 
       if (actor.Controller is ObjectiveAI ai) {
         var dests = ai.WantToGoHere(actor.Location);
-        if (null != dests) foreach(var loc in dests) AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
+        if (null != dests) foreach(var loc in dests) overlays.Add(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
     }
 
@@ -12285,6 +12312,12 @@ namespace djack.RogueSurvivor.Engine
     private Point MouseToMap(GDI_Point mouse)
     {
       var logical = LogicalPixel(mouse) / TILE_SIZE;
+      return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
+    }
+
+    private Point MouseToMap(int mousex, int mousey)
+    {
+      var logical = LogicalPixel(new GDI_Point(mousex, mousey)) / TILE_SIZE;
       return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
     }
 

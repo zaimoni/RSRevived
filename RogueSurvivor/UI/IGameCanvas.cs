@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
+
 using Color = System.Drawing.Color;
 using Font = System.Drawing.Font;
 using Image = System.Drawing.Image;
@@ -19,6 +21,11 @@ namespace djack.RogueSurvivor.UI
     bool NeedRedraw { get; set; }
 
     Point MouseLocation { get; set; }
+
+    // mouse event support
+    // formally should be Point, but we don't want to leak System.Drawing types more than we already are
+    void Add(Action<int, int> op);
+    void Add(Func<int, int, bool> op);
 
     float ScaleX { get; }
 
