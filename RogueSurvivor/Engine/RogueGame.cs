@@ -4054,7 +4054,8 @@ namespace djack.RogueSurvivor.Engine
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
         Actor a = allies[index];
-        PanViewportTo(a);
+        if (a.IsSleeping) PanViewportTo(a.Location);
+        else PanViewportTo(a);
         var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
