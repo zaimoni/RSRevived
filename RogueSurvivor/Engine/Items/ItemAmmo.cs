@@ -53,6 +53,7 @@ namespace djack.RogueSurvivor.Engine.Items
       else inv.IncrementalDefrag(this);
       if (RogueGame.Game.ForceVisibleToPlayer(actor))
         RogueGame.AddMessage(RogueGame.MakeMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
+      _rw = null;
     }
     public string ReasonCantUse(Actor a) {
       if (!a.Inventory.Contains(_rw)) _rw = null;
