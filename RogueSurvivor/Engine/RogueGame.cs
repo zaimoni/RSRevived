@@ -6874,27 +6874,8 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private Direction? WaitDirectionOrCancel()
     {
-      Direction? direction;
-      do {
-        KeyEventArgs key = m_UI.UI_WaitKey();
-        if (key.KeyCode == Keys.Escape) return null;
-        PlayerCommand command = InputTranslator.KeyToCommand(key);
-        direction = CommandToDirection(command);
-      } while (null == direction);
-      return direction;
+        return m_UI.WaitEscape(key => CommandToDirection(InputTranslator.KeyToCommand(key)));
     }
-
-    private bool WaitEscape(Predicate<KeyEventArgs> ok)
-    {
-      if (IsSimulating) return false;
-      var test = m_UI.UI_WaitKey(); // yes, no mouse processing
-      while(test.KeyCode != Keys.Escape) {
-        if (ok(test)) return true;
-        test = m_UI.UI_WaitKey();
-      };
-      return false;
-    }
-
 #nullable restore
 
     static private int KeyToChoiceNumber(Keys key)
@@ -13396,7 +13377,7 @@ retry:
       AddOverlay(content);
       AddOverlay(who);
       RedrawPlayScreen();
-      var ret = WaitEscape(ok);
+      var ret = m_UI.WaitEscape(ok);
       RemoveOverlay(who);   // alpha10 fix
       RemoveOverlay(content);
       m_MusicManager.Stop();

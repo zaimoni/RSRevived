@@ -242,6 +242,30 @@ namespace djack.RogueSurvivor
       while (UI_WaitKey().KeyCode != Keys.Escape);
     }
 
+    public bool WaitEscape(Predicate<KeyEventArgs> ok)
+    {
+      if (RogueGame.IsSimulating) return false;
+      var test = UI_WaitKey(); // yes, no mouse processing
+      while(test.KeyCode != Keys.Escape) {
+        if (ok(test)) return true;
+        test = UI_WaitKey();
+      };
+      return false;
+    }
+
+#nullable enable
+    public T? WaitEscape<T>(Func<KeyEventArgs, T?> ok) where T:class
+    {
+      T? ret;
+      do {
+        var key = UI_WaitKey();
+        if (key.KeyCode == Keys.Escape) return null;
+        ret = ok(key);
+      } while (null == ret);
+      return ret;
+    }
+#nullable restore
+
     public void UI_Wait(int msecs)
     {
       UI_Repaint();
