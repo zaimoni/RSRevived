@@ -602,19 +602,6 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    public void AddMessagePressEnter(Action<KeyEventArgs> filter)
-    {
-#if DEBUG
-      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
-#else
-      if (IsSimulating) return;   // visual no-op
-#endif
-      RedrawPlayScreen(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      WaitEnter(filter);
-      RemoveLastMessage();
-      RedrawPlayScreen();
-    }
-
     static private string Truncate(string s, int maxLength)
     {
       return (s.Length > maxLength) ? s.Substring(0, maxLength) : s;
@@ -6895,16 +6882,6 @@ namespace djack.RogueSurvivor.Engine
         direction = CommandToDirection(command);
       } while (null == direction);
       return direction;
-    }
-
-    private void WaitEnter(Action<KeyEventArgs> filter)
-    {
-      if (IsSimulating) return;
-      var test = m_UI.UI_WaitKey(); // yes, no mouse processing
-      while(test.KeyCode != Keys.Return) {
-        filter(test);
-        test = m_UI.UI_WaitKey();
-      }
     }
 
     private bool WaitEscape(Predicate<KeyEventArgs> ok)
@@ -13395,7 +13372,7 @@ retry:
 
 #nullable enable
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
-    private void ShowSpecialDialogue(Actor speaker, string[] text, Action<KeyEventArgs>? filter=null)
+    private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
       m_MusicManager.Stop();
       m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
@@ -13404,7 +13381,7 @@ retry:
       AddOverlay(content);
       AddOverlay(who);
       ClearMessages();
-      if (null == filter) AddMessagePressEnter(); else AddMessagePressEnter(filter);
+      AddMessagePressEnter();
       RemoveOverlay(who);   // alpha10 fix
       RemoveOverlay(content);
       m_MusicManager.Stop();
