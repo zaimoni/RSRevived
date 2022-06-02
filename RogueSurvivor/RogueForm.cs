@@ -269,6 +269,16 @@ namespace djack.RogueSurvivor
     }
 #nullable restore
 
+    public bool WaitYesOrNo()
+    {
+      var key = UI_WaitKey();
+      while (Keys.N != key.KeyCode && Keys.Escape != key.KeyCode) {
+        if (Keys.Y == key.KeyCode) return true;
+        key = UI_WaitKey();
+      };
+      return false;
+    }
+
     public void UI_Wait(int msecs)
     {
       UI_Repaint();

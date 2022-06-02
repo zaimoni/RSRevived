@@ -1137,7 +1137,7 @@ namespace djack.RogueSurvivor.Engine
           int gy4 = gy3 + BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
           m_UI.UI_Repaint();
-          if (WaitYesOrNo()) return isUndead;
+          if (m_UI.WaitYesOrNo()) return isUndead;
           break;
         case 1: return false;
         case 2: return true;
@@ -1197,7 +1197,7 @@ namespace djack.RogueSurvivor.Engine
             gy += BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
             m_UI.UI_Repaint();
-            if (WaitYesOrNo()) return isMale;
+            if (m_UI.WaitYesOrNo()) return isMale;
             break;
           case 1: return true;
           case 2: return false;
@@ -1263,7 +1263,7 @@ namespace djack.RogueSurvivor.Engine
             int gy4 = gy3 + BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
             m_UI.UI_Repaint();
-            if (WaitYesOrNo()) return modelID;
+            if (m_UI.WaitYesOrNo()) return modelID;
             break;
           default: return undead[currentChoice-1].ID;
         }
@@ -1310,7 +1310,7 @@ namespace djack.RogueSurvivor.Engine
         int gy4 = gy3 + BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
         m_UI.UI_Repaint();
-        if (WaitYesOrNo()) return skID;
+        if (m_UI.WaitYesOrNo()) return skID;
         return null;
       });
       return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
@@ -3774,7 +3774,7 @@ namespace djack.RogueSurvivor.Engine
       var working = new OverlayPopup(msg, Color.White, MODE_BORDERCOLOR, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
       AddOverlay(working);
       RedrawPlayScreen();
-      var ret = WaitYesOrNo();
+      var ret = m_UI.WaitYesOrNo();
       RemoveOverlay(working);
       return ret;
     }
@@ -6981,16 +6981,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private bool WaitYesOrNo()
-    {
-      KeyEventArgs keyEventArgs;
-      do {
-        keyEventArgs = m_UI.UI_WaitKey();
-        if (keyEventArgs.KeyCode == Keys.Y) return true;
-      } while (keyEventArgs.KeyCode != Keys.N && keyEventArgs.KeyCode != Keys.Escape);
-      return false;
-    }
-
     static private string[] DescribeStuffAt(Map map, Point mapPos)
     {
       if (!map.IsInBounds(mapPos)) {
@@ -9128,7 +9118,7 @@ namespace djack.RogueSurvivor.Engine
 
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
-      bool acceptDeal = WaitYesOrNo();
+      bool acceptDeal = m_UI.WaitYesOrNo();
       ClearOverlays();
       RedrawPlayScreen();
 
@@ -9166,7 +9156,7 @@ namespace djack.RogueSurvivor.Engine
 
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
-      bool acceptDeal = WaitYesOrNo();
+      bool acceptDeal = m_UI.WaitYesOrNo();
       ClearOverlays();
       RedrawPlayScreen();
 
@@ -13618,7 +13608,7 @@ retry:
       int gy10 = gy9 + 28;
       m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy10, new Color?());
       m_UI.UI_Repaint();
-      return WaitYesOrNo();
+      return m_UI.WaitYesOrNo();
     }
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
