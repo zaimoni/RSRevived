@@ -233,8 +233,13 @@ namespace djack.RogueSurvivor
     public void WaitEnter()
     {
       if (RogueGame.IsSimulating) return;
-      do;
       while (UI_WaitKey().KeyCode != Keys.Return);
+    }
+
+    public void WaitEscape()
+    {
+      if (RogueGame.IsSimulating) return;
+      while (UI_WaitKey().KeyCode != Keys.Escape);
     }
 
     public void UI_Wait(int msecs)

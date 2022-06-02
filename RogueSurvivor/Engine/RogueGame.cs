@@ -1399,7 +1399,7 @@ namespace djack.RogueSurvivor.Engine
       if (saveToTextfile) m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy1, new Color?());
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
-      WaitEscape();
+      m_UI.WaitEscape();
     }
 
     private void LoadHiScoreTable()
@@ -1541,7 +1541,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
       DrawFootnote(Color.White, "ESC to leave");
       m_UI.UI_Repaint();
-      WaitEscape();
+      m_UI.WaitEscape();
     }
 
     private void HandleOptions(bool ingame)
@@ -3597,7 +3597,7 @@ namespace djack.RogueSurvivor.Engine
       }
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
-      WaitEscape();
+      m_UI.WaitEscape();
     }
 
     private void HandleCityInfo()
@@ -3613,7 +3613,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy, new Color?());
         DrawFootnote(Color.White, "press ESC to leave");
         m_UI.UI_Repaint();
-        WaitEscape();
+        m_UI.WaitEscape();
         return;
       }
 
@@ -3737,7 +3737,7 @@ namespace djack.RogueSurvivor.Engine
         }
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
-      WaitEscape();
+      m_UI.WaitEscape();
     }
 
 #nullable enable
@@ -3753,7 +3753,7 @@ namespace djack.RogueSurvivor.Engine
       var working = new OverlayPopup(msg, Color.Red, Color.Red, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
       AddOverlay(working);
       RedrawPlayScreen();
-      WaitEscape();
+      m_UI.WaitEscape();
       RemoveOverlay(working);
     }
     public void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
@@ -3770,7 +3770,7 @@ namespace djack.RogueSurvivor.Engine
       var working = new OverlayPopup(msg, Color.White, MODE_BORDERCOLOR, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
       AddOverlay(working);
       RedrawPlayScreen();
-      WaitEscape();
+      m_UI.WaitEscape();
       RemoveOverlay(working);
     }
     public void InfoPopup(string msg) { InfoPopup(new string[] { msg }); } // Ok: Waterfall i.e. SSADM lifecycle
@@ -6905,14 +6905,6 @@ namespace djack.RogueSurvivor.Engine
         filter(test);
         test = m_UI.UI_WaitKey();
       }
-    }
-
-    private void WaitEscape()
-    {
-      if (IsSimulating) return;
-      do
-        ;
-      while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
     }
 
     private bool WaitEscape(Predicate<KeyEventArgs> ok)
