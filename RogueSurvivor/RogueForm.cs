@@ -25,7 +25,9 @@ namespace djack.RogueSurvivor
     private const int CP_NOCLOSE_BUTTON = 512;
     private Font m_NormalFont;
     private Font m_BoldFont;
-    private KeyEventArgs m_InKey;
+#nullable enable
+    private KeyEventArgs? m_InKey;
+#nullable restore
     private bool m_HasMouseButtons;
     private MouseButtons m_MouseButtons;
     private IContainer components;
@@ -151,7 +153,7 @@ namespace djack.RogueSurvivor
 #endregion
 
 #region IRogueUI implementation
-    // <returns>non-null</returns>
+#nullable enable
     public KeyEventArgs UI_WaitKey()
     {
       while (true) {    // XXX no clean way to do this loop
@@ -162,12 +164,13 @@ namespace djack.RogueSurvivor
       return Interlocked.Exchange(ref m_InKey, null);
     }
 
-    public KeyEventArgs UI_PeekKey()
+    public KeyEventArgs? UI_PeekKey()
     {
       Thread.Sleep(1);
       Application.DoEvents();
       return Interlocked.Exchange(ref m_InKey, null);
     }
+#nullable restore
 
     public void UI_PostKey(KeyEventArgs e)
     {

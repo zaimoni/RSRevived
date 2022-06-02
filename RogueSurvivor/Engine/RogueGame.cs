@@ -12360,14 +12360,12 @@ namespace djack.RogueSurvivor.Engine
         return false;
       };
 
-
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps and record waypoint. ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
 
       do {
-        WaitKeyOrMouse(out KeyEventArgs key, out _, out _);
-        if (null != key) {
+          var key = m_UI.UI_WaitKey();
           switch(key.KeyCode) {
           case Keys.Escape: // cancel
             ClearOverlays();
@@ -12473,7 +12471,6 @@ namespace djack.RogueSurvivor.Engine
           }
           if (null != inspect) AddOverlay(inspect);
           PanViewportTo(in viewpoint);
-        }
       } while(true);
     }
 
