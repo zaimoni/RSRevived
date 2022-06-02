@@ -597,7 +597,7 @@ namespace djack.RogueSurvivor.Engine
       if (IsSimulating) return;   // visual no-op
 #endif
       RedrawPlayScreen(new Data.Message("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      WaitEnter();
+      m_UI.WaitEnter();
       RemoveLastMessage();
       RedrawPlayScreen();
     }
@@ -767,7 +767,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy1, new Color?());
       DrawFootnote(Color.White, "press ENTER");
       m_UI.UI_Repaint();
-      WaitEnter();
+      m_UI.WaitEnter();
     }
 
 #if FAIL
@@ -1342,7 +1342,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy1, new Color?());
         m_UI.UI_Repaint();
         DrawFootnote(Color.White, "press ENTER");
-        WaitEnter();
+        m_UI.WaitEnter();
         return null;
       } else {
         m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
@@ -1458,7 +1458,7 @@ namespace djack.RogueSurvivor.Engine
         }
         AddMessage(new Data.Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.AsString(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
         RedrawPlayScreen(new Data.Message("<press ENTER>", 0, Color.Yellow));
-        WaitEnter();
+        m_UI.WaitEnter();
       }
       ClearMessages();
       ClearMessagesHistory();
@@ -1484,7 +1484,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
       RefreshPlayer();
       RedrawPlayScreen();
-      WaitEnter();
+      m_UI.WaitEnter();
       ClearMessages();
       RedrawPlayScreen(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       play_timer.Start();
@@ -3448,7 +3448,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, 0, new Color?());
         DrawFootnote(Color.White, "press ENTER");
         m_UI.UI_Repaint();
-        WaitEnter();
+        m_UI.WaitEnter();
       } else {
         bool flag = true;
         List<string> formatedLines = m_Manual.FormatedLines;
@@ -6895,14 +6895,6 @@ namespace djack.RogueSurvivor.Engine
         direction = CommandToDirection(command);
       } while (null == direction);
       return direction;
-    }
-
-    private void WaitEnter()
-    {
-      if (IsSimulating) return;
-      do
-        ;
-      while (m_UI.UI_WaitKey().KeyCode != Keys.Return);
     }
 
     private void WaitEnter(Action<KeyEventArgs> filter)
@@ -10791,7 +10783,7 @@ namespace djack.RogueSurvivor.Engine
       }
       DrawFootnote(Color.White, "press ENTER");
       m_UI.UI_Repaint();
-      WaitEnter();
+      m_UI.WaitEnter();
       textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
       do {
@@ -10808,7 +10800,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING, new Color?());
         DrawFootnote(Color.White,(index < textFile.FormatedLines.Count ? "press ENTER for more" : "press ENTER to leave"));
         m_UI.UI_Repaint();
-        WaitEnter();
+        m_UI.WaitEnter();
       }
       while (index < textFile.FormatedLines.Count);
       var stringBuilder1 = new StringBuilder();
@@ -13670,7 +13662,7 @@ retry:
         m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy8, new Color?());
         DrawFootnote(Color.White, "press ENTER");
         m_UI.UI_Repaint();
-        WaitEnter();
+        m_UI.WaitEnter();
         return false;
       }
       m_UI.UI_DrawStringBold(Color.White, "Leave?", gx, gy6, new Color?());
