@@ -279,10 +279,19 @@ namespace djack.RogueSurvivor
       return false;
     }
 
-    public bool Modal(Func<KeyEventArgs, bool?> ok) {
+    new public bool Modal(Func<KeyEventArgs, bool?> ok) {
       do {
         var key = UI_WaitKey();
         if (Keys.Escape == key.KeyCode) return false;
+        var ret = ok(key);
+        if (null != ret) return ret.Value;
+      } while(true);
+    }
+
+    new public T? Modal<T>(Func<KeyEventArgs, T?> ok) where T:struct {
+      do {
+        var key = UI_WaitKey();
+        if (Keys.Escape == key.KeyCode) return null;
         var ret = ok(key);
         if (null != ret) return ret.Value;
       } while(true);

@@ -818,36 +818,41 @@ namespace djack.RogueSurvivor.Engine
     private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,int,T?>? failover_handler=null) where T:struct
     {
       int currentChoice = 0;
-      do {
-        T? ret = setup_handler(currentChoice);
-        if (null != ret) return ret.Value;
-        m_UI.UI_Repaint();
 
-        KeyEventArgs key = m_UI.UI_WaitKey();
+      T? code = setup_handler(currentChoice);
+      if (null != code) return code.Value;
+      m_UI.UI_Repaint();
 
+      T? handler(KeyEventArgs key) {
         switch(key.KeyCode) {
           case Keys.Return:
-            ret = choice_handler(currentChoice);
-            if (null == ret) break;
-            return ret.Value;
-          case Keys.Escape: return null;
-          case Keys.Up:
-            if (currentChoice > 0) {
-              --currentChoice;
-              break;
+            {
+            var ret = choice_handler(currentChoice);
+            if (null != ret) return ret.Value;
             }
-            currentChoice = choice_length - 1;
+            break;
+          case Keys.Up:
+            if (currentChoice > 0) --currentChoice;
+            else currentChoice = choice_length - 1;
             break;
           case Keys.Down:
             currentChoice = (currentChoice + 1) % choice_length;
             break;
           default:
-            if (null == failover_handler) break;
-            ret = failover_handler(key.KeyCode,currentChoice);
-            if (null == ret) break;
-            return ret.Value;
+            if (null == failover_handler) return null;
+            {
+            var ret = failover_handler(key.KeyCode,currentChoice);
+            if (null != ret) return ret.Value;
+            }
+            break;
         }
-      } while(true);
+
+        var code2 = setup_handler(currentChoice);
+        if (null != code2) return code2.Value;
+        m_UI.UI_Repaint();
+        return null;
+      };
+      return m_UI.Modal(handler);
     }
 
     private void HandleMainMenu()
