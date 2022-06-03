@@ -3448,30 +3448,32 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
         m_UI.WaitEnter();
       } else {
-        bool flag = true;
         List<string> formatedLines = m_Manual.FormatedLines;
-        do {
+
+        void display(int index) {
           m_UI.UI_Clear(Color.Black);
           DrawHeader();
           int gy1 = BOLD_LINE_SPACING;
-          m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1, new Color?());
+          m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1);
           gy1 += BOLD_LINE_SPACING;
-          m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1);
           gy1 += BOLD_LINE_SPACING;
-          int index = m_ManualLine;
+
           do {
             if ("<SECTION>" != formatedLines[index]) {
-              m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy1, new Color?());
+              m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy1);
               gy1 += BOLD_LINE_SPACING;
             }
             ++index;
           }
           while (index < formatedLines.Count && gy1 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
-            m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1);
           DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
           m_UI.UI_Repaint();
-          KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-          int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
+        };
+
+        bool? handler(KeyEventArgs key) {
+          int choiceNumber = KeyToChoiceNumber(key.KeyCode);
           if (choiceNumber >= 0) {
             if (choiceNumber == 0) {
               m_ManualLine = 0;
@@ -3484,15 +3486,12 @@ namespace djack.RogueSurvivor.Engine
               if (m_ManualLine >= formatedLines.Count) m_ManualLine = num3;
             }
           } else {
-            switch (keyEventArgs.KeyCode) {
-              case Keys.Escape:
-                flag = false;
-                break;
+            switch (key.KeyCode) {
               case Keys.Prior:
-                m_ManualLine -= 50;
+                m_ManualLine -= TEXTFILE_LINES_PER_PAGE;
                 break;
               case Keys.Next:
-                m_ManualLine += 50;
+                m_ManualLine += TEXTFILE_LINES_PER_PAGE;
                 break;
               case Keys.Up:
                 --m_ManualLine;
@@ -3500,12 +3499,17 @@ namespace djack.RogueSurvivor.Engine
               case Keys.Down:
                 ++m_ManualLine;
                 break;
+            default: return null;
             }
           }
           if (m_ManualLine < 0) m_ManualLine = 0;
-          if (m_ManualLine + 50 >= formatedLines.Count) m_ManualLine = Math.Max(0, formatedLines.Count - 50);
+          else if (m_ManualLine + TEXTFILE_LINES_PER_PAGE >= formatedLines.Count) m_ManualLine = Math.Max(0, formatedLines.Count - TEXTFILE_LINES_PER_PAGE);
+          display(m_ManualLine);
+          return null;
         }
-        while (flag);
+
+        display(m_ManualLine);
+        m_UI.Modal(handler);
       }
     }
 
