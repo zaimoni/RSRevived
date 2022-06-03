@@ -279,6 +279,15 @@ namespace djack.RogueSurvivor
       return false;
     }
 
+    public bool Modal(Func<KeyEventArgs, bool?> ok) {
+      do {
+        var key = UI_WaitKey();
+        if (Keys.Escape == key.KeyCode) return false;
+        var ret = ok(key);
+        if (null != ret) return ret.Value;
+      } while(true);
+    }
+
     public void UI_Wait(int msecs)
     {
       UI_Repaint();

@@ -4981,6 +4981,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerFireMode(Actor player)
     {
+      const string FIRE_MODE_TEXT = "FIRE MODE - F to fire, T next target, M toggle mode, ESC cancels";
+
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
         return HandlePlayerThrowGrenade(player);
       if (!(player.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) {
@@ -4996,60 +4998,88 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup("No targets to fire at.");
         return false;
       }
+
       Attack attack = player.RangedAttack(0);
       int index = 0;
+
       var LoF = new List<Point>(attack.Range);
       FireMode mode = default;
-      bool flag2 = false;
-      do {
-        Actor currentTarget = enemiesInFov[index];
-        LoF.Clear();
-        bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
-        int num1 = Rules.InteractionDistance(player.Location, currentTarget.Location);
 
-        string modeDesc = (mode == FireMode.RAPID ? string.Format("RAPID fire average hit chances {0}% {1}%", player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2))
-                                                  : string.Format("Normal fire average hit chance {0}%", player.ComputeChancesRangedHit(currentTarget, 0)));
-
-        ///////////////////
-        // 1. Redraw
-        // 2. Get input.
-        // 3. Handle input
-        ///////////////////
-
-        // 1. Redraw
-        var overlayPopupText = new List<string>();
-        overlayPopupText.AddRange(FIRE_MODE_TEXT);
-        overlayPopupText.Add(modeDesc);
-        ClearOverlays();
-        AddOverlay(new OverlayPopup(overlayPopupText.ToArray(), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        AddOverlay(new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
-        string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
-        foreach (Point mapPosition in LoF)
-          AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
-        RedrawPlayScreen();
-
-        // 2. Get input.
-        KeyEventArgs key = m_UI.UI_WaitKey();
-
-        // 3. Handle input
-        if (key.KeyCode == Keys.Escape) break;
-        else if (key.KeyCode == Keys.T) index = (index + 1) % enemiesInFov.Count;
-        else if (key.KeyCode == Keys.M) {
-          mode = (FireMode) ((int) (mode + 1) % 2);
-          AddMessage(new Data.Message(string.Format("Switched to {0} fire mode.", mode.ToString()), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        } else if (key.KeyCode == Keys.F) {
-          if (flag3) {
-            DoRangedAttack(player, currentTarget, LoF, mode);
-            RedrawPlayScreen();
-            flag2 = true;
-            break;
-          } else
-            ErrorPopup(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason));
+      string desc(FireMode mode, Actor currentTarget) {
+        switch(mode) {
+          case FireMode.RAPID: return string.Format("RAPID fire average hit chances {0}% {1}%", player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2));
+          default: return string.Format("Normal fire average hit chance {0}%", player.ComputeChancesRangedHit(currentTarget, 0));
         }
       }
-      while(true);
+
+      // variables lifted/created for event handler setup
+      Actor currentTarget = enemiesInFov[index];
+      var overlayPopupText = new string[2];
+      overlayPopupText[0] = FIRE_MODE_TEXT;
+      overlayPopupText[1] = desc(mode, currentTarget);
+
+      var modeDesc = new OverlayPopup(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      var target = new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET);
+      bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
+
+      List<OverlayImage> display_path(List<Point> los) {
+        List<OverlayImage> ret = new();
+        int num1 = Rules.InteractionDistance(player.Location, currentTarget.Location);
+        string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
+        foreach (Point mapPosition in los)
+          ret.Add(new OverlayImage(MapToScreen(mapPosition), imageID));
+        return ret;
+      }
+
+      List<OverlayImage> LoS = display_path(LoF);
+
       ClearOverlays();
-      return flag2;
+
+      // Initial redraw
+      AddOverlay(modeDesc);
+      AddOverlay(target);
+      foreach(var o in LoS) AddOverlay(o);
+      RedrawPlayScreen();
+
+      bool? handler(KeyEventArgs key) {
+        switch(key.KeyCode) {
+          case Keys.T:
+            if (1 < enemiesInFov.Count) {
+              index = (index + 1) % enemiesInFov.Count;
+              currentTarget = enemiesInFov[index];
+              overlayPopupText[1] = desc(mode, currentTarget);
+              RemoveOverlay(modeDesc);
+              AddOverlay(modeDesc = new OverlayPopup(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+              RemoveOverlay(target);
+              AddOverlay(target = new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
+              flag3 = player.CanFireAt(currentTarget, LoF, out reason);
+              foreach(var o in LoS) RemoveOverlay(o);
+              LoS = display_path(LoF);
+              foreach(var o in LoS) AddOverlay(o);
+              RedrawPlayScreen();
+            }
+            return null;
+          case Keys.M:
+            mode = (FireMode) ((int) (mode + 1) % 2);
+            AddMessage(new Data.Message(string.Format("Switched to {0} fire mode.", mode.ToString()), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+            overlayPopupText[1] = desc(mode, currentTarget);
+            RemoveOverlay(modeDesc);
+            AddOverlay(modeDesc = new OverlayPopup(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+            RedrawPlayScreen();
+            return null;
+          case Keys.F:
+            if (flag3) {
+              DoRangedAttack(player, currentTarget, LoF, mode);
+              RedrawPlayScreen();
+              return true;
+            } else
+              ErrorPopup(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason));
+           return null;
+        }
+        return null;
+      }
+
+      return m_UI.Modal(handler);
     }
 
     private void HandlePlayerMarkEnemies(Actor player)
