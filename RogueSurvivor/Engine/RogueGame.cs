@@ -3810,11 +3810,11 @@ namespace djack.RogueSurvivor.Engine
       var header_size = RogueForm.Get.Measure(header);
       header_size.Height += 1;
 
-      bool ret = false;
       int delta = EXTENDED_CHOICE_UB;
       int num1 = 0;
       int num2 = 0;
-      do {
+
+      void display() {
         staging.Clear();
         if (null == working) {
           for (num2 = 0; num2 < delta && num1 + num2 < strict_ub; ++num2) {
@@ -3837,31 +3837,34 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(working);
         }
         RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        if (Keys.Escape == keyEventArgs.KeyCode) break;
+      }
+
+      bool? handler(KeyEventArgs key) {
         if (delta < strict_ub) {
-          if (Keys.Left == keyEventArgs.KeyCode) {
+          if (Keys.Left == key.KeyCode) {
             if (0 < num1) num1 -= delta;
             else num1 = ((strict_ub - 1) / delta) * delta;
             RemoveOverlay(working);
             working = null;
-          } else if (Keys.Right == keyEventArgs.KeyCode) {
+          } else if (Keys.Right == key.KeyCode) {
             num1 += delta;
             if (num1 >= strict_ub) num1 = 0;
             RemoveOverlay(working);
             working = null;
           }
         }
-        int choiceNumber = KeyToExtendedChoiceNumber(keyEventArgs.KeyCode);
-        if (choiceNumber >= 0 && choiceNumber < delta) {
-          int index = num1 + choiceNumber;
-          if (strict_ub > index && details(index)) {
-            ret = true;
-            break;
+        if (null != working) {
+          int choiceNumber = KeyToExtendedChoiceNumber(key.KeyCode);
+          if (choiceNumber >= 0 && choiceNumber < delta) {
+            int index = num1 + choiceNumber;
+            if (strict_ub > index && details(index)) return true;
           }
-        }
+        } else display();
+        return null;
       }
-      while(true);
+
+      display();
+      var ret = m_UI.Modal(handler);
       RemoveOverlay(working);
       return ret;
     }
