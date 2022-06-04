@@ -3531,57 +3531,61 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("~~~~");
         stringList.Add("");
       }
-      int num3 = 0;
-      bool flag = true;
-      do {
+
+      void display(int index) {
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         int gy3 = BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3);
         gy3 += BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3);
         gy3 += BOLD_LINE_SPACING;
-        int index = num3;
+
         do {
-          m_UI.UI_DrawStringBold(Color.LightGray, stringList[index], 0, gy3, new Color?());
+          m_UI.UI_DrawStringBold(Color.LightGray, stringList[index], 0, gy3);
           gy3 += BOLD_LINE_SPACING;
           ++index;
         }
         while (index < stringList.Count && gy3 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
-        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3);
         DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
         m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
+      }
+
+      int line_no = 0;
+      bool? handler(KeyEventArgs key) {
+        switch (key.KeyCode) {
           case Keys.Up:
-            --num3;
+            --line_no;
             break;
           case Keys.Down:
-            ++num3;
+            ++line_no;
             break;
           case Keys.R:
             s_Hints.ResetAllHints();
             m_UI.UI_Clear(Color.Black);
             DrawHeader();
-            m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, BOLD_LINE_SPACING, new Color?());
-            m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, 2*BOLD_LINE_SPACING, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, BOLD_LINE_SPACING);
+            m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, 2*BOLD_LINE_SPACING);
             m_UI.UI_Repaint();
             m_UI.UI_Wait(DELAY_LONG);
             break;
-          case Keys.Escape:
-            flag = false;
-            break;
           case Keys.Prior:
-            num3 -= 50;
+            line_no -= TEXTFILE_LINES_PER_PAGE;
             break;
           case Keys.Next:
-            num3 += 50;
+            line_no += TEXTFILE_LINES_PER_PAGE;
             break;
+          default: return null;
         }
-        if (num3 < 0) num3 = 0;
-        if (num3 + 50 >= stringList.Count)
-          num3 = Math.Max(0, stringList.Count - 50);
+        if (line_no < 0) line_no = 0;
+        else if (line_no + TEXTFILE_LINES_PER_PAGE >= stringList.Count) line_no = Math.Max(0, stringList.Count - TEXTFILE_LINES_PER_PAGE);
+        display(line_no);
+        return null;
       }
-      while (flag);
+
+      display(line_no);
+      m_UI.Modal(handler);
     }
 
     private void HandleMessageLog()
