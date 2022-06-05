@@ -20,6 +20,12 @@ namespace djack.RogueSurvivor.Engine.Tasks
           _safe_zone = safe_zone;
         }
 
+        public TaskEscapeNanny(Actor escapee, HashSet<Point> safe_zone) : base(1)
+        {
+            _escapees = new() { escapee };
+            _safe_zone = safe_zone;
+        }
+
         public override void Trigger(Map m)
         {
             _escapees.RemoveAll(a => a.IsDead);
