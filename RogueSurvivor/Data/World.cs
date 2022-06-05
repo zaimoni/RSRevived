@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define BOOTSTRAP_HIGHWAY
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,12 +31,8 @@ namespace djack.RogueSurvivor.Data
     private static World? s_Recent = null; // most recently constructed World; our owner Session is a Singleton
     public static World Get { get { return s_Recent ?? throw new ArgumentNullException(nameof(s_Recent)); } }
 
-#if BOOTSTRAP_HIGHWAY
-    static public readonly Point CHAR_City_Origin = new Point(1, 1);
-#else
     // VAPORWARE: non-city districts outside of city limits (both gas station and National Guard base will be outside city limits)
-    static public readonly Point CHAR_City_Origin = new Point(0,0);
-#endif
+    static public readonly Point CHAR_City_Origin = new Point(1, 1);
     [NonSerialized] private Rectangle m_CHAR_City;
     public Rectangle CHAR_CityLimits { get { return m_CHAR_City; } }
 
@@ -55,11 +49,7 @@ namespace djack.RogueSurvivor.Data
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
     public short Size { get { return m_Size; } }
-#if BOOTSTRAP_HIGHWAY
     public short CitySize { get { return m_CHAR_City.Width; } }  // not guaranteed to be the same as the above
-#else
-    public short CitySize { get { return m_Size; } }  // not guaranteed to be the same as the above
-#endif
 
     public bool InBounds(int x,int y) {
       return 0 <= x && m_Size > x && 0 <= y && m_Size > y;
@@ -254,11 +244,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= size) throw new ArgumentOutOfRangeException(nameof(size),size, "0 >= size");
 #endif
-#if BOOTSTRAP_HIGHWAY
       m_Size = (short)(size + 2);
-#else
-      m_Size = size;
-#endif
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
       m_DistrictsGrid = new District[Size, Size];
 //    Weather = Weather.CLEAR;
@@ -275,12 +261,7 @@ namespace djack.RogueSurvivor.Data
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
-      var c_size = 
-#if BOOTSTRAP_HIGHWAY
-      (short)(m_Size - 2);
-#else
-      m_Size;
-#endif
+      var c_size = (short)(m_Size - 2);
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
       s_Recent = this;
     }
