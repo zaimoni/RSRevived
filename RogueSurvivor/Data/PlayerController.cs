@@ -463,22 +463,22 @@ namespace djack.RogueSurvivor.Data
 
     public override void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, true, n));
+      SetObjective(new Goal_PathTo(m_Actor, in loc, true, n));
     }
 
     public void WalkTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, true, n));
+      SetObjective(new Goal_PathTo(m_Actor, locs, true, n));
     }
 
     public void RunTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
-      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, in loc, false, n));
+      SetObjective(new Goal_PathTo(m_Actor, in loc, false, n));
     }
 
     public void RunTo(IEnumerable<Location> locs, int n = int.MaxValue)
     {
-      SetObjective(new Goal_PathTo(Session.Get.WorldTime.TurnCounter, m_Actor, locs, false, n));
+      SetObjective(new Goal_PathTo(m_Actor, locs, false, n));
     }
 
     public List<string> GetValidSelfOrders()

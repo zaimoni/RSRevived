@@ -347,16 +347,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly bool walking;
       private int turns;
 
-      public Goal_PathTo(int t0, Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
-      : base(t0,who)
+      public Goal_PathTo(Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
+      : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         _locs = new HashSet<Location>{loc};
         walking = walk;
         turns = n;
       }
 
-      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs, bool walk = false, int n = int.MaxValue)
-      : base(t0,who)
+      public Goal_PathTo(Actor who, IEnumerable<Location> locs, bool walk = false, int n = int.MaxValue)
+      : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         _locs = new HashSet<Location>(locs);
         walking = walk;

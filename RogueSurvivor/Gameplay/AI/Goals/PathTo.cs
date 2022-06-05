@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -11,7 +9,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // Ancestor class Goal_PathTo
     [Serializable]
-    internal class PathTo : Objective
+    internal class PathTo : Objective, LatePathable
     {
       private readonly HashSet<Location> _locs;
       private readonly bool walking;
@@ -46,12 +44,19 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           _isExpired = true;    // cancel: something urgent
           return true;
         }
+        return false; // defer actual pathing until later
+      }
 
-        ret = ai.BehaviorPathTo(_locs);
+      public ActorAction? Pathing()
+      {
+        var dests = _locs.Where(loc => !loc.StrictHasActorAt);
+        if (!dests.Any()) return null;
+
+        var oai = m_Actor.Controller as ObjectiveAI;
+        var ret = oai.BehaviorPathTo(new HashSet<Location>(_locs));
         if (!(ret?.IsPerformable() ?? false)) {
-          ret = null;
           _isExpired = true;    // cancel: buggy
-          return true;
+          return null;
         }
 
         while(ret is Resolvable res) ret = res.ConcreteAction;
@@ -60,10 +65,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           if (m_Actor.CanRun()) {
             if (walking) {
               if (m_Actor.MaxSTA <= m_Actor.StaminaPoints) want_to_walk = false;
-              else if (!m_Actor.RunIsFreeMove && !m_Actor.WillTireAfter(ai.STA_delta(0, 1, 0, 0) + m_Actor.RunningStaminaCost(step.dest)))
+              else if (!m_Actor.RunIsFreeMove && !m_Actor.WillTireAfter(oai.STA_delta(0, 1, 0, 0) + m_Actor.RunningStaminaCost(step.dest)))
                 want_to_walk = false;
             } else {
-              if (!m_Actor.WillTireAfter(ai.STA_delta(0, 1, 0, 0) + m_Actor.RunningStaminaCost(step.dest)))
+              if (!m_Actor.WillTireAfter(oai.STA_delta(0, 1, 0, 0) + m_Actor.RunningStaminaCost(step.dest)))
                 want_to_walk = false;
             }
           }
@@ -71,7 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           else m_Actor.Run();
         } else m_Actor.Walk();
 
-        return true;
+        return ret;
       }
     }
 }

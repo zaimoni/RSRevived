@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return false;
         }
 
-        public ActorAction Pathing()
+        public ActorAction? Pathing()
         {
             if (_removeInvalidStacks()) return null;
             var _locs = _stacks.Select(p => p.Key.Location).Where(loc => !loc.StrictHasActorAt);

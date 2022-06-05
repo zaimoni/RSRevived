@@ -5013,7 +5013,7 @@ restart_chokepoints:
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)
     {
-      SetObjective(new Goal_PathTo(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Select(pt => new Location(m, pt))));
+      SetObjective(new Goals.PathTo(m_Actor, dest.Select(pt => new Location(m, pt))));
     }
 
 #region damage field
