@@ -315,6 +315,7 @@ namespace djack.RogueSurvivor.Engine
         get { return s_ooao!; }
     }
 
+    static private ZoneLoc[]? s_HighwaySpawnZones = null;
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
     static private List<Actor>? s_RefugeePool = null;
 #nullable restore
@@ -686,28 +687,34 @@ namespace djack.RogueSurvivor.Engine
          const int highway_width = 6;   // synchronize w/map generation
          Rectangle world_bounds = world.Extent;
          List<ZoneLoc> stage = new();
+         List<ZoneLoc> stage_highway = new();
          // Estimate where highways enter our reality bubble
          var m = world.At(world_bounds.Anchor(Compass.XCOMlike.N))!.EntryMap;
          var pt = m.Rect.Anchor(Compass.XCOMlike.N);
          var highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
+         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-n", new Rectangle(highway_origin.Position, new Point(zone_length, 1)))));
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.E))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.E);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
+         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-e", new Rectangle(highway_origin.Position, new Point(1, zone_length)))));
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.S))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.S);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
+         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-s", new Rectangle(highway_origin.Position, new Point(zone_length, 1)))));
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.W))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.W);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
+         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-w", new Rectangle(highway_origin.Position, new Point(1, zone_length)))));
          Interlocked.CompareExchange(ref s_RefugeeSpawnZones, stage.ToArray(), null);
+         Interlocked.CompareExchange(ref s_HighwaySpawnZones, stage_highway.ToArray(), null);
       }
     }
 
