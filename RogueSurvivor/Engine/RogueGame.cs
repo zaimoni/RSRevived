@@ -8,7 +8,6 @@
 
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
-// #define REFUGEE_WAVES
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -1877,12 +1876,8 @@ namespace djack.RogueSurvivor.Engine
     private void EndTurnDistrictEvents(District d)
     { // historically, all districts were within city limits so they all could use the same event specifications.
       CheckFor_Fire_ZombieInvasion(d.EntryMap);
-#if REFUGEE_WAVES
-      if (CheckForEvent_RefugeesWave(d.EntryMap)) FireEvent_RefugeesWave(d);
-#else
       if (CheckForEvent_ScheduleRefugees(d.EntryMap)) FireEvent_ScheduleRefugees(d);
       CheckFor_Fire_RefugeeParty(d);
-#endif
       if (CheckForEvent_NationalGuard(d.EntryMap)) FireEvent_NationalGuard(d.EntryMap);
       if (CheckForEvent_ArmySupplies(d.EntryMap)) FireEvent_ArmySupplies(d.EntryMap);
       if (CheckForEvent_BikersRaid(d.EntryMap)) FireEvent_BikersRaid(d.EntryMap);
@@ -2313,36 +2308,6 @@ namespace djack.RogueSurvivor.Engine
 
     // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map
     // that was physically disconnected from the surface, from their point of view.)
-#if REFUGEE_WAVES
-    static private bool CheckForEvent_RefugeesWave(Map map)
-    {
-      return map.LocalTime.IsStrikeOfMidday;
-    }
-
-    private void FireEvent_RefugeesWave(District district)
-    {
-      // Why are they landing on the ley lines in the first place?  Make this 100% no later than when their arrival is physical
-//    const int REFUGEE_SURFACE_SPAWN_CHANCE = 100;  // RS Alpha 80% is appropriate for a true megapolis (city-planet Trantor, for instance)
-      const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
-      const float REFUGEES_WAVE_SIZE = 0.2f;
-
-      if (district == Player.Location.Map.District && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-        RedrawPlayScreen(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
-      }
-      int num1 = district.EntryMap.Actors.Count(a => a.IsFaction(GameFactions.IDs.TheCivilians) || a.IsFaction(GameFactions.IDs.ThePolice));
-      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
-      var rules = Rules.Get;
-      for (int index = 0; index < num2; ++index)
-//      SpawnNewRefugee(!rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? district.SewersMap : district.EntryMap);
-        SpawnNewRefugee(district.EntryMap);
-      if (!rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
-      lock (Session.Get.UniqueActors) {
-        var candidates = Session.Get.UniqueActors.DraftPool(a => a.IsWithRefugees && !a.IsSpawned /* && !a.TheActor.IsDead */);
-        if (0 < candidates.Count) FireEvent_UniqueActorArrive(district.EntryMap, Rules.Get.DiceRoller.Choose(candidates));
-      }
-    }
-
-#else
     // Refugee re-implementation (requires encircling highway)
     // * These arrive "near the main roads", typically
     // * We shall assume arrival on foot, for now.  Anyone arriving by vehicle either is police/military, or has an escape plan
@@ -2519,8 +2484,9 @@ namespace djack.RogueSurvivor.Engine
         if (0 >= s_RefugeePool.Count) Interlocked.Exchange(ref s_RefugeePool, null);
       }
     }
-#endif
 
+    // \todo re-wire the non-spawn part of this in
+#if DEAD_FUNC
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
       if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER)) return;
@@ -2553,6 +2519,7 @@ namespace djack.RogueSurvivor.Engine
                 if (highlightOverlay != null) RemoveOverlay(highlightOverlay);
             }
         }
+#endif
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
@@ -2843,13 +2810,6 @@ namespace djack.RogueSurvivor.Engine
     // eliminating PC spawn radius shielding to match undead
 
     // The ley line backstory doesn't work for livings.
-    private void SpawnNewRefugee(Map map)
-    {
-      Actor newRefugee = m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
-//    SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true); // allows cheesy metagaming
-      SpawnActorOnMapBorder(map, newRefugee, 1);
-    }
-
     // The bands remain PC spawn radius shielded, for now.
     private Actor? SpawnNewSurvivor(Map map)
     {
