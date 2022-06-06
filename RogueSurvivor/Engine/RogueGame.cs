@@ -13496,8 +13496,8 @@ retry:
       var who = new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR));
       AddOverlay(content);
       AddOverlay(who);
-      ClearMessages();
-      AddMessagePressEnter();
+      RedrawPlayScreen();
+      m_UI.WaitEscape();
       RemoveOverlay(who);   // alpha10 fix
       RemoveOverlay(content);
       m_MusicManager.Stop();
