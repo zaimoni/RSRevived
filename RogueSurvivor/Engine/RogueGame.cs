@@ -314,8 +314,7 @@ namespace djack.RogueSurvivor.Engine
         get { return s_ooao!; }
     }
 
-    static private HashSet<Point>[]? s_ArrivalZones = null;
-    static private ZoneLoc[]? s_HighwaySpawnZones = null;
+    static private KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>[]? s_Arrival = null;
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
     static private List<Actor>? s_RefugeePool = null;
 #nullable restore
@@ -691,10 +690,14 @@ namespace djack.RogueSurvivor.Engine
 
          const int zone_length = 6;
          const int highway_width = 6;   // synchronize w/map generation
+         const int C_assert_survivor_spawn = 1/(SURVIVORS_BAND_SIZE + 1 <= highway_width ? 1 : 0);
+
          Rectangle world_bounds = world.Extent;
          List<ZoneLoc> stage = new();
-         List<ZoneLoc> stage_highway = new();
-         var stage_arrive = new HashSet<Point>[4];
+         var stage_arrivals = new KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>[4];
+
+         Point ns_arrival_zone_dim = new(zone_length, 1);
+         Point ew_arrival_zone_dim = new(1, zone_length);
 
          // We have to redo stage_arrive if the district entry maps stop being the same size, or
          // if any highway entry points are on the corners of the reality bubble.
@@ -703,36 +706,33 @@ namespace djack.RogueSurvivor.Engine
          var m = world.At(world_bounds.Anchor(Compass.XCOMlike.N))!.EntryMap;
          var pt = m.Rect.Anchor(Compass.XCOMlike.N);
          var highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
-         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-n", new Rectangle(highway_origin.Position, new Point(zone_length, 1)))));
-         stage_arrive[0] = stage_arrive[2] = arrival(new(m.Rect.Anchor(Compass.XCOMlike.W) + Direction.N, new Point(m.Width, 2)));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, ns_arrival_zone_dim))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, ns_arrival_zone_dim))));
+         stage_arrivals[0] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-n", new Rectangle(highway_origin.Position, ns_arrival_zone_dim))), arrival(new(m.Rect.Anchor(Compass.XCOMlike.W) + Direction.N, new Point(m.Width, 2)))));
 
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.E))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.E);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
-         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-e", new Rectangle(highway_origin.Position, new Point(1, zone_length)))));
-         stage_arrive[1] = stage_arrive[3] = arrival(new(m.Rect.Anchor(Compass.XCOMlike.N) + Direction.W, new Point(2, m.Height)));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, ew_arrival_zone_dim))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, ew_arrival_zone_dim))));
+         stage_arrivals[1] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-e", new Rectangle(highway_origin.Position, ew_arrival_zone_dim))), arrival(new(m.Rect.Anchor(Compass.XCOMlike.N) + Direction.W, new Point(2, m.Height)))));
 
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.S))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.S);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, new Point(zone_length, 1)))));
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, new Point(zone_length, 1)))));
-         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-s", new Rectangle(highway_origin.Position, new Point(zone_length, 1)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, ns_arrival_zone_dim))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-s-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, ns_arrival_zone_dim))));
+         stage_arrivals[2] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-s", new Rectangle(highway_origin.Position, ns_arrival_zone_dim))), stage_arrivals[0].Value.Value));
 
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.W))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.W);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, new Point(1, zone_length)))));
-         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, new Point(1, zone_length)))));
-         stage_highway.Add(new ZoneLoc(m, new Zone("highway-spawn-w", new Rectangle(highway_origin.Position, new Point(1, zone_length)))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, ew_arrival_zone_dim))));
+         stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-w-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, ew_arrival_zone_dim))));
+         stage_arrivals[3] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-w", new Rectangle(highway_origin.Position, ew_arrival_zone_dim))), stage_arrivals[1].Value.Value));
 
          Interlocked.CompareExchange(ref s_RefugeeSpawnZones, stage.ToArray(), null);
-         Interlocked.CompareExchange(ref s_HighwaySpawnZones, stage_highway.ToArray(), null);
-         Interlocked.CompareExchange(ref s_ArrivalZones, stage_arrive, null);
+         Interlocked.CompareExchange(ref s_Arrival, stage_arrivals, null);
       }
     }
 
@@ -2423,6 +2423,14 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
+    static private Compass.XCOMlike? entering_from(Rectangle r, Map m) {
+        if (0 == r.Top) return Compass.XCOMlike.N;
+        if (0 == r.Left) return Compass.XCOMlike.W;
+        if (r.Right == m.Rect.Right) return Compass.XCOMlike.E;
+        if (r.Bottom == m.Rect.Bottom) return Compass.XCOMlike.S;
+        return null;
+    }
+
     private void PlaceRefugeeParty(ZoneLoc dest) {
       var party = ConstructRefugeeParty();
       var leader = party[0];
@@ -2431,19 +2439,11 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      Compass.XCOMlike? entering_from() {
-        if (0 == dest.Rect.Top) return Compass.XCOMlike.N;
-        if (0 == dest.Rect.Left) return Compass.XCOMlike.W;
-        if (dest.Rect.Right == dest.m.Rect.Right) return Compass.XCOMlike.E;
-        if (dest.Rect.Bottom == dest.m.Rect.Bottom) return Compass.XCOMlike.S;
-        return null;
-      }
-
       // If the leader does not use advanced pathing (e.g., police), point him at the city
       if (null == leader.Threats) {
-        var dir = entering_from();
+        var dir = entering_from(dest.Rect, dest.m);
         if (null != dir) {
-          var escape = new Tasks.TaskEscapeNanny(leader, s_ArrivalZones![(int)(dir.Value) /2]);
+          var escape = new Tasks.TaskEscapeNanny(leader, s_Arrival![(int)(dir.Value) /2].Value.Value);
           escape.Trigger(dest.m);
           dest.m.AddTimer(escape);
         }
@@ -2676,6 +2676,47 @@ namespace djack.RogueSurvivor.Engine
       return Session.Get.World.HasRaidHappenedSince(raid, map, sinceNTurns);
     }
 
+    private List<KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>> LandEventEntrance(Point world_pos)
+    {
+        int min_dist = int.MaxValue;
+        List<KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>> ret = new();
+        foreach(var x in s_Arrival!) {
+          var dist = Rules.GridDistance(in world_pos, x.Key.District.WorldPosition);
+          if (dist > min_dist) continue;
+          if (dist < min_dist) {
+            min_dist = dist;
+            ret.Clear();
+          }
+          ret.Add(x);
+        }
+        return ret;
+    }
+
+    static private bool LZ_is_clear(ZoneLoc landing_zone, Faction friendly)
+    {
+        var scan = landing_zone.Listing;
+        foreach(var loc in scan) if (null != loc.Actor) return false;
+        short radius = (short)Actor.MaxLivingFOV(landing_zone.m);
+        // cut some corners re FOV calculations
+        var LoS_zone = new ZoneLoc(landing_zone.m, new Rectangle(landing_zone.Rect.Location-radius*Direction.NW, landing_zone.Rect.Size+2*Direction.SE));
+        var scan2 = LoS_zone.Listing;
+        foreach(var loc in scan2) {
+          if (scan.Contains(loc)) continue;
+          var a = loc.Actor;
+          if (null != a && a.Faction.IsEnemyOf(friendly)) return false;
+        }
+        return true;
+    }
+
+    private Point nominate_edge(Map map, Actor toSpawn) {
+      var tmp = new Zaimoni.Data.Stack<Point>(stackalloc Point[2 * (map.Rect.Width + map.Rect.Height - 2)]);
+      map.Rect.WhereOnEdge(ref tmp, pt => {
+         if (!map.IsWalkableFor(pt, toSpawn)) return false;
+         return true;
+      });
+      return Rules.Get.DiceRoller.Choose(tmp);
+    }
+
     private bool CheckForEvent_BikersRaid(Map map)
     {
         if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
@@ -2756,12 +2797,43 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BandOfSurvivors(Map map)
     {
+      var landing_zones = LandEventEntrance(map.District.WorldPosition);
+      var n = landing_zones.Count;
+      while(0 <= --n) {
+        if (!LZ_is_clear(landing_zones[n].Value.Key, GameFactions.TheSurvivors)) landing_zones.RemoveAt(n);
+      }
+      if (0 >= landing_zones.Count) return;
+      n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
+      var turn = map.LocalTime.TurnCounter;
+      var party = new Actor[SURVIVORS_BAND_SIZE+1];
+      var i = SURVIVORS_BAND_SIZE + 1;
+      while(0 <= --i) party[i] = m_TownGenerator.CreateNewSurvivor(turn);
+
+      // 2022-06-06: Survivors don't have a guaranteed leader(???).
+      // \todo pre-lead like we do civilians
+
+      var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
+      if (null != dir) {
+          // point the leaderless survivors at the city (they won't have threat tracking),
+          // then the destination the legacy implementation would have picked out.
+          var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
+          i = SURVIVORS_BAND_SIZE + 1;
+          while(0 <= --i) {
+            var escape = new Tasks.TaskEscapeNanny(party[i], final_dest);
+            escape.Trigger(map);
+            map.AddTimer(escape);
+            escape = new Tasks.TaskEscapeNanny(party[i], landing_zones[n].Value.Value);
+            escape.Trigger(landing_zones[n].Key);
+            landing_zones[n].Key.AddTimer(escape);
+          }
+      }
+
+      var lz = landing_zones[n].Value.Key.Listing;
+      i = SURVIVORS_BAND_SIZE + 1;
+      while(0 <= --i) lz[i].Place(party[i]);
+
       Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
-      var actor = SpawnNewSurvivor(map);
-      if (actor == null) return;
-      var origin = actor.Location;
-      for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index) SpawnNewSurvivor(origin);
-      NotifyOrderablesAI(RaidType.SURVIVORS, origin);
+      NotifyOrderablesAI(RaidType.SURVIVORS, party[2].Location);
     }
 
     static private int DistanceToPlayer(Map map, Point pos)
