@@ -2559,6 +2559,10 @@ namespace djack.RogueSurvivor.Engine
         }
 #endif
 
+    // VAPORWARE: helicopter events: National Guard, supply drop, Black Ops
+    // VAPORWARE: land vehicle events: Bikers (motorcycles), Gangsters (cars), Survivors (vans)
+    // for now, allow the helicopter events to use legacy behavior
+    // \todo but require the landbound events to arrive at the highway entrance zone
     private bool CheckForEvent_NationalGuard(Map map)
     {
       if (0 == s_Options.NatGuardFactor || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !Rules.Get.RollChance(NATGUARD_INTERVENTION_CHANCE))
@@ -2674,6 +2678,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BikersRaid(Map map)
     {
+        if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
       var day = map.LocalTime.Day;
       return day >= BIKERS_RAID_DAY && day < BIKERS_END_DAY
          && !HasRaidHappenedSince(RaidType.BIKERS, map, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY)
@@ -2696,6 +2701,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private bool CheckForEvent_GangstasRaid(Map map)
     {
+        if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
       var day = map.LocalTime.Day;
       return day >= GANGSTAS_RAID_DAY && day < GANGSTAS_END_DAY
          && !HasRaidHappenedSince(RaidType.GANGSTA, map, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY)
@@ -2742,6 +2748,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
+        if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
       return map.LocalTime.Day >= SURVIVORS_BAND_DAY
          && !HasRaidHappenedSince(RaidType.SURVIVORS, map, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
