@@ -3960,35 +3960,47 @@ namespace djack.RogueSurvivor.Engine
 
       int turn = Session.Get.WorldTime.TurnCounter;
       int num1 = 0;
-      ClearOverlays();
-      AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      do {
+      int num2;
+      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      AddOverlay(mode);
+
+      void display(int origin) {
         ClearMessages();
         AddMessage(new Data.Message(header, turn, Color.Yellow));
-        int num2;
-        for (num2 = 0; num2 < MENU_VIEW && num1 + num2 < strict_ub; ++num2) {
-          int index = num1 + num2;
+        for (num2 = 0; num2 < MENU_VIEW && origin + num2 < strict_ub; ++num2) {
+          int index = origin + num2;
           AddMessage(new Data.Message((1+num2).ToString()+" "+label(index), turn, Color.LightGreen));
         }
         if (2 * MENU_VIEW < strict_ub) AddMessage(new Data.Message("8. prev  9. next", turn, Color.LightGreen));
         else if (MENU_VIEW < strict_ub) AddMessage(new Data.Message("9. next", turn, Color.LightGreen));
         RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        if (Keys.Escape == keyEventArgs.KeyCode) break;
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (8 == choiceNumber) {
-          num1 -= MENU_VIEW;
-          if (0 > num1) num1 = (strict_ub / MENU_VIEW) * MENU_VIEW;
-        } else if (9 == choiceNumber) {
-          num1 += MENU_VIEW;
-          if (num1 >= strict_ub) num1 = 0;
-        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-          int index = num1 + choiceNumber - 1;
-          if (details(index)) break;
-        }
       }
-      while(true);
-      ClearOverlays();
+
+      bool? handler(KeyEventArgs key) {
+        int choiceNumber = KeyToChoiceNumber(key.KeyCode);
+        switch(choiceNumber) {
+          case 8:
+            num1 -= MENU_VIEW;
+            if (0 > num1) num1 = (strict_ub / MENU_VIEW) * MENU_VIEW;
+            break;
+          case 9:
+            num1 += MENU_VIEW;
+            if (num1 >= strict_ub) num1 = 0;
+            break;
+          default:
+            if (choiceNumber >= 1 && choiceNumber <= num2) {
+             int index = num1 + choiceNumber - 1;
+             if (details(index)) return true;
+            };
+            return null;
+        }
+        display(num1);
+        return null;
+      }
+
+      display(num1);
+      m_UI.Modal(handler);
+      RemoveOverlay(mode);
     }
 #nullable restore
 
