@@ -1579,6 +1579,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    /// <returns>true if and only if a cell phone is required to be equipped</returns>
+    protected bool BehaviorEquipPoliceRadio()
+    {
+      var radio = m_Actor.Inventory.GetBestMatching<ItemTracker>(it => it.CanTrackPolice && !it.IsUseless, (lhs, rhs) => {
+          if (lhs.IsEquipped) return false;
+          if (rhs.IsEquipped) return true;
+          return lhs.Batteries>rhs.Batteries;
+      });
+      if (null == radio) return false;
+      if (m_Actor.NeedActivePoliceRadio) {    // VAPORWARE could dial 911, at least while that desk is manned
+        radio.EquippedBy(m_Actor);
+        return true;
+      }
+      radio.UnequippedBy(m_Actor);
+      return false;
+    }
+
     protected ActionThrowGrenade? BehaviorThrowGrenade()
     {
 #if DEBUG
