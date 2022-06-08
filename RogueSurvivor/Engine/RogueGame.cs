@@ -8238,7 +8238,7 @@ namespace djack.RogueSurvivor.Engine
           if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
-      if (origin_seen) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_LEAVE.Conjugate(actor), map.Name)));
+      if (origin_seen && !is_cross_district) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_LEAVE.Conjugate(actor), map.Name)));
       actor.RemoveFromMap();
       var dragged_corpse = actor.DraggedCorpse;
       if (null != dragged_corpse) map.Remove(dragged_corpse);
@@ -8249,7 +8249,7 @@ namespace djack.RogueSurvivor.Engine
         exit_map.MoveActorToFirstPosition(actor);
 
       if (null != dragged_corpse) exitAt.Location.Add(dragged_corpse);
-      if (ForceVisibleToPlayer(actor) || isPlayer) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_ENTER.Conjugate(actor), exit_map.Name)));
+      if ((ForceVisibleToPlayer(actor) || isPlayer) && !is_cross_district) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_ENTER.Conjugate(actor), exit_map.Name)));
       if (is_cross_district)
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
