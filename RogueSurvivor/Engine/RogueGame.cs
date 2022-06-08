@@ -5197,7 +5197,11 @@ namespace djack.RogueSurvivor.Engine
         return null;
       }
 
-      return m_UI.Modal(handler);
+      var ret = m_UI.Modal(handler);
+      foreach(var o in LoS) RemoveOverlay(o);
+      RemoveOverlay(target);
+      RemoveOverlay(modeDesc);
+      return ret;
     }
 
     private void HandlePlayerMarkEnemies(Actor player)
