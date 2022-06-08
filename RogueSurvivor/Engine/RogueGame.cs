@@ -13500,6 +13500,7 @@ retry:
       m_UI.WaitEscape();
       RemoveOverlay(who);   // alpha10 fix
       RemoveOverlay(content);
+      RedrawPlayScreen();
       m_MusicManager.Stop();
     }
 
