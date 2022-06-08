@@ -27,15 +27,15 @@ namespace djack.RogueSurvivor.Engine._Goal
 
 #region Condition<Actor> implementation
         public bool IsDone() {
-            foreach (var loc in m_Locations) if (IsDone(in loc)) return true;
-            return false;
+            foreach (var loc in m_Locations) if (!IsDone(in loc)) return false;
+            return true;
         }
 
         public int StatusCode() { return IsDone() ? 0 : 1; }
 
         public bool IsDone(Actor viewpoint) {
-            foreach (var loc in m_Locations) if (IsDone(in loc, viewpoint)) return true;
-            return false;
+            foreach (var loc in m_Locations) if (!IsDone(in loc, viewpoint)) return false;
+            return true;
         }
 
         public int StatusCode(Actor viewpoint) { return IsDone(viewpoint) ? 0 : 1; }
