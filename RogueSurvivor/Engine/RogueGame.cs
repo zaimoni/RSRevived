@@ -2812,6 +2812,10 @@ namespace djack.RogueSurvivor.Engine
       // 2022-06-06: Survivors don't have a guaranteed leader(???).
       // \todo pre-lead like we do civilians
 
+      var lz = landing_zones[n].Value.Key.Listing;
+      i = SURVIVORS_BAND_SIZE + 1;
+      while(0 <= --i) lz[i].Place(party[i]);
+
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
       if (null != dir) {
           // point the leaderless survivors at the city (they won't have threat tracking),
@@ -2827,10 +2831,6 @@ namespace djack.RogueSurvivor.Engine
             landing_zones[n].Key.AddTimer(escape);
           }
       }
-
-      var lz = landing_zones[n].Value.Key.Listing;
-      i = SURVIVORS_BAND_SIZE + 1;
-      while(0 <= --i) lz[i].Place(party[i]);
 
       Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
       NotifyOrderablesAI(RaidType.SURVIVORS, party[2].Location);
