@@ -4331,7 +4331,7 @@ namespace djack.RogueSurvivor.Engine
         string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (lines != null) {
           var screen = MapToScreen(pt);
-          overlays.Add(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y)));
+          overlays.Add(SetInfoOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y))));
         }
         if (s_Options.ShowTargets) {
           var actorAt = loc.Actor;
@@ -4345,9 +4345,12 @@ namespace djack.RogueSurvivor.Engine
             Point pt = MouseToMap(mousePos);
             Location test = new(CurrentMap, pt);
             if (Map.Canonical(ref test) && null!=m_LiveLook && test == m_LiveLook.Value) return false;
-            foreach(var o in overlays) RemoveOverlay(o);
+            bool need_redraw = false;
+            foreach(var o in overlays) {
+              if (RemoveOverlay(o)) need_redraw = true;
+            }
             m_LiveLook = null;
-            RedrawPlayScreen();
+            if (need_redraw) RedrawPlayScreen();
             return true;
           }
           IRogueUI.UI.Add(remove);
@@ -4418,7 +4421,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X, itemPos.Y, TILE_SIZE, TILE_SIZE)));
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
       if (inventoryItem != null) {
-        AddOverlay(new OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE)));
+        AddOverlay(SetInfoOverlay(new OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
         if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
           else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
@@ -12333,20 +12336,31 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
 #endif
+      Interlocked.Exchange(ref s_infoOverlay, null);
       lock (m_Overlays) { m_Overlays.Clear(); }
     }
 
-    void RemoveOverlay(Overlay o)   // alpha10
+    bool RemoveOverlay(Overlay o)   // alpha10
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
 #endif
-      lock (m_Overlays) { m_Overlays.Remove(o); }
+      Interlocked.CompareExchange(ref s_infoOverlay, null, o);
+      lock (m_Overlays) { return m_Overlays.Remove(o); }
     }
 
     bool HasOverlay(Overlay o) // alpha10
     {
       lock (m_Overlays) { return m_Overlays.Contains(o); }
+    }
+
+    private static Overlay? s_infoOverlay = null;
+
+    Overlay SetInfoOverlay(Overlay src) {
+      // Create Read Update Delete would indicate a ClearInfoOverlay, but that is handled as formally required
+      var expired = Interlocked.Exchange(ref s_infoOverlay, src);
+      if (null != expired) RemoveOverlay(expired);
+      return src;
     }
 
     private static GDI_Point MapToScreen(int x, int y)
