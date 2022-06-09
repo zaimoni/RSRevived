@@ -344,7 +344,6 @@ namespace djack.RogueSurvivor.Engine
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
     private static GameHintsStatus s_Hints = new GameHintsStatus();
-    private OverlayPopup m_HintAvailableOverlay;  // alpha10
     private readonly BaseTownGenerator m_TownGenerator;
     private static bool m_PlayedIntro = false;
     private readonly IMusicManager m_MusicManager;
@@ -3017,6 +3016,10 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
+    // Advisor hint available overlay
+    static private OverlayPopup? s_HintAvailableOverlay = null;  // alpha10
+    static private string[] s_HintAvailableHeaderLines = null;
+
     // Don't want this in PlayerController; the required public accessors are unacceptable.
     static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
 
@@ -3054,21 +3057,22 @@ namespace djack.RogueSurvivor.Engine
           // alpha10 fix properly handle hint overlay
           int availableHint = -1;
           if (s_Options.IsAdvisorEnabled && (availableHint = GetAdvisorFirstAvailableHint()) != -1) {
-            var overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
-            if (m_HintAvailableOverlay == null) {
-              m_HintAvailableOverlay = new OverlayPopup(null, Color.White, Color.White, Color.Black, overlayPos);
-              AddOverlay(m_HintAvailableOverlay);
+            GetAdvisorHintText((AdvisorHint)availableHint, out string hintTitle, out var _);
+            if (null == s_HintAvailableOverlay) {
+              // constant due to above
+              var overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
+              s_HintAvailableHeaderLines = new string[] {
+                string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.AsString(PlayerCommand.ADVISOR)),
+                hintTitle
+              };
+              s_HintAvailableOverlay = new OverlayPopup(s_HintAvailableHeaderLines, Color.White, Color.White, Color.Black, overlayPos);
+              AddOverlay(s_HintAvailableOverlay);
             } else {
-              m_HintAvailableOverlay.ScreenPosition = overlayPos;
-              if (!HasOverlay(m_HintAvailableOverlay)) AddOverlay(m_HintAvailableOverlay);
+              s_HintAvailableHeaderLines[1] = hintTitle;
+              if (!HasOverlay(s_HintAvailableOverlay)) AddOverlay(s_HintAvailableOverlay);
             }
-
-            GetAdvisorHintText((AdvisorHint)availableHint, out string hintTitle, out string[] hintBody);
-            m_HintAvailableOverlay.Lines = new string[] {
-              string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.AsString(PlayerCommand.ADVISOR)),
-              hintTitle };
-          } else if (m_HintAvailableOverlay != null && HasOverlay(m_HintAvailableOverlay)) {
-            RemoveOverlay(m_HintAvailableOverlay);
+          } else if (s_HintAvailableOverlay != null && HasOverlay(s_HintAvailableOverlay)) {
+            RemoveOverlay(s_HintAvailableOverlay);
           }
         }
 
@@ -14305,13 +14309,8 @@ retry:
       public readonly Color TextColor;
       public readonly Color BoxBorderColor;
       public readonly Color BoxFillColor;
-      public string[] Lines;
+      public readonly string[] Lines;  // Cf. Advisor: need array entries to be writeable
 
-      /// <param name="lines">can be null if want to set text property later</param>
-      /// <param name="textColor"></param>
-      /// <param name="boxBorderColor"></param>
-      /// <param name="boxFillColor"></param>
-      /// <param name="screenPos"></param>
       public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos)
       {
         ScreenPosition = screenPos;
