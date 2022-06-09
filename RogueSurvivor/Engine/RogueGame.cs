@@ -46,51 +46,13 @@ namespace djack.RogueSurvivor.Engine
   {
     private readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
     // these are used by OverlayPopup, so are used as arrays of strings anyway
-    // string.Format requires a string, but otherwise these should remain arrays of strings
-    private readonly string[] CLOSE_DOOR_MODE_TEXT = new string[1]
-    {
-      "CLOSE MODE - directions to close, ESC cancels"
-    };
-    private readonly string[] BARRICADE_MODE_TEXT = new string[1]
-    {
-      "BARRICADE/REPAIR MODE - directions to barricade/repair, ESC cancels"
-    };
-    private readonly string[] BREAK_MODE_TEXT = new string[1]
-    {
-      "BREAK MODE - directions/wait to break an object, ESC cancels"
-    };
-    private readonly string[] BUILD_LARGE_FORT_MODE_TEXT = new string[1]
-    {
-      "BUILD LARGE FORTIFICATION MODE - directions to build, ESC cancels"
-    };
-    private readonly string[] BUILD_SMALL_FORT_MODE_TEXT = new string[1]
-    {
-      "BUILD SMALL FORTIFICATION MODE - directions to build, ESC cancels"
-    };
-    private readonly string[] TRADE_MODE_TEXT = new string[1]
-    {
-      "TRADE MODE - Y to accept the deal, N to refuse"
-    };
+    private const string TRADE_MODE_TEXT = "TRADE MODE - Y to accept the deal, N to refuse";
     private readonly string[] INITIATE_TRADE_MODE_TEXT = new string[1]
     {
       "INITIATE TRADE MODE - directions to offer item to someone, ESC cancels"
     };
-    private readonly string[] UPGRADE_MODE_TEXT = new string[] { "UPGRADE MODE - follow instructions in the message panel" };
     private readonly string[] FIRE_MODE_TEXT = new string[] { "FIRE MODE - F to fire, T next target, M toggle mode, ESC cancels" };
-    private readonly string[] SWITCH_PLACE_MODE_TEXT = new string[] { "SWITCH PLACE MODE - directions to switch place with a follower, ESC cancels" };
-    private readonly string[] TAKE_LEAD_MODE_TEXT = new string[] { "TAKE LEAD MODE - directions to recruit a follower, ESC cancels" };
-    private readonly string[] PULL_MODE_TEXT = new string[] { "PULL MODE - directions to select object, ESC cancels" }; // alpha10
-    private readonly string[] PUSH_MODE_TEXT = new string[] { "PUSH/SHOVE MODE - directions to push/shove, ESC cancels" };
-    private readonly string[] TAG_MODE_TEXT = new string[] { "TAG MODE - directions to tag a wall or on the floor, ESC cancels" };
-    private readonly string[] SPRAY_MODE_TEXT = new string[] { "SPRAY MODE - directions to spray or wait key to spray on yourself, ESC cancels" };  // alpha10
-    private readonly string PULL_OBJECT_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
-    private readonly string PULL_ACTOR_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
-    private readonly string PUSH_OBJECT_MODE_TEXT = "PUSHING {0} - directions to push, ESC cancels";
-    private readonly string SHOVE_ACTOR_MODE_TEXT = "SHOVING {0} - directions to shove, ESC cancels";
-    private readonly string[] ORDER_MODE_TEXT = new string[] { "ORDER MODE - follow instructions in the message panel, ESC cancels" };
-    private readonly string[] GIVE_MODE_TEXT = new string[] { "GIVE MODE - directions to give item to someone, ESC cancels" };
-    private readonly string[] THROW_GRENADE_MODE_TEXT = new string[] { "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels" };
-    private readonly string[] MARK_ENEMIES_MODE = new string[] { "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels" };
+    private readonly string ORDER_MODE_TEXT = "ORDER MODE - follow instructions in the message panel, ESC cancels";
     // end string arrays used by OverlayPopup
 
     // report formatting; design width 120 characters, design height 51-ish lines (depends on bold/normal)
@@ -4774,6 +4736,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
+      const string GIVE_MODE_TEXT = "GIVE MODE - directions to give item to someone, ESC cancels";
+
       var inventoryItem = MouseToInventoryItem(screen, out var inv);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       ClearOverlays();
@@ -4829,7 +4793,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         Actor target = actorList[index];
         ClearOverlays();
-        AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+        AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
@@ -4918,6 +4882,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerCloseDoor(Actor player)
     {
+      const string CLOSE_DOOR_MODE_TEXT = "CLOSE MODE - directions to close, ESC cancels";
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -4956,6 +4922,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerBarricade(Actor player)
     {
+      const string BARRICADE_MODE_TEXT = "BARRICADE/REPAIR MODE - directions to barricade/repair, ESC cancels";
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -5002,6 +4970,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerBreak(Actor player)
     {
+      const string BREAK_MODE_TEXT = "BREAK MODE - directions/wait to break an object, ESC cancels";
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -5072,6 +5042,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
     {
+      const string BUILD_LARGE_FORT_MODE_TEXT = "BUILD LARGE FORTIFICATION MODE - directions to build, ESC cancels";
+      const string BUILD_SMALL_FORT_MODE_TEXT = "BUILD SMALL FORTIFICATION MODE - directions to build, ESC cancels";
+
       if (player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) {
         ErrorPopup("need carpentry skill.");
         return false;
@@ -5213,6 +5186,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerMarkEnemies(Actor player)
     {
+      const string MARK_ENEMIES_MODE = "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels";
+
       if (player.Model.Abilities.IsUndead) {
         ErrorPopup("Undeads can't have personal enemies.");
         return;
@@ -5258,6 +5233,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerThrowGrenade(Actor player)
     {
+      const string THROW_GRENADE_MODE_TEXT = "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels";
+
       var itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
       var itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
 #if DEBUG
@@ -5332,6 +5309,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerSwitchPlace(Actor player)
     {
+      const string SWITCH_PLACE_MODE_TEXT = "SWITCH PLACE MODE - directions to switch place with a follower, ESC cancels";
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -5365,6 +5344,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerTakeLead(Actor player)
     {
+      const string TAKE_LEAD_MODE_TEXT = "TAKE LEAD MODE - directions to recruit a follower, ESC cancels";
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -5419,6 +5400,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPush(Actor player)
     {
+      const string PUSH_MODE_TEXT = "PUSH/SHOVE MODE - directions to push/shove, ESC cancels";
+
       string err = player.ReasonCantPush();
       if (!string.IsNullOrEmpty(err)) {
         ErrorPopup(err);
@@ -5463,8 +5446,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPushObject(Actor player, MapObject mapObj)
     {
+      const string PUSH_OBJECT_MODE_TEXT = "PUSHING {0} - directions to push, ESC cancels";
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1] { string.Format(PUSH_OBJECT_MODE_TEXT,  mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(string.Format(PUSH_OBJECT_MODE_TEXT,  mapObj.TheName), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
 
       Point? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(mapObj.Location.Position + dir); }
@@ -5489,8 +5474,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerShoveActor(Actor player, Actor other)
     {
+      const string SHOVE_ACTOR_MODE_TEXT = "SHOVING {0} - directions to shove, ESC cancels";
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1] { string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location), SIZE_OF_ACTOR)));
       if (other.Controller is ObjectiveAI ai) {
         var dests = ai.WantToGoHere(other.Location);
@@ -5518,6 +5505,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPull(Actor player) // alpha10
     {
+      const string PULL_MODE_TEXT = "PULL MODE - directions to select object, ESC cancels"; // alpha10
+
       // fail immediately for stupid cases.
       string err = player.ReasonCantPull();
       if (!string.IsNullOrEmpty(err)) {
@@ -5565,8 +5554,10 @@ namespace djack.RogueSurvivor.Engine
 
     bool HandlePlayerPullObject(Actor player, MapObject mapObj) // alpha10
     {
+      const string PULL_OBJECT_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(string.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(mapObj.Location.Position), SIZE_OF_TILE)));
 
       Point? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
@@ -5590,8 +5581,10 @@ namespace djack.RogueSurvivor.Engine
 
     bool HandlePlayerPullActor(Actor player, Actor other)   // alpha10
     {
+      const string PULL_ACTOR_MODE_TEXT = "PULLING {0} - directions to walk to, ESC cancels";  // alpha10
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(string.Format(PULL_ACTOR_MODE_TEXT, other.TheName), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(other.Location.Position), SIZE_OF_TILE)));
 
       Location? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(player.Location + dir); }
@@ -5629,6 +5622,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerTag(Actor player, ItemSprayPaint spray)
     {
+      const string TAG_MODE_TEXT = "TAG MODE - directions to tag a wall or on the floor, ESC cancels";
+
       if (spray.PaintQuantity <= 0) {
         ErrorPopup("No paint left.");
         return false;
@@ -5678,6 +5673,8 @@ namespace djack.RogueSurvivor.Engine
     // alpha10 new way to use stench killer
     private bool HandlePlayerSprayOdorSuppressor(Actor player, ItemSprayScent spray)
     {
+      const string SPRAY_MODE_TEXT = "SPRAY MODE - directions to spray or wait key to spray on yourself, ESC cancels";  // alpha10
+
       // Check if has odor suppressor, etc.
       if (!player.CanSprayOdorSuppressor(spray, out string reason)) {
         ErrorPopup(reason);
@@ -10916,8 +10913,6 @@ namespace djack.RogueSurvivor.Engine
             pc.DeferMessage(msg_alive);
             pc.DeferMessage(msg_welcome);
         } else {
-            ClearOverlays();
-            AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
             m_MusicManager.Stop();
             m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
             ClearMessages();
@@ -10927,7 +10922,6 @@ namespace djack.RogueSurvivor.Engine
             // HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
             ClearMessages();
             AddMessage(msg_welcome);
-            ClearOverlays();
             RedrawPlayScreen();
             m_MusicManager.Stop();
         }
@@ -12520,8 +12514,12 @@ namespace djack.RogueSurvivor.Engine
         return false;
       };
 
+      var desc = "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint";
+      if (null != available_followers) desc += ", O)rder a follower to stop by the waypoint";
+      desc += ", or walk 1) to 9) steps and record waypoint. ESC cancels";
+
       ClearOverlays();
-      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint, or walk 1) to 9) steps and record waypoint. ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      AddOverlay(new OverlayPopup(desc, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
 
       do {
@@ -14318,6 +14316,15 @@ retry:
         BoxBorderColor = boxBorderColor;
         BoxFillColor = boxFillColor;
         Lines = lines;
+      }
+
+      public OverlayPopup(string line, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos)
+      {
+        ScreenPosition = screenPos;
+        TextColor = textColor;
+        BoxBorderColor = boxBorderColor;
+        BoxFillColor = boxFillColor;
+        Lines = new string[] { line };
       }
 
       public override void Draw(IRogueUI ui)
