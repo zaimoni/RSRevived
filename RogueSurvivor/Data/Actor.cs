@@ -737,12 +737,6 @@ namespace djack.RogueSurvivor.Data
 
       m_CurrentDefence = Sheet.BaseDefence;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) m_CurrentDefence += armor.Model.ToDefence();
-
-      CommandLinePlayer();
-      // Support savefile hacking.
-      // If the controller is null, intent was to hand control from the player to the AI.
-      // Give them AI controllers here.
-      if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
     void IDeserializationCallback.OnDeserialization(object? sender)
@@ -752,6 +746,12 @@ namespace djack.RogueSurvivor.Data
 
     public void RepairLoad()
     {
+      CommandLinePlayer();
+      // Support savefile hacking.
+      // If the controller is null, intent was to hand control from the player to the AI.
+      // Give them AI controllers here.
+      if (null == m_Controller) Controller = Model.InstanciateController(this);
+
       Controller.RepairLoad();
     }
 #nullable restore
