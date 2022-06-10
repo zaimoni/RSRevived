@@ -10962,9 +10962,11 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup(str + " can't learn anything new!");
         return;
       }
+
       var skills = upgradeActor.Sheet.SkillTable;
-      do {
-          ClearMessages();
+      OverlayPopupTitle? popup = null;
+
+      void display() {
           var popupLines = new List<string> { "" };
 
           for (int iChoice = 0; iChoice < upgrade.Count; iChoice++) {
@@ -10990,15 +10992,16 @@ namespace djack.RogueSurvivor.Engine
             }
           }
 
-          var popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64));
-          AddOverlay(popup);
+          AddOverlay(popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64)));
           RedrawPlayScreen();
-          KeyEventArgs key = m_UI.UI_WaitKey();
-          if (key.KeyCode == Keys.Escape) break;
+      }
+
+      bool? handler(KeyEventArgs key) {
           if (key.KeyCode == Keys.Space) {
             upgrade = RollSkillsToUpgrade(upgradeActor, 300);
             RemoveOverlay(popup);
-            continue;
+            display();
+            return null;
           }
 
           int choiceNumber = KeyToChoiceNumber(key.KeyCode);
@@ -11013,10 +11016,15 @@ namespace djack.RogueSurvivor.Engine
             AddMessagePressEnter();
             RemoveOverlay(popup);
             RedrawPlayScreen();
-            break;
+            return true;
           }
           RemoveOverlay(popup);
-      } while(true);
+          display();
+          return null;
+      }
+
+      display();
+      m_UI.Modal(handler);
 
       // this is the change target for becoming a cop
       if (upgradeActor.Controller is ObjectiveAI oai) {
