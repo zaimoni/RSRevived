@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                 int currentDistToGoal = distanceFn(current.Pos, dest);
                 foreach (Direction dir in Direction.COMPASS) {
                     var adj = current.Pos + dir;
-                    if (!adj.Map.IsValid(adj.Position)) continue;
+                    if (!Map.Canonical(ref adj)) continue;
                     int adjDistToGoal = distanceFn(adj, dest);
                     if (adjDistToGoal >= currentDistToGoal || adjDistToGoal > maxDist) continue;
 

@@ -2198,6 +2198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (null == GetBestRangedWeaponWithAmmo())  {   // call contract
            // check route
            if (!CanReachSimple(in e_loc, allowedChargeActions)) {
+             if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("unreachable: " + e_loc.ToString());
              if (null == (enemy.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) return null;  // no ranged weapon, unreachable: harmless?
              decideToFlee = true;   // get out of here, now
            }
@@ -2223,6 +2224,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 >= approachable_enemies.Count) approachable_enemies = null;
         }
       }
+
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("approachable enemies: " + (null == approachable_enemies ? "null" : approachable_enemies.to_s()));
 
       // if enemy is not approachable then following checks are invalid
       if (!(approachable_enemies?.Contains(target) ?? false)) return new ActionWait(m_Actor);
