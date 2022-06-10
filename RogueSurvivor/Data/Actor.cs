@@ -662,7 +662,10 @@ namespace djack.RogueSurvivor.Data
           _force_PC_names = Array.Empty<string>();
         }
       }
-      if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName)) Controller = new PlayerController(this);
+      if (0<_force_PC_names.Length && _force_PC_names.Contains(UnmodifiedName) && !IsPlayer) {
+        Controller = new PlayerController(this);
+        Session.Get.Scoring.UseReincarnation(); // intentionally unconditional; this is the command line
+      }
     }
 
 #nullable enable

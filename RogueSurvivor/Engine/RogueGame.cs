@@ -3179,7 +3179,7 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case PlayerCommand.ABANDON_PC:
-                if (HandleAbandonPC(Player)) {
+                if (HandleAbandonPC(pc)) {
                   StopSimThread();
                   flag1 = false;
                   break;
@@ -3454,19 +3454,18 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // XXX \todo use different text than the suicide text above
-    private bool HandleAbandonPC(Actor player)
+    private bool HandleAbandonPC(PlayerController pc)
     {
-#if DEBUG
-      if (!player.IsPlayer) throw new InvalidOperationException("Cannot abandon NPC");
-#endif
+      var player = pc.ControlledActor; // backward compatiblity
       bool confirm = YesNoPopup("REALLY ABANDON " + player.UnmodifiedName + " TO FATE");
       AddMessage(new Data.Message(confirm ? "You can't bear the horror anymore..."
-                                          : "Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+                                          : "You retain your will to live.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       if (!confirm) return false;
       player.Controller = player.Model.InstanciateController(player);
+      Session.Get.Scoring.Deincarnate();
       player.DoForAllFollowers(fo => {
-          if (fo.IsPlayer) {
-              HandleAbandonPC(fo);
+          if (fo.Controller is PlayerController fo_pc) {
+              HandleAbandonPC(fo_pc);
               if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
           }
       });

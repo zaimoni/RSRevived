@@ -84,17 +84,9 @@ namespace djack.RogueSurvivor.Engine
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
     }
 
-
-    public int StartNewLife()
-    {
-      return ++m_ReincarnationNumber;
-    }
-
-    public void UseReincarnation()
-    {
-      ++m_ReincarnationNumber;
-    }
-
+    public int StartNewLife() => ++m_ReincarnationNumber;
+    public void UseReincarnation() => ++m_ReincarnationNumber;
+    public void Deincarnate() => --m_ReincarnationNumber;
     public static Achievement GetAchievement(Achievement.IDs id) => Achievements[(int) id];
   }
 
