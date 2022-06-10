@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Data
 
      public InventorySource(MapObject owner, T? obj = null) {
 #if DEBUG
-       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+       if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
 #endif
        inv = owner.Inventory;
        obj_owner = owner;
@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
 
      public InventorySource(MapObject owner, Actor agent, T? obj = null) {
 #if DEBUG
-       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+       if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
 #endif
        inv = owner.Inventory;
        obj_owner = owner;

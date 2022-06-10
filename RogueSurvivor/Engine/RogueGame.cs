@@ -4067,6 +4067,7 @@ namespace djack.RogueSurvivor.Engine
 
           bool details_follower(int index) {
             var obj = x.Key.MapObject;
+            if (null != obj && null == obj.NonEmptyInventory) obj = null;
             InventorySource<Item> src = (null != obj) ? new(obj) : new(x.Key);
             (available_followers[index].Controller as ObjectiveAI).Track(in src, item_type);
             return true;
