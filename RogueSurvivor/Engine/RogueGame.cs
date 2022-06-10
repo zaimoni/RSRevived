@@ -3916,6 +3916,7 @@ namespace djack.RogueSurvivor.Engine
       display();
       var ret = m_UI.Modal(handler);
       RemoveOverlay(working);
+      RedrawPlayScreen();
       return ret;
     }
 
