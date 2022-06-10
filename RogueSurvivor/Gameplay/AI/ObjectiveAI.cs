@@ -407,6 +407,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return;
 #endif
       };
+
+      // flush expired objectives
+      var ub = Objectives.Count;
+      while(0 <= --ub) {
+        if (Objectives[ub].UrgentAction(out var _) && Objectives[ub].IsExpired) Objectives.RemoveAt(ub);
+      }
+
       if (0 >= Objectives.Count) {
         RogueGame.Game.ErrorPopup("No current orders.");
         return;
