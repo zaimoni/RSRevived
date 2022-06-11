@@ -5453,10 +5453,10 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(string.Format(PUSH_OBJECT_MODE_TEXT,  mapObj.TheName), MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
 
-      Point? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(mapObj.Location.Position + dir); }
-      bool push(Point? pos) {
+      Location? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(mapObj.Location + dir); }
+      bool push(Location? pos) {
         if (null == pos) return false;
-        var loc = new Location(player.Location.Map, pos.Value);
+        var loc = pos.Value;
         if (!Map.Canonical(ref loc)) return false;
         if (mapObj.CanPushTo(loc, out string reason)) {
           DoPush(player, mapObj, loc);
@@ -5485,12 +5485,13 @@ namespace djack.RogueSurvivor.Engine
         if (null != dests) foreach(var loc in dests) AddOverlay(new OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
 
-      Point? shove_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(other.Location.Position + dir); }
-      bool shove(Point? pos) {
+      Location? shove_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(other.Location + dir); }
+      bool shove(Location? pos) {
         if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
-        if (other.CanBeShovedTo(pos.Value, out string reason)) {
-          DoShove(player, other, pos.Value);
+        var loc = pos.Value;
+        if (!Map.Canonical(ref loc)) return false;
+        if (other.CanBeShovedTo(in loc, out string reason)) {
+          DoShove(player, other, loc);
           return true;
         } else {
           ErrorPopup(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason));
@@ -10179,16 +10180,16 @@ namespace djack.RogueSurvivor.Engine
       CheckMapObjectTriggersTraps(objDest.Map, objDest.Position);
     }
 
-    public void DoShove(Actor actor, Actor target, in Point toPos)
+    public void DoShove(Actor actor, Actor target, in Location dest)
     {
       actor.SpendActionPoints();
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDragCorpse(target);
         var t_loc = target.Location;
-        var new_t_loc = new Location(t_loc.Map, toPos);
+        var new_t_loc = dest; // so Map.Canonical works
         if (!Map.Canonical(ref new_t_loc)) throw new InvalidOperationException("shoved off map entirely");
-        bool non_adjacent = !Rules.IsAdjacent(new_t_loc, actor.Location);
+        bool non_adjacent = !Rules.IsAdjacent(in new_t_loc, actor.Location);
         if (non_adjacent && Location.RequiresJump(in t_loc)) {
 #if DEBUG
           if (!actor.CanJump) throw new InvalidOperationException("shoving off a jumpable object this way requires jumping onto the object");
@@ -10202,7 +10203,7 @@ namespace djack.RogueSurvivor.Engine
             OnActorEnterTile(actor);
           }
         }
-        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, in toPos)) {
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(in new_t_loc)) {
           RedrawPlayScreen(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
         }
         if (target.IsSleeping) DoWakeUp(target);

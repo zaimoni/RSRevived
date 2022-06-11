@@ -2109,10 +2109,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanBeShovedTo(Point toPos, out string reason) => string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(new Location(Location.Map, toPos)));
     public bool CanBeShovedTo(Point toPos) => string.IsNullOrEmpty(ReasonCantBeShovedTo(new Location(Location.Map, toPos)));
-#if DEAD_FUNC
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
-    public bool CanBeShovedTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(in to)); }
-#endif
+    public bool CanBeShovedTo(in Location to, out string reason) { return string.IsNullOrEmpty(reason = ReasonCantBeShovedTo(to)); }
     /// <param name="to">Assumed to be in canonical form (in bounds)</param>
     public bool CanBeShovedTo(in Location to) => string.IsNullOrEmpty(ReasonCantBeShovedTo(to));
 
