@@ -5961,6 +5961,14 @@ namespace djack.RogueSurvivor.Engine
             return false;
         }));
 
+        if (!follower.IsPlayer) {
+          orders.Add(new("We need to talk...", () => {
+              follower.Controller = new PlayerController(follower);
+              Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
+              return true;
+          }));
+        }
+
       string label(int index) { return orders[index].Key; }
       bool details(int index) { return orders[index].Value(); }
 
