@@ -3472,12 +3472,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-#if DEAD_FUNC
-    public bool CanGiveTo(Actor target, Item gift)
-    {
-      return string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
-    }
-#endif
+    public bool CanGiveTo(Actor target, Item gift) => string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
 
     private string ReasonCantEquip(Item it)
     {

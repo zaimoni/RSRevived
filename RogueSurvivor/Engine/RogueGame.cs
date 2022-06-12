@@ -3919,7 +3919,7 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
+    private bool PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
     {
       const int MENU_VIEW = MAX_MESSAGES - 2; // breaks down if this exceeds 7
       const int C_assert_MENU_VIEW = 1/(8 > MENU_VIEW ? 1 : 0);
@@ -3965,8 +3965,9 @@ namespace djack.RogueSurvivor.Engine
       }
 
       display(num1);
-      m_UI.Modal(handler);
+      var ret = m_UI.Modal(handler);
       RemoveOverlay(mode);
+      return ret;
     }
 #nullable restore
 
@@ -6220,65 +6221,34 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private Data.Message? FollowerCannotGiveItems(Actor player, Actor follower) {
+    private string? FollowerCannotGiveItems(Actor player, Actor follower) {
       if (follower.Inventory == null || follower.Inventory.IsEmpty) 
-        return MakeErrorMessage(string.Format("{0} has no items to give.", follower.TheName));
+        return string.Format("{0} has no items to give.", follower.TheName);
       if (!Rules.IsAdjacent(player.Location, follower.Location))
-        return MakeErrorMessage(string.Format("{0} is not next to you.", follower.TheName));
+        return string.Format("{0} is not next to you.", follower.TheName);
       return null;
     }
 
     private bool HandlePlayerOrderFollowerToGiveItems(Actor player, Actor follower)
     {
+#if DEBUG
       var err = FollowerCannotGiveItems(player, follower);
-      if (null != err) {
-        ClearMessages();
-        AddMessage(err);
-        AddMessagePressEnter();
+      if (null != err) throw new InvalidOperationException(err);    // precondition violation
+#endif
+
+      var can_give = follower.Inventory.grep(obj => follower.CanGiveTo(player, obj));
+      if (null == can_give) {
+        ErrorPopup(string.Format("{0} can give no items.", follower.TheName));
         return false;
       }
 
-      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
-      AddOverlay(mode);
-
-      bool flag1 = true;
-      bool flag2 = false;
-      int num1 = 0;
-      Inventory inventory = follower.Inventory;
-      do {
-        ClearMessages();
-        AddMessage(new Data.Message(string.Format("Ordering {0} to give...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        int num2;
-        for (num2 = 0; num2 < 5 && num1 + num2 < inventory.CountItems; ++num2) {
-          int index = num1 + num2;
-          AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", 1 + num2, index + 1, inventory.CountItems, DescribeItemShort(inventory[index])), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        }
-        if (num2 < inventory.CountItems)
-          AddMessage(new Data.Message("9. next", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
-        else if (choiceNumber == 9) {
-          num1 += 5;
-          if (num1 >= inventory.CountItems) num1 = 0;
-        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-          int index = num1 + choiceNumber - 1;
-          Item obj = inventory[index];
-          if (follower.CanGiveTo(player, obj, out string reason)) {
-            DoGiveItemTo(follower, player, obj);
-            flag1 = false;
-            flag2 = true;
-          } else {
-            ClearMessages();
-            AddMessage(MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", follower.TheName, DescribeItemShort(obj), reason)));
-            AddMessagePressEnter();
-          }
-        }
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, can_give.Count, DescribeItemShort(can_give[index])); }
+      bool details(int index) {
+        DoGiveItemTo(follower, player, can_give[index]);
+        return true;
       }
-      while (flag1);
-      RemoveOverlay(mode);
-      return flag2;
+
+      return PagedMenu(string.Format("Ordering {0} to give...", follower.Name), can_give.Count, label, details);
     }
 
 #nullable enable

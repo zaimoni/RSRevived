@@ -177,6 +177,14 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Item> Items { get { return m_Items; } }
     public int CountItems { get { return m_Items.Count; } }
 
+    public List<Item>? grep(Predicate<Item> ok) {
+      List<Item> ret = new();
+      foreach(var it in m_Items) {
+        if (ok(it)) ret.Add(it);
+      }
+      return (0 < ret.Count) ? ret : null;
+    }
+
     public Item? this[int index] {
       get {
         if (index < 0 || index >= m_Items.Count) return null;
