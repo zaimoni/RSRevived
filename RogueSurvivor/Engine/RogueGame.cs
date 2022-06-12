@@ -3264,7 +3264,7 @@ namespace djack.RogueSurvivor.Engine
                 HandlePlayerMarkEnemies(player);
                 break;
               case PlayerCommand.ORDER_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(pc);
                 break;
               case PlayerCommand.ORDER_PC_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(pc);
@@ -5741,8 +5741,9 @@ namespace djack.RogueSurvivor.Engine
       PagedPopup("Current self-orders", orders.Length, label, details);
     }
 
-    private bool HandlePlayerOrderMode(Actor player)
+    private bool HandlePlayerOrderMode(PlayerController pc)
     {
+      var player = pc.ControlledActor; // backward compatibiblity
       if (player.CountFollowers == 0) {
         AddMessage(MakeErrorMessage("No followers to give orders to."));
         return false;
@@ -5760,7 +5761,7 @@ namespace djack.RogueSurvivor.Engine
         ++index1;
       }
       if (player.CountFollowers == 1 && flagArray[0]) {
-        bool flag = HandlePlayerOrderFollower(player, actorArray[0]);
+        bool flag = HandlePlayerOrderFollower(pc, actorArray[0]);
         ClearOverlays();
         ClearMessages();
         return flag;
@@ -5796,7 +5797,7 @@ namespace djack.RogueSurvivor.Engine
           int index2 = num1 + choiceNumber - 1;
           if (flagArray[index2]) {
             Actor follower = actorArray[index2];
-            if (HandlePlayerOrderFollower(player, follower)) {
+            if (HandlePlayerOrderFollower(pc, follower)) {
               flag3 = false;
               flag4 = true;
             }
@@ -5863,8 +5864,9 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool HandlePlayerOrderFollower(Actor player, Actor follower)
+    private bool HandlePlayerOrderFollower(PlayerController pc, Actor follower)
     {
+      var player = pc.ControlledActor;  // backward compatibility
       if (!follower.IsTrustingLeader) {
         if (IsVisibleToPlayer(follower))
           DoSay(follower, player, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
