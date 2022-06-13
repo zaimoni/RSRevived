@@ -164,12 +164,28 @@ namespace djack.RogueSurvivor
       return Interlocked.Exchange(ref m_InKey, null);
     }
 
-    public KeyEventArgs? UI_PeekKey()
+    // Ancestor is RogueGame::WaitKeyOrMouse
+    public KeyValuePair<KeyValuePair<KeyEventArgs?, MouseButtons?>, KeyValuePair<int, int>> WaitKeyOrMouse()
     {
-      Thread.Sleep(1);
-      Application.DoEvents();
-      return Interlocked.Exchange(ref m_InKey, null);
+      Interlocked.Exchange(ref m_InKey, null); // discard prior key
+      var origin = m_GameCanvas.MouseLocation;
+      do {
+        Thread.Sleep(1);
+        Application.DoEvents();
+
+        // inline UI_GetMousePosition()
+        var mousePos = m_GameCanvas.MouseLocation;
+        var key = Interlocked.Exchange(ref m_InKey, null);
+        if (null != key) return new(new(key, null), new(mousePos.X, mousePos.Y));
+        // inline UI_PeekMouseButtons
+        if (m_HasMouseButtons) {
+            m_HasMouseButtons = false;
+            return new(new(null, m_MouseButtons), new(mousePos.X, mousePos.Y));
+        }
+        if (origin != mousePos) return new(default, new(mousePos.X, mousePos.Y));
+      } while (true);
     }
+
 #nullable restore
 
     public void UI_PostKey(KeyEventArgs e)
@@ -201,24 +217,10 @@ namespace djack.RogueSurvivor
       }
     }
 
-    public Point UI_GetMousePosition()
-    {
-      Thread.Sleep(1);
-      Application.DoEvents();
-      return m_GameCanvas.MouseLocation;
-    }
-
     public void UI_PostMouseButtons(MouseButtons buttons)
     {
       m_HasMouseButtons = true;
       m_MouseButtons = buttons;
-    }
-
-    public MouseButtons? UI_PeekMouseButtons()
-    {
-      if (!m_HasMouseButtons) return null;
-      m_HasMouseButtons = false;
-      return m_MouseButtons;
     }
 
     // mouse event support

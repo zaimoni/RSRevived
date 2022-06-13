@@ -3129,7 +3129,12 @@ namespace djack.RogueSurvivor.Engine
           return;
         }
 
-        WaitKeyOrMouse(out KeyEventArgs key, out var point, out MouseButtons? mouseButtons);
+        var ui_event = m_UI.WaitKeyOrMouse();
+        // backward compatibility
+        var key = ui_event.Key.Key;
+        var mouseButtons = ui_event.Key.Value;
+        GDI_Point point = new(ui_event.Value.Key, ui_event.Value.Value);
+
         if (null != key) {
           PlayerCommand command = InputTranslator.KeyToCommand(key);
             switch (command) {  // start indentation failure
@@ -5996,7 +6001,13 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
+
+        var ui_event = m_UI.WaitKeyOrMouse();
+        // backward compatibility
+        var key = ui_event.Key.Key;
+        var mouseButtons = ui_event.Key.Value;
+        GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
+
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -6052,7 +6063,13 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
+
+        var ui_event = m_UI.WaitKeyOrMouse();
+        // backward compatibility
+        var key = ui_event.Key.Key;
+        var mouseButtons = ui_event.Key.Value;
+        GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
+
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -6108,7 +6125,13 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
+
+        var ui_event = m_UI.WaitKeyOrMouse();
+        // backward compatibility
+        var key = ui_event.Key.Key;
+        var mouseButtons = ui_event.Key.Value;
+        GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
+
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -6165,7 +6188,13 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen(new Data.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        WaitKeyOrMouse(out KeyEventArgs key, out var mousePos, out MouseButtons? mouseButtons);
+
+        var ui_event = m_UI.WaitKeyOrMouse();
+        // backward compatibility
+        var key = ui_event.Key.Key;
+        var mouseButtons = ui_event.Key.Value;
+        GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
+
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -6989,24 +7018,6 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       ClearOverlays();
       RedrawPlayScreen();
-    }
-
-    private void WaitKeyOrMouse(out KeyEventArgs key, out GDI_Point mousePos, out MouseButtons? mouseButtons)
-    {
-      m_UI.UI_PeekKey(); // discards prior key
-      var mousePosition = m_UI.UI_GetMousePosition();
-      mousePos = new GDI_Point(-1, -1);
-      mouseButtons = null;
-      do {
-        KeyEventArgs keyEventArgs = m_UI.UI_PeekKey();
-        if (keyEventArgs != null) {
-          key = keyEventArgs;
-          return;
-        }
-        mousePos = m_UI.UI_GetMousePosition();
-        mouseButtons = m_UI.UI_PeekMouseButtons();
-      } while (mousePos == mousePosition && !mouseButtons.HasValue);
-      key = null;
     }
 
 #nullable enable
