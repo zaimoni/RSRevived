@@ -4284,11 +4284,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// not really; just need to block the other manual handlers from triggering
-    private bool HandleMouseLook(GDI_Point mousePos)
-    {
-      Point pt = MouseToMap(mousePos);
-      return IsInViewRect(pt);
-    }
+    private bool HandleMouseLook(GDI_Point mousePos) => null != MouseToLoc(mousePos.X, mousePos.Y);
 
     static private Location? m_LiveLook = null;
     private void HandleMouseLookAuto(int x, int y)
@@ -4313,10 +4309,8 @@ namespace djack.RogueSurvivor.Engine
           m_LiveLook = loc;
           foreach(var o in overlays) AddOverlay(o);
           bool remove(int x, int y) {
-            GDI_Point mousePos = new(x, y);
-            Point pt = MouseToMap(mousePos);
-            Location test = new(CurrentMap, pt);
-            if (Map.Canonical(ref test) && null!=m_LiveLook && test == m_LiveLook.Value) return false;
+            var test = MouseToLoc(x, y);
+            if (null != test && null != m_LiveLook && test.Value == m_LiveLook.Value) return false;
             bool need_redraw = false;
             foreach(var o in overlays) {
               if (RemoveOverlay(o)) need_redraw = true;
