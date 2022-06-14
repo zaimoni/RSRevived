@@ -2330,7 +2330,8 @@ retry:
     public bool IsBlockingThrow(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (!tile_loc.Key?.IsWalkable ?? true) return false;
+      if (null == tile_loc.Key) return true;
+      if (!tile_loc.Key.IsWalkable) return true;
       var obj = tile_loc.Value.MapObject;
       return obj != null && !obj.IsWalkable && !obj.IsJumpable;
     }

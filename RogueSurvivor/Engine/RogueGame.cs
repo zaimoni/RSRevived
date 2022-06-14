@@ -5247,52 +5247,69 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
 #endif
-      bool flag2 = false;
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
+      var mode = new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
+      List<OverlayImage> path = new();
       Map map = player.Location.Map;
       Point point1 = player.Location.Position;
       int num = player.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       var LoF = new List<Point>();
-      do {
+
+      string? display(Point dest) {
         LoF.Clear();
-        bool flag3 = player.CanThrowTo(point1, out string reason, LoF);
+        bool can_throw = player.CanThrowTo(dest, out var reason, LoF);
         ClearOverlays();
-        AddOverlay(new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        string imageID = flag3 ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
-        foreach (Point mapPosition in LoF)
-          AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
+        AddOverlay(mode);
+        string imageID = can_throw ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
+        path.Clear();
+        foreach (Point mapPosition in LoF) {
+          var o = new OverlayImage(MapToScreen(mapPosition), imageID);
+          path.Add(o);
+          AddOverlay(o);
+        }
         RedrawPlayScreen();
-        KeyEventArgs key = m_UI.UI_WaitKey();
+        return reason;
+      }
+
+      var err = display(point1);
+
+      bool? handler(KeyEventArgs key) {
         PlayerCommand command = InputTranslator.KeyToCommand(key);
-        if (key.KeyCode == Keys.Escape) break;
-        else if (key.KeyCode == Keys.F) {
-          if (flag3) {
-            bool flag4 = true;
-            if (Rules.GridDistance(player.Location.Position, in point1) <= itemGrenadeModel.BlastAttack.Radius) {
-              flag4 = YesNoPopup(new string[] { "You are in the blast radius!", "Really throw there? (Y/N)" });
+        switch(key.KeyCode) {
+        case Keys.F:
+            if (string.IsNullOrEmpty(err)) {
+              bool flag4 = true;
+              if (Rules.GridDistance(player.Location.Position, in point1) <= itemGrenadeModel.BlastAttack.Radius) {
+                flag4 = YesNoPopup(new string[] { "You are in the blast radius!", "Really throw there? (Y/N)" });
+              }
+              if (flag4) {
+                if (itemGrenade != null)
+                  DoThrowGrenadeUnprimed(player, in point1);
+                else
+                  DoThrowGrenadePrimed(player, in point1);
+                return true;
+              }
+            } else {
+              ErrorPopup(string.Format("Can't throw there : {0}.", err));
             }
-            if (flag4) {
-              if (itemGrenade != null)
-                DoThrowGrenadeUnprimed(player, in point1);
-              else
-                DoThrowGrenadePrimed(player, in point1);
-              RedrawPlayScreen();
-              flag2 = true;
-              break;
-            }
-          } else
-            ErrorPopup(string.Format("Can't throw there : {0}.", reason));
-        } else {
-          Direction direction = CommandToDirection(command);
-          if (direction != null) {
-            Point point2 = point1 + direction;
-            if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, in point2) <= num)
-              point1 = point2;
-          }
+            return null;
+        default:
+           {
+           var dir = CommandToDirection(command);
+           if (dir != null) {
+              Point point2 = point1 + dir;
+              if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, in point2) <= num) {
+                err = display(point1 = point2);
+              }
+           }
+           return null;
+           }
         }
       }
-      while(true);
+
+      var flag2 = m_UI.Modal(handler);
       ClearOverlays();
+      RedrawPlayScreen();
       return flag2;
     }
 
