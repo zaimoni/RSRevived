@@ -4294,16 +4294,15 @@ namespace djack.RogueSurvivor.Engine
     private void HandleMouseLookAuto(int x, int y)
     {
       if (null == m_MapView) return;
-      Point pt = MouseToMap(x, y);
-      if (!IsInViewRect(pt)) return;
-      Location loc = new(CurrentMap, pt);
-      if (!Map.Canonical(ref loc)) return;
+      var examine = MouseToLoc(x, y);
+      if (null == examine) return;
+      var loc = examine.Value; // backward compatibility
       if (loc == m_LiveLook) return;
       if (IsVisibleToPlayer(in loc)) {
         List<Overlay> overlays = new();
-        string[] lines = DescribeStuffAt(CurrentMap, pt);
+        string[] lines = DescribeStuffAt(loc);
         if (lines != null) {
-          var screen = MapToScreen(pt);
+          var screen = MapToScreen(loc);
           overlays.Add(SetInfoOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y))));
         }
         if (s_Options.ShowTargets) {
@@ -7147,22 +7146,19 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string[] DescribeStuffAt(Map map, Point mapPos)
+    static private string[] DescribeStuffAt(Location examine)
     {
-      if (!map.IsInBounds(mapPos)) {
-          Location? test = map.Normalize(mapPos);
-          if (null == test) return null;
-          map = test.Value.Map;
-          mapPos = test.Value.Position;
-      }
+#if DEBUG
+      if (!Map.Canonical(ref examine)) throw new InvalidOperationException("tracing unvisualizable");
+#endif
 
-      Actor actorAt = map.GetActorAt(mapPos);
+      Actor actorAt = examine.Actor;
       if (actorAt != null) return DescribeActor(actorAt);
-      var mapObjectAt = map.GetMapObjectAt(mapPos);
+      var mapObjectAt = examine.MapObject;
       if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
-      var itemsAt = map.GetItemsAt(mapPos);
+      var itemsAt = examine.Items;
       if (itemsAt != null) return DescribeInventory(itemsAt);
-      var corpsesAt = map.GetCorpsesAt(mapPos);
+      var corpsesAt = examine.Corpses;
       return corpsesAt?.Describe();
     }
 
@@ -12430,10 +12426,21 @@ namespace djack.RogueSurvivor.Engine
       return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
     }
 
-    private Point MouseToMap(int mousex, int mousey)
+    private Location? MouseToLoc(int mousex, int mousey)
     {
-      var logical = LogicalPixel(new GDI_Point(mousex, mousey)) / TILE_SIZE;
-      return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
+      var pixel = LogicalPixel(new GDI_Point(mousex, mousey));
+      var logical = pixel / TILE_SIZE;
+      Point pos = new(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
+      if (IsInViewRect(pos)) {
+        Location loc = new(CurrentMap, pos);
+        if (Map.Canonical(ref loc)) return loc;
+      }
+      var e = m_MapView.Center.Exit;
+      if (null != e) {
+        Rectangle bounds = new(new(EXIT_SLOT_X, EXIT_SLOT_Y0), new(TILE_SIZE, 2* TILE_SIZE));
+        if (bounds.Contains(new Point(pixel.X, pixel.Y))) return e.Location;
+      }
+      return null;
     }
 
     private Vector2D_int_stack MouseToInventorySlot(int invX, int invY, GDI_Point mouse)
@@ -12623,7 +12630,7 @@ namespace djack.RogueSurvivor.Engine
           viewpoint = tmp.Value;
           // from Staying Alive: inspect mode within far-look
           if (IsVisibleToPlayer(in viewpoint)) {
-            string[] lines = DescribeStuffAt(viewpoint.Map, viewpoint.Position);
+            string[] lines = DescribeStuffAt(viewpoint);
             if (null != lines) inspect = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             List<string> lines = null;
