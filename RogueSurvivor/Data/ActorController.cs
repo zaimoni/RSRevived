@@ -190,10 +190,9 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    public bool IsVisibleTo(Actor actor)
-    {
-      return actor == m_Actor || IsVisibleTo(actor.Location);
-    }
+    public bool IsVisibleTo(Actor actor) => actor == m_Actor || IsVisibleTo(actor.Location);
+    public string VisibleIdentity(Actor actor) => IsVisibleTo(actor) ? actor.TheName : "someone";
+    public string VisibleIdentity(MapObject mapObj) => IsVisibleTo(mapObj.Location) ? mapObj.TheName : "something";
 
     public abstract ActorAction? GetAction();
 #nullable restore

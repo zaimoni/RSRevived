@@ -487,16 +487,6 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
 
-    private static string ActorVisibleIdentity(Actor actor)
-    {
-      return IsVisibleToPlayer(actor) ? actor.TheName : "someone";
-    }
-
-    private static string ObjectVisibleIdentity(MapObject mapObj)
-    {
-      return IsVisibleToPlayer(mapObj) ? mapObj.TheName : "something";
-    }
-
     public static Data.Message MakeMessage(Actor actor, string doWhat)
     {
       return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
@@ -504,7 +494,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static Data.Message MakeMessage(Actor actor, string doWhat, Color color)
     {
-      var msg = new string[] { ActorVisibleIdentity(actor), doWhat };
+      var viewpoint = actor.Controller;
+      if (!actor.IsPlayer) viewpoint = Player.Controller;
+      var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat };
       return new Data.Message(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
 
@@ -515,7 +507,11 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
     {
-      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, ActorVisibleIdentity(target)+phraseEnd };
+      var viewpoint = actor.Controller;
+      if (!actor.IsPlayer) {
+        viewpoint = target.IsPlayer ? target.Controller : Player.Controller;
+      }
+      var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, viewpoint.VisibleIdentity(target)+phraseEnd };
       return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
@@ -526,7 +522,9 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
-      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, ObjectVisibleIdentity(target)+phraseEnd };
+      var viewpoint = actor.Controller;
+      if (!actor.IsPlayer) viewpoint = Player.Controller;
+      var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, viewpoint.VisibleIdentity(target)+phraseEnd };
       return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
@@ -537,7 +535,9 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
     {
-      var msg = new string[] { ActorVisibleIdentity(actor), doWhat, target.TheName + phraseEnd };
+      var viewpoint = actor.Controller;
+      if (!actor.IsPlayer) viewpoint = Player.Controller;
+      var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, target.TheName + phraseEnd };
       return new Data.Message(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
