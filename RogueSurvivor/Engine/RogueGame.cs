@@ -5760,7 +5760,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var player = pc.ControlledActor; // backward compatibiblity
       if (player.CountFollowers == 0) {
-        AddMessage(MakeErrorMessage("No followers to give orders to."));
+        ErrorPopup("No followers to give orders to.");
         return false;
       }
       Actor[] actorArray = new Actor[player.CountFollowers];
@@ -6033,10 +6033,8 @@ namespace djack.RogueSurvivor.Engine
                 }
               } else {
                 color = Color.Red;
-                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  AddMessage(MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? "large" : "small", reason)));
-                  AddMessagePressEnter();
-                }
+                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
+                  ErrorPopup(string.Format("Can't build {0} fortification : {1}.", isLarge ? "large" : "small", reason));
               }
             } else {
               color = Color.Red;
@@ -6096,10 +6094,8 @@ namespace djack.RogueSurvivor.Engine
                   }
                 } else {
                   color = Color.Red;
-                  if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                    AddMessage(MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", door.TheName, reason)));
-                    AddMessagePressEnter();
-                  }
+                  if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
+                    ErrorPopup(string.Format("Can't barricade {0} : {1}.", door.TheName, reason));
                 }
               } else color = Color.Red;
             } else color = Color.Red;
@@ -6157,10 +6153,8 @@ namespace djack.RogueSurvivor.Engine
                 }
               } else {
                 color = Color.Red;
-                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  AddMessage(MakeErrorMessage(string.Format("Can't guard here : {0}", reason)));
-                  AddMessagePressEnter();
-                }
+                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
+                  ErrorPopup(string.Format("Can't guard here : {0}", reason));
               }
             } else {
               color = Color.Red;
@@ -6227,10 +6221,8 @@ namespace djack.RogueSurvivor.Engine
                 }
               } else {
                 color = Color.Red;
-                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
-                  AddMessage(MakeErrorMessage(string.Format("Can't patrol here : {0}", reason)));
-                  AddMessagePressEnter();
-                }
+                if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
+                  ErrorPopup(string.Format("Can't patrol here : {0}", reason));
               }
             } else {
               color = Color.Red;
