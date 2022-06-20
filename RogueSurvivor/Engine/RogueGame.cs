@@ -5732,10 +5732,10 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]); }
-      bool details(int index) { return pc.InterpretSelfOrder(index, orders); }
+      string label(int index) { return orders[index].Key; }
+      bool details(int index) { orders[index].Value(); return true; }
 
-      PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
+      PagedPopup("Orders for yourself:", orders.Count, label, details);
       return pc.AutoPilotIsOn;
     }
 

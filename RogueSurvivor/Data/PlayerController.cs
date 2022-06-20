@@ -481,15 +481,19 @@ namespace djack.RogueSurvivor.Data
       SetObjective(new Goal_PathTo(m_Actor, locs, false, n));
     }
 
-    public List<string> GetValidSelfOrders()
+    public List<KeyValuePair<string, Action>> GetValidSelfOrders()
     {
-      var ret = new List<string>();
+      List<KeyValuePair<string, Action>> ret = new();
       bool in_combat = (null!=m_Actor.Controller.enemies_in_FOV);   // not using InCombat getter as we don't want to be that draconian
 
       if (!in_combat) {
-      if (m_Actor.IsTired && null == enemies_in_FOV) ret.Add("Rest in place");
+      if (m_Actor.IsTired && null == enemies_in_FOV) {
+        ret.Add(new("Rest in place", () => {
+            SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter, m_Actor, Actor.STAMINA_MIN_FOR_ACTIVITY));
+        }));
+      }
 
-      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) as ItemMedicine);
+      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_STA) as ItemMedicine);
       if (null != stim) {
         MapObject car = null;
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
@@ -508,8 +512,13 @@ namespace djack.RogueSurvivor.Data
         }
         if (null != car) {
           int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
+          // currently all wrecked cars have weight 100
           if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
-          if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) ret.Add("Brace for pushing car in place");
+          if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) {
+             ret.Add(new("Brace for pushing car in place",() => {
+                 SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter, m_Actor, threshold));
+             }));
+          }
         }
       }
 
@@ -517,82 +526,52 @@ namespace djack.RogueSurvivor.Data
       if (0 < generators.Count) {
         var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
         var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.Model.ID && it.MaxBatteries - 1 > it.Batteries);
-        if (0 < (lights?.Count ?? 0) || 0 < (trackers?.Count ?? 0)) ret.Add("Recharge everything to full");
+        if (null != lights || null != trackers) {
+          ret.Add(new("Recharge everything to full", () => {
+              SetObjective(new Goal_RechargeAll(m_Actor));
+          }));
+        }
       }
-      if (null != TurnOnAdjacentGenerators()) ret.Add("Turn on all adjacent generators");
+      if (null != TurnOnAdjacentGenerators()) {
+        ret.Add(new("Turn on all adjacent generators", () => {
+            SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        }));
+      }
 
-      if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
-      if (m_Actor.IsSleepy) ret.Add("Rest rather than lose turn when sleepy");
+      if (m_Actor.IsTired) {
+        ret.Add(new("Rest rather than lose turn when tired", () => {
+            SetObjective(new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
+        }));
+      }
+      if (m_Actor.IsSleepy) {
+        ret.Add(new("Rest rather than lose turn when sleepy", () => {
+            SetObjective(new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
+        }));
+      }
 
       var corpses_at = m_Actor.Location.Corpses;
       if (null != corpses_at) {
-        foreach(Corpse c in corpses_at) ret.Add("Butcher "+c.ToString());
+        foreach(Corpse c in corpses_at) {
+          ret.Add(new("Butcher "+c.ToString(), () => {
+              SetObjective(new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor, c));
+          }));
+        }
       }
 
-      Objective test = new Goal_MedicateSLP(m_Actor);
-      if (test.UrgentAction(out ActorAction testAction) && null!=testAction) ret.Add("Medicate sleep");
-      test = new Goal_MedicateHP(m_Actor);
-      if (test.UrgentAction(out testAction) && null!=testAction) ret.Add("Medicate HP");
+      var medicate_slp = new Goal_MedicateSLP(m_Actor);
+      if (medicate_slp.UrgentAction(out var testAction) && null!=testAction) {
+        ret.Add(new("Medicate sleep", () => {
+            SetObjective(medicate_slp);
+        }));
+      }
+      var medicate_hp = new Goal_MedicateHP(m_Actor);
+      if (medicate_hp.UrgentAction(out testAction) && null!=testAction) {
+        ret.Add(new("Medicate HP", () => {
+            SetObjective(medicate_hp);
+        }));
+      }
       } // if (!in_combat)
       return ret;
-    }
-
-    public bool InterpretSelfOrder(int i, List<string> orders)
-    {
-      if (orders[i].StartsWith("Butcher corpse of ")) {
-        var corpses_at = m_Actor.Location.Corpses;
-#if DEBUG
-        if (null == corpses_at) throw new InvalidOperationException("no corpses here");
-#else
-        if (null == corpses_at) return false;
-#endif
-        string target_name = orders[i].Substring(18);
-        foreach(Corpse c in corpses_at) {
-          if (target_name == c.DeadGuy.Name) {
-            SetObjective(new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor,c));
-            return true;
-          }
-        }
-#if DEBUG
-        throw new InvalidOperationException("requested corpse not here");
-#else
-        return false;
-#endif
-
-      }
-
-      switch(orders[i])
-      {
-      case "Rest in place":
-        SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
-        return true;
-      case "Brace for pushing car in place":
-        {
-        if (!(m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_SLP) is ItemMedicine stim)) return false; // actually invariant failure
-        int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
-        // currently all wrecked cars have weight 100
-        if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
-        SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
-        }
-        return true;
-      case "Recharge everything to full":
-        SetObjective(new Goal_RechargeAll(m_Actor));
-        return true;
-      case "Rest rather than lose turn when tired":
-      case "Rest rather than lose turn when sleepy":
-        SetObjective(new Goal_RestRatherThanLoseturnWhenTired(m_Actor));
-        return true;
-      case "Turn on all adjacent generators":
-        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
-        return true;
-      case "Medicate sleep":
-        SetObjective(new Goal_MedicateSLP(m_Actor));
-        return true;
-      case "Medicate HP":
-        SetObjective(new Goal_MedicateHP(m_Actor));
-        return true;
-      default: return false;  // automatic failure
-      }
     }
 
     private void _raidMsg(Data.Message desc_msg, Data.Message where_msg, string music)
