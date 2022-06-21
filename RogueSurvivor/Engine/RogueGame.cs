@@ -5975,18 +5975,19 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // new-style orders, that are valid for PCs, go here
-        orders.Add(new("What's up?", () => {
-            fo_ordai.HandlePlayerCountermand();
-            return false;
-        }));
+      orders.Add(new("What's up?", () => {
+        if (null != fo_ordai) fo_ordai.HandlePlayerCountermand();
+        else HandlePlayerCountermandPC(follower.Controller as PlayerController);
+        return false;
+      }));
 
-        if (!follower.IsPlayer) {
-          orders.Add(new("We need to talk...", () => {
-              follower.Controller = new PlayerController(follower);
-              Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
-              return true;
-          }));
-        }
+      if (!follower.IsPlayer) {
+        orders.Add(new("We need to talk...", () => {
+          follower.Controller = new PlayerController(follower);
+          Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
+          return true;
+        }));
+      }
 
       string label(int index) { return orders[index].Key; }
       bool details(int index) { return orders[index].Value(); }
