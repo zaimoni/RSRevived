@@ -11,8 +11,8 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionLeaveMap : ActorAction
-  {
+  internal class ActionLeaveMap : ActorAction, ActorDest
+    {
     private readonly Point m_ExitPoint;
 
     public ActionLeaveMap(Actor actor, in Point exitPoint) : base(actor)
@@ -22,6 +22,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
        m_ExitPoint = exitPoint;
     }
+
+    public Location dest { get {
+        Location ret = new(m_Actor.Location.Map, m_ExitPoint);
+        Map.Canonical(ref ret);
+        return ret;
+    } }
 
     public override bool IsLegal()
     {
@@ -35,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override string ToString()
     {
-      return m_Actor.Name+" leaving "+m_Actor.Location.ToString()+" for "+m_ExitPoint.ToString();
+      return m_Actor.Name+" leaving "+m_Actor.Location.ToString()+" for "+m_ExitPoint.to_s();
     }
   }
 }

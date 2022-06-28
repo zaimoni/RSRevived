@@ -750,23 +750,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within minimap: "+(tmpAction?.ToString() ?? "null"));
 #endif
             // object constancy: remember that we're going somewhere on the destination level
-            if (   tmpAction is ActionUseExit leaving && leaving.dest.Map.DistrictPos == m_Actor.Location.Map.DistrictPos
-                && 1==District.UsesCrossDistrictView(m_Actor.Location.Map) && 2!= District.UsesCrossDistrictView(leaving.dest.Map)) {
-                var dest_view = District.UsesCrossDistrictView(leaving.dest.Map);
+            if (tmpAction is ActionUseExit leaving) {
+                if (   leaving.dest.Map.DistrictPos == m_Actor.Location.Map.DistrictPos
+                    && 1 == District.UsesCrossDistrictView(m_Actor.Location.Map) && 2 != District.UsesCrossDistrictView(leaving.dest.Map)) {
+                    var dest_view = District.UsesCrossDistrictView(leaving.dest.Map);
+                    if (2 != dest_view) {
+                        HashSet<Location>? dests = null;
+                        if (0<Session.Get.UniqueMaps.HospitalDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map));
+                        if (0<Session.Get.UniqueMaps.PoliceStationDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
+                        if (0 >= dest_view) dests = update_path.Unstage(loc => leaving.dest.Map != loc.Map);
+                        else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
+                        if (0 < dests.Count) {
+                            var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
+                            SetObjective(goal);
+                            AddFOVevent(goal);
+                            return tmpAction;
+                        }
+                    }
+                }
+            } else if (tmpAction is ActionLeaveMap crossdistrict_exit) {
+                var dest_view = District.UsesCrossDistrictView(crossdistrict_exit.dest.Map);
                 if (2 != dest_view) {
-                  HashSet<Location>? dests = null;
-                  if (0<Session.Get.UniqueMaps.HospitalDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.HospitalDepth(loc.Map));
-                  if (0<Session.Get.UniqueMaps.PoliceStationDepth(leaving.dest.Map)) dests = update_path.Unstage(loc => 0 < Session.Get.UniqueMaps.PoliceStationDepth(loc.Map));
-                  if (0 >= dest_view) dests = update_path.Unstage(loc => leaving.dest.Map != loc.Map);
-                  else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
-                  if (0 < dests.Count) {
-                    var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
-                    SetObjective(goal);
-                    AddFOVevent(goal);
-                  }
+                    var dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
+                    if (0 < dests.Count) {
+                        var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
+                        SetObjective(goal);
+                        AddFOVevent(goal);
+                        return tmpAction;
+                    }
                 }
             }
-            if (null!=tmpAction) return tmpAction;
+
+            if (null != tmpAction) {
+              var considering = GetPreviousGoals(m_Actor.Location);
+              var unseen = considering?.Where(loc => !CanSee(loc)).ToHashSet();
+              if (null != unseen && 0 < unseen.Count) {
+                var goal = new Goals.AcquireLineOfSight(m_Actor, unseen);
+                SetObjective(goal);
+                AddFOVevent(goal);
+              }
+              return tmpAction;
+            }
+
 #if ZONEWALK_PATHING
             target_threat.Clear();
             target_tourism.Clear();
@@ -854,12 +879,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Try to reuse previous goals before explore/wander 2020-11-20 zaimoni
       var prev_goals = GetPreviousGoals(m_Actor.Location);
       if (null != prev_goals) {
-        if (prev_goals.Contains(m_Actor.Location)) {
-#if DEBUG
-          throw new InvalidOperationException("test case");
-#endif
-//        _sparse.Unset(SparseData.PathingTo); // ClearGoals body?  Won't build here (access control)
-        } else {
           var ok = prev_goals.Where(loc => loc.IsWalkableFor(m_Actor));
           if (ok.Any()) {
             if (ok.Count() < prev_goals.Count) prev_goals = ok.ToHashSet();
@@ -872,7 +891,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorMakeTime();
           if (null != tmpAction) return tmpAction;
           return new ActionWait(m_Actor);
-        }
       }
 
 #if FALSE_POSITIVE
