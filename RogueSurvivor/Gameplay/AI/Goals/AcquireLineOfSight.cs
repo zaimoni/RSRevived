@@ -76,7 +76,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             ret = null;
             if (IsExpired) return true;
 
-            foreach (Actor friend in m_Actor.Allies) { // if any in-communication ally can see the location, clear it
+            var allies = m_Actor.Allies;
+            if (null != allies) foreach (var friend in allies) { // if any in-communication ally can see the location, clear it
                 if (!oai.InCommunicationWith(friend)) continue;
                 if (_locs.Any(loc => friend.Controller.CanSee(in loc))) {
                     _isExpired = true;
