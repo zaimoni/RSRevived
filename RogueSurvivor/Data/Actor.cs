@@ -143,7 +143,7 @@ namespace djack.RogueSurvivor.Data
                                         // in a later version of C#, we can't count on the fix remaining.
                                         // Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
                                         // this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
-    private readonly int m_SpawnTime;   // savefile break \todo eliminate accessor
+    public readonly int SpawnTime;
     private Inventory? m_Inventory;
     private Doll m_Doll;
     private int m_HitPoints;
@@ -286,7 +286,6 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
     public bool IsPlayer { get { return m_Controller is PlayerController; } }
-    public int SpawnTime { get { return m_SpawnTime; } }
 
     public Gameplay.GameGangs.IDs GangID {
       get { return m_GangID; }
@@ -678,7 +677,7 @@ namespace djack.RogueSurvivor.Data
       IsProperName = false;
       IsPluralName = false;
       m_Location = new Location();
-      m_SpawnTime = spawnTime;
+      SpawnTime = spawnTime;
       IsUnique = false;
       IsDead = false;
       ActorScoring = new ActorScoring(this);
@@ -3941,7 +3940,7 @@ namespace djack.RogueSurvivor.Data
     public bool Equals(Actor? x)
     {
       if (null == x) return false;
-      if (m_SpawnTime != x.m_SpawnTime) return false;
+      if (SpawnTime != x.SpawnTime) return false;
       if (m_Name != x.m_Name) return false;
       if (Location!=x.Location) return false;
       return true;
@@ -3952,10 +3951,7 @@ namespace djack.RogueSurvivor.Data
       return obj is Actor tmp && Equals(tmp);
     }
 
-    public override int GetHashCode()
-    {
-      return m_SpawnTime ^ m_Name.GetHashCode();
-    }
+    public override int GetHashCode() => SpawnTime ^ m_Name.GetHashCode();
 #endregion
 
     [System.Flags]
