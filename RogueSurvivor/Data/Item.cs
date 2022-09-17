@@ -52,17 +52,17 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
   internal class Item
   {
-    protected readonly Gameplay.GameItems.IDs m_ModelID; // savefile break: make public and rename to ModelID
+    public readonly Gameplay.GameItems.IDs ModelID;
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
-    public ItemModel Model { get { return Gameplay.GameItems.From(m_ModelID); } }
+    public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
-    public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return m_ModelID; }  }
+    public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return ModelID; }  }
 #if USE_ITEM_STRUCT
-    public virtual Item_s toStruct() { return new Item_s(m_ModelID, m_Quantity);  }
+    public virtual Item_s toStruct() { return new Item_s(ModelID, m_Quantity);  }
     public virtual void toStruct(ref Item_s dest) {
-        dest.ModelID = m_ModelID;
+        dest.ModelID = ModelID;
         dest.QtyLike = m_Quantity;
         dest.Flags = 0;
     }
@@ -117,14 +117,10 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= qty) throw new ArgumentOutOfRangeException(nameof(qty)); // reddit/Brasz 2020-10-23
 #endif
-      m_ModelID = model.ID;
+      ModelID = model.ID;
       m_Quantity = qty;
       EquippedPart = DollPart.NONE;
     }
-
-#if PROTOTYPE
-    public virtual ItemStruct Struct { get { return new ItemStruct(Model.ID, m_Quantity); } }
-#endif
 
     public void UnequippedBy(Actor actor, bool canMessage=true)
     {

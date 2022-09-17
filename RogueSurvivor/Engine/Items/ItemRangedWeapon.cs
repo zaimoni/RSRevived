@@ -24,10 +24,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemRangedWeapon(ItemRangedWeaponModel model) : base(model) { Ammo = model.MaxAmmo; }
 
 #if USE_ITEM_STRUCT
-    public override Item_s toStruct() { return new Item_s(m_ModelID, Ammo); }
+    public override Item_s toStruct() { return new Item_s(ModelID, Ammo); }
     public override void toStruct(ref Item_s dest)
     {
-        dest.ModelID = m_ModelID;
+        dest.ModelID = ModelID;
         dest.QtyLike = Ammo;
         dest.Flags = 0;
     }

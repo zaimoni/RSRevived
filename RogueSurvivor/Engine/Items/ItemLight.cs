@@ -54,10 +54,10 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
 #if USE_ITEM_STRUCT
-    public override Item_s toStruct() { return new Item_s(m_ModelID, m_Batteries); }
+    public override Item_s toStruct() { return new Item_s(ModelID, m_Batteries); }
     public override void toStruct(ref Item_s dest)
     {
-        dest.ModelID = m_ModelID;
+        dest.ModelID = ModelID;
         dest.QtyLike = m_Batteries;
         dest.Flags = 0;
     }
