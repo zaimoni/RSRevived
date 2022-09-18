@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 if (1 == TradeableItems.Count) {
                     var other_TradeableItems = a_oai.GetTradeableItems();
                     if (null == other_TradeableItems) continue;
-                    if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID == other_TradeableItems[0].Model.ID) {
+                    if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) {
                         _whom.RemoveAt(i);
                         continue;
                     }

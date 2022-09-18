@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override string ToString()
     {
-      return Model.ID.ToString()+(IsPerishable ? " (" + BestBefore.ToString() + ")" : "");
+      return ModelID.ToString()+(IsPerishable ? " (" + BestBefore.ToString() + ")" : "");
     }
   }
 }

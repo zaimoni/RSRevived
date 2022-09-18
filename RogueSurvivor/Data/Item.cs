@@ -162,8 +162,8 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      if (Model.IsStackable) return Model.ID.ToString()+" ("+Quantity.ToString()+")";
-      return Model.ID.ToString();
+      if (Model.IsStackable) return ModelID.ToString()+" ("+Quantity.ToString()+")";
+      return ModelID.ToString();
     }
   }
 }

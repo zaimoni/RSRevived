@@ -648,14 +648,11 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
-    public bool Has(Gameplay.GameItems.IDs id)
-    {
-      return null != GetFirst(id);
-    }
+    public bool Has(Gameplay.GameItems.IDs id) => null != GetFirst(id);
 
     public Item? GetFirst(Gameplay.GameItems.IDs id)
     {
-      foreach (Item it in m_Items) if (id == it.Model.ID) return it;
+      foreach (Item it in m_Items) if (id == it.ModelID) return it;
       return null;
     }
 

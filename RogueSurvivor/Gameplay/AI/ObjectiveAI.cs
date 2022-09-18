@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
       {
-      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => GameItems.IDs.TRACKER_POLICE_RADIO!=it.Model.ID);
+      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => GameItems.IDs.TRACKER_POLICE_RADIO!=it.ModelID);
       if (0 < (trackers?.Count ?? 0)) {
         foreach(var x in trackers) {
           ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
@@ -1547,14 +1547,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool WantToRecharge(ItemLight it)
     {
       int burn_time = 0;
-      switch(it.Model.ID)
+      switch(it.ModelID)
       {
       case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration+2*WorldTime.TURNS_PER_HOUR;
         break;
       case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration+WorldTime.TURNS_PER_HOUR;
         break;
 #if DEBUG
-      default: throw new InvalidOperationException("Unhandled light type " + it.Model.ID.ToString());
+      default: throw new InvalidOperationException("Unhandled light type " + it.ModelID.ToString());
 #else
       default: return false;
 #endif
@@ -5667,7 +5667,7 @@ restart_chokepoints:
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) continue;
-            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID== other_TradeableItems[0].ModelID) continue;
           }
           if (!(x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) continue;
           if (!HaveTradeOptions(x.Value)) continue;
@@ -5726,7 +5726,7 @@ restart_chokepoints:
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (ally.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) continue;
-            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) continue;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID== other_TradeableItems[0].ModelID) continue;
           }
           if (!(ally.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
           return HaveTradeOptions(ally);
@@ -5863,9 +5863,9 @@ restart_chokepoints:
 
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
       Inventory inv;
-      if ((inv = m_Actor.Inventory).Contains(it)) return (ok_trackers.Contains(it.Model.ID) && null!=m_Actor.LiveLeader) ? 2 : 1;
+      if ((inv = m_Actor.Inventory).Contains(it)) return (ok_trackers.Contains(it.ModelID) && null!=m_Actor.LiveLeader) ? 2 : 1;
       if (inv.Items.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
-      return (ok_trackers.Contains(it.Model.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
+      return (ok_trackers.Contains(it.ModelID) && null != m_Actor.LiveLeader) ? 2 : 1;
     }
 
     /// <returns>the item rating code for a generic sanity-restoring item</returns>
@@ -6325,7 +6325,7 @@ restart_chokepoints:
       if (!m_Actor.Inventory.Contains(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
       if (!m_Actor.Inventory.Contains(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
 #endif
-      if (lhs.Model.ID == rhs.Model.ID) {
+      if (lhs.ModelID == rhs.ModelID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
         if (lhs is BatteryPowered lhs_batt) return (lhs_batt.Batteries < (rhs as BatteryPowered).Batteries);
@@ -6423,8 +6423,8 @@ restart_chokepoints:
       if (rhs is ItemTracker)
         {
         if (!(lhs is ItemTracker)) return false;
-        if (ok_trackers.Contains(lhs.Model.ID)) return false;
-        return ok_trackers.Contains(rhs.Model.ID);
+        if (ok_trackers.Contains(lhs.ModelID)) return false;
+        return ok_trackers.Contains(rhs.ModelID);
         }
       else if (lhs is ItemTracker) return false;
 
@@ -6547,10 +6547,10 @@ restart_chokepoints:
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              recover.Add(new ActionTake(m_Actor,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            recover.Add(new ActionUse(m_Actor, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
         }
@@ -6587,11 +6587,11 @@ restart_chokepoints:
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              recover.Add(new ActionTake(m_Actor,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            recover.Add(new ActionUse(m_Actor, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
           }
@@ -6618,7 +6618,7 @@ restart_chokepoints:
             if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
             var recover = new List<ActorAction> {
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+                new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
           }
@@ -6654,7 +6654,7 @@ restart_chokepoints:
 
       // medicine glut ... drop it
       foreach(GameItems.IDs x in GameItems.medicine) {
-        if (it.Model.ID == x) continue;
+        if (it.ModelID == x) continue;
         ItemModel model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
@@ -6667,10 +6667,10 @@ restart_chokepoints:
       if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
       if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
-        if (!ok_trackers.Contains(it.Model.ID)) return null;   // tracker normally not worth clearing a slot for
+        if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
       // ditch an unwanted tracker if possible
-      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.ModelID));
       if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, in stack, use_ok);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
@@ -6756,7 +6756,7 @@ restart_chokepoints:
               if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
               var recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                  new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+                  new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
             }
@@ -6833,7 +6833,7 @@ restart_chokepoints:
             var actions = new List<ActorAction> { initiate };
             actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
             if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
-            else actions.Add(new ActionTake(m_Actor, discard.Model.ID));
+            else actions.Add(new ActionTake(m_Actor, discard.ModelID));
             return new ActionChain(m_Actor, actions);
           }
         }
@@ -6960,10 +6960,10 @@ restart_chokepoints:
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              recover.Add(new ActionTake(m_Actor,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            recover.Add(new ActionUse(m_Actor, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
         }
@@ -7000,11 +7000,11 @@ restart_chokepoints:
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+              recover.Add(new ActionTake(m_Actor,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            recover.Add(new ActionUse(m_Actor, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
           }
@@ -7031,7 +7031,7 @@ restart_chokepoints:
             if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
             var recover = new List<ActorAction>{
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+                new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
           }
@@ -7067,7 +7067,7 @@ restart_chokepoints:
 
       // medicine glut ... drop it
       foreach(GameItems.IDs x in GameItems.medicine) {
-        if (it.Model.ID == x) continue;
+        if (it.ModelID == x) continue;
         ItemModel model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
@@ -7080,10 +7080,10 @@ restart_chokepoints:
       if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
       if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
-        if (!ok_trackers.Contains(it.Model.ID)) return null;   // tracker normally not worth clearing a slot for
+        if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
       // ditch an unwanted tracker if possible
-      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.ModelID));
       if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position, use_ok);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
@@ -7169,7 +7169,7 @@ restart_chokepoints:
               if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
               List<ActorAction> recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                  new ActionTake(m_Actor,it.Model.ID) // 3b) pick up food
+                  new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
             }
@@ -7246,7 +7246,7 @@ restart_chokepoints:
             var actions = new List<ActorAction> { initiate };
             actions.Add(new ActionUseItem(m_Actor, it)); // won't be legal but would be after initiation
             if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
-            else actions.Add(new ActionTake(m_Actor, discard.Model.ID));
+            else actions.Add(new ActionTake(m_Actor, discard.ModelID));
             return new ActionChain(m_Actor, actions);
           }
         }
@@ -7432,7 +7432,7 @@ restart_chokepoints:
       if (ItemIsUseless(it)) return false;
 
       if (null != _rating_overrides) {
-        if (_rating_overrides.TryGetValue(it.Model.ID, out var cache)) {
+        if (_rating_overrides.TryGetValue(it.ModelID, out var cache)) {
           if (1 < cache.Key) return true;
           if (1 > cache.Key) return false;
         }
@@ -7443,7 +7443,7 @@ restart_chokepoints:
       bool ret = _IsInterestingItem(it);
       int item_rating = ItemRatingCode(it);
       if (ret && 1>item_rating) throw new InvalidOperationException("interesting item thought to have no use");
-      if (!ret && 1<item_rating && !m_Actor.Inventory.Has(it.Model.ID)) {
+      if (!ret && 1<item_rating && !m_Actor.Inventory.Has(it.ModelID)) {
         // check inventory for less-interesting item.  Force high visibility in debugger.
         foreach(Item obj in m_Actor.Inventory.Items) {
           if (it.Model == obj.Model) continue;
@@ -7644,7 +7644,7 @@ restart_chokepoints:
         // ranged weapons: require ours to have strictly less ammo
         if (null != rw_model) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
         // battery-powered items: require strictly less charge (police radios not included as they are low-grade generators)
-        if (mine is BatteryPowered test && mine.Model.ID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
+        if (mine is BatteryPowered test && mine.ModelID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
         // generally, if stackable we want to trade away the smaller stack (intercepting partial take from ground inventory is a higher order test)
         if (1<mine.Model.StackingLimit) return mine.Quantity >= theirs.Quantity;
         // default is to reject.   Expected to change once AI state is involved
@@ -7652,17 +7652,17 @@ restart_chokepoints:
       }
 
       // do not trade away weapon for own ammo
-      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
+      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
 
       switch(mine.Model.ID)
       {
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
       case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
-        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
         break;
       case GameItems.IDs.LIGHT_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
         break;
       }
       return false;
@@ -7673,7 +7673,7 @@ restart_chokepoints:
     {
       // do not trade away weapon for own ammo
       if (    mine.Model is ItemRangedWeaponModel rw_model
-          && (GameItems.IDs)((int)rw_model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.Model.ID) return true;
+          && (GameItems.IDs)((int)rw_model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]

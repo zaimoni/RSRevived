@@ -952,7 +952,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if (IsRunning) return 0;
         if (GetEquippedWeapon() is ItemMeleeWeapon melee && melee.Model.IsMartialArts) {
-          if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.Model.ID) return 0; // Cf Tai Chi for why the scythe can be weaponized
+          if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.ModelID) return 0; // Cf Tai Chi for why the scythe can be weaponized
           return Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
         }
         return 0;
@@ -3235,7 +3235,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item? GetEquippedItem(Gameplay.GameItems.IDs id)
     {
-      return m_Inventory?.GetFirst<Item>(obj => obj.Model.ID == id && DollPart.NONE != obj.EquippedPart);
+      return m_Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
     }
 
     // this cannot be side-effecting (martial arts, grenades)

@@ -2508,7 +2508,7 @@ restart:
     // hospital storeroom wants to simply maximize quantities, not randomize
     private Item PostprocessQuantity(Item it)   // relies on Item being a class rather than a struct
     {
-      switch(it.Model.ID) {
+      switch(it.ModelID) {
       case GameItems.IDs.TRAP_SPIKES:
         it.Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit);  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
         break;
@@ -4250,7 +4250,7 @@ restart:
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
       inv.AddAll(rw);
-      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.Model.ID) : MakeItemGrenade());
+      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.ModelID) : MakeItemGrenade());
       }
       inv.AddAll(GameItems.MEDIKIT.instantiate());
       inv.AddAll(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
@@ -4288,7 +4288,7 @@ restart:
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).instantiate();
       numberedName.Inventory.AddAll(rw);
-      numberedName.Inventory.AddAll(ItemAmmo.make(rw.Model.ID));
+      numberedName.Inventory.AddAll(ItemAmmo.make(rw.ModelID));
       numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it

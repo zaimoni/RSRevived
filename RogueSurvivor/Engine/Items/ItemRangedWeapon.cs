@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override string ToString()
     {
-      return Model.ID.ToString()+" ("+Ammo.ToString()+")";
+      return ModelID.ToString()+" ("+Ammo.ToString()+")";
     }
   }
 }

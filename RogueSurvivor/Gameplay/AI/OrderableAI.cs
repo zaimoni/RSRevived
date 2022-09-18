@@ -3087,7 +3087,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       exclude.ExceptWith(WhatDoINeedNow());
       exclude.ExceptWith(WhatDoIWantNow());
 #endif
-      var tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
+      var tmp = Items.Where(it => !exclude.Contains(it.ModelID) && IsInterestingItem(it));
       if (!tmp.Any()) return null;
       var tmp2 = tmp.Where(it => it is UsableItem use && use.FreeSlotByUse(m_Actor));
       if (tmp2.Any()) return tmp2.ToList();
@@ -3152,8 +3152,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
         if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
-            if (obj.Model.ID == drop.Give.Model.ID) return null;
-            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
+            if (obj.ModelID == drop.Give.ModelID) return null;
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.ModelID));
           }
           return new ActionChain(recover, tmp);
         }
@@ -3177,8 +3177,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
         if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
-            if (obj.Model.ID == drop.Give.Model.ID) return null;
-            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.Model.ID));
+            if (obj.ModelID == drop.Give.ModelID) return null;
+            if (is_real) Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Give.ModelID));
           }
           return new ActionChain(recover, tmp);
         }
@@ -3408,7 +3408,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
                   case ActionTakeItem old_take:
-                     if (new_take.Take.Model.ID==old_take.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                     if (new_take.Take.ModelID==old_take.Take.ModelID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                        item_compare = -1;
                        break;
                      }
@@ -3429,7 +3429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     break;
                   case Use<Item> old_use:
                     // generally better to take than use
-                    if (old_use.Use.Model.ID!=new_take.Take.Model.ID) dominated.Add(old_loc);
+                    if (old_use.Use.ModelID!=new_take.Take.ModelID) dominated.Add(old_loc);
                     else item_compare = 0;
                     break;
                   }
@@ -3449,7 +3449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      else item_compare = 0;
                     break;
                   case ActorTake old_trade:
-                     if (new_trade.Take.Model.ID == old_trade.Take.Model.ID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                     if (new_trade.Take.ModelID == old_trade.Take.ModelID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                        item_compare = -1;
                        break;
                      }
@@ -3462,7 +3462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     break;
                   case Use<Item> old_use:
                     // generally better to take than use
-                    if (old_use.Use.Model.ID!= new_trade.Take.Model.ID) dominated.Add(old_loc);
+                    if (old_use.Use.ModelID!= new_trade.Take.ModelID) dominated.Add(old_loc);
                     else item_compare = 0;
                     break;
                   }
@@ -3474,13 +3474,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
                     case Use<Item> old_use:
-                      if (old_use.Use.Model.ID==new_use.Use.Model.ID) { // duplicate
+                      if (old_use.Use.ModelID==new_use.Use.ModelID) { // duplicate
                         item_compare = -1;
                         break;
                       }
                       break;
                     case ActionTakeItem old_take:
-                      if (old_take.Take.Model.ID!=new_use.Use.Model.ID) { // generally better to take than use
+                      if (old_take.Take.ModelID!=new_use.Use.ModelID) { // generally better to take than use
                         item_compare = -1;
                         break;
                       }

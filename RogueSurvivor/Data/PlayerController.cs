@@ -525,7 +525,7 @@ namespace djack.RogueSurvivor.Data
       var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
       if (0 < generators.Count) {
         var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
-        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.Model.ID && it.MaxBatteries - 1 > it.Batteries);
+        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
         if (null != lights || null != trackers) {
           ret.Add(new("Recharge everything to full", () => {
               SetObjective(new Goal_RechargeAll(m_Actor));
@@ -637,7 +637,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
-      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.Model.ID && m_Actor.IsFaction(GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
+      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.ModelID && m_Actor.IsFaction(GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
       return true;
     }
 

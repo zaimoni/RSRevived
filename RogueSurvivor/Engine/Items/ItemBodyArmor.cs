@@ -41,8 +41,8 @@ namespace djack.RogueSurvivor.Engine.Items
     // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.
     // March 28 2018: armors that are !IsNeutral are guaranteed non-neutral to all factions that pay attention
     // to such things.
-    public bool IsHostileForCops() => 0 <= Array.IndexOf(BAD_POLICE_OUTFITS, Model.ID);
-    public bool IsFriendlyForCops() => 0 <= Array.IndexOf(GOOD_POLICE_OUTFITS, Model.ID);
+    public bool IsHostileForCops() => 0 <= Array.IndexOf(BAD_POLICE_OUTFITS, ModelID);
+    public bool IsFriendlyForCops() => 0 <= Array.IndexOf(GOOD_POLICE_OUTFITS, ModelID);
 
     // Validity for these is enforced in GameItems.  The ordering of the armor ids was adjusted to make these valid.
     // these never were valid for non-gang members
@@ -53,12 +53,12 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool IsFriendlyForBiker(GameGangs.IDs gangID)
     {
-      return (int)Model.ID == (((int)gangID - MIN_GANG_ID) + MIN_GANG_ARMOR_ID);
+      return (int)ModelID == (((int)gangID - MIN_GANG_ID) + MIN_GANG_ARMOR_ID);
     }
 
     public bool IsNeutral {
       get {
-        int armor_index = (int)Model.ID- MIN_GANG_ARMOR_ID;
+        int armor_index = (int)ModelID- MIN_GANG_ARMOR_ID;
         return -GOOD_POLICE_OUTFITS.Length > armor_index;
       }
     }

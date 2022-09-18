@@ -2031,7 +2031,7 @@ retry:
 
         foreach(var x in m_GroundItemsByPosition) {
           foreach(var it in x.Value.Items) {
-            if (!ret.TryGetValue(it.Model.ID, out var cache)) ret.Add(it.Model.ID, cache = new());
+            if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
             if (!cache2.Contains(x.Value)) cache2.Add(x.Value);
           }
@@ -2041,7 +2041,7 @@ retry:
           if (!x.Value.IsContainer) continue;
           var inv = x.Value.Inventory;
           foreach (var it in inv.Items) {
-            if (!ret.TryGetValue(it.Model.ID, out var cache)) ret.Add(it.Model.ID, cache = new());
+            if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
             if (!cache2.Contains(inv)) cache2.Add(inv);
           }

@@ -4136,12 +4136,12 @@ namespace djack.RogueSurvivor.Engine
         else PanViewportTo(a);
         var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
-        tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
+        tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.ModelID.ToString()));
         var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (null != ranged) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
-            msg += " "+rw.Model.ID.ToString();
+            msg += " "+rw.ModelID.ToString();
           }
           tmp.Add(msg);
         }
@@ -7322,7 +7322,7 @@ namespace djack.RogueSurvivor.Engine
       if (trade_ok && 1== TradeableItems.Count) {
         var other_TradeableItems = order_ai.GetTradeableItems();
         if (null == other_TradeableItems) trade_ok = false;
-        else if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID == other_TradeableItems[0].Model.ID) trade_ok = false;
+        else if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) trade_ok = false;
       }
       if (trade_ok && order_ai.HasAnyInterestingItem(TradeableItems)) {
         // Cf. RogueGame::PickItemsToTrade
@@ -9469,56 +9469,56 @@ namespace djack.RogueSurvivor.Engine
       var objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
       if (objList == null || 0>=objList.Count) return null;
       // following is AI-only
-      IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.Model.ID != it.Model.ID));
+      IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.ModelID != it.ModelID));
       // XXX disallow clearly non-mutual advantage trades
-      switch(itSpeaker.Model.ID)
+      switch(itSpeaker.ModelID)
       {
       // two weapons for the ammo
       case GameItems.IDs.RANGED_PRECISION_RIFLE:
       case GameItems.IDs.RANGED_ARMY_RIFLE:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_HEAVY_RIFLE);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_HEAVY_RIFLE);
         break;
       case GameItems.IDs.AMMO_HEAVY_RIFLE:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_PRECISION_RIFLE && it.Model.ID!= GameItems.IDs.RANGED_ARMY_RIFLE);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_PRECISION_RIFLE && it.Model.ID!= GameItems.IDs.RANGED_ARMY_RIFLE);
         break;
       case GameItems.IDs.RANGED_PISTOL:
       case GameItems.IDs.RANGED_KOLT_REVOLVER:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_LIGHT_PISTOL);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_LIGHT_PISTOL);
         break;
       case GameItems.IDs.AMMO_LIGHT_PISTOL:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_PISTOL && it.Model.ID!= GameItems.IDs.RANGED_KOLT_REVOLVER);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_PISTOL && it.Model.ID!= GameItems.IDs.RANGED_KOLT_REVOLVER);
         break;
       // one weapon for the ammo
       case GameItems.IDs.RANGED_ARMY_PISTOL:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_HEAVY_PISTOL);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_HEAVY_PISTOL);
         break;
       case GameItems.IDs.AMMO_HEAVY_PISTOL:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_ARMY_PISTOL);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_ARMY_PISTOL);
         break;
       case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_BOLTS);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_BOLTS);
         break;
       case GameItems.IDs.AMMO_BOLTS:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_HUNTING_CROSSBOW);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_HUNTING_CROSSBOW);
         break;
       case GameItems.IDs.RANGED_HUNTING_RIFLE:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_LIGHT_RIFLE);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_LIGHT_RIFLE);
         break;
       case GameItems.IDs.AMMO_LIGHT_RIFLE:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_HUNTING_RIFLE);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_HUNTING_RIFLE);
         break;
       case GameItems.IDs.RANGED_SHOTGUN:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_SHOTGUN);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_SHOTGUN);
         break;
       case GameItems.IDs.AMMO_SHOTGUN:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_SHOTGUN);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_SHOTGUN);
         break;
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
       case GameItems.IDs.LIGHT_FLASHLIGHT:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
         break;
       case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
-        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.LIGHT_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries>=(it as BatteryPowered).Batteries);
+        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.LIGHT_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries>=(it as BatteryPowered).Batteries);
         break;
       }
       if (!tmp.Any()) return null;
@@ -9830,7 +9830,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InventorySource<Item> dest)
     {
-      var ammo = ItemAmmo.make(src.it.Model.ID);
+      var ammo = ItemAmmo.make(src.it.ModelID);
       ammo.Quantity = src.it.Ammo;
       if (null != dest.inv) {
         var added = dest.inv.AddAsMuchAsPossible(ammo);
@@ -9896,7 +9896,7 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints();
       actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
-      switch(ent.Model.ID) {
+      switch(ent.ModelID) {
       case GameItems.IDs.ENT_CHAR_GUARD_MANUAL:
         if (Player==actor) {  // this manual is highly informative
           var display = new List<string>();
