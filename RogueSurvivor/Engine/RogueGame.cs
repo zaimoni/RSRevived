@@ -545,11 +545,6 @@ namespace djack.RogueSurvivor.Engine
     private static void ClearMessagesHistory() { Messages.ClearHistory(); }
     private static void RemoveLastMessage() { Messages.RemoveLastMessage(); }
 
-    private void DrawMessages()
-    {
-      Messages.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
-    }
-
     public void AddMessagePressEnter()
     {
 #if DEBUG
@@ -11293,7 +11288,7 @@ namespace djack.RogueSurvivor.Engine
                     DrawMiniMap(view);
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
-                DrawMessages();
+                Messages.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
                 // \todo finetune spacing
                 // We had one spare line of text in the location panel; the CPU line uses it.
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
