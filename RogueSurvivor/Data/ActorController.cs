@@ -33,9 +33,9 @@ namespace djack.RogueSurvivor.Data
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
-    public virtual void AddMessage(Data.Message msg) { RogueGame.AddMessage(msg); }
-    public virtual void AddMessageForceRead(Data.Message msg) { RogueGame.AddMessage(msg); }
-    public virtual void AddMessageForceReadClear(Data.Message msg) { RogueGame.AddMessage(msg); }
+    public virtual void AddMessage(UI.Message msg) { RogueGame.AddMessage(msg); }
+    public virtual void AddMessageForceRead(UI.Message msg) { RogueGame.AddMessage(msg); }
+    public virtual void AddMessageForceReadClear(UI.Message msg) { RogueGame.AddMessage(msg); }
 
     // check-in with leader
     public virtual bool ReportBlocked(in InventorySource<Item> src, Actor who) { return true; }

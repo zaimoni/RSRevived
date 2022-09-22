@@ -126,7 +126,6 @@
     <Compile Include="Data\Abilities.cs" />
     <Compile Include="Data\ActorModel.cs" />
     <Compile Include="Data\WorldTime.cs" />
-    <Compile Include="Data\Message.cs" />
     <Compile Include="Data\Exit.cs" />
     <Compile Include="Data\Map.cs" />
     <Compile Include="Data\MapKripke.cs" />
@@ -287,6 +286,7 @@
     <Compile Include="Properties\Resources.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="UI\Message.cs" />
     <Compile Include="Zaimoni\Collections\Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Cache.cs" />

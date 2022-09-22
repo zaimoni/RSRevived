@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI;
+using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -53,7 +54,7 @@ namespace djack.RogueSurvivor.Data
         var game = RogueGame.Game;
         game.PlayEventMusic(music);
         RogueGame.ClearMessages();
-        RogueGame.AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        RogueGame.AddMessage(new(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
         game.AddMessagePressEnter();
         return true;
     }
@@ -76,7 +77,7 @@ namespace djack.RogueSurvivor.Data
     {
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
-    private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
+    private readonly List<Message> m_MsgCache = new();
     private List<Waypoint_s>? m_Waypoints = null;
 
     private static List<EventUnconditional>? s_BeforeAction;
@@ -89,43 +90,43 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region UI messages
-    public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
-    public void DeferMessages(IEnumerable<Data.Message> x) {
-      foreach(Data.Message msg in x) m_MsgCache.Add(msg);
+    public void DeferMessage(Message x) { m_MsgCache.Add(x); }
+    public void DeferMessages(IEnumerable<Message> x) {
+      foreach(var msg in x) m_MsgCache.Add(msg);
     }
-    public List<Data.Message> ReleaseMessages() {
+    public List<Message> ReleaseMessages() {
       if (0 >= m_MsgCache.Count) return null;
-      var ret = new List<Data.Message>(m_MsgCache);
+      var ret = new List<Message>(m_MsgCache);
       m_MsgCache.Clear();
       return ret;
     }
 
     // forwarder system for to RogueGame::AddMessage
-    public override void AddMessage(Data.Message msg) {
+    public override void AddMessage(Message msg) {
       if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessage(msg);
       else DeferMessage(msg);
     }
 
-    public void AddMessages(IEnumerable<Data.Message> msgs) {
+    public void AddMessages(IEnumerable<Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessages(msgs);
       else DeferMessages(msgs);
     }
 
-    public override void AddMessageForceRead(Data.Message msg) {
+    public override void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
       } else DeferMessage(msg);
     }
-    public void AddMessagesForceRead(IEnumerable<Data.Message> msgs) {
+    public void AddMessagesForceRead(IEnumerable<Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessages(msgs);
         RogueGame.Game.AddMessagePressEnter();
       } else DeferMessages(msgs);
     }
-    public override void AddMessageForceReadClear(Data.Message msg) {
+    public override void AddMessageForceReadClear(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
@@ -140,7 +141,7 @@ namespace djack.RogueSurvivor.Data
         who.Say(ControlledActor, raw_text, RogueGame.Sayflags.IS_FREE_ACTION);
       }
       if (2 == code) {
-        var msg = new Data.Message("(police radio, "+ who.Name +") "+raw_text, Session.Get.WorldTime.TurnCounter, RogueGame.SAYOREMOTE_NORMAL_COLOR);
+        Message msg = new("(police radio, "+ who.Name +") "+raw_text, Session.Get.WorldTime.TurnCounter, RogueGame.SAYOREMOTE_NORMAL_COLOR);
         Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg);
         who.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
       }
@@ -574,7 +575,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    private void _raidMsg(Data.Message desc_msg, Data.Message where_msg, string music)
+    private void _raidMsg(Message desc_msg, Message where_msg, string music)
     {
         if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
             var game = RogueGame.Game;
@@ -597,37 +598,37 @@ namespace djack.RogueSurvivor.Data
       switch (raid)
       {
       case RaidType.NATGUARD:
-        _raidMsg(new Data.Message("A National Guard squad has arrived!", turn, Color.LightGreen),
+        _raidMsg(new("A National Guard squad has arrived!", turn, Color.LightGreen),
                  MakeCentricMessage("Soldiers seem to come from", loc), Gameplay.GameMusics.ARMY);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "A National Guard squad arrived at " + loc.Map.District.ToString()+".");
         break;
       case RaidType.ARMY_SUPLLIES:
-        _raidMsg(new Data.Message("An Army chopper has dropped supplies!", turn, Color.LightGreen),
+        _raidMsg(new("An Army chopper has dropped supplies!", turn, Color.LightGreen),
                  MakeCentricMessage("The drop point seems to be", loc), Gameplay.GameMusics.ARMY);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "An army chopper dropped supplies in " + loc.Map.District.ToString()+".");
         break;
       case RaidType.BIKERS:
-        _raidMsg(new Data.Message("You hear the sound of roaring engines!", turn, Color.LightGreen),
+        _raidMsg(new("You hear the sound of roaring engines!", turn, Color.LightGreen),
                  MakeCentricMessage("Motorbikes seem to come from", loc), Gameplay.GameMusics.BIKER);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "Bikers raided " + loc.Map.District.ToString()+".");
         break;
       case RaidType.GANGSTA:
-        _raidMsg(new Data.Message("You hear obnoxious loud music!", turn, Color.LightGreen),
+        _raidMsg(new("You hear obnoxious loud music!", turn, Color.LightGreen),
                  MakeCentricMessage("Cars seem to come from", loc), Gameplay.GameMusics.GANGSTA);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "Gangstas raided " + loc.Map.District.ToString()+".");
         break;
       case RaidType.BLACKOPS:
-        _raidMsg(new Data.Message("You hear a chopper flying over the city!", turn, Color.LightGreen),
+        _raidMsg(new("You hear a chopper flying over the city!", turn, Color.LightGreen),
                  MakeCentricMessage("The chopper has dropped something", loc), Gameplay.GameMusics.ARMY);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "BlackOps raided " + loc.Map.District.ToString()+".");
         break;
       case RaidType.SURVIVORS:
-        _raidMsg(new Data.Message("You hear shooting and honking in the distance.", turn, Color.LightGreen),
+        _raidMsg(new("You hear shooting and honking in the distance.", turn, Color.LightGreen),
                  MakeCentricMessage("A van has stopped", loc), Gameplay.GameMusics.SURVIVORS);
         // XXX should be district event
         m_Actor.ActorScoring.AddEvent(turn, "A Band of Survivors entered "+loc.Map.District.ToString()+".");
@@ -650,14 +651,14 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
 
     // while the following is "valid" for any actor, messages are shown *only* to the player
-    public Data.Message MakeCentricMessage(string eventText, in Location loc, Color? color=null)
+    public Message MakeCentricMessage(string eventText, in Location loc, Color? color=null)
     {
       Location? test = m_Actor.Location.Map.Denormalize(in loc);
       if (null == test) throw new ArgumentNullException(nameof(test));
       var v = test.Value.Position - m_Actor.Location.Position;
       string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(in v), Direction.ApproximateFromVector(v));
-      if (null != color) return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
-      return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter);
+      if (null != color) return new(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
+      return new(msg_text, Session.Get.WorldTime.TurnCounter);
     }
 
     private void HandleSay(object sender, Actor.SayArgs e)

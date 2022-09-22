@@ -3759,14 +3759,14 @@ namespace djack.RogueSurvivor.Data
     public struct SayArgs
     {
       public readonly Actor _target;
-      public readonly List<Data.Message> messages;
+      public readonly List<UI.Message> messages;
       public readonly bool _important;
       public bool shown;
 
       public SayArgs(Actor target, bool important)
       {
         _target = target;
-        messages = new List<Data.Message>();
+        messages = new();
         _important = important;
         shown = false;
       }
