@@ -183,6 +183,10 @@ namespace djack.RogueSurvivor.Engine
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
+
+    private const int LINE_SPACING = 12;
+    public const int BOLD_LINE_SPACING = 14;
+
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
@@ -196,10 +200,11 @@ namespace djack.RogueSurvivor.Engine
     private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
     private const int MESSAGES_X = 4;
     public const int MESSAGES_Y = LOCATIONPANEL_Y;
-    private const int MESSAGES_SPACING = 12;
-    private const int MESSAGES_FADEOUT = 25;
-    private const int MAX_MESSAGES = 7;
-    private const int MESSAGES_HISTORY = 59;
+    private const int MESSAGES_SPACING = LINE_SPACING;
+//  private const int MAX_MESSAGES = 7;
+    private const int MAX_MESSAGES = (CANVAS_HEIGHT - LOCATIONPANEL_Y) / MESSAGES_SPACING;
+//  private const int MESSAGES_HISTORY = 59;
+    private const int MESSAGES_HISTORY = (CANVAS_HEIGHT - 3 * BOLD_LINE_SPACING) / MESSAGES_SPACING;
     private const int MESSAGES_LINE_LENGTH = 91;    // in characters (empirical constant rather than measured)
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
@@ -212,8 +217,6 @@ namespace djack.RogueSurvivor.Engine
     public const int DELAY_SHORT = 250;
     public const int DELAY_NORMAL = 500;
     public const int DELAY_LONG = 1000;
-    private const int LINE_SPACING = 12;
-    public const int BOLD_LINE_SPACING = 14;
     private const int SKILL_LINE_SPACING = LINE_SPACING+4;
     private const int CREDIT_CHAR_SPACING = 8;
     private const int CREDIT_LINE_SPACING = 12;
@@ -388,7 +391,7 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
-      s_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
+      s_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_HISTORY, MAX_MESSAGES);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
       s_Options.ResetToDefaultValues();
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;

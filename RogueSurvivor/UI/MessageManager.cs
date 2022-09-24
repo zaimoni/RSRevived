@@ -18,24 +18,21 @@ namespace djack.RogueSurvivor.UI
   {
     private readonly List<Message> m_Messages;
     private readonly int m_LinesSpacing; // normal; bold is 2 more
-    private readonly int m_FadeoutFactor;
     private readonly List<Message> m_History;
     private readonly int m_HistorySize;
     private readonly int m_DisplaySize;
 
-    public MessageManager(int linesSpacing, int fadeoutFactor, int historySize, int displaySize)
+    public MessageManager(int linesSpacing, int historySize, int displaySize)
     {
 #if DEBUG
       if (0 >= linesSpacing) throw new ArgumentOutOfRangeException(nameof(linesSpacing));
-      if (0 >= fadeoutFactor) throw new ArgumentOutOfRangeException(nameof(fadeoutFactor));
       if (0 >= historySize) throw new ArgumentOutOfRangeException(nameof(historySize));
 #endif
       m_LinesSpacing = linesSpacing;
-      m_FadeoutFactor = fadeoutFactor;
       m_HistorySize = historySize;
       m_DisplaySize = displaySize;
-      m_History = new List<Message>(historySize);
-      m_Messages = new List<Message>(displaySize);
+      m_History = new(historySize);
+      m_Messages = new(displaySize);
     }
 
     public void Clear() { m_Messages.Clear(); }
@@ -56,10 +53,12 @@ namespace djack.RogueSurvivor.UI
     }
 
     public void Draw(IRogueUI ui, int freshMessagesTurn, int gx, int gy) {
+      const int FADEOUT = 25;
+
       for (int index = 0; index < m_Messages.Count; ++index) {
         Message message = m_Messages[index];
-        int alpha = Math.Max(64, (int) byte.MaxValue - m_FadeoutFactor * (m_Messages.Count - 1 - index));
-        Color color = Color.FromArgb(alpha, message.Color);
+        int alpha = Math.Max(64, (int) byte.MaxValue - FADEOUT * (m_Messages.Count - 1 - index));
+        var color = Color.FromArgb(alpha, message.Color);
         if (message.Turn >= freshMessagesTurn) ui.UI_DrawStringBold(color, message.Text, gx, gy);
         else ui.UI_DrawString(color, message.Text, gx, gy);
         gy += m_LinesSpacing;
