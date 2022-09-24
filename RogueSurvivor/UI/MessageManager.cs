@@ -27,6 +27,7 @@ namespace djack.RogueSurvivor.UI
 #if DEBUG
       if (0 >= linesSpacing) throw new ArgumentOutOfRangeException(nameof(linesSpacing));
       if (0 >= historySize) throw new ArgumentOutOfRangeException(nameof(historySize));
+      if (0 >= displaySize) throw new ArgumentOutOfRangeException(nameof(displaySize));
 #endif
       m_LinesSpacing = linesSpacing;
       m_HistorySize = historySize;
@@ -40,10 +41,10 @@ namespace djack.RogueSurvivor.UI
 
     public void Add(Message msg)
     {
+      if (m_HistorySize <= m_History.Count) m_History.RemoveAt(0);
+      if (m_DisplaySize <= m_Messages.Count) m_Messages.RemoveAt(0);
       m_Messages.Add(msg);
       m_History.Add(msg);
-      if (m_HistorySize < m_History.Count) m_History.RemoveAt(0);
-      if (m_DisplaySize < m_Messages.Count) m_Messages.RemoveAt(0);
     }
 
     public void RemoveLastMessage()
