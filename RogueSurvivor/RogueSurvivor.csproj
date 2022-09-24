@@ -181,7 +181,6 @@
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Engine\LOS.cs" />
     <Compile Include="Engine\InputTranslator.cs" />
-    <Compile Include="Engine\MessageManager.cs" />
     <Compile Include="Engine\Achievement.cs" />
     <Compile Include="Engine\Scoring.cs" />
     <Compile Include="Engine\GameOptions.cs" />
@@ -287,6 +286,7 @@
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="UI\Message.cs" />
+    <Compile Include="UI\MessageManager.cs" />
     <Compile Include="Zaimoni\Collections\Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Cache.cs" />

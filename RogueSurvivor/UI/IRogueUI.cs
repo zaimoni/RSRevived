@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.UI
   /// <summary>
   /// Provides UI functionalities to a Rogue game.
   /// </summary>
-  internal interface IRogueUI
+  public interface IRogueUI
   {
 #nullable enable
     // C# 8.0: cooperative almost-singleton now possible for interfaces
