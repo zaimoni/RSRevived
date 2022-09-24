@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.Engine
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
 
-    private const int LINE_SPACING = 12;
+    public const int LINE_SPACING = 12;
     public const int BOLD_LINE_SPACING = 14;
 
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Engine
     private const int SKILLTABLE_Y = CORPSESPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int SKILLTABLE_LINES = 8;  // alpha10; formerly 10
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
-    private const int LOCATIONPANEL_Y = 676;
+    public const int LOCATIONPANEL_Y = 676;
     private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
     private const int LOCATIONPANEL_TEXT_X_COL2 = LOCATIONPANEL_TEXT_X+(CANVAS_WIDTH - LOCATIONPANEL_TEXT_X)/3;
     private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
@@ -11018,7 +11018,7 @@ namespace djack.RogueSurvivor.Engine
         if (oai.CanBecomeCop()) {
           if (YesNoPopup("Become a cop") && oai.BecomeCop()) {
             // 2020-09-12: NPC CivilianAI do not have pre-existing item memory and upgrade theirs without help.
-            upgradeActor.Controller = new PlayerController(upgradeActor);
+            upgradeActor.Controller = new PlayerController(upgradeActor, upgradeActor.Controller as PlayerController);
           }
         }
       }

@@ -79,14 +79,21 @@ namespace djack.RogueSurvivor.Data
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
     private readonly List<Message> m_MsgCache = new();
     private List<Waypoint_s>? m_Waypoints = null;
+    public readonly MessageManager Messages;
 
     private static List<EventUnconditional>? s_BeforeAction;
     private static List<EventUnconditional>? s_AfterAction;
 
-	public PlayerController(Actor src) : base(src) {
+	public PlayerController(Actor src, PlayerController? upgrading = null) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
       m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
                                                                    : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+
+      const int MESSAGES_SPACING = RogueGame.LINE_SPACING;
+      const int MAX_MESSAGES = (RogueGame.CANVAS_HEIGHT - RogueGame.LOCATIONPANEL_Y) / MESSAGES_SPACING; // historically 7
+      const int MESSAGES_HISTORY = (RogueGame.CANVAS_HEIGHT - 3 * RogueGame.BOLD_LINE_SPACING) / MESSAGES_SPACING; // historically 59
+
+      Messages = upgrading?.Messages ?? new MessageManager(MESSAGES_SPACING, MESSAGES_HISTORY, MAX_MESSAGES);
     }
 
 #region UI messages
