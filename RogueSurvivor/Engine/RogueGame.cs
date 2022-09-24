@@ -3646,10 +3646,7 @@ namespace djack.RogueSurvivor.Engine
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      foreach (var msg in Messages.History) {
-        m_UI.UI_DrawString(msg.Color, msg.Text, 0, gy1, new Color?());
-        gy1 += LINE_SPACING;
-      }
+      Messages.DrawMessageLog(m_UI, 0, gy1);
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
       m_UI.WaitEscape();

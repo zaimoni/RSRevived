@@ -17,13 +17,11 @@ namespace djack.RogueSurvivor.UI
   public class MessageManager
   {
     private readonly List<Message> m_Messages;
-    private readonly int m_LinesSpacing;
+    private readonly int m_LinesSpacing; // normal; bold is 2 more
     private readonly int m_FadeoutFactor;
     private readonly List<Message> m_History;
     private readonly int m_HistorySize;
     private readonly int m_DisplaySize;
-
-    public IEnumerable<Message> History { get { return m_History; } }
 
     public MessageManager(int linesSpacing, int fadeoutFactor, int historySize, int displaySize)
     {
@@ -57,15 +55,22 @@ namespace djack.RogueSurvivor.UI
       if (0 < (count = m_Messages.Count)) m_Messages.RemoveAt(count - 1);
     }
 
-    public void Draw(UI.IRogueUI ui, int freshMessagesTurn, int gx, int gy) {
+    public void Draw(IRogueUI ui, int freshMessagesTurn, int gx, int gy) {
       for (int index = 0; index < m_Messages.Count; ++index) {
         Message message = m_Messages[index];
         int alpha = Math.Max(64, (int) byte.MaxValue - m_FadeoutFactor * (m_Messages.Count - 1 - index));
         Color color = Color.FromArgb(alpha, message.Color);
-        if (message.Turn >= freshMessagesTurn) ui.UI_DrawStringBold(color, message.Text, gx, gy, new Color?());
-        else ui.UI_DrawString(color, message.Text, gx, gy, new Color?());
+        if (message.Turn >= freshMessagesTurn) ui.UI_DrawStringBold(color, message.Text, gx, gy);
+        else ui.UI_DrawString(color, message.Text, gx, gy);
         gy += m_LinesSpacing;
       }
+    }
+
+    public void DrawMessageLog(IRogueUI ui, int gx, int gy) {
+        foreach (var msg in m_History) {
+            ui.UI_DrawString(msg.Color, msg.Text, gx, gy);
+            gy += m_LinesSpacing;
+        }
     }
   }
 }
