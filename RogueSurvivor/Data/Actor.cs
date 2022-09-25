@@ -3887,12 +3887,8 @@ namespace djack.RogueSurvivor.Data
        if (IsRunning && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) {
          Walk();
          if (Controller is PlayerController pc) {
-           var msg = RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this)));
-           if (RogueGame.IsPlayer(this)) {
-             RogueGame.Game.RedrawPlayScreen(msg);
-           } else {
-             pc.DeferMessage(msg);
-           }
+           pc.AddMessage(RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this))));
+           if (RogueGame.IsPlayer(this)) RogueGame.Game.RedrawPlayScreen();
          }
        }
     }

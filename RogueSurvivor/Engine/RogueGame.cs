@@ -438,15 +438,11 @@ namespace djack.RogueSurvivor.Engine
       var actors = ThoseNearby(loc, GameActors.HUMAN_AUDIO, hears);
       if (null == actors) return;
       foreach(var a in actors) {
-          if (a.Controller is PlayerController player) {
-            if (player_knows(a)) return;
-            var msg = player.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
-            if (Player == a) {
-              RedrawPlayScreen(msg);
-              return;
-            }
-            player.DeferMessage(msg);
-            return;
+          if (a.Controller is PlayerController pc) {
+            if (player_knows(a)) continue;
+            pc.AddMessage(pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR));
+            if (Player == a) RedrawPlayScreen();
+            continue;
           }
           // NPC ai hooks go here
           doFn(a);
@@ -470,8 +466,8 @@ namespace djack.RogueSurvivor.Engine
         var pc = (player.Controller as PlayerController)!;
         var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
         if (null != msg) {
-            if (IsPlayer(player)) RedrawPlayScreen(msg);
-            else pc.DeferMessage(msg);
+            pc.AddMessage(msg);
+            if (IsPlayer(player)) RedrawPlayScreen();
         }
       }
     }
@@ -10895,8 +10891,8 @@ namespace djack.RogueSurvivor.Engine
     private void PCsurvival(PlayerController pc, UI.Message msg_alive, UI.Message msg_welcome)
     {
         if (IsSimulating || IsPlayer(pc.ControlledActor)) {
-            pc.DeferMessage(msg_alive);
-            pc.DeferMessage(msg_welcome);
+            pc.AddMessage(msg_alive);
+            pc.AddMessage(msg_welcome);
         } else {
             m_MusicManager.Stop();
             m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
@@ -13478,7 +13474,7 @@ retry:
       lines.Add(string.Format("Achievements : {0}/{1}.", score.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
       lines.Add(str);
       if (IsSimulating || victor!=Player) {
-        foreach(var msg in lines) pc.DeferMessage(new(msg, Session.Get.WorldTime.TurnCounter, Color.Gold));
+        foreach(var msg in lines) pc.AddMessage(new(msg, Session.Get.WorldTime.TurnCounter, Color.Gold));
       } else {
         m_MusicManager.PlayLooping(achievement.MusicID, MusicPriority.PRIORITY_EVENT);
         AddOverlay(new OverlayPopup(lines.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));

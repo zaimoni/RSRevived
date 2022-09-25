@@ -108,15 +108,22 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    private void _releaseMessages() {
+      if (0 < m_MsgCache.Count) {
+        Messages.Add(m_MsgCache);
+        m_MsgCache.Clear();
+      }
+    }
+
     // forwarder system for to RogueGame::AddMessage
     public override void AddMessage(Message msg) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessage(msg);
-      else DeferMessage(msg);
+      _releaseMessages();
+      Messages.Add(msg);
     }
 
     public void AddMessages(IEnumerable<Message> msgs) {
-      if (RogueGame.IsPlayer(m_Actor)) RogueGame.AddMessages(msgs);
-      else DeferMessages(msgs);
+      _releaseMessages();
+      Messages.Add(msgs);
     }
 
     public override void AddMessageForceRead(Message msg) {
@@ -124,14 +131,14 @@ namespace djack.RogueSurvivor.Data
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
-      } else DeferMessage(msg);
+      } else AddMessage(msg);
     }
     public void AddMessagesForceRead(IEnumerable<Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessages(msgs);
         RogueGame.Game.AddMessagePressEnter();
-      } else DeferMessages(msgs);
+      } else AddMessages(msgs);
     }
     public override void AddMessageForceReadClear(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
@@ -139,7 +146,7 @@ namespace djack.RogueSurvivor.Data
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
         RogueGame.ClearMessages();
-      } else DeferMessage(msg);
+      } else AddMessage(msg);
     }
 
     private void _handleReport(string raw_text, int code, Actor who)
@@ -593,8 +600,8 @@ namespace djack.RogueSurvivor.Data
             game.AddMessagePressEnter();
             RogueGame.ClearMessages();
         } else {
-            DeferMessage(desc_msg);
-            DeferMessage(where_msg);
+            AddMessage(desc_msg);
+            AddMessage(where_msg);
         }
     }
 
