@@ -555,7 +555,8 @@ namespace djack.RogueSurvivor.Engine
 #else
       if (IsSimulating) return;   // visual no-op
 #endif
-      RedrawPlayScreen(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      RedrawPlayScreen();
       m_UI.WaitEnter();
       Messages.RemoveLastMessage();
       RedrawPlayScreen();

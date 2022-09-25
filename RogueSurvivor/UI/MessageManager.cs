@@ -49,6 +49,12 @@ namespace djack.RogueSurvivor.UI
 
     public void Add(IEnumerable<Message> msgs) { foreach(var msg in msgs) Add(msg); }
 
+    public void AddNoLog(Message msg)
+    {
+      if (m_DisplaySize <= m_Messages.Count) m_Messages.RemoveAt(0);
+      m_Messages.Add(msg);
+    }
+
     public void RemoveLastMessage()
     {
       int count;
