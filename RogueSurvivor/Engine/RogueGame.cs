@@ -323,6 +323,13 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public static Actor Player { get { return m_Player!; } }
     public static bool IsPlayer(Actor? a) { return a == m_Player; }
+    private static Actor setPlayer(Actor a) {
+        // \todo these may need to be atomic updates
+        m_Player = a;
+        var msgs = (a.Controller as PlayerController)?.Messages;
+        if (null != msgs) s_MessageManager = msgs;
+        return a;
+    }
 #nullable restore
     public static Map CurrentMap { get { return m_MapView.m; } }
     private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
@@ -339,8 +346,7 @@ namespace djack.RogueSurvivor.Engine
 #region Session save/load assistants
     static public void AfterLoad(Map.ActorCode src)
     {
-      m_Player = Map.decode(src);
-      m_MapView = m_Player.Location.View;
+      m_MapView = setPlayer(Map.decode(src)).Location.View;
     }
 
     static public void Load(SerializationInfo info, StreamingContext context)
@@ -1720,7 +1726,7 @@ namespace djack.RogueSurvivor.Engine
     {
        var tmp = CurrentMap.FindPlayer;
        if (null != tmp) {
-         (m_Player = tmp).Controller.UpdateSensors();
+         setPlayer(tmp).Controller.UpdateSensors();
          SetCurrentMap(Player.Location);
          RedrawPlayScreen();
          return;
@@ -1728,7 +1734,7 @@ namespace djack.RogueSurvivor.Engine
        // check all maps in current district
        tmp = CurrentMap.District.FindPlayer(CurrentMap);
        if (null != tmp) {
-         m_Player = tmp;
+         setPlayer(tmp);
          return;
        }
 
@@ -1736,7 +1742,7 @@ namespace djack.RogueSurvivor.Engine
        foreach(District tmp2 in Session.Get.World.PlayerDistricts) {
          tmp = tmp2.FindPlayer(null);
          if (null != tmp) {
-           m_Player = tmp;
+           setPlayer(tmp);
            return;
          }
        }
@@ -2995,7 +3001,7 @@ namespace djack.RogueSurvivor.Engine
       pc.SparseReset();
       pc.UpdateSensors();
       pc.BeforeAction();
-      m_Player = player;
+      setPlayer(m_Player);
       m_PlayerInTurn = player;
       SetCurrentMap(player.Location);  // multi-PC support
 
@@ -3006,10 +3012,7 @@ namespace djack.RogueSurvivor.Engine
       int hotkey_turns = 0;
       bool flag1 = true;
       do {
-        if (Player!=player) {
-          m_Player = player;
-          SetCurrentMap(player.Location);  // multi-PC support
-        }
+        if (Player!=player) SetCurrentMap(setPlayer(player).Location);  // multi-PC support
         m_UI.UI_SetCursor(null);
         // hint available?
         // alpha10 no hint if undead
@@ -3020,7 +3023,7 @@ namespace djack.RogueSurvivor.Engine
             GetAdvisorHintText((AdvisorHint)availableHint, out string hintTitle, out var _);
             if (null == s_HintAvailableOverlay) {
               // constant due to above
-              var overlayPos = MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1);
+              var overlayPos = MapToScreen(Player.Location.Position + Direction.NW + 2 * Direction.N);
               s_HintAvailableHeaderLines = new string[] {
                 string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.AsString(PlayerCommand.ADVISOR)),
                 hintTitle
@@ -3780,7 +3783,7 @@ namespace djack.RogueSurvivor.Engine
               }
             }
             var vip = Session.Get.UniqueActors.TheSewersThing.TheActor;
-            if ((m_Player.Controller as PlayerController).KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
+            if ((Player.Controller as PlayerController).KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
               m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
               if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
@@ -6236,7 +6239,7 @@ namespace djack.RogueSurvivor.Engine
                 lines[0] = "Zone(s) here :";
                 for (int index = 0; index < zonesAt.Count; ++index)
                  lines[index + 1] = string.Format("- {0}", zonesAt[index].Name);
-                zones = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(nullable.Value.X + 1, nullable.Value.Y + 1));
+                zones = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(nullable.Value + Direction.SE));
                 AddOverlay(zones);
               } else zones = null;
             }
@@ -10422,7 +10425,7 @@ namespace djack.RogueSurvivor.Engine
            : string.Format("* {0} died by {1}! *", deadGuy.TheName, reason)));
       }
       if (deadGuy == m_Player_bak) {
-        m_Player = m_Player_bak;
+        setPlayer(m_Player_bak);
         if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
       }
       deadGuy.RemoveAllFollowers();
@@ -12466,11 +12469,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    public void PanViewportTo(Actor player)
-    {
-      m_Player = player;
-      PanViewportTo(player.Location);
-    }
+    public void PanViewportTo(Actor player) => PanViewportTo(setPlayer(player).Location);
 
     /// Debugging tool: allows AI to pray for advice to player
     public ActorAction? AI_prayer(Actor actor, List<ActorAction> considering)
@@ -13365,7 +13364,7 @@ namespace djack.RogueSurvivor.Engine
     private void RefreshPlayer()
     {
       var player = CurrentMap.FindPlayer;
-      if (null != player) SetCurrentMap((m_Player = player).Location);
+      if (null != player) SetCurrentMap(setPlayer(player).Location);
     }
 
     private void SetCurrentMap(Location loc)
@@ -13733,7 +13732,7 @@ retry:
       newPlayerAvatar.Controller = new PlayerController(newPlayerAvatar);
       if (newPlayerAvatar.Activity != Data.Activity.SLEEPING) newPlayerAvatar.Activity = Data.Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
-      (m_Player = newPlayerAvatar).ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.StartNewLife()));
+      setPlayer(newPlayerAvatar).ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.StartNewLife()));
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.Stop();
