@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Data
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
-    public override void AddMessage(Message msg) => Messages.Add(msg);
+    public void AddMessage(Message msg) => Messages.Add(msg);
     public void AddMessages(IEnumerable<Message> msgs) => Messages.Add(msgs);
 
     public override void AddMessageForceRead(Message msg) {

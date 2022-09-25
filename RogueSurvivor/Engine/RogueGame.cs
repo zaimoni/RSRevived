@@ -455,19 +455,17 @@ namespace djack.RogueSurvivor.Engine
       bool hears(Actor a) {
         if (a.IsSleeping) return false;
         if (Rules.StdDistance(a.Location, in loc) > a.AudioRange) return false;
-        if (a.Controller.CanSee(loc)) return false;
-        return a.IsPlayer;
+        return !a.Controller.CanSee(loc);
       };
 
-      var actors = ThoseNearby(loc, GameActors.HUMAN_AUDIO, hears);
-      if (null == actors) return;
+      var PCs = PCsNearby(loc, GameActors.HUMAN_AUDIO, hears);
+      if (null == PCs) return;
 
-      foreach(var player in actors) {
-        var pc = (player.Controller as PlayerController)!;
+      foreach(var pc in PCs) {
         var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
         if (null != msg) {
             pc.AddMessage(msg);
-            if (IsPlayer(player)) RedrawPlayScreen();
+            if (IsPlayer(pc.ControlledActor)) RedrawPlayScreen();
         }
       }
     }
@@ -9106,15 +9104,33 @@ namespace djack.RogueSurvivor.Engine
         return 0<ret.Count ? ret : null;
     }
 
-    static private List<Actor>? PlayersInLOS(Location view) {
+    static private List<PlayerController>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
+        List<PlayerController> ret = new();
+        var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
+        // lambda function access of loc.Position prevents converting to member function
+        survey.DoForEach(pt => {
+          Location test = new Location(loc.Map, pt);
+          if (Map.Canonical(ref test)) {
+              var actor = test.Actor;
+              if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
+          }
+        });
+
+        var exit = loc.Exit;
+        if (null != exit) {
+          var actor = exit.Location.Actor;
+          if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
+        }
+
+        return 0<ret.Count ? ret : null;
+    }
+
+    static public List<PlayerController>? PlayersInLOS(Location view) {
       if (!Map.Canonical(ref view)) return null;
 
-      bool sees(Actor a) {
-        if (!a.IsPlayer) return false;
-        return a.Controller.CanSee(view);
-      };
+      bool sees(Actor a) { return a.Controller.CanSee(view); };
 
-      return ThoseNearby(view, Actor.MAX_VISION, sees);
+      return PCsNearby(view, Actor.MAX_VISION, sees);
     }
 
     public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
@@ -12457,6 +12473,18 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public void PanViewportTo(Actor player) => PanViewportTo(setPlayer(player).Location);
 
+    public void PanViewportTo(List<Actor> witnesses) {
+      if (0 >= witnesses.Count) return;
+      if (witnesses.Contains(Player)) RedrawPlayScreen();
+      else PanViewportTo(witnesses[0]);
+    }
+
+    public void PanViewportTo(List<PlayerController> witnesses) {
+      if (0 >= witnesses.Count) return;
+      if (witnesses.Contains(Player.Controller as PlayerController)) RedrawPlayScreen();
+      else PanViewportTo(witnesses[0].ControlledActor);
+    }
+
     /// Debugging tool: allows AI to pray for advice to player
     public ActorAction? AI_prayer(Actor actor, List<ActorAction> considering)
     {
@@ -13880,6 +13908,8 @@ retry:
       var victims = ThoseNearby(loc, maxLivingFOV, sees);
       if (null == victims) return;
 
+      var pc_did_it = whoDoesTheAction.Controller as PlayerController;
+
       UI.Message? pc_saw = null;
       bool need_to_message_performer = true;
       foreach(var actor in victims) {
@@ -13887,28 +13917,25 @@ retry:
         var PC_witnesses = PlayersInLOS(actor.Location);
         if (null == PC_witnesses) continue;
         bool have_messaged = false;
-        if (PC_witnesses.Remove(whoDoesTheAction)) {
+        if (null != pc_did_it && PC_witnesses.Remove(pc_did_it)) {
           if (need_to_message_performer) {
-              (whoDoesTheAction.Controller as PlayerController)!.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+              pc_did_it.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               need_to_message_performer = false;
               have_messaged = true;
               PanViewportTo(whoDoesTheAction);
           }
         }
         if (0 >= PC_witnesses.Count) continue;
-        if (PC_witnesses.Remove(actor)) {
-          (actor.Controller as PlayerController)!.AddMessage(pc_saw ?? (pc_saw = new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange)));
+        if (actor.Controller is PlayerController a_pc && PC_witnesses.Remove(a_pc)) {
+          a_pc.AddMessage(pc_saw ?? (pc_saw = new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange)));
           have_messaged = true;
           PanViewportTo(actor);
         }
         if (0 >= PC_witnesses.Count) continue;
         var broadcast = whoDoesTheAction == actor ? MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
                                                   : MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
-        foreach (var witness in PC_witnesses) (witness.Controller as PlayerController)!.AddMessage(broadcast);
-        if (!have_messaged) {
-          if (PC_witnesses.Contains(Player)) RedrawPlayScreen();
-          else PanViewportTo(PC_witnesses[0]);
-        }
+        foreach (var witness in PC_witnesses) witness.AddMessage(broadcast);
+        if (!have_messaged) PanViewportTo(PC_witnesses);
       }
     }
 
