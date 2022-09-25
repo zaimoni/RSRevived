@@ -3038,8 +3038,6 @@ namespace djack.RogueSurvivor.Engine
         }
 #endregion
 
-        var deferredMessages = pc.ReleaseMessages();
-        if (null != deferredMessages) AddMessages(deferredMessages);
         if (2 <= hotkey_turns) m_Status2 = hotkey_turns.ToString();
         else m_Status2 = null;
         RedrawPlayScreen();
@@ -9212,20 +9210,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(var overhear in audience) {
         if (overhear!=speaker && overhear!=target && audience2.Contains(overhear)) op(overhear);
       }
-      // flush deferred reply now
-      void flush_messages(PlayerController PC) {
-        var deferredMessages = PC.ReleaseMessages();
-        if (null != deferredMessages) { // should be non-null by construction
-          SetCurrentMap(PC.ControlledActor.Location);
-          AddMessages(deferredMessages);
-          RedrawPlayScreen();
-        }
-      }
 
-      if (!IsSimulating) {
-        if (null != s_PC) flush_messages(s_PC);
-        if (null != t_PC) flush_messages(t_PC);
-      }
       return true;
     }
 

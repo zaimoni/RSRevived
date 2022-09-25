@@ -77,7 +77,6 @@ namespace djack.RogueSurvivor.Data
     {
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
-    private readonly List<Message> m_MsgCache = new();
     private List<Waypoint_s>? m_Waypoints = null;
     public readonly MessageManager Messages;
 
@@ -97,34 +96,9 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region UI messages
-    public void DeferMessage(Message x) { m_MsgCache.Add(x); }
-    public void DeferMessages(IEnumerable<Message> x) {
-      foreach(var msg in x) m_MsgCache.Add(msg);
-    }
-    public List<Message> ReleaseMessages() {
-      if (0 >= m_MsgCache.Count) return null;
-      var ret = new List<Message>(m_MsgCache);
-      m_MsgCache.Clear();
-      return ret;
-    }
-
-    private void _releaseMessages() {
-      if (0 < m_MsgCache.Count) {
-        Messages.Add(m_MsgCache);
-        m_MsgCache.Clear();
-      }
-    }
-
     // forwarder system for to RogueGame::AddMessage
-    public override void AddMessage(Message msg) {
-      _releaseMessages();
-      Messages.Add(msg);
-    }
-
-    public void AddMessages(IEnumerable<Message> msgs) {
-      _releaseMessages();
-      Messages.Add(msgs);
-    }
+    public override void AddMessage(Message msg) => Messages.Add(msg);
+    public void AddMessages(IEnumerable<Message> msgs) => Messages.Add(msgs);
 
     public override void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
