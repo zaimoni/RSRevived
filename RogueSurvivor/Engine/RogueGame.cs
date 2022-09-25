@@ -416,12 +416,8 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    public static void AddMessage(UI.Message msg) { Messages.Add(msg); }
-
-    public static void AddMessages(IEnumerable<UI.Message> msgs)
-    {
-      foreach(var msg in msgs) Messages.Add(msg);
-    }
+    public static void AddMessage(UI.Message msg) => Messages.Add(msg);
+    public static void AddMessages(IEnumerable<UI.Message> msgs) => Messages.Add(msgs);
 
     public void ImportantMessage(UI.Message msg, int delay=0)
     {

@@ -47,6 +47,8 @@ namespace djack.RogueSurvivor.UI
       m_History.Add(msg);
     }
 
+    public void Add(IEnumerable<Message> msgs) { foreach(var msg in msgs) Add(msg); }
+
     public void RemoveLastMessage()
     {
       int count;
