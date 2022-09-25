@@ -9106,6 +9106,17 @@ namespace djack.RogueSurvivor.Engine
         return 0<ret.Count ? ret : null;
     }
 
+    static private List<Actor>? PlayersInLOS(Location view) {
+      if (!Map.Canonical(ref view)) return null;
+
+      bool sees(Actor a) {
+        if (!a.IsPlayer) return false;
+        return a.Controller.CanSee(view);
+      };
+
+      return ThoseNearby(view, Actor.MAX_VISION, sees);
+    }
+
     public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
     {
       bool is_awake(Actor a) { return !a.IsSleeping; };
@@ -13869,18 +13880,35 @@ retry:
       var victims = ThoseNearby(loc, maxLivingFOV, sees);
       if (null == victims) return;
 
+      UI.Message? pc_saw = null;
+      bool need_to_message_performer = true;
       foreach(var actor in victims) {
         actor.SpendSanity(sanCost);
-        if (whoDoesTheAction == actor) {
-          if (actor.IsPlayer)
-            actor.Controller.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
-          else if (ForceVisibleToPlayer(actor))
-            AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor))));
+        var PC_witnesses = PlayersInLOS(actor.Location);
+        if (null == PC_witnesses) continue;
+        bool have_messaged = false;
+        if (PC_witnesses.Remove(whoDoesTheAction)) {
+          if (need_to_message_performer) {
+              (whoDoesTheAction.Controller as PlayerController)!.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+              need_to_message_performer = false;
+              have_messaged = true;
+              PanViewportTo(whoDoesTheAction);
+          }
         }
-        else if (actor.IsPlayer)
-          actor.Controller.AddMessage(new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
-        else if (ForceVisibleToPlayer(actor))
-          AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor))));
+        if (0 >= PC_witnesses.Count) continue;
+        if (PC_witnesses.Remove(actor)) {
+          (actor.Controller as PlayerController)!.AddMessage(pc_saw ?? (pc_saw = new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange)));
+          have_messaged = true;
+          PanViewportTo(actor);
+        }
+        if (0 >= PC_witnesses.Count) continue;
+        var broadcast = whoDoesTheAction == actor ? MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
+                                                  : MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
+        foreach (var witness in PC_witnesses) (witness.Controller as PlayerController)!.AddMessage(broadcast);
+        if (!have_messaged) {
+          if (PC_witnesses.Contains(Player)) RedrawPlayScreen();
+          else PanViewportTo(PC_witnesses[0]);
+        }
       }
     }
 
