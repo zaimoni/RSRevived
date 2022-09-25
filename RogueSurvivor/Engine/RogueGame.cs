@@ -547,8 +547,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public static void ClearMessages() { Messages.Clear(); }
-    private static void ClearMessagesHistory() { Messages.ClearHistory(); }
-    private static void RemoveLastMessage() { Messages.RemoveLastMessage(); }
 
     public void AddMessagePressEnter()
     {
@@ -559,7 +557,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       RedrawPlayScreen(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_UI.WaitEnter();
-      RemoveLastMessage();
+      Messages.RemoveLastMessage();
       RedrawPlayScreen();
     }
 
@@ -1431,8 +1429,8 @@ namespace djack.RogueSurvivor.Engine
       Player.ActorScoring.AddVisit(Session.Get.WorldTime.TurnCounter, Player.Location.Map);
       Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", Player.Location.Map.Name));
       if (s_Options.IsAdvisorEnabled) {
-        ClearMessages();
-        ClearMessagesHistory();
+        Messages.Clear();
+        Messages.ClearHistory();
         if (isUndead) {    // alpha10
           AddMessage(new("The Advisor is enabled but you will get no hint when playing undead.", 0, Color.Red));
         } else {
@@ -1444,8 +1442,8 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen(new("<press ENTER>", 0, Color.Yellow));
         m_UI.WaitEnter();
       }
-      ClearMessages();
-      ClearMessagesHistory();
+      Messages.Clear();
+      Messages.ClearHistory();
       string msg1 = "Welcome to " + SetupConfig.GAME_NAME;
       string msg2 = "We hope you like Zombies";
       int len = (msg1.Length < msg2.Length ? msg2.Length : msg1.Length);
@@ -9570,7 +9568,6 @@ namespace djack.RogueSurvivor.Engine
         if (null != text) DoEmote(speaker, text, true);
         AddMessagePressEnter();
         ClearOverlays();
-        RemoveLastMessage();
       } else {
         var verb = VERB_SHOUT.Conjugate(speaker);
         if (null == text)
