@@ -38,12 +38,9 @@ namespace djack.RogueSurvivor.Data
       RogueGame.Game.PanViewportTo(witnesses);
     }
 
-    public virtual void AddMessageForceReadClear(UI.Message msg) {
-      var witnesses = RogueGame.PlayersInLOS(m_Actor.Location);
-      if (null != witnesses) {
-        foreach (var witness in witnesses) witness.AddMessage(msg);
-        RogueGame.Game.PanViewportTo(witnesses);
-      }
+    public virtual void AddMessageForceReadClear(UI.Message msg, List<PlayerController> witnesses) {
+      foreach (var witness in witnesses) witness.AddMessage(msg);
+      RogueGame.Game.PanViewportTo(witnesses);
     }
 
     // check-in with leader

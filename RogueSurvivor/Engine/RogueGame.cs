@@ -540,9 +540,9 @@ namespace djack.RogueSurvivor.Engine
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    public static void ClearMessages() { Messages.Clear(); }
+    private static void ClearMessages() { Messages.Clear(); }
 
-    public void AddMessagePressEnter()
+    private void AddMessagePressEnter()
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
@@ -551,6 +551,20 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
+      m_UI.WaitEnter();
+      Messages.RemoveLastMessage();
+      RedrawPlayScreen();
+    }
+
+    public void AddMessagePressEnter(PlayerController pc)
+    {
+#if DEBUG
+      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
+#else
+      if (IsSimulating) return;   // visual no-op
+#endif
+      pc.Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      PanViewportTo(pc.ControlledActor);
       m_UI.WaitEnter();
       Messages.RemoveLastMessage();
       RedrawPlayScreen();
@@ -2009,24 +2023,24 @@ namespace djack.RogueSurvivor.Engine
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
               int infectionPercent = actor.InfectionPercent;
               if (rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
-                bool player = ForceVisibleToPlayer(actor);
+                var witnesses = PlayersInLOS(actor.Location);
                 if (actor.IsSleeping) DoWakeUp(actor);
                 bool flag4 = false;
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                   if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple));
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple));
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (player) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple));
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 }
                 if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }

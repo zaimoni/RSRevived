@@ -50,12 +50,14 @@ namespace djack.RogueSurvivor.Data
         if (expired || who.IsDead) return true;
         if (null == viewpoint.Sees(who)) return false;
         expired = true; // just in case of severe multithreading bug
-        (viewpoint.Controller as PlayerController)?.InstallAfterAction(new UITracking(who));
-        var game = RogueGame.Game;
-        game.PlayEventMusic(music);
-        RogueGame.ClearMessages();
-        RogueGame.AddMessage(new(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        game.AddMessagePressEnter();
+        if (viewpoint.Controller is PlayerController pc) {
+            pc.InstallAfterAction(new UITracking(who));
+            var game = RogueGame.Game;
+            game.PlayEventMusic(music);
+            pc.Messages.Clear();
+            pc.Messages.Add(new Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+            game.AddMessagePressEnter(pc);
+        }
         return true;
     }
   }
@@ -102,19 +104,18 @@ namespace djack.RogueSurvivor.Data
 
     public void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
-        RogueGame.ClearMessages();
-        RogueGame.AddMessage(msg);
-        RogueGame.Game.AddMessagePressEnter();
-      } else AddMessage(msg);
+        Messages.Clear();
+        Messages.Add(msg);
+        RogueGame.Game.AddMessagePressEnter(this);
+      } else Messages.Add(msg);
     }
 
     public override void AddMessageForceRead(UI.Message msg, List<PlayerController> witnesses) {
       bool have_panned = false;
       if (!RogueGame.IsSimulating && witnesses.Remove(this)) {
-        RogueGame.ClearMessages();
-        RogueGame.AddMessage(msg);
-        RogueGame.Game.PanViewportTo(m_Actor);
-        RogueGame.Game.AddMessagePressEnter();
+        Messages.Clear();
+        Messages.Add(msg);
+        RogueGame.Game.AddMessagePressEnter(this);
         have_panned = true;
         if (0 >= witnesses.Count) return;
       }
@@ -125,18 +126,24 @@ namespace djack.RogueSurvivor.Data
 
     public void AddMessagesForceRead(IEnumerable<Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
-        RogueGame.ClearMessages();
-        RogueGame.AddMessages(msgs);
-        RogueGame.Game.AddMessagePressEnter();
-      } else AddMessages(msgs);
+        Messages.Clear();
+        Messages.Add(msgs);
+        RogueGame.Game.AddMessagePressEnter(this);
+      } else Messages.Add(msgs);
     }
-    public override void AddMessageForceReadClear(Message msg) {
-      if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
-        RogueGame.ClearMessages();
-        RogueGame.AddMessage(msg);
-        RogueGame.Game.AddMessagePressEnter();
-        RogueGame.ClearMessages();
-      } else AddMessage(msg);
+
+    public override void AddMessageForceReadClear(Message msg, List<PlayerController> witnesses) {
+      bool have_panned = false;
+      if (!RogueGame.IsSimulating && witnesses.Remove(this)) {
+        Messages.Clear();
+        Messages.Add(msg);
+        RogueGame.Game.AddMessagePressEnter(this);
+        have_panned = true;
+        if (0 >= witnesses.Count) return;
+      }
+
+      foreach(var witness in witnesses) witness.AddMessage(msg);
+      if (!have_panned) RogueGame.Game.PanViewportTo(witnesses);
     }
 
     private void _handleReport(string raw_text, int code, Actor who)
@@ -584,14 +591,13 @@ namespace djack.RogueSurvivor.Data
         if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
             var game = RogueGame.Game;
             game.PlayEventMusic(music);
-            RogueGame.ClearMessages();
-            AddMessage(desc_msg);
-            AddMessage(where_msg);
-            game.AddMessagePressEnter();
-            RogueGame.ClearMessages();
+            Messages.Clear();
+            Messages.Add(desc_msg);
+            Messages.Add(where_msg);
+            game.AddMessagePressEnter(this);
         } else {
-            AddMessage(desc_msg);
-            AddMessage(where_msg);
+            Messages.Add(desc_msg);
+            Messages.Add(where_msg);
         }
     }
 
@@ -676,15 +682,17 @@ namespace djack.RogueSurvivor.Data
         if (m_Actor!= e._target && e._target.IsPlayer) return;
         e.shown = true;
       }
-      var game = RogueGame.Game;
-      game.PanViewportTo(m_Actor);
 
-      if (e._important) RogueGame.ClearMessages();
-      RogueGame.AddMessages(e.messages);
-      if (!e._important) return;
+      var game = RogueGame.Game;
+      if (e._important) Messages.Clear();
+      Messages.Add(e.messages);
+      if (!e._important) {
+          game.PanViewportTo(m_Actor);
+          return;
+      }
 
       game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
-      game.AddMessagePressEnter();
+      game.AddMessagePressEnter(this);
       game.ClearOverlays();
       game.RedrawPlayScreen();
     }
