@@ -461,7 +461,7 @@ namespace djack.RogueSurvivor.Engine
       var PCs = PCsNearby(loc, GameActors.HUMAN_AUDIO, hears);
       if (null == PCs) return;
 
-      foreach(var pc in PCs) {
+      foreach(var pc in PCs.Value.Key) {
         var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
         if (null != msg) {
             pc.AddMessage(msg);
@@ -2029,18 +2029,18 @@ namespace djack.RogueSurvivor.Engine
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
                   if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
                 }
                 if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }
@@ -9118,28 +9118,31 @@ namespace djack.RogueSurvivor.Engine
         return 0<ret.Count ? ret : null;
     }
 
-    static private List<PlayerController>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
+    static private KeyValuePair<List<PlayerController>, List<Actor>>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
+        List<Actor> ret_viewpoints = new();
+
+        void classify(Actor? actor) {
+            if (null != actor && !actor.IsDead && actor.IsViewpoint && ok(actor)) {
+                if (actor.Controller is PlayerController pc) ret.Add(pc);
+                else ret_viewpoints.Add(actor);
+            }
+        };
+
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
         // lambda function access of loc.Position prevents converting to member function
         survey.DoForEach(pt => {
           Location test = new Location(loc.Map, pt);
-          if (Map.Canonical(ref test)) {
-              var actor = test.Actor;
-              if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
-          }
+          if (Map.Canonical(ref test)) classify(test.Actor);
         });
 
         var exit = loc.Exit;
-        if (null != exit) {
-          var actor = exit.Location.Actor;
-          if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
-        }
+        if (null != exit) classify(exit.Location.Actor);
 
-        return 0<ret.Count ? ret : null;
+        return (0<ret.Count || 0<ret_viewpoints.Count) ? new(ret, ret_viewpoints) : null;
     }
 
-    static public List<PlayerController>? PlayersInLOS(Location view) {
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(Location view) {
       if (!Map.Canonical(ref view)) return null;
 
       bool sees(Actor a) { return a.Controller.CanSee(view); };
@@ -10429,7 +10432,7 @@ namespace djack.RogueSurvivor.Engine
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
           var PCs = PlayersInLOS(a.Location);
-          if (null != PCs) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), PCs);
+          if (null != PCs) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), PCs.Value);
         }
       }
 
@@ -13932,7 +13935,7 @@ retry:
         var PC_witnesses = PlayersInLOS(actor.Location);
         if (null == PC_witnesses) continue;
         bool have_messaged = false;
-        if (null != pc_did_it && PC_witnesses.Remove(pc_did_it)) {
+        if (null != pc_did_it && PC_witnesses.Value.Key.Remove(pc_did_it)) {
           if (need_to_message_performer) {
               pc_did_it.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               need_to_message_performer = false;
@@ -13940,17 +13943,31 @@ retry:
               PanViewportTo(whoDoesTheAction);
           }
         }
-        if (0 >= PC_witnesses.Count) continue;
-        if (actor.Controller is PlayerController a_pc && PC_witnesses.Remove(a_pc)) {
+        if (actor == whoDoesTheAction && PC_witnesses.Value.Value.Remove(whoDoesTheAction)) {
+              PanViewportTo(whoDoesTheAction);
+              RedrawPlayScreen(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+              have_messaged = true;
+        }
+        if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
+        if (actor.Controller is PlayerController a_pc && PC_witnesses.Value.Key.Remove(a_pc)) {
           a_pc.AddMessage(pc_saw ?? (pc_saw = new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange)));
           have_messaged = true;
           PanViewportTo(actor);
         }
-        if (0 >= PC_witnesses.Count) continue;
+        if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
         var broadcast = whoDoesTheAction == actor ? MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
                                                   : MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
-        foreach (var witness in PC_witnesses) witness.AddMessage(broadcast);
-        if (!have_messaged) PanViewportTo(PC_witnesses);
+        if (0 < PC_witnesses.Value.Key.Count) {
+          foreach (var witness in PC_witnesses.Value.Key) witness.AddMessage(broadcast);
+          if (!have_messaged) {
+            PanViewportTo(PC_witnesses.Value.Key);
+            return;
+          }
+        }
+        if (!have_messaged && 0 < PC_witnesses.Value.Key.Count) {
+          PanViewportTo(PC_witnesses.Value.Value);
+          RedrawPlayScreen(broadcast);
+        }
       }
     }
 

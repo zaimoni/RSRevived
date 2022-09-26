@@ -110,18 +110,29 @@ namespace djack.RogueSurvivor.Data
       } else Messages.Add(msg);
     }
 
-    public override void AddMessageForceRead(UI.Message msg, List<PlayerController> witnesses) {
+    public override void AddMessageForceRead(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       bool have_panned = false;
-      if (!RogueGame.IsSimulating && witnesses.Remove(this)) {
-        Messages.Clear();
-        Messages.Add(msg);
-        RogueGame.Game.AddMessagePressEnter(this);
-        have_panned = true;
-        if (0 >= witnesses.Count) return;
+      if (!RogueGame.IsSimulating) {
+        if (witnesses.Key.Remove(this)) {
+          Messages.Clear();
+          Messages.Add(msg);
+          RogueGame.Game.AddMessagePressEnter(this);
+          have_panned = true;
+          if (0 >= witnesses.Key.Count) return;
+        }
       }
 
-      foreach(var witness in witnesses) witness.AddMessage(msg);
-      if (!have_panned) RogueGame.Game.PanViewportTo(witnesses);
+      if (0 < witnesses.Key.Count) {
+        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
+        if (!RogueGame.IsSimulating) {
+          if (!have_panned) RogueGame.Game.PanViewportTo(witnesses.Key);
+          have_panned = true;
+        }
+      }
+
+      if (have_panned || 0 >= witnesses.Value.Count || RogueGame.IsSimulating) return;
+      RogueGame.Game.PanViewportTo(witnesses.Value);
+      RogueGame.Game.RedrawPlayScreen(msg);
     }
 
     public void AddMessagesForceRead(IEnumerable<Message> msgs) {
@@ -132,18 +143,29 @@ namespace djack.RogueSurvivor.Data
       } else Messages.Add(msgs);
     }
 
-    public override void AddMessageForceReadClear(Message msg, List<PlayerController> witnesses) {
+    public override void AddMessageForceReadClear(Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       bool have_panned = false;
-      if (!RogueGame.IsSimulating && witnesses.Remove(this)) {
-        Messages.Clear();
-        Messages.Add(msg);
-        RogueGame.Game.AddMessagePressEnter(this);
-        have_panned = true;
-        if (0 >= witnesses.Count) return;
+      if (!RogueGame.IsSimulating) {
+        if (witnesses.Key.Remove(this)) {
+          Messages.Clear();
+          Messages.Add(msg);
+          RogueGame.Game.AddMessagePressEnter(this);
+          have_panned = true;
+          if (0 >= witnesses.Key.Count) return;
+        }
       }
 
-      foreach(var witness in witnesses) witness.AddMessage(msg);
-      if (!have_panned) RogueGame.Game.PanViewportTo(witnesses);
+      if (0 < witnesses.Key.Count) {
+        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
+        if (!RogueGame.IsSimulating) {
+          if (!have_panned) RogueGame.Game.PanViewportTo(witnesses.Key);
+          have_panned = true;
+        }
+      }
+
+      if (have_panned || 0 >= witnesses.Value.Count || RogueGame.IsSimulating) return;
+      RogueGame.Game.PanViewportTo(witnesses.Value);
+      RogueGame.Game.RedrawPlayScreen(msg);
     }
 
     private void _handleReport(string raw_text, int code, Actor who)
