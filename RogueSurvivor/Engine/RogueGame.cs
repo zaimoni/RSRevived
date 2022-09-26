@@ -10414,7 +10414,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != clan) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (ForceVisibleToPlayer(a)) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)));
+          var PCs = PlayersInLOS(a.Location);
+          if (null != PCs) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), PCs);
         }
       }
 

@@ -100,13 +100,29 @@ namespace djack.RogueSurvivor.Data
     public void AddMessage(Message msg) => Messages.Add(msg);
     public void AddMessages(IEnumerable<Message> msgs) => Messages.Add(msgs);
 
-    public override void AddMessageForceRead(Message msg) {
+    public void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
         RogueGame.AddMessage(msg);
         RogueGame.Game.AddMessagePressEnter();
       } else AddMessage(msg);
     }
+
+    public override void AddMessageForceRead(UI.Message msg, List<PlayerController> witnesses) {
+      bool have_panned = false;
+      if (!RogueGame.IsSimulating && witnesses.Remove(this)) {
+        RogueGame.ClearMessages();
+        RogueGame.AddMessage(msg);
+        RogueGame.Game.PanViewportTo(m_Actor);
+        RogueGame.Game.AddMessagePressEnter();
+        have_panned = true;
+        if (0 >= witnesses.Count) return;
+      }
+
+      foreach(var witness in witnesses) witness.AddMessage(msg);
+      if (!have_panned) RogueGame.Game.PanViewportTo(witnesses);
+    }
+
     public void AddMessagesForceRead(IEnumerable<Message> msgs) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         RogueGame.ClearMessages();
