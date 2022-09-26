@@ -12740,25 +12740,17 @@ namespace djack.RogueSurvivor.Engine
       Location view = new(map, position);
       if (!Map.Canonical(ref view)) return false;
 
-      bool sees(Actor a) {
-        if (!a.IsViewpoint) return false;
-        return a.Controller.CanSee(view);
-      };
+      var viewing = PlayersInLOS(view);
+      if (null == viewing) return false;
 
-      var players = ThoseNearby(view, Actor.MAX_VISION, sees);
-      if (null == players) return false;
-
-      if (players.Contains(Player)) return true;
-      if (1==players.Count) {
-        PanViewportTo(players[0]);
+      if (viewing.Value.Key.Contains(Player.Controller as PlayerController)) return true;
+      if (viewing.Value.Value.Contains(Player)) return true;
+      if (0 < viewing.Value.Key.Count) {
+        PanViewportTo(viewing.Value.Key);
         return true;
       }
-#if PROTOTYPE
-      throw new InvalidProgramException("need to handle multiple non-active PCs who can see location");
-#else
-      PanViewportTo(players[0]);
+      PanViewportTo(viewing.Value.Value);
       return true;
-#endif
     }
 
     public bool ForceVisibleToPlayer(Actor actor)
