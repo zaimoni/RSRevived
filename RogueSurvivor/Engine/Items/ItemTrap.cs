@@ -67,9 +67,9 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       actor.SpendActionPoints();
       if (IsActivated) Desactivate();
-      else Activate(actor);
-      if (RogueGame.Game.ForceVisibleToPlayer(actor))
-        RogueGame.AddMessage(RogueGame.MakeMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
+      else Activate(actor); 
+      var witnesses = RogueGame.PlayersInLOS(actor.Location);
+      if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
     }
     public string ReasonCantUse(Actor a) {
       if (!CouldUse()) return "does not activate manually";

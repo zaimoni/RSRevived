@@ -419,6 +419,16 @@ namespace djack.RogueSurvivor.Engine
     public static void AddMessage(UI.Message msg) => Messages.Add(msg);
     public static void AddMessages(IEnumerable<UI.Message> msgs) => Messages.Add(msgs);
 
+    public static void AddMessage(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg)
+    {
+        if (0 < witnesses.Key.Count) {
+            foreach(var pc in witnesses.Key) pc.Messages.Add(msg);
+            return;
+        }
+        AddMessage(msg);
+    }
+
+
     public void ImportantMessage(UI.Message msg, int delay=0)
     {
       RedrawPlayScreen(msg);
@@ -516,12 +526,7 @@ namespace djack.RogueSurvivor.Engine
       return MakeMessage(actor.IsPlayer ? actor.Controller : Player.Controller, actor, doWhat, color);
     }
 
-    private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target)
-    {
-      return MakeMessage(actor, doWhat, target, ".");
-    }
-
-    private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
+    private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd = ".")
     {
       var viewpoint = actor.Controller;
       if (!actor.IsPlayer) {
@@ -531,32 +536,28 @@ namespace djack.RogueSurvivor.Engine
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    private static UI.Message MakeMessage(Actor actor, string doWhat, MapObject target)
-    {
-      return MakeMessage(actor, doWhat, target, ".");
-    }
-
     private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, viewpoint.VisibleIdentity(target)+phraseEnd };
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    private static UI.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
+    private static UI.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd = ".")
     {
       return MakeMessage(actor.IsPlayer ? Player.Controller : actor.Controller, actor, doWhat, target, phraseEnd);
     }
 
-    public static UI.Message MakeMessage(Actor actor, string doWhat, Item target)
-    {
-      return MakeMessage(actor, doWhat, target, ".");
-    }
-
-    private static UI.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
+    public static UI.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd = ".")
     {
       var viewpoint = actor.Controller;
       if (!actor.IsPlayer) viewpoint = Player.Controller;
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, target.TheName + phraseEnd };
+      return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+    }
+
+    public static UI.Message MakePanopticMessage(Actor actor, string doWhat, Item target, string phraseEnd = ".")
+    {
+      var msg = new string[] { actor.TheName, doWhat, target.TheName + phraseEnd };
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
@@ -1468,7 +1469,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
         }
         AddMessage(new(string.Format("Press {0} during the game to change the options.", s_KeyBindings.AsString(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
-        RedrawPlayScreen(new("<press ENTER>", 0, Color.Yellow));
+        RedrawPlayScreen(new UI.Message("<press ENTER>", 0, Color.Yellow));
         m_UI.WaitEnter();
       }
       Messages.Clear();
@@ -1497,7 +1498,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
       m_UI.WaitEnter();
       ClearMessages();
-      RedrawPlayScreen(new(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
+      RedrawPlayScreen(new UI.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       play_timer.Start();
       Session.Get.World.ScheduleForAdvancePlay();   // simulation starts at district A1
       StopSimThread(false);  // alpha10 stop-start
@@ -2135,7 +2136,7 @@ namespace djack.RogueSurvivor.Engine
                 // check music.
                 m_MusicManager.PlayLooping(GameMusics.SLEEP, 1 == Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
                 // message.
-                RedrawPlayScreen(new("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
+                RedrawPlayScreen(new UI.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 Thread.Sleep(10);
               } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE)) {
                 var witnesses = PlayersInLOS(actor.Location);
@@ -2280,7 +2281,7 @@ namespace djack.RogueSurvivor.Engine
         var max_un = s_Options.MaxUndeads;
         if (uc < max_un) {
           if (map == Player.Location.Map && !Player.IsSleeping && !Player.Model.Abilities.IsUndead) {
-            RedrawPlayScreen(new("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
+            RedrawPlayScreen(new UI.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
           }
           var day = map.LocalTime.Day;
           int num2 = 1 + (int)(Math.Min(1f, (float)(day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * max_un) - uc;
@@ -3509,10 +3510,10 @@ namespace djack.RogueSurvivor.Engine
     private void HandleScreenshot()
     {
       int turn = Session.Get.WorldTime.TurnCounter;
-      RedrawPlayScreen(new("Taking screenshot...", turn, Color.Yellow));
+      RedrawPlayScreen(new UI.Message("Taking screenshot...", turn, Color.Yellow));
       var screenshot = DoTakeScreenshot();
-      RedrawPlayScreen(null == screenshot ? new("Could not save screenshot.", turn, Color.Red)
-                     : new(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
+      RedrawPlayScreen(null == screenshot ? new UI.Message("Could not save screenshot.", turn, Color.Red)
+                     : new UI.Message(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
     }
 
     private string? DoTakeScreenshot()
@@ -5866,7 +5867,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new(string.Format("2. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new(string.Format("3. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         AddMessage(new(string.Format("4. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen(new(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
@@ -6037,7 +6038,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         ClearMessages();
         AddMessage(new(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen(new("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
 
         var ui_event = m_UI.WaitKeyOrMouse();
         // backward compatibility
@@ -6097,7 +6098,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         ClearMessages();
         AddMessage(new(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen(new("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message("<LMB> on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
 
         var ui_event = m_UI.WaitKeyOrMouse();
         // backward compatibility
@@ -6157,7 +6158,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         ClearMessages();
         AddMessage(new(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen(new("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
 
         var ui_event = m_UI.WaitKeyOrMouse();
         // backward compatibility
@@ -6218,7 +6219,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         ClearMessages();
         AddMessage(new(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        RedrawPlayScreen(new("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message("<LMB> on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
 
         var ui_event = m_UI.WaitKeyOrMouse();
         // backward compatibility
@@ -8215,7 +8216,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (isPlayer && askForConfirmation) {
         if (!YesNoPopup(string.Format("REALLY LEAVE {0}", map.Name))) {
-          RedrawPlayScreen(new("Let's stay here a bit longer...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+          RedrawPlayScreen(new UI.Message("Let's stay here a bit longer...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
           return false;
         }
       }
@@ -9937,6 +9938,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
+      var witnesses = PlayersInLOS(actor.Location);
+      if (null != witnesses) RedrawPlayScreen(witnesses.Value);
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints();
       actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
@@ -9965,25 +9968,24 @@ namespace djack.RogueSurvivor.Engine
 #endif
         break;
       }
-      if (player) AddMessage(MakeMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
+      if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {
         actor.Inventory!.Consume(ent);
-        if (player) AddMessage(MakeMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
+        if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
       } else if (Rules.Get.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
-        if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
+        if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
       }
+      if (null != witnesses) RedrawPlayScreen();
     }
 
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
       actor.SpendActionPoints();
       (it as BatteryPowered).Recharge();
-      if (ForceVisibleToPlayer(actor)) {
-        AddMessage(MakeMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
-        if (actor.IsPlayer) RedrawPlayScreen();
-      }
+      var witnesses = PlayersInLOS(actor.Location);
+      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
@@ -11380,6 +11382,15 @@ namespace djack.RogueSurvivor.Engine
     {
       AddMessage(msg);
       RedrawPlayScreen();
+    }
+
+    public void RedrawPlayScreen(KeyValuePair<List<PlayerController>, List<Actor>> witnesses)
+    {
+        if (0 < witnesses.Key.Count) {
+            PanViewportTo(witnesses.Key);
+            return;
+        }
+        PanViewportTo(witnesses.Value);
     }
 
     public void RedrawPlayScreen(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg)
@@ -12857,7 +12868,7 @@ namespace djack.RogueSurvivor.Engine
       StopSimThread(false); // alpha10.1
 
       ClearMessages();
-      RedrawPlayScreen(new("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      RedrawPlayScreen(new UI.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_UI.UI_Repaint();
       if (!LoadGame(saveName)) AddMessage(new("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
 
@@ -13802,7 +13813,7 @@ retry:
       Player.Controller.UpdateSensors();
       SetCurrentMap(Player.Location);
       ClearMessages();
-      RedrawPlayScreen(new(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      RedrawPlayScreen(new UI.Message(string.Format("{0} feels disoriented for a second...", Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_MusicManager.Play(GameMusics.REINCARNATE, MusicPriority.PRIORITY_EVENT);
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
@@ -13976,7 +13987,7 @@ retry:
         }
         if (actor == whoDoesTheAction && PC_witnesses.Value.Value.Remove(whoDoesTheAction)) {
               PanViewportTo(whoDoesTheAction);
-              RedrawPlayScreen(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+              RedrawPlayScreen(new UI.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               have_messaged = true;
         }
         if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
@@ -14010,7 +14021,7 @@ retry:
             if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
-                RedrawPlayScreen(new("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
+                RedrawPlayScreen(new UI.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
               }
               // XXX \todo severe reimplementation
               if (!victor.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
@@ -14019,7 +14030,7 @@ retry:
           } else if (map.Illuminate(false)) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              RedrawPlayScreen(new("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
+              RedrawPlayScreen(new UI.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
             }
           }
         }
@@ -14031,7 +14042,7 @@ retry:
               if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
-                RedrawPlayScreen(new("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
+                RedrawPlayScreen(new UI.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
               }
               map.OpenAllGates();
             }
@@ -14039,7 +14050,7 @@ retry:
             if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen(new("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
+              RedrawPlayScreen(new UI.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
             }
             CloseAllGates(map,"gates");
           }
@@ -14050,14 +14061,14 @@ retry:
           if (1.0 <= map.PowerRatio) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              RedrawPlayScreen(new("The lights turn on.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen(new UI.Message("The lights turn on.", map.LocalTime.TurnCounter, Color.Green));
             }
             Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(true);
             Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(true);
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              RedrawPlayScreen(new("The lights turn off.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen(new UI.Message("The lights turn off.", map.LocalTime.TurnCounter, Color.Green));
             }
             Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(false);
             Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(false);
@@ -14069,7 +14080,7 @@ retry:
           if (1.0 <= map.PowerRatio) {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              RedrawPlayScreen(new("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen(new UI.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
             }
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
@@ -14103,7 +14114,7 @@ retry:
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
-              RedrawPlayScreen(new("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen(new UI.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
             }
             CloseAllGates(map,"cells");
           }
@@ -14115,14 +14126,14 @@ retry:
         if (1.0 <= map.PowerRatio) {
           if (0 < map.PlayerCount) {
             ClearMessages();
-            RedrawPlayScreen(new("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
+            RedrawPlayScreen(new UI.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
           }
           DoHospitalPowerOn();
         } else {
           if (map.Lighting == Lighting.DARKNESS) return;
           if (0 < map.PlayerCount) {
             ClearMessages();
-            RedrawPlayScreen(new("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
+            RedrawPlayScreen(new UI.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
           }
           DoHospitalPowerOff();
         }
