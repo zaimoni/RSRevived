@@ -486,17 +486,28 @@ namespace djack.RogueSurvivor.Engine
       return new(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
 
+
     public static UI.Message MakeMessage(Actor actor, string doWhat)
     {
       return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
     }
 
-    public static UI.Message MakeMessage(Actor actor, string doWhat, Color color)
+    private static UI.Message MakePanopticMessage(Actor actor, string doWhat, Color color)
     {
-      var viewpoint = actor.Controller;
-      if (!actor.IsPlayer) viewpoint = Player.Controller;
+      var msg = new string[] { actor.TheName, doWhat };
+      return new(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
+    }
+    private static UI.Message MakePanopticMessage(Actor actor, string doWhat) => MakePanopticMessage(actor, doWhat, OTHER_ACTION_COLOR);
+
+    private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, Color color)
+    {
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat };
       return new(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
+    }
+
+    public static UI.Message MakeMessage(Actor actor, string doWhat, Color color)
+    {
+      return MakeMessage(actor.IsPlayer ? actor.Controller : Player.Controller, actor, doWhat, color);
     }
 
     private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target)
@@ -2115,8 +2126,11 @@ namespace djack.RogueSurvivor.Engine
                 // message.
                 RedrawPlayScreen(new("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 Thread.Sleep(10);
-              } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
-                RedrawPlayScreen(MakeMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
+              } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE)) {
+                var witnesses = PlayersInLOS(actor.Location);
+                if (null != witnesses) {
+                  RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
+                }
               }
 #endregion
             }
@@ -11352,6 +11366,17 @@ namespace djack.RogueSurvivor.Engine
     {
       AddMessage(msg);
       RedrawPlayScreen();
+    }
+
+    public void RedrawPlayScreen(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg)
+    {
+        if (0 < witnesses.Key.Count) {
+            foreach(var pc in witnesses.Key) pc.Messages.Add(msg);
+            PanViewportTo(witnesses.Key);
+            return;
+        }
+        PanViewportTo(witnesses.Value);
+        RedrawPlayScreen(msg);
     }
 
 #nullable enable
