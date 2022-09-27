@@ -1835,7 +1835,6 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-#if PROTOTYPE
     public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesTo(in Location dest) {
       var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
       if (CanEnter(dest)) {
@@ -1854,6 +1853,7 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
+#if PROTOTYPE
     public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesFrom(in Location src) {
       var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
       if (CanEnter(src)) {

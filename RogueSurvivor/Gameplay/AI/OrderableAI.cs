@@ -2350,17 +2350,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	protected ActorAction BehaviorPathToAdjacent(Location dest)
 	{
       var seen = new HashSet<Location> { dest };
-      var final_range = new Dictionary<Location,ActorAction>();
+      Dictionary<Location, ActionMoveDelta> final_range = new();
 
-      var range = m_Actor.OnePathRange(in dest);
+      var range = m_Actor.MovesTo(in dest);
       if (null == range) return null;
 
-      void reprocess_range(Dictionary<Location,ActorAction> src) {
+      void reprocess_range(Dictionary<Location, ActionMoveDelta> src) {
         var reject = new HashSet<Location>();
         foreach(var x in src) {
           seen.Add(x.Key);
-          var test = x.Value as ActorDest;
-          if (null == test && !(x.Value is ActionOpenDoor)) continue;
           if (!VetoAction(x.Value)) {
             final_range.Add(x.Key,x.Value);
             continue;
@@ -2368,7 +2366,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           reject.Add(x.Key);
         }
         foreach(var loc in reject) {
-          var failover = m_Actor.OnePathRange(in loc);
+          var failover = m_Actor.MovesTo(in loc);
           if (null == failover) continue;
           failover.OnlyIf(loc2 => !seen.Contains(loc2));
           if (0 >= failover.Count) continue;
