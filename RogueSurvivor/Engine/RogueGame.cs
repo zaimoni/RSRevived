@@ -9287,7 +9287,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      target.Inventory.RejectCrossLink(speaker.Inventory);
+      target.Inventory!.RejectCrossLink(speaker.Inventory!);
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
@@ -9305,22 +9305,23 @@ namespace djack.RogueSurvivor.Engine
       }
 
       AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.AName, itSpeaker.AName)));
-
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
       bool acceptDeal = m_UI.WaitYesOrNo();
       ClearOverlays();
-      RedrawPlayScreen();
+//    RedrawPlayScreen(); // redraw handled by AddMessage calls below
+
+      // no need to spam other PCs with above messages
+      var witnesses = PlayersInLOS(speaker.Location)!.Value;
 
       if (!acceptDeal) {
-        RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
+        speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
         return false;
       }
 
-      RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
+      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
 
-      if (target.Leader == speaker && flag3)
-        DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (target.Leader == speaker && flag3) DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
       target.Remove(trade);
       speaker.Inventory.AddAll(trade);
@@ -9335,33 +9336,32 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      target.RejectCrossLink(speaker.Inventory);
-//    bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
-      const bool flag1 = true;
+      target.RejectCrossLink(speaker.Inventory!);
+      var witnesses = PlayersInLOS(speaker.Location)!.Value;
 
       var trade = PickItemToTrade(target, pc, itSpeaker);
       if (null == trade) return;
 
-      if (flag1) AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
+      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)), witnesses);
 
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
       bool acceptDeal = m_UI.WaitYesOrNo();
       ClearOverlays();
-      RedrawPlayScreen();
+//    RedrawPlayScreen(); // redraw will be triggered by messaging, below
 
       if (!acceptDeal) {
-        if (flag1) RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
+        speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
         return;
       }
 
       speaker.SpendActionPoints();
-      if (flag1) RedrawPlayScreen(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
       speaker.Remove(itSpeaker);
       target.RemoveAllQuantity(trade);
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
+      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
       target.RejectCrossLink(speaker.Inventory);
     }
 
@@ -9372,7 +9372,8 @@ namespace djack.RogueSurvivor.Engine
       if (null == inv) throw new ArgumentNullException(nameof(actor)+".Inventory");
 #endif
       inv.RejectCrossLink(dest);
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
+      var witnesses = _ForceVisibleToPlayer(actor);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)), witnesses.Value);
 
       actor.SpendActionPoints();
       actor.Remove(give);
@@ -9933,9 +9934,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
-      var witnesses = PlayersInLOS(actor.Location);
-      if (null != witnesses) RedrawPlayScreen(witnesses.Value);
-      bool player = ForceVisibleToPlayer(actor);
+      var witnesses = _ForceVisibleToPlayer(actor);
       actor.SpendActionPoints();
       actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
       switch(ent.ModelID) {
@@ -10344,8 +10343,8 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))));
+      var witnesses = _ForceVisibleToPlayer(actor);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))), witnesses.Value);
       // stop sleep music if player.
       if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
@@ -10355,8 +10354,8 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints();
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
-      if (!ForceVisibleToPlayer(actor)) return;
-      actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
+      var witnesses = _ForceVisibleToPlayer(actor);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))), witnesses.Value);
     }
 
 #nullable enable
@@ -10406,8 +10405,8 @@ namespace djack.RogueSurvivor.Engine
       if (null == actors) return;
 
       foreach(var actor in actors) {
+        var witnesses = _ForceVisibleToPlayer(actor);
         DoWakeUp(actor);
-        var witnesses = PlayersInLOS(actor.Location);
         if (null != witnesses) {
           RedrawPlayScreen(witnesses.Value, new(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
         }
@@ -10551,7 +10550,7 @@ namespace djack.RogueSurvivor.Engine
         });
         if (isMurder.cache) {
           killer.HasMurdered(deadGuy);
-          var witnesses = PlayersInLOS(killer.Location);
+          var witnesses = _ForceVisibleToPlayer(killer);
           if (null != witnesses) killer.Controller.AddMessage(MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)), witnesses.Value);
 
           // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
@@ -11245,8 +11244,8 @@ namespace djack.RogueSurvivor.Engine
     {
       var lost = actor.Sheet.SkillTable.LoseRandomSkill();
       if (null != lost) {
-        var witnesses = PlayersInLOS(actor.Location);
-        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
+        var witnesses = _ForceVisibleToPlayer(actor);
+        if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))), witnesses.Value);
       }
     }
 
@@ -12782,6 +12781,51 @@ namespace djack.RogueSurvivor.Engine
       PanViewportTo(player);
     }
 
+    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Map map, in Point position)
+    {
+      if (null == map) return null; // convince Duckman to not superheroically crash many games on turn 0
+
+      Location view = new(map, position);
+      if (!Map.Canonical(ref view)) return null;
+
+      var viewing = PlayersInLOS(view);
+      if (null == viewing) return null;
+
+      if (viewing.Value.Key.Contains(Player.Controller as PlayerController)) return viewing;
+      if (viewing.Value.Value.Contains(Player)) return viewing;
+      if (0 < viewing.Value.Key.Count) {
+        PanViewportTo(viewing.Value.Key);
+        return viewing;
+      }
+      PanViewportTo(viewing.Value.Value);
+      return viewing;
+    }
+    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
+
+    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor)
+    {
+      var viewing = PlayersInLOS(actor.Location);
+      if (null == viewing) return null;
+      if (actor.IsViewpoint) {
+        if (actor == Player) return viewing;
+        if (   viewing.Value.Key.Contains(actor.Controller as PlayerController)
+            || viewing.Value.Value.Contains(actor)) {
+          PanViewportTo(actor);
+          return viewing;
+        }
+      }
+      if (   viewing.Value.Key.Contains(Player.Controller as PlayerController)
+          || viewing.Value.Value.Contains(Player)) {
+        return viewing;
+      }
+      if (0 < viewing.Value.Key.Count) {
+        PanViewportTo(viewing.Value.Key);
+        return viewing;
+      }
+      PanViewportTo(viewing.Value.Value);
+      return viewing;
+    }
+
     private bool ForceVisibleToPlayer(Map map, in Point position)
     {
       if (null == map) return false; // convince Duckman to not superheroically crash many games on turn 0
@@ -14153,8 +14197,8 @@ retry:
           Actor? actorAt = map.GetActorAt(obj.Location.Position);
           if (null == actorAt) return;
           KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
-          var witnesses = PlayersInLOS(actorAt.Location);
-          if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
+          var witnesses = _ForceVisibleToPlayer(actorAt);
+          if (null != witnesses) actorAt.Controller.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))), witnesses.Value);
       });
     }
 #nullable restore

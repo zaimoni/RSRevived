@@ -50,11 +50,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void AddMessage(UI.Message msg) {
-      var witnesses = RogueGame.PlayersInLOS(m_Actor.Location);
-      if (null != witnesses) AddMessage(msg, witnesses.Value);
-    }
-
     public virtual void AddMessageForceRead(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       if (0 < witnesses.Key.Count) {
         foreach(var witness in witnesses.Key) witness.AddMessage(msg);

@@ -82,7 +82,6 @@ namespace djack.RogueSurvivor.Engine.Items
         actor.Location.Drop(emptyCan);
       }
       var witnesses = RogueGame.PlayersInLOS(actor.Location);
-      bool player = RogueGame.Game.ForceVisibleToPlayer(actor);
       if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(actor, RogueGame.VERB_EAT.Conjugate(actor), this));
       if (!IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;
       actor.Vomit();
