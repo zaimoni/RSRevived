@@ -536,12 +536,15 @@ namespace djack.RogueSurvivor.Engine
       return MakeMessage(actor, doWhat, target, ".");
     }
 
-    private static UI.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
+    private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
-      var viewpoint = actor.Controller;
-      if (!actor.IsPlayer) viewpoint = Player.Controller;
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, viewpoint.VisibleIdentity(target)+phraseEnd };
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+    }
+
+    private static UI.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
+    {
+      return MakeMessage(actor.IsPlayer ? Player.Controller : actor.Controller, actor, doWhat, target, phraseEnd);
     }
 
     public static UI.Message MakeMessage(Actor actor, string doWhat, Item target)
@@ -9985,8 +9988,7 @@ namespace djack.RogueSurvivor.Engine
     {
       door.SetState(DoorWindow.STATE_OPEN);
       actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
-    }
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));    }
 
     public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
@@ -10406,8 +10408,9 @@ namespace djack.RogueSurvivor.Engine
 
       foreach(var actor in actors) {
         DoWakeUp(actor);
-        if (ForceVisibleToPlayer(actor)) {
-          RedrawPlayScreen(new(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
+        var witnesses = PlayersInLOS(actor.Location);
+        if (null != witnesses) {
+          RedrawPlayScreen(witnesses.Value, new(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
         }
       }
     }
