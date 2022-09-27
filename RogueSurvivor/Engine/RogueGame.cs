@@ -502,12 +502,6 @@ namespace djack.RogueSurvivor.Engine
       return new(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
 
-
-    public static UI.Message MakeMessage(Actor actor, string doWhat)
-    {
-      return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
-    }
-
     private static UI.Message MakePanopticMessage(Actor actor, string doWhat, Color color)
     {
       var msg = new string[] { actor.TheName, doWhat };
@@ -525,6 +519,7 @@ namespace djack.RogueSurvivor.Engine
     {
       return MakeMessage(actor.IsPlayer ? actor.Controller : Player.Controller, actor, doWhat, color);
     }
+    public static UI.Message MakeMessage(Actor actor, string doWhat) => MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
 
     private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd = ".")
     {
@@ -2050,18 +2045,18 @@ namespace djack.RogueSurvivor.Engine
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
                   if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakeMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
                 }
                 if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }
@@ -9840,16 +9835,16 @@ namespace djack.RogueSurvivor.Engine
         if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
       }
+      var witnesses = PlayersInLOS(actor.Location);
       if (it.IsUseless) {
         DiscardItem(actor, it);
-        if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DISCARD.Conjugate(actor), it));
+        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
       // XXX using containers can go here, but we may want a different action anyway
       if (obj == it) DropItem(actor, it);
       else DropCloneItem(actor, it, obj);
-      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, VERB_DROP.Conjugate(actor), obj));
-      if (Player==actor) RedrawPlayScreen();
+      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
       actor.Location.Items?.RejectCrossLink(actor.Inventory);
     }
 
@@ -9890,8 +9885,8 @@ namespace djack.RogueSurvivor.Engine
       src.fireChange();
       dest.fireChange();
 
-      bool player = ForceVisibleToPlayer(actor);
-      if (player) AddMessage(MakeMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
+      var witnesses = PlayersInLOS(actor.Location);
+      if (null!=witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
       return true;
     }
 
@@ -10361,7 +10356,7 @@ namespace djack.RogueSurvivor.Engine
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       if (!ForceVisibleToPlayer(actor)) return;
-      AddMessage(MakeMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
+      actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
     }
 
 #nullable enable
@@ -10460,8 +10455,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != clan) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          var PCs = PlayersInLOS(a.Location);
-          if (null != PCs) a.Controller.AddMessageForceRead(MakeMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), PCs.Value);
+          var witnesses = PlayersInLOS(a.Location);
+          if (null != witnesses) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses.Value);
         }
       }
 
@@ -10556,7 +10551,8 @@ namespace djack.RogueSurvivor.Engine
         });
         if (isMurder.cache) {
           killer.HasMurdered(deadGuy);
-          if (IsVisibleToPlayer(killer)) AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
+          var witnesses = PlayersInLOS(killer.Location);
+          if (null != witnesses) killer.Controller.AddMessage(MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)), witnesses.Value);
 
           // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
           PropagateSight(killer.Location, a => {
@@ -11248,7 +11244,10 @@ namespace djack.RogueSurvivor.Engine
     private void DoLooseRandomSkill(Actor actor)
     {
       var lost = actor.Sheet.SkillTable.LoseRandomSkill();
-      if (null != lost && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
+      if (null != lost) {
+        var witnesses = PlayersInLOS(actor.Location);
+        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
+      }
     }
 
     private void ChangeWeather()
@@ -13997,8 +13996,8 @@ retry:
           PanViewportTo(actor);
         }
         if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
-        var broadcast = whoDoesTheAction == actor ? MakeMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
-                                                  : MakeMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
+        var broadcast = whoDoesTheAction == actor ? MakePanopticMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
+                                                  : MakePanopticMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
         if (0 < PC_witnesses.Value.Key.Count) {
           foreach (var witness in PC_witnesses.Value.Key) witness.AddMessage(broadcast);
           if (!have_messaged) {
@@ -14154,11 +14153,8 @@ retry:
           Actor? actorAt = map.GetActorAt(obj.Location.Position);
           if (null == actorAt) return;
           KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
-          if (0 < map.PlayerCount)
-          {    // XXX \todo should be visibility check on top of this
-              AddMessage(MakeMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
-              RedrawPlayScreen();
-          }
+          var witnesses = PlayersInLOS(actorAt.Location);
+          if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
       });
     }
 #nullable restore
