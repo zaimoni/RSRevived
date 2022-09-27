@@ -425,6 +425,12 @@ namespace djack.RogueSurvivor.Engine
       if (0 < delay) AnimDelay(delay);
     }
 
+    public void ImportantMessage(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg, int delay=0)
+    {
+      RedrawPlayScreen(witnesses, msg);
+      if (0 < delay) AnimDelay(delay);
+    }
+
     // allows propagating sound to NPCs, in theory (API needs extending)
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
     public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
@@ -2137,8 +2143,9 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsExhausted && rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
 #region 4.3 Exhausted actors might collapse.
               DoStartSleeping(actor);
-              if (ForceVisibleToPlayer(actor)) {
-                RedrawPlayScreen(MakeMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
+              var witnesses = PlayersInLOS(actor.Location);
+              if (null != witnesses) {
+                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
               }
               if (actor == Player) {
                 Player.Controller.UpdateSensors();
@@ -2168,15 +2175,16 @@ namespace djack.RogueSurvivor.Engine
 #region Kill (zombify) starved actors.
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
-            if (ForceVisibleToPlayer(actor)) {
-              RedrawPlayScreen(MakeMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
+            var witnesses = PlayersInLOS(actor.Location);
+            if (null != witnesses) {
+              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             }
             KillActor(null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
-              if (ForceVisibleToPlayer(actor)) {
-                ImportantMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
+              if (null != witnesses) {
+                ImportantMessage(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
               }
             }
           }
