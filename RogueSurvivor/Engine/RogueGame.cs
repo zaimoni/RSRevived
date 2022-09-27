@@ -503,7 +503,7 @@ namespace djack.RogueSurvivor.Engine
       var msg = new string[] { actor.TheName, doWhat };
       return new(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
-    private static UI.Message MakePanopticMessage(Actor actor, string doWhat) => MakePanopticMessage(actor, doWhat, OTHER_ACTION_COLOR);
+    public static UI.Message MakePanopticMessage(Actor actor, string doWhat) => MakePanopticMessage(actor, doWhat, OTHER_ACTION_COLOR);
 
     private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, Color color)
     {
@@ -2108,8 +2108,10 @@ namespace djack.RogueSurvivor.Engine
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 actor.SpendStaminaPoints(Rules.SANITY_NIGHTMARE_STA_LOSS);
-                if (ForceVisibleToPlayer(actor))
-                  AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
+                var witnesses = PlayersInLOS(actor.Location);
+                if (null != witnesses) {
+                  RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
+                }
                 if (actor.IsPlayer) {
                    // FIXME replace with sfx
                    // alpha10 
@@ -8157,27 +8159,27 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoTriggerTrap(ItemTrap trap, Actor victim)
     {
-      bool player = ForceVisibleToPlayer(victim);
+      var witnesses = PlayersInLOS(victim.Location);
       trap.IsTriggered = true;
       ItemTrapModel trapModel = trap.Model;
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0) {
         victim.TakeDamage(dmg);
-        if (player) {
+        if (null != witnesses) {
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-          ImportantMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(witnesses.Value, MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
           RedrawPlayScreen();
         }
       }
       if (trapModel.IsNoisy) {
-        if (player) AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
+        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
         OnLoudNoise(victim.Location, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
       if (!trap.CheckStepOnBreaks()) return false;
-      if (player) AddMessage(MakeMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
+      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
       return trap.Consume();
     }
 
@@ -10536,9 +10538,10 @@ namespace djack.RogueSurvivor.Engine
               }
               killer.RecomputeStartingStats();
             }
-            if (ForceVisibleToPlayer(killer)) {
+            var witnesses = PlayersInLOS(killer.Location);
+            if (null != witnesses) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-              ImportantMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
+              ImportantMessage(witnesses.Value, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
             }
           }

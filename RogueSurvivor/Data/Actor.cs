@@ -3051,8 +3051,9 @@ namespace djack.RogueSurvivor.Data
       var game = RogueGame.Game;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         Remove(equippedItem);
-        if (game.ForceVisibleToPlayer(this)) {
-          game.ImportantMessage(Engine.RogueGame.MakeMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
+        var witnesses = RogueGame.PlayersInLOS(Location);
+        if (null != witnesses) {
+          game.ImportantMessage(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
         }
       }
       if (IsSleeping) game.DoWakeUp(this);
