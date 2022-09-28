@@ -2503,7 +2503,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var loc in reject) {
           var failover = m_Actor.MovesTo(in loc);
           if (null == failover) continue;
-          failover.OnlyIf(loc2 => !seen.Contains(loc2));
+          failover.OnlyIf(loc2 => !seen.Contains(loc2) && loc2 != m_Actor.Location);
           if (0 >= failover.Count) continue;
           reprocess_range(failover);
         }
