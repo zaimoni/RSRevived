@@ -105,6 +105,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 
+      const bool tracing = false; // debugging hook
+
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
 #endif
@@ -117,6 +119,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (o.IsExpired) Objectives.Remove(o);
           else if (o.UrgentAction(out goal_action)) {
+            if (tracing) RogueGame.Game.InfoPopup(o.ToString()+": "+(goal_action?.ToString() ?? "null"));
+
             if (null==goal_action) Objectives.Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
@@ -160,12 +164,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif
+      if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("ManageMeleeRisk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading: " + tmpAction);
 #endif
+      if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorEquipWeapon: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       if (null != _enemies) {
@@ -173,6 +179,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons: " + tmpAction);
 #endif
+        if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorFightOrFlee: "+tmpAction.ToString());
         if (null != tmpAction) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action

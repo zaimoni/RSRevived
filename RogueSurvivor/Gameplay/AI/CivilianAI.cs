@@ -172,6 +172,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == _enemies) AdviseFriendsOfSafety();
       else m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
+      const bool tracing = false; // debugging hook
+
       // New objectives system
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
@@ -222,13 +224,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // \todo change target for using Goal_NextCombatAction to short-circuit unhealthy cowardice (or not, main objective processing is above)
       // this action tests whether enemies are in sight and chooses which action to take based on this
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
-
-      const bool tracing = false; // debugging hook
-      if (tracing && !RogueGame.IsSimulating && null != _enemies) {
-        RogueGame.Game.PanViewportTo(m_Actor);
-        RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
-      }
-
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);

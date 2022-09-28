@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 
@@ -50,4 +51,27 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
     }
   }
+
+    // This is not covering fire.  More like a pop out and snipe at something
+    [Serializable]
+    internal class OpportunityTarget : WorldUpdate
+    {
+        public OpportunityTarget() { }
+
+        public override bool IsLegal() => true;
+        public override bool IsRelevant() => true;
+        public override bool IsRelevant(Location loc) => true;
+        public override bool IsSuppressed(Actor a) => false;
+
+        /// <returns>null, or a Performable action</returns>
+        public override ActorAction? Bind(Actor src) {
+            var ordai = src.Controller as OrderableAI;
+            if (null == ordai) return null;
+            return ordai.OpportunityFire();
+        }
+        public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src) => null;
+        public override void Blacklist(HashSet<Location> goals) { }
+        public override void Goals(HashSet<Location> goals) { }
+    }
+
 }

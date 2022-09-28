@@ -331,6 +331,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
         ai.ClearLastMove();
         ret = ai.BehaviorPathTo(m => WhereIn(m));
+
+        ai.SetObjective(new Engine.Goal.NextAction(m_Actor, new OpportunityTarget()));
+
         return true;
       }
 
@@ -1480,6 +1483,128 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return BehaviorRangedAttack(actor);
       }
+    }
+
+    public ActorAction? OpportunityFire()
+    {
+        // migrated from CivilianAI::SelectAction
+        ActorAction tmpAction = null;
+        if (null != _enemies) {
+            tmpAction = ScanForMeleeSnipe();
+            if (null != tmpAction) return tmpAction;
+        }
+
+        var available_ranged_weapons = GetAvailableRangedWeapons();
+        if (null == available_ranged_weapons) return null;
+        if (null == _enemies) return null;
+        available_ranged_weapons.OnlyIf(rw => 0<rw.Ammo);   // no reloading (may profile as needing micro-optimization)
+        if (0 >= available_ranged_weapons.Count) return null;
+
+        // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
+        // also, damage field should be non-null because enemies is non-null
+
+        int best_range = available_ranged_weapons.Max(rw => rw.Model.Attack.Range);
+        var en_in_range = FilterFireTargets(_enemies, best_range);
+        if (null == en_in_range) return null;
+
+        // if no enemies in range, or just one available ranged weapon, use the best one
+        if (1 == available_ranged_weapons.Count) {
+          tmpAction = Equip(available_ranged_weapons[0]);
+          if (null != tmpAction) return null; // fail if we need to reload
+        }
+
+        // filter immediate threat by being in range
+        Zaimoni.Data.Stack<Actor> immediate_threat_in_range = default;
+        if (null != _immediate_threat) immediate_threat_in_range = en_in_range.Select(p => p.Percepted).ToZStack(a => _immediate_threat.Contains(a));
+
+        if (1 == available_ranged_weapons.Count) {
+            if (1 == en_in_range.Count) {
+                return BehaviorRangedAttack(en_in_range[0].Percepted);
+            } else if (1 == immediate_threat_in_range.Count) {
+                return BehaviorRangedAttack(immediate_threat_in_range[0]);
+            }
+        }
+
+        // Get ETA stats
+        var best_weapon_ETAs = new Dictionary<Actor,int>();
+        var best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
+        if (1<available_ranged_weapons.Count) {
+            foreach(var p in en_in_range) {
+                Actor a = p.Percepted;
+                int range = Rules.InteractionDistance(m_Actor.Location, p.Location);
+                foreach(ItemRangedWeapon rw in available_ranged_weapons) {
+                    if (range > rw.Model.Attack.Range) continue;
+                    ETAToKill(a, range, rw,best_weapon_ETAs, best_weapons);
+                }
+            }
+        } else {
+            foreach(var p in en_in_range) {
+                Actor a = p.Percepted;
+                ETAToKill(a,Rules.InteractionDistance(m_Actor.Location,p.Location), available_ranged_weapons[0], best_weapon_ETAs);
+            }
+        }
+
+        // cf above: we got here because there were multiple ranged weapons to choose from in these cases
+        if (1 == en_in_range.Count) {
+            Actor a = en_in_range[0].Percepted;
+            Equip(best_weapons[a]);
+            return BehaviorRangedAttack(a);
+        } else if (1 == immediate_threat_in_range.Count) {
+            Actor a = immediate_threat_in_range[0];
+            Equip(best_weapons[a]);
+            return BehaviorRangedAttack(a);
+        }
+
+        // at this point: there definitely is more than one enemy in range
+        // if there are any immediate threat, there are at least two immediate threat
+        if (2 <= immediate_threat_in_range.Count) {
+            int ETA_min = immediate_threat_in_range.Min(a => best_weapon_ETAs[a]);
+            immediate_threat_in_range.SelfFilter(a => best_weapon_ETAs[a] == ETA_min);
+            if (2 <= immediate_threat_in_range.Count) {
+                int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Max(a => a.HitPoints) : immediate_threat_in_range.Min(a => a.HitPoints));
+                immediate_threat_in_range.SelfFilter(a => a.HitPoints == HP_min);
+                if (2 <= immediate_threat_in_range.Count) {
+                    int dist_min = immediate_threat_in_range.Min(a => Rules.InteractionDistance(m_Actor.Location,a.Location));
+                    immediate_threat_in_range.SelfFilter(a => Rules.InteractionDistance(m_Actor.Location, a.Location) == dist_min);
+                }
+            }
+            Actor actor = immediate_threat_in_range[0];
+            if (1 < available_ranged_weapons.Count) Equip(best_weapons[actor]);
+            return BehaviorRangedAttack(actor);
+        }
+
+        // at this point, no immediate threat in range
+        {
+        int ETA_min = en_in_range.Min(p => best_weapon_ETAs[p.Percepted]);
+        if (2==ETA_min) {
+            // snipe something
+            en_in_range = en_in_range.Filter(a => ETA_min == best_weapon_ETAs[a]);
+            if (2<=en_in_range.Count) {
+                int HP_max = en_in_range.Max(p => p.Percepted.HitPoints);
+                en_in_range = en_in_range.Filter(a => a.HitPoints == HP_max);
+                if (2<=en_in_range.Count) {
+                    int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
+                    en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
+                }
+            }
+            Actor actor = en_in_range[0].Percepted;
+            if (1 < available_ranged_weapons.Count) Equip(best_weapons[actor]);
+            return BehaviorRangedAttack(actor);
+        }
+        }
+
+        // just deal with something close
+        {
+        int dist_min = en_in_range.Min(p => Rules.InteractionDistance(m_Actor.Location,p.Location));
+        en_in_range = en_in_range.Filter<Percept_<Actor>>(p => Rules.InteractionDistance(m_Actor.Location, p.Location) == dist_min);
+        if (2<=en_in_range.Count) {
+            int HP_min = en_in_range.Min(p => p.Percepted.HitPoints);
+            en_in_range = en_in_range.Filter(a => a.HitPoints == HP_min);
+        }
+        Actor actor = en_in_range[0].Percepted;
+        if (1 < available_ranged_weapons.Count) Equip(best_weapons[actor]);
+        return BehaviorRangedAttack(actor);
+        }
     }
 
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
