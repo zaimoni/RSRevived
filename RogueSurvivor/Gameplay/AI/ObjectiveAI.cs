@@ -2399,7 +2399,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int ret = 0;
       foreach(var pt in test.Position.Adjacent()) {
         var loc = new Location(test.Map, pt);
-        if (!Map.Canonical(ref loc)) continue;
         if (Map.Canonical(ref loc) && loc.IsWalkableFor(viewpoint)) ret++;
       }
       return ret;
@@ -2475,6 +2474,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? BehaviorMakeTime() {
       // canned food is too valuable to just eat
+      const bool tracing = false; // debugging hook
+
       var microoptimize_items = m_Actor.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
       if (microoptimize_items.Any()) {
         var obj = microoptimize_items.First();
@@ -2487,8 +2488,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == _legal_path) return null;
       var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
+      if (tracing) RogueGame.Game.InfoPopup("considering moving: " + tolerable_moves.to_s());
       // if very crowded, relax standards
       if (0 >= tolerable_moves.Count) tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>();
+      if (tracing) RogueGame.Game.InfoPopup("considering moving: " + tolerable_moves.to_s());
       if (0 >= tolerable_moves.Count) return null;
       if (1 == tolerable_moves.Count) return (ActorAction)tolerable_moves.First().Value;
       var best_moves = tolerable_moves.CloneCast<Location, ActorDest, ActionMoveStep>(NoContestedExit);

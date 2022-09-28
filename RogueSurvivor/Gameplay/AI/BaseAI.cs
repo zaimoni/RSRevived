@@ -68,9 +68,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       var actorAction = SelectAction();
+      const bool tracing = false; // debugging hook
 #if DEBUG
       if (null != actorAction && !actorAction.IsPerformable()) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
+      if (tracing) {
+        RogueGame.Game.PanViewportTo(m_Actor);
+        RogueGame.Game.InfoPopup(m_Actor.Name+": "+actorAction.ToString());
+      }
       if ((this is ObjectiveAI ai)) {
         if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
 #if DEBUG
@@ -90,6 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ResetAICache();
       RecordLastAction(actorAction);
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;
+      if (tracing) RogueGame.Game.InfoPopup("Enacting: " +actorAction.ToString());
       return actorAction ?? new ActionWait(m_Actor);
     }
 

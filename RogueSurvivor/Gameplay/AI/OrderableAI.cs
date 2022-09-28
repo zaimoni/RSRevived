@@ -2254,6 +2254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
             SetObjective(goal);
           }
+          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("enemy cannot hit back: "+ act.ToString());
           return act;
         };
         if (m_Actor.Speed > enemy.Speed && !enemy.CanRun()) {
@@ -2270,6 +2271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var act = next_to[n];
             Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
             SetObjective(goal);
+            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("dash-attack (slow enemy): "+ act.ToString());
             return act;
           } else
             return new ActionWait(m_Actor);
@@ -2287,12 +2289,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
             var act = next_to[n];
             Engine.Goal.NextAction goal = new(m_Actor, new ActionMeleeAttack(m_Actor, enemy));
             SetObjective(goal);
+            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("dash-attack: "+ act.ToString());
             return act;
           }
         }
       } else if (2 == en_dist) {
         // no dash-attack at range 2, have not decided to flee
-        if (null == _damage_field || !_damage_field.ContainsKey(m_Actor.Location.Position)) return new ActionWait(m_Actor);
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("plan to wait rather than dash-attack: "+ (null == _damage_field || !_damage_field.ContainsKey(m_Actor.Location.Position)).ToString());
+        if (null == _damage_field || !_damage_field.ContainsKey(m_Actor.Location.Position)) return new ActionWait(m_Actor); // XXX \todo should be a tactical wait that's rewrite-proof
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("declining wait w/o dash-attack: "+ _damage_field.to_s());
       }
 
       if (3 == en_dist && m_Actor.RunIsFreeMove && enemy.CanRun()) {
@@ -2301,6 +2306,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var n = Rules.Get.DiceRoller.Roll(0,options.Count);
           Engine.Goal.NextAction goal = new(m_Actor, options[n].Key[1]);
           SetObjective(goal);
+          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("charging (free move, enemy can run): "+ options[n].Value.ToString());
           return options[n].Value;
         }
       }
@@ -2308,6 +2314,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // charge
       tmpAction = BehaviorChargeEnemy(target, true, true);
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("charging: "+ tmpAction.ToString());
+      if (3 == en_dist && m_Actor.Speed > enemy.Speed && !enemy.CanRun()) {
+          if (!m_Actor.WillActAgainBefore(enemy)) m_Actor.Walk();
+      }
+
 
       if (null != tmpAction) {
         if (null != next_to) {
