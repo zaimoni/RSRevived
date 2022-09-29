@@ -3687,7 +3687,7 @@ namespace djack.RogueSurvivor.Engine
       int gx = 0;
       int gy = 0;
       m_UI.UI_Clear(Color.Black);
-      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Seed.ToString(), gx, gy, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Seed.ToString()+" "+ Session.DescGameMode(Session.Get.GameMode), gx, gy, new Color?());
       gy = 2* BOLD_LINE_SPACING;
       if (Player.Model.Abilities.IsUndead) {
         m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy, new Color?());
