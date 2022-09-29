@@ -2016,9 +2016,10 @@ namespace djack.RogueSurvivor.Engine
           foreach (var corpse in corpseList1) {
               if (!map.HasActorAt(corpse.Position)) {
                 Zombify(null, corpse.DeadGuy, false);
-                if (ForceVisibleToPlayer(map, corpse.Position)) {
-                  AddMessage(new("The "+corpse.ToString()+" rises again!!", map.LocalTime.TurnCounter, Color.Red));
-                  m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
+                var witnesses = _ForceVisibleToPlayer(map, corpse.Position);
+                if (null != witnesses) {
+                    RedrawPlayScreen(witnesses.Value, new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
+                    m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
                 }
                 map.Destroy(corpse);
               }
@@ -2027,8 +2028,8 @@ namespace djack.RogueSurvivor.Engine
           // don't really have the RAM to do anything complex, like inanimate skeletons.
           foreach (Corpse c in corpseList2) {
             map.Destroy(c);
-            if (ForceVisibleToPlayer(map, c.Position))
-              AddMessage(new("The "+c.ToString()+" turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
+            var witnesses = _ForceVisibleToPlayer(map, c.Position);
+            if (null != witnesses) RedrawPlayScreen(witnesses.Value, new("The " + c.ToString() + " turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
           }
 #endregion
         }
@@ -8743,10 +8744,15 @@ namespace djack.RogueSurvivor.Engine
       ref var r_attack = ref attacker.CurrentRangedAttack;
       attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
       var rules = Rules.Get;
-      if (r_attack.Kind == AttackKind.FIREARM && (rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
-      {
-        AddMessage(MakeMessage(attacker, " : weapon jam!"));
-      } else {
+
+      var witnesses_attacker = _ForceVisibleToPlayer(attacker, defender);
+
+      if (   r_attack.Kind == AttackKind.FIREARM
+          && (rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
+        if (null != witnesses_attacker) RedrawPlayScreen(witnesses_attacker.Value, MakePanopticMessage(attacker, " : weapon jam!"));
+        return;
+      }
+
         int distance = Rules.InteractionDistance(attacker.Location, defender.Location);
         if (!(attacker.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
@@ -8837,7 +8843,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
-      }
     }
 
     private bool DoCheckFireThrough(Actor attacker, List<Point> LoF)
@@ -8888,10 +8893,16 @@ namespace djack.RogueSurvivor.Engine
 
       PropagateSight(dest, fear_explosive);
 
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(dest)) return;
+      var witnesses_throw = _ForceVisibleToPlayer(actor);
+      if (null == witnesses_throw && !ForceVisibleToPlayer(dest)) return;
+
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
+      if (null != witnesses_throw) {
+        ImportantMessage(witnesses_throw.Value, MakePanopticMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
+      } else {
+        ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
+      }
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -8918,10 +8929,16 @@ namespace djack.RogueSurvivor.Engine
 
       PropagateSight(dest, fear_explosive);
 
-      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(dest)) return;
+      var witnesses_throw = _ForceVisibleToPlayer(actor);
+      if (null == witnesses_throw && !ForceVisibleToPlayer(dest)) return;
+
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
+      if (null != witnesses_throw) {
+        ImportantMessage(witnesses_throw.Value, MakePanopticMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
+      } else {
+        ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
+      }
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -12811,6 +12828,38 @@ namespace djack.RogueSurvivor.Engine
         if (   viewing.Value.Key.Contains(actor.Controller as PlayerController)
             || viewing.Value.Value.Contains(actor)) {
           PanViewportTo(actor);
+          return viewing;
+        }
+      }
+      if (   viewing.Value.Key.Contains(Player.Controller as PlayerController)
+          || viewing.Value.Value.Contains(Player)) {
+        return viewing;
+      }
+      if (0 < viewing.Value.Key.Count) {
+        PanViewportTo(viewing.Value.Key);
+        return viewing;
+      }
+      PanViewportTo(viewing.Value.Value);
+      return viewing;
+    }
+
+    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor, Actor want)
+    {
+      var viewing = PlayersInLOS(actor.Location);
+      if (null == viewing) return null;
+      if (actor.IsViewpoint) {
+        if (actor == Player) return viewing;
+        if (   viewing.Value.Key.Contains(actor.Controller as PlayerController)
+            || viewing.Value.Value.Contains(actor)) {
+          PanViewportTo(actor);
+          return viewing;
+        }
+      }
+      if (want.IsViewpoint) {
+        if (want == Player) return viewing;
+        if (   viewing.Value.Key.Contains(want.Controller as PlayerController)
+            || viewing.Value.Value.Contains(want)) {
+          PanViewportTo(want);
           return viewing;
         }
       }
