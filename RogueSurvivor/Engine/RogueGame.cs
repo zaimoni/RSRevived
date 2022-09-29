@@ -1051,17 +1051,17 @@ namespace djack.RogueSurvivor.Engine
         switch(x.Substring(0,1))
         {
         case "C":   // Classic
-          Session.Get.GameMode = GameMode.GM_STANDARD;
+          m_CharGen.GameMode = GameMode.GM_STANDARD;
           return true;
         case "I":   // Infection
-          Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
+          m_CharGen.GameMode = GameMode.GM_CORPSES_INFECTION;
           return true;
         case "V":   // Vintage
-          Session.Get.GameMode = GameMode.GM_VINTAGE;
+          m_CharGen.GameMode = GameMode.GM_VINTAGE;
           ApplyOptions(false);
           return true;
         case "Z":   // World War Z, Resident Evil, etc: instant zombification w/corpses
-          Session.Get.GameMode = GameMode.GM_WORLD_WAR_Z;
+          m_CharGen.GameMode = GameMode.GM_WORLD_WAR_Z;
           return true;
         default: return false;
         }
@@ -1090,17 +1090,17 @@ namespace djack.RogueSurvivor.Engine
       Func<int, bool?> choice_handler = (currentChoice => {
         switch (currentChoice) {
           case 0:
-            Session.Get.GameMode = GameMode.GM_STANDARD;
+            m_CharGen.GameMode = GameMode.GM_STANDARD;
             return true;
           case 1:
-            Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
+            m_CharGen.GameMode = GameMode.GM_CORPSES_INFECTION;
             return true;
           case 2:
-            Session.Get.GameMode = GameMode.GM_VINTAGE;
+            m_CharGen.GameMode = GameMode.GM_VINTAGE;
             ApplyOptions(false);
             return true;
           case 3:
-            Session.Get.GameMode = GameMode.GM_WORLD_WAR_Z;
+            m_CharGen.GameMode = GameMode.GM_WORLD_WAR_Z;
             return true;
         }
         return null;
@@ -13167,7 +13167,7 @@ namespace djack.RogueSurvivor.Engine
       _validateCity();  // use the --city option values if they are remotely valid
       _validateSpawn(); // prepare to use the --spawn option
 
-      Session.Reset();
+      Session.Reset(m_CharGen.GameMode);
       Rules.Reset();
       Direction_ext.Now();
       World world = Session.Get.World;
@@ -14542,6 +14542,7 @@ retry:
 
     private struct CharGen
     {
+      public GameMode GameMode;
       public bool IsUndead;
       public GameActors.IDs UndeadModel;
       public bool IsMale;

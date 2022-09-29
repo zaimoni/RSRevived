@@ -65,10 +65,11 @@ namespace djack.RogueSurvivor.Engine
     public Scoring Scoring { get { return m_Scoring; } }
     public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
 
-    private Session()
+    private Session(GameMode mode = GameMode.GM_STANDARD)
     {
       m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
       s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+      GameMode = mode;
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
@@ -264,7 +265,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #endregion
 
-    public static void Reset() { s_TheSession = null; }
+    public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
 
     public bool CMDoptionExists(string x) {
       if (null == m_CommandLineOptions) return false;
