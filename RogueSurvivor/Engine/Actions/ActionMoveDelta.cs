@@ -36,8 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 	public Location origin { get { return m_Origin; } }
     public ActorAction ConcreteAction { get { return _result ?? _resolve(); } }
 
-    public ActionMoveDelta(Actor actor, Location to)
-      : base(actor)
+    public ActionMoveDelta(Actor actor, Location to) : base(actor)
     {
       m_NewLocation = to;
       m_Origin = m_Actor.Location;
@@ -46,16 +45,11 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
     }
 
-    public ActionMoveDelta(Actor actor, in Location to, in Location from)
-      : base(actor)
+    public ActionMoveDelta(Actor actor, in Location to, in Location from) : base(actor)
     {
+      _Action.MoveStep._Ok(in from, in to, actor);
       m_NewLocation = to;
       m_Origin = from;
-#if DEBUG
-      if (1!=Rules.InteractionDistance(in m_NewLocation,in m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
-      if (!m_Actor.CanEnter(m_Origin)) throw new InvalidOperationException("must be able to exist at the origin");
-      if (!m_Actor.CanEnter(m_NewLocation)) throw new InvalidOperationException("must be able to exist at the destination");
-#endif
     }
 
     public override bool IsLegal()

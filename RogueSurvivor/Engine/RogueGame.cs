@@ -542,12 +542,15 @@ namespace djack.RogueSurvivor.Engine
       return MakeMessage(actor.IsPlayer ? Player.Controller : actor.Controller, actor, doWhat, target, phraseEnd);
     }
 
-    public static UI.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd = ".")
+    private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, Item target, string phraseEnd = ".")
     {
-      var viewpoint = actor.Controller;
-      if (!actor.IsPlayer) viewpoint = Player.Controller;
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, target.TheName + phraseEnd };
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+    }
+
+    public static UI.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd = ".")
+    {
+      return MakeMessage(actor.IsPlayer ? actor.Controller : Player.Controller, actor, doWhat, target, phraseEnd);
     }
 
     public static UI.Message MakePanopticMessage(Actor actor, string doWhat, Item target, string phraseEnd = ".")
@@ -7991,10 +7994,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMoveActor(Actor actor, in Location newLocation)
     {
-#if DEBUG
-      if (!Rules.IsAdjacent(actor.Location,newLocation)) throw new InvalidOperationException("tried to teleport from "+actor.Location+" to "+newLocation);
-      if (!actor.CanEnter(newLocation)) throw new InvalidOperationException(actor.Name+" tried to enter impassible "+newLocation+" from "+actor.Location);
-#endif
+       _Action.MoveStep._Ok(actor.Location, in newLocation, actor);
       if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints();
         return;
@@ -9724,13 +9724,26 @@ namespace djack.RogueSurvivor.Engine
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
-      actor.Inventory.RepairContains(it, "have already taken ");
+      actor.Inventory!.RepairContains(it, "have already taken ");
       actor.SpendActionPoints();
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
       loc.Map.TransferFrom(it, loc.Position, actor.Inventory);   // invalidates g_inv if that was the last item
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(loc))
-        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
+
+      var witnesses = _ForceVisibleToPlayer(actor);
+      var see_take = PlayersInLOS(loc);
+      see_take?.SetDifference(witnesses);
+
+      if (null != witnesses) {
+        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
+        if (null != see_take && 0 < see_take.Value.Key.Count) {
+            var msg = MakeMessage(see_take.Value.Key[0], actor, VERB_TAKE.Conjugate(actor), it);
+            foreach (var pc in see_take.Value.Key) pc.Messages.Add(msg);
+        }
+      } else if (null != see_take && see_take.Value.ForceVisible()) {
+        AddMessage(see_take.Value, MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
+      }
+
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
@@ -14635,6 +14648,33 @@ retry:
     static public string Conjugate(this Verb verb, Actor actor)
     {
       return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+    }
+
+    static public void SetDifference(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
+        if (null == rhs) return;
+        if (0 < lhs.Key.Count) {
+            foreach(var actor in rhs.Value.Key) lhs.Key.Remove(actor);
+            foreach(var actor in rhs.Value.Value) if (actor.Controller is PlayerController pc) lhs.Key.Remove(pc);
+        }
+        if (0 < lhs.Value.Count) {
+            foreach(var actor in rhs.Value.Key) lhs.Value.Remove(actor.ControlledActor);
+            foreach(var actor in rhs.Value.Value) lhs.Value.Remove(actor);
+        }
+    }
+
+    static public bool ForceVisible(this KeyValuePair<List<PlayerController>, List<Actor>> viewing) {
+      var player = RogueGame.Player;
+      if (player.Controller is PlayerController pc && viewing.Key.Contains(pc)) return true;
+      if (viewing.Value.Contains(player)) return true;
+      if (0 < viewing.Key.Count) {
+        RogueGame.Game.PanViewportTo(viewing.Key);
+        return true;
+      }
+      if (0 < viewing.Value.Count) {
+        RogueGame.Game.PanViewportTo(viewing.Value);
+        return true;
+      }
+      return false;
     }
 
     static public string? StatusIcon(this ItemTrap trap)

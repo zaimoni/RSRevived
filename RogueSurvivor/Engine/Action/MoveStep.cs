@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -98,6 +99,12 @@ namespace djack.RogueSurvivor.Engine._Action
         public Location dest { get { return m_NewLocation; } }  // of m_Actor
         public Location origin { get { return m_Origin; } }
 
+        [Conditional("DEBUG")]
+        static public void _Ok(in Location origin, in Location dest, Actor actor) {
+            if (1 != Rules.InteractionDistance(in dest, in origin)) throw new InvalidOperationException("move delta must be adjacent");
+            if (!actor.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
+        }
+
         static public bool _CanConstruct(Location from, Location to, bool run, Actor actor) {
 #if DEBUG
             if (1 != Rules.InteractionDistance(to, from)) return false;
@@ -110,13 +117,12 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public MoveStep(Location from, Location to, bool run, Actor actor) : base(actor)
         {
+            _Ok(in from, in to, actor);
             m_NewLocation = to;
             m_Origin = from;
             is_running = run;
 #if DEBUG
-            if (1 != Rules.InteractionDistance(m_NewLocation, m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
             if (!m_Actor.CanEnter(m_Origin)) throw new InvalidOperationException("must be able to exist at the origin");
-            if (!m_Actor.CanEnter(m_NewLocation)) throw new InvalidOperationException("must be able to exist at the destination");
 #endif
         }
 
