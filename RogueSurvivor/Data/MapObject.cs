@@ -14,6 +14,12 @@ using Point = Zaimoni.Data.Vector2D_short;
 
 namespace djack.RogueSurvivor.Data
 {
+/*
+ MapObject inventory is up for a redesign.
+ * we would like on-shelf inventory to be independent of non-walkability.
+ * we would like the item get UI to allow take/trade with adjacent tables, but not the floor inventory underneath those tables
+ * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
+ */
   [Serializable]
   internal class MapObject
   {

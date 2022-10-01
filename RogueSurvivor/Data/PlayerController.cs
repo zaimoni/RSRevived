@@ -428,7 +428,7 @@ namespace djack.RogueSurvivor.Data
 #nullable restore
 
     // originally in Actor
-    private string ReasonCantGetFromContainer(Location loc)
+    static private string ReasonCantGetFromContainer(Location loc)
     {
       var obj = loc.MapObject;
       if (null == obj || !obj.IsContainer) return "object is not a container";
@@ -437,25 +437,9 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-    private string ReasonCantGetFromContainer(Point position)
-    {
-      return ReasonCantGetFromContainer(new Location(m_Actor.Location.Map, position));
-    }
-
-	public bool CanGetFromContainer(Location loc, out string reason)
-	{
-	  reason = ReasonCantGetFromContainer(loc);
-	  return string.IsNullOrEmpty(reason);
-	}
-
 	public bool CanGetFromContainer(Point position)
 	{
-	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
-	}
-
-	public bool CanGetFromContainer(Location loc)
-	{
-	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(loc));
+	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(new Location(m_Actor.Location.Map, position)));
 	}
 
     public bool AutoPilotIsOn { get { return 0 < Objectives.Count;  } }
@@ -677,8 +661,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     protected override ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack)
     {
-      if (CanGetFromContainer(loc)) return new Engine.Actions.ActionGetFromContainer(this, loc);
-      return null;
+      return Engine.Actions.ActionGetFromContainer.create(this, loc);
     }
 #nullable restore
 

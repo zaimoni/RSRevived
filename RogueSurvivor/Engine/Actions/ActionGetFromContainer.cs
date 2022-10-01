@@ -15,18 +15,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly MapObject m_Container;
 
-    public ActionGetFromContainer(PlayerController pc, Location loc) : base(pc.ControlledActor)
+    // error checks in ...::create
+    private ActionGetFromContainer(PlayerController pc, MapObject obj) : base(pc.ControlledActor)
     {
-      if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc),loc,"not canonical");
-      var obj = loc.MapObject;
-      if (null == obj || !obj.IsContainer) throw new ArgumentNullException(nameof(obj));
       m_Container = obj;
     }
 
-    public override bool IsLegal()
-    {
-      return (m_Actor.Controller as PlayerController).CanGetFromContainer(m_Container.Location, out m_FailReason);
-    }
+    public override bool IsLegal() => CanGetFrom(m_Container, out m_FailReason);
 
     public override bool IsPerformable()
     {
@@ -37,6 +32,26 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       RogueGame.Game.HandlePlayerTakeItemFromContainer(m_Actor.Controller as PlayerController, m_Container);
+    }
+
+    static private string ReasonCantGetFrom(MapObject? obj)
+    {
+      if (null == obj || !obj.IsContainer) return "object is not a container";
+      if (obj.Inventory.IsEmpty) return "nothing to take there";
+      return "";
+    }
+
+    static private bool CanGetFrom(MapObject? obj, out string reason)
+    {
+	  reason = ReasonCantGetFrom(obj);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    static public ActionGetFromContainer? create(PlayerController pc, Location loc) {
+        if (!Map.Canonical(ref loc)) return null;
+        var obj = loc.MapObject;
+        if (null == obj || !obj.IsContainer || obj.Inventory.IsEmpty) return null;
+        return new ActionGetFromContainer(pc, obj);
     }
   }
 }
