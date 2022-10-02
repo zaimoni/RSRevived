@@ -11720,6 +11720,51 @@ namespace djack.RogueSurvivor.Engine
       return GameImages.ICON_THREAT_DANGER;
     }
 
+#nullable enable
+    private static string? EnemyIcon(Actor actor) {
+        if (Player.IsSelfDefenceFrom(actor)) return GameImages.ICON_SELF_DEFENCE;
+        else if (Player.IsAggressorOf(actor)) return GameImages.ICON_AGGRESSOR;
+        else if (Player.AreIndirectEnemies(actor)) return GameImages.ICON_INDIRECT_ENEMIES;
+        return null;
+    }
+
+    private static string? RunIcon(Actor actor) {
+        if (actor.IsRunning) return GameImages.ICON_RUNNING;
+        else if (actor.Model.Abilities.CanRun && !actor.CanRun()) return GameImages.ICON_CANT_RUN;
+        return null;
+    }
+
+    private static string? SleepIcon(Actor actor) {
+        if (actor.Model.Abilities.HasToSleep) {
+            if (actor.IsExhausted) return GameImages.ICON_SLEEP_EXHAUSTED;
+            else if (actor.IsSleepy) return GameImages.ICON_SLEEP_SLEEPY;
+            else if (actor.IsAlmostSleepy) return GameImages.ICON_SLEEP_ALMOST_SLEEPY;
+        }
+        return null;
+    }
+
+    private static string? HungerIcon(Actor actor) {
+        if (actor.Model.Abilities.HasToEat) {
+            if (actor.IsStarving) return GameImages.ICON_FOOD_STARVING;
+            else if (actor.IsHungry) return GameImages.ICON_FOOD_HUNGRY;
+            else if (actor.IsAlmostHungry) return GameImages.ICON_FOOD_ALMOST_HUNGRY;
+        } else if (actor.Model.Abilities.IsRotting) {
+            if (actor.IsRotStarving) return GameImages.ICON_ROT_STARVING;
+            else if (actor.IsRotHungry) return GameImages.ICON_ROT_HUNGRY;
+            else if (actor.IsAlmostRotHungry) return GameImages.ICON_ROT_ALMOST_HUNGRY;
+        }
+        return null;
+    }
+
+    private static string? SanityIcon(Actor actor) {
+        if (actor.Model.Abilities.HasSanity) {
+            if (actor.IsInsane) return GameImages.ICON_SANITY_INSANE;
+            else if (actor.IsDisturbed) return GameImages.ICON_SANITY_DISTURBED;
+        }
+        return null;
+    }
+#nullable restore
+
     public void DrawActorSprite(Actor actor, GDI_Point screen, Color tint)
     {
 #if DEBUG
@@ -11744,35 +11789,16 @@ namespace djack.RogueSurvivor.Engine
         m_UI.DrawTile(gx2, gy2);    // would hand off to sprite cache here
       }
 
-      if (Player.IsSelfDefenceFrom(actor)) m_UI.UI_DrawImage(GameImages.ICON_SELF_DEFENCE, gx2, gy2, tint);
-      else if (Player.IsAggressorOf(actor)) m_UI.UI_DrawImage(GameImages.ICON_AGGRESSOR, gx2, gy2, tint);
-      else if (Player.AreIndirectEnemies(actor)) m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx2, gy2, tint);
+      EnemyIcon(actor)?.DrawIcon(screen, tint);
 
       switch (actor.Activity) {
         case Data.Activity.IDLE:
           int maxHitPoints = actor.MaxHPs;
           if (actor.HitPoints < maxHitPoints) DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
-          if (actor.IsRunning) m_UI.UI_DrawImage(GameImages.ICON_RUNNING, gx2, gy2, tint);
-          else if (actor.Model.Abilities.CanRun && !actor.CanRun()) m_UI.UI_DrawImage(GameImages.ICON_CANT_RUN, gx2, gy2, tint);
-          if (actor.Model.Abilities.HasToSleep) {
-            if (actor.IsExhausted) m_UI.UI_DrawImage(GameImages.ICON_SLEEP_EXHAUSTED, gx2, gy2, tint);
-            else if (actor.IsSleepy) m_UI.UI_DrawImage(GameImages.ICON_SLEEP_SLEEPY, gx2, gy2, tint);
-            else if (actor.IsAlmostSleepy) m_UI.UI_DrawImage(GameImages.ICON_SLEEP_ALMOST_SLEEPY, gx2, gy2, tint);
-          }
-          if (actor.Model.Abilities.HasToEat) {
-            if (actor.IsStarving) m_UI.UI_DrawImage(GameImages.ICON_FOOD_STARVING, gx2, gy2, tint);
-            else if (actor.IsHungry) m_UI.UI_DrawImage(GameImages.ICON_FOOD_HUNGRY, gx2, gy2, tint);
-            else if (actor.IsAlmostHungry) m_UI.UI_DrawImage(GameImages.ICON_FOOD_ALMOST_HUNGRY, gx2, gy2, tint);
-          }
-          else if (actor.Model.Abilities.IsRotting) {
-            if (actor.IsRotStarving) m_UI.UI_DrawImage(GameImages.ICON_ROT_STARVING, gx2, gy2, tint);
-            else if (actor.IsRotHungry) m_UI.UI_DrawImage(GameImages.ICON_ROT_HUNGRY, gx2, gy2, tint);
-            else if (actor.IsAlmostRotHungry) m_UI.UI_DrawImage(GameImages.ICON_ROT_ALMOST_HUNGRY, gx2, gy2, tint);
-          }
-          if (actor.Model.Abilities.HasSanity) {
-            if (actor.IsInsane) m_UI.UI_DrawImage(GameImages.ICON_SANITY_INSANE, gx2, gy2, tint);
-            else if (actor.IsDisturbed) m_UI.UI_DrawImage(GameImages.ICON_SANITY_DISTURBED, gx2, gy2, tint);
-          }
+          RunIcon(actor)?.DrawIcon(screen, tint);
+          SleepIcon(actor)?.DrawIcon(screen, tint);
+          HungerIcon(actor)?.DrawIcon(screen, tint);
+          SanityIcon(actor)?.DrawIcon(screen, tint);
           if (Player.CanTradeWith(actor)) {
 /*          var o_oai = actor.Controller as OrderableAI;
             if (null != o_oai) {
