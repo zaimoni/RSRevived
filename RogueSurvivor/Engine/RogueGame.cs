@@ -12333,14 +12333,9 @@ namespace djack.RogueSurvivor.Engine
           Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
           if (0 >= electric.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
           DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, TILE_SIZE-4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), bar_color, bar_color, bar_color, Color.DarkGray);
-        } else if (it is ItemFood food) {
-          if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter))
-            m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, gx2, gy2);
-          else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
-            m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, gx2, gy2);
-        } else if (it is ItemTrap trap) {
-          trap.StatusIcon()?.DrawIcon(gx2, gy2);
-        } else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
+        } else if (it is ItemFood food) food.StatusIcon()?.DrawIcon(gx2, gy2);
+        else if (it is ItemTrap trap) trap.StatusIcon()?.DrawIcon(gx2, gy2);
+        else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
         DrawItem(it, gx2, gy2);
         if (++num2 >= slotsPerLine) {
@@ -14693,6 +14688,9 @@ retry:
 
     static public string? StatusIcon(this ItemTrap trap)
     {
+      // internal offset: (1,1)
+      // internal dimensions: (9,8)
+      // anchor for CGI generation: GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP
       var player = RogueGame.Player;
       if (trap.IsTriggered) {
         if (trap.Owner == player) return GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER;
@@ -14706,6 +14704,16 @@ retry:
         else if (trap.WouldLearnHowToBypass(player)) return GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP;
         return GameImages.ICON_TRAP_ACTIVATED;
       }
+      return null;
+    }
+
+    static public string? StatusIcon(this ItemFood food)
+    {
+      // internal offset: (22,1)
+      // internal dimensions: (8,8)
+      var turn = Session.Get.WorldTime.TurnCounter;
+      if (food.IsExpiredAt(turn)) return GameImages.ICON_EXPIRED_FOOD;
+      else if (food.IsSpoiledAt(turn)) return GameImages.ICON_SPOILED_FOOD;
       return null;
     }
 
