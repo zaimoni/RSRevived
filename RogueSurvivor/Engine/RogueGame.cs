@@ -12339,8 +12339,7 @@ namespace djack.RogueSurvivor.Engine
           else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, gx2, gy2);
         } else if (it is ItemTrap trap) {
-          var trap_status = trap?.StatusIcon();
-          if (null != trap_status) m_UI.UI_DrawImage(trap_status, gx2, gy2);
+          trap.StatusIcon()?.DrawIcon(gx2, gy2);
         } else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
         DrawItem(it, gx2, gy2);
@@ -12377,8 +12376,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
         m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
-      var trap_status = (it as ItemTrap)?.StatusIcon();
-      if (null != trap_status) m_UI.UI_DrawImage(trap_status, gx, gy);
+      (it as ItemTrap)?.StatusIcon()?.DrawIcon(gx, gy);
     }
 #nullable restore
 
@@ -14675,6 +14673,22 @@ retry:
         return true;
       }
       return false;
+    }
+
+    static public void DrawIcon(this string icon, in GDI_Point origin, Color tint) {
+        IRogueUI.UI.UI_DrawImage(icon, origin.X, origin.Y, tint);
+    }
+
+    static public void DrawIcon(this string icon, in GDI_Point origin) {
+        IRogueUI.UI.UI_DrawImage(icon, origin.X, origin.Y);
+    }
+
+    static public void DrawIcon(this string icon, int x, int y, Color tint) {
+        IRogueUI.UI.UI_DrawImage(icon, x, y, tint);
+    }
+
+    static public void DrawIcon(this string icon, int x, int y) {
+        IRogueUI.UI.UI_DrawImage(icon, x, y);
     }
 
     static public string? StatusIcon(this ItemTrap trap)
