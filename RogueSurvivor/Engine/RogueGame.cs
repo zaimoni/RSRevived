@@ -11845,10 +11845,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#nullable enable
     public void DrawActorDecoration(Actor actor, DollPart part, Color tint)
     {
-      List<string> decorations = actor.Doll.GetDecorations(part);
-      if (decorations == null) return;
+      var decorations = actor.Doll.GetDecorations(part);
+      if (null == decorations) return;
       foreach (string imageID in decorations)
       {// the skin is both guaranteed to be present when any decorations are present, and be unique
         if (DollPart.SKIN==part) {
@@ -11861,18 +11862,18 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
     {
-      List<string> decorations = actor.Doll.GetDecorations(part);
-      if (decorations == null) return;
+      var decorations = actor.Doll.GetDecorations(part);
+      if (null == decorations) return;
       foreach (string imageID in decorations)
         m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
     }
 
     public void DrawActorEquipment(Actor actor, DollPart part, Color tint)
     {
-      Item equippedItem = actor.GetEquippedItem(part);
-      if (equippedItem == null) return;
-      m_UI.AppendTile(equippedItem.ImageID, tint);
+      var equippedItem = actor.GetEquippedItem(part);
+      if (null != equippedItem) m_UI.AppendTile(equippedItem.ImageID, tint);
     }
+#nullable restore
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
     {
