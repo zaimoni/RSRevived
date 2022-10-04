@@ -685,8 +685,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return null;
       }
-      if (m_Actor.Location.Map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
-        return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          var e = m_Actor.Location.Exit;
+          if (null != e) return BehaviorUseExit(e, UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      }
       return null;
     }
 #nullable restore
@@ -830,10 +832,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
-    protected ActorAction? BehaviorUseExit(UseExitFlags useFlags)
+    private ActorAction? BehaviorUseExit(Exit exitAt, UseExitFlags useFlags)
     {
-      var exitAt = m_Actor.Location.Exit;
-      if (null == exitAt) return null;
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit() ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
       if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
@@ -845,6 +845,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionBreak(m_Actor, mapObjectAt);
       }
       return null;
+    }
+
+    protected ActorAction? BehaviorUseExit(UseExitFlags useFlags) {
+      var e = m_Actor.Location.Exit;
+      if (null == e) return null;
+      return BehaviorUseExit(e, useFlags);
     }
 
     protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept>? stacksPercepts)
