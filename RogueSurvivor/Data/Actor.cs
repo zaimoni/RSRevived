@@ -1324,6 +1324,41 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
+#if PROTOTYPE
+    public List<Actor>? grepAllInRadioRange(Func<Actor, bool> ok, Location? origin = null)
+    {
+      bool police_radio = HasActivePoliceRadio;
+      bool army_radio = HasActiveArmyRadio;
+      if (!police_radio && !army_radio) return null;
+#if DEBUG
+      if (police_radio && army_radio) throw new InvalidOperationException("need to implement dual police and army radio case");
+#endif
+      if (null == origin) origin = Location;
+      var radio_location = Rules.PoliceRadioLocation(origin.Value);
+      var radio_range = radio_location.RadioDistricts;
+
+      List<Actor> ret = new();
+
+      Session.Get.World.DoForAllMaps(map => {
+        foreach (Actor actor in map.Actors.ToList()) {   // subject to multi-threading race
+          if (this == actor) continue;
+          // XXX defer implementing dual radios
+          if (police_radio) {
+            if (!actor.HasActivePoliceRadio) continue;
+          } else {
+            if (!actor.HasActiveArmyRadio) continue;
+          }
+          var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
+          if (RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
+
+          if (ok(actor)) ret.Add(actor);
+        }
+        },d => radio_range.Contains(d.WorldPosition));
+
+      return 0<ret.Count ? ret : null;
+    }
+#endif
+
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<PlayerController> msg_player, Action<PlayerController> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
       bool player_initiated = RogueGame.IsPlayer(this);
