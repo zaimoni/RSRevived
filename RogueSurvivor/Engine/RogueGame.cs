@@ -617,9 +617,7 @@ namespace djack.RogueSurvivor.Engine
             LoadHints();
             ApplyOptions(false);
             LoadKeybindings();
-            m_UI.ClearScreen();
-            m_UI.UI_DrawStringBold(Color.White, "Loading music...", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+            m_UI.DrawHeadNote("Loading music...");
             m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE);
             m_MusicManager.Load(GameMusics.BIGBEAR_THEME_SONG, GameMusics.BIGBEAR_THEME_SONG_FILE);
             m_MusicManager.Load(GameMusics.BIKER, GameMusics.BIKER_FILE);
@@ -645,18 +643,12 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
       // alpha10
       m_MusicManager.Load(GameMusics.SURFACE, GameMusics.SURFACE_FILE);
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading music... done!");
+      m_UI.DrawHeadNote("Loading sfxs...");
       m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
       m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
       m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading sfxs... done!");
       m_ManualLine = 0; // reset line just in case
       LoadHiScoreTable();
       while (m_IsGameRunning)
@@ -1156,9 +1148,9 @@ namespace djack.RogueSurvivor.Engine
         case 0:
           bool isUndead = roller.RollChance(50);
           int gy3 = gy1 + 3*BOLD_LINE_SPACING;
-          m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy3, new Color?());
-          int gy4 = gy3 + BOLD_LINE_SPACING;
-          m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy3);
+          gy3 += BOLD_LINE_SPACING;
+          m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy3);
           m_UI.UI_Repaint();
           if (m_UI.WaitYesOrNo()) return isUndead;
           break;
@@ -1414,9 +1406,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadHiScoreTable()
     {
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading hiscores table...");
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
       bool regen_table = (null == m_HiScoreTable);
       if (!regen_table) {
@@ -1433,20 +1423,14 @@ namespace djack.RogueSurvivor.Engine
         m_HiScoreTable.Clear();
       }
 
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading hiscores table... done!");
     }
 
     private void SaveHiScoreTable()
     {
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Saving hiscores table...");
       HiScoreTable.Save(m_HiScoreTable, GetUserHiScoreFilePath());
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Saving hiscores table... done!");
     }
 
     private void StartNewGame()
@@ -13048,24 +13032,16 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadKeybindings()
     {
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading keybindings...");
       s_KeyBindings = Keybindings.Load(Path.Combine(GetUserConfigPath(), "keys.dat"));
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading keybindings... done!");
     }
 
     private void LoadHints()
     {
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading hints...");
       s_Hints = GameHintsStatus.Load(Path.Combine(GetUserConfigPath(), "hints.dat"));
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Loading hints... done!");
     }
 
     static private void SaveHints()
@@ -13105,7 +13081,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawFootnote(Color color, string text)
     {
       Color color1 = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
-      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, 754, color1);
+      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, CANVAS_HEIGHT - BOLD_LINE_SPACING, color1);
     }
 
     public static string GetUserBasePath() { return SetupConfig.DirPath; }
@@ -13206,16 +13182,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content
     {
-      if (isVerbose) {
-        m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
-        m_UI.UI_Repaint();
-      }
-      if (isVerbose) {
-        m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
-        m_UI.UI_Repaint();
-      }
+      if (isVerbose) m_UI.DrawHeadNote("Generating game world...");
+      if (isVerbose) m_UI.DrawHeadNote("Creating empty world...");
 
       static void _validateCity()
       {
@@ -13257,12 +13225,8 @@ namespace djack.RogueSurvivor.Engine
       BaseTownGenerator.WorldGenInit(zoning);
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
-          if (isVerbose) {
-            m_UI.ClearScreen();
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());
-            m_UI.UI_Repaint();
-          }
-          var dest = new Point(index1, index2);
+          if (isVerbose) m_UI.DrawHeadNote(string.Format("Creating District@{0}...", World.CoordToString(index1, index2)));
+          Point dest = new(index1, index2);
           District district = (world.CHAR_CityLimits.Contains(dest)) ? new District(dest, zoning[world.CHAR_CityLimits.convert(dest)])
                             : new District(dest, DistrictKind.INTERSTATE);
           world[index1, index2] = district;
@@ -13281,17 +13245,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
       }
-      if (isVerbose) {
-        m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
-        m_UI.UI_Repaint();
-      }
+      if (isVerbose) m_UI.DrawHeadNote("Generating unique maps...");
       Session.Get.UniqueMaps.CHARUndergroundFacility = CreateUniqueMap_CHARUndegroundFacility(world);
-      if (isVerbose) {
-        m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
-        m_UI.UI_Repaint();
-      }
+      if (isVerbose) m_UI.DrawHeadNote("Generating unique actors...");
       Session.Get.UniqueActors.init_UnboundUniques(m_TownGenerator);
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
 
@@ -13353,11 +13309,7 @@ namespace djack.RogueSurvivor.Engine
 
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
-          if (isVerbose) {
-            m_UI.ClearScreen();
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x1, y1)), 0, 0);
-            m_UI.UI_Repaint();
-          }
+          if (isVerbose) m_UI.DrawHeadNote(string.Format("Linking District@{0}...", World.CoordToString(x1, y1)));
           Point dest = new Point(x1, y1);
 
           // In RS Alpha 9, the peacewalls meant the entry map and the sewers map had to be handled differently.
@@ -13385,11 +13337,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (isVerbose) {
-        m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0);
-        m_UI.UI_Repaint();
-      }
+      if (isVerbose) m_UI.DrawHeadNote("Spawning player...");
 
       world.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
       world.DoForAllMaps(m=>m.RepairZoneWalk());
@@ -13434,9 +13382,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
       Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Generating game world... done!");
     }
 
     static private bool CheckIfExitIsGood(Map toMap, Point to)
@@ -13872,8 +13818,8 @@ retry:
 
       m_MusicManager.PlayLooping(GameMusics.LIMBO, MusicPriority.PRIORITY_EVENT);
       m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
-      m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
+      m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0);
+      m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * BOLD_LINE_SPACING);
       m_UI.UI_Repaint();
       Actor[] reincarnationAvatars = {
         FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out int matchingActors1),
@@ -13896,23 +13842,22 @@ retry:
       values[1] = string.Format("{0}   (out of {1} possibilities)", values[1], matchingActors2);
       values[2] = string.Format("{0}   (out of {1} possibilities)", values[2], matchingActors3);
       values[3] = string.Format("{0}   (out of {1} possibilities)", values[3], matchingActors4);
-      const int gx = 0;
 
       Actor newPlayerAvatar = null;
       Func<int,bool?> setup_handler = (currentChoice => {
         int gy1 = 0;
         m_UI.ClearScreen();
-        m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", 0, gy1);
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, 0, ref gy1);
         gy1 += 2*BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", 0, gy1);
         gy1 += BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", new WorldTime(Session.Get.WorldTime.TurnCounter).ToString()), gx, gy1, new Color?());
-        int gy4 = gy1 + 2*BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", new WorldTime(Session.Get.WorldTime.TurnCounter).ToString()), 0, gy1);
+        gy1 += 2*BOLD_LINE_SPACING;
         for (int index = 0; index < strArray.Length; ++index) {
-          m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
-          gy4 += BOLD_LINE_SPACING;
+          m_UI.UI_DrawStringBold(Color.Pink, strArray[index], 0, gy1);
+          gy1 += BOLD_LINE_SPACING;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
         return null;
@@ -13952,35 +13897,33 @@ retry:
 
     private bool AskForReincarnation()
     {
-      int gy1;
-      int gx = gy1 = 0;
       m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", gx, gy1, new Color?());
-      int gy2 = gy1 + 28;
-      m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), gx, gy2, new Color?());
-      int gy3 = gy2 + 14;
-      m_UI.UI_DrawStringBold(Color.White, "Remember lives.", gx, gy3, new Color?());
-      int gy4 = gy3 + 14;
-      m_UI.UI_DrawStringBold(Color.White, "Remember purpose.", gx, gy4, new Color?());
-      int gy5 = gy4 + 14;
-      m_UI.UI_DrawStringBold(Color.White, "Clear again.", gx, gy5, new Color?());
-      int gy6 = gy5 + 14;
+      m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", 0, 0);
+      int gy = 2 * BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), 0, gy);
+      gy += BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, "Remember lives.", 0, gy);
+      gy += BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, "Remember purpose.", 0, gy);
+      gy += BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, "Clear again.", 0, gy);
+      gy += BOLD_LINE_SPACING;
       if (Session.Get.Scoring.ReincarnationNumber >= s_Options.MaxReincarnations) {
-        m_UI.UI_DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy6, new Color?());
-        int gy7 = gy6 + 14;
-        m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy7, new Color?());
-        int gy8 = gy7 + 14 + 28;
-        m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy8, new Color?());
+        m_UI.UI_DrawStringBold(Color.LightGreen, "Humans interesting.", 0, gy);
+        gy += BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", 0, gy);
+        gy += 3 * BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", 0, gy);
         DrawFootnote(Color.White, "press ENTER");
         m_UI.UI_Repaint();
         m_UI.WaitEnter();
         return false;
       }
-      m_UI.UI_DrawStringBold(Color.White, "Leave?", gx, gy6, new Color?());
-      int gy9 = gy6 + 14;
-      m_UI.UI_DrawStringBold(Color.White, "Live?", gx, gy9, new Color?());
-      int gy10 = gy9 + 28;
-      m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy10, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Leave?", 0, gy);
+      gy += BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.White, "Live?", 0, gy);
+      gy += 2 * BOLD_LINE_SPACING;
+      m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", 0, gy);
       m_UI.UI_Repaint();
       return m_UI.WaitYesOrNo();
     }

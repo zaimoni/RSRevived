@@ -375,6 +375,13 @@ namespace djack.RogueSurvivor
         UI_DrawStringBold(text.Key, text.Value, gx, gy, shadowColor);
     }
 
+    public void DrawHeadNote(string text)
+    {
+      ClearScreen();
+      UI_DrawStringBold(Color.White, text, 0, 0, null);
+      UI_Repaint();
+    }
+
     public void UI_DrawRect(Color color, Rectangle rect)
     {
 #if DEBUG

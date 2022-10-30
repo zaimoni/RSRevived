@@ -275,13 +275,9 @@ namespace djack.RogueSurvivor.Engine
       while(CheckForConflict());
 
       // save the keybindings
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Saving keybindings...");
       Save(Path.Combine(RogueGame.GetUserConfigPath(), "keys.dat"));
-      m_UI.ClearScreen();
-      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
-      m_UI.UI_Repaint();
+      m_UI.DrawHeadNote("Saving keybindings... done!");
     }
   }
 }

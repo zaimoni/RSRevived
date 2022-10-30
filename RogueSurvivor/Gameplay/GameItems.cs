@@ -785,12 +785,7 @@ namespace djack.RogueSurvivor.Gameplay
       });
     }
 
-    private static void Notify(IRogueUI ui, string what, string stage)
-    {
-      ui.ClearScreen();
-      ui.UI_DrawStringBold(Color.White, "Loading " + what + " data : " + stage, 0, 0, new Color?());
-      ui.UI_Repaint();
-    }
+    private static void Notify(IRogueUI ui, string what, string stage) => ui.DrawHeadNote("Loading " + what + " data : " + stage);
 
     private static void LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
