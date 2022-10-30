@@ -1049,7 +1049,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void Notify(IRogueUI ui, string stage)
     {
-      ui.UI_Clear(Color.Black);
+      ui.ClearScreen();
       ui.UI_DrawStringBold(Color.White, "Loading resources: " + stage, 0, 0, new Color?());
       ui.UI_Repaint();
     }

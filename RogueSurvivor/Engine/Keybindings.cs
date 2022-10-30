@@ -242,7 +242,7 @@ namespace djack.RogueSurvivor.Engine
         string[] values = command_labels.Select(x => Get(x.Value).ToString()).ToArray();
 
         gy = 0;
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         game.DrawHeader();
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
@@ -275,11 +275,11 @@ namespace djack.RogueSurvivor.Engine
       while(CheckForConflict());
 
       // save the keybindings
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       Save(Path.Combine(RogueGame.GetUserConfigPath(), "keys.dat"));
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }

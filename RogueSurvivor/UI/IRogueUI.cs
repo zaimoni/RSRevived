@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.UI
 
 #region Canvas Painting
     void UI_Repaint();
-    void UI_Clear(Color clearColor);
+    void ClearScreen();
     void UI_DrawImage(string imageID, int gx, int gy);
     void UI_DrawImage(string imageID, int gx, int gy, Color tint);
     void UI_DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale);

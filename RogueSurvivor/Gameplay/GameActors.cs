@@ -280,7 +280,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
 
     private static void Notify(IRogueUI ui, string stage)
     {
-      ui.UI_Clear(Color.Black);
+      ui.ClearScreen();
       ui.UI_DrawStringBold(Color.White, "Loading actors data : " + stage, 0, 0, new Color?());
       ui.UI_Repaint();
     }

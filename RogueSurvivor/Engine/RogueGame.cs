@@ -617,7 +617,7 @@ namespace djack.RogueSurvivor.Engine
             LoadHints();
             ApplyOptions(false);
             LoadKeybindings();
-            m_UI.UI_Clear(Color.Black);
+            m_UI.ClearScreen();
             m_UI.UI_DrawStringBold(Color.White, "Loading music...", 0, 0, new Color?());
             m_UI.UI_Repaint();
             m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE);
@@ -645,16 +645,16 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
       // alpha10
       m_MusicManager.Load(GameMusics.SURFACE, GameMusics.SURFACE_FILE);
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
       m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
       m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
       m_ManualLine = 0; // reset line just in case
@@ -749,7 +749,7 @@ namespace djack.RogueSurvivor.Engine
     private void InitDirectories()
     {
       int gy1 = 0;
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
@@ -893,7 +893,7 @@ namespace djack.RogueSurvivor.Engine
           m_PlayedIntro = true;
         }
         gy1 = 0;
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         DrawHeader();
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
@@ -1077,7 +1077,7 @@ namespace djack.RogueSurvivor.Engine
       const int gx = 0;
 
       Func<int,bool?> setup_handler = (currentChoice => {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
@@ -1143,7 +1143,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != ret) return ret;
 
       Func<int,bool?> setup_handler = (currentChoice => {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
@@ -1203,7 +1203,7 @@ namespace djack.RogueSurvivor.Engine
       int gy = 0;
 
       Func<int,bool?> setup_handler = (currentChoice => {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 2* BOLD_LINE_SPACING;
@@ -1269,7 +1269,7 @@ namespace djack.RogueSurvivor.Engine
       int gy1 = 0;
 
       Func<int,GameActors.IDs?> setup_handler = (currentChoice => {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
@@ -1319,7 +1319,7 @@ namespace djack.RogueSurvivor.Engine
 
       Func<int,Skills.IDs?> setup_handler = (currentChoice => {
         gy1 = 0;
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? "Male" : "Female"), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
@@ -1341,7 +1341,7 @@ namespace djack.RogueSurvivor.Engine
 
     private TextFile? LoadManual()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_Repaint();
@@ -1359,7 +1359,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_Repaint();
         ret.FormatLines(TEXTFILE_CHARS_PER_LINE);
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy1, new Color?());
         m_UI.UI_Repaint();
       }
@@ -1369,7 +1369,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleHiScores(bool saveToTextfile)
     {
       var textFile = (saveToTextfile ? new TextFile() : null);
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Hi Scores", 0, gy1, new Color?());
@@ -1414,7 +1414,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadHiScoreTable()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
@@ -1429,22 +1429,22 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (regen_table) {
-        m_HiScoreTable = new HiScoreTable();
+        m_HiScoreTable = new();
         m_HiScoreTable.Clear();
       }
 
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }
 
     private void SaveHiScoreTable()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       HiScoreTable.Save(m_HiScoreTable, GetUserHiScoreFilePath());
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }
@@ -1507,7 +1507,7 @@ namespace djack.RogueSurvivor.Engine
     {
       m_MusicManager.Stop();
       m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_BGM);
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Credits", 0, gy1, new Color?());
@@ -1611,7 +1611,7 @@ namespace djack.RogueSurvivor.Engine
         string[] values = idsArray.Select(x => s_Options.DescribeValue(x)).ToArray();
         int gy;
         int gx = gy = 0;
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         DrawHeader();
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
@@ -3525,7 +3525,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleHelpMode()
     {
       if (m_Manual == null) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, 0, new Color?());
         DrawFootnote(Color.White, "press ENTER");
         m_UI.UI_Repaint();
@@ -3534,7 +3534,7 @@ namespace djack.RogueSurvivor.Engine
         List<string> formatedLines = m_Manual.FormatedLines;
 
         void display(int index) {
-          m_UI.UI_Clear(Color.Black);
+          m_UI.ClearScreen();
           DrawHeader();
           int gy1 = BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1);
@@ -3598,14 +3598,14 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleHintsScreen()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "preparing...", 0, gy1, new Color?());
       m_UI.UI_Repaint();
-      var stringList = new List<string>();
+      List<string> stringList = new();
       for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
         GetAdvisorHintText((AdvisorHint) index, out string title, out string[] body);
         if (s_Hints.IsAdvisorHintGiven((AdvisorHint)index)) title += " (hint already given)"; // alpha10
@@ -3616,7 +3616,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       void display(int index) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         DrawHeader();
         int gy3 = BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3);
@@ -3646,7 +3646,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           case Keys.R:
             s_Hints.ResetAllHints();
-            m_UI.UI_Clear(Color.Black);
+            m_UI.ClearScreen();
             DrawHeader();
             m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, BOLD_LINE_SPACING);
             m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, 2*BOLD_LINE_SPACING);
@@ -3673,7 +3673,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleMessageLog()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
@@ -3690,7 +3690,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int gx = 0;
       int gy = 0;
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Seed.ToString()+" "+ Session.DescGameMode(Session.Get.GameMode), gx, gy, new Color?());
       gy = 2* BOLD_LINE_SPACING;
       if (Player.Model.Abilities.IsUndead) {
@@ -10933,7 +10933,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("May {0} soul rest in peace.", player_his));
       textFile.Append(string.Format("For {0} body is now a meal for evil.", player_his));
       textFile.Append("The End.");
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       string str4 = GraveFilePath(GetUserNewGraveyardName());
@@ -10949,7 +10949,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
       do {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         DrawHeader();
         int gy2 = BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
@@ -11358,7 +11358,7 @@ namespace djack.RogueSurvivor.Engine
     {
             if (IsSimulating) return;   // deadlocks otherwise
             lock (m_UI) {
-                m_UI.UI_Clear(Color.Black);
+                m_UI.ClearScreen();
                 m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, RIGHTPANEL_Y, LOCATIONPANEL_X, LOCATIONPANEL_Y);
                 DrawMap(CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, MINIMAP_Y- MINITILE_SIZE, CANVAS_WIDTH, MINIMAP_Y - MINITILE_SIZE);
@@ -13048,22 +13048,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadKeybindings()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       s_KeyBindings = Keybindings.Load(Path.Combine(GetUserConfigPath(), "keys.dat"));
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }
 
     private void LoadHints()
     {
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       s_Hints = GameHintsStatus.Load(Path.Combine(GetUserConfigPath(), "hints.dat"));
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }
@@ -13207,12 +13207,12 @@ namespace djack.RogueSurvivor.Engine
     private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content
     {
       if (isVerbose) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
       if (isVerbose) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
@@ -13258,7 +13258,7 @@ namespace djack.RogueSurvivor.Engine
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {
-            m_UI.UI_Clear(Color.Black);
+            m_UI.ClearScreen();
             m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());
             m_UI.UI_Repaint();
           }
@@ -13282,13 +13282,13 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (isVerbose) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
       Session.Get.UniqueMaps.CHARUndergroundFacility = CreateUniqueMap_CHARUndegroundFacility(world);
       if (isVerbose) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
@@ -13354,7 +13354,7 @@ namespace djack.RogueSurvivor.Engine
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
           if (isVerbose) {
-            m_UI.UI_Clear(Color.Black);
+            m_UI.ClearScreen();
             m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x1, y1)), 0, 0);
             m_UI.UI_Repaint();
           }
@@ -13386,7 +13386,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (isVerbose) {
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0);
         m_UI.UI_Repaint();
       }
@@ -13434,7 +13434,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
       Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
       m_UI.UI_Repaint();
     }
@@ -13871,7 +13871,7 @@ retry:
       }
 
       m_MusicManager.PlayLooping(GameMusics.LIMBO, MusicPriority.PRIORITY_EVENT);
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
       m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
       m_UI.UI_Repaint();
@@ -13901,7 +13901,7 @@ retry:
       Actor newPlayerAvatar = null;
       Func<int,bool?> setup_handler = (currentChoice => {
         int gy1 = 0;
-        m_UI.UI_Clear(Color.Black);
+        m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy1);
@@ -13954,7 +13954,7 @@ retry:
     {
       int gy1;
       int gx = gy1 = 0;
-      m_UI.UI_Clear(Color.Black);
+      m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", gx, gy1, new Color?());
       int gy2 = gy1 + 28;
       m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), gx, gy2, new Color?());

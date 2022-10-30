@@ -311,10 +311,8 @@ namespace djack.RogueSurvivor
       Application.DoEvents();
     }
 
-    public void UI_Clear(Color clearColor)
-    {
-      m_GameCanvas.Clear(clearColor);
-    }
+    // historically UI_Clear(Color.Black)
+    public void ClearScreen() => m_GameCanvas.Clear(Color.Black);
 
     public void UI_DrawImage(string imageID, int gx, int gy)
     {

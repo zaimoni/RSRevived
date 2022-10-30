@@ -787,7 +787,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void Notify(IRogueUI ui, string what, string stage)
     {
-      ui.UI_Clear(Color.Black);
+      ui.ClearScreen();
       ui.UI_DrawStringBold(Color.White, "Loading " + what + " data : " + stage, 0, 0, new Color?());
       ui.UI_Repaint();
     }
