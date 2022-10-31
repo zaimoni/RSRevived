@@ -24,6 +24,12 @@ namespace djack.RogueSurvivor.UI
   /// </summary>
   public interface IRogueUI
   {
+    // our subclasses are the ones that actually load fonts; define empirical constraints here
+    public const int CANVAS_WIDTH = 1024;
+    public const int CANVAS_HEIGHT = 768;
+    public const int LINE_SPACING = 12;
+    public const int BOLD_LINE_SPACING = 14;
+
 #nullable enable
     // C# 8.0: cooperative almost-singleton now possible for interfaces
     static private IRogueUI? s_ooao = null;

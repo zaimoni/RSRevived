@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor
         break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetClientSizeCore...");
-      SetClientSizeCore(RogueGame.CANVAS_WIDTH, RogueGame.CANVAS_HEIGHT);
+      SetClientSizeCore(IRogueUI.CANVAS_WIDTH, IRogueUI.CANVAS_HEIGHT);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetStyle...");
       SetStyle(ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint, true);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 1...");
@@ -433,8 +433,8 @@ namespace djack.RogueSurvivor
       Size size = new Size(sizeArray[^1].Width + 4, sizeArray[^1].Height + 4);
       Rectangle rect = new Rectangle(location, size);
       const int x_margin = 10;
-      if (RogueGame.CANVAS_WIDTH - x_margin <= rect.Right) {
-        int delta = (rect.Right - RogueGame.CANVAS_WIDTH+ x_margin);
+      if (IRogueUI.CANVAS_WIDTH - x_margin <= rect.Right) {
+        int delta = (rect.Right - IRogueUI.CANVAS_WIDTH + x_margin);
         if (delta <= rect.X) {
           rect.X -= delta;
           location.X -= delta;

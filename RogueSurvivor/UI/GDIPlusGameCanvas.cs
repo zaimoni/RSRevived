@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.UI
     private static readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
     private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
     private Bitmap m_TileImage = new Bitmap(Engine.RogueGame.TILE_SIZE, Engine.RogueGame.TILE_SIZE);    // working space for pre-compositing tiles
-    private Bitmap m_RenderImage = new Bitmap(Engine.RogueGame.CANVAS_WIDTH, Engine.RogueGame.CANVAS_HEIGHT);   // image *source* for PaintEventArgs object's Graphics member; image *destination* for m_RenderGraphics
+    private Bitmap m_RenderImage = new Bitmap(IRogueUI.CANVAS_WIDTH, IRogueUI.CANVAS_HEIGHT);   // image *source* for PaintEventArgs object's Graphics member; image *destination* for m_RenderGraphics
 #if GDI_PLUS
     private readonly Graphics m_RenderGraphics;
     private readonly Graphics m_RenderTile;
@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.UI
       get {
         var form = RogueForm.Get;
         if (null == form) return 1f;
-        return form.ClientRectangle.Width / (float)Engine.RogueGame.CANVAS_WIDTH;
+        return form.ClientRectangle.Width / (float)IRogueUI.CANVAS_WIDTH;
       }
     }
 
@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.UI
       get {
         var form = RogueForm.Get;
         if (null == form) return 1f;
-        return form.ClientRectangle.Height / (float)Engine.RogueGame.CANVAS_HEIGHT;
+        return form.ClientRectangle.Height / (float)IRogueUI.CANVAS_HEIGHT;
       }
     }
 

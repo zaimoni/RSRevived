@@ -173,8 +173,12 @@ namespace djack.RogueSurvivor.Engine
     public const int TILE_VIEW_WIDTH = 2 * HALF_VIEW_WIDTH + 1;
     public const int TILE_VIEW_HEIGHT = 2 * HALF_VIEW_HEIGHT + 1;
 #endif
-    public const int CANVAS_WIDTH = 1024;
-    public const int CANVAS_HEIGHT = 768;
+    // RS Alpha 10.1- define these here.  Backward compatibility constants
+    public const int CANVAS_WIDTH = IRogueUI.CANVAS_WIDTH;
+    public const int CANVAS_HEIGHT = IRogueUI.CANVAS_HEIGHT;
+    public const int LINE_SPACING = IRogueUI.LINE_SPACING;
+    public const int BOLD_LINE_SPACING = IRogueUI.BOLD_LINE_SPACING;
+
     private const int DAMAGE_DX = 10;
     private const int DAMAGE_DY = 10;
     private const int RIGHTPANEL_X = 676;
@@ -183,9 +187,6 @@ namespace djack.RogueSurvivor.Engine
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
-
-    public const int LINE_SPACING = 12;
-    public const int BOLD_LINE_SPACING = 14;
 
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
