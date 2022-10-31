@@ -233,7 +233,7 @@ namespace djack.RogueSurvivor.Engine
 
       string[] entries = command_labels.Select(x => x.Key).ToArray();
       var m_UI = IRogueUI.UI; // backward compatibility
-      const int BOLD_LINE_SPACING = RogueGame.BOLD_LINE_SPACING;
+      const int BOLD_LINE_SPACING = IRogueUI.BOLD_LINE_SPACING;
       var game = RogueGame.Game;
       const int gx = 0;
       int gy = 0;
@@ -252,7 +252,7 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += BOLD_LINE_SPACING;
         }
-        game.DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+        m_UI.DrawFootnote("cursor to move, ENTER to rebind a key, ESC to save and leave");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {

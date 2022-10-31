@@ -757,8 +757,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawString(Color.LightGreen, GetUserBasePath(), 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy1, new Color?());
-      DrawFootnote(Color.White, "press ENTER");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("press ENTER");
       m_UI.WaitEnter();
     }
 
@@ -892,7 +891,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1);
-        DrawFootnote(Color.White, "cursor to move, ENTER to select");
+        m_UI.DrawFootnote("cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
         var rules = Rules.Get;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26) {
@@ -1080,7 +1079,7 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy1, new Color?());
           gy1 += BOLD_LINE_SPACING;
         }
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {
@@ -1141,7 +1140,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {
@@ -1201,7 +1200,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy);
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {
@@ -1267,7 +1266,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, GameActors.IDs?> choice_handler = (currentChoice => {
@@ -1316,7 +1315,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? "Male" : "Female"), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, Skills.IDs?> choice_handler = (currentChoice => {
@@ -1343,8 +1342,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy1, new Color?());
-        m_UI.UI_Repaint();
-        DrawFootnote(Color.White, "press ENTER");
+        m_UI.RenderFootnote("press ENTER");
         m_UI.WaitEnter();
         return null;
       } else {
@@ -1400,8 +1398,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       if (saveToTextfile) m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy1, new Color?());
-      DrawFootnote(Color.White, "press ESC to leave");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("press ESC to leave");
       m_UI.WaitEscape();
     }
 
@@ -1534,8 +1531,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawString(Color.White, "source code: https://github.com/zaimoni/RSRevived", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
-      DrawFootnote(Color.White, "ESC to leave");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("ESC to leave");
       m_UI.WaitEscape();
     }
 
@@ -1625,7 +1621,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheCivilians)), (int)(100.0 * (double)s_Options.DifficultyRating(GameFactions.IDs.TheUndeads))), gx, gy, new Color?());
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
-        DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
+        m_UI.DrawFootnote("cursor to move and change values, R to restore previous values, ESC to save and leave");
         return null;
       });
 
@@ -3512,8 +3508,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_Manual == null) {
         m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, 0, new Color?());
-        DrawFootnote(Color.White, "press ENTER");
-        m_UI.UI_Repaint();
+        m_UI.RenderFootnote("press ENTER");
         m_UI.WaitEnter();
       } else {
         List<string> formatedLines = m_Manual.FormatedLines;
@@ -3535,9 +3530,8 @@ namespace djack.RogueSurvivor.Engine
             ++index;
           }
           while (index < formatedLines.Count && gy1 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
-            m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1);
-          DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
-          m_UI.UI_Repaint();
+          m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1);
+          m_UI.RenderFootnote("cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
         };
 
         bool? handler(KeyEventArgs key) {
@@ -3616,8 +3610,7 @@ namespace djack.RogueSurvivor.Engine
         }
         while (index < stringList.Count && gy3 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3);
-        DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
-        m_UI.UI_Repaint();
+        m_UI.RenderFootnote("cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
       }
 
       int line_no = 0;
@@ -3666,8 +3659,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       Messages.DrawMessageLog(m_UI, 0, gy1);
-      DrawFootnote(Color.White, "press ESC to leave");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("press ESC to leave");
       m_UI.WaitEscape();
     }
 
@@ -3682,8 +3674,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy, new Color?());
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy, new Color?());
-        DrawFootnote(Color.White, "press ESC to leave");
-        m_UI.UI_Repaint();
+        m_UI.RenderFootnote("press ESC to leave");
         m_UI.WaitEscape();
         return;
       }
@@ -3806,8 +3797,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      DrawFootnote(Color.White, "press ESC to leave");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("press ESC to leave");
       m_UI.WaitEscape();
     }
 
@@ -10928,8 +10918,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, BOLD_LINE_SPACING, new Color?());
         m_UI.UI_DrawString(Color.White, str4, 0, 2*BOLD_LINE_SPACING, new Color?());
       }
-      DrawFootnote(Color.White, "press ENTER");
-      m_UI.UI_Repaint();
+      m_UI.RenderFootnote("press ENTER");
       m_UI.WaitEnter();
       textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
@@ -10945,8 +10934,7 @@ namespace djack.RogueSurvivor.Engine
           ++index;
         }
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING, new Color?());
-        DrawFootnote(Color.White,(index < textFile.FormatedLines.Count ? "press ENTER for more" : "press ENTER to leave"));
-        m_UI.UI_Repaint();
+        m_UI.RenderFootnote(index < textFile.FormatedLines.Count ? "press ENTER for more" : "press ENTER to leave");
         m_UI.WaitEnter();
       }
       while (index < textFile.FormatedLines.Count);
@@ -13079,15 +13067,9 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
     }
 
-    public void DrawFootnote(Color color, string text)
-    {
-      Color color1 = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
-      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", text), 0, CANVAS_HEIGHT - BOLD_LINE_SPACING, color1);
-    }
-
-    public static string GetUserBasePath() { return SetupConfig.DirPath; }
-    public static string GetUserSavesPath() { return Path.Combine(GetUserBasePath(), "Saves"); }
-    public static string GetUserSave() { return Path.Combine(GetUserSavesPath(), "save.dat"); }
+    public static string GetUserBasePath() => SetupConfig.DirPath;
+    public static string GetUserSavesPath() => Path.Combine(GetUserBasePath(), "Saves");
+    public static string GetUserSave() => Path.Combine(GetUserSavesPath(), "save.dat");
 
     public static string GetUserSaveBackup()
     {
@@ -13100,8 +13082,8 @@ namespace djack.RogueSurvivor.Engine
       );
     }
 
-    public static string GetUserDocsPath() { return Path.Combine(GetUserBasePath(), "Docs") + Path.DirectorySeparatorChar; }
-    public static string GetUserGraveyardPath() { return Path.Combine(GetUserBasePath(), "Graveyard") + Path.DirectorySeparatorChar; }
+    public static string GetUserDocsPath() => Path.Combine(GetUserBasePath(), "Docs") + Path.DirectorySeparatorChar;
+    public static string GetUserGraveyardPath() => Path.Combine(GetUserBasePath(), "Graveyard") + Path.DirectorySeparatorChar;
 
     static private string GetUserNewGraveyardName()
     {
@@ -13860,7 +13842,7 @@ retry:
           m_UI.UI_DrawStringBold(Color.Pink, strArray[index], 0, gy1);
           gy1 += BOLD_LINE_SPACING;
         }
-        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
+        m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel and end game");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {
@@ -13915,8 +13897,7 @@ retry:
         m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", 0, gy);
         gy += 3 * BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", 0, gy);
-        DrawFootnote(Color.White, "press ENTER");
-        m_UI.UI_Repaint();
+        m_UI.RenderFootnote("press ENTER");
         m_UI.WaitEnter();
         return false;
       }

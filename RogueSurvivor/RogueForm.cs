@@ -382,6 +382,11 @@ namespace djack.RogueSurvivor
       UI_Repaint();
     }
 
+    public void DrawFootnote(string text)
+    {
+      UI_DrawStringBold(Color.White, string.Format("<{0}>", text), 0, IRogueUI.CANVAS_HEIGHT - IRogueUI.BOLD_LINE_SPACING, Color.Gray);
+    }
+
     public void UI_DrawRect(Color color, Rectangle rect)
     {
 #if DEBUG
