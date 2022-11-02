@@ -398,6 +398,21 @@ namespace djack.RogueSurvivor.Data
         return SKILL_LEADERSHIP_FOLLOWER_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
       }
     }
+
+    public List<KeyValuePair<int, Actor>>? DistantFollowers(int max_dist, int want_nearby)
+    {
+        if (null == m_Followers) return null;
+        if (0 >= want_nearby) return null;
+
+        List<KeyValuePair<int, Actor>> ret = new();
+        int closeCount = 0;
+        foreach (Actor follower in m_Followers) {
+            int dist = Rules.InteractionDistance(follower.Location, in m_Location);
+            if (dist <= max_dist && ++closeCount >= want_nearby) return null;
+            ret.Add(new(dist, follower));
+        }
+        return ret;
+    }
 #nullable restore
 
     // Formally would make sense to break this up into target-independent and target-dependent checks for AI processing,

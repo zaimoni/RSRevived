@@ -1887,24 +1887,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       target = null;
       // Scan the group:
-      // - Find farthest member of the group.
+      // - Find nearst member of the group that isn't near enough
       // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
-      // next test game \todo (m_Actor.CountFollowers+1)/ 2 ,so a single follower isn't left behind
-      int halfGroup = m_Actor.CountFollowers / 2;
-      if (0 >= halfGroup) return null;	// automatic do nothing(!)
-      int worstDist = Int32.MinValue;
-      int closeCount = 0;
+      var remote_followers = m_Actor.DistantFollowers(distance, (m_Actor.CountFollowers + 1) / 2);
+      if (null == remote_followers) return null;
 
-      foreach (Actor follower in m_Actor.Followers) {
-        int dist = Rules.InteractionDistance(follower.Location,m_Actor.Location);
-        if (dist <= distance && ++closeCount >= halfGroup) return null;
-        if (dist > worstDist) {
-          target = follower;
-          worstDist = dist;
-        }
-      }
-      if (target == null) return null;
-      return BehaviorPathToAdjacent(target.Location);
+      var closest = remote_followers[0];
+      int ub = remote_followers.Count;
+      while(0 < --ub) {
+        if (closest.Key > remote_followers[ub].Key) closest = remote_followers[ub];
+      };
+
+      target = closest.Value;
+      return BehaviorPathToAdjacent(closest.Value.Location);
     }
 
 #nullable enable
