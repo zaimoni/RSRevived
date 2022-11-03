@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using djack.RogueSurvivor.Data;
@@ -18,13 +19,29 @@ namespace djack.RogueSurvivor.Engine.Op
         public Location obj_origin { get { return m_From; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        public PushOnto(Location from, Location to, int code)
+        [Conditional("DEBUG")]
+        static public void _Ok(Location origin, Location dest)
+        {
+            if (1 != Rules.InteractionDistance(in origin, in dest)) throw new InvalidOperationException("move delta must be adjacent");
+            if (!Map.CanEnter(ref origin)) throw new InvalidOperationException("must be able to exist at the origin");
+            if (!Map.CanEnter(ref dest)) throw new InvalidOperationException("must be able to exist at the destination");
+            if (!dest.TileModel.IsWalkable) throw new InvalidOperationException("destination must allow map objects");
+        }
+
+        static public bool _CanConstruct(Location from, Location to)
         {
 #if DEBUG
-            if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
+            if (1 != Rules.InteractionDistance(in from, in to)) return false;
 #endif
-            if (!Map.CanEnter(ref from)) throw new InvalidOperationException("must be able to exist at the origin");
-            if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
+            if (!Map.CanEnter(ref from)) return false;
+            if (!Map.CanEnter(ref to)) return false;
+            if (!to.TileModel.IsWalkable) return false;
+            return true;
+        }
+
+        public PushOnto(Location from, Location to, int code)
+        {
+            _Ok(from, to);
             m_NewLocation = to;
             m_From = from;
             m_ObjCode = code;
@@ -178,18 +195,35 @@ namespace djack.RogueSurvivor.Engine._Action
         public Location obj_origin { get { return m_Origin; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
+        [Conditional("DEBUG")]
+        static public void _Ok(Location origin, Location dest, Actor actor, MapObject? obj = null)
+        {
+            if (1 != Rules.InteractionDistance(in origin, in dest)) throw new InvalidOperationException("move delta must be adjacent");
+            if (!actor.CanEnter(ref origin)) throw new InvalidOperationException("must be able to exist at the origin");
+            if (!actor.CanEnter(ref dest)) throw new InvalidOperationException("must be able to exist at the destination");
+            if (!dest.TileModel.IsWalkable) throw new InvalidOperationException("destination must allow map objects");
+            if (null == obj) obj = origin.MapObject;
+            if (null == obj) throw new ArgumentNullException(nameof(obj));
+        }
+
+        static public MapObject? _CanConstruct(Location from, Location to, bool run, Actor actor, MapObject? obj = null)
         {
 #if DEBUG
-            if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
+            if (1 != Rules.InteractionDistance(in from, in to)) return null;
 #endif
-            if (!actor.CanEnter(ref from)) throw new InvalidOperationException("must be able to exist at the origin");
-            if (!actor.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
-            if (null == obj) obj = from.MapObject;
-            if (null == obj) throw new ArgumentNullException(nameof(obj));
+            if (!actor.CanEnter(ref from)) return null;
+            if (!actor.CanEnter(ref to)) return null;
+            if (!to.TileModel.IsWalkable) return null;
+            if (null == obj) return from.MapObject;
+            return obj;
+        }
+
+        public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
+        {
+            _Ok(from, to, actor, obj);
             m_NewLocation = to;
             m_Origin = from;
-            m_Object = obj;
+            m_Object = obj ?? from.MapObject ?? throw new ArgumentNullException(nameof(obj));
         }
 
         public override bool IsLegal()
