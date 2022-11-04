@@ -59,6 +59,7 @@ namespace djack.RogueSurvivor.Data
        }
      }
 
+#if DEAD_FUNC
      public InventorySource(MapObject owner, Actor agent, T? obj = null) {
 #if DEBUG
        if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
@@ -73,8 +74,18 @@ namespace djack.RogueSurvivor.Data
          it = obj;
        }
      }
+#endif
 
-     public InventorySource(Location src, T? obj = null) {
+     public InventorySource(Location src) {
+        inv = src.Items
+#if DEBUG
+            ?? throw new ArgumentNullException("src.Items");
+#endif
+        loc = src;
+     }
+
+#if DEAD_FUNC
+     public InventorySource(Location src, T obj) {
         var floor_inv = src.Items;
 #if DEBUG
        if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
@@ -88,8 +99,9 @@ namespace djack.RogueSurvivor.Data
          it = obj;
        }
      }
+#endif
 
-     public InventorySource(Location src, Actor agent, T? obj = null) {
+        public InventorySource(Location src, Actor agent, T? obj = null) {
         var floor_inv = src.Items;
 #if DEBUG
        if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
@@ -656,6 +668,14 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public bool HasPrecise(Gameplay.GameItems.IDs id) => null != GetFirstPrecise(id);
+
+    public Item? GetFirstPrecise(Gameplay.GameItems.IDs id)
+    {
+      foreach (Item it in m_Items) if (id == it.InventoryMemoryID) return it;
+      return null;
+    }
+
     public List<_T_>? GetItemsByType<_T_>() where _T_ : Item
     {
       List<_T_>? tList = null;
@@ -864,4 +884,33 @@ namespace djack.RogueSurvivor.Data
       return string.Join("\n",ret);
     }
   }
+
+    static internal class Inventory_ext
+    {
+        static public InventorySource<Item>? GroundInv(this Location loc)
+        {
+            var g_inv = loc.Items;
+            if (null != g_inv && !g_inv.IsEmpty) return new(loc);
+            return null;
+        }
+
+        static public InventorySource<Item>? ShelfInv(this Location loc)
+        {
+            var o_inv = loc.MapObject?.NonEmptyInventory;
+            if (null != o_inv /* && !o_inv.IsEmpty */) return new(loc.MapObject);
+            return null;
+        }
+
+        // historical behavior: favor shelf inventory over ground inventory (RS Alpha 10.1- does not support both at once at same location)
+        // but only limited clairvoyance allowed
+        static public InventorySource<Item>? Inv(this Location loc, Gameplay.GameItems.IDs item_type)
+        {
+            var ret = loc.ShelfInv();
+            if (null != ret && ret.Value.inv.HasPrecise(item_type)) return ret;
+            var ret2 = loc.GroundInv();
+            if (null != ret2 && ret2.Value.inv.HasPrecise(item_type)) return ret;
+            if (null != ret) return ret;
+            return ret2;
+        }
+    }
 }

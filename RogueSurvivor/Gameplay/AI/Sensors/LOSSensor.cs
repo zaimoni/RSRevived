@@ -83,8 +83,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         var allItems = Map.AllItemsAt(loc, m_Actor);
         if (null == allItems) continue;
         foreach(var inv in allItems) {
-          perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc)); // \todo fix this
-          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv; // \todo may have to retype this
+          perceptList.Add(new Percept(inv.inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
+          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv.inv; // \todo may have to retype this
         }
       }
     }
@@ -100,9 +100,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         }
         HashSet<GameItems.IDs>? staging = new HashSet<GameItems.IDs>();
         foreach(var inv in allItems) {
-          staging.UnionWith(inv.Items.Select(x => x.InventoryMemoryID));
-          perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc)); // \todo fix this
-          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv; // \todo may have to retype this
+          staging.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
+          perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
+          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv.inv; // \todo may have to retype this
         }
         items.Set(loc, staging, loc.Map.LocalTime.TurnCounter);
       }

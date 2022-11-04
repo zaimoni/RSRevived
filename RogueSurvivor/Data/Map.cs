@@ -1839,23 +1839,14 @@ retry:
     /// <summary>
     /// All inventories at that position, regardless of type.  Actors are not meant to be equally efficient at noticing inventories.
     /// </summary>
-    static public List<Inventory>? AllItemsAt(Location loc, Actor? a=null)
+    static public List<InventorySource<Item>>? AllItemsAt(Location loc, Actor? a=null)
     {
-       if (!Map.Canonical(ref loc)) return null;
-       var g_inv = loc.Items;
-       var ret = (null == g_inv || g_inv.IsEmpty ? null : new List<Inventory> { g_inv });
-       var o_inv = loc.MapObject?.NonEmptyInventory;
-       if (null != o_inv && !o_inv.IsEmpty) (ret ??= new()).Add(o_inv);
-       return ret;
-    }
-
-    static public List<Inventory>? AllItemsAt(Location loc, Predicate<Inventory> ok, Actor? a=null)
-    {
-       if (!Map.Canonical(ref loc)) return null;
-       var g_inv = loc.Items;
-       var ret = (null == g_inv || g_inv.IsEmpty || !ok(g_inv) ? null : new List<Inventory> { g_inv });
-       var o_inv = loc.MapObject?.NonEmptyInventory;
-       if (null != o_inv && ok(o_inv)) (ret ??= new()).Add(o_inv);
+       if (!Map.Canonical(ref loc)) return null;  // \todo? precondition
+       List<InventorySource<Item>>? ret = null;
+       var stage = loc.GroundInv();
+       if (null != stage) (ret ??= new()).Add(stage.Value);
+       stage = loc.ShelfInv();
+       if (null != stage) (ret ??= new()).Add(stage.Value);
        return ret;
     }
 
@@ -1863,15 +1854,15 @@ retry:
     {
       List<InventorySource<Item>> ret = new();
 
-      InventorySource<Item> stage = new(origin);
-      if (null != stage.inv) ret.Add(stage);
+      var g_stage = origin.GroundInv();
+      if (null != g_stage) ret.Add(g_stage.Value);
 
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
         var obj = loc.MapObject;
         if (null != obj && obj.IsContainer) {
-          stage = new(obj);
+          InventorySource<Item> stage = new(obj);
 
           // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
           // \todo for now, A Miracle Occurs

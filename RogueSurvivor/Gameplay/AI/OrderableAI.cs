@@ -513,7 +513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         var allItems = Map.AllItemsAt(loc, m_Actor);
         if (null == allItems) return null;
-        foreach(var inv in allItems) if (ordai.WouldGrabFromStack(in loc, inv)) return inv;
+        foreach(var inv in allItems) if (ordai.WouldGrabFromStack(in loc, inv.inv)) return inv.inv;
         return null;
       }
 
