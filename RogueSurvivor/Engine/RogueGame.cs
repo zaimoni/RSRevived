@@ -2705,14 +2705,48 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BikersRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.BIKERS, map);
-      var actor = SpawnNewBikerLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
-      if (actor == null) return;
-      for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
-        var other = SpawnNewBiker(actor);
-        if (other != null) actor.AddFollower(other);
+      var landing_zones = LandEventEntrance(map.District.WorldPosition);
+      var n = landing_zones.Count;
+      while(0 <= --n) {
+        if (!LZ_is_clear(landing_zones[n].Value.Key, GameFactions.TheGangstas)) landing_zones.RemoveAt(n);
       }
-      NotifyOrderablesAI(RaidType.BIKERS, actor.Location);
+      if (0 >= landing_zones.Count) return;
+      n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
+      var turn = map.LocalTime.TurnCounter;
+      var party = new Actor[BIKERS_RAID_SIZE + 1];
+      party[BIKERS_RAID_SIZE - 1] = SpawnNewBikerLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
+
+      var leader = party[BIKERS_RAID_SIZE - 1];
+      var i = BIKERS_RAID_SIZE - 1;
+      while(0 <= --i) {
+        party[i] = SpawnNewBiker(leader);
+        leader.AddFollower(party[i]);
+      }
+
+      // postprocess: leader to center
+      party[BIKERS_RAID_SIZE - 1] = party[(BIKERS_RAID_SIZE - 1)/2];
+      party[(BIKERS_RAID_SIZE - 1)/2] = leader;
+
+      var lz = landing_zones[n].Value.Key.Listing;
+      i = BIKERS_RAID_SIZE + 1;
+      while(0 <= --i) lz[i].Place(party[i]);
+
+      var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
+      if (null != dir) {
+          // point the leader at the city (who won't have threat tracking),
+          // then the destination the legacy implementation would have picked out.
+          var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
+
+          var escape = new Tasks.TaskEscapeNanny(leader, final_dest);
+          escape.Trigger(map);
+          map.AddTimer(escape);
+          escape = new Tasks.TaskEscapeNanny(leader, landing_zones[n].Value.Value);
+          escape.Trigger(landing_zones[n].Key);
+          landing_zones[n].Key.AddTimer(escape);
+      }
+
+      Session.Get.SetLastRaidTime(RaidType.BIKERS, map);
+      NotifyOrderablesAI(RaidType.BIKERS, leader.Location);
     }
 
 #nullable enable
@@ -2728,14 +2762,52 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_GangstasRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.GANGSTA, map);
-      var actor = SpawnNewGangstaLeader(map, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
-      if (actor == null) return;
-      for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
-        var other = SpawnNewGangsta(actor);
-        if (other != null) actor.AddFollower(other);
+      var landing_zones = LandEventEntrance(map.District.WorldPosition);
+      var n = landing_zones.Count;
+      while(0 <= --n) {
+        if (!LZ_is_clear(landing_zones[n].Value.Key, GameFactions.TheGangstas)) landing_zones.RemoveAt(n);
       }
-      NotifyOrderablesAI(RaidType.GANGSTA, actor.Location);
+      if (0 >= landing_zones.Count) return;
+      n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
+      var turn = map.LocalTime.TurnCounter;
+      var party = new Actor[GANGSTAS_RAID_SIZE + 1];
+      party[GANGSTAS_RAID_SIZE - 1] = SpawnNewGangstaLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
+
+      var leader = party[GANGSTAS_RAID_SIZE - 1];
+      var i = GANGSTAS_RAID_SIZE - 1;
+      while(0 <= --i) {
+        party[i] = SpawnNewGangsta(leader);
+        leader.AddFollower(party[i]);
+      }
+
+      // \todo postprocess: firearms skill should get priority re firearms
+
+      // postprocess: leader to center
+      party[GANGSTAS_RAID_SIZE - 1] = party[(GANGSTAS_RAID_SIZE - 1)/2];
+      party[(GANGSTAS_RAID_SIZE - 1)/2] = leader;
+
+      // \todo postprocess: firearms on edge
+
+      var lz = landing_zones[n].Value.Key.Listing;
+      i = GANGSTAS_RAID_SIZE + 1;
+      while(0 <= --i) lz[i].Place(party[i]);
+
+      var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
+      if (null != dir) {
+          // point the leader at the city (who won't have threat tracking),
+          // then the destination the legacy implementation would have picked out.
+          var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
+
+          var escape = new Tasks.TaskEscapeNanny(leader, final_dest);
+          escape.Trigger(map);
+          map.AddTimer(escape);
+          escape = new Tasks.TaskEscapeNanny(leader, landing_zones[n].Value.Value);
+          escape.Trigger(landing_zones[n].Key);
+          landing_zones[n].Key.AddTimer(escape);
+      }
+
+      Session.Get.SetLastRaidTime(RaidType.GANGSTA, map);
+      NotifyOrderablesAI(RaidType.GANGSTA, leader.Location);
     }
 
 #nullable enable
@@ -2933,37 +3005,37 @@ namespace djack.RogueSurvivor.Engine
       return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
-    private Actor? SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
+    private Actor SpawnNewBikerLeader(int turn, GameGangs.IDs gangId)
     {
-      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
+      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(turn, gangId);
       newBikerMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH,3);
       newBikerMan.StartingSkill(Skills.IDs.STRONG,3);
-      return (SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER) ? newBikerMan : null);
+      return newBikerMan;
     }
 
-    private Actor? SpawnNewBiker(Actor leader)
+    private Actor SpawnNewBiker(Actor leader)
     {
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
-      return SpawnActorNear(leader.Location, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, 3);
+      return newBikerMan;
     }
 
-    private Actor? SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
+    private Actor SpawnNewGangstaLeader(int turn, GameGangs.IDs gangId)
     {
-      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
+      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(turn, gangId);
       newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE,3);
       newGangstaMan.StartingSkill(Skills.IDs.FIREARMS);
-      return (SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER) ? newGangstaMan : null);
+      return newGangstaMan;
     }
 
-    private Actor? SpawnNewGangsta(Actor leader)
+    private Actor SpawnNewGangsta(Actor leader)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
-      return SpawnActorNear(leader.Location, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, 3);
+      return newGangstaMan;
     }
 
     private Actor? SpawnNewBlackOpsLeader(Map map)
