@@ -79,8 +79,9 @@ namespace djack.RogueSurvivor.Data
      public InventorySource(Location src) {
         inv = src.Items
 #if DEBUG
-            ?? throw new ArgumentNullException("src.Items");
+            ?? throw new ArgumentNullException("src.Items")
 #endif
+        ;
         loc = src;
      }
 
