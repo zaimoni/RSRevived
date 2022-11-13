@@ -4395,7 +4395,7 @@ restart:
     public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = GameActors.BikerMan.CreateNumberedName(GameFactions.TheBikers, spawnTime);
-      numberedName.GangID = gangId;
+      (numberedName.Controller as AI.GangAI)!.Join(gangId);
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Inventory.AddAll(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
@@ -4414,7 +4414,7 @@ restart:
     public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = GameActors.GangstaMan.CreateNumberedName(GameFactions.TheGangstas, spawnTime);
-      numberedName.GangID = gangId;
+      (numberedName.Controller as AI.GangAI)!.Join(gangId);
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       // Gangsters don't seem very prepared: no reserve ammo

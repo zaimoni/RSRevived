@@ -35,11 +35,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
     private readonly ExplorationData m_Exploration = new ExplorationData();
+    private GameGangs.IDs m_GangID = GameGangs.IDs.NONE;
 
+    // due to how this is called, we cannot include the gang id as a parameter
     public GangAI(Actor src) : base(src)
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
+
+    public override GameGangs.IDs GangID { get { return m_GangID; } }
+    public void Join(GameGangs.IDs src) {
+#if DEBUG
+      if (GameGangs.IDs.NONE != m_GangID) throw new InvalidOperationException("only call GangAI::Join post-construction");
+#endif
+      m_GangID = src;
+    }
+
 
     public override bool UsesExplosives { get { return false; } }
 

@@ -31,6 +31,8 @@ namespace djack.RogueSurvivor.Data
     public virtual void TakeControl() {}
     public virtual void LeaveControl() {}
 
+    public virtual Gameplay.GameGangs.IDs GangID { get { return Gameplay.GameGangs.IDs.NONE; } }
+
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
     public void AddMessage(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {

@@ -133,7 +133,6 @@ namespace djack.RogueSurvivor.Data
     private Flags m_Flags;
     private GameActors.IDs m_ModelID;
     private GameFactions.IDs m_FactionID;
-    private GameGangs.IDs m_GangID;  // sparse field
 #nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
@@ -287,12 +286,9 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public bool IsPlayer { get { return m_Controller is PlayerController; } }
 
-    public Gameplay.GameGangs.IDs GangID {
-      get { return m_GangID; }
-      set { m_GangID = value; }
-    }
+    public GameGangs.IDs GangID { get { return m_Controller.GangID; } }
 
-    public bool IsInAGang { get { return m_GangID != 0; } }
+    public bool IsInAGang { get { return GameGangs.IDs.NONE != m_Controller.GangID; } }
     public ref readonly Doll Doll { get { return ref m_Doll; } }
 
     public bool IsDead {
@@ -573,7 +569,7 @@ namespace djack.RogueSurvivor.Data
       // retain general-purpose code within the cases
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
         int bonus() {
-          switch((GameFactions.IDs)observer.Faction.ID) {
+          switch(observer.Faction.ID) {
             case GameFactions.IDs.ThePolice:
               if (armor.IsHostileForCops()) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
               else if (armor.IsFriendlyForCops()) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
@@ -687,7 +683,6 @@ namespace djack.RogueSurvivor.Data
     {
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
-      m_GangID = 0;
       m_Name = string.IsNullOrEmpty(name) ? model.Name : name;
       IsProperName = false;
       IsPluralName = false;
