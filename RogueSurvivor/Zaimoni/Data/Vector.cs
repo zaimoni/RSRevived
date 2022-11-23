@@ -1411,6 +1411,258 @@ namespace Zaimoni.Data
 
     }
 
+    public record struct Box2D<T>
+        where T:IConvertible,
+                IComparable<T>,
+                System.Numerics.INumberBase<T>,
+                System.Numerics.IMinMaxValue<T>
+    {
+        private Vector2D<T> _anchor;
+        private Vector2D<T> _dim;
+
+        public Box2D(Vector2D<T> origin, Vector2D<T> size)
+        {
+            _anchor = origin;
+            _dim = size;
+        }
+
+        public Box2D(Vector2D<T> origin, T sizex, T sizey)
+        {
+            _anchor = origin;
+            _dim = new(sizex, sizey);
+        }
+
+#if PROTOTYPE
+        public Box2D_short(int originx, int originy, int sizex, int sizey)
+        {
+            _anchor = new Vector2D_short(originx, originy);
+            _dim = new Vector2D_short(sizex, sizey);
+        }
+
+        static public Box2D_short FromLTRB(int left, int top, int right, int bottom) { return new Box2D_short(left, top, right - left, bottom - top); }
+#endif
+
+        static readonly public Box2D<T> Empty = new(Vector2D<T>.Empty, Vector2D<T>.Empty);
+        public bool IsEmpty { get { return Empty == this; } }
+
+#region pure getters
+        public T Bottom { get { return _anchor.Y + _dim.Y; } }
+        public T Left { get { return _anchor.X; } }
+        public T Right { get { return _anchor.X + _dim.X; } }
+        public T Top { get { return _anchor.Y; } }
+#endregion
+
+#region get/set pairs
+        public T Height
+        {
+            get { return _dim.Y; }
+            set { _dim.Y = value; }
+        }
+
+        public T Width
+        {
+            get { return _dim.X; }
+            set { _dim.X = value; }
+        }
+
+        public Vector2D<T> Size
+        {
+            get { return _dim; }
+            set { _dim = value; }
+        }
+
+        public Vector2D<T> Location
+        {
+            get { return _anchor; }
+            set { _anchor = value; }
+        }
+
+        public T X
+        {
+            get { return _anchor.X; }
+            set { _anchor.X = value; }
+        }
+
+        public T Y
+        {
+            get { return _anchor.Y; }
+            set { _anchor.Y = value; }
+        }
+#endregion
+
+        static public Box2D<T> Union(Box2D<T> lhs, Box2D<T> rhs)
+        {
+            Box2D<T> ret = lhs;
+            if (0 < ret.X.CompareTo(rhs.X)) {
+                ret.Width += ret.X - rhs.X;
+                ret.X = rhs.X;
+            }
+            if (0 < ret.Y.CompareTo(rhs.Y)) {
+                ret.Height += ret.Y - rhs.Y;
+                ret.Y = rhs.Y;
+            }
+            if (0 > ret.Right.CompareTo(rhs.Right)) ret.Width += rhs.Right - ret.Right;
+            if (0 > ret.Bottom.CompareTo(rhs.Bottom)) ret.Height += rhs.Bottom - ret.Bottom;
+            return ret;
+        }
+
+        public Box2D<T> Intersect(Box2D<T> rhs)
+        {
+            Box2D<T> ret = this;
+            if (0 > ret.X.CompareTo(rhs.X)) {
+                ret.Width -= rhs.X - ret.X;
+                ret.X = rhs.X;
+            }
+            if (0 > ret.Y.CompareTo(rhs.Y))
+            {
+                ret.Height -= rhs.Y - ret.Y;
+                ret.Y = rhs.Y;
+            }
+            if (0 < ret.Right.CompareTo(rhs.Right)) ret.Width -= ret.Right - rhs.Right;
+            if (0 < ret.Bottom.CompareTo(rhs.Bottom)) ret.Height -= ret.Bottom - rhs.Bottom;
+            return ret;
+        }
+
+        // these are not the safest implementations for integer math
+        private bool ContainsX(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Right);
+        private bool ContainsY(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Bottom);
+        public bool Contains(T x, T y) => ContainsX(x) && ContainsY(Y);
+        public bool Contains(Vector2D<T> src) => ContainsX(src.X) && ContainsY(src.Y);
+
+        public bool Contains(Box2D<T> src) {
+            return 0 >= Left.CompareTo(src.Left) && 0 >= src.Right.CompareTo(Right) && 0>= Top.CompareTo(src.Top)
+                && 0 >= src.Bottom.CompareTo(Bottom);
+        }
+
+        // closely related to compass rose ordering
+        public int EdgeCode(Vector2D<T> src)
+        {
+            int ret = 0;
+            if (_anchor.X == src.X) ret += 8;
+            if (Right - T.One == src.X) ret += 2;
+            if (_anchor.Y == src.Y) ret += 1;
+            if (Bottom - T.One == src.Y) ret += 4;
+            return ret;
+        }
+
+#nullable enable
+        public Vector2D<T>? FirstOrDefault(Predicate<Vector2D<T>> testFn)
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
+                    if (testFn(pt)) return pt;
+                }
+            }
+            return null;
+        }
+
+        public bool Any(Predicate<Vector2D<T>> testFn) => null != FirstOrDefault(testFn);
+
+        public void DoForEach(Action<Vector2D<T>> doFn, Predicate<Vector2D<T>> testFn)
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
+                    if (testFn(pt)) doFn(pt);
+                }
+            }
+        }
+
+        public void DoForEach<U>(Action<U> doFn, Func<Vector2D<T>, U?> testFn) where U : class
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
+                    var test = testFn(pt);
+                    if (null != test) doFn(test);
+                }
+            }
+        }
+
+        public void DoForEach(Action<Vector2D<T>> doFn)
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
+                    doFn(pt);
+                }
+            }
+        }
+
+        public void DoForEachOnEdge(Action<Vector2D<T>> doFn)
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                pt.Y = Top;
+                doFn(pt);
+                pt.Y = Bottom - T.One;
+                doFn(pt);
+            }
+            if (0 <= (T.One+T.One).CompareTo(Height)) return;
+            for (pt.Y = Top + T.One; 0 > pt.Y.CompareTo(Bottom - T.One); ++pt.Y) {
+                pt.X = Left;
+                doFn(pt);
+                pt.X = Right - T.One;
+                doFn(pt);
+            }
+        }
+
+        public void DoForEachOnEdge(Action<Vector2D<T>> doFn, Predicate<Vector2D<T>> testFn)
+        {
+            Vector2D<T> pt = new();
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
+                pt.Y = Top;
+                if (testFn(pt)) doFn(pt);
+                pt.Y = Bottom - T.One;
+                if (testFn(pt)) doFn(pt);
+            }
+            if (0 <= (T.One + T.One).CompareTo(Height)) return;
+            for (pt.Y = Top + T.One; 0 > pt.Y.CompareTo(Bottom - T.One); ++pt.Y) {
+                pt.X = Left;
+                if (testFn(pt)) doFn(pt);
+                pt.X = Right - T.One;
+                if (testFn(pt)) doFn(pt);
+            }
+        }
+
+        public List<Vector2D<T>> Where(Predicate<Vector2D<T>> testFn)
+        {
+            List<Vector2D<T>> ret = new();
+            DoForEach(pt => ret.Add(pt), testFn);
+            return ret;
+        }
+
+        public List<Vector2D<T>> WhereOnEdge(Predicate<Vector2D<T>> testFn)
+        {
+            List<Vector2D<T>> ret = new();
+            DoForEachOnEdge(pt => ret.Add(pt), testFn);
+            return ret;
+        }
+
+        public void WhereOnEdge(ref Stack<Vector2D<T>> dest, Predicate<Vector2D<T>> testFn)
+        {
+            Vector2D<T> pt = new();   // inline DoForEachOnEdge
+            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X)
+            {
+                pt.Y = Top;
+                if (testFn(pt)) dest.push(ref pt);
+                pt.Y = Bottom - T.One;
+                if (testFn(pt)) dest.push(ref pt);
+            }
+            if (0 <= (T.One + T.One).CompareTo(Height)) return;
+            for (pt.Y = Top + T.One; 0 > pt.Y.CompareTo(Bottom - (T.One + T.One)); ++pt.Y) {
+                pt.X = Left;
+                if (testFn(pt)) dest.push(ref pt);
+                pt.X = Right - T.One;
+                if (testFn(pt)) dest.push(ref pt);
+            }
+        }
+#nullable restore
+
+        public override int GetHashCode() => _anchor.GetHashCode() ^ _dim.GetHashCode();
+    }
+
     public static class ext_Vector {
         public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
         {
