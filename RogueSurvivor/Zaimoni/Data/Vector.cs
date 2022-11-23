@@ -624,15 +624,11 @@ namespace Zaimoni.Data
             _dim = new(sizex, sizey);
         }
 
-#if PROTOTYPE
-        public Box2D_short(int originx, int originy, int sizex, int sizey)
+        public Box2D(T originx, T originy, T sizex, T sizey)
         {
-            _anchor = new Vector2D_short(originx, originy);
-            _dim = new Vector2D_short(sizex, sizey);
+            _anchor = new Vector2D<T>(originx, originy);
+            _dim = new Vector2D<T>(sizex, sizey);
         }
-
-        static public Box2D_short FromLTRB(int left, int top, int right, int bottom) { return new Box2D_short(left, top, right - left, bottom - top); }
-#endif
 
         static readonly public Box2D<T> Empty = new(Vector2D<T>.Empty, Vector2D<T>.Empty);
         public bool IsEmpty { get { return Empty == this; } }
@@ -856,6 +852,18 @@ namespace Zaimoni.Data
     }
 
     public static class ext_Vector {
+        public static T To<U, T>(this U src) where U : IConvertible
+        {
+            var method = typeof(IConvertible).GetMethod("ToInt16");
+            if (typeof(T) == method.ReturnType) return (T)method.Invoke(src, new object[1]);
+            throw new InvalidOperationException("unimplemented");
+        }
+
+        static public Box2D<short> FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
+        {
+            return new Box2D<short>(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
+        }
+
         public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
         {
             hull[0] = new Vector2D_short(short.MaxValue, short.MaxValue);
