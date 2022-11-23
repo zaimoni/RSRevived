@@ -8,10 +8,21 @@ using Zaimoni.Data;
 
 namespace Zaimoni.Serialization
 {
+    // should not implement this on structs, to avoid boxing
     public interface ISerialize
     {   // need something heavier as the second parameter
 //      void load(Stream src, DecodeObjects context); // unsure if this is needed (constructor overload?)
         void save(EncodeObjects encode);
+    }
+
+    public partial interface ISave
+    {
+        // C# 11.  Forces compiler error until we actually know what we're doing.
+        static abstract void Save(EncodeObjects encode, object src);
+        static abstract void InlineSave(EncodeObjects encode, object src);
+
+        static void Save(EncodeObjects encode, ISerialize src) => encode.Saving(src);
+        static void InlineSave(EncodeObjects encode, ISerialize src) => src.save(encode);
     }
 
     public class EncodeObjects
@@ -76,8 +87,6 @@ namespace Zaimoni.Serialization
             next(dest); // write object itself to hard drive
             return true;
         }
-
-        public void SaveInline(ISerialize src) => src.save(this);
 
 #region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
         private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();

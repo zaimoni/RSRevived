@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public void Load(Zaimoni.Serialization.DecodeObjects decode) => m_DiceRoller = decode.LoadInline<DiceRoller>();
-    public void Save(Zaimoni.Serialization.EncodeObjects encode) => encode.SaveInline(m_DiceRoller);
+    public void Save(Zaimoni.Serialization.EncodeObjects encode) => Zaimoni.Serialization.ISave.InlineSave(encode, m_DiceRoller);
 #endregion
 
     public DiceRoller DiceRoller { get { return m_DiceRoller; } }

@@ -13,7 +13,7 @@ using System.Runtime.Serialization;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum DayPhase
+  public enum DayPhase
   {
     SUNSET,
     EVENING,
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class WorldTime : ISerializable, Zaimoni.Serialization.ISerialize
+  public class WorldTime : ISerializable
     {
     public const int HOURS_PER_DAY = 24;    // not scalable
     public const int TURNS_PER_HOUR = 30;   // defines space-time scale.  Standard game is 30 turns/hour, district size 50
@@ -118,11 +118,6 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_int);
       TurnCounter = tmp_int;
     }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_TurnCounter);
-    }
 #endregion
 
     public override string ToString()
@@ -196,5 +191,13 @@ namespace djack.RogueSurvivor.Data
 #endif
         }
       }
+    }
+}
+
+namespace Zaimoni.Serialization {
+
+    public partial interface ISave
+    {
+        static void InlineSave(EncodeObjects encode, in djack.RogueSurvivor.Data.WorldTime src) => Formatter.Serialize(encode.dest, src.TurnCounter);
     }
 }

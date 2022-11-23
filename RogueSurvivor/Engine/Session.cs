@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Engine
             Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)(PlayerKnows_CHARUndergroundFacilityLocation ? 1 : 0));
             encode.SaveTo(m_CommandLineOptions);
 //          encode.LinearSave(m_CommandLineOptions, dest);
-            encode.SaveInline(m_Scoring);
+            Zaimoni.Serialization.ISave.InlineSave(encode, m_Scoring);
             ActorModel.Save(encode); // this static data doesn't involve objects
             Rules.Get.Save(encode);
 

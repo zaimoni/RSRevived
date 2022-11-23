@@ -354,7 +354,7 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.Y);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.X);
       Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.Y);
-      encode.SaveInline(LocalTime);
+      Zaimoni.Serialization.ISave.InlineSave(encode, in LocalTime);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
       encode.SaveTo(m_IsInside);
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent

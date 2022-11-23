@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine
     public DiceRoller(int seed) => m_Rng = new Random(seed);
     public DiceRoller() : this((int) DateTime.UtcNow.Ticks) {}
     public DiceRoller(DecodeObjects decode) => m_Rng = decode.LoadInline<Random>();
-    public void save(EncodeObjects encode) => encode.SaveInline(m_Rng);
+    public void save(EncodeObjects encode) => ISave.InlineSave(encode, m_Rng);
 
     public int Roll(int min, int max)
     {
