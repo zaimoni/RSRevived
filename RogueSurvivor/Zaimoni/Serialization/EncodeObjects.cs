@@ -18,11 +18,31 @@ namespace Zaimoni.Serialization
     public partial interface ISave
     {
         // C# 11.  Forces compiler error until we actually know what we're doing.
+#region ISerialize support
         static abstract void Save(EncodeObjects encode, object src);
         static abstract void InlineSave(EncodeObjects encode, object src);
 
         static void Save(EncodeObjects encode, ISerialize src) => encode.Saving(src);
         static void InlineSave(EncodeObjects encode, ISerialize src) => src.save(encode);
+#endregion
+
+#region 7bit support
+        static abstract void Serialize7bit(Stream dest, object src);
+        static void Serialize7bit(Stream dest, ulong src) => Formatter.Serialize7bit(dest, src);
+        static void Serialize7bit(Stream dest, uint src) => Formatter.Serialize7bit(dest, src);
+        static void Serialize7bit(Stream dest, ushort src) => Formatter.Serialize7bit(dest, src);
+        static void Serialize7bit(Stream dest, long src) => Formatter.Serialize7bit(dest, src);
+        static void Serialize7bit(Stream dest, int src) => Formatter.Serialize7bit(dest, src);
+        static void Serialize7bit(Stream dest, short src) => Formatter.Serialize7bit(dest, src);
+
+        static abstract void Deserialize7bit(Stream src, ref object dest);
+        static void Deserialize7bit(Stream src, ref ulong dest) => Formatter.Deserialize7bit(src, ref dest);
+        static void Deserialize7bit(Stream src, ref uint dest) => Formatter.Deserialize7bit(src, ref dest);
+        static void Deserialize7bit(Stream src, ref ushort dest) => Formatter.Deserialize7bit(src, ref dest);
+        static void Deserialize7bit(Stream src, ref long dest) => Formatter.Deserialize7bit(src, ref dest);
+        static void Deserialize7bit(Stream src, ref int dest) => Formatter.Deserialize7bit(src, ref dest);
+        static void Deserialize7bit(Stream src, ref short dest) => Formatter.Deserialize7bit(src, ref dest);
+#endregion
     }
 
     public class EncodeObjects

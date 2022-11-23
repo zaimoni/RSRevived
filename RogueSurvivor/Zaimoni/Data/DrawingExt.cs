@@ -858,15 +858,6 @@ namespace Zaimoni.Data
       return new string(new char[] { (char)(256 * (pt.X - rect.Left) + (pt.Y - rect.Top)) });
     }
 
-    public static string Encode(this Box2D_int rect, Vector2D_int pt)
-    {
-      // C# char is 16-bit unsigned
-      if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
-      if (255<rect.Width || 255<rect.Height) throw new InvalidProgramException("must extend Zaimoni.Data.Encode(Rectangle,Point)");
-      if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
-      return new string(new char[] { (char)(256 * (pt.X - rect.Left) + (pt.Y - rect.Top)) });
-    }
-
     public static string Encode(this Box2D_short rect, Vector2D_short pt)
     {
       // C# char is 16-bit unsigned
@@ -897,18 +888,6 @@ namespace Zaimoni.Data
 
     // encode a dictionary to a string
     public static string Encode(this Rectangle rect, Dictionary<Point,int> src)
-    {
-      if (null==src || 0 >= src.Count) return string.Empty;
-      var tmp = src.Keys.ToList();
-      tmp.Sort((a,b)=> {
-          var test = a.X.CompareTo(b.X);
-          if (0 != test) return test;
-          return a.Y.CompareTo(b.Y);
-      });
-      return string.Concat(tmp.Select(pt => rect.Encode(pt)+((uint)(src[pt])).Encode()));
-    }
-
-    public static string Encode(this Box2D_int rect, Dictionary<Vector2D_int, int> src)
     {
       if (null==src || 0 >= src.Count) return string.Empty;
       var tmp = src.Keys.ToList();
