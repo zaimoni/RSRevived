@@ -18,63 +18,6 @@ using System.Numerics;
 namespace Zaimoni.Data
 {
     // C naming conventions
-    public ref struct Vector2D_int_stack
-    {
-        public int X;
-        public int Y;
-
-        public Vector2D_int_stack(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-        static public explicit operator Vector2D_int_stack(int x) => new Vector2D_int_stack(x, x);
-
-        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
-
-        static public bool operator ==(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return lhs.Equals(rhs); }
-        static public bool operator !=(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return !lhs.Equals(rhs); }
-        static public bool operator <(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return 0 > lhs.CompareTo(rhs); }
-        static public bool operator >(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return 0 < lhs.CompareTo(rhs); }
-        static public bool operator <=(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return 0 >= lhs.CompareTo(rhs); }
-        static public bool operator >=(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return 0 <= lhs.CompareTo(rhs); }
-
-        // vector arithmetic
-        static public Vector2D_int_stack operator +(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return new Vector2D_int_stack(lhs.X + rhs.X, lhs.Y + rhs.Y); }
-        static public Vector2D_int_stack operator -(Vector2D_int_stack lhs, Vector2D_int_stack rhs) { return new Vector2D_int_stack(lhs.X - rhs.X, lhs.Y - rhs.Y); }
-        static public Vector2D_int_stack operator -(Vector2D_int_stack src) { return new Vector2D_int_stack(-src.X, -src.Y); }
-
-        // ignore dot product for integer vectors for now.
-
-        // scalar product/division
-        static public Vector2D_int_stack operator *(int lhs, Vector2D_int_stack rhs) { return new Vector2D_int_stack(lhs * rhs.X, lhs * rhs.Y); }
-        static public Vector2D_int_stack operator *(Vector2D_int_stack lhs, int rhs) { return new Vector2D_int_stack(lhs.X * rhs, lhs.Y * rhs); }
-        static public Vector2D_int_stack operator /(Vector2D_int_stack lhs, int rhs) { return new Vector2D_int_stack(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
-
-        // other coordinate-wise operations
-        public Vector2D_int_stack coord_xform(Func<int, int> op) { return new Vector2D_int_stack(op(X), op(Y)); }
-
-        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
-
-        // lexicographic sort; IComparable<>
-        public int CompareTo(Vector2D_int_stack other)
-        {
-            int ret = X.CompareTo(other.X);
-            if (0 != ret) return ret;
-            return Y.CompareTo(other.Y);
-        }
-
-        // IEquatable<>
-        public bool Equals(Vector2D_int_stack other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object obj) => throw new NotSupportedException();
-        public override int GetHashCode() => throw new NotSupportedException();
-        public override string ToString() => throw new NotSupportedException(); // arguable, but example class did this
-    };
-
     public readonly ref struct Vector2D_int_stack_r
     {
         public readonly int X;
@@ -213,78 +156,6 @@ namespace Zaimoni.Data
         {
             return unchecked(1 + 19 * X + 19 * 17 * Y);
         }
-    };
-
-    public ref struct Vector2D_short_stack
-    {
-        public short X;
-        public short Y;
-
-        public Vector2D_short_stack(short x, short y)
-        {
-            X = x;
-            Y = y;
-        }
-        public Vector2D_short_stack(short x, int y)
-        {
-            X = x;
-            Y = (short)y;
-        }
-        public Vector2D_short_stack(int x, short y)
-        {
-            X = (short)x;
-            Y = y;
-        }
-        public Vector2D_short_stack(int x, int y)
-        {
-            X = (short)x;
-            Y = (short)y;
-        }
-        static public explicit operator Vector2D_short_stack(short x) => new Vector2D_short_stack(x, x);
-
-        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
-
-        static public bool operator ==(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return lhs.Equals(rhs); }
-        static public bool operator !=(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return !lhs.Equals(rhs); }
-        static public bool operator <(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return 0 > lhs.CompareTo(rhs); }
-        static public bool operator >(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return 0 < lhs.CompareTo(rhs); }
-        static public bool operator <=(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return 0 >= lhs.CompareTo(rhs); }
-        static public bool operator >=(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return 0 <= lhs.CompareTo(rhs); }
-
-        // vector arithmetic
-        static public Vector2D_short_stack operator +(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs.X + rhs.X), (short)(lhs.Y + rhs.Y)); }
-        static public Vector2D_short_stack operator -(Vector2D_short_stack lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs.X - rhs.X), (short)(lhs.Y - rhs.Y)); }
-        static public Vector2D_short_stack operator -(Vector2D_short_stack src) { return new Vector2D_short_stack((short)(-src.X), (short)(-src.Y)); }
-
-        // ignore dot product for integer vectors for now.
-
-        // scalar product/division
-        static public Vector2D_short_stack operator *(short lhs, Vector2D_short_stack rhs) { return new Vector2D_short_stack((short)(lhs * rhs.X), (short)(lhs * rhs.Y)); }
-        static public Vector2D_short_stack operator *(Vector2D_short_stack lhs, short rhs) { return new Vector2D_short_stack((short)(lhs.X * rhs), (short)(lhs.Y * rhs)); }
-        static public Vector2D_short_stack operator /(Vector2D_short_stack lhs, short rhs) { return new Vector2D_short_stack((short)(lhs.X / rhs), (short)(lhs.Y / rhs)); } // arguable whether this is useful
-
-        // other coordinate-wise operations
-        public Vector2D_short_stack coord_xform(Func<short, short> op) { return new Vector2D_short_stack(op(X), op(Y)); }
-
-        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
-
-        // lexicographic sort; IComparable<>
-        public int CompareTo(Vector2D_short_stack other)
-        {
-            int ret = X.CompareTo(other.X);
-            if (0 != ret) return ret;
-            return Y.CompareTo(other.Y);
-        }
-
-        // IEquatable<>
-        public bool Equals(Vector2D_short_stack other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object obj) => throw new NotSupportedException();
-        public override int GetHashCode() => throw new NotSupportedException();
-        public override string ToString() => throw new NotSupportedException(); // arguable, but example class did this
     };
 
     public readonly ref struct Vector2D_short_stack_r
@@ -610,63 +481,6 @@ namespace Zaimoni.Data
             return _anchor.GetHashCode() ^ _dim.GetHashCode();
         }
     }
-
-    public ref struct Vector2D_long_stack
-    {
-        public long X;
-        public long Y;
-
-        public Vector2D_long_stack(long x, long y)
-        {
-            X = x;
-            Y = y;
-        }
-        static public explicit operator Vector2D_long_stack(long x) => new Vector2D_long_stack(x, x);
-
-        public bool IsEmpty { get { return 0 == X && 0 == Y; } }
-
-        static public bool operator ==(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return lhs.Equals(rhs); }
-        static public bool operator !=(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return !lhs.Equals(rhs); }
-        static public bool operator <(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return 0 > lhs.CompareTo(rhs); }
-        static public bool operator >(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return 0 < lhs.CompareTo(rhs); }
-        static public bool operator <=(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return 0 >= lhs.CompareTo(rhs); }
-        static public bool operator >=(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return 0 <= lhs.CompareTo(rhs); }
-
-        // vector arithmetic
-        static public Vector2D_long_stack operator +(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs.X + rhs.X, lhs.Y + rhs.Y); }
-        static public Vector2D_long_stack operator -(Vector2D_long_stack lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs.X - rhs.X, lhs.Y - rhs.Y); }
-        static public Vector2D_long_stack operator -(Vector2D_long_stack src) { return new Vector2D_long_stack(-src.X, -src.Y); }
-
-        // ignore dot product for integer vectors for now.
-
-        // scalar product/division
-        static public Vector2D_long_stack operator *(long lhs, Vector2D_long_stack rhs) { return new Vector2D_long_stack(lhs * rhs.X, lhs * rhs.Y); }
-        static public Vector2D_long_stack operator *(Vector2D_long_stack lhs, long rhs) { return new Vector2D_long_stack(lhs.X * rhs, lhs.Y * rhs); }
-        static public Vector2D_long_stack operator /(Vector2D_long_stack lhs, long rhs) { return new Vector2D_long_stack(lhs.X / rhs, lhs.Y / rhs); } // arguable whether this is useful
-
-        // other coordinate-wise operations
-        public Vector2D_long_stack coord_xform(Func<long, long> op) { return new Vector2D_long_stack(op(X), op(Y)); }
-
-        public string to_s() => "(" + X.ToString() + "," + Y.ToString() + ")";
-
-        // lexicographic sort; IComparable<>
-        public long CompareTo(Vector2D_long_stack other)
-        {
-            long ret = X.CompareTo(other.X);
-            if (0 != ret) return ret;
-            return Y.CompareTo(other.Y);
-        }
-
-        // IEquatable<>
-        public bool Equals(Vector2D_long_stack other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object obj) => throw new NotSupportedException();
-        public override int GetHashCode() => throw new NotSupportedException();
-        public override string ToString() => throw new NotSupportedException(); // arguable, but example class did this
-    };
 
     public readonly ref struct Vector2D_long_stack_r
     {
