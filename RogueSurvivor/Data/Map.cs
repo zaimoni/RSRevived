@@ -472,7 +472,7 @@ namespace djack.RogueSurvivor.Data
       int delta_code = DistrictDeltaCode(pt);
       if (0==delta_code) return null;
       Point new_district = DistrictPos;    // System.Drawing.Point is a struct: this is a value copy
-      Vector2D_int_stack district_delta = new Vector2D_int_stack(0,0);
+      var district_delta = Vector2D_stack<int>.AdditiveIdentity;
       while(0!=delta_code) {
         var tmp = Zaimoni.Data.ext_Drawing.sgn_from_delta_code(ref delta_code);
         // XXX: reject Y other than 0,1 in debug mode
@@ -513,7 +513,7 @@ namespace djack.RogueSurvivor.Data
       }
       int map_code = District.UsesCrossDistrictView(this);
       if (0>=map_code || map_code != District.UsesCrossDistrictView(loc.Map)) return null;
-      Vector2D_int_stack district_delta = new Vector2D_int_stack(loc.Map.DistrictPos.X- DistrictPos.X, loc.Map.DistrictPos.Y - DistrictPos.Y);
+      Vector2D_stack<int> district_delta = new Vector2D_stack<int>(loc.Map.DistrictPos.X- DistrictPos.X, loc.Map.DistrictPos.Y - DistrictPos.Y);
 
       // fails at district delta coordinates of absolute value 2+ where intermediate maps do not have same width/height as the endpoint of interest
       Point not_in_bounds = loc.Position;
@@ -2862,15 +2862,15 @@ retry:
 #endif
 
     public void RegenerateMapGeometry() {
-      int crm_encode(Vector2D_int_stack pt) { return pt.X + Rect.Width*pt.Y; }    // chinese remainder theorem encoding
-      Vector2D_int_stack crm_decode(int n) { return new Vector2D_int_stack(n%Rect.Width,n/Rect.Width); }    // chinese remainder theorem decoding
+      int crm_encode(Vector2D_stack<int> pt) { return pt.X + Rect.Width*pt.Y; }    // chinese remainder theorem encoding
+      Vector2D_stack<int> crm_decode(int n) { return new Vector2D_stack<int>(n%Rect.Width,n/Rect.Width); }    // chinese remainder theorem decoding
 
       // we don't care about being completely correct for outdoors, here.  This has to support the indoor situation only
       Span<bool> wall_horz3 = stackalloc bool[Rect.Height*Rect.Width];
       Span<bool> wall_vert3 = stackalloc bool[Rect.Height*Rect.Width];
       Span<bool> space_horz3 = stackalloc bool[Rect.Height*Rect.Width];
       Span<bool> space_vert3 = stackalloc bool[Rect.Height*Rect.Width];
-      Vector2D_int_stack p;
+      Vector2D_stack<int> p;
       p.X = Rect.Width;
       while(0 < p.X--) {
         p.Y = Rect.Height;
@@ -2905,62 +2905,62 @@ retry:
       m_FlushWall_e.Clear();
 
       int i = Rect.Width*Rect.Height;
-      Vector2D_int_stack tmp;
+      Vector2D_stack<int> tmp;
       int tmp_i;
       while(0 < i--) {
         if (!wall_horz3[i] && !wall_vert3[i]) continue;
         p = crm_decode(i);
         if (wall_horz3[i] && wall_vert3[i]) {
           // nw corner candidate
-          if (   space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y+1))]
+          if (   space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]
               && space_vert3[tmp_i]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y+2))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2,p.Y+1))]) m_FullCorner_nw.Add(new Point(p.X+1,p.Y+1));
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+2))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y+1))]) m_FullCorner_nw.Add(new(p.X+1,p.Y+1));
         }
         // [tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X,p.Y))]
         if (wall_horz3[i]) {
           // must test for: flush wall n/s
           // can test for cleanly: corner ne
           if (   Rect.Height-2 > p.Y
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y+1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y+2))]) m_FlushWall_n.Add(new Point(p.X+1,p.Y+1));
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+1))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+2))]) m_FlushWall_n.Add(new(p.X+1,p.Y+1));
           if (   2 <= p.Y
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y-1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y-2))]) m_FlushWall_s.Add(new Point(p.X+1,p.Y-1));
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y-1))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y-2))]) m_FlushWall_s.Add(new(p.X+1,p.Y-1));
           if (   Rect.Width-2 > p.X
               && 1 <= p.X
-              && wall_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2, p.Y))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y+1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y+2))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X  ,p.Y+1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y+1))]) m_FullCorner_ne.Add(new Point(p.X-1,p.Y+1));
+              && wall_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y+1))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y+2))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X  ,p.Y+1))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]) m_FullCorner_ne.Add(new(p.X-1,p.Y+1));
           // do SE here as well
           if (   Rect.Width-2 > p.X
               && 1 <= p.X
               && 3 <= p.Y
-              && wall_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2, p.Y-2))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y-1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1,p.Y-2))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X  ,p.Y-3))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y-3))]) m_FullCorner_se.Add(new Point(p.X-1,p.Y-1));
+              && wall_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y-2))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y-1))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y-2))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X  ,p.Y-3))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y-3))]) m_FullCorner_se.Add(new(p.X-1,p.Y-1));
         }
         if (wall_vert3[i]) {
           // must test for: flush wall e/w
           // can test for cleanly: corner sw
           if (   Rect.Width-2 > p.X
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1, p.Y))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2, p.Y))]) m_FlushWall_w.Add(new Point(p.X+1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1, p.Y))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y))]) m_FlushWall_w.Add(new(p.X+1,p.Y+1));
           if (   2 <= p.X
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-1, p.Y))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X-2, p.Y))]) m_FlushWall_e.Add(new Point(p.X-1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X-1, p.Y))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X-2, p.Y))]) m_FlushWall_e.Add(new(p.X-1,p.Y+1));
           if (   Rect.Width-2 > p.X
               && 1 <= p.Y
               && Rect.Height - 2 > p.Y
-              && wall_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X, p.Y+2))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y))]
-              && space_horz3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y+1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+1,p.Y-1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X+2,p.Y-1))]) m_FullCorner_sw.Add(new Point(p.X+1,p.Y-1));
+              && wall_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+2))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y))]
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y-1))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y-1))]) m_FullCorner_sw.Add(new(p.X+1,p.Y-1));
         }
       } // end while(0 < i--)
     }

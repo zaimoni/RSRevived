@@ -12561,9 +12561,9 @@ namespace djack.RogueSurvivor.Engine
       return MapToScreen(tmp.Value.Position);
     }
 
-    private Vector2D_int_stack LogicalPixel(GDI_Point mouse)   // does not belong in IRogueUI -- return type incompatible
+    private Vector2D_stack<int> LogicalPixel(GDI_Point mouse)   // does not belong in IRogueUI -- return type incompatible
     {
-      return new Vector2D_int_stack((int)(mouse.X / (double)m_UI.UI_GetCanvasScaleX()), (int)(mouse.Y / (double)m_UI.UI_GetCanvasScaleY()));
+      return new Vector2D_stack<int>((int)(mouse.X / (double)m_UI.UI_GetCanvasScaleX()), (int)(mouse.Y / (double)m_UI.UI_GetCanvasScaleY()));
     }
 
     private Point MouseToMap(GDI_Point mouse)
@@ -12589,14 +12589,14 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    private Vector2D_int_stack MouseToInventorySlot(int invX, int invY, GDI_Point mouse)
+    private Vector2D_stack<int> MouseToInventorySlot(int invX, int invY, GDI_Point mouse)
     {
       var logical = LogicalPixel(mouse);
-      logical -= new Vector2D_int_stack(invX,invY);
+      logical -= new Vector2D_stack<int>(invX,invY);
       return logical/ TILE_SIZE;
     }
 
-    static private GDI_Point InventorySlotToScreen(int invX, int invY, Vector2D_int_stack slot)
+    static private GDI_Point InventorySlotToScreen(int invX, int invY, Vector2D_stack<int> slot)
     {
       return new GDI_Point(invX + slot.X * TILE_SIZE, invY + slot.Y * TILE_SIZE);
     }

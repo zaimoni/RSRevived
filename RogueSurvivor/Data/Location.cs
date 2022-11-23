@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Data
         Rectangle ret = new Rectangle(Map.DistrictPos, new Size(1, 1));
         const int radius = Engine.RogueGame.POLICE_RADIO_RANGE + 100/2; // 100: magic constant for CHAR Underground base, the single largest human-scale map in the game
         var district_size = Engine.RogueGame.Options.DistrictSize;
-        var topleft = new Vector2D_int_stack(Position.X-radius,Position.Y-radius);
+        var topleft = new Vector2D_stack<int>(Position.X-radius,Position.Y-radius);
         while(0>topleft.X && 0<ret.Left) {
           topleft.X += district_size;
           --ret.X;
@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Data
           --ret.Y;
           ++ret.Height;
         }
-        var bottomright = new Vector2D_int_stack(Position.X+radius,Position.Y+radius);
+        var bottomright = new Vector2D_stack<int>(Position.X+radius,Position.Y+radius);
         while(district_size <= bottomright.X) {
           bottomright.X -= district_size;
           ++ret.Width;
