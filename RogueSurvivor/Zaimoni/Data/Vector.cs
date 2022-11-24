@@ -124,8 +124,6 @@ namespace Zaimoni.Data
             _dim = new Vector2D_short(sizex, sizey);
         }
 
-        static public Box2D_short FromLTRB(int left, int top, int right, int bottom) { return new Box2D_short(left, top, right - left, bottom - top); }
-
         static readonly public Box2D_short Empty = new Box2D_short(0, 0, 0, 0);
         public bool IsEmpty { get { return 0 == _anchor.X && 0 == _anchor.Y && 0 == _dim.X && 0 == _dim.Y; } }
 
@@ -867,9 +865,9 @@ namespace Zaimoni.Data
             throw new InvalidOperationException("unimplemented");
         }
 
-        static public Box2D<short> FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
+        static public Box2D_short FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
         {
-            return new Box2D<short>(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
+            return new Box2D_short(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
         }
 
         public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)

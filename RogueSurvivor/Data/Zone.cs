@@ -376,55 +376,55 @@ namespace djack.RogueSurvivor.Data
             if (0 == overflow_ew && 0 == overflow_ns) return null; // overflow contained no renormalizable coordinates
 
             // install the repaired zone for our map
-            var ret = new List<ZoneLoc>() { new ZoneLoc(m, Rectangle.FromLTRB(width_cuts[1], height_cuts[1], width_cuts[2], height_cuts[2])) };
+            var ret = new List<ZoneLoc>() { new ZoneLoc(m, ext_Vector.FromLTRB_short(width_cuts[1], height_cuts[1], width_cuts[2], height_cuts[2])) };
 
             // we'd like this within a countdown loop
             ZoneLoc? zone = null;
             List<ZoneLoc>? canon = null;
             if (null != maps[(int)XCOMlike.N] && overflow[(int)XCOMlike.N / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.N], Rectangle.FromLTRB(width_cuts[1], height_cuts[0], width_cuts[2], m.Height));
+                zone = new ZoneLoc(maps[(int)XCOMlike.N], ext_Vector.FromLTRB_short(width_cuts[1], height_cuts[0], width_cuts[2], m.Height));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.NE] && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.E / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.NE], Rectangle.FromLTRB(0, height_cuts[0], width_cuts[3], m.Height));
+                zone = new ZoneLoc(maps[(int)XCOMlike.NE], ext_Vector.FromLTRB_short(0, height_cuts[0], width_cuts[3], m.Height));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.E] && overflow[(int)XCOMlike.E / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.E], Rectangle.FromLTRB(0, height_cuts[1], width_cuts[3], height_cuts[2]));
+                zone = new ZoneLoc(maps[(int)XCOMlike.E], ext_Vector.FromLTRB_short(0, height_cuts[1], width_cuts[3], height_cuts[2]));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.SE] && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.E / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.SE], Rectangle.FromLTRB(0, 0, width_cuts[3], height_cuts[3]));
+                zone = new ZoneLoc(maps[(int)XCOMlike.SE], ext_Vector.FromLTRB_short(0, 0, width_cuts[3], height_cuts[3]));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.S] && overflow[(int)XCOMlike.S / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.S], Rectangle.FromLTRB(width_cuts[1], 0, width_cuts[2], height_cuts[3]));
+                zone = new ZoneLoc(maps[(int)XCOMlike.S], ext_Vector.FromLTRB_short(width_cuts[1], 0, width_cuts[2], height_cuts[3]));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.SW] && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.W / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.SW], Rectangle.FromLTRB(width_cuts[0], 0, m.Width, height_cuts[3]));
+                zone = new ZoneLoc(maps[(int)XCOMlike.SW], ext_Vector.FromLTRB_short(width_cuts[0], 0, m.Width, height_cuts[3]));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.W] && overflow[(int)XCOMlike.W / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.W], Rectangle.FromLTRB(width_cuts[0], height_cuts[1], m.Width, height_cuts[2]));
+                zone = new ZoneLoc(maps[(int)XCOMlike.W], ext_Vector.FromLTRB_short(width_cuts[0], height_cuts[1], m.Width, height_cuts[2]));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             if (null != maps[(int)XCOMlike.NW] && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.W / 2]) {
-                zone = new ZoneLoc(maps[(int)XCOMlike.NW], Rectangle.FromLTRB(width_cuts[0], height_cuts[0], m.Width, m.Height));
+                zone = new ZoneLoc(maps[(int)XCOMlike.NW], ext_Vector.FromLTRB_short(width_cuts[0], height_cuts[0], m.Width, m.Height));
                 canon = zone.GetCanonical;
                 if (null == canon) ret.Add(zone);
                 else ret.AddRange(canon);

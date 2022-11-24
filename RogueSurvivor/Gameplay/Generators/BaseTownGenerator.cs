@@ -1324,7 +1324,7 @@ restart:
         --bottom;
         centralAlley = b.InsideRect.Top + b.InsideRect.Height / 2;
       }
-      Rectangle alleysRect = Rectangle.FromLTRB(left1, top1, right, bottom);
+      var alleysRect = ext_Vector.FromLTRB_short(left1, top1, right, bottom);
       MapObjectFill(map, alleysRect, pt => {
         if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley) {
           return MakeObjShelf();    // XXX why not the shop items as well at this time?
@@ -1816,31 +1816,25 @@ restart:
             // make wings.
             Rectangle wingOne;
             Rectangle wingTwo;
-            if (horizontalCorridor)
-            {
+            if (horizontalCorridor) {
                 // top side.
-                wingOne = Rectangle.FromLTRB(b.BuildingRect.Left, b.BuildingRect.Top, b.BuildingRect.Right, corridorRect.Top);
+                wingOne = ext_Vector.FromLTRB_short(b.BuildingRect.Left, b.BuildingRect.Top, b.BuildingRect.Right, corridorRect.Top);
                 // bottom side.
-                wingTwo = Rectangle.FromLTRB(b.BuildingRect.Left, corridorRect.Bottom, b.BuildingRect.Right, b.BuildingRect.Bottom);
-            }
-            else
-            {
+                wingTwo = ext_Vector.FromLTRB_short(b.BuildingRect.Left, corridorRect.Bottom, b.BuildingRect.Right, b.BuildingRect.Bottom);
+            } else {
                 // left side
-                wingOne = Rectangle.FromLTRB(b.BuildingRect.Left, b.BuildingRect.Top, corridorRect.Left, b.BuildingRect.Bottom);
+                wingOne = ext_Vector.FromLTRB_short(b.BuildingRect.Left, b.BuildingRect.Top, corridorRect.Left, b.BuildingRect.Bottom);
                 // right side
-                wingTwo = Rectangle.FromLTRB(corridorRect.Right, b.BuildingRect.Top, b.BuildingRect.Right, b.BuildingRect.Bottom);
+                wingTwo = ext_Vector.FromLTRB_short(corridorRect.Right, b.BuildingRect.Top, b.BuildingRect.Right, b.BuildingRect.Bottom);
             }
 
             // make apartements in each wing with doors leaving toward corridor and windows to the outside
             // pick sizes so the apartements are not cut into multiple rooms by MakeRoomsPlan
             int apartmentMinXSize, apartmentMinYSize;
-            if (horizontalCorridor)
-            {
+            if (horizontalCorridor) {
                 apartmentMinXSize = 4;
                 apartmentMinYSize = b.BuildingRect.Height / 2;
-            }
-            else
-            {
+            } else {
                 apartmentMinXSize = b.BuildingRect.Width / 2;
                 apartmentMinYSize = 4;
             }
@@ -1848,7 +1842,7 @@ restart:
             var apartementsWingOne = MakeRoomsPlan(map, wingOne, apartmentMinXSize, apartmentMinYSize);
             var apartementsWingTwo = MakeRoomsPlan(map, wingTwo, apartmentMinXSize, apartmentMinYSize);
 
-            List<Rectangle> allApartments = new List<Rectangle>(apartementsWingOne.Count + apartementsWingTwo.Count);
+            List<Rectangle> allApartments = new(apartementsWingOne.Count + apartementsWingTwo.Count);
             allApartments.AddRange(apartementsWingOne);
             allApartments.AddRange(apartementsWingTwo);
 
@@ -3006,10 +3000,10 @@ restart:
       AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP);
       AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN);
       underground.ForEachAdjacent(point2, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
-      Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
-      Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
-      Rectangle rect3 = Rectangle.FromLTRB(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
-      Rectangle rect4 = Rectangle.FromLTRB(rect2.Left, rect3.Top, underground.Width, underground.Height);
+      var rect1 = ext_Vector.FromLTRB_short(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
+      var rect2 = ext_Vector.FromLTRB_short(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
+      var rect3 = ext_Vector.FromLTRB_short(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
+      var rect4 = ext_Vector.FromLTRB_short(rect2.Left, rect3.Top, underground.Width, underground.Height);
       var list = MakeRoomsPlan(underground, rect3, 6);
       MakeRoomsPlan(underground, rect4, 6, list);
       MakeRoomsPlan(underground, rect1, 6, list);
@@ -3263,7 +3257,7 @@ restart:
 
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
-      Rectangle rect1 = Rectangle.FromLTRB(3, 0, OFFICES_WIDTH, OFFICES_HEIGHT);
+      var rect1 = ext_Vector.FromLTRB_short(3, 0, OFFICES_WIDTH, OFFICES_HEIGHT);
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       force_QuadSplit_width = OFFICES_WIDTH - 3 - 8; // Police building codes maximize supplies: width 9, including walls
       var list = MakeRoomsPlan(map, rect1, 5);
@@ -3812,7 +3806,7 @@ restart:
       List<Rectangle> rectangleList = new List<Rectangle>();
       short x = 0;
       while (x + 2 < JAILS_WIDTH) {
-        Rectangle rect = new Rectangle(x, 3, 3, 3);
+        Rectangle rect = new(x, 3, 3, 3);
         rectangleList.Add(rect);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect);
@@ -3823,7 +3817,7 @@ restart:
         map.AddZone(MakeUniqueZone("jail", rect));
         x += 2;
       }
-      Rectangle rect1 = Rectangle.FromLTRB(1, 1, JAILS_WIDTH, 3);
+      var rect1 = ext_Vector.FromLTRB_short(1, 1, JAILS_WIDTH, 3);
       map.AddZone(MakeUniqueZone("cells corridor", rect1));
       map.PlaceAt(MakeObjPowerGenerator(), map.Rect.Anchor(Compass.XCOMlike.NE)+Direction.SW);
 
@@ -3902,11 +3896,10 @@ restart:
       Point point2 = point1+Direction.W;
       surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point2+Direction.W);
       surfaceMap.AddDecorationAt(GameImages.DECO_HOSPITAL, point1+Direction.E);
-      Rectangle rect = Rectangle.FromLTRB(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
+      var rect = ext_Vector.FromLTRB_short(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
       PlaceDoor(surfaceMap, point1, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       PlaceDoor(surfaceMap, point2, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-      DoForEachTile(rect, (Action<Point>) (pt =>
-      {
+      DoForEachTile(rect, (pt => {
         if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt) || (CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
           return;
         surfaceMap.PlaceAt(MakeObjIronBench(), pt);
@@ -4035,10 +4028,10 @@ restart:
       Map map = new Map(seed, "Hospital - Storage", d, 3+ STORAGE_ROOMS_PER_CORRIDOR*(HOSPITAL_TYPICAL_WIDTH_HEIGHT - 1), 4+STORAGE_CORRIDORS*(2+ STORAGE_ROOM_DEPTH), Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
-      Rectangle rect1 = Rectangle.FromLTRB(0, 0, map.Width, 4);
+      var rect1 = ext_Vector.FromLTRB_short(0, 0, map.Width, 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect1);
       map.AddZone(MakeUniqueZone("north corridor", rect1));
-      Rectangle rect2 = Rectangle.FromLTRB(0, rect1.Bottom - 1, map.Width, rect1.Bottom - 1 + 4);
+      var rect2 = ext_Vector.FromLTRB_short(0, rect1.Bottom - 1, map.Width, rect1.Bottom - 1 + 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect2);
       map.SetTileModelAt(1, rect2.Top, GameTiles.FLOOR_TILES);
       map.PlaceAt(MakeObjIronGate(), new Point(1, rect2.Top));
@@ -4050,7 +4043,7 @@ restart:
         storage_room.X += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       map.SetTileModelAt(1, storage_room.Y, GameTiles.FLOOR_TILES);
-      Rectangle rect3 = Rectangle.FromLTRB(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
+      var rect3 = ext_Vector.FromLTRB_short(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect3);
       map.SetTileModelAt(1, rect3.Top, GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("south corridor", rect3));
@@ -4071,11 +4064,11 @@ restart:
       Map map = new Map(seed, "Hospital - Power", d, POWER_WIDTH, POWER_HEIGHT, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(map, GameTiles.WALL_BRICK, map.Rect);
-      Rectangle rect = Rectangle.FromLTRB(1, 1, 3, POWER_HEIGHT);
+      var rect = ext_Vector.FromLTRB_short(1, 1, 3, POWER_HEIGHT);
       map.AddZone(MakeUniqueZone("corridor", rect));
       for (short y = 1; y < POWER_HEIGHT - 2; ++y)
         map.PlaceAt(MakeObjIronFence(), new Point(2, y));
-      Rectangle room = Rectangle.FromLTRB(3, 0, POWER_WIDTH, POWER_HEIGHT);
+      var room = ext_Vector.FromLTRB_short(3, 0, POWER_WIDTH, POWER_HEIGHT);
       map.AddZone(MakeUniqueZone("power room", room));
       DoForEachTile(room, (Action<Point>) (pt =>
       {
