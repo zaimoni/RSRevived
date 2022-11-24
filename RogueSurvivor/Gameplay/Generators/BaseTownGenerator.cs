@@ -1358,9 +1358,7 @@ restart:
         var d = map.District;
         string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Top + b.BuildingRect.Height / 2);
         Rectangle rectangle = b.BuildingRect;
-        int width = rectangle.Width;
-        int height = rectangle.Height;
-        Map shopBasement = new Map(seed, name, map.District, width, height, Lighting.DARKNESS);
+        Map shopBasement = new Map(seed, name, map.District, rectangle.Width, rectangle.Height, Lighting.DARKNESS);
         TileFill(shopBasement, GameTiles.FLOOR_CONCRETE, true);
         TileRectangle(shopBasement, GameTiles.WALL_BRICK, shopBasement.Rect);
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
@@ -4467,8 +4465,8 @@ restart:
 
     public struct Parameters
     {
-      private int m_MapWidth;
-      private int m_MapHeight;
+      private short m_MapWidth;
+      private short m_MapHeight;
       private int m_MinBlockSize;
       private int m_WreckedCarChance;
       private int m_CHARBuildingChance;
@@ -4480,10 +4478,8 @@ restart:
       private int m_PolicemanChance;
 
       // map generation is naturally slow, so we can afford to hard-validate even in release mode
-      public int MapWidth {
-        get {
-          return m_MapWidth;
-        }
+      public short MapWidth {
+        get { return m_MapWidth; }
         set {
           if (value <= 0 || value > RogueGame.MAP_MAX_WIDTH)
             throw new ArgumentOutOfRangeException(nameof(MapWidth),value,"must be in 1.."+ RogueGame.MAP_MAX_WIDTH.ToString());
@@ -4491,10 +4487,8 @@ restart:
         }
       }
 
-      public int MapHeight {
-        get {
-          return m_MapHeight;
-        }
+      public short MapHeight {
+        get { return m_MapHeight; }
         set {
           if (value <= 0 || value > RogueGame.MAP_MAX_HEIGHT)
             throw new ArgumentOutOfRangeException(nameof(MapHeight),value,"must be in 1.."+ RogueGame.MAP_MAX_HEIGHT.ToString());

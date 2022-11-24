@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine
     public const int DEFAULT_NATGUARD_FACTOR = 100;
     public const int DEFAULT_SUPPLIESDROP_FACTOR = 100;
     public const ZupDays DEFAULT_ZOMBIFIEDS_UPGRADE_DAYS = ZupDays.THREE;
-    private int m_DistrictSize;
+    private short m_DistrictSize;
     private int m_MaxCivilians;
     private int m_MaxDogs;
     private int m_MaxUndeads;
@@ -252,15 +252,13 @@ namespace djack.RogueSurvivor.Engine
       return 0==(x%10) && 30 <= x && Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH) >= x;
     }
 
-    public int DistrictSize
+    public short DistrictSize
     {
-      get {
-        return m_DistrictSize;
-      }
+      get { return m_DistrictSize; }
       set {
         if (value < 30) value = 30;
         if (value > RogueGame.MAP_MAX_HEIGHT || value > RogueGame.MAP_MAX_WIDTH)
-          value = Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH);
+          value = (short)(Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH));
         m_DistrictSize = value;
       }
     }

@@ -13243,14 +13243,14 @@ namespace djack.RogueSurvivor.Engine
         if (!Session.CommandLineOptions.TryGetValue("city",out string x)) return;
         int split = x.IndexOf(",");
         if (   1 > split || x.Length-2 < split
-            || !int.TryParse(x.Substring(0, split), out int city_size)
+            || !short.TryParse(x.Substring(0, split), out short city_size)
             || !GameOptions.CitySize_ok(city_size)
-            || !int.TryParse(x.Substring(split + 1), out int district_size)
+            || !short.TryParse(x.Substring(split + 1), out short district_size)
             || !GameOptions.DistrictSize_ok(district_size)) {
           Session.CommandLineOptions.Remove("city");
           return;
         }
-        s_Options.CitySize = (short)city_size;
+        s_Options.CitySize = city_size;
         s_Options.DistrictSize = district_size;
       }
 

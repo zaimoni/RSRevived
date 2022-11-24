@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Data
     }
 #nullable restore
 
-    public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
+    public Map(int seed, string name, District d, short width, short height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
 #if DEBUG
       if (0 >= width) throw new ArgumentOutOfRangeException(nameof(width), width, "0 >= width");
